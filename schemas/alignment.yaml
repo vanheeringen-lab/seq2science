@@ -1,0 +1,19 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+description: an entry in the sample sheet
+
+properties:
+  sample:
+    type: string
+    description: sample name/identifier, if it starts with GSM/SRR/ERR/DRR it can be downloaded from the ENA or NCBI servers.
+  local_path:
+    type: string
+    description: instead of downloading from the ENA/NCBI servers, you can provide a local path.
+    default: None
+  assembly:
+    type: string
+    description: assembly to align against. Will be downloaded by genomepy if not yet in genome_dir.
+
+required:
+  - sample
+  - assembly

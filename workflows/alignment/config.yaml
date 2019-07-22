@@ -1,0 +1,34 @@
+# TODO
+
+# tab-separated file
+samples: samples.tsv
+
+
+# where to find the snakemake rules and sample schemas
+rule_dir:   ../../rules
+schema_dir: ../../schemas
+
+
+# pipeline file locations
+fastq_dir:  /mnt/ocimum/vol/atacpipeline  # where to look for fastq-files FIXME
+result_dir: /mnt/ocimum/vol/atacpipeline  # where to store results
+genome_dir: /mnt/ocimum/vol/genomes       # if none specified, it defaults to genomepy default settings
+
+
+# cutadapt
+cut_adapter: auto
+cut_params: -q 10 --minimum-length 20
+
+
+# bwa index
+bwa_index_algo: bwtsw
+
+
+# bwa mem
+bwa_mem_sort: sambamba
+bwa_mem_sort_order: queryname # queryname | coordinate
+duplicate_params: REMOVE_DUPLICATES=false -Xms4G -Xmx6G MAX_FILE_HANDLES_FOR_READ_ENDS_MAP=999
+
+
+# samindex
+samindex_params: ''

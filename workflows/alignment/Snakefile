@@ -1,0 +1,20 @@
+configfile: "config.yaml"
+
+
+# complement the configuration and do onstart/onexit things
+schema = 'alignment.yaml'
+include: f"{config['rule_dir']}/configuration.smk"
+
+# load the relevant rules
+include: f"{config['rule_dir']}/get_genome.smk"
+include: f"{config['rule_dir']}/get_fastq.smk"
+include: f"{config['rule_dir']}/alignment.smk"
+include: f"{config['rule_dir']}/trim_auto.smk"
+
+
+rule all:
+    # align each sample against its assembly
+    # TODO: does triple quote (""") work here?
+    input:
+        [expand(f"{{result_dir}}/mapped/{sample}-{samples.loc[sample, 'assembly']}.bam", **config)
+         for sample in samples.index]
