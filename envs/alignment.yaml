@@ -1,0 +1,11 @@
+name: alignment
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - bioconda::picard=2.9.2
+  - bioconda::samtools=1.9
+  - bioconda::bwa=0.7.17
+  - conda-forge::cpulimit=0.2
+

@@ -25,17 +25,19 @@ if 'local_lookup' in samples:
 if 'assembly' in samples:
     config['assemblies'] = set(samples['assembly'])
 
+if 'fastq_dump' in config:
+    assert config['fastq_dump'] in ['split', 'splot']
 
 # complement the config when paths are not provided
-if not config['result_dir']:
+if 'result_dir' not in config:
     config['result_dir'] = f"{os.getcwd()}"
-if not config['fastq_dir']:
-    config['fastq_dir'] = f"{os.getcwd()}"
-if not config['genome_dir']:
+if 'genome_dir' not in config:
     config['genome_dir'] = os.path.expanduser(genomepy.functions.config.get("genome_dir"))
+if 'log_dir' not in config:
+    config['log_dir']    = f"{os.getcwd()}"
 
 # cut off trailing slashes
-for path in ['result_dir', 'fastq_dir', 'genome_dir']:
+for path in ['result_dir', 'genome_dir', 'log_dir']:
     config[path] = re.split("\/$", config[path])[0]
 
 

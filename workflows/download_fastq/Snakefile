@@ -1,0 +1,18 @@
+configfile: "config.yaml"
+
+
+# complement the configuration and do onstart/onexit things
+schema = 'download_fastq.yaml'
+include: f"{config['rule_dir']}/configuration.smk"
+
+# load the relevant rules
+include: f"{config['rule_dir']}/get_fastq.smk"
+
+
+rule all:
+    """
+    download all samples
+    """
+    input:
+        [expand(f"{{result_dir}}/fastq/{sample}.fastq.gz", **config)
+         for sample in samples.index]

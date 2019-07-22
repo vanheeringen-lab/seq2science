@@ -34,7 +34,7 @@ rule bwa_mem:
     priority: 1
     threads: 20
     wrapper:
-        "file:wrappers/bwa/mem"
+        "file:../../wrappers/bwa/mem"
 
 
 rule mark_duplicates:

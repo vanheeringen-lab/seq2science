@@ -1,0 +1,25 @@
+# TODO
+
+# tab-separated file
+samples: samples.tsv
+
+
+# where to find the snakemake rules and sample schemas
+rule_dir:   ../../rules
+schema_dir: ../../schemas
+
+
+# pipeline file locations
+result_dir: /mnt/ocimum/vol/atacpipeline  # where to store results
+
+
+# filename conventions
+fqext1: pass_1  #R1
+fqext2: pass_2  #R2
+fqsuffix: fastq
+
+
+# fastq-dump
+PE_split: --split-files --skip-technical --dumpbase --readids --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' --defline-qual '+'
+PE_splot: --split-spot  --skip-technical --dumpbase --readids --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' --defline-qual '+'
+SE_splot: --split-spot  --skip-technical --dumpbase --readids --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' --defline-qual '+'
