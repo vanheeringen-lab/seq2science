@@ -1,3 +1,4 @@
 *.pyc
-.idea/*
-.snakemake*
+.idea/
+.snakemake/
+logs/
