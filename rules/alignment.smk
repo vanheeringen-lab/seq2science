@@ -1,7 +1,6 @@
 config['bwaindex_types'] = ['amb', 'ann', 'bwt', 'pac', 'sa']
 
-# TODO replace wrapper with one-liner?
-# TODO merge params
+
 rule bwa_index:
     input:
         expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config)
@@ -12,8 +11,10 @@ rule bwa_index:
     params:
         prefix="{genome_dir}/{{assembly}}/index/bwa/{{assembly}}".format(**config),
         algorithm=config["bwa_index_algo"]
-    wrapper:
-        "0.31.1/bio/bwa/index"
+    conda:
+        "../envs/alignment.yaml"
+    shell:
+        "bwa index -p {params.prefix} -a {params.algorithm} {input} > {log} 2>&1"
 
 
 # TODO: maybe no wrapper, but make use of pipes/groups?
