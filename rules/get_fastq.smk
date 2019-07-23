@@ -1,5 +1,5 @@
 # TODO: ASCPPATH & KEYPATH, we need a proper way to retrieve them dynamically
-rule gsm2sra:
+rule id2sra:
     output:
         temp(directory(expand("{result_dir}/sra/{{sample}}", **config)))
     log:
