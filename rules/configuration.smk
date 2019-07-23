@@ -42,7 +42,6 @@ for path in ['result_dir', 'genome_dir', 'log_dir']:
 
 
 onstart:
-    # TODO: download location genomepy
     if 'genomepy' in sys.modules:
         # get the genomepy settings
         config['active_plugins'] = [p.name() for p in genomepy.plugin.get_active_plugins()]

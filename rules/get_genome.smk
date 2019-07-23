@@ -16,6 +16,8 @@ rule get_genome:
     conda:
         "../envs/get_genome.yaml"
     shell:
-        "genomepy install {wildcards.assemb} UCSC    >  {log} 2>&1 || "
-        "genomepy install {wildcards.assemb} NCBI    >> {log} 2>&1 || "
-        "genomepy install {wildcards.assemb} Ensembl >> {log} 2>&1 "
+        f"""
+        genomepy install --genome_dir {config['genome_dir']} {{wildcards.assemb}} UCSC    >  {{log}} 2>&1 ||
+        genomepy install --genome_dir {config['genome_dir']} {{wildcards.assemb}} NCBI    >> {{log}} 2>&1 ||
+        genomepy install --genome_dir {config['genome_dir']} {{wildcards.assemb}} Ensembl >> {{log}} 2>&1
+        """
