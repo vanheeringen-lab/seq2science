@@ -21,7 +21,7 @@ rule bwa_index:
 # TODO merge params
 rule bwa_mem:
     input:
-        reads=expand("{fastq_dir}/trimmed/{{sample}}_trimmed.fastq.gz", **config),
+        reads=expand("{result_dir}/trimmed/{{sample}}_trimmed.fastq.gz", **config),
         index=expand("{genome_dir}/{{assembly}}/index/bwa/{{assembly}}.{bwaindex_types}", **config)
     output:
         expand("{result_dir}/mapped/{{sample}}-{{assembly}}.bam", **config)

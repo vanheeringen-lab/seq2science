@@ -10,7 +10,6 @@ schema_dir: ../../schemas
 
 
 # pipeline file locations
-fastq_dir:  /mnt/ocimum/vol/atacpipeline  # where to look for fastq-files FIXME
 result_dir: /mnt/ocimum/vol/atacpipeline  # where to store results
 genome_dir: /mnt/ocimum/vol/genomes       # if none specified, it defaults to genomepy default settings
 
