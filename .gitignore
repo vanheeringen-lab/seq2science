@@ -1,4 +1,4 @@
 *.pyc
 .idea/
 .snakemake/
-logs/
+log/
