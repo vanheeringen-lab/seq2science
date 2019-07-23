@@ -8,7 +8,7 @@ properties:
     description: sample name/identifier, if it starts with GSM/SRR/ERR/DRR it can be downloaded from the ENA or NCBI servers.
   local_path:
     type: string
-    description: instead of downloading from the ENA/NCBI servers, you can provide a local path.
+    description: instead of downloading from the ENA/NCBI servers, you can provide a local path. (defaults to None)
     default: None
   assembly:
     type: string
