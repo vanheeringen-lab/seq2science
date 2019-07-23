@@ -6,6 +6,10 @@ properties:
   sample:
     type: string
     description: sample name/identifier, if it starts with GSM/SRR/ERR/DRR it can be downloaded from the ENA or NCBI servers.
+  splitsplot:
+    type: string
+    description: whether to dump the paired-end fastq in separate files (split), or interleaving them (splot). When dealing with single-end data only splot is allowed. (defaults to splot)
+    default: splot
 
 required:
   - sample

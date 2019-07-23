@@ -1,4 +1,4 @@
-# TODO: ASCPPATH & KEYPATH
+# TODO: ASCPPATH & KEYPATH, we need a proper way to retrieve them dynamically
 rule gsm2sra:
     output:
         temp(directory(expand("{result_dir}/sra/{{sample}}", **config)))
@@ -44,55 +44,58 @@ rule gsm2sra:
         """
 
 
-rule sra2fastqPE_split:
+rule sra2fastq_split:
     input:
         rules.gsm2sra.output
     output:
-        expand("{fastq_dir}/fastq/{{sample}}_{fqext1}.{fqsuffix}.gz", **config),
-        expand("{fastq_dir}/fastq/{{sample}}_{fqext2}.{fqsuffix}.gz", **config)
+        expand("{result_dir}/fastq/{{sample}}_{fqext1}.{fqsuffix}.gz", **config),
+        expand("{result_dir}/fastq/{{sample}}_{fqext2}.{fqsuffix}.gz", **config)
     log:
         expand("{log_dir}/sra2fastq/{{sample}}.log", **config)
     threads: 8
     params:
-        files=expand("{result_dir}/sra/{{sample}}/*", **config)[0],
-        params=config['PE_split']
+        files=expand("{result_dir}/sra/{{sample}}/*", **config)[0]
     conda:
         "../envs/get_fastq.yaml"
     shell:
         f"""
-        parallel-fastq-dump -s {{params.files}} -O {config['result_dir']}/fastq {{params.params}} --threads {{threads}} --gzip >> {{log}} 2>&1
+        numLines=$(fastq-dump -X 1 -Z --split-spot {{params.files}} 2> {{log}} | wc -l)
+        if [ $numLines -eq 4 ]; then
+            echo "{{params.files}} is single-end, specify it as splot" >> {{log}}
+            exit 1
+        fi
+        
+        parallel-fastq-dump -s {{params.files}} -O {config['result_dir']}/fastq {config['split']} --threads {{threads}} --gzip >> {{log}} 2>&1
 
         # rename the SRRs to GSMs
         GSM=$(basename {{input}})
         SRR=$(basename {{params.files}})
-        FILES={config['result_dir']}/*.{config['fqsuffix']}.gz
+        FILES={config['result_dir']}/fastq/*.{config['fqsuffix']}.gz
         rcmd=s/$SRR/$GSM/
         rename -v $rcmd $FILES >> {{log}} 2>&1
         """
 
 
-rule sra2fastqSE_splot:
+rule sra2fastq_splot:
     input:
         rules.gsm2sra.output
     output:
         expand("{result_dir}/fastq/{{sample}}.{fqsuffix}.gz", **config)
     log:
         expand("{log_dir}/sra2fastq/{{sample}}.log", **config)
-    threads: 40
+    threads: 8
     params:
-        files=expand("{result_dir}/sra/{{sample}}/*", **config)[0],
-        params=config['SE_splot']
+        files=expand("{result_dir}/sra/{{sample}}/*", **config)[0]
     conda:
         "../envs/get_fastq.yaml"
     shell:
         f"""
-        parallel-fastq-dump -s {{params.files}} -O {config['result_dir']}/fastq {{params.params}} --threads {{threads}} --gzip >> {{log}} 2>&1
+        parallel-fastq-dump -s {{params.files}} -O {config['result_dir']}/fastq {config['splot']} --threads {{threads}} --gzip >> {{log}} 2>&1
         
         # rename the SRR to GSM
         GSM=$(basename {{input}})
         SRR=$(basename {{params.files}})
         src='{config['result_dir']}/fastq/'$SRR'_*.{config['fqsuffix']}.gz'
         dst='{config['result_dir']}/fastq/'$GSM'.{config['fqsuffix']}.gz'
-        echo $src; echo $dst;
         mv -v $src $dst >> {{log}} 2>&1
         """
