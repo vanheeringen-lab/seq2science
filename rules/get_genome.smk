@@ -8,7 +8,7 @@ rule get_genome:
     output:
         expand("{genome_dir}/{{assemb}}/{{assemb}}.{genome_types}", **config)
     log:
-        expand("logs/get_genome/{{assemb}}.log", **config)
+        expand("{log_dir}/get_genome/{{assemb}}.log", **config)
     threads: 1
     resources:
         parallel_downloads=1

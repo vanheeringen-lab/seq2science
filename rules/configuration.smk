@@ -34,7 +34,7 @@ if 'result_dir' not in config:
 if 'genome_dir' not in config:
     config['genome_dir'] = os.path.expanduser(genomepy.functions.config.get("genome_dir"))
 if 'log_dir' not in config:
-    config['log_dir']    = f"{os.getcwd()}"
+    config['log_dir']    = f"{os.getcwd()}/log"
 
 # cut off trailing slashes
 for path in ['result_dir', 'genome_dir', 'log_dir']:

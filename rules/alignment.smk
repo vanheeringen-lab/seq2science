@@ -8,7 +8,7 @@ rule bwa_index:
     output:
         expand("{genome_dir}/{{assembly}}/index/bwa/{{assembly}}.{bwaindex_types}", **config)
     log:
-        "logs/bwa_index/{assembly}.log"
+        expand("{log_dir}/bwa_index/{{assembly}}.log", **config)
     params:
         prefix="{genome_dir}/{{assembly}}/index/bwa/{{assembly}}".format(**config),
         algorithm=config["bwa_index_algo"]
@@ -26,7 +26,7 @@ rule bwa_mem:
     output:
         expand("{result_dir}/mapped/{{sample}}-{{assembly}}.bam", **config)
     log:
-        "logs/bwa_mem/{sample}-{assembly}.log"
+        expand("{log_dir}/bwa_mem/{{sample}}-{{assembly}}.log", **config)
     params:
         index=expand("{genome_dir}/{{assembly}}/index/bwa/{{assembly}}", **config),
         sort=config['bwa_mem_sort'],
@@ -44,7 +44,7 @@ rule mark_duplicates:
         bam=    expand("{result_dir}/dedup/{{sample}}-{{condition}}-{{project}}-{{assembly}}.bam", **config),
         metrics=expand("{result_dir}/dedup/{{sample}}-{{condition}}-{{project}}-{{assembly}}.metrics.txt", **config)
     log:
-        "logs/mark_duplicates/{sample}-{condition}-{project}-{assembly}.log"
+        expand("{log_dir}/mark_duplicates/{{sample}}-{{condition}}-{{project}}-{{assembly}}.log", **config)
     params:
         config['duplicate_params']
     conda:
@@ -60,7 +60,7 @@ rule samtools_stats:
     output:
         expand("{result_dir}/samtools_stats/{{sample}}-{{condition}}-{{project}}-{{assembly}}.txt", **config)
     log:
-        "logs/samtools_stats/{sample}-{condition}-{project}-{assembly}.log"
+        expand("{log_dir}/samtools_stats/{{sample}}-{{condition}}-{{project}}-{{assembly}}.log", **config)
     conda:
         "../envs/alignment.yaml"
     shell:

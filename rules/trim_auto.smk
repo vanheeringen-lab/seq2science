@@ -9,7 +9,7 @@ rule trim_auto:
         adapter=config['cut_adapter'],
         extra=  config['cut_params']
     log:
-        "logs/trim_auto/{sample}.log"
+        expand("{log_dir}/trim_auto/{{sample}}.log", **config)
     threads: 6
     wrapper:
         "file:../../wrappers/cutadapt"
