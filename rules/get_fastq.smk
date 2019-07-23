@@ -35,11 +35,11 @@ rule gsm2sra:
             WGET_URL=$(esearch -db sra -query {wildcards.sample} | efetch --format runinfo | cut -d ',' -f 10 | grep http);
 
             # first try the ENA (which has at least two different filing systems), if not successful, try NCBI
-            $ASCPPATH -i $KEYPATH -P33001 -T -d -k 0 -Q -l 2G -m 250M $URL_ENA1 {output[0]}  > {log} 2>&1 ||
-            $ASCPPATH -i $KEYPATH -P33001 -T -d -k 0 -Q -l 2G -m 250M $URL_ENA2 {output[0]}  > {log} 2>&1 ||
-            $ASCPPATH -i $KEYPATH         -T -d -k 0 -Q -l 2G -m 250M $URL_NCBI {output[0]}  > {log} 2>&1 ||
+            $ASCPPATH -i $KEYPATH -P33001 -T -d -k 0 -Q -l 2G -m 250M $URL_ENA1 {output[0]} > {log} 2>&1 ||
+            $ASCPPATH -i $KEYPATH -P33001 -T -d -k 0 -Q -l 2G -m 250M $URL_ENA2 {output[0]} > {log} 2>&1 ||
+            $ASCPPATH -i $KEYPATH         -T -d -k 0 -Q -l 2G -m 250M $URL_NCBI {output[0]} > {log} 2>&1 ||
             # if none of the ascp servers work, then simply wget
-            wget -O {output[0]}/{wildcards.sample} -a {log} -nv $WGET_URL 
+            mkdir {output[0]} && wget -O {output[0]}/{wildcards.sample} -a {log} -nv $WGET_URL 
         done;
         """
 
