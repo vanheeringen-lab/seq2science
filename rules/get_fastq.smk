@@ -3,7 +3,7 @@ rule id2sra:
     output:
         temp(directory(expand("{result_dir}/sra/{{sample}}", **config)))
     log:
-        expand("{log_dir}/gsm2sra/{{sample}}.log", **config)
+        expand("{log_dir}/id2sra/{{sample}}.log", **config)
     resources:
         parallel_downloads=1
     wildcard_constraints:
@@ -46,7 +46,7 @@ rule id2sra:
 
 rule sra2fastq_split:
     input:
-        rules.gsm2sra.output
+        rules.id2sra.output
     output:
         expand("{result_dir}/fastq/{{sample}}_{fqext1}.{fqsuffix}.gz", **config),
         expand("{result_dir}/fastq/{{sample}}_{fqext2}.{fqsuffix}.gz", **config)
@@ -78,7 +78,7 @@ rule sra2fastq_split:
 
 rule sra2fastq_splot:
     input:
-        rules.gsm2sra.output
+        rules.id2sra.output
     output:
         expand("{result_dir}/fastq/{{sample}}.{fqsuffix}.gz", **config)
     log:
