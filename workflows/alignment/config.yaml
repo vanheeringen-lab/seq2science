@@ -31,3 +31,9 @@ duplicate_params: REMOVE_DUPLICATES=false -Xms4G -Xmx6G MAX_FILE_HANDLES_FOR_REA
 
 # samindex
 samindex_params: ''
+
+
+# filename conventions
+fqext1: pass_1  # R1
+fqext2: pass_2  # R2
+fqsuffix: fastq

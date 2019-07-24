@@ -17,52 +17,79 @@ rule bwa_index:
         "bwa index -p {params.prefix} -a {params.algorithm} {input} > {log} 2>&1"
 
 
-# TODO: maybe no wrapper, but make use of pipes/groups?
-# https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html#defining-groups-for-execution
-# TODO merge params
+def splitsplot_input(wildcards):
+    dump = samples.loc[wildcards.sample]['splitsplot']
+    assert dump in ['split', 'splot']
+    if dump == 'split':
+        return expand("{result_dir}/fastq/{{sample}}_{fqext1}_trimmed.{fqsuffix}.gz", **config),\
+               expand("{result_dir}/fastq/{{sample}}_{fqext2}_trimmed.{fqsuffix}.gz", **config)
+    else:
+        print(expand("{result_dir}/fastq/{{sample}}_trimmed.{fqsuffix}.gz", **config))
+        return expand("{result_dir}/fastq/{{sample}}_trimmed.{fqsuffix}.gz", **config)
+
+
 rule bwa_mem:
     input:
-        reads=expand("{result_dir}/trimmed/{{sample}}_trimmed.fastq.gz", **config),
+        reads=splitsplot_input,
         index=expand("{genome_dir}/{{assembly}}/index/bwa/{{assembly}}.{bwaindex_types}", **config)
     output:
-        expand("{result_dir}/mapped/{{sample}}-{{assembly}}.bam", **config)
+        pipe(expand("{result_dir}/mapped/{{sample}}-{{assembly}}.bampipe", **config))
     log:
         expand("{log_dir}/bwa_mem/{{sample}}-{{assembly}}.log", **config)
     params:
-        index=expand("{genome_dir}/{{assembly}}/index/bwa/{{assembly}}", **config),
-        sort=config['bwa_mem_sort'],
-        sort_order=config['bwa_mem_sort_order']
-    priority: 1
-    threads: 20
-    wrapper:
-        "file:../../wrappers/bwa/mem"
+        interleaved='true',
+        index_dir=expand("{genome_dir}/{{assembly}}/index/bwa/{{assembly}}", **config),
+    threads: 40
+    conda:
+        "../envs/alignment.yaml"
+    shell:
+        """
+        bwa mem -t {threads} {params.index_dir} {input.reads} 1> {output} 2> {log} 
+        """
 
-
-rule mark_duplicates:
+rule sambamba_sort:
     input:
         rules.bwa_mem.output
     output:
-        bam=    expand("{result_dir}/dedup/{{sample}}-{{condition}}-{{project}}-{{assembly}}.bam", **config),
-        metrics=expand("{result_dir}/dedup/{{sample}}-{{condition}}-{{project}}-{{assembly}}.metrics.txt", **config)
+        expand("{result_dir}/mapped/{{sample}}-{{assembly}}.bam", **config)
     log:
-        expand("{log_dir}/mark_duplicates/{{sample}}-{{condition}}-{{project}}-{{assembly}}.log", **config)
-    params:
-        config['duplicate_params']
+        expand("{log_dir}/bwa_mem/{{sample}}-{{assembly}}-sambamba_sort.log", **config)
+    params:  # TODO: replace by config
+        ""
+    threads: 3
     conda:
         "../envs/alignment.yaml"
     shell:
-        "picard MarkDuplicates {params} INPUT={input} "
-        "OUTPUT={output.bam} METRICS_FILE={output.metrics} > {log} 2>&1"
+        """
+        sambamba view --nthreads {threads} -S -f bam  {input[0]} -o /dev/stdout  2> {{log}} |
+        sambamba sort --nthreads {threads} {params}   /dev/stdin -o {output[0]}  2> {{log}}
+        """
 
-
-rule samtools_stats:
-    input:
-        expand("{result_dir}/dedup/{{sample}}-{{condition}}-{{project}}-{{assembly}}.bam", **config)
-    output:
-        expand("{result_dir}/samtools_stats/{{sample}}-{{condition}}-{{project}}-{{assembly}}.txt", **config)
-    log:
-        expand("{log_dir}/samtools_stats/{{sample}}-{{condition}}-{{project}}-{{assembly}}.log", **config)
-    conda:
-        "../envs/alignment.yaml"
-    shell:
-        "samtools stats {input} 1> {output} 2> {log}"
+# rule mark_duplicates:
+#     input:
+#         rules.bwa_mem.output
+#     output:
+#         bam=    expand("{result_dir}/dedup/{{sample}}-{{condition}}-{{project}}-{{assembly}}.bam", **config),
+#         metrics=expand("{result_dir}/dedup/{{sample}}-{{condition}}-{{project}}-{{assembly}}.metrics.txt", **config)
+#     log:
+#         expand("{log_dir}/mark_duplicates/{{sample}}-{{condition}}-{{project}}-{{assembly}}.log", **config)
+#     params:
+#         config['duplicate_params']
+#     conda:
+#         "../envs/alignment.yaml"
+#     shell:
+#         "picard MarkDuplicates {params} INPUT={input} "
+#         "OUTPUT={output.bam} METRICS_FILE={output.metrics} > {log} 2>&1"
+#
+#
+# rule samtools_stats:
+#     input:
+#         expand("{result_dir}/dedup/{{sample}}-{{condition}}-{{project}}-{{assembly}}.bam", **config)
+#     output:
+#         expand("{result_dir}/samtools_stats/{{sample}}-{{condition}}-{{project}}-{{assembly}}.txt", **config)
+#     log:
+#         expand("{log_dir}/samtools_stats/{{sample}}-{{condition}}-{{project}}-{{assembly}}.log", **config)
+#     conda:
+#         "../envs/alignment.yaml"
+#     shell:
+#         "samtools stats {input} 1> {output} 2> {log}"
