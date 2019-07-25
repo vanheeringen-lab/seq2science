@@ -1,3 +1,3 @@
-sample	local_path	assembly
-GSM3557733		GRCh38.p13
-GSM3449580		GRCh38.p13
+sample	local_path	assembly	splitsplot
+GSM2520641		Spur_4.2	splot
+GSM2837484		Bl71nemr	splot
