@@ -10,7 +10,7 @@ rule bwa_index:
         expand("{log_dir}/bwa_index/{{assembly}}.log", **config)
     params:
         prefix="{genome_dir}/{{assembly}}/index/bwa/{{assembly}}".format(**config),
-        algorithm=config["bwa_index_algo"]
+        algorithm=config["bwa_algo"]
     conda:
         "../envs/alignment.yaml"
     shell:
@@ -44,15 +44,15 @@ rule sambamba_sort:
         expand("{result_dir}/mapped/{{sample}}-{{assembly}}.bam", **config)
     log:
         expand("{log_dir}/bwa_mem/{{sample}}-{{assembly}}-sambamba_sort.log", **config)
-    params:  # TODO: replace by config
-        ""
+    params:
+        "-n" if config['bam_sort_order'] == 'queryname' else ''
     threads: 3
     conda:
         "../envs/alignment.yaml"
     shell:
         """
         sambamba view --nthreads {threads} -S -f bam  {input[0]} -o /dev/stdout  2> {log} |
-        sambamba sort --nthreads {threads} {params}   /dev/stdin -o {output[0]}  2> {log}
+        sambamba sort --nthreads {threads} {params.sort}   /dev/stdin -o {output[0]}  2> {log}
         """
 
 
@@ -65,7 +65,7 @@ rule mark_duplicates:
     log:
         expand("{log_dir}/mark_duplicates/{{sample}}-{{assembly}}.log", **config)
     params:
-        config['duplicate_params']
+        config['markduplicates']
     conda:
         "../envs/alignment.yaml"
     shell:

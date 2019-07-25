@@ -1,4 +1,6 @@
+from snakemake.utils import validate
 configfile: "config.yaml"
+validate(config, schema=f"../../schemas/config.schema.yaml", set_default=True)
 
 
 # complement the configuration and do onstart/onexit things

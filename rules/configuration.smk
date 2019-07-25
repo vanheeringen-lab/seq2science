@@ -16,31 +16,19 @@ samples.index = samples.index.map(str)
 if 'condition' in samples:
     samples['condition'] = samples['condition'].str.replace(" ","")
 
-if 'peaks' in samples:
-    config['peaks'] = {k: v for d in config['peaks'] for k, v in d.items()}
-
-if 'local_lookup' in samples:
-    config["local_lookup"] = samples.local_path.to_dict()
-
 if 'assembly' in samples:
     config['assemblies'] = set(samples['assembly'])
 
-if 'fastq_dump' in config:
-    assert config['fastq_dump'] in ['split', 'splot']
-
-# complement the config when paths are not provided
-if 'result_dir' not in config:
-    config['result_dir'] = f"{os.getcwd()}"
-if 'genome_dir' not in config:
-    config['genome_dir'] = os.path.expanduser(genomepy.functions.config.get("genome_dir"))
-if 'log_dir' not in config:
-    config['log_dir']    = f"{os.getcwd()}/log"
+if 'peak_caller' in config:
+    config['peak_caller'] = {k: v for d in config['peak_caller'] for k, v in d.items()}
+    assert all(key in ['macs2', 'genrich'] for key in config['peak_caller'].keys())
 
 # cut off trailing slashes
 for path in ['result_dir', 'genome_dir', 'log_dir']:
     config[path] = re.split("\/$", config[path])[0]
 
 
+# Do onstart/onexit things
 onstart:
     if 'genomepy' in sys.modules:
         # get the genomepy settings
