@@ -26,8 +26,18 @@ properties:
     type: string
   log_dir:
     description: directory where to store the logs
-    default: ./logs
+    default: log
     type: string
+  sra_dir:
+    description: directory inside the result dir where to store the workflow sras
+    default: sra
+    type: string
+  fastq_dir:
+    description: directory inside the result dir where to store the workflow fastqs
+    default: FASTQ
+    type: string
+
+
 
   # fastq-dump parameters
   split:

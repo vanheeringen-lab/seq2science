@@ -1,7 +1,7 @@
 # TODO: ASCPPATH & KEYPATH, we need a proper way to retrieve them dynamically
 rule id2sra:
     output:
-        temp(directory(expand("{result_dir}/sra/{{sample}}", **config)))
+        temp(directory(expand("{result_dir}/{sra_dir}/{{sample}}", **config)))
     log:
         expand("{log_dir}/id2sra/{{sample}}.log", **config)
     resources:
@@ -48,7 +48,7 @@ checkpoint sra2fastq:
     input:
         rules.id2sra.output
     output:
-        directory(expand("{result_dir}/FASTQ/{{sample}}/", **config))
+        directory(expand("{result_dir}/{fastq_dir}/{{sample}}/", **config))
     log:
         expand("{log_dir}/sra2fastq/{{sample}}.log", **config)
     threads: 8
