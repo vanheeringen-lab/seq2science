@@ -1,0 +1,89 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+description: snakemake-workflows configuration
+
+#type: object
+
+properties:
+  # workflow samples
+  samples:
+    description: tab-separated file specifying the samples to run through the workflow
+    default: samples.tsv
+    type: string
+
+  # paths
+  rule_dir:
+    description: directory where to find the workflow rules
+    default: ../../rules
+    type: string
+  result_dir:
+    description: where to store all the pipeline's results
+    default: ./
+    type: string
+  genome_dir:
+    description: where to store the pipeline's genome assemblies
+    default: ./
+    type: string
+  log_dir:
+    description: directory where to store the logs
+    default: ./logs
+    type: string
+
+  # fastq-dump parameters
+  split:
+    description: fastq-dump parameters when splitting reads (paired-end)
+    default: --split-files --skip-technical --dumpbase --readids --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' --defline-qual '+'
+    type: string
+  splot:
+    description: fastq-dump parameters when splotting reads (single-end)
+    default: --split-spot  --skip-technical --dumpbase --readids --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' --defline-qual '+'
+    type: string
+
+  # filename conventions
+  fqext1:
+    description: filename suffix when handling paired-end data, describing the forward read
+    default: pass_1
+    type: string
+  fqext2:
+    description: filename suffix when handling paired-end data, describing the reverse read
+    default: pass_2
+    type: string
+  fqsuffix:
+    description: file descriptor for fastq files (often fastq or fq)
+    default: fastq
+    type: string
+
+  # cutadapt parameters
+  cutadapt:
+    description: cutadapt settings (note that the adapter is autodetected, so you do not have to set it here)
+    default: -q 10 --minimum-length 20
+    type: string
+
+  # bwa alignment parameters
+  bwa_algo:
+    description: the algorithm bwa index uses for alignment
+    default: bwtsw
+    type: string
+
+  # bam sorting
+  bam_sorter:
+    description: which sorting software to use
+    default: sambamba
+    type: string
+  bam_sort_order:
+    description: sort order of aligned reads
+    default: queryname
+    type: string
+
+  # picard markduplicates
+  markduplicates:
+    description: the parameters of picard markduplicates
+    default: REMOVE_DUPLICATES=false -Xms4G -Xmx6G MAX_FILE_HANDLES_FOR_READ_ENDS_MAP=999
+    type: string
+
+  # peak caller algorithms
+#  peak_callers:
+
+#required:
+#  - sample
+#  - assembly

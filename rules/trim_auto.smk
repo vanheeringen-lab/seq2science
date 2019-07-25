@@ -12,7 +12,8 @@ rule cutadapt:
         input=sorted(expand("{result_dir}/FASTQ/{{sample}}/*.{fqsuffix}.gz", **config)),
         read2=expand("{result_dir}/FASTQ/{{sample}}/{{sample}}_{fqext2}.{fqsuffix}.gz", **config)[0],
     # TODO: add config params
-        config="-a AGATCGGAAGAGCAGATCGGAAGAGCAGATCGGAAGAGC"
+        adapter="-a AGATCGGAAGAGCAGATCGGAAGAGCAGATCGGAAGAGC",
+        config=config['cutadapt']
     conda:
         "../envs/trim_auto.yaml"
     threads: 8
@@ -35,7 +36,7 @@ rule cutadapt:
         # now cut adapters
         mkdir $outdir &
         cpulimit --include-children -l {threads}00 --\
-        cutadapt -j {threads} {params.config} $output {params.input} 1> {output.qc} 2> {log}
+        cutadapt -j {threads} {params.adapter} {params.config} $output {params.input} 1> {output.qc} 2> {log}
         """
 
 
