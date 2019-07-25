@@ -21,8 +21,8 @@ def splitsplot_input(wildcards):
     dump = samples.loc[wildcards.sample]['splitsplot']
     assert dump in ['split', 'splot']
     if dump == 'split':
-        return expand("{result_dir}/fastq/{{sample}}_{fqext1}_trimmed.{fqsuffix}.gz", **config),\
-               expand("{result_dir}/fastq/{{sample}}_{fqext2}_trimmed.{fqsuffix}.gz", **config)
+        return [expand("{result_dir}/fastq/{{sample}}_{fqext1}_trimmed.{fqsuffix}.gz", **config)[0],\
+                expand("{result_dir}/fastq/{{sample}}_{fqext2}_trimmed.{fqsuffix}.gz", **config)[0]]
     else:
         return expand("{result_dir}/fastq/{{sample}}_trimmed.{fqsuffix}.gz", **config)
 
