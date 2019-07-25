@@ -25,6 +25,6 @@ rule all:
     align each sample against its assembly
     """
     input:
-        [expand(f"{{result_dir}}/mapped/{sample}-{samples.loc[sample, 'assembly']}.bam", **config)
+        [expand(f"{{result_dir}}/dedup/{sample}-{samples.loc[sample, 'assembly']}.bam", **config)
          for sample in samples.index]
 

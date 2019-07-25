@@ -56,21 +56,21 @@ rule sambamba_sort:
         """
 
 
-# rule mark_duplicates:
-#     input:
-#         rules.bwa_mem.output
-#     output:
-#         bam=    expand("{result_dir}/dedup/{{sample}}-{{condition}}-{{project}}-{{assembly}}.bam", **config),
-#         metrics=expand("{result_dir}/dedup/{{sample}}-{{condition}}-{{project}}-{{assembly}}.metrics.txt", **config)
-#     log:
-#         expand("{log_dir}/mark_duplicates/{{sample}}-{{condition}}-{{project}}-{{assembly}}.log", **config)
-#     params:
-#         config['duplicate_params']
-#     conda:
-#         "../envs/alignment.yaml"
-#     shell:
-#         "picard MarkDuplicates {params} INPUT={input} "
-#         "OUTPUT={output.bam} METRICS_FILE={output.metrics} > {log} 2>&1"
+rule mark_duplicates:
+    input:
+        expand("{result_dir}/mapped/{{sample}}-{{assembly}}.bam", **config)
+    output:
+        bam=    expand("{result_dir}/dedup/{{sample}}-{{assembly}}.bam", **config),
+        metrics=expand("{result_dir}/dedup/{{sample}}-{{assembly}}.metrics.txt", **config)
+    log:
+        expand("{log_dir}/mark_duplicates/{{sample}}-{{assembly}}.log", **config)
+    params:
+        config['duplicate_params']
+    conda:
+        "../envs/alignment.yaml"
+    shell:
+        "picard MarkDuplicates {params} INPUT={input} "
+        "OUTPUT={output.bam} METRICS_FILE={output.metrics} > {log} 2>&1"
 
 
 # rule samtools_stats:
