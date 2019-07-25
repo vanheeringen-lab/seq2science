@@ -17,19 +17,9 @@ rule bwa_index:
         "bwa index -p {params.prefix} -a {params.algorithm} {input} > {log} 2>&1"
 
 
-def splitsplot_input(wildcards):
-    dump = samples.loc[wildcards.sample]['splitsplot']
-    assert dump in ['split', 'splot']
-    if dump == 'split':
-        return [expand("{result_dir}/fastq/{{sample}}_{fqext1}_trimmed.{fqsuffix}.gz", **config)[0],\
-                expand("{result_dir}/fastq/{{sample}}_{fqext2}_trimmed.{fqsuffix}.gz", **config)[0]]
-    else:
-        return expand("{result_dir}/fastq/{{sample}}_trimmed.{fqsuffix}.gz", **config)
-
-
 rule bwa_mem:
     input:
-        reads=splitsplot_input,
+        reads=expand("{result_dir}/trimmed/{{sample}}", **config),
         index=expand("{genome_dir}/{{assembly}}/index/bwa/{{assembly}}.{bwaindex_types}", **config)
     output:
         pipe(expand("{result_dir}/mapped/{{sample}}-{{assembly}}.bampipe", **config))
@@ -38,13 +28,14 @@ rule bwa_mem:
     params:
         interleaved='true',
         index_dir=expand("{genome_dir}/{{assembly}}/index/bwa/{{assembly}}", **config),
-    threads: 40
+    threads: 20
     conda:
         "../envs/alignment.yaml"
     shell:
         """
-        bwa mem -t {threads} {params.index_dir} {input.reads} 1> {output} 2> {log} 
+        bwa mem -t {threads} {params.index_dir} {input.reads}/* 1> {output} 2> {log}
         """
+
 
 rule sambamba_sort:
     input:
@@ -60,9 +51,10 @@ rule sambamba_sort:
         "../envs/alignment.yaml"
     shell:
         """
-        sambamba view --nthreads {threads} -S -f bam  {input[0]} -o /dev/stdout  2> {{log}} |
-        sambamba sort --nthreads {threads} {params}   /dev/stdin -o {output[0]}  2> {{log}}
+        sambamba view --nthreads {threads} -S -f bam  {input[0]} -o /dev/stdout  2> {log} |
+        sambamba sort --nthreads {threads} {params}   /dev/stdin -o {output[0]}  2> {log}
         """
+
 
 # rule mark_duplicates:
 #     input:
@@ -79,8 +71,8 @@ rule sambamba_sort:
 #     shell:
 #         "picard MarkDuplicates {params} INPUT={input} "
 #         "OUTPUT={output.bam} METRICS_FILE={output.metrics} > {log} 2>&1"
-#
-#
+
+
 # rule samtools_stats:
 #     input:
 #         expand("{result_dir}/dedup/{{sample}}-{{condition}}-{{project}}-{{assembly}}.bam", **config)
