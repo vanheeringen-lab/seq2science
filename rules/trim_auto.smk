@@ -1,19 +1,19 @@
 rule cutadapt:
     input:
-        dir=download_fastq(expand("{result_dir}/FASTQ/{{sample}}/", **config)),
-        adapt=expand("{result_dir}/FASTQ/{{sample}}/adapter.txt", **config)
+        dir=download_fastq(expand("{result_dir}/{fastq_dir}/{{sample}}/", **config)),
+        adapt=expand("{result_dir}/{fastq_dir}/{{sample}}/adapter.txt", **config)
     output:
-        dir=directory(expand("{result_dir}/trimmed/{{sample}}", **config)),
-        qc=expand("{result_dir}/trimmed_qc/{{sample}}/{{sample}}_trimming_report.txt", **config)
+        dir=directory(expand("{result_dir}/{trimmed_dir}/{{sample}}", **config)),
+        qc=expand("{result_dir}/{trimmedqc_dir}/{{sample}}/{{sample}}_trimming_report.txt", **config)
     log:
         expand("{log_dir}/cutadapt/{{sample}}.log", **config)
     params:
-    # TODO: check in config if read1/read2 is sorted
-        input=sorted(expand("{result_dir}/FASTQ/{{sample}}/*.{fqsuffix}.gz", **config)),
-        read2=expand("{result_dir}/FASTQ/{{sample}}/{{sample}}_{fqext2}.{fqsuffix}.gz", **config)[0],
-    # TODO: add config params
+        # TODO: check in config if read1/read2 is sorted
+        input=sorted(expand("{result_dir}/{fastq_dir}/{{sample}}/*.{fqsuffix}.gz", **config)),
+        read2=expand("{result_dir}/{fastq_dir}/{{sample}}/{{sample}}_{fqext2}.{fqsuffix}.gz", **config)[0],
         adapter="-a AGATCGGAAGAGCAGATCGGAAGAGCAGATCGGAAGAGC",
-        config=config['cutadapt']
+        config=config['cutadapt'],
+        fastq_dir=config['fastq_dir']
     conda:
         "../envs/trim_auto.yaml"
     threads: 8
@@ -28,10 +28,10 @@ rule cutadapt:
         fi;
 
         # make sure that the output gets written to the trimmed folder, not the fastq folder
-        output="${{output//FASTQ/trimmed}}"
+        output="${{output//{params.fastq_dir}/trimmed}}"
 
         # remove directory on premature end
-        outdir=$(dirname "${{read1//FASTQ/trimmed}}")
+        outdir=$(dirname "${{read1//{params.fastq_dir}/trimmed}}")
         trap \"rm -f $outdir\" INT;
         # now cut adapters
         mkdir $outdir &
@@ -44,9 +44,9 @@ rule cutadapt:
 # TODO: pipe? Or temp output?
 rule detect_adapter:
     input:
-        download_fastq(expand("{result_dir}/FASTQ/{{sample}}/", **config))
+        download_fastq(expand("{result_dir}/{fastq_dir}/{{sample}}/", **config))
     output:
-        expand("{result_dir}/FASTQ/{{sample}}/adapter.txt", **config)
+        expand("{result_dir}/{fastq_dir}/{{sample}}/adapter.txt", **config)
     log: # TODO
         expand("{log_dir}/detect_adapter/{{sample}}.log", **config)
     run:

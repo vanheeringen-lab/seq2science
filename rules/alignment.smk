@@ -19,10 +19,10 @@ rule bwa_index:
 
 rule bwa_mem:
     input:
-        reads=expand("{result_dir}/trimmed/{{sample}}", **config),
+        reads=expand("{result_dir}/{trimmed_dir}/{{sample}}", **config),
         index=expand("{genome_dir}/{{assembly}}/index/bwa/{{assembly}}.{bwaindex_types}", **config)
     output:
-        pipe(expand("{result_dir}/mapped/{{sample}}-{{assembly}}.bampipe", **config))
+        pipe(expand("{result_dir}/{bwa_dir}/{{sample}}-{{assembly}}.bampipe", **config))
     log:
         expand("{log_dir}/bwa_mem/{{sample}}-{{assembly}}.log", **config)
     params:
@@ -41,7 +41,7 @@ rule sambamba_sort:
     input:
         rules.bwa_mem.output
     output:
-        expand("{result_dir}/mapped/{{sample}}-{{assembly}}.bam", **config)
+        expand("{result_dir}/{bwa_dir}/{{sample}}-{{assembly}}.bam", **config)
     log:
         expand("{log_dir}/bwa_mem/{{sample}}-{{assembly}}-sambamba_sort.log", **config)
     params:
@@ -58,10 +58,10 @@ rule sambamba_sort:
 
 rule mark_duplicates:
     input:
-        expand("{result_dir}/mapped/{{sample}}-{{assembly}}.bam", **config)
+        expand("{result_dir}/{bwa_dir}/{{sample}}-{{assembly}}.bam", **config)
     output:
-        bam=    expand("{result_dir}/dedup/{{sample}}-{{assembly}}.bam", **config),
-        metrics=expand("{result_dir}/dedup/{{sample}}-{{assembly}}.metrics.txt", **config)
+        bam=    expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.bam", **config),
+        metrics=expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.metrics.txt", **config)
     log:
         expand("{log_dir}/mark_duplicates/{{sample}}-{{assembly}}.log", **config)
     params:

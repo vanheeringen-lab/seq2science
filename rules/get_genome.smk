@@ -3,13 +3,12 @@ config['genome_types'] = ['fa', 'fa.fai', 'fa.sizes', 'gaps.bed']
 
 rule get_genome:
     # """
-    # Download the genomes, specified in config:samples, through genomepy.
+    # Download genomes
     # """
     output:
         expand("{genome_dir}/{{assemb}}/{{assemb}}.{genome_types}", **config)
     log:
         expand("{log_dir}/get_genome/{{assemb}}.log", **config)
-    threads: 1
     resources:
         parallel_downloads=1
     priority: 1
