@@ -9,19 +9,9 @@ include: f"{config['rule_dir']}/configuration.smk"
 include: f"{config['rule_dir']}/get_fastq.smk"
 
 
-# make a list of all the fastq files we expect from the workflow
-fastqs = []
-for sample in samples.index:
-    if samples.loc[sample]['splitsplot'] == 'split':
-        fastqs.append(expand(f"{{result_dir}}/fastq/{sample}_{{fqext1}}.{{fqsuffix}}.gz", **config))
-        fastqs.append(expand(f"{{result_dir}}/fastq/{sample}_{{fqext2}}.{{fqsuffix}}.gz", **config))
-    else:
-        fastqs.append(expand(f"{{result_dir}}/fastq/{sample}.{{fqsuffix}}.gz", **config))
-
-
 rule all:
     """
     download all samples
     """
     input:
-        fastqs
+        [expand(f"{{result_dir}}/fastq/{sample}/", **config) for sample in samples.index]
