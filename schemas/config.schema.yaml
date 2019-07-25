@@ -21,7 +21,7 @@ properties:
     default: ./
     type: string
   genome_dir:
-    description: where to store the pipeline's genome assemblies
+    description: where to store the pipeline's genome assemblies. NOTE that this is not inside the result_dir
     default: ./
     type: string
   log_dir:
@@ -36,8 +36,22 @@ properties:
     description: directory inside the result dir where to store the workflow fastqs
     default: FASTQ
     type: string
-
-
+  trimmed_dir:
+    description: directory inside the result dir where to store the workflow trimmed fastqs
+    default: trimmed
+    type: string
+  trimmedqc_dir:
+    description: directory inside the result dir where to store the workflow trimming quality controls
+    default: trimmed_qc
+    type: string
+  bwa_dir:
+    description: directory inside the result dir where to store the workflow bwa output
+    default: bwa
+    type: string
+  dedup_dir:
+    description: directory inside the result dir where to store the workflow deduplicated alignment
+    default: dedup
+    type: string
 
   # fastq-dump parameters
   split:
