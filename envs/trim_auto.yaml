@@ -1,0 +1,9 @@
+name: trim_auto
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - bioconda::cutadapt=2.4
+  - conda-forge::cpulimit=0.2
+
