@@ -80,6 +80,3 @@ checkpoint sra2fastq:
             rename -v $rcmd $FILES >> {{log}} 2>&1
         fi
         """
-
-rule test:
-
