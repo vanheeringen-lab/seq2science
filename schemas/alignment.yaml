@@ -13,10 +13,6 @@ properties:
   assembly:
     type: string
     description: assembly to align against. Will be downloaded by genomepy if not yet in genome_dir.
-  splitsplot:
-    type: string
-    description: whether to dump the paired-end fastq in separate files (split), or interleaving them (splot). When dealing with single-end data only splot is allowed. (defaults to splot)
-    default: splot
 
 required:
   - sample
