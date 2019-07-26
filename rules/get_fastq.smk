@@ -44,39 +44,47 @@ rule id2sra:
         """
 
 
-checkpoint sra2fastq:
+checkpoint sra2fastq_SE:
     input:
         rules.id2sra.output
     output:
-        directory(expand("{result_dir}/{fastq_dir}/{{sample}}/", **config))
+        expand("{result_dir}/{fastq_dir}/{{sample}}.{fqsuffix}.gz", **config)
     log:
         expand("{log_dir}/sra2fastq/{{sample}}.log", **config)
     threads: 8
-    params:
-        files=expand("{result_dir}/sra/{{sample}}/*", **config)[0]
     conda:
         "../envs/get_fastq.yaml"
     shell:
         f"""
-        numLines=$(fastq-dump -X 1 -Z --split-spot {{params.files}} 2> {{log}} | wc -l)
-        if [ $numLines -eq 4 ]; then
-            parallel-fastq-dump -s {{params.files}} -O {config['result_dir']}/FASTQ/{{wildcards.sample}} {config['splot']} --threads {{threads}} --gzip >> {{log}} 2>&1
-        
-            # rename the SRR to GSM
-            GSM=$(basename {{input}})
-            SRR=$(basename {{params.files}})
-            src='{config['result_dir']}/FASTQ/{{wildcards.sample}}/'$SRR'_*.{config['fqsuffix']}.gz'
-            dst='{config['result_dir']}/FASTQ/{{wildcards.sample}}/'$GSM'.{config['fqsuffix']}.gz'
-            mv -v $src $dst >> {{log}} 2>&1
+        parallel-fastq-dump -s {{input}}/* -O {config['result_dir']}/{config['fastq_dir']} {config['splot']} --threads {{threads}} --gzip >> {{log}} 2>&1
 
-        elif [ $numLines -eq 8 ]; then
-            parallel-fastq-dump -s {{params.files}} -O {config['result_dir']}/FASTQ/{{wildcards.sample}} {config['split']} --threads {{threads}} --gzip >> {{log}} 2>&1
+        # rename the SRR to GSM
+        GSM=$(basename {{input}})
+        SRR=$(basename {{input}}/*)
+        src='{config['result_dir']}/{config['fastq_dir']}/'$SRR'_pass.{config['fqsuffix']}.gz'
+        dst='{config['result_dir']}/{config['fastq_dir']}/'$GSM'.{config['fqsuffix']}.gz'
+        mv -v $src $dst >> {{log}} 2>&1
+        """
 
-            # rename the SRRs to GSMs
-            GSM=$(basename {{input}})
-            SRR=$(basename {{params.files}})
-            FILES={config['result_dir']}/FASTQ/{{wildcards.sample}}/*.{config['fqsuffix']}.gz
-            rcmd=s/$SRR/$GSM/
-            rename -v $rcmd $FILES >> {{log}} 2>&1
-        fi
+
+checkpoint sra2fastq_PE:
+    input:
+        rules.id2sra.output
+    output:
+        expand("{result_dir}/{fastq_dir}/{{sample}}_{fqext}.{fqsuffix}.gz", **config)
+    log:
+        expand("{log_dir}/sra2fastq/{{sample}}.log", **config)
+    threads: 8
+    conda:
+        "../envs/get_fastq.yaml"
+    shell:
+        f"""
+        parallel-fastq-dump -s {{input}}/* -O {config['result_dir']}/{config['fastq_dir']} {config['split']} --threads {{threads}} --gzip >> {{log}} 2>&1
+
+        # rename the SRRs to GSMs
+        GSM=$(basename {{input}})
+        SRR=$(basename {{input}}/*)
+        FILES={config['result_dir']}/{config['fastq_dir']}/{{wildcards.sample}}/*.{config['fqsuffix']}.gz
+        rcmd=s/$SRR/$GSM/
+        rename -v $rcmd $FILES >> {{log}} 2>&1
         """

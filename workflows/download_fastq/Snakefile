@@ -16,4 +16,5 @@ rule all:
     download all samples
     """
     input:
-        [expand(f"{{result_dir}}/{{fastq_dir}}/{sample}/", **config) for sample in samples.index]
+        [expand(f"{{result_dir}}/{{fastq_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz", **config) if config['layout'][sample] == "PAIRED" else
+         expand(f"{{result_dir}}/{{fastq_dir}}/{sample}.{{fqsuffix}}.gz", **config) for sample in samples.index]

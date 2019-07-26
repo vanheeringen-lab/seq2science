@@ -1,6 +1,8 @@
 import re
 import genomepy
+import subprocess
 import pandas as pd
+from multiprocessing.pool import ThreadPool
 from snakemake.utils import validate
 
 
@@ -27,9 +29,27 @@ if 'peak_caller' in config:
 for path in ['result_dir', 'genome_dir', 'log_dir']:
     config[path] = re.split("\/$", config[path])[0]
 
+# check if paired-end filename suffixes are lexicograpically ordered
+config['fqext'] = [config['fqext1'], config['fqext2']]
+assert sorted(config['fqext'])[0] == config['fqext1']
+
+
+# check if a sample is single-end or paired end, and store it
+results = []
+tp = ThreadPool(1)  # TODO: get key for more requests! https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/
+
+def get_layout(sample):
+    return sample, subprocess.check_output(
+        f'''esearch -db sra -query {sample} | efetch | grep -Po "(?<=<LIBRARY_LAYOUT><)[^/><]*"''',
+        shell=True).decode('ascii').rstrip()
+
+for sample in samples.index:
+    results.append(tp.apply_async(get_layout, (sample,)))
+config['layout'] = {r.get()[0]: r.get()[1] for r in results}
 
 # Do onstart/onexit things
 onstart:
+    # turn off genomepy plugins, since they slow down the 'downloading' process
     if 'genomepy' in sys.modules:
         # get the genomepy settings
         config['active_plugins'] = [p.name() for p in genomepy.plugin.get_active_plugins()]
