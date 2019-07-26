@@ -1,0 +1,37 @@
+from snakemake.utils import validate
+configfile: "config.yaml"
+validate(config, schema=f"../../schemas/config.schema.yaml", set_default=True)
+
+# complement the configuration and do onstart/onexit things
+schema = 'alignment.yaml'
+include: f"{config['rule_dir']}/configuration.smk"
+
+
+# load the subworkflow alignment
+subworkflow alignment:
+    workdir:
+        "../alignment"
+    configfile:
+        "config.yaml"
+
+
+# load the remaining relevant rules
+include: f"{config['rule_dir']}/call_peak.smk"
+include: f"{config['rule_dir']}/get_genome.smk"
+
+
+if 'condition' in config:
+    assert False
+#     rule all:
+#         """
+#         call peaks for each sample, IDR / genrich
+#         """
+else:
+    rule all:
+        """
+        call peaks for each sample, no IDR / genrich replicates
+        """
+        input:
+            [expand(f"{{result_dir}}/{{peak_caller}}/{sample}-{samples.loc[sample, 'assembly']}_peaks.narrowPeak", **config)
+             for sample in samples.index]
+

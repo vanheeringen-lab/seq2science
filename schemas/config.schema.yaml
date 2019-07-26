@@ -105,8 +105,16 @@ properties:
     default: REMOVE_DUPLICATES=false -Xms4G -Xmx6G MAX_FILE_HANDLES_FOR_READ_ENDS_MAP=999
     type: string
 
-  # peak caller algorithms
+#  # peak caller algorithms
 #  peak_callers:
+#    genrich:
+#      description: genrich peak caller
+#      default: ''
+#      type: string
+#    macs2:
+#      description: macs2 peak caller
+#      type: string
+
 
 #required:
 #  - sample
