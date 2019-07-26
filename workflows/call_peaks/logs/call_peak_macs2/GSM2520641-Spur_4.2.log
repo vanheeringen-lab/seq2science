@@ -1,0 +1,109 @@
+INFO  @ Thu, 25 Jul 2019 23:36:30: 
+# Command line: callpeak -t /mnt/ocimum/vol/atacpipeline/dedup/GSM2520641-Spur_4.2.bam --outdir /mnt/ocimum/vol/atacpipeline/macs2/ -n GSM2520641-Spur_4.2 --shift -100 --extsize 200 -B --nomodel --keep-dup 1 --buffer-size 10000 -g 123456789
+# ARGUMENTS LIST:
+# name = GSM2520641-Spur_4.2
+# format = AUTO
+# ChIP-seq file = ['/mnt/ocimum/vol/atacpipeline/dedup/GSM2520641-Spur_4.2.bam']
+# control file = None
+# effective genome size = 1.23e+08
+# band width = 300
+# model fold = [5, 50]
+# qvalue cutoff = 5.00e-02
+# The maximum gap between significant sites is assigned as the read length/tag size.
+# The minimum length of peaks is assigned as the predicted fragment length "d".
+# Larger dataset will be scaled towards smaller dataset.
+# Range for calculating regional lambda is: 10000 bps
+# Broad region calling is off
+# Paired-End mode is off
+ 
+INFO  @ Thu, 25 Jul 2019 23:36:30: #1 read tag files... 
+INFO  @ Thu, 25 Jul 2019 23:36:30: #1 read treatment tags... 
+INFO  @ Thu, 25 Jul 2019 23:36:30: Detected format is: BAM 
+INFO  @ Thu, 25 Jul 2019 23:36:30: * Input file is gzipped. 
+INFO  @ Thu, 25 Jul 2019 23:36:34:  1000000 
+INFO  @ Thu, 25 Jul 2019 23:36:37:  2000000 
+INFO  @ Thu, 25 Jul 2019 23:36:41:  3000000 
+INFO  @ Thu, 25 Jul 2019 23:36:44:  4000000 
+INFO  @ Thu, 25 Jul 2019 23:36:47:  5000000 
+INFO  @ Thu, 25 Jul 2019 23:36:51:  6000000 
+INFO  @ Thu, 25 Jul 2019 23:36:54:  7000000 
+INFO  @ Thu, 25 Jul 2019 23:36:57:  8000000 
+INFO  @ Thu, 25 Jul 2019 23:37:01:  9000000 
+INFO  @ Thu, 25 Jul 2019 23:37:04:  10000000 
+INFO  @ Thu, 25 Jul 2019 23:37:07:  11000000 
+INFO  @ Thu, 25 Jul 2019 23:37:10:  12000000 
+INFO  @ Thu, 25 Jul 2019 23:37:13:  13000000 
+INFO  @ Thu, 25 Jul 2019 23:37:17:  14000000 
+INFO  @ Thu, 25 Jul 2019 23:37:20:  15000000 
+INFO  @ Thu, 25 Jul 2019 23:37:23:  16000000 
+INFO  @ Thu, 25 Jul 2019 23:37:26:  17000000 
+INFO  @ Thu, 25 Jul 2019 23:37:29:  18000000 
+INFO  @ Thu, 25 Jul 2019 23:37:33:  19000000 
+INFO  @ Thu, 25 Jul 2019 23:37:36:  20000000 
+INFO  @ Thu, 25 Jul 2019 23:37:39:  21000000 
+INFO  @ Thu, 25 Jul 2019 23:37:42:  22000000 
+INFO  @ Thu, 25 Jul 2019 23:37:45:  23000000 
+INFO  @ Thu, 25 Jul 2019 23:37:48:  24000000 
+INFO  @ Thu, 25 Jul 2019 23:37:52:  25000000 
+INFO  @ Thu, 25 Jul 2019 23:37:55:  26000000 
+INFO  @ Thu, 25 Jul 2019 23:37:58:  27000000 
+INFO  @ Thu, 25 Jul 2019 23:38:01:  28000000 
+INFO  @ Thu, 25 Jul 2019 23:38:04:  29000000 
+INFO  @ Thu, 25 Jul 2019 23:38:07:  30000000 
+INFO  @ Thu, 25 Jul 2019 23:38:11:  31000000 
+INFO  @ Thu, 25 Jul 2019 23:38:14:  32000000 
+INFO  @ Thu, 25 Jul 2019 23:38:17:  33000000 
+INFO  @ Thu, 25 Jul 2019 23:38:20:  34000000 
+INFO  @ Thu, 25 Jul 2019 23:38:23:  35000000 
+INFO  @ Thu, 25 Jul 2019 23:38:26:  36000000 
+INFO  @ Thu, 25 Jul 2019 23:38:29:  37000000 
+INFO  @ Thu, 25 Jul 2019 23:38:33:  38000000 
+INFO  @ Thu, 25 Jul 2019 23:38:36:  39000000 
+INFO  @ Thu, 25 Jul 2019 23:38:39:  40000000 
+INFO  @ Thu, 25 Jul 2019 23:38:42:  41000000 
+INFO  @ Thu, 25 Jul 2019 23:38:45:  42000000 
+INFO  @ Thu, 25 Jul 2019 23:38:48:  43000000 
+INFO  @ Thu, 25 Jul 2019 23:38:52:  44000000 
+INFO  @ Thu, 25 Jul 2019 23:38:55:  45000000 
+INFO  @ Thu, 25 Jul 2019 23:38:58:  46000000 
+INFO  @ Thu, 25 Jul 2019 23:39:01:  47000000 
+INFO  @ Thu, 25 Jul 2019 23:39:04:  48000000 
+INFO  @ Thu, 25 Jul 2019 23:39:07:  49000000 
+INFO  @ Thu, 25 Jul 2019 23:39:11:  50000000 
+INFO  @ Thu, 25 Jul 2019 23:39:14:  51000000 
+INFO  @ Thu, 25 Jul 2019 23:39:17:  52000000 
+INFO  @ Thu, 25 Jul 2019 23:39:20:  53000000 
+INFO  @ Thu, 25 Jul 2019 23:39:24:  54000000 
+INFO  @ Thu, 25 Jul 2019 23:39:27:  55000000 
+INFO  @ Thu, 25 Jul 2019 23:39:30:  56000000 
+INFO  @ Thu, 25 Jul 2019 23:39:33:  57000000 
+INFO  @ Thu, 25 Jul 2019 23:39:37:  58000000 
+INFO  @ Thu, 25 Jul 2019 23:39:40:  59000000 
+INFO  @ Thu, 25 Jul 2019 23:39:43:  60000000 
+INFO  @ Thu, 25 Jul 2019 23:39:46:  61000000 
+INFO  @ Thu, 25 Jul 2019 23:39:50:  62000000 
+INFO  @ Thu, 25 Jul 2019 23:39:53:  63000000 
+INFO  @ Thu, 25 Jul 2019 23:39:56:  64000000 
+INFO  @ Thu, 25 Jul 2019 23:39:59: #1 tag size is determined as 46 bps 
+INFO  @ Thu, 25 Jul 2019 23:39:59: #1 tag size = 46.0 
+INFO  @ Thu, 25 Jul 2019 23:39:59: #1  total tags in treatment: 44277219 
+INFO  @ Thu, 25 Jul 2019 23:39:59: #1 user defined the maximum tags... 
+INFO  @ Thu, 25 Jul 2019 23:39:59: #1 filter out redundant tags at the same location and the same strand by allowing at most 1 tag(s) 
+INFO  @ Thu, 25 Jul 2019 23:40:01: #1  tags after filtering in treatment: 35068687 
+INFO  @ Thu, 25 Jul 2019 23:40:01: #1  Redundant rate of treatment: 0.21 
+INFO  @ Thu, 25 Jul 2019 23:40:01: #1 finished! 
+INFO  @ Thu, 25 Jul 2019 23:40:01: #2 Build Peak Model... 
+INFO  @ Thu, 25 Jul 2019 23:40:01: #2 Skipped... 
+INFO  @ Thu, 25 Jul 2019 23:40:01: #2 Use 200 as fragment length 
+INFO  @ Thu, 25 Jul 2019 23:40:01: #2 Sequencing ends will be shifted towards 5' by 100 bp(s) 
+INFO  @ Thu, 25 Jul 2019 23:40:01: #3 Call peaks... 
+INFO  @ Thu, 25 Jul 2019 23:40:01: #3 Pre-compute pvalue-qvalue table... 
+INFO  @ Thu, 25 Jul 2019 23:41:18: #3 In the peak calling step, the following will be performed simultaneously: 
+INFO  @ Thu, 25 Jul 2019 23:41:18: #3   Write bedGraph files for treatment pileup (after scaling if necessary)... GSM2520641-Spur_4.2_treat_pileup.bdg 
+INFO  @ Thu, 25 Jul 2019 23:41:18: #3   Write bedGraph files for control lambda (after scaling if necessary)... GSM2520641-Spur_4.2_control_lambda.bdg 
+INFO  @ Thu, 25 Jul 2019 23:41:18: #3   Pileup will be based on sequencing depth in treatment. 
+INFO  @ Thu, 25 Jul 2019 23:41:18: #3 Call peaks for each chromosome... 
+INFO  @ Thu, 25 Jul 2019 23:44:20: #4 Write output xls file... /mnt/ocimum/vol/atacpipeline/macs2/GSM2520641-Spur_4.2_peaks.xls 
+INFO  @ Thu, 25 Jul 2019 23:44:20: #4 Write peak in narrowPeak format file... /mnt/ocimum/vol/atacpipeline/macs2/GSM2520641-Spur_4.2_peaks.narrowPeak 
+INFO  @ Thu, 25 Jul 2019 23:44:20: #4 Write summits bed file... /mnt/ocimum/vol/atacpipeline/macs2/GSM2520641-Spur_4.2_summits.bed 
+INFO  @ Thu, 25 Jul 2019 23:44:20: Done! 

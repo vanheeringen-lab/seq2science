@@ -52,7 +52,7 @@ rule sambamba_sort:
     shell:
         """
         sambamba view --nthreads {threads} -S -f bam  {input[0]} -o /dev/stdout  2> {log} |
-        sambamba sort --nthreads {threads} {params.sort}   /dev/stdin -o {output[0]}  2> {log}
+        sambamba sort --nthreads {threads} {params}   /dev/stdin -o {output[0]}  2> {log}
         """
 
 

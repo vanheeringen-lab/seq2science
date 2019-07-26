@@ -1,0 +1,9 @@
+name: call_peak_macs2
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - python=2.7
+  - macs2
+  - bioconda:khmer

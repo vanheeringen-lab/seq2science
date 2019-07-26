@@ -1,0 +1,15 @@
+# tab-separated file of the samples
+samples: samples.tsv
+
+
+# pipeline file locations
+result_dir: /mnt/ocimum/vol/atacpipeline  # where to store results
+genome_dir: /mnt/ocimum/vol/genomes       # if none specified, it defaults to genomepy default settings
+
+
+# peak callers (supported peak callers are macs2 & genrich)
+peak_caller:
+  - macs2:
+      --shift -100 --extsize 200 -B --nomodel --keep-dup 1 --buffer-size 10000
+  - genrich:
+      -y -j
