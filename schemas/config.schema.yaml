@@ -99,11 +99,19 @@ properties:
   # bam sorting
   bam_sorter:
     description: which sorting software to use
-    default: sambamba
+    default: samtools
+    enum: [sambamba, samtools]
     type: string
   bam_sort_order:
     description: sort order of aligned reads
-    default: queryname
+    default: coordinate
+    enum: [queryname, coordinate]
+    type: string
+
+  # samtools index
+  samtools_index:
+    description: samtools index settings
+    default: ''
     type: string
 
   # picard markduplicates
