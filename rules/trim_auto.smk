@@ -1,54 +1,52 @@
-rule cutadapt:
+# ruleorder in favour of PE over SE, otherwise can't resolve properly
+ruleorder: trim_galore_PE > trim_galore_SE
+
+rule trim_galore_SE:
     input:
-        dir=download_fastq(expand("{result_dir}/{fastq_dir}/{{sample}}/", **config)),
-        adapt=expand("{result_dir}/{fastq_dir}/{{sample}}/adapter.txt", **config)
+        download_fastq(expand("{result_dir}/{fastq_dir}/{{sample}}.{fqsuffix}.gz", **config))
     output:
-        dir=directory(expand("{result_dir}/{trimmed_dir}/{{sample}}", **config)),
-        qc=expand("{result_dir}/{trimmedqc_dir}/{{sample}}/{{sample}}_trimming_report.txt", **config)
-    log:
-        expand("{log_dir}/cutadapt/{{sample}}.log", **config)
-    params:
-        # TODO: check in config if read1/read2 is sorted
-        input=sorted(expand("{result_dir}/{fastq_dir}/{{sample}}/*.{fqsuffix}.gz", **config)),
-        read2=expand("{result_dir}/{fastq_dir}/{{sample}}/{{sample}}_{fqext2}.{fqsuffix}.gz", **config)[0],
-        adapter="-a AGATCGGAAGAGCAGATCGGAAGAGCAGATCGGAAGAGC",
-        config=config['cutadapt'],
-        fastq_dir=config['fastq_dir']
+        se=expand("{result_dir}/{trimmed_dir}/{{sample}}_trimmed.{fqsuffix}.gz", **config),
+        qc=expand("{result_dir}/{trimmed_dir}/{{sample}}.{fqsuffix}.gz_trimming_report.txt", **config)
     conda:
         "../envs/trim_auto.yaml"
-    threads: 8
+    threads: 6
+    log:
+        expand("{log_dir}/trim_galore/{{sample}}.log", **config)  
+    params:
+        config=config['trim_galore'],
+        fqsuffix=config['fqsuffix']
     shell:
         """
-        read1=$(echo {params.input} | cut -f1 -d' ')
-        output="-o $read1"
-
-        # if paired end then add read2 to the output
-        if [[ -f {params.read2} ]]; then
-            output="$output -p {params.read2}"
-        fi;
-
-        # make sure that the output gets written to the trimmed folder, not the fastq folder
-        output="${{output//{params.fastq_dir}/trimmed}}"
-
-        # remove directory on premature end
-        outdir=$(dirname "${{read1//{params.fastq_dir}/trimmed}}")
-        trap \"rm -f $outdir\" INT;
-        # now cut adapters
-        mkdir $outdir &
         cpulimit --include-children -l {threads}00 --\
-        cutadapt -j {threads} {params.adapter} {params.config} $output {params.input} 1> {output.qc} 2> {log}
+        trim_galore -j {threads} {params.config} -o $(dirname {output.se}) {input} > {log} 2>&1
+
+        # now rename to proper output
+        rename 's/.fq/.{params.fqsuffix}/' "$(dirname {output.se})/{wildcards.sample}_trimmed.fq.gz"
         """
 
 
-# FIXME: this obviously does not work!
-# TODO: pipe? Or temp output?
-rule detect_adapter:
+rule trim_galore_PE:
     input:
-        download_fastq(expand("{result_dir}/{fastq_dir}/{{sample}}/", **config))
+        r1=download_fastq(expand("{result_dir}/{fastq_dir}/{{sample}}_{fqext1}.{fqsuffix}.gz", **config)),
+        r2=download_fastq(expand("{result_dir}/{fastq_dir}/{{sample}}_{fqext2}.{fqsuffix}.gz", **config))
     output:
-        expand("{result_dir}/{fastq_dir}/{{sample}}/adapter.txt", **config)
-    log: # TODO
-        expand("{log_dir}/detect_adapter/{{sample}}.log", **config)
-    run:
-        with open(output[0], "w") as text_file:
-            text_file.write("AGATCGGAAGAGC")
+        r1=expand("{result_dir}/{trimmed_dir}/{{sample}}_{fqext1}_trimmed.{fqsuffix}.gz", **config),
+        r2=expand("{result_dir}/{trimmed_dir}/{{sample}}_{fqext2}_trimmed.{fqsuffix}.gz", **config),
+        qc=expand("{result_dir}/{trimmed_dir}/{{sample}}_{fqext}.{fqsuffix}.gz_trimming_report.txt", **config)
+    conda:
+        "../envs/trim_auto.yaml"
+    threads: 6
+    log:
+        expand("{log_dir}/trim_galore/{{sample}}.log", **config)
+    params:
+        config=config['trim_galore'],
+        fqsuffix=config['fqsuffix']
+    shell:
+        """
+        cpulimit --include-children -l {threads}00 --\
+        trim_galore --paired -j {threads} {params.config} -o $(dirname {output.r1}) {input.r1} {input.r2} > {log} 2>&1
+
+        # now rename to proper output
+        find "$(dirname {output.r1})/" -name "{wildcards.sample}_*val_*.fq.gz" | rename 's/.fq/.{params.fqsuffix}/'
+        find "$(dirname {output.r1})/" -name "{wildcards.sample}_*val_*.fastq.gz" | rename 's/_val_\d/_trimmed/'
+        """

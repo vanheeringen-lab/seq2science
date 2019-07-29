@@ -2,8 +2,6 @@ $schema: "http://json-schema.org/draft-06/schema#"
 
 description: snakemake-workflows configuration
 
-#type: object
-
 properties:
   # workflow samples
   samples:
@@ -38,7 +36,7 @@ properties:
     type: string
   trimmed_dir:
     description: directory inside the result dir where to store the workflow trimmed fastqs
-    default: trimmed
+    default: FASTQ
     type: string
   trimmedqc_dir:
     description: directory inside the result dir where to store the workflow trimming quality controls
@@ -52,6 +50,15 @@ properties:
     description: directory inside the result dir where to store the workflow deduplicated alignment
     default: dedup
     type: string
+
+  # NCBI e-utilities key
+  ncbi_key:
+    description: e-utilities key for faster lookup interval
+    type: string
+  ncbi_requests:
+    description: the number of lookups per second the key permits
+    default: 3
+    type: integer
 
   # fastq-dump parameters
   split:
@@ -77,10 +84,10 @@ properties:
     default: fastq
     type: string
 
-  # cutadapt parameters
-  cutadapt:
-    description: cutadapt settings (note that the adapter is autodetected, so you do not have to set it here)
-    default: -q 10 --minimum-length 20
+  # trim_galore parameters
+  trim_galore:
+    description: trim_galore settings (note that the adapter is autodetected, so you do not have to set it here)
+    default: --quality 10 --length 20
     type: string
 
   # bwa alignment parameters
@@ -92,11 +99,19 @@ properties:
   # bam sorting
   bam_sorter:
     description: which sorting software to use
-    default: sambamba
+    default: samtools
+    enum: [sambamba, samtools]
     type: string
   bam_sort_order:
     description: sort order of aligned reads
-    default: queryname
+    default: coordinate
+    enum: [queryname, coordinate]
+    type: string
+
+  # samtools index
+  samtools_index:
+    description: samtools index settings
+    default: ''
     type: string
 
   # picard markduplicates
