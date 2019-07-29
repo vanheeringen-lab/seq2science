@@ -120,8 +120,16 @@ properties:
     default: REMOVE_DUPLICATES=false -Xms4G -Xmx6G MAX_FILE_HANDLES_FOR_READ_ENDS_MAP=999
     type: string
 
-#  # peak caller algorithms
-#  peak_callers:
+  # peak caller algorithms
+  peak_caller:
+    description: which peak caller(s) to use. Currently macs2 (default) and genrich are supported.
+    type: array
+    default: [macs2]
+
+  validated:
+    description: for internal use only. Is used to check if the configuration has been validated (yet).
+    type: boolean
+    default: true
 #    genrich:
 #      description: genrich peak caller
 #      default: ''

@@ -1,17 +1,21 @@
 from snakemake.utils import validate
-configfile: "config.yaml"
-validate(config, schema=f"../../schemas/config.schema.yaml", set_default=True)
 
 
-# complement the configuration and do onstart/onexit things
-schema = 'download_fastq.yaml'
+# complement the configuration
+if not 'validated' in config:
+    configfile: "config.yaml"
+    validate(config, schema=f"../../schemas/config.schema.yaml")
+
+# do onstart/onexit things
+schema = 'download_fastq.schema.yaml'
 include: f"{config['rule_dir']}/configuration.smk"
+
 
 # load the relevant rules
 include: f"{config['rule_dir']}/get_fastq.smk"
 
 
-rule all:
+rule download_all:
     """
     download all samples
     """

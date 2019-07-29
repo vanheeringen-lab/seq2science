@@ -1,19 +1,18 @@
 from snakemake.utils import validate
-configfile: "config.yaml"
-validate(config, schema=f"../../schemas/config.schema.yaml", set_default=True)
 
 
-# complement the configuration and do onstart/onexit things
-schema = 'alignment.yaml'
+# complement the configuration
+if not 'validated' in config:
+    configfile: "config.yaml"
+    validate(config, schema=f"../../schemas/config.schema.yaml")
+
+# do onstart/onexit things
+schema = 'alignment.schema.yaml'
 include: f"{config['rule_dir']}/configuration.smk"
 
 
-# load the subworkflow download_fastq
-subworkflow download_fastq:
-    workdir:
-        "../download_fastq"
-    configfile:
-        "config.yaml"
+# load the 'subworkflow' download_fastq
+include: "../download_fastq/Snakefile"
 
 
 # load the remaining relevant rules
@@ -22,7 +21,7 @@ include: f"{config['rule_dir']}/alignment.smk"
 include: f"{config['rule_dir']}/trim_auto.smk"
 
 
-rule all:
+rule align_all:
     """
     align each sample against its assembly
     """

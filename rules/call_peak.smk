@@ -8,7 +8,7 @@
 rule genrich_pileup:
     # TODO log
     input:
-        alignment(expand("{result_dir}/dedup/{{sample}}-{{assembly}}.bam", **config))
+        expand("{result_dir}/dedup/{{sample}}-{{assembly}}.bam", **config)
     output:
         bedgraphish=expand("{result_dir}/genrich/{{sample}}-{{assembly}}.bdgish", **config),
         log=expand("{result_dir}/genrich/{{sample}}-{{assembly}}.log", **config)
@@ -44,7 +44,7 @@ rule call_peak_macs2:
     # Calculates genome size based on unique kmers of average length
     #
     input:
-        bam=   alignment(expand("{result_dir}/dedup/{{sample}}-{{assembly}}.bam", **config)),
+        bam=   expand("{result_dir}/dedup/{{sample}}-{{assembly}}.bam", **config),
         #fastqc=expand("{result_dir}/trimmed/{{sample}}-{{condition}}-{{project}}-{{assembly}}_trimmed_fastqc.zip", **config)
     output:
         expand("{result_dir}/macs2/{{sample}}-{{assembly}}_{macs2_types}", **config)
