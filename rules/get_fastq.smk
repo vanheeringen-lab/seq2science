@@ -15,6 +15,7 @@ rule id2sra:
         ASCPPATH=$HOME/.aspera/connect/bin/ascp;
         KEYPATH=$HOME/.aspera/connect/etc/asperaweb_id_dsa.openssh;
 
+        echo "starting lookup of the sample in the sra database:" > {log}
         if [[ {wildcards.sample} =~ GSM ]]; then
             IDS=$(esearch -db sra -query {wildcards.sample} | efetch --format runinfo | cut -d ',' -f 1 | grep SRR);
             TYPE_U=SRR;
@@ -23,6 +24,7 @@ rule id2sra:
             TYPE_U=$(echo {wildcards.sample} | grep 'SRR|ERR|DRR' -E -o);
         fi;
         TYPE_L=$(echo $TYPE_U | tr '[:upper:]' '[:lower:]');
+        echo "ids: $IDS, type (uppercase): $TYPE_U, type (lowercase): $TYPE_L" >> {log}
 
         for ID in $IDS;
         do
@@ -34,10 +36,11 @@ rule id2sra:
             URL_NCBI="anonftp@ftp.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/$TYPE_U/$PREFIX/$ID/$ID.sra";
             WGET_URL=$(esearch -db sra -query {wildcards.sample} | efetch --format runinfo | cut -d ',' -f 10 | grep http);
 
+            echo "trying to download $ID from, respectively: \n$URL_ENA1 \n$URL_ENA2 \n$URL_NCBI \n$WGET_URL" >> {log}
             # first try the ENA (which has at least two different filing systems), if not successful, try NCBI
-            $ASCPPATH -i $KEYPATH -P33001 -T -d -k 0 -Q -l 2G -m 250M $URL_ENA1 {output[0]} > {log} 2>&1 ||
-            $ASCPPATH -i $KEYPATH -P33001 -T -d -k 0 -Q -l 2G -m 250M $URL_ENA2 {output[0]} > {log} 2>&1 ||
-            $ASCPPATH -i $KEYPATH         -T -d -k 0 -Q -l 2G -m 250M $URL_NCBI {output[0]} > {log} 2>&1 ||
+            $ASCPPATH -i $KEYPATH -P33001 -T -d -k 0 -Q -l 2G -m 250M $URL_ENA1 {output[0]} >> {log} 2>&1 ||
+            $ASCPPATH -i $KEYPATH -P33001 -T -d -k 0 -Q -l 2G -m 250M $URL_ENA2 {output[0]} >> {log} 2>&1 ||
+            $ASCPPATH -i $KEYPATH         -T -d -k 0 -Q -l 2G -m 250M $URL_NCBI {output[0]} >> {log} 2>&1 ||
             # if none of the ascp servers work, then simply wget
             mkdir {output[0]} && wget -O {output[0]}/{wildcards.sample} -a {log} -nv $WGET_URL 
         done;

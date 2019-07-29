@@ -60,6 +60,7 @@ if 'sambamba' == config['bam_sorter']:
             sambamba sort --nthreads {threads} {params}   /dev/stdin -o {output[0]}  2> {log}
             """
 
+
 elif 'samtools' == config['bam_sorter']:
     rule samtools_sort:
         input:
