@@ -6,7 +6,7 @@ rule trim_galore_SE:
         download_fastq(expand("{result_dir}/{fastq_dir}/{{sample}}.{fqsuffix}.gz", **config))
     output:
         se=expand("{result_dir}/{trimmed_dir}/{{sample}}_trimmed.{fqsuffix}.gz", **config),
-        qc=expand("{{sample}}.{fqsuffix}.gz_trimming_report.txt", **config)
+        qc=expand("{result_dir}/{trimmed_dir}/{{sample}}.{fqsuffix}.gz_trimming_report.txt", **config)
     conda:
         "../envs/trim_auto.yaml"
     threads: 6
@@ -32,7 +32,7 @@ rule trim_galore_PE:
     output:
         r1=expand("{result_dir}/{trimmed_dir}/{{sample}}_{fqext1}_trimmed.{fqsuffix}.gz", **config),
         r2=expand("{result_dir}/{trimmed_dir}/{{sample}}_{fqext2}_trimmed.{fqsuffix}.gz", **config),
-        qc=expand("{{sample}}_{fqext}.{fqsuffix}.gz_trimming_report.txt", **config)
+        qc=expand("{result_dir}/{trimmed_dir}/{{sample}}_{fqext}.{fqsuffix}.gz_trimming_report.txt", **config)
     conda:
         "../envs/trim_auto.yaml"
     threads: 6

@@ -18,9 +18,9 @@ rule bwa_index:
 
 
 def get_reads(wildcards):
-    if wildcards.sample == "SINGLE":
-        return expand(f"{{result_dir}}/{{trimmed_dir}}/{sample}_trimmed.{{fqsuffix}}.gz", **config)
-    return sorted(expand(f"{{result_dir}}/{{trimmed_dir}}/{sample}_{{fqext}}_trimmed.{{fqsuffix}}.gz", **config))
+    if config['layout'][wildcards.sample] == "SINGLE":
+        return expand("{result_dir}/{trimmed_dir}/{{sample}}_trimmed.{fqsuffix}.gz", **config)
+    return sorted(expand("{result_dir}/{trimmed_dir}/{{sample}}_{fqext}_trimmed.{fqsuffix}.gz", **config))
 
 
 rule bwa_mem:
@@ -83,9 +83,9 @@ elif 'samtools' == config['bam_sorter']:
 
     rule samtools_index:
         input:
-            expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.bam", **config)
+            expand("{result_dir}/{bwa_dir}/{{sample}}-{{assembly}}.bam", **config)
         output:
-            expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.bai", **config)
+            expand("{result_dir}/{bwa_dir}/{{sample}}-{{assembly}}.bai", **config)
         log:
             expand("{log_dir}/samtools_index/{{sample}}-{{assembly}}.log", **config)
         params:
@@ -96,6 +96,7 @@ elif 'samtools' == config['bam_sorter']:
             """
             samtools index {params} {input} {output}
             """
+
 
 rule mark_duplicates:
     input:
