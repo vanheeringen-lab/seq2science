@@ -22,7 +22,7 @@ if 'condition' in samples:
 if 'assembly' in samples:
     config['assemblies'] = set(samples['assembly'])
 
-if 'peak_caller' in config:
+if config['peak_caller']:
     config['peak_caller'] = {k: v for d in config['peak_caller'] for k, v in d.items()}
     assert all(key in ['macs2', 'genrich'] for key in config['peak_caller'].keys())
 

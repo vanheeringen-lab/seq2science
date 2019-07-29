@@ -132,7 +132,7 @@ properties:
   peak_caller:
     description: which peak caller(s) to use. Currently macs2 (default) and genrich are supported.
     type: array
-    default: [macs2]
+    default: []
 
   validated:
     description: for internal use only. Is used to check if the configuration has been validated (yet).
