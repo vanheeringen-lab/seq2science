@@ -1,9 +1,6 @@
-# ruleorder in favour of PE over SE, otherwise can't resolve properly
-ruleorder: trim_galore_PE > trim_galore_SE
-
 rule trim_galore_SE:
     input:
-        download_fastq(expand("{result_dir}/{fastq_dir}/{{sample}}.{fqsuffix}.gz", **config))
+        expand("{result_dir}/{fastq_dir}/{{sample}}.{fqsuffix}.gz", **config)
     output:
         se=expand("{result_dir}/{trimmed_dir}/{{sample}}_trimmed.{fqsuffix}.gz", **config),
         qc=expand("{result_dir}/{trimmed_dir}/{{sample}}.{fqsuffix}.gz_trimming_report.txt", **config)
@@ -27,8 +24,8 @@ rule trim_galore_SE:
 
 rule trim_galore_PE:
     input:
-        r1=download_fastq(expand("{result_dir}/{fastq_dir}/{{sample}}_{fqext1}.{fqsuffix}.gz", **config)),
-        r2=download_fastq(expand("{result_dir}/{fastq_dir}/{{sample}}_{fqext2}.{fqsuffix}.gz", **config))
+        r1=expand("{result_dir}/{fastq_dir}/{{sample}}_{fqext1}.{fqsuffix}.gz", **config),
+        r2=expand("{result_dir}/{fastq_dir}/{{sample}}_{fqext2}.{fqsuffix}.gz", **config)
     output:
         r1=expand("{result_dir}/{trimmed_dir}/{{sample}}_{fqext1}_trimmed.{fqsuffix}.gz", **config),
         r2=expand("{result_dir}/{trimmed_dir}/{{sample}}_{fqext2}_trimmed.{fqsuffix}.gz", **config),
@@ -50,3 +47,7 @@ rule trim_galore_PE:
         find "$(dirname {output.r1})/" -name "{wildcards.sample}_*val_*.fq.gz" | rename 's/.fq/.{params.fqsuffix}/'
         find "$(dirname {output.r1})/" -name "{wildcards.sample}_*val_*.fastq.gz" | rename 's/_val_\d/_trimmed/'
         """
+
+
+# ruleorder in favour of PE over SE, otherwise can't resolve properly
+ruleorder: trim_galore_PE > trim_galore_SE

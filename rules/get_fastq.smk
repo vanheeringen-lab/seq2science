@@ -47,7 +47,7 @@ rule id2sra:
         """
 
 
-checkpoint sra2fastq_SE:
+rule sra2fastq_SE:
     input:
         rules.id2sra.output
     output:
@@ -70,7 +70,7 @@ checkpoint sra2fastq_SE:
         """
 
 
-checkpoint sra2fastq_PE:
+rule sra2fastq_PE:
     input:
         rules.id2sra.output
     output:
