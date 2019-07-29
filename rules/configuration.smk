@@ -1,4 +1,5 @@
 import re
+import time
 import genomepy
 import subprocess
 import pandas as pd
@@ -35,16 +36,27 @@ assert sorted(config['fqext'])[0] == config['fqext1']
 
 
 # check if a sample is single-end or paired end, and store it
-results = []
-tp = ThreadPool(1)  # TODO: get key for more requests! https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/
-
 def get_layout(sample):
+    """ sends a request to ncbi checking whether a sample is single-end or paired-end """
+    api_key = config.get('ncbi_key', "")
+    if api_key is not "":
+        api_key = f'-api_key {api_key}'
+
     return sample, subprocess.check_output(
-        f'''esearch -db sra -query {sample} | efetch | grep -Po "(?<=<LIBRARY_LAYOUT><)[^/><]*"''',
+        f'''esearch {api_key} -db sra -query {sample} | efetch {api_key} | grep -Po "(?<=<LIBRARY_LAYOUT><)[^/><]*"''',
         shell=True).decode('ascii').rstrip()
 
+
+results = []
+tp = ThreadPool(config['ncbi_requests'] // 2)
+
+# now do a request for each sample
 for sample in samples.index:
     results.append(tp.apply_async(get_layout, (sample,)))
+    # sleep 1.25 times the minimum required sleep time
+    time.sleep(1.25 / (config['ncbi_requests'] // 2))
+
+# now parse the output and store in config
 config['layout'] = {r.get()[0]: r.get()[1] for r in results}
 
 # Do onstart/onexit things
