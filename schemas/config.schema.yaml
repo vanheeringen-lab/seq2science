@@ -38,7 +38,7 @@ properties:
     type: string
   trimmed_dir:
     description: directory inside the result dir where to store the workflow trimmed fastqs
-    default: trimmed
+    default: FASTQ
     type: string
   trimmedqc_dir:
     description: directory inside the result dir where to store the workflow trimming quality controls
@@ -77,10 +77,10 @@ properties:
     default: fastq
     type: string
 
-  # cutadapt parameters
-  cutadapt:
-    description: cutadapt settings (note that the adapter is autodetected, so you do not have to set it here)
-    default: -q 10 --minimum-length 20
+  # trim_galore parameters
+  trim_galore:
+    description: trim_galore settings (note that the adapter is autodetected, so you do not have to set it here)
+    default: --quality 10 --length 20
     type: string
 
   # bwa alignment parameters
