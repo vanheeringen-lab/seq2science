@@ -27,5 +27,4 @@ rule all:
     align each sample against its assembly
     """
     input:
-        [expand(f"{{result_dir}}/{{trimmed_dir}}/{sample}_trimmed.{{fqsuffix}}.gz", **config) if config['layout'][sample] == "SINGLE" else
-         expand(f"{{result_dir}}/{{trimmed_dir}}/{sample}_{{fqext}}_trimmed.{{fqsuffix}}.gz", **config) for sample in samples.index]
+        [expand(f"{{result_dir}}/{{bwa_dir}}/{sample}-{samples.loc[sample]['assembly']}.bam", **config) for sample in samples.index]
