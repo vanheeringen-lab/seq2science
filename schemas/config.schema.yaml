@@ -60,6 +60,14 @@ properties:
     default: 3
     type: integer
 
+  # downloading through ascp
+  ascp_path:
+    description: the pipeline supports downloading through ascp if this variable is set.
+    type: string
+  ascp_key:
+    description: the public key of ascp
+    type: string
+
   # fastq-dump parameters
   split:
     description: fastq-dump parameters when splitting reads (paired-end)

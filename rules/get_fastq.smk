@@ -1,4 +1,3 @@
-# TODO: ASCPPATH & KEYPATH, we need a proper way to retrieve them dynamically
 rule id2sra:
     output:
         temp(directory(expand("{result_dir}/{sra_dir}/{{sample}}", **config)))
@@ -10,6 +9,9 @@ rule id2sra:
         sample="(GSM|SRR|ERR|DRR)\d+"
     conda:
         "../envs/get_fastq.yaml"
+    params:
+        ascp_path=config.get('ascp_path', "NO_ASCP"),
+        ascp_key= config.get('ascp_key',  "NO_KEY")
     shell:
         """
         ASCPPATH=$HOME/.aspera/connect/bin/ascp;
@@ -38,10 +40,10 @@ rule id2sra:
 
             echo "trying to download $ID from, respectively: \n$URL_ENA1 \n$URL_ENA2 \n$URL_NCBI \n$WGET_URL" >> {log}
             # first try the ENA (which has at least two different filing systems), if not successful, try NCBI
-            $ASCPPATH -i $KEYPATH -P33001 -T -d -k 0 -Q -l 2G -m 250M $URL_ENA1 {output[0]} >> {log} 2>&1 ||
-            $ASCPPATH -i $KEYPATH -P33001 -T -d -k 0 -Q -l 2G -m 250M $URL_ENA2 {output[0]} >> {log} 2>&1 ||
-            $ASCPPATH -i $KEYPATH         -T -d -k 0 -Q -l 2G -m 250M $URL_NCBI {output[0]} >> {log} 2>&1 ||
-            # if none of the ascp servers work, then simply wget
+            {params.ascp_path} -i {params.ascp_key} -P33001 -T -d -k 0 -Q -l 2G -m 250M $URL_ENA1 {output[0]} >> {log} 2>&1 ||
+            {params.ascp_path} -i {params.ascp_key} -P33001 -T -d -k 0 -Q -l 2G -m 250M $URL_ENA2 {output[0]} >> {log} 2>&1 ||
+            {params.ascp_path} -i {params.ascp_key}         -T -d -k 0 -Q -l 2G -m 250M $URL_NCBI {output[0]} >> {log} 2>&1 ||
+            # if none of the ascp servers work, or ascp is not defined in the config, then simply wget
             mkdir {output[0]} && wget -O {output[0]}/{wildcards.sample} -a {log} -nv $WGET_URL 
         done;
         """
