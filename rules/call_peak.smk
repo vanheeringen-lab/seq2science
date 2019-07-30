@@ -6,12 +6,15 @@
 #                   result_dir=config['result_dir'], sample=sample)
 
 rule genrich_pileup:
-    # TODO log & benchmark
     input:
         expand("{result_dir}/dedup/{{sample}}-{{assembly}}.bam", **config)
     output:
         bedgraphish=expand("{result_dir}/genrich/{{sample}}-{{assembly}}.bdgish", **config),
         log=expand("{result_dir}/genrich/{{sample}}-{{assembly}}.log", **config)
+    log:
+        expand("{log_dir}/genrich_pileup/{{sample}}-{{assembly}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/genrich_pileup/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
     conda:
         "../envs/call_peak.yaml"
     params:
@@ -23,11 +26,14 @@ rule genrich_pileup:
 
 
 rule call_peak_genrich:
-    # TODO log & benchmark
     input:
         log=expand("{result_dir}/genrich/{{sample}}-{{assembly}}.log", **config)
     output:
         narrowpeak= expand("{result_dir}/genrich/{{sample}}-{{assembly}}_peaks.narrowPeak", **config)
+    log:
+        expand("{log_dir}/call_peak_genrich/{{sample}}-{{assembly}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/call_peak_genrich/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
     conda:
         "../envs/call_peak.yaml"
     params:
@@ -39,7 +45,6 @@ rule call_peak_genrich:
 
 config['macs2_types'] = ['control_lambda.bdg', 'summits.bed', 'peaks.narrowPeak',
                          'peaks.xls', 'treat_pileup.bdg']
-# TODO: benchmark
 rule call_peak_macs2:
     #
     # Calculates genome size based on unique kmers of average length
@@ -49,12 +54,14 @@ rule call_peak_macs2:
         #fastqc=expand("{result_dir}/trimmed/{{sample}}-{{condition}}-{{project}}-{{assembly}}_trimmed_fastqc.zip", **config)
     output:
         expand("{result_dir}/macs2/{{sample}}-{{assembly}}_{macs2_types}", **config)
+    log:
+        expand("{log_dir}/call_peak_macs2/{{sample}}-{{assembly}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/call_peak_macs2/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
     params:
         name="{sample}-{assembly}",
         genome=f"{config['genome_dir']}/{{assembly}}/{{assembly}}.fa",
         macs_params=config['peak_caller']['macs2']
-    log:
-        "logs/call_peak_macs2/{sample}-{assembly}.log"
     conda:
         "../envs/call_peak_macs2.yaml"
     shell:
