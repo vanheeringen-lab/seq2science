@@ -129,14 +129,14 @@ rule mark_duplicates:
         "OUTPUT={output.bam} METRICS_FILE={output.metrics} > {log} 2>&1"
 
 
-# rule samtools_stats:
-#     input:
-#         expand("{result_dir}/dedup/{{sample}}-{{condition}}-{{project}}-{{assembly}}.bam", **config)
-#     output:
-#         expand("{result_dir}/samtools_stats/{{sample}}-{{condition}}-{{project}}-{{assembly}}.txt", **config)
-#     log:
-#         expand("{log_dir}/samtools_stats/{{sample}}-{{condition}}-{{project}}-{{assembly}}.log", **config)
-#     conda:
-#         "../envs/alignment.yaml"
-#     shell:
-#         "samtools stats {input} 1> {output} 2> {log}"
+rule samtools_stats:
+    input:
+        expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.bam", **config)
+    output:
+        expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.samtools_stats.txt", **config)
+    log:
+        expand("{log_dir}/samtools_stats/{{sample}}-{{assembly}}.log", **config)
+    conda:
+        "../envs/alignment.yaml"
+    shell:
+        "samtools stats {input} 1> {output} 2> {log}"

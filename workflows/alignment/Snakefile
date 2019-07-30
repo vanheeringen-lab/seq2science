@@ -30,6 +30,7 @@ for sample in samples.index:
     else:
         quality_control.append(expand(f"{{result_dir}}/{{trimmed_dir}}/PE/{sample}_{{fqext}}_trimmed_fastqc.zip", **config))
         quality_control.append(expand(f"{{result_dir}}/{{trimmed_dir}}/PE/{sample}_{{fqext}}_fastqc.zip", **config))
+    quality_control.append(expand(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.samtools_stats.txt", **config)
 
 
 rule align_all:
