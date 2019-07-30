@@ -8,7 +8,9 @@ rule trim_galore_SE:
         "../envs/trim_auto.yaml"
     threads: 6
     log:
-        expand("{log_dir}/trim_galore/{{sample}}.log", **config)  
+        expand("{log_dir}/trim_galore_PE/{{sample}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/trim_galore_SE/{{sample}}.benchmark.txt", **config)[0]
     params:
         config=config['trim_galore'],
         fqsuffix=config['fqsuffix']
@@ -34,7 +36,9 @@ rule trim_galore_PE:
         "../envs/trim_auto.yaml"
     threads: 6
     log:
-        expand("{log_dir}/trim_galore/{{sample}}.log", **config)
+        expand("{log_dir}/trim_galore_PE/{{sample}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/trim_galore_SE/{{sample}}.benchmark.txt", **config)[0]
     params:
         config=config['trim_galore'],
         fqsuffix=config['fqsuffix']

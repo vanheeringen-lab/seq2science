@@ -26,6 +26,10 @@ properties:
     description: directory where to store the logs
     default: log
     type: string
+  benchmark_dir:
+    description: directory where to store the logs
+    default: benchmark
+    type: string
   sra_dir:
     description: directory inside the result dir where to store the workflow sras
     default: sra

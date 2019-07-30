@@ -8,6 +8,8 @@ rule bwa_index:
         expand("{genome_dir}/{{assembly}}/index/bwa/{{assembly}}.{bwaindex_types}", **config)
     log:
         expand("{log_dir}/bwa_index/{{assembly}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/bwa_index/{{assembly}}.benchmark.txt", **config)[0]
     params:
         prefix="{genome_dir}/{{assembly}}/index/bwa/{{assembly}}".format(**config),
         algorithm=config["bwa_algo"]
@@ -31,6 +33,8 @@ rule bwa_mem:
         pipe(expand("{result_dir}/{bwa_dir}/{{sample}}-{{assembly}}.bampipe", **config))
     log:
         expand("{log_dir}/bwa_mem/{{sample}}-{{assembly}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/bwa_mem/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
     params:
         index_dir=expand("{genome_dir}/{{assembly}}/index/bwa/{{assembly}}", **config),
     threads: 20
@@ -50,6 +54,8 @@ if 'sambamba' == config['bam_sorter']:
             expand("{result_dir}/{bwa_dir}/{{sample}}-{{assembly}}.bam", **config)
         log:
             expand("{log_dir}/bwa_mem/{{sample}}-{{assembly}}-sambamba_sort.log", **config)
+        benchmark:
+            expand("{benchmark_dir}/sambamba_sort/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
         params:
             "-n" if config['bam_sort_order'] == 'queryname' else ''
         threads: 4
@@ -70,6 +76,8 @@ elif 'samtools' == config['bam_sorter']:
             expand("{result_dir}/{bwa_dir}/{{sample}}-{{assembly}}.bam", **config)
         log:
             expand("{log_dir}/bwa_mem/{{sample}}-{{assembly}}-samtools_sort.log", **config)
+        benchmark:
+            expand("{benchmark_dir}/samtools_sort/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
         params:
             order="-n" if config['bam_sort_order'] == 'queryname' else '',
             threads=lambda wildcards, input, output, threads: threads - 1
@@ -90,6 +98,8 @@ elif 'samtools' == config['bam_sorter']:
             expand("{result_dir}/{bwa_dir}/{{sample}}-{{assembly}}.bai", **config)
         log:
             expand("{log_dir}/samtools_index/{{sample}}-{{assembly}}.log", **config)
+        benchmark:
+            expand("{benchmark_dir}/samtools_index/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
         params:
             config['samtools_index']
         conda:
@@ -108,6 +118,8 @@ rule mark_duplicates:
         metrics=expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.metrics.txt", **config)
     log:
         expand("{log_dir}/mark_duplicates/{{sample}}-{{assembly}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/mark_duplicates/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
     params:
         config['markduplicates']
     conda:
