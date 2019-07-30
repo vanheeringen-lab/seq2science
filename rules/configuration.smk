@@ -54,7 +54,7 @@ config['layout'] = {}
 # now do a request for each sample
 for sample in samples.index:
     if 'local_path' in samples:
-        if samples['local_path'][sample] != None:
+        if not pd.isnull(samples['local_path'][sample]):
             if '/SE' in samples['local_path'][sample]:
                 config['layout'][sample] ='SINGLE'
             elif '/PE' in samples['local_path'][sample]:
