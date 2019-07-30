@@ -75,7 +75,7 @@ rule call_peak_macs2:
         # extract the kmer size, and get the effictive genome size from it
         kmer_size=$(unzip -p {{input.fastqc}} {{params.name}}_trimmed_fastqc/fastqc_data.txt  | grep -P -o '(?<=Sequence length\\t).*' | grep -P -o '\d+$');
         GENSIZE=$(unique-kmers.py {{params.genome}} -k $kmer_size --quiet 2>&1 | grep -P -o '(?<=\.fa: ).*');
-        echo "kmer size: $kmer_size, and effective genome size: $GENSIZE"
+        echo "kmer size: $kmer_size, and effective genome size: $GENSIZE" >> {{log}}
 
         # call peaks
         macs2 callpeak -t {{input.bam}} --outdir {config['result_dir']}/macs2/ -n {{params.name}} \
