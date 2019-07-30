@@ -91,23 +91,23 @@ elif 'samtools' == config['bam_sorter']:
             """
 
 
-    rule samtools_index:
-        input:
-            expand("{result_dir}/{bwa_dir}/{{sample}}-{{assembly}}.bam", **config)
-        output:
-            expand("{result_dir}/{bwa_dir}/{{sample}}-{{assembly}}.bai", **config)
-        log:
-            expand("{log_dir}/samtools_index/{{sample}}-{{assembly}}.log", **config)
-        benchmark:
-            expand("{benchmark_dir}/samtools_index/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
-        params:
-            config['samtools_index']
-        conda:
-            "../envs/alignment.yaml"
-        shell:
-            """
-            samtools index {params} {input} {output}
-            """
+rule samtools_index:
+    input:
+        expand("{result_dir}/{bwa_dir}/{{sample}}-{{assembly}}.bam", **config)
+    output:
+        expand("{result_dir}/{bwa_dir}/{{sample}}-{{assembly}}.bai", **config)
+    log:
+        expand("{log_dir}/samtools_index/{{sample}}-{{assembly}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/samtools_index/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
+    params:
+        config['samtools_index']
+    conda:
+        "../envs/alignment.yaml"
+    shell:
+        """
+        samtools index {params} {input} {output}
+        """
 
 
 rule mark_duplicates:
