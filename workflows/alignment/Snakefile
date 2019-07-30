@@ -19,6 +19,17 @@ include: "../download_fastq/Snakefile"
 include: f"{config['rule_dir']}/get_genome.smk"
 include: f"{config['rule_dir']}/alignment.smk"
 include: f"{config['rule_dir']}/trim_auto.smk"
+include: f"{config['rule_dir']}/qc.smk"
+
+
+quality_control = []
+for sample in samples.index:
+    if config['layout'][sample] == 'SINGLE':
+        quality_control.append(expand(f"{{result_dir}}/{{trimmed_dir}}/SE/{sample}_trimmed_fastqc.zip", **config))
+        quality_control.append(expand(f"{{result_dir}}/{{trimmed_dir}}/SE/{sample}_fastqc.zip", **config))
+    else:
+        quality_control.append(expand(f"{{result_dir}}/{{trimmed_dir}}/PE/{sample}_{{fqext}}_trimmed_fastqc.zip", **config))
+        quality_control.append(expand(f"{{result_dir}}/{{trimmed_dir}}/PE/{sample}_{{fqext}}_fastqc.zip", **config))
 
 
 rule align_all:
@@ -27,4 +38,6 @@ rule align_all:
     """
     input:
         [expand(f"{{result_dir}}/{{bwa_dir}}/{sample}-{samples.loc[sample]['assembly']}.bam", **config) for sample in samples.index],
-        [expand(f"{{result_dir}}/{{bwa_dir}}/{sample}-{samples.loc[sample]['assembly']}.bai", **config) for sample in samples.index]
+        [expand(f"{{result_dir}}/{{bwa_dir}}/{sample}-{samples.loc[sample]['assembly']}.bai", **config) for sample in samples.index],
+        quality_control
+
