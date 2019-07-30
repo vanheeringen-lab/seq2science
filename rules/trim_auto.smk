@@ -1,9 +1,9 @@
 rule trim_galore_SE:
     input:
-        expand("{result_dir}/{fastq_dir}/{{sample}}.{fqsuffix}.gz", **config)
+        expand("{result_dir}/{fastq_dir}/SE/{{sample}}.{fqsuffix}.gz", **config)
     output:
-        se=expand("{result_dir}/{trimmed_dir}/{{sample}}_trimmed.{fqsuffix}.gz", **config),
-        qc=expand("{result_dir}/{trimmed_dir}/{{sample}}.{fqsuffix}.gz_trimming_report.txt", **config)
+        se=expand("{result_dir}/{trimmed_dir}/SE/{{sample}}_trimmed.{fqsuffix}.gz", **config),
+        qc=expand("{result_dir}/{trimmed_dir}/SE/{{sample}}.{fqsuffix}.gz_trimming_report.txt", **config)
     conda:
         "../envs/trim_auto.yaml"
     threads: 6
@@ -24,12 +24,12 @@ rule trim_galore_SE:
 
 rule trim_galore_PE:
     input:
-        r1=expand("{result_dir}/{fastq_dir}/{{sample}}_{fqext1}.{fqsuffix}.gz", **config),
-        r2=expand("{result_dir}/{fastq_dir}/{{sample}}_{fqext2}.{fqsuffix}.gz", **config)
+        r1=expand("{result_dir}/{fastq_dir}/PE/{{sample}}_{fqext1}.{fqsuffix}.gz", **config),
+        r2=expand("{result_dir}/{fastq_dir}/PE/{{sample}}_{fqext2}.{fqsuffix}.gz", **config)
     output:
-        r1=expand("{result_dir}/{trimmed_dir}/{{sample}}_{fqext1}_trimmed.{fqsuffix}.gz", **config),
-        r2=expand("{result_dir}/{trimmed_dir}/{{sample}}_{fqext2}_trimmed.{fqsuffix}.gz", **config),
-        qc=expand("{result_dir}/{trimmed_dir}/{{sample}}_{fqext}.{fqsuffix}.gz_trimming_report.txt", **config)
+        r1=expand("{result_dir}/{trimmed_dir}/PE/{{sample}}_{fqext1}_trimmed.{fqsuffix}.gz", **config),
+        r2=expand("{result_dir}/{trimmed_dir}/PE/{{sample}}_{fqext2}_trimmed.{fqsuffix}.gz", **config),
+        qc=expand("{result_dir}/{trimmed_dir}/PE/{{sample}}_{fqext}.{fqsuffix}.gz_trimming_report.txt", **config)
     conda:
         "../envs/trim_auto.yaml"
     threads: 6
@@ -48,6 +48,3 @@ rule trim_galore_PE:
         find "$(dirname {output.r1})/" -name "{wildcards.sample}_*val_*.fastq.gz" | rename 's/_val_\d/_trimmed/'
         """
 
-
-# ruleorder in favour of PE over SE, otherwise can't resolve properly
-ruleorder: trim_galore_PE > trim_galore_SE
