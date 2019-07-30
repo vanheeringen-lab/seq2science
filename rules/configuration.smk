@@ -49,15 +49,34 @@ def get_layout(sample):
 
 results = []
 tp = ThreadPool(config['ncbi_requests'] // 2)
+config['layout'] = {}
 
 # now do a request for each sample
 for sample in samples.index:
+    print(sample)
+    print(samples['local_path'])
+    print(samples['local_path'][sample])
+    if 'local_path' in samples:
+        print(1)
+        if samples['local_path'][sample] != None:
+            print(2)
+            if '/SE' in samples['local_path'][sample]:
+                print(3)
+                config['layout'][sample] ='SINGLE'
+            elif '/PE' in samples['local_path'][sample]:
+                print(4)
+                config['layout'][sample] ='PAIRED'
+            else:
+                assert False
+            continue
+
     results.append(tp.apply_async(get_layout, (sample,)))
     # sleep 1.25 times the minimum required sleep time
     time.sleep(1.25 / (config['ncbi_requests'] // 2))
 
 # now parse the output and store in config
-config['layout'] = {r.get()[0]: r.get()[1] for r in results}
+config['layout'] = {**config['layout'], **{r.get()[0]: r.get()[1] for r in results}}
+print(config['layout'])
 
 # Do onstart/onexit things
 onstart:
