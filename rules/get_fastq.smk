@@ -94,5 +94,6 @@ rule sra2fastq_PE:
         SRR=$(basename {{input}}/*)
         FILES={config['result_dir']}/{config['fastq_dir']}/PE/{{wildcards.sample}}/*.{config['fqsuffix']}.gz
         rcmd=s/$SRR/$GSM/
+        # TODO: change rename to mv (see trim_galore)
         rename -v $rcmd $FILES >> {{log}} 2>&1
         """

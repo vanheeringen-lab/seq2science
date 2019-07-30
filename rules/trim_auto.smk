@@ -20,7 +20,8 @@ rule trim_galore_SE:
         trim_galore -j {threads} {params.config} -o $(dirname {output.se}) {input} > {log} 2>&1
 
         # now rename to proper output
-        rename 's/.fq/.{params.fqsuffix}/' "$(dirname {output.se})/{wildcards.sample}_trimmed.fq.gz"
+        for f in $(find "$(dirname {output.r1})/" -name "{wildcards.sample}_*val_*.fq.gz"); do
+            mv "$f" "$(echo "$f" | sed s/.fq/.{params.fqsuffix}/)"; done
         """
 
 
@@ -48,7 +49,9 @@ rule trim_galore_PE:
         trim_galore --paired -j {threads} {params.config} -o $(dirname {output.r1}) {input.r1} {input.r2} > {log} 2>&1
 
         # now rename to proper output
-        find "$(dirname {output.r1})/" -name "{wildcards.sample}_*val_*.fq.gz" | rename 's/.fq/.{params.fqsuffix}/'
-        find "$(dirname {output.r1})/" -name "{wildcards.sample}_*val_*.fastq.gz" | rename 's/_val_\d/_trimmed/'
+        for f in $(find "$(dirname {output.r1})/" -name "{wildcards.sample}_*val_*.fq.gz"); do
+            mv "$f" "$(echo "$f" | sed s/.fq/.{params.fqsuffix}/)"; done
+        for f in $(find "$(dirname {output.r1})/" -maxdepth 1 -name "{wildcards.sample}_*val_*.fastq.gz"); do
+            mv "$f" "$(echo "$f" | sed s/_val_./_trimmed/)"; done
         """
 
