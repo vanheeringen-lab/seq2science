@@ -6,11 +6,11 @@ rule get_genome:
     # Download genomes
     # """
     output:
-        expand("{genome_dir}/{{assemb}}/{{assemb}}.{genome_types}", **config)
+        expand("{genome_dir}/{{assembly}}/{{assembly}}.{genome_types}", **config)
     log:
-        expand("{log_dir}/get_genome/{{assemb}}.log", **config)
+        expand("{log_dir}/get_genome/{{assembly}}.log", **config)
     benchmark:
-        expand("{benchmark_dir}/get_genome/{{sample}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/get_genome/{{assembly}}.benchmark.txt", **config)[0]
     resources:
         parallel_downloads=1
     priority: 1
@@ -18,7 +18,7 @@ rule get_genome:
         "../envs/get_genome.yaml"
     shell:
         f"""
-        genomepy install --genome_dir {config['genome_dir']} {{wildcards.assemb}} UCSC    >  {{log}} 2>&1 ||
-        genomepy install --genome_dir {config['genome_dir']} {{wildcards.assemb}} NCBI    >> {{log}} 2>&1 ||
-        genomepy install --genome_dir {config['genome_dir']} {{wildcards.assemb}} Ensembl >> {{log}} 2>&1
+        genomepy install --genome_dir {config['genome_dir']} {{wildcards.assembly}} UCSC    >  {{log}} 2>&1 ||
+        genomepy install --genome_dir {config['genome_dir']} {{wildcards.assembly}} NCBI    >> {{log}} 2>&1 ||
+        genomepy install --genome_dir {config['genome_dir']} {{wildcards.assembly}} Ensembl >> {{log}} 2>&1
         """
