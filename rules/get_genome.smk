@@ -9,6 +9,8 @@ rule get_genome:
         expand("{genome_dir}/{{assemb}}/{{assemb}}.{genome_types}", **config)
     log:
         expand("{log_dir}/get_genome/{{assemb}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/get_genome/{{sample}}.benchmark.txt", **config)[0]
     resources:
         parallel_downloads=1
     priority: 1

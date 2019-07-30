@@ -3,6 +3,8 @@ rule id2sra:
         temp(directory(expand("{result_dir}/{sra_dir}/{{sample}}", **config)))
     log:
         expand("{log_dir}/id2sra/{{sample}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/id2sra/{{sample}}.benchmark.txt", **config)[0]
     resources:
         parallel_downloads=1
     wildcard_constraints:
@@ -14,9 +16,6 @@ rule id2sra:
         ascp_key= config.get('ascp_key',  "NO_KEY")
     shell:
         """
-        ASCPPATH=$HOME/.aspera/connect/bin/ascp;
-        KEYPATH=$HOME/.aspera/connect/etc/asperaweb_id_dsa.openssh;
-
         echo "starting lookup of the sample in the sra database:" > {log}
         if [[ {wildcards.sample} =~ GSM ]]; then
             IDS=$(esearch -db sra -query {wildcards.sample} | efetch --format runinfo | cut -d ',' -f 1 | grep SRR);
@@ -44,7 +43,7 @@ rule id2sra:
             {params.ascp_path} -i {params.ascp_key} -P33001 -T -d -k 0 -Q -l 2G -m 250M $URL_ENA2 {output[0]} >> {log} 2>&1 ||
             {params.ascp_path} -i {params.ascp_key}         -T -d -k 0 -Q -l 2G -m 250M $URL_NCBI {output[0]} >> {log} 2>&1 ||
             # if none of the ascp servers work, or ascp is not defined in the config, then simply wget
-            mkdir {output[0]} && wget -O {output[0]}/{wildcards.sample} -a {log} -nv $WGET_URL 
+            mkdir {output[0]} >> {log} 2>&1 >&& wget -O {output[0]}/{wildcards.sample} -a {log} -nv $WGET_URL >> {log} 2>&1
         done;
         """
 
@@ -55,7 +54,9 @@ rule sra2fastq_SE:
     output:
         expand("{result_dir}/{fastq_dir}/SE/{{sample}}.{fqsuffix}.gz", **config)
     log:
-        expand("{log_dir}/sra2fastq/{{sample}}.log", **config)
+        expand("{log_dir}/sra2fastq_SE/{{sample}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/sra2fastq_SE/{{sample}}.benchmark.txt", **config)[0]
     threads: 8
     conda:
         "../envs/get_fastq.yaml"
@@ -78,7 +79,9 @@ rule sra2fastq_PE:
     output:
         expand("{result_dir}/{fastq_dir}/PE/{{sample}}_{fqext}.{fqsuffix}.gz", **config)
     log:
-        expand("{log_dir}/sra2fastq/{{sample}}.log", **config)
+        expand("{log_dir}/sra2fastq_PE/{{sample}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/sra2fastq_PE/{{sample}}.benchmark.txt", **config)[0]
     threads: 8
     conda:
         "../envs/get_fastq.yaml"
