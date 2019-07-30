@@ -39,11 +39,11 @@ rule id2sra:
 
             echo "trying to download $ID from, respectively: \n$URL_ENA1 \n$URL_ENA2 \n$URL_NCBI \n$WGET_URL" >> {log}
             # first try the ENA (which has at least two different filing systems), if not successful, try NCBI
+            # if none of the ascp servers work, or ascp is not defined in the config, then simply wget
             {params.ascp_path} -i {params.ascp_key} -P33001 -T -d -k 0 -Q -l 2G -m 250M $URL_ENA1 {output[0]} >> {log} 2>&1 ||
             {params.ascp_path} -i {params.ascp_key} -P33001 -T -d -k 0 -Q -l 2G -m 250M $URL_ENA2 {output[0]} >> {log} 2>&1 ||
             {params.ascp_path} -i {params.ascp_key}         -T -d -k 0 -Q -l 2G -m 250M $URL_NCBI {output[0]} >> {log} 2>&1 ||
-            # if none of the ascp servers work, or ascp is not defined in the config, then simply wget
-            mkdir {output[0]} >> {log} 2>&1 >&& wget -O {output[0]}/{wildcards.sample} -a {log} -nv $WGET_URL >> {log} 2>&1
+            (mkdir {output[0]} >> {log} 2>&1 && wget -O {output[0]}/{wildcards.sample} -a {log} -nv $WGET_URL >> {log} 2>&1)
         done;
         """
 
