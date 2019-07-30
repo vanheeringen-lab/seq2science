@@ -37,7 +37,7 @@ rule call_peak_genrich:
     conda:
         "../envs/call_peak.yaml"
     params:
-        config['peak_caller']['genrich']
+        config['peak_caller'].get('genrich', "")
     threads: 1
     shell:
         "Genrich -P -f {input.log} -o {output.narrowpeak} {params}"
