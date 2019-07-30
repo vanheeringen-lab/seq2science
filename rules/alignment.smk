@@ -77,6 +77,7 @@ elif 'samtools' == config['bam_sorter']:
             "../envs/alignment.yaml"
         shell:
             """
+            trap \"rm -f {output}*\" INT;
             samtools sort -@ {params.threads} {params.order} {input} -o {output}  2> {log}
             """
 
