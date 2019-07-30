@@ -6,7 +6,7 @@
 #                   result_dir=config['result_dir'], sample=sample)
 
 rule genrich_pileup:
-    # TODO log
+    # TODO log & benchmark
     input:
         expand("{result_dir}/dedup/{{sample}}-{{assembly}}.bam", **config)
     output:
@@ -23,7 +23,7 @@ rule genrich_pileup:
 
 
 rule call_peak_genrich:
-    # TODO log
+    # TODO log & benchmark
     input:
         log=expand("{result_dir}/genrich/{{sample}}-{{assembly}}.log", **config)
     output:
@@ -39,6 +39,7 @@ rule call_peak_genrich:
 
 config['macs2_types'] = ['control_lambda.bdg', 'summits.bed', 'peaks.narrowPeak',
                          'peaks.xls', 'treat_pileup.bdg']
+# TODO: benchmark
 rule call_peak_macs2:
     #
     # Calculates genome size based on unique kmers of average length
