@@ -18,6 +18,7 @@ include: "../alignment/Snakefile"
 # load the remaining relevant rules
 include: f"{config['rule_dir']}/call_peak.smk"
 include: f"{config['rule_dir']}/get_genome.smk"
+include: f"{config['rule_dir']}/qc.smk"
 
 
 if 'condition' in config:
