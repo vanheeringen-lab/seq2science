@@ -5,6 +5,7 @@ import subprocess
 import pandas as pd
 from multiprocessing.pool import ThreadPool
 from snakemake.utils import validate
+from snakemake.logging import logger
 
 
 # read the samples file
@@ -96,3 +97,10 @@ onerror:
 
 onsuccess:
     onexit(config)
+
+
+# after all is done, log (print) the configuration
+logger.info("CONFIGURATION VARIABLES:")
+for key, value in config.items():
+     logger.info(f"{key: <23}: {value}")
+logger.info("\n\n")
