@@ -1,3 +1,4 @@
+import os
 import re
 import time
 import genomepy
@@ -5,6 +6,7 @@ import subprocess
 import pandas as pd
 from multiprocessing.pool import ThreadPool
 from snakemake.utils import validate
+from snakemake.logging import logger
 
 
 # read the samples file
@@ -53,19 +55,14 @@ config['layout'] = {}
 
 # now do a request for each sample
 for sample in samples.index:
-    if 'local_path' in samples:
-        if not pd.isnull(samples['local_path'][sample]):
-            if '/SE' in samples['local_path'][sample]:
-                config['layout'][sample] ='SINGLE'
-            elif '/PE' in samples['local_path'][sample]:
-                config['layout'][sample] ='PAIRED'
-            else:
-                assert False
-            continue
-
-    results.append(tp.apply_async(get_layout, (sample,)))
-    # sleep 1.25 times the minimum required sleep time
-    time.sleep(1.25 / (config['ncbi_requests'] // 2))
+    if   os.path.exists(expand(f'{{result_dir}}/{{fastq_dir}}/SE/{sample}.{{fqsuffix}}.gz', **config)[0]):
+        config['layout'][sample] ='SINGLE'
+    elif all(os.path.exists(path) for path in expand(f'{{result_dir}}/{{fastq_dir}}/PE/{sample}_{{fqext}}.{{fqsuffix}}.gz', **config)):
+        config['layout'][sample] ='PAIRED'
+    else:
+        results.append(tp.apply_async(get_layout, (sample,)))
+        # sleep 1.25 times the minimum required sleep time
+        time.sleep(1.25 / (config['ncbi_requests'] // 2))
 
 # now parse the output and store in config
 config['layout'] = {**config['layout'], **{r.get()[0]: r.get()[1] for r in results}}
@@ -96,3 +93,10 @@ onerror:
 
 onsuccess:
     onexit(config)
+
+
+# after all is done, log (print) the configuration
+logger.info("CONFIGURATION VARIABLES:")
+for key, value in config.items():
+     logger.info(f"{key: <23}: {value}")
+logger.info("\n\n")

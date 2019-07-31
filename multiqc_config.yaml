@@ -1,0 +1,45 @@
+extra_fn_clean_exts:
+    - '-'
+    - type: remove
+      pattern: _1
+    - type: remove
+      pattern: _pass
+
+
+module_order:
+    - fastqc:
+        name: 'FastQC (raw)'
+        path_filters:
+            - '*_fastqc.zip'
+        path_filters_exclude:
+            - '*_trimmed_fastqc.zip'
+    - cutadapt
+    - fastqc:
+        name: 'FastQC (trimmed)'
+        path_filters:
+            - '*_trimmed_fastqc.zip'
+    - picard
+    - samtools
+    - featureCounts:
+        name: 'macs2'
+        path_filters:
+            - '*macs2*'
+    - featureCounts:
+        name: 'genrich'
+        path_filters:
+            - '*genrich*'
+
+
+table_columns_visible:
+    FastQC (raw):
+        percent_duplicates: False
+        percent_gc: False
+    FastQC (trimmed):
+        total_sequences: False
+    Samtools Stats:
+        non-primary_alignments: False
+        raw_total_sequences: False
+        reads_mapped: False
+    featureCounts:
+        percent_assigned: True
+        Assigned: False
