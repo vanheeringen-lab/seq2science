@@ -37,4 +37,4 @@ rule align_all:
     input:
         [expand(f"{{result_dir}}/{{bwa_dir}}/{sample}-{samples.loc[sample]['assembly']}.bam", **config) for sample in samples.index],
         [expand(f"{{result_dir}}/{{bwa_dir}}/{sample}-{samples.loc[sample]['assembly']}.bai", **config) for sample in samples.index],
-        expand("{result_dir}/qc/multiqc.html", **config)
+         expand("{result_dir}/qc/multiqc.html", **config)

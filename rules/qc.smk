@@ -22,7 +22,7 @@ rule multiqc:
        get_qc_files
     output:
         expand("{result_dir}/qc/multiqc.html", **config),
-        directory("{result_dir}/qc/multiqc_data", **config))
+        directory(expand("{result_dir}/qc/multiqc_data", **config))
     params:
         "{result_dir}/qc/".format(**config)
     log:
@@ -35,14 +35,14 @@ rule multiqc:
 
 def get_trimming_qc(sample):
     if config['layout'][sample] == 'SINGLE':
-        return expand([f"{{result_dir}}/{{trimmed_dir}}/SE/{sample}_fastqc.zip",
-                       f"{{result_dir}}/{{trimmed_dir}}/SE/{sample}_trimmed_fastqc.zip",
-                       f"{{result_dir}}/{{trimmed_dir}}/SE/{sample}.{{fqsuffix}}.gz_trimming_report.txt"],
+        return expand([f"{{result_dir}}/{{trimmed_dir}}/{sample}_fastqc.zip",
+                       f"{{result_dir}}/{{trimmed_dir}}/{sample}_trimmed_fastqc.zip",
+                       f"{{result_dir}}/{{trimmed_dir}}/{sample}.{{fqsuffix}}.gz_trimming_report.txt"],
                        **config)
     else:
-        return expand([f"{{result_dir}}/{{trimmed_dir}}/PE/{sample}_{{fqext}}_fastqc.zip",
-                       f"{{result_dir}}/{{trimmed_dir}}/PE/{sample}_{{fqext}}_trimmed_fastqc.zip",
-                       f"{{result_dir}}/{{trimmed_dir}}/PE/{sample}_{{fqext}}.{{fqsuffix}}.gz_trimming_report.txt"],
+        return expand([f"{{result_dir}}/{{trimmed_dir}}/{sample}_{{fqext}}_fastqc.zip",
+                       f"{{result_dir}}/{{trimmed_dir}}/{sample}_{{fqext}}_trimmed_fastqc.zip",
+                       f"{{result_dir}}/{{trimmed_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz_trimming_report.txt"],
                        **config)
 
 def get_alignment_qc(sample):
