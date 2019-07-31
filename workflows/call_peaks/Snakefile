@@ -22,17 +22,25 @@ include: f"{config['rule_dir']}/qc.smk"
 
 
 if 'condition' in config:
-    assert False
+    raise NotImplementedError
 #     rule all:
 #         """
 #         call peaks for each sample, IDR / genrich
 #         """
 else:
+    # load the quality control files
+    quality_control = []
+    for sample in samples.index:
+        quality_control.extend(get_trimming_qc(sample))
+        quality_control.extend(get_alignment_qc(sample))
+        quality_control.extend(get_peak_calling_qc(sample))
+
     rule call_peaks_all:
         """
         call peaks for each sample, no IDR / genrich replicates
         """
         input:
             [expand(f"{{result_dir}}/{{peak_caller}}/{sample}-{samples.loc[sample, 'assembly']}_peaks.narrowPeak", **config)
-             for sample in samples.index]
+             for sample in samples.index],
+             expand("{result_dir}/qc/multiqc.html", **config)
 
