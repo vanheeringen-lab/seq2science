@@ -52,7 +52,7 @@ rule sra2fastq_SE:
     input:
         rules.id2sra.output
     output:
-        expand("{result_dir}/{fastq_dir}/SE/{{sample}}.{fqsuffix}.gz", **config)
+        expand("{result_dir}/{fastq_dir}/{{sample}}.{fqsuffix}.gz", **config)
     log:
         expand("{log_dir}/sra2fastq_SE/{{sample}}.log", **config)
     benchmark:
@@ -62,13 +62,13 @@ rule sra2fastq_SE:
         "../envs/get_fastq.yaml"
     shell:
         f"""
-        parallel-fastq-dump -s {{input}}/* -O {config['result_dir']}/{config['fastq_dir']}/SE {config['splot']} --threads {{threads}} --gzip >> {{log}} 2>&1
+        parallel-fastq-dump -s {{input}}/* -O {config['result_dir']}/{config['fastq_dir']} {config['splot']} --threads {{threads}} --gzip >> {{log}} 2>&1
 
         # rename the SRR to GSM
         GSM=$(basename {{input}})
         SRR=$(basename {{input}}/*)
-        src='{config['result_dir']}/{config['fastq_dir']}/SE/'$SRR'_pass.{config['fqsuffix']}.gz'
-        dst='{config['result_dir']}/{config['fastq_dir']}/SE/'$GSM'.{config['fqsuffix']}.gz'
+        src='{config['result_dir']}/{config['fastq_dir']}/'$SRR'_pass.{config['fqsuffix']}.gz'
+        dst='{config['result_dir']}/{config['fastq_dir']}/'$GSM'.{config['fqsuffix']}.gz'
         mv -v $src $dst >> {{log}} 2>&1
         """
 
@@ -77,7 +77,7 @@ rule sra2fastq_PE:
     input:
         rules.id2sra.output
     output:
-        expand("{result_dir}/{fastq_dir}/PE/{{sample}}_{fqext}.{fqsuffix}.gz", **config)
+        expand("{result_dir}/{fastq_dir}/{{sample}}_{fqext}.{fqsuffix}.gz", **config)
     log:
         expand("{log_dir}/sra2fastq_PE/{{sample}}.log", **config)
     benchmark:
@@ -87,12 +87,12 @@ rule sra2fastq_PE:
         "../envs/get_fastq.yaml"
     shell:
         f"""
-        parallel-fastq-dump -s {{input}}/* -O {config['result_dir']}/{config['fastq_dir']}/PE {config['split']} --threads {{threads}} --gzip >> {{log}} 2>&1
+        parallel-fastq-dump -s {{input}}/* -O {config['result_dir']}/{config['fastq_dir']} {config['split']} --threads {{threads}} --gzip >> {{log}} 2>&1
 
         # rename the SRRs to GSMs
         GSM=$(basename {{input}})
         SRR=$(basename {{input}}/*)
-        FILES={config['result_dir']}/{config['fastq_dir']}/PE/{{wildcards.sample}}/*.{config['fqsuffix']}.gz
+        FILES={config['result_dir']}/{config['fastq_dir']}/{{wildcards.sample}}/*.{config['fqsuffix']}.gz
         rcmd=s/$SRR/$GSM/
         # TODO: change rename to mv (see trim_galore)
         rename -v $rcmd $FILES >> {{log}} 2>&1

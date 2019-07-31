@@ -55,9 +55,9 @@ config['layout'] = {}
 
 # now do a request for each sample
 for sample in samples.index:
-    if   os.path.exists(expand(f'{{result_dir}}/{{fastq_dir}}/SE/{sample}.{{fqsuffix}}.gz', **config)[0]):
+    if os.path.exists(expand(f'{{result_dir}}/{{fastq_dir}}/{sample}.{{fqsuffix}}.gz', **config)[0]):
         config['layout'][sample] ='SINGLE'
-    elif all(os.path.exists(path) for path in expand(f'{{result_dir}}/{{fastq_dir}}/PE/{sample}_{{fqext}}.{{fqsuffix}}.gz', **config)):
+    elif all(os.path.exists(path) for path in expand(f'{{result_dir}}/{{fastq_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz', **config)):
         config['layout'][sample] ='PAIRED'
     else:
         results.append(tp.apply_async(get_layout, (sample,)))

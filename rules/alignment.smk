@@ -21,8 +21,8 @@ rule bwa_index:
 
 def get_reads(wildcards):
     if config['layout'][wildcards.sample] == "SINGLE":
-        return expand("{result_dir}/{trimmed_dir}/SE/{{sample}}_trimmed.{fqsuffix}.gz", **config)
-    return sorted(expand("{result_dir}/{trimmed_dir}/PE/{{sample}}_{fqext}_trimmed.{fqsuffix}.gz", **config))
+        return expand("{result_dir}/{trimmed_dir}/{{sample}}_trimmed.{fqsuffix}.gz", **config)
+    return sorted(expand("{result_dir}/{trimmed_dir}/{{sample}}_{fqext}_trimmed.{fqsuffix}.gz", **config))
 
 
 rule bwa_mem:

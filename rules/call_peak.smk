@@ -39,8 +39,8 @@ config['macs2_types'] = ['control_lambda.bdg', 'summits.bed', 'peaks.narrowPeak'
                          'peaks.xls', 'treat_pileup.bdg']
 def get_fastqc(wildcards):
     if config['layout'][wildcards.sample] == "SINGLE":
-        return expand("{result_dir}/{trimmed_dir}/SE/{{sample}}_trimmed_fastqc.zip", **config)
-    return sorted(expand("{result_dir}/{trimmed_dir}/PE/{{sample}}_{fqext1}_trimmed_fastqc.zip", **config))
+        return expand("{result_dir}/{trimmed_dir}/{{sample}}_trimmed_fastqc.zip", **config)
+    return sorted(expand("{result_dir}/{trimmed_dir}/{{sample}}_{fqext1}_trimmed_fastqc.zip", **config))
 
 rule call_peak_macs2:
     #
