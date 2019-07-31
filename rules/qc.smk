@@ -21,7 +21,8 @@ rule multiqc:
     input:
        get_qc_files
     output:
-        expand("{result_dir}/qc/multiqc.html", **config)
+        expand("{result_dir}/qc/multiqc.html", **config),
+        directory("{result_dir}/qc/multiqc_data", **config))
     params:
         "{result_dir}/qc/".format(**config)
     log:
