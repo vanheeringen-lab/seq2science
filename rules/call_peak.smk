@@ -12,7 +12,7 @@ rule genrich_pileup:
         bedgraphish=expand("{result_dir}/genrich/{{sample}}-{{assembly}}.bdgish", **config),
         log=expand("{result_dir}/genrich/{{sample}}-{{assembly}}.log", **config)
     log:
-        expand("{log_dir}/genrich_pileup/{{sample}}-{{assembly}}.log", **config)
+        expand("{log_dir}/genrich_pileup/{{sample}}-{{assembly}}_pileup.log", **config)
     benchmark:
         expand("{benchmark_dir}/genrich_pileup/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
     conda:
@@ -21,8 +21,7 @@ rule genrich_pileup:
         config['peak_caller'].get('genrich', " ")
     threads: 15
     shell:
-        "input=$(echo {input} | tr ' ' ','); "
-        "Genrich -X -t $input -f {output.log} -k {output.bedgraphish} {params}"
+        "Genrich -X -t {input} -f {output.log} -k {output.bedgraphish} {params} -v > {log} 2>&1"
 
 
 rule call_peak_genrich:
@@ -31,7 +30,7 @@ rule call_peak_genrich:
     output:
         narrowpeak= expand("{result_dir}/genrich/{{sample}}-{{assembly}}_peaks.narrowPeak", **config)
     log:
-        expand("{log_dir}/call_peak_genrich/{{sample}}-{{assembly}}.log", **config)
+        expand("{log_dir}/call_peak_genrich/{{sample}}-{{assembly}}_peak.log", **config)
     benchmark:
         expand("{benchmark_dir}/call_peak_genrich/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
     conda:
@@ -40,7 +39,7 @@ rule call_peak_genrich:
         config['peak_caller'].get('genrich', "")
     threads: 1
     shell:
-        "Genrich -P -f {input.log} -o {output.narrowpeak} {params}"
+        "Genrich -P -f {input.log} -o {output.narrowpeak} {params} -v > {log} 2>&1"
 
 
 config['macs2_types'] = ['control_lambda.bdg', 'summits.bed', 'peaks.narrowPeak',
