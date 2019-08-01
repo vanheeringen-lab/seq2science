@@ -1,0 +1,61 @@
+from snakemake.utils import validate
+
+
+# complement the configuration
+if not 'validated' in config:
+    configfile: "config.yaml"
+    validate(config, schema=f"../../schemas/config.schema.yaml")
+
+# do onstart/onexit things
+schema = 'call_peaks.schema.yaml'
+include: f"{config['rule_dir']}/configuration.smk"
+
+
+# load the 'subworkflow' alignment
+include: "../alignment/Snakefile"
+
+
+# load the remaining relevant rules
+include: f"{config['rule_dir']}/call_peak.smk"
+include: f"{config['rule_dir']}/get_genome.smk"
+include: f"{config['rule_dir']}/qc.smk"
+# include: f"{config['rule_dir']}/trackhub.smk"
+
+
+# load the quality control files
+quality_control = []
+for sample in samples.index:
+    quality_control.extend(get_trimming_qc(sample))
+    quality_control.extend(get_alignment_qc(sample))
+    quality_control.extend(get_peak_calling_qc(sample))
+
+
+if 'condition' in samples:
+    out = []
+    # for each assembly
+    for assembly in set(samples["assembly"]):
+        # for each condition of this assembly
+        for condition in set(samples[samples['assembly'] == assembly]['condition']):
+            out.append(expand(f"{{result_dir}}/genrich/{condition}-{assembly}_peaks.narrowPeak", **config))
+
+    rule call_peaks_all:
+        """
+        call peaks for each condition, IDR / genrich replicates
+        """
+        input:
+            [expand(f"{{result_dir}}/{{peak_caller}}/{sample}-{samples.loc[sample, 'assembly']}_peaks.narrowPeak", **config)
+             for sample in samples.index],
+             expand("{result_dir}/qc/multiqc.html", **config),
+             out
+#              expand("{result_dir}/trackhub_macs2/", **config)
+# else:
+#     rule call_peaks_all:
+#         """
+#         call peaks for each sample, no IDR / genrich replicates
+#         """
+#         input:
+#             [expand(f"{{result_dir}}/{{peak_caller}}/{sample}-{samples.loc[sample, 'assembly']}_peaks.narrowPeak", **config)
+#              for sample in samples.index],
+#              expand("{result_dir}/qc/multiqc.html", **config),
+# #              expand("{result_dir}/trackhub_macs2/", **config)
+

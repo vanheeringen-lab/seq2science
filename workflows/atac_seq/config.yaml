@@ -13,3 +13,8 @@ peak_caller:
       --shift -100 --extsize 200 -B --nomodel --keep-dup 1 --buffer-size 10000
   - genrich:
       -y -j
+
+
+# when calling genrich peaks the alignment has to be queryname sorted
+bam_sorter: sambamba
+bam_sort_order: queryname
