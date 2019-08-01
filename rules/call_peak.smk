@@ -1,31 +1,44 @@
+def get_genrich_replicates(wildcards):
+    sample_condition, assembly = wildcards.fname.split('-')
+    if (not 'replicates' in samples.columns and not 'condition' in samples.columns) \
+    or (sample_condition in samples.index   and not sample_condition in samples['condition'].values):
+        return expand(f"{{result_dir}}/{{dedup_dir}}/{wildcards.fname}.bam", **config)
+    else:
+        return expand([f"{{result_dir}}/{{dedup_dir}}/{replicate}-{assembly}.bam"
+        for replicate in samples[samples['condition'] == condition].index], **config)
+
+
 rule genrich_pileup:
     input:
-        expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.bam", **config)
+        get_genrich_replicates
     output:
-        bedgraphish=expand("{result_dir}/genrich/{{sample}}-{{assembly}}.bdgish", **config),
-        log=expand("{result_dir}/genrich/{{sample}}-{{assembly}}.log", **config)
+        bedgraphish=expand("{result_dir}/genrich/{{fname}}.bdgish", **config),
+        log=expand("{result_dir}/genrich/{{fname}}.log", **config)
     log:
-        expand("{log_dir}/genrich_pileup/{{sample}}-{{assembly}}_pileup.log", **config)
+        expand("{log_dir}/genrich_pileup/{{fname}}_pileup.log", **config)
     benchmark:
-        expand("{benchmark_dir}/genrich_pileup/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/genrich_pileup/{{fname}}.benchmark.txt", **config)[0]
     conda:
         "../envs/call_peak.yaml"
     params:
-        config['peak_caller'].get('genrich', " ")
-    threads: 15
+        config['peak_caller'].get('genrich', " ")  # TODO: move this to config.schema.yaml
+    threads: 15  # TODO: genrich uses lots of ram. Get the number from benchmark, instead of doing it through threads
     shell:
-        "Genrich -X -t {input} -f {output.log} -k {output.bedgraphish} {params} -v > {log} 2>&1"
+        """
+        input=$(echo {input} | tr ' ' ',');
+        Genrich -X -t {input} -f {output.log} -k {output.bedgraphish} {params} -v > {log} 2>&1
+        """
 
 
 rule call_peak_genrich:
     input:
-        log=expand("{result_dir}/genrich/{{sample}}-{{assembly}}.log", **config)
+        log=expand("{result_dir}/genrich/{{fname}}.log", **config)
     output:
-        narrowpeak= expand("{result_dir}/genrich/{{sample}}-{{assembly}}_peaks.narrowPeak", **config)
+        narrowpeak= expand("{result_dir}/genrich/{{fname}}_peaks.narrowPeak", **config)
     log:
-        expand("{log_dir}/call_peak_genrich/{{sample}}-{{assembly}}_peak.log", **config)
+        expand("{log_dir}/call_peak_genrich/{{fname}}_peak.log", **config)
     benchmark:
-        expand("{benchmark_dir}/call_peak_genrich/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/call_peak_genrich/{{fname}}.benchmark.txt", **config)[0]
     conda:
         "../envs/call_peak.yaml"
     params:
@@ -59,7 +72,7 @@ rule call_peak_macs2:
         name=lambda wildcards, input: f"{wildcards.sample}" if config['layout'][wildcards.sample] == 'SINGLE' else \
                                       f"{wildcards.sample}_{config['fqext1']}",
         genome=f"{config['genome_dir']}/{{assembly}}/{{assembly}}.fa",
-        macs_params=config['peak_caller']['macs2']
+        macs_params=config['peak_caller'].get('macs2', "")  # TODO: move to config.schema.yaml
     conda:
         "../envs/call_peak_macs2.yaml"
     shell:
