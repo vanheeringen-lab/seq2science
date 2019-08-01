@@ -82,7 +82,7 @@ rule sra2fastq_PE:
         expand("{log_dir}/sra2fastq_PE/{{sample}}.log", **config)
     benchmark:
         expand("{benchmark_dir}/sra2fastq_PE/{{sample}}.benchmark.txt", **config)[0]
-    threads: 8
+    threads: 40
     conda:
         "../envs/get_fastq.yaml"
     shell:
@@ -92,7 +92,7 @@ rule sra2fastq_PE:
         # rename the SRRs to GSMs
         GSM=$(basename {{input}})
         SRR=$(basename {{input}}/*)
-        FILES={config['result_dir']}/{config['fastq_dir']}/{{wildcards.sample}}/*.{config['fqsuffix']}.gz
+        FILES={config['result_dir']}/{config['fastq_dir']}/*.{config['fqsuffix']}.gz
         rcmd=s/$SRR/$GSM/
         # TODO: change rename to mv (see trim_galore)
         rename -v $rcmd $FILES >> {{log}} 2>&1

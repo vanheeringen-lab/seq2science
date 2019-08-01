@@ -1,6 +1,6 @@
 rule fastqc:
     input:
-        f"{{path}}/{{fname}}.{config['fqext']}.gz"
+        f"{{path}}/{{fname}}.{config['fqsuffix']}.gz"
     output:
         "{path}/{fname}_fastqc.html",
         "{path}/{fname}_fastqc.zip"

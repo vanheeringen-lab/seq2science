@@ -38,6 +38,7 @@ assert sorted(config['fqext'])[0] == config['fqext1']
 
 
 # check if a sample is single-end or paired end, and store it
+logger.info("Checking if samples are single-end or paired-end...")
 def get_layout(sample):
     """ sends a request to ncbi checking whether a sample is single-end or paired-end """
     api_key = config.get('ncbi_key', "")
@@ -66,6 +67,7 @@ for sample in samples.index:
 
 # now parse the output and store in config
 config['layout'] = {**config['layout'], **{r.get()[0]: r.get()[1] for r in results}}
+logger.info("Done!\n\n")
 
 
 # Do onstart/onexit things

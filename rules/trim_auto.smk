@@ -22,8 +22,9 @@ rule trim_galore_SE:
         trim_galore -j {threads} {params.config} -o $(dirname {output.se}) {input} > {log} 2>&1
 
         # now rename to proper output
-        for f in $(find "$(dirname {output.r1})/" -name "{wildcards.sample}_*val_*.fq.gz"); do
-            mv "$f" "$(echo "$f" | sed s/.fq/.{params.fqsuffix}/)"; done
+        if [ "{params.fqsuffix}" != "fq" ]; then
+          mv "$(dirname {output.se})/{wildcards.sample}_trimmed.fq.gz" {output.se}
+        fi 
         """
 
 
