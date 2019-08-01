@@ -26,7 +26,7 @@ rule multiqc:
     params:
         "{result_dir}/qc/".format(**config)
     log:
-        "logs/multiqc.log"
+        expand("{log_dir}/multiqc.log", **config)
     conda:
         "../envs/qc.yaml"
     shell:
