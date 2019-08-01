@@ -4,6 +4,6 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - bioconda::trim-galore=0.6.3
+  - bioconda::trim-galore=0.6.4
   - conda-forge::cpulimit=0.2
 
