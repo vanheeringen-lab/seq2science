@@ -25,8 +25,8 @@ rule genrich_pileup:
     threads: 15  # TODO: genrich uses lots of ram. Get the number from benchmark, instead of doing it through threads
     shell:
         """
-        input=$(echo {input} | tr ' ' ',');
-        Genrich -X -t {input} -f {output.log} -k {output.bedgraphish} {params} -v > {log} 2>&1
+        input=$(echo {input} | tr ' ' ',')
+        Genrich -X -t $input -f {output.log} -k {output.bedgraphish} {params} -v > {log} 2>&1
         """
 
 
@@ -55,19 +55,19 @@ def get_fastqc(wildcards):
         return expand("{result_dir}/{trimmed_dir}/{{sample}}_trimmed_fastqc.zip", **config)
     return sorted(expand("{result_dir}/{trimmed_dir}/{{sample}}_{fqext1}_trimmed_fastqc.zip", **config))
 
-rule call_peak_macs2:
+rule macs2_callpeak:
     #
     # Calculates genome size based on unique kmers of average length
     #
     input:
-        bam=   expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.bam", **config),
+        bam=expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.bam", **config),
         fastqc=get_fastqc
     output:
         expand("{result_dir}/macs2/{{sample}}-{{assembly}}_{macs2_types}", **config)
     log:
-        expand("{log_dir}/call_peak_macs2/{{sample}}-{{assembly}}.log", **config)
+        expand("{log_dir}/macs2_callpeak/{{sample}}-{{assembly}}.log", **config)
     benchmark:
-        expand("{benchmark_dir}/call_peak_macs2/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/macs2_callpeak/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
     params:
         name=lambda wildcards, input: f"{wildcards.sample}" if config['layout'][wildcards.sample] == 'SINGLE' else \
                                       f"{wildcards.sample}_{config['fqext1']}",
