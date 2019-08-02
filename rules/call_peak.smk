@@ -25,8 +25,8 @@ rule genrich_pileup:
     threads: 15  # TODO: genrich uses lots of ram. Get the number from benchmark, instead of doing it through threads
     shell:
         """
-        input=$(echo {input} | tr ' ' ',');
-        Genrich -X -t {input} -f {output.log} -k {output.bedgraphish} {params} -v > {log} 2>&1
+        input=$(echo {input} | tr ' ' ',')
+        Genrich -X -t $input -f {output.log} -k {output.bedgraphish} {params} -v > {log} 2>&1
         """
 
 
