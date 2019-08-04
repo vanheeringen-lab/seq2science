@@ -70,33 +70,6 @@ config['layout'] = {**config['layout'], **{r.get()[0]: r.get()[1] for r in resul
 logger.info("Done!\n\n")
 
 
-# Do onstart/onexit things
-onstart:
-    # turn off genomepy plugins, since they slow down the 'downloading' process
-    if 'genomepy' in sys.modules:
-        # get the genomepy settings
-        config['active_plugins'] = [p.name() for p in genomepy.plugin.get_active_plugins()]
-
-        # disable genomepy plugins
-        for plugin in ['bowtie2', 'bwa', 'gmap', 'hisat2', 'minimap2']:
-            genomepy.plugin.deactivate(plugin)
-
-
-def onexit(config):
-    if 'genomepy' in sys.modules:
-        for plugin in genomepy.plugin.plugins:
-            if plugin in config['active_plugins']:
-                genomepy.plugin.activate(plugin)
-
-
-onerror:
-    onexit(config)
-
-
-onsuccess:
-    onexit(config)
-
-
 # after all is done, log (print) the configuration
 logger.info("CONFIGURATION VARIABLES:")
 for key, value in config.items():
