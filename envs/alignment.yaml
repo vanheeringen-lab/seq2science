@@ -8,3 +8,4 @@ dependencies:
   - bioconda::samtools=1.9
   - bioconda::bwa=0.7.17
   - bioconda::sambamba=0.7.0
+  - bioconda::hisat2=2.1.0
