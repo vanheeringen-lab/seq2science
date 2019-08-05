@@ -56,9 +56,6 @@ elif config['aligner'] == 'hisat2':
             expand("{log_dir}/hisat2_index/{{assembly}}.log", **config)
         benchmark:
             expand("{benchmark_dir}/hisat2_index/{{assembly}}.benchmark.txt", **config)[0]
-        params:
-            prefix="{genome_dir}/{{assembly}}/index/bwa/{{assembly}}".format(**config),
-            algorithm=config["bwa_algo"]
         threads: 4
         conda:
             "../envs/alignment.yaml"
@@ -87,6 +84,43 @@ elif config['aligner'] == 'hisat2':
             hisat2 --threads {threads} -x {input.index}{wildcards.assembly} {params.input} 1> {output} 2> {log}
             """
 
+elif config['aligner'] == 'bowtie2':
+    rule bowtie2_index:
+        input:
+            expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config)
+        output:
+            directory(expand("{genome_dir}/{{assembly}}/index/bowtie2/", **config))
+        log:
+            expand("{log_dir}/bowtie2_index/{{assembly}}.log", **config)
+        benchmark:
+            expand("{benchmark_dir}/bowtie2_index/{{assembly}}.benchmark.txt", **config)[0]
+        threads: 4
+        conda:
+            "../envs/alignment.yaml"
+        shell:
+            "bowtie2-build --threads {threads} {input} {output}/{wildcards.assembly} > {log} 2>&1"
+
+
+    rule bowtie2_align:
+        input:
+            reads=get_reads,
+            index=expand("{genome_dir}/{{assembly}}/index/bowtie2/", **config)
+        output:
+            pipe(expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}.bampipe", **config))
+        log:
+            expand("{log_dir}/bowtie2_align/{{sample}}-{{assembly}}.log", **config)
+        benchmark:
+            expand("{benchmark_dir}/bowtie2_align/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
+        params:
+            input=lambda wildcards, input: f'-U {input.reads}' if config['layout'][wildcards.sample] == 'SINGLE' else \
+                                           f'-1 {input.reads[0]} -2 {input.reads[1]}'
+        threads: 20
+        conda:
+            "../envs/alignment.yaml"
+        shell:
+            """
+            bowtie2 --threads {threads} -x {input.index}{wildcards.assembly} {params.input} 1> {output} 2> {log}
+            """
 
 if 'sambamba' == config['bam_sorter']:
     rule sambamba_sort:

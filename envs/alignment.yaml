@@ -9,3 +9,4 @@ dependencies:
   - bioconda::bwa=0.7.17
   - bioconda::sambamba=0.7.0
   - bioconda::hisat2=2.1.0
+  - bioconda::bowtie2=2.3.5

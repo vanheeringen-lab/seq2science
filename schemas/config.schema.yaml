@@ -108,7 +108,7 @@ properties:
   aligner:
     description: which aligner to use
     default: bwa
-    enum: [bwa, hisat2]
+    enum: [bwa, hisat2, bowtie2]
     type: string
 
   # bwa alignment parameters
