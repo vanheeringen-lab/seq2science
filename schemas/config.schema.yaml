@@ -104,6 +104,13 @@ properties:
     default: --quality 10 --length 20 --consider_already_trimmed 10
     type: string
 
+  # aligner
+  aligner:
+    description: which aligner to use
+    default: bwa
+    enum: [bwa, hisat2, bowtie2]
+    type: string
+
   # bwa alignment parameters
   bwa_algo:
     description: the algorithm bwa index uses for alignment

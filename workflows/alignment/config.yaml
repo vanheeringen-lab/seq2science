@@ -5,3 +5,7 @@ samples: samples.tsv
 # pipeline file locations
 result_dir: /mnt/ocimum/vol/atacpipeline  # where to store results
 genome_dir: /mnt/ocimum/vol/genomes       # if none specified, it defaults to genomepy default settings
+
+
+# which aligner to use
+aligner: bwa
