@@ -86,28 +86,3 @@ rule macs2_callpeak:
         macs2 callpeak --bdg -t {{input.bam}} --outdir {config['result_dir']}/macs2/ -n {{wildcards.sample}}-{{wildcards.assembly}} \
         {{params.macs_params}} -g $GENSIZE > {{log}} 2>&1
         """
-
-
-rule featureCounts:
-    # https://www.biostars.org/p/337872/
-    # https://www.biostars.org/p/228636/
-    input:
-        bam=expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.bam", **config),
-        peak=expand("{result_dir}/{{peak_caller}}/{{sample}}-{{assembly}}_peaks.narrowPeak", **config)
-    output:
-        tmp_saf=temp(expand("{result_dir}/{{peak_caller}}/{{sample}}-{{assembly}}.saf", **config)),
-        real_out=expand("{result_dir}/{{peak_caller}}/{{sample}}-{{assembly}}_featureCounts.txt", **config),
-        summary=expand("{result_dir}/{{peak_caller}}/{{sample}}-{{assembly}}_featureCounts.txt.summary", **config)
-    log:
-        expand("{log_dir}/featureCounts/{{sample}}-{{assembly}}-{{peak_caller}}.log", **config)
-    threads: 4
-    conda:
-        "../envs/call_peak.yaml"
-    shell:
-        """
-        ## Make a custom "SAF" file which featureCounts needs:
-        awk 'BEGIN{{FS=OFS="\t"; print "GeneID\tChr\tStart\tEnd\tStrand"}}{{print $4, $1, $2+1, $3, "."}}' {input.peak} 1> {output.tmp_saf} 2> {log}
-
-        ## run featureCounts
-        featureCounts -T {threads} -p -a {output.tmp_saf} -F SAF -o {output.real_out} {input.bam} > {log} 2>&1
-        """
