@@ -82,7 +82,7 @@ rule sra2fastq_PE:
         expand("{log_dir}/sra2fastq_PE/{{sample}}.log", **config)
     benchmark:
         expand("{benchmark_dir}/sra2fastq_PE/{{sample}}.benchmark.txt", **config)[0]
-    threads: 40
+    threads: 8
     conda:
         "../envs/get_fastq.yaml"
     shell:
