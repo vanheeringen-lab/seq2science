@@ -7,7 +7,6 @@ def get_reads(wildcards):
 if config['aligner'] == 'bwa':
     config['bwaindex_types'] = ['amb', 'ann', 'bwt', 'pac', 'sa']
 
-
     rule bwa_index:
         input:
             expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config)
@@ -21,7 +20,7 @@ if config['aligner'] == 'bwa':
             prefix="{genome_dir}/{{assembly}}/index/bwa/{{assembly}}".format(**config),
             algorithm=config["bwa_algo"]
         conda:
-            "../envs/alignment.yaml"
+            "../envs/bwa.yaml"
         shell:
             "bwa index -p {params.prefix} -a {params.algorithm} {input} > {log} 2>&1"
 
@@ -40,7 +39,7 @@ if config['aligner'] == 'bwa':
             index_dir=expand("{genome_dir}/{{assembly}}/index/bwa/{{assembly}}", **config)
         threads: 20
         conda:
-            "../envs/alignment.yaml"
+            "../envs/bwa.yaml"
         shell:
             """
             bwa mem -t {threads} {params.index_dir} {input.reads} 1> {output} 2> {log}
@@ -58,7 +57,7 @@ elif config['aligner'] == 'hisat2':
             expand("{benchmark_dir}/hisat2_index/{{assembly}}.benchmark.txt", **config)[0]
         threads: 4
         conda:
-            "../envs/alignment.yaml"
+            "../envs/hisat2.yaml"
         shell:
             "hisat2-build -p {threads} {input} {output}/{wildcards.assembly} > {log} 2>&1"
 
@@ -78,7 +77,7 @@ elif config['aligner'] == 'hisat2':
                                            f'-1 {input.reads[0]} -2 {input.reads[1]}'
         threads: 20
         conda:
-            "../envs/alignment.yaml"
+            "../envs/hisat2.yaml"
         shell:
             """
             hisat2 --threads {threads} -x {input.index}{wildcards.assembly} {params.input} 1> {output} 2> {log}
@@ -96,7 +95,7 @@ elif config['aligner'] == 'bowtie2':
             expand("{benchmark_dir}/bowtie2_index/{{assembly}}.benchmark.txt", **config)[0]
         threads: 4
         conda:
-            "../envs/alignment.yaml"
+            "../envs/bowtie2.yaml"
         shell:
             "bowtie2-build --threads {threads} {input} {output}/{wildcards.assembly} > {log} 2>&1"
 
@@ -116,7 +115,7 @@ elif config['aligner'] == 'bowtie2':
                                            f'-1 {input.reads[0]} -2 {input.reads[1]}'
         threads: 20
         conda:
-            "../envs/alignment.yaml"
+            "../envs/bowtie2.yaml"
         shell:
             """
             bowtie2 --threads {threads} -x {input.index}{wildcards.assembly} {params.input} 1> {output} 2> {log}
@@ -136,7 +135,7 @@ if 'sambamba' == config['bam_sorter']:
             "-n" if config['bam_sort_order'] == 'queryname' else ''
         threads: 4
         conda:
-            "../envs/alignment.yaml"
+            "../envs/sambamba.yaml"
         shell:
             """
             sambamba view --nthreads {threads} -S -f bam  {input[0]} -o /dev/stdout  2> {log} |
@@ -159,7 +158,7 @@ elif 'samtools' == config['bam_sorter']:
             threads=lambda wildcards, input, output, threads: threads - 1
         threads: 4
         conda:
-            "../envs/alignment.yaml"
+            "../envs/samtools.yaml"
         shell:
             """
             trap \"rm -f {output}*\" INT;
@@ -179,7 +178,7 @@ rule samtools_index:
     params:
         config['samtools_index']
     conda:
-        "../envs/alignment.yaml"
+        "../envs/samtools.yaml"
     shell:
         """
         samtools index {params} {input} {output}
@@ -199,20 +198,7 @@ rule mark_duplicates:
     params:
         config['markduplicates']
     conda:
-        "../envs/alignment.yaml"
+        "../envs/picard.yaml"
     shell:
         "picard MarkDuplicates {params} INPUT={input} "
         "OUTPUT={output.bam} METRICS_FILE={output.metrics} > {log} 2>&1"
-
-
-rule samtools_stats:
-    input:
-        expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.bam", **config)
-    output:
-        expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.samtools_stats.txt", **config)
-    log:
-        expand("{log_dir}/samtools_stats/{{sample}}-{{assembly}}.log", **config)
-    conda:
-        "../envs/alignment.yaml"
-    shell:
-        "samtools stats {input} 1> {output} 2> {log}"

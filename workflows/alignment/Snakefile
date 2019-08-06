@@ -18,7 +18,7 @@ include: "../download_fastq/Snakefile"
 # load the remaining relevant rules
 include: f"{config['rule_dir']}/get_genome.smk"
 include: f"{config['rule_dir']}/alignment.smk"
-include: f"{config['rule_dir']}/trim_auto.smk"
+include: f"{config['rule_dir']}/trimming.smk"
 include: f"{config['rule_dir']}/qc.smk"
 
 

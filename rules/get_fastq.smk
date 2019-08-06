@@ -82,7 +82,7 @@ rule sra2fastq_PE:
         expand("{log_dir}/sra2fastq_PE/{{sample}}.log", **config)
     benchmark:
         expand("{benchmark_dir}/sra2fastq_PE/{{sample}}.benchmark.txt", **config)[0]
-    threads: 40
+    threads: 8
     conda:
         "../envs/get_fastq.yaml"
     shell:
@@ -90,10 +90,10 @@ rule sra2fastq_PE:
         parallel-fastq-dump -s {{input}}/* -O {config['result_dir']}/{config['fastq_dir']} {config['split']} --threads {{threads}} --gzip >> {{log}} 2>&1
 
         # rename the SRRs to GSMs
-        GSM=$(basename {{input}})
         SRR=$(basename {{input}}/*)
-        FILES={config['result_dir']}/{config['fastq_dir']}/*.{config['fqsuffix']}.gz
-        rcmd=s/$SRR/$GSM/
-        # TODO: change rename to mv (see trim_galore)
-        rename -v $rcmd $FILES >> {{log}} 2>&1
+        GSM=$(basename {{input}})
+        file1="$(find "$(dirname {{output[0]}})" -name "$SRR*.fastq.gz" | sort | head -n 1)"
+        mv "$file1" "$(echo "$file1" | sed -e "s/$SRR/$GSM/" -e 's/.fastq/.{config['fqsuffix']}/' -e 's/pass_1/{config['fqext1']}/')"
+        file1="$(find "$(dirname {{output[0]}})" -name "$SRR*.fastq.gz" | sort | tail -n 1)"
+        mv "$file1" "$(echo "$file1" | sed -e "s/$SRR/$GSM/" -e 's/.fastq/.{config['fqsuffix']}/' -e 's/pass_2/{config['fqext2']}/')"
         """

@@ -7,7 +7,7 @@ rule trim_galore_SE:
         se=expand("{result_dir}/{trimmed_dir}/{{sample}}_trimmed.{fqsuffix}.gz", **config),
         qc=expand("{result_dir}/{trimmed_dir}/{{sample}}.{fqsuffix}.gz_trimming_report.txt", **config)
     conda:
-        "../envs/trim_auto.yaml"
+        "../envs/trimgalore.yaml"
     threads: 6
     log:
         expand("{log_dir}/trim_galore_SE/{{sample}}.log", **config)
@@ -37,7 +37,7 @@ rule trim_galore_PE:
         r2=expand("{result_dir}/{trimmed_dir}/{{sample}}_{fqext2}_trimmed.{fqsuffix}.gz", **config),
         qc=expand("{result_dir}/{trimmed_dir}/{{sample}}_{fqext}.{fqsuffix}.gz_trimming_report.txt", **config)
     conda:
-        "../envs/trim_auto.yaml"
+        "../envs/trimgalore.yaml"
     threads: 6
     log:
         expand("{log_dir}/trim_galore_PE/{{sample}}.log", **config)

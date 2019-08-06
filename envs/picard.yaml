@@ -1,0 +1,7 @@
+name: picard
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - bioconda::picard=2.9.2
