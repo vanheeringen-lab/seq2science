@@ -1,0 +1,14 @@
+name: snakemake-workflows
+
+
+dependencies:
+  # get snakemake
+  - pkgs/main::python>=3.6
+  - bioconda::snakemake>=5.5.4
+#  - conda-forge::pip=19.2
+  - pip=19.2.1
+  - pip:
+    - git+https://github.com/daler/trackhub@params-overhaul
+#  - pandas
+#  - numpy
+  # get the trackhub branch that supports newer file format
