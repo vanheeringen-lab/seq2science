@@ -1,3 +1,16 @@
+rule samtools_stats:
+    input:
+        expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.bam", **config)
+    output:
+        expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.samtools_stats.txt", **config)
+    log:
+        expand("{log_dir}/samtools_stats/{{sample}}-{{assembly}}.log", **config)
+    conda:
+        "../envs/alignment.yaml"
+    shell:
+        "samtools stats {input} 1> {output} 2> {log}"
+
+
 rule fastqc:
     input:
         f"{{path}}/{{fname}}.{config['fqsuffix']}.gz"

@@ -7,7 +7,6 @@ def get_reads(wildcards):
 if config['aligner'] == 'bwa':
     config['bwaindex_types'] = ['amb', 'ann', 'bwt', 'pac', 'sa']
 
-
     rule bwa_index:
         input:
             expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config)
@@ -203,16 +202,3 @@ rule mark_duplicates:
     shell:
         "picard MarkDuplicates {params} INPUT={input} "
         "OUTPUT={output.bam} METRICS_FILE={output.metrics} > {log} 2>&1"
-
-
-rule samtools_stats:
-    input:
-        expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.bam", **config)
-    output:
-        expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.samtools_stats.txt", **config)
-    log:
-        expand("{log_dir}/samtools_stats/{{sample}}-{{assembly}}.log", **config)
-    conda:
-        "../envs/alignment.yaml"
-    shell:
-        "samtools stats {input} 1> {output} 2> {log}"
