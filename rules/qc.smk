@@ -6,7 +6,7 @@ rule samtools_stats:
     log:
         expand("{log_dir}/samtools_stats/{{sample}}-{{assembly}}.log", **config)
     conda:
-        "../envs/alignment.yaml"
+        "../envs/samtools.yaml"
     shell:
         "samtools stats {input} 1> {output} 2> {log}"
 
@@ -25,7 +25,7 @@ rule featureCounts:
         expand("{log_dir}/featureCounts/{{sample}}-{{assembly}}-{{peak_caller}}.log", **config)
     threads: 4
     conda:
-        "../envs/call_peak.yaml"
+        "../envs/subread.yaml"
     shell:
         """
         ## Make a custom "SAF" file which featureCounts needs:
