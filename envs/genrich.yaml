@@ -1,0 +1,7 @@
+name: genrich
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - bioconda::genrich=0.5

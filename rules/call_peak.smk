@@ -19,7 +19,7 @@ rule genrich_pileup:
     benchmark:
         expand("{benchmark_dir}/genrich_pileup/{{fname}}.benchmark.txt", **config)[0]
     conda:
-        "../envs/call_peak.yaml"
+        "../envs/genrich.yaml"
     params:
         config['peak_caller'].get('genrich', " ")  # TODO: move this to config.schema.yaml
     threads: 15  # TODO: genrich uses lots of ram. Get the number from benchmark, instead of doing it through threads
@@ -40,7 +40,7 @@ rule call_peak_genrich:
     benchmark:
         expand("{benchmark_dir}/call_peak_genrich/{{fname}}.benchmark.txt", **config)[0]
     conda:
-        "../envs/call_peak.yaml"
+        "../envs/genrich.yaml"
     params:
         config['peak_caller'].get('genrich', "")
     threads: 1
@@ -74,7 +74,7 @@ rule macs2_callpeak:
         genome=f"{config['genome_dir']}/{{assembly}}/{{assembly}}.fa",
         macs_params=config['peak_caller'].get('macs2', "")  # TODO: move to config.schema.yaml
     conda:
-        "../envs/call_peak_macs2.yaml"
+        "../envs/macs2.yaml"
     shell:
         f"""
         # extract the kmer size, and get the effective genome size from it

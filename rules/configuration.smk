@@ -1,7 +1,6 @@
 import os
 import re
 import time
-import genomepy
 import subprocess
 import pandas as pd
 from multiprocessing.pool import ThreadPool
@@ -28,9 +27,9 @@ if config['peak_caller']:
     config['peak_caller'] = {k: v for d in config['peak_caller'] for k, v in d.items()}
     assert all(key in ['macs2', 'genrich'] for key in config['peak_caller'].keys())
 
-# cut off trailing slashes
-for path in ['result_dir', 'genome_dir', 'log_dir']:
-    config[path] = re.split("\/$", config[path])[0]
+# # cut off trailing slashes
+# for path in ['result_dir', 'genome_dir', 'log_dir']:
+#     config[path] = re.split("\/$", config[path])[0]
 
 # check if paired-end filename suffixes are lexicograpically ordered
 config['fqext'] = [config['fqext1'], config['fqext2']]
