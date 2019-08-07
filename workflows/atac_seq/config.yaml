@@ -3,8 +3,8 @@ samples: samples.tsv
 
 
 # pipeline file locations
-result_dir: /mnt/ocimum/vol/atacpipeline  # where to store results
-genome_dir: /mnt/ocimum/vol/genomes       # if none specified, it defaults to genomepy default settings
+result_dir: ./  # where to store results
+genome_dir: ./  # where to look for or download the genomes
 
 
 # peak callers (supported peak callers are macs2 & genrich)
@@ -18,3 +18,7 @@ peak_caller:
 # when calling genrich peaks the alignment has to be queryname sorted
 bam_sorter: sambamba
 bam_sort_order: queryname
+
+
+fqext1: R1
+fqext2: R2

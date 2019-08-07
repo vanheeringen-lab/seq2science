@@ -3,4 +3,4 @@ samples: samples.tsv
 
 
 # pipeline file locations
-result_dir: /mnt/ocimum/vol/atacpipeline  # where to store results
+result_dir: ./  # where to store results
