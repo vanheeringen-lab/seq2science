@@ -3,3 +3,4 @@
 .snakemake/
 log/
 benchmark/
+slurm*.out
