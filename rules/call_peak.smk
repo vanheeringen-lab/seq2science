@@ -5,7 +5,7 @@ def get_genrich_replicates(wildcards):
         return expand(f"{{result_dir}}/{{dedup_dir}}/{wildcards.fname}.bam", **config)
     else:
         return expand([f"{{result_dir}}/{{dedup_dir}}/{replicate}-{assembly}.bam"
-        for replicate in samples[samples['condition'] == condition].index], **config)
+        for replicate in samples[(samples['assembly'] == assembly) & (samples['condition'] == sample_condition)].index], **config)
 
 
 rule genrich_pileup:
