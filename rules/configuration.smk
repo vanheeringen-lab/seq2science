@@ -27,9 +27,11 @@ if config['peak_caller']:
     config['peak_caller'] = {k: v for d in config['peak_caller'] for k, v in d.items()}
     assert all(key in ['macs2', 'genrich'] for key in config['peak_caller'].keys())
 
-# cut off trailing slashes
+# cut off trailing slashes and make absolute path
 for key, value in config.items():
     if '_dir' in key:
+        if key in ['result_dir', 'genome_dir']:
+            value = os.path.abspath(value)
         config[key] = re.split("\/$", value)[0]
 
 # check if paired-end filename suffixes are lexicograpically ordered
