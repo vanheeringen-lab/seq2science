@@ -42,7 +42,6 @@ if config['aligner'] == 'bowtie2':
             bowtie2 --threads {threads} -x {input.index}{wildcards.assembly} {params.input} 1> {output} 2> {log}
             """
 
-
 elif config['aligner'] == 'bwa':
     config['bwaindex_types'] = ['amb', 'ann', 'bwt', 'pac', 'sa']
 
