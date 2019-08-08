@@ -45,6 +45,14 @@ rule id2sra:
             {params.ascp_path} -i {params.ascp_key}         -T -d -k 0 -Q -l 2G -m 250M $URL_NCBI {output[0]} >> {log} 2>&1 ||
             (mkdir {output[0]} >> {log} 2>&1 && wget -O {output[0]}/{wildcards.sample} -a {log} -nv $WGET_URL >> {log} 2>&1)
         done;
+
+        #if the folder contains multiple files, catenate them
+        if [[ $(ls -1q {output[0]} | wc -l) > 1 ]]; then
+          catfile={output[0]}/$TYPE_U'_catenated'
+          for file in {output[0]}/*; do
+            cat $file >> $catfile && rm $file
+          done
+        fi
         """
 
 
@@ -65,11 +73,13 @@ rule sra2fastq_SE:
         parallel-fastq-dump -s {{input}}/* -O {config['result_dir']}/{config['fastq_dir']} {config['splot']} --threads {{threads}} --gzip >> {{log}} 2>&1
 
         # rename the SRR to GSM
-        GSM=$(basename {{input}})
-        SRR=$(basename {{input}}/*)
+	SRR=$(basename {{input}}/*)
+	GSM=$(basename {{input}})
         src='{config['result_dir']}/{config['fastq_dir']}/'$SRR'_pass.{config['fqsuffix']}.gz'
         dst='{config['result_dir']}/{config['fastq_dir']}/'$GSM'.{config['fqsuffix']}.gz'
-        mv -v $src $dst >> {{log}} 2>&1
+	if [[ ! $src = $dst ]]; then
+          mv -v $src $dst >> {{log}} 2>&1
+	fi
         """
 
 
@@ -89,11 +99,15 @@ rule sra2fastq_PE:
         f"""
         parallel-fastq-dump -s {{input}}/* -O {config['result_dir']}/{config['fastq_dir']} {config['split']} --threads {{threads}} --gzip >> {{log}} 2>&1
 
-        # rename the SRRs to GSMs
-        SRR=$(basename {{input}}/*)
-        GSM=$(basename {{input}})
-        file1="$(find "$(dirname {{output[0]}})" -name "$SRR*.fastq.gz" | sort | head -n 1)"
-        mv "$file1" "$(echo "$file1" | sed -e "s/$SRR/$GSM/" -e 's/.fastq/.{config['fqsuffix']}/' -e 's/pass_1/{config['fqext1']}/')"
-        file1="$(find "$(dirname {{output[0]}})" -name "$SRR*.fastq.gz" | sort | tail -n 1)"
-        mv "$file1" "$(echo "$file1" | sed -e "s/$SRR/$GSM/" -e 's/.fastq/.{config['fqsuffix']}/' -e 's/pass_2/{config['fqext2']}/')"
+	# rename the SRRs to GSMs
+	SRR=$(basename {{input}}/*)
+	GSM=$(basename {{input}})
+	if [[ ! $SRR = $GSM ]]; then
+	  src='{config['result_dir']}/{config['fastq_dir']}/'$SRR'_{config['fqext1']}.{config['fqsuffix']}.gz' 
+	  dst='{config['result_dir']}/{config['fastq_dir']}/'$GSM'_{config['fqext1']}.{config['fqsuffix']}.gz' 
+	  mv -v $src $dst >> {{log}} 2>&1
+	  src='{config['result_dir']}/{config['fastq_dir']}/'$SRR'_{config['fqext2']}.{config['fqsuffix']}.gz' 
+	  dst='{config['result_dir']}/{config['fastq_dir']}/'$GSM'_{config['fqext2']}.{config['fqsuffix']}.gz' 
+	  mv -v $src $dst >> {{log}} 2>&1
+	fi
         """
