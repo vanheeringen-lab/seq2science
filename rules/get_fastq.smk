@@ -46,9 +46,9 @@ rule id2sra:
             (mkdir {output[0]} >> {log} 2>&1 && wget -O {output[0]}/{wildcards.sample} -a {log} -nv $WGET_URL >> {log} 2>&1)
         done;
 
-        #if the folder contains multiple files, catenate them
+        #if the folder contains multiple files, concatenate them
         if [[ $(ls -1q {output[0]} | wc -l) > 1 ]]; then
-          catfile={output[0]}/$TYPE_U'_catenated'
+          catfile={output[0]}/$TYPE_U'_concatenated'
           for file in {output[0]}/*; do
             cat $file >> $catfile && rm $file
           done
