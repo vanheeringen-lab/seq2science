@@ -4,3 +4,5 @@
 log/
 benchmark/
 slurm*.out
+config.yaml
+samples.tsv
