@@ -1,10 +1,9 @@
 import os
 import re
 import time
+import pickle
 import subprocess
 import pandas as pd
-from ast import literal_eval
-from hashlib import blake2b
 from multiprocessing.pool import ThreadPool
 from snakemake.utils import validate
 from snakemake.logging import logger
@@ -13,7 +12,6 @@ from snakemake.logging import logger
 # read the samples file
 samples = pd.read_csv(config["samples"], sep='\t')
 validate(samples, schema=f"../schemas/{schema}")
-samples['sample'] = samples['sample'].str.strip()
 samples = samples.set_index('sample')
 samples.index = samples.index.map(str)
 
@@ -44,44 +42,50 @@ assert sorted(config['fqext'])[0] == config['fqext1']
 
 # check if a sample is single-end or paired end, and store it
 logger.info("Checking if samples are single-end or paired-end...")
-# layout file with a unique name depending on the samples contained
-identifier = str(blake2b(''.join(samples.sort_index().index).encode(), digest_size=12).hexdigest())
-layout_file = './.snakemake/layouts_' + identifier
-if not os.path.exists(layout_file):
-    def get_layout(sample):
-        """ sends a request to ncbi checking whether a sample is single-end or paired-end """
-        api_key = config.get('ncbi_key', "")
-        if api_key is not "":
-            api_key = f'-api_key {api_key}'
+layout_cachefile = './.snakemake/layouts.p'
 
-        return sample, subprocess.check_output(
-            f'''esearch {api_key} -db sra -query {sample} | efetch {api_key} | grep -Po "(?<=<LIBRARY_LAYOUT><)[^/><]*"''',
-            shell=True).decode('ascii').rstrip()
+def get_layout(sample):
+    """ sends a request to ncbi checking whether a sample is single-end or paired-end """
+    api_key = config.get('ncbi_key', "")
+    if api_key is not "":
+        api_key = f'-api_key {api_key}'
+
+    return sample, subprocess.check_output(
+        f'''esearch {api_key} -db sra -query {sample} | efetch {api_key} | grep -Po "(?<=<LIBRARY_LAYOUT><)[^/><]*"''',
+        shell=True).decode('ascii').rstrip()
 
 
-    tp = ThreadPool(config['ncbi_requests'] // 2)
-    layout = {}
+# try to load the layout cache, otherwise defaults to empty dictionary
+try:
+    layout_cache = pickle.load(open(layout_cachefile, "rb"))
+except FileNotFoundError:
+    layout_cache = {}
 
-    # now do a request for each sample
-    for sample in samples.index:
-        if os.path.exists(expand(f'{{result_dir}}/{{fastq_dir}}/{sample}.{{fqsuffix}}.gz', **config)[0]):
-            layout[sample] = 'SINGLE'
-        elif all(os.path.exists(path) for path in expand(f'{{result_dir}}/{{fastq_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz', **config)):
-            layout[sample] = 'PAIRED'
-        else:
-            layout[sample] = get_layout(sample)[1]
-            # sleep 1.25 times the minimum required sleep time
-            time.sleep(1.25 / (config['ncbi_requests'] // 2))
 
-    # save layout to file
-    with open(layout_file, 'w') as f:
-        f.write(str(layout))
-else:
-    with open(layout_file, 'r') as f:
-        layout = literal_eval(f.read())
+results = []
+tp = ThreadPool(config['ncbi_requests'] // 2)
+config['layout'] = {}
 
-# now store in config
-config['layout'] = layout
+# now do a request for each sample that was not in the cache
+for sample in [sample for sample in samples.index if sample not in layout_cache]:
+    if os.path.exists(expand(f'{{result_dir}}/{{fastq_dir}}/{sample}.{{fqsuffix}}.gz', **config)[0]):
+        config['layout'][sample] ='SINGLE'
+    elif all(os.path.exists(path) for path in expand(f'{{result_dir}}/{{fastq_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz', **config)):
+        config['layout'][sample] ='PAIRED'
+    else:
+        results.append(tp.apply_async(get_layout, (sample,)))
+        # sleep 1.25 times the minimum required sleep time
+        time.sleep(1.25 / (config['ncbi_requests'] // 2))
+
+# now parse the output and store the cache, the local files' layout, and the ones that were fetched online
+config['layout'] = {**layout_cache,
+                    **config['layout'],
+                    **{r.get()[0]: r.get()[1] for r in results}}
+
+# if new samples were added, update the
+if len([sample for sample in samples.index if sample not in layout_cache]) is not 0:
+    pickle.dump(config['layout'], open(layout_cachefile, "wb"))
+
 logger.info("Done!\n\n")
 
 
