@@ -1,3 +1,3 @@
-sample	local_path	assembly
-GSM2520641		Spur_4.2
-GSM2837484		Bl71nemr
+sample	assembly  condition
+GSM2520641	Spur_4.2  a
+GSM2837484	Bl71nemr  b
