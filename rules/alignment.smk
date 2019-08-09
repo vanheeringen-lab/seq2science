@@ -122,7 +122,61 @@ elif config['aligner'] == 'hisat2':
             """
 
 
-if 'sambamba' == config['bam_sorter']:
+elif config['aligner'] == 'salmon':
+    rule salmon_index:
+        input:
+            #expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config)
+            expand("{genome_dir}/{{assembly}}/transcriptome.fa", **config) #todo: expand genomepy to download transcriptomes
+        output:
+            directory(expand("{genome_dir}/{{assembly}}/index/{aligner}/", **config))
+        log:
+            expand("{log_dir}/{aligner}_index/{{assembly}}.log", **config)
+        benchmark:
+            expand("{benchmark_dir}/{aligner}_index/{{assembly}}.benchmark.txt", **config)[0]
+        params:
+            config['salmon_ind']
+        threads: 4
+        conda:
+            "../envs/salmon.yaml"
+        shell:
+            "salmon index -t {input} -i {output} {params} --threads {threads} > {log} 2&1"
+
+    rule salmon_quant:
+        input:
+            reads=get_reads,
+            index=expand("{genome_dir}/{{assembly}}/index/{aligner}/", **config)
+        output:
+            pipe(expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}.bampipe", **config))
+        log:
+            expand("{log_dir}/{aligner}_align/{{sample}}-{{assembly}}.log", **config)
+        benchmark:
+            expand("{benchmark_dir}/{aligner}_align/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
+        params:
+            input=lambda wildcards, input: f'-r {input.reads}' if config['layout'][wildcards.sample] == 'SINGLE' else \
+                                           f'-1 {input.reads[0]} -2 {input.reads[1]}',
+            flags=config['salmon_aln']
+        threads: 21
+        conda:
+            "../envs/salmon.yaml"
+        shell:
+            """
+            salmon quant -i {input.index} -l A {params.input} {params.flags} --threads {threads}/3 2> {log} --writeMappings | samtools view --threads {threads}/3 -Sb - | samtools sort --threads {threads}/3 -T sort.tmp -o - > {output}
+            """
+
+            # """
+            # salmon quant -i {input.index} {params.input} 2> {log} \
+            # # output stdout in SAM format, and convert this to BAM.
+            # # requires mapping-based mode with a quasi-index
+            # --writeMappings | samtools view -Sb - | samtools sort -T sort.tmp -o - > {output}
+            # """
+            #
+            # "salmon quant -i {params.salmonindex} -l A -1 {input.fastq1} -2 {input.fastq2} "
+		    # "-o {params.salmondir}/{wildcards.sample} --seqBias --gcBias "
+		    # "--fldMean {params.fldMean} --fldSD {params.fldSD} -p {threads}"
+		    # #"--posBias"
+
+
+if config['bam_sorter'] == 'sambamba':
     rule sambamba_sort:
         input:
             expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}.bampipe", **config)
@@ -144,7 +198,7 @@ if 'sambamba' == config['bam_sorter']:
             """
 
 
-elif 'samtools' == config['bam_sorter']:
+elif config['bam_sorter'] == 'samtools':
     rule samtools_sort:
         input:
             expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}.bampipe", **config)
