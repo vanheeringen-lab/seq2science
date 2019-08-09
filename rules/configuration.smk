@@ -91,7 +91,7 @@ config['layout'] = {**layout_cache,
                     **config['layout'],
                     **{r.get()[0]: r.get()[1] for r in results}}
 
-# if new samples were added, update the
+# if new samples were added, update the cache
 if len([sample for sample in samples.index if sample not in layout_cache]) is not 0:
     pickle.dump(config['layout'], open(layout_cachefile, "wb"))
 
