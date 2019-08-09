@@ -4,4 +4,4 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - bioconda::genrich=0.5
+  - bioconda::genrich=0.6
