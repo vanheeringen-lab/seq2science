@@ -12,6 +12,7 @@ from snakemake.logging import logger
 # read the samples file
 samples = pd.read_csv(config["samples"], sep='\t')
 validate(samples, schema=f"../schemas/{schema}")
+samples['sample'] = samples['sample'].str.strip() 
 samples = samples.set_index('sample')
 samples.index = samples.index.map(str)
 
