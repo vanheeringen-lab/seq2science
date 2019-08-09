@@ -73,10 +73,18 @@ for sample in [sample for sample in samples.index if sample not in layout_cache]
         config['layout'][sample] ='SINGLE'
     elif all(os.path.exists(path) for path in expand(f'{{result_dir}}/{{fastq_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz', **config)):
         config['layout'][sample] ='PAIRED'
-    else:
+    elif sample.startswith(('GSM', 'SRR', 'ERR', 'DRR')):
         results.append(tp.apply_async(get_layout, (sample,)))
         # sleep 1.25 times the minimum required sleep time
         time.sleep(1.25 / (config['ncbi_requests'] // 2))
+    else:
+        raise ValueError(f"\nsample {sample} was not found..\n"
+                         f"We checked for SE file:\n"
+                         f"\t{config['result_dir']}/{config['fastq_dir']}/{sample}.{config['fqsuffix']}.gz \n"
+                         f"and for PE files:\n"
+                         f"\t{config['result_dir']}/{config['fastq_dir']}/{sample}_{config['fqext1']}.{config['fqsuffix']}.gz \n"
+                         f"\t{config['result_dir']}/{config['fastq_dir']}/{sample}_{config['fqext2']}.{config['fqsuffix']}.gz \n"
+                         f"and since the sample did not start with either GSM, SRR, ERR, and DRR we couldn't find it online..\n")
 
 # now parse the output and store the cache, the local files' layout, and the ones that were fetched online
 config['layout'] = {**layout_cache,
