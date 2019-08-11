@@ -63,7 +63,6 @@ except FileNotFoundError:
     layout_cache = {}
 
 
-results = []
 tp = ThreadPool(config['ncbi_requests'] // 2)
 config['layout'] = {}
 
@@ -74,7 +73,7 @@ for sample in [sample for sample in samples.index if sample not in layout_cache]
     elif all(os.path.exists(path) for path in expand(f'{{result_dir}}/{{fastq_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz', **config)):
         config['layout'][sample] ='PAIRED'
     elif sample.startswith(('GSM', 'SRR', 'ERR', 'DRR')):
-        results.append(tp.apply_async(get_layout, (sample,)))
+        config['layout'][sample] = tp.apply_async(get_layout, (sample,))
         # sleep 1.25 times the minimum required sleep time
         time.sleep(1.25 / (config['ncbi_requests'] // 2))
     else:
@@ -88,8 +87,7 @@ for sample in [sample for sample in samples.index if sample not in layout_cache]
 
 # now parse the output and store the cache, the local files' layout, and the ones that were fetched online
 config['layout'] = {**layout_cache,
-                    **config['layout'],
-                    **{r.get()[0]: r.get()[1] for r in results}}
+                    **{k: (v if isinstance(v, str) else v.get()[0]) for k, v in config['layout'].items()}}
 
 # if new samples were added, update the cache
 if len([sample for sample in samples.index if sample not in layout_cache]) is not 0:
