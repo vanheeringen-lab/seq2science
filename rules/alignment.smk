@@ -29,6 +29,7 @@ if config['aligner'] == 'bowtie2':
             pipe(expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}.bampipe", **config))
         log:
             expand("{log_dir}/bowtie2_align/{{sample}}-{{assembly}}.log", **config)
+        group: 'alignment'
         benchmark:
             expand("{benchmark_dir}/bowtie2_align/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
         params:
@@ -71,6 +72,7 @@ elif config['aligner'] == 'bwa':
             pipe(expand("{result_dir}/{bwa_dir}/{{sample}}-{{assembly}}.bampipe", **config))
         log:
             expand("{log_dir}/bwa_mem/{{sample}}-{{assembly}}.log", **config)
+        group: 'alignment'
         benchmark:
             expand("{benchmark_dir}/bwa_mem/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
         params:
@@ -108,6 +110,7 @@ elif config['aligner'] == 'hisat2':
             pipe(expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}.bampipe", **config))
         log:
             expand("{log_dir}/hisat2_align/{{sample}}-{{assembly}}.log", **config)
+        group: 'alignment'
         benchmark:
             expand("{benchmark_dir}/hisat2_align/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
         params:
@@ -130,6 +133,7 @@ if 'sambamba' == config['bam_sorter']:
             expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}.bam", **config)
         log:
             expand("{log_dir}/bwa_mem/{{sample}}-{{assembly}}-sambamba_sort.log", **config)
+        group: 'alignment'
         benchmark:
             expand("{benchmark_dir}/sambamba_sort/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
         params:
@@ -152,6 +156,7 @@ elif 'samtools' == config['bam_sorter']:
             expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}.bam", **config)
         log:
             expand("{log_dir}/bwa_mem/{{sample}}-{{assembly}}-samtools_sort.log", **config)
+        group: 'alignment'
         benchmark:
             expand("{benchmark_dir}/samtools_sort/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
         params:
@@ -169,9 +174,9 @@ elif 'samtools' == config['bam_sorter']:
 
 rule samtools_index:
     input:
-        expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}.bam", **config)
+        expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.bam", **config)
     output:
-        expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}.bai", **config)
+        expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.bai", **config)
     log:
         expand("{log_dir}/samtools_index/{{sample}}-{{assembly}}.log", **config)
     benchmark:
