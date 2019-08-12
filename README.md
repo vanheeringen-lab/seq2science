@@ -1,5 +1,5 @@
 # Snakemake workflows
-The comprehensive snakemake workflows of the *vanheeringen lab*. Please take a look at our **[wiki](https://github.com/vanheeringen-lab/snakemake-workflows/wiki)** for help with installation, how to run it, and best practices.
+The comprehensive snakemake workflows repository of the *vanheeringen lab*. Please take a look at our **[wiki](https://github.com/vanheeringen-lab/snakemake-workflows/wiki)** for help with installation, how to run it, and best practices.
 
 ### Why use 
 Super easy, automated quality checks, modular  # TODO
