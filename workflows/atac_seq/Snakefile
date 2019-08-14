@@ -19,7 +19,7 @@ include: "../alignment/Snakefile"
 include: f"{config['rule_dir']}/call_peak.smk"
 include: f"{config['rule_dir']}/get_genome.smk"
 include: f"{config['rule_dir']}/qc.smk"
-# include: f"{config['rule_dir']}/trackhub.smk"
+include: f"{config['rule_dir']}/trackhub.smk"
 
 
 # load the quality control files
@@ -30,32 +30,10 @@ for sample in samples.index:
     quality_control.extend(get_peak_calling_qc(sample))
 
 
-if 'condition' in samples:
-    out = []
-    # for each assembly
-    for assembly in set(samples["assembly"]):
-        # for each condition of this assembly
-        for condition in set(samples[samples['assembly'] == assembly]['condition']):
-            out.append(expand(f"{{result_dir}}/genrich/{condition}-{assembly}_peaks.narrowPeak", **config))
-
-    rule call_peaks_all:
-        """
-        call peaks for each condition, IDR / genrich replicates
-        """
-        input:
-            [expand(f"{{result_dir}}/{{peak_caller}}/{sample}-{samples.loc[sample, 'assembly']}_peaks.narrowPeak", **config)
-             for sample in samples.index],
-             expand("{result_dir}/qc/multiqc.html", **config),
-             out
-#              expand("{result_dir}/trackhub_macs2/", **config)
-# else:
-#     rule call_peaks_all:
-#         """
-#         call peaks for each sample, no IDR / genrich replicates
-#         """
-#         input:
-#             [expand(f"{{result_dir}}/{{peak_caller}}/{sample}-{samples.loc[sample, 'assembly']}_peaks.narrowPeak", **config)
-#              for sample in samples.index],
-#              expand("{result_dir}/qc/multiqc.html", **config),
-# #              expand("{result_dir}/trackhub_macs2/", **config)
-
+rule call_peaks_all:
+    """
+    call peaks for each sample (or condition if applies)
+    """
+    input:
+         expand("{result_dir}/trackhub/", **config),
+         expand("{result_dir}/qc/multiqc.html", **config)
