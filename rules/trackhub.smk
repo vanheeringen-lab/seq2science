@@ -3,6 +3,10 @@ rule bedgraphish_to_bedgraph:
         expand("{result_dir}/genrich/{{sample}}-{{assembly}}.bdgish", **config)
     output:
         bedgraph=expand("{result_dir}/genrich/{{sample}}-{{assembly}}.bedgraph", **config)
+    log:
+        expand("{log_dir}/bedgraphish_to_bedgraph//{{sample}}-{{assembly}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/bedgraphish_to_bedgraph//{{sample}}-{{assembly}}.log", **config)
     shell:
         """
         splits=$(grep -Pno "([^\/]*)(?=\.bam)" {input})
@@ -48,7 +52,9 @@ rule bedgraph_bigwig:
         out=expand("{result_dir}/{{peak_caller}}/{{sample}}-{{assembly}}.bw", **config),
         tmp=temp(expand("{result_dir}/{{peak_caller}}/{{sample}}-{{assembly}}.bedgraphtmp", **config))
     log:
-        "logs/bedgraph_bigwig/{peak_caller}/{sample}-{assembly}.log"
+        expand("{log_dir}/bedgraph_bigwig/{{peak_caller}}/{{sample}}-{{assembly}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/bedgraphish_to_bedgraph//{{sample}}-{{assembly}}.log", **config)
     conda:
         "../envs/ucsc.yaml"
     shell:
@@ -76,6 +82,10 @@ rule narrowpeak_bignarrowpeak:
     output:
         out=     expand("{result_dir}/{{peak_caller}}/{{sample}}-{{assembly}}.bigNarrowPeak", **config),
         tmp=temp(expand("{result_dir}/{{peak_caller}}/{{sample}}-{{assembly}}.tmp.narrowPeak", **config))
+    log:
+        expand("{log_dir}/narrowpeak_bignarrowpeak//{{sample}}-{{assembly}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/bedgraphish_to_bedgraph//{{sample}}-{{assembly}}.log", **config)
     conda:
         "../envs/ucsc.yaml"
     shell:
@@ -108,6 +118,8 @@ rule trackhub:
         directory(expand("{result_dir}/trackhub/", **config))
     log:
         "log/trackhub.log"
+    benchmark:
+        expand("{benchmark_dir}/bedgraphish_to_bedgraph//{{sample}}-{{assembly}}.log", **config)
     run:
         import os
         import re
@@ -156,8 +168,11 @@ rule trackhub:
                             bigwigs = [bw for bw in input.bigwigs if assembly in bw and samcon in bw]
 
                         for bigwig in bigwigs:
-                            sample = re.split('-|/|\.', bigwig)[-3]
-                            name = f"{sample}_{samcon}"
+                            if 'condition' in samples:
+                                sample = re.split('-|/|\.', bigwig)[-3]
+                                name = f"{sample}_{samcon}"
+                            else:
+                                name = f"{samcon}_bw"
 
                             track = trackhub.Track(
                                 name=name,           # track names can't have any spaces or special chars.
