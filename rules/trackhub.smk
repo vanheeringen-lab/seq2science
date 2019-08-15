@@ -4,9 +4,9 @@ rule bedgraphish_to_bedgraph:
     output:
         bedgraph=expand("{result_dir}/genrich/{{sample}}-{{assembly}}.bedgraph", **config)
     log:
-        expand("{log_dir}/bedgraphish_to_bedgraph//{{sample}}-{{assembly}}.log", **config)
+        expand("{log_dir}/bedgraphish_to_bedgraph/{{sample}}-{{assembly}}.log", **config)
     benchmark:
-        expand("{benchmark_dir}/bedgraphish_to_bedgraph//{{sample}}-{{assembly}}.log", **config)
+        expand("{benchmark_dir}/bedgraphish_to_bedgraph/{{sample}}-{{assembly}}.log", **config)[0]
     shell:
         """
         splits=$(grep -Pno "([^\/]*)(?=\.bam)" {input})
@@ -54,7 +54,7 @@ rule bedgraph_bigwig:
     log:
         expand("{log_dir}/bedgraph_bigwig/{{peak_caller}}/{{sample}}-{{assembly}}.log", **config)
     benchmark:
-        expand("{benchmark_dir}/bedgraphish_to_bedgraph//{{sample}}-{{assembly}}.log", **config)
+        expand("{benchmark_dir}/bedgraphish_to_bedgraph/{{sample}}-{{assembly}}-{{peak_caller}}.log", **config)[0]
     conda:
         "../envs/ucsc.yaml"
     shell:
@@ -83,9 +83,9 @@ rule narrowpeak_bignarrowpeak:
         out=     expand("{result_dir}/{{peak_caller}}/{{sample}}-{{assembly}}.bigNarrowPeak", **config),
         tmp=temp(expand("{result_dir}/{{peak_caller}}/{{sample}}-{{assembly}}.tmp.narrowPeak", **config))
     log:
-        expand("{log_dir}/narrowpeak_bignarrowpeak//{{sample}}-{{assembly}}.log", **config)
+        expand("{log_dir}/narrowpeak_bignarrowpeak/{{peak_caller}}/{{sample}}-{{assembly}}.log", **config)
     benchmark:
-        expand("{benchmark_dir}/bedgraphish_to_bedgraph//{{sample}}-{{assembly}}.log", **config)
+        expand("{benchmark_dir}/bedgraphish_to_bedgraph/{{sample}}-{{assembly}}-{{peak_caller}}.log", **config)[0]
     conda:
         "../envs/ucsc.yaml"
     shell:
@@ -119,7 +119,7 @@ rule trackhub:
     log:
         "log/trackhub.log"
     benchmark:
-        expand("{benchmark_dir}/bedgraphish_to_bedgraph//{{sample}}-{{assembly}}.log", **config)
+        expand("{benchmark_dir}/trackhub.log", **config)[0]
     run:
         import os
         import re
