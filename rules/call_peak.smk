@@ -1,7 +1,7 @@
 def get_genrich_replicates(wildcards):
     sample_condition, assembly = wildcards.fname.split('-')
-    if (not 'replicates' in samples.columns and not 'condition' in samples.columns) \
-    or (sample_condition in samples.index   and not sample_condition in samples['condition'].values):
+    if not 'condition' in samples.columns \
+    or (sample_condition in samples.index and not sample_condition in samples['condition'].values):
         return expand(f"{{result_dir}}/{{dedup_dir}}/{wildcards.fname}.bam", **config)
     else:
         return expand([f"{{result_dir}}/{{dedup_dir}}/{replicate}-{assembly}.bam"
