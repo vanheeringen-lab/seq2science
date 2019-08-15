@@ -86,3 +86,49 @@ rule macs2_callpeak:
         macs2 callpeak --bdg -t {{input.bam}} --outdir {config['result_dir']}/macs2/ -n {{wildcards.sample}}-{{wildcards.assembly}} \
         {{params.macs_params}} -g $GENSIZE > {{log}} 2>&1
         """
+
+
+rule hmmratac_genome_info:
+    input:
+        bam=expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.bam", **config)
+    output:
+        out=expand("{result_dir}/hmmratac/{{sample}}-{{assembly}}.genomesizes", **config),
+        tmp1=temp(expand("{result_dir}/hmmratac/{{sample}}-{{assembly}}.tmp1", **config)),
+        tmp2=temp(expand("{result_dir}/hmmratac/{{sample}}-{{assembly}}.tmp2", **config))
+    log:
+        expand("{log_dir}/hmmratac_genome_info/{{sample}}-{{assembly}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/hmmratac_genome_info/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
+    conda:
+        "../envs/samtools.yaml"
+    shell:
+        """
+        samtools view -H {input} | grep SQ | cut -f 2-3 | cut -d ':' -f 2   | cut -f 1        > {output.tmp1}
+        samtools view -H {input} | grep SQ | cut -f 2-3 | cut -d ':' -f 2,3 | cut -d ':' -f 2 > {output.tmp2}
+        paste {output.tmp1} {output.tmp2} > {output.out}
+        """
+
+
+config['hmmratac_types'] = ['.log', '.model', '_peaks.gappedPeak', '_summits.bed']  # TODO bedgraph
+
+rule hmmratac:
+    input:
+        genome_size=expand("{result_dir}/hmmratac/{{sample}}-{{assembly}}.genomesizes", **config),
+        bam_index=expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.bai", **config),
+        bam=expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.bam", **config)
+    output:
+        expand("{result_dir}/hmmratac/{{sample}}-{{assembly}}{hmmratac_types}", **config)
+    log:
+        expand("{log_dir}/hmmratac/{{sample}}-{{assembly}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/hmmratac/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
+    params:
+        name=lambda wildcards, input: f"{wildcards.sample}" if config['layout'][wildcards.sample] == 'SINGLE' else \
+                                      f"{wildcards.sample}_{config['fqext1']}",
+        genome=f"{config['genome_dir']}/{{assembly}}/{{assembly}}.fa",
+    conda:
+        "../envs/hmmratac.yaml"
+    shell:
+        """
+        HMMRATAC --bedgraph true -o {output[0].split('.')[:-1]} -Xmx12G -b {input.bam} -i {input.bam_index} -g {input.genome_size}
+        """
