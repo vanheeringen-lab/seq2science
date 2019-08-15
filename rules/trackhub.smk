@@ -1,12 +1,12 @@
 rule bedgraphish_to_bedgraph:
     input:
-        expand("{result_dir}/genrich/{{sample}}-{{assembly}}.bdgish", **config)
+        expand("{result_dir}/{{peak_caller}}/{{sample}}-{{assembly}}.bdgish", **config)
     output:
-        bedgraph=expand("{result_dir}/genrich/{{sample}}-{{assembly}}.bedgraph", **config)
+        bedgraph=expand("{result_dir}/{{peak_caller}}/{{sample}}-{{assembly}}.bedgraph", **config)
     log:
-        expand("{log_dir}/bedgraphish_to_bedgraph/{{sample}}-{{assembly}}.log", **config)
+        expand("{log_dir}/bedgraphish_to_bedgraph/{{sample}}-{{assembly}}-{{peak_caller}}.log", **config)
     benchmark:
-        expand("{benchmark_dir}/bedgraphish_to_bedgraph/{{sample}}-{{assembly}}.log", **config)[0]
+        expand("{benchmark_dir}/bedgraphish_to_bedgraph/{{sample}}-{{assembly}}-{{peak_caller}}.log", **config)[0]
     shell:
         """
         splits=$(grep -Pno "([^\/]*)(?=\.bam)" {input})
@@ -39,9 +39,9 @@ def find_bedgraph(wildcards):
     elif wildcards.peak_caller == 'macs2':
         suffix = '_treat_pileup.bdg'
     else:
-        raise NotImplementedError
+        suffix = '.bedgraph'
 
-    return f"{config['result_dir']}/{{peak_caller}}/{wildcards.sample}-{wildcards.assembly}{suffix}"
+    return f"{config['result_dir']}/{wildcards.peak_caller}/{wildcards.sample}-{wildcards.assembly}{suffix}"
 
 
 rule bedgraph_bigwig:
@@ -70,6 +70,8 @@ def find_narrowpeak_to_big(wildcards):
         suffix = '.narrowPeak'
     elif wildcards.peak_caller == 'macs2':
         suffix = '_peaks.narrowPeak'
+    else:
+        suffix = '.bedgraph'
 
     return f"{config['result_dir']}/{{peak_caller}}/{{sample}}-{{assembly}}{suffix}"
 
@@ -97,16 +99,17 @@ def get_bigfiles(wildcards):
     bigfiles = {}
     bigfiles['bigwigs'] = []; bigfiles['bigpeaks'] = []
 
-    if 'condition' in samples:
-        for condition in set(samples['condition']):
-            for assembly in set(samples[samples['condition'] == condition]['assembly']):
-                bigfiles['bigpeaks'].append(f"{config['result_dir']}/genrich/{condition}-{assembly}.bigNarrowPeak")
-    else:
-        for sample in samples.index:
-            bigfiles['bigpeaks'].append(f"{config['result_dir']}/genrich/{sample}-{samples.loc[sample, 'assembly']}.bigNarrowPeak")
+    if 'hmmratac' not in config['peak_caller']:
+        if 'condition' in samples:
+            for condition in set(samples['condition']):
+                for assembly in set(samples[samples['condition'] == condition]['assembly']):
+                    bigfiles['bigpeaks'].extend(expand("{result_dir}/{peak_caller}/{{condition}}-{{assembly}}.bigNarrowPeak", **config))
+        else:
+            for sample in samples.index:
+                bigfiles['bigpeaks'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{sample}-{samples.loc[sample, 'assembly']}.bigNarrowPeak", **config))
 
     for sample in samples.index:
-        bigfiles['bigwigs'].append(f"{config['result_dir']}/genrich/{sample}-{samples.loc[sample, 'assembly']}.bw")
+        bigfiles['bigwigs'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{sample}-{samples.loc[sample, 'assembly']}.bw", **config))
 
     return bigfiles
 
