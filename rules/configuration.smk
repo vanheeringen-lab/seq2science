@@ -25,9 +25,16 @@ if 'condition' in samples:
 if 'assembly' in samples:
     config['assemblies'] = set(samples['assembly'])
 
-if config['peak_caller']:
+if config.get('peak_caller', False):
     config['peak_caller'] = {k: v for d in config['peak_caller'] for k, v in d.items()}
-    assert all(key in ['macs2', 'genrich'] for key in config['peak_caller'].keys())
+
+#     if 'hmmratac' in config['peak_caller']:
+#         assert config['bam_sort_order'] is not 'coordinate', \
+#             'HMMRATAC requires coordinate sorted bams!'
+#
+#     if 'genrich' in config['peak_caller']:
+#         assert config['bam_sort_order'] == 'queryname' and config['bam_sorter'] == 'sambamba', \
+#             'genrich requires queryname sorted bams by sambamba!'
 
 # cut off trailing slashes and make absolute path
 for key, value in config.items():
@@ -101,3 +108,9 @@ logger.info("CONFIGURATION VARIABLES:")
 for key, value in config.items():
      logger.info(f"{key: <23}: {value}")
 logger.info("\n\n")
+
+
+# If hmmratac peak caller, check if all samples are paired-end
+if config.get('peak_caller', False) and 'hmmratac' in config['peak_caller']:
+    assert all([config['layout'][sample] == 'PAIRED' for sample in samples.index]), \
+    "HMMRATAC requires all samples to be paired end"

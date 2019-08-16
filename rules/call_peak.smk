@@ -2,9 +2,9 @@ def get_genrich_replicates(wildcards):
     sample_condition, assembly = wildcards.fname.split('-')
     if not 'condition' in samples.columns \
     or (sample_condition in samples.index and not sample_condition in samples['condition'].values):
-        return expand(f"{{result_dir}}/{{dedup_dir}}/{wildcards.fname}.bam", **config)
+        return expand(f"{{result_dir}}/{{dedup_dir}}/{wildcards.fname}.sambamba-queryname.bam", **config)
     else:
-        return expand([f"{{result_dir}}/{{dedup_dir}}/{replicate}-{assembly}.bam"
+        return expand([f"{{result_dir}}/{{dedup_dir}}/{replicate}-{assembly}.sambamba-queryname.bam"
         for replicate in samples[(samples['assembly'] == assembly) & (samples['condition'] == sample_condition)].index], **config)
 
 
@@ -60,7 +60,7 @@ rule macs2_callpeak:
     # Calculates genome size based on unique kmers of average length
     #
     input:
-        bam=expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.bam", **config),
+        bam=expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config),
         fastqc=get_fastqc
     output:
         expand("{result_dir}/macs2/{{sample}}-{{assembly}}_{macs2_types}", **config)
@@ -90,7 +90,7 @@ rule macs2_callpeak:
 
 rule hmmratac_genome_info:
     input:
-        bam=expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.bam", **config)
+        bam=expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config)
     output:
         out=expand("{result_dir}/hmmratac/{{sample}}-{{assembly}}.genomesizes", **config),
         tmp1=temp(expand("{result_dir}/hmmratac/{{sample}}-{{assembly}}.tmp1", **config)),
@@ -109,13 +109,13 @@ rule hmmratac_genome_info:
         """
 
 
-config['hmmratac_types'] = ['.log', '.model', '_peaks.gappedPeak', '_summits.bed']  # TODO bedgraph
+config['hmmratac_types'] = ['.log', '.model', '_peaks.gappedPeak', '_summits.bed', '.bedgraph']
 
 rule hmmratac:
     input:
         genome_size=expand("{result_dir}/hmmratac/{{sample}}-{{assembly}}.genomesizes", **config),
-        bam_index=expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.bai", **config),
-        bam=expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.bam", **config)
+        bam_index=expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bai", **config),
+        bam=expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config)
     output:
         expand("{result_dir}/hmmratac/{{sample}}-{{assembly}}{hmmratac_types}", **config)
     log:
@@ -123,12 +123,40 @@ rule hmmratac:
     benchmark:
         expand("{benchmark_dir}/hmmratac/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
     params:
-        name=lambda wildcards, input: f"{wildcards.sample}" if config['layout'][wildcards.sample] == 'SINGLE' else \
-                                      f"{wildcards.sample}_{config['fqext1']}",
-        genome=f"{config['genome_dir']}/{{assembly}}/{{assembly}}.fa",
+#         name=lambda wildcards, input: f"{wildcards.sample}" if config['layout'][wildcards.sample] == 'SINGLE' else \
+#                                       f"{wildcards.sample}_{config['fqext1']}",
+#         genome=f"{config['genome_dir']}/{{assembly}}/{{assembly}}.fa",
+        basename=lambda wildcards: expand(f"{{result_dir}}/hmmratac/{wildcards.sample}-{wildcards.assembly}", **config)
     conda:
         "../envs/hmmratac.yaml"
     shell:
         """
-        HMMRATAC --bedgraph true -o {output[0].split('.')[:-1]} -Xmx12G -b {input.bam} -i {input.bam_index} -g {input.genome_size}
+        HMMRATAC --bedgraph true -o {params.basename} -Xmx22G -b {input.bam} -i {input.bam_index} -g {input.genome_size}
         """
+
+
+# if 'condition' in samples:
+#     def get_replicates(wildcards):
+#         condition, assembly = wildcards.fname.split('-')
+#         return expand([f"{{result_dir}}/{{dedup_dir}}/{replicate}-{assembly}.sambamba-queryname.bam"
+#         for replicate in samples[(samples['assembly'] == assembly) & (samples['condition'] == sample_condition)].index], **config)
+#
+#     if 'idr' is config.get('combine_replicates', "").lower():
+#         rule idr:
+#             input:
+#                 get_replicates
+#             output:
+#                 bedgraphish=expand("{result_dir}/genrich/{{fname}}.bdgish", **config),
+#             log:
+#                 expand("{log_dir}/idr/{{sample}}-{{assembly}}.log", **config)
+#             benchmark:
+#                 expand("{benchmark_dir}/idr/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
+#             params: ""
+#             conda:
+#                 "../envs/idr.yaml"
+#             shell:
+#             """
+#             """
+#         pass
+#     elif 'fisher' is config.get('combine_replicates', "").lower():
+#         pass

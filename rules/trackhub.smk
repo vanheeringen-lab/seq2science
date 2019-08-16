@@ -1,12 +1,13 @@
 rule bedgraphish_to_bedgraph:
     input:
-        expand("{result_dir}/{{peak_caller}}/{{sample}}-{{assembly}}.bdgish", **config)
+        expand("{result_dir}/genrich/{{sample}}-{{assembly}}.bdgish", **config)
+#         rules.genrich_pileup.output.bedgraphish
     output:
-        bedgraph=expand("{result_dir}/{{peak_caller}}/{{sample}}-{{assembly}}.bedgraph", **config)
+        bedgraph=expand("{result_dir}/genrich/{{sample}}-{{assembly}}.bedgraph", **config)
     log:
-        expand("{log_dir}/bedgraphish_to_bedgraph/{{sample}}-{{assembly}}-{{peak_caller}}.log", **config)
+        expand("{log_dir}/bedgraphish_to_bedgraph/{{sample}}-{{assembly}}.log", **config)
     benchmark:
-        expand("{benchmark_dir}/bedgraphish_to_bedgraph/{{sample}}-{{assembly}}-{{peak_caller}}.log", **config)[0]
+        expand("{benchmark_dir}/bedgraphish_to_bedgraph/{{sample}}-{{assembly}}.log", **config)[0]
     shell:
         """
         splits=$(grep -Pno "([^\/]*)(?=\.bam)" {input})

@@ -143,9 +143,8 @@ properties:
 
   # peak caller algorithms
   peak_caller:
-    description: which peak caller(s) to use. Currently macs2 (default) and genrich are supported.
+    description: which peak caller(s) to use. Currently macs2 (default), genrich, and hmmratac are supported.
     type: array
-    default: []
 
   validated:
     description: for internal use only. Is used to check if the configuration has been validated (yet).
