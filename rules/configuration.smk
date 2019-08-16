@@ -17,7 +17,6 @@ samples = samples.set_index('sample')
 samples.index = samples.index.map(str)
 
 
-# TODO: maybe move to other locations? Cleaner?
 # apply workflow specific changes
 if 'condition' in samples:
     samples['condition'] = samples['condition'].str.replace(" ","")
@@ -27,14 +26,6 @@ if 'assembly' in samples:
 
 if config.get('peak_caller', False):
     config['peak_caller'] = {k: v for d in config['peak_caller'] for k, v in d.items()}
-
-#     if 'hmmratac' in config['peak_caller']:
-#         assert config['bam_sort_order'] is not 'coordinate', \
-#             'HMMRATAC requires coordinate sorted bams!'
-#
-#     if 'genrich' in config['peak_caller']:
-#         assert config['bam_sort_order'] == 'queryname' and config['bam_sorter'] == 'sambamba', \
-#             'genrich requires queryname sorted bams by sambamba!'
 
 # cut off trailing slashes and make absolute path
 for key, value in config.items():

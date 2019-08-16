@@ -157,5 +157,6 @@ if 'condition' in samples:
                 """
                 idr --samples {input} {params} --output-file {output}
                 """
+
     elif 'fisher' is config.get('combine_replicates', "").lower():
         raise NotImplementedError
