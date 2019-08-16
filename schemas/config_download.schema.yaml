@@ -1,0 +1,43 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+description: snakemake-workflows downloading configuration
+
+properties:
+  # paths to download and dump to
+  sra_dir:
+    description: directory inside the result dir where to store the workflow sras
+    default: sra
+    type: string
+  fastq_dir:
+    description: directory inside the result dir where to store the workflow fastqs
+    default: FASTQ
+    type: string
+
+  # NCBI e-utilities key
+  ncbi_key:
+    description: e-utilities key for faster lookup interval
+    type: string
+  ncbi_requests:
+    description: the number of lookups per second the key permits
+    default: 3
+    type: integer
+
+  # downloading through ascp
+  ascp_path:
+    description: the pipeline supports downloading through ascp if this variable is set.
+    type: string
+    default: "NO_ASCP"
+  ascp_key:
+    description: the public key of ascp
+    type: string
+    default: "NO_ASCP_KEY"
+
+  # fastq-dump parameters
+  split:
+    description: fastq-dump parameters when splitting reads (paired-end)
+    default: --split-files --skip-technical --dumpbase --readids --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' --defline-qual '+'
+    type: string
+  splot:
+    description: fastq-dump parameters when splotting reads (single-end)
+    default: --split-spot  --skip-technical --dumpbase --readids --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' --defline-qual '+'
+    type: string
