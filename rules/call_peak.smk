@@ -51,7 +51,7 @@ rule call_peak_genrich:
 config['macs2_types'] = ['control_lambda.bdg', 'summits.bed', 'peaks.narrowPeak',
                          'peaks.xls', 'treat_pileup.bdg']
 def get_fastqc(wildcards):
-    if config['layout'][wildcards.sample] == "SINGLE":
+    if config['layout'].get(wildcards.sample, False) == "SINGLE":
         return expand("{result_dir}/{trimmed_dir}/{{sample}}_trimmed_fastqc.zip", **config)
     return sorted(expand("{result_dir}/{trimmed_dir}/{{sample}}_{fqext1}_trimmed_fastqc.zip", **config))
 
@@ -123,9 +123,6 @@ rule hmmratac:
     benchmark:
         expand("{benchmark_dir}/hmmratac/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
     params:
-#         name=lambda wildcards, input: f"{wildcards.sample}" if config['layout'][wildcards.sample] == 'SINGLE' else \
-#                                       f"{wildcards.sample}_{config['fqext1']}",
-#         genome=f"{config['genome_dir']}/{{assembly}}/{{assembly}}.fa",
         basename=lambda wildcards: expand(f"{{result_dir}}/hmmratac/{wildcards.sample}-{wildcards.assembly}", **config)
     conda:
         "../envs/hmmratac.yaml"
@@ -135,28 +132,30 @@ rule hmmratac:
         """
 
 
-# if 'condition' in samples:
-#     def get_replicates(wildcards):
-#         condition, assembly = wildcards.fname.split('-')
-#         return expand([f"{{result_dir}}/{{dedup_dir}}/{replicate}-{assembly}.sambamba-queryname.bam"
-#         for replicate in samples[(samples['assembly'] == assembly) & (samples['condition'] == sample_condition)].index], **config)
-#
-#     if 'idr' is config.get('combine_replicates', "").lower():
-#         rule idr:
-#             input:
-#                 get_replicates
-#             output:
-#                 bedgraphish=expand("{result_dir}/genrich/{{fname}}.bdgish", **config),
-#             log:
-#                 expand("{log_dir}/idr/{{sample}}-{{assembly}}.log", **config)
-#             benchmark:
-#                 expand("{benchmark_dir}/idr/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
-#             params: ""
-#             conda:
-#                 "../envs/idr.yaml"
-#             shell:
-#             """
-#             """
-#         pass
-#     elif 'fisher' is config.get('combine_replicates', "").lower():
-#         pass
+if 'condition' in samples:
+    ruleorder: macs2_callpeak > call_peak_genrich > idr
+    def get_replicates(wildcards):
+        print(expand([f"{{result_dir}}/{wildcards.peak_caller}/{replicate}-{wildcards.assembly}_peaks.narrowPeak"
+               for replicate in samples[(samples['assembly'] == wildcards.assembly) & (samples['condition'] == wildcards.condition)].index], **config))
+        return expand([f"{{result_dir}}/{wildcards.peak_caller}/{replicate}-{wildcards.assembly}_peaks.narrowPeak"
+               for replicate in samples[(samples['assembly'] == wildcards.assembly) & (samples['condition'] == wildcards.condition)].index], **config)
+
+    if 'idr' in config.get('combine_replicates', "").lower():
+        rule idr:
+            input:
+                get_replicates
+            output:
+                expand("{result_dir}/{{peak_caller}}/{{condition}}-{{assembly}}_peaks.narrowPeak", **config),
+            log:
+                expand("{log_dir}/idr/{{condition}}-{{assembly}}-{{peak_caller}}.log", **config)
+            benchmark:
+                expand("{benchmark_dir}/idr/{{condition}}-{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
+            params: ""
+            conda:
+                "../envs/idr.yaml"
+            shell:
+                """
+                idr --samples {input} {params} --output-file {output}
+                """
+    elif 'fisher' is config.get('combine_replicates', "").lower():
+        raise NotImplementedError

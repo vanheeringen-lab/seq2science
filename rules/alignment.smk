@@ -1,5 +1,5 @@
 def get_reads(wildcards):
-    if config['layout'][wildcards.sample] == "SINGLE":
+    if config['layout'].get(wildcards.sample, False) == "SINGLE":
         return expand("{result_dir}/{trimmed_dir}/{{sample}}_trimmed.{fqsuffix}.gz", **config)
     return sorted(expand("{result_dir}/{trimmed_dir}/{{sample}}_{fqext}_trimmed.{fqsuffix}.gz", **config))
 
