@@ -2,9 +2,11 @@ from snakemake.utils import validate
 
 
 # complement the configuration
-if not 'validated' in config:
+if not 'validated' in globals():
+    validated = True
     configfile: "config.yaml"
-    validate(config, schema=f"../../schemas/config.schema.yaml")
+    for schema in ['general', 'download']:
+        validate(config, schema=f"../../schemas/config_{schema}.schema.yaml")
 
 # do onstart/onexit things
 schema = 'download_fastq.schema.yaml'

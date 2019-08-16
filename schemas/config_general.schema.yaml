@@ -1,0 +1,46 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+description: snakemake-workflows general configuration
+
+properties:
+  # workflow samples
+  samples:
+    description: tab-separated file specifying the samples to run through the workflow
+    default: samples.tsv
+    type: string
+
+  # paths
+  rule_dir:
+    description: directory where to find the workflow rules
+    default: ../../rules
+    type: string
+  result_dir:
+    description: where to store all the pipeline's results
+    default: ./
+    type: string
+  genome_dir:
+    description: where to store the pipeline's genome assemblies. NOTE that this is not inside the result_dir
+    default: ./
+    type: string
+  log_dir:
+    description: directory where to store the logs
+    default: log
+    type: string
+  benchmark_dir:
+    description: directory where to store the logs
+    default: benchmark
+    type: string
+
+  # filename conventions
+  fqext1:
+    description: filename suffix when handling paired-end data, describing the forward read
+    default: pass_1
+    type: string
+  fqext2:
+    description: filename suffix when handling paired-end data, describing the reverse read
+    default: pass_2
+    type: string
+  fqsuffix:
+    description: file descriptor for fastq files (often fastq or fq)
+    default: fastq
+    type: string
