@@ -32,7 +32,7 @@ if config['peak_caller']:
 # cut off trailing slashes and make absolute path
 for key, value in config.items():
     if '_dir' in key:
-        if key in ['result_dir', 'genome_dir']:
+        if key in ['result_dir', 'genome_dir', 'rule_dir']:
             value = os.path.abspath(value)
         config[key] = re.split("\/$", value)[0]
 
