@@ -84,9 +84,14 @@ def get_trimming_qc(sample):
                        **config)
 
 def get_alignment_qc(sample):
-    return expand([f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.metrics.txt",
-                   f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.samtools_stats.txt"],
-                   **config)
+    output = []
+    if not 'condition' in samples:
+        output.append(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.{{bam_sorter}}-{{bam_sort_order}}.metrics.txt")
+    else:
+        output.append(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.samtools-coordinate.metrics.txt")
+    output.append(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.samtools_stats.txt")
+
+    return expand(output, **config)
 
 
 def get_peak_calling_qc(sample):
