@@ -133,7 +133,6 @@ rule hmmratac:
 
 
 if 'condition' in samples:
-    ruleorder: macs2_callpeak > call_peak_genrich > idr
     def get_replicates(wildcards):
         print(expand([f"{{result_dir}}/{wildcards.peak_caller}/{replicate}-{wildcards.assembly}_peaks.narrowPeak"
                for replicate in samples[(samples['assembly'] == wildcards.assembly) & (samples['condition'] == wildcards.condition)].index], **config))
@@ -141,6 +140,7 @@ if 'condition' in samples:
                for replicate in samples[(samples['assembly'] == wildcards.assembly) & (samples['condition'] == wildcards.condition)].index], **config)
 
     if 'idr' in config.get('combine_replicates', "").lower():
+        ruleorder: macs2_callpeak > call_peak_genrich > idr
         rule idr:
             input:
                 get_replicates

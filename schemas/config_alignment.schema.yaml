@@ -1,0 +1,76 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+description: snakemake-workflows alignment configuration
+
+properties:
+  # paths to store results
+  fastq_dir:
+    description: directory inside the result dir where to store the workflow fastqs
+    default: FASTQ
+    type: string
+  trimmed_dir:
+    description: directory inside the result dir where to store the workflow trimmed fastqs
+    default: FASTQ
+    type: string
+  trimmedqc_dir:
+    description: directory inside the result dir where to store the workflow trimming quality controls
+    default: trimmed_qc
+    type: string
+  bwa_dir:
+    description: directory inside the result dir where to store the workflow bwa output
+    default: bwa
+    type: string
+  dedup_dir:
+    description: directory inside the result dir where to store the workflow deduplicated alignment
+    default: dedup
+    type: string
+
+  # trim_galore parameters
+  trim_galore:
+    description: trim_galore settings (note that the adapter is autodetected, so you do not have to set it here)
+    default: --quality 10 --length 20 --consider_already_trimmed 10
+    type: string
+
+  # aligner
+  aligner:
+    description: which aligner to use
+    default: bwa
+    enum: [bowtie2, bwa, hisat2]
+    type: string
+
+  # bwa alignment parameters
+  bwa_algo:
+    description: the algorithm bwa index uses for alignment
+    default: bwtsw
+    type: string
+
+  # bam sorting
+  bam_sorter:
+    description: which sorting software to use
+    default: samtools
+    enum: [sambamba, samtools]
+    type: string
+  bam_sort_order:
+    description: sort order of aligned reads
+    default: coordinate
+    enum: [queryname, coordinate]
+    type: string
+
+  # samtools index
+  samtools_index:
+    description: samtools index settings
+    default: ''
+    type: string
+
+  # picard markduplicates
+  markduplicates:
+    description: the parameters of picard markduplicates
+    default: REMOVE_DUPLICATES=false -Xms4G -Xmx6G MAX_FILE_HANDLES_FOR_READ_ENDS_MAP=999
+    type: string
+
+
+  combine_replicates:
+    description: which method to use to combine replicates (idr or fisher)
+    default: idr
+    enum: [idr, fisher]
+    type: string

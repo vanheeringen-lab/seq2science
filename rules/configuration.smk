@@ -20,6 +20,8 @@ samples.index = samples.index.map(str)
 # apply workflow specific changes
 if 'condition' in samples:
     samples['condition'] = samples['condition'].str.replace(" ","")
+else:
+    del config['combine_replicates']
 
 if 'assembly' in samples:
     config['assemblies'] = set(samples['assembly'])
@@ -30,11 +32,11 @@ if config.get('peak_caller', False):
 # cut off trailing slashes and make absolute path
 for key, value in config.items():
     if '_dir' in key:
-        if key in ['result_dir', 'genome_dir']:
+        if key in ['result_dir', 'genome_dir', 'rule_dir']:
             value = os.path.abspath(value)
         config[key] = re.split("\/$", value)[0]
 
-# check if paired-end filename suffixes are lexicograpically ordered
+# check if paired-end filename suffixes are lexicographically ordered
 config['fqext'] = [config['fqext1'], config['fqext2']]
 assert sorted(config['fqext'])[0] == config['fqext1']
 
@@ -105,3 +107,4 @@ logger.info("\n\n")
 if config.get('peak_caller', False) and 'hmmratac' in config['peak_caller']:
     assert all([config['layout'][sample] == 'PAIRED' for sample in samples.index]), \
     "HMMRATAC requires all samples to be paired end"
+
