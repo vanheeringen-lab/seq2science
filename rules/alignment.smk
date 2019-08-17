@@ -3,6 +3,17 @@ def get_reads(wildcards):
         return expand("{result_dir}/{trimmed_dir}/{{sample}}_trimmed.{fqsuffix}.gz", **config)
     return sorted(expand("{result_dir}/{trimmed_dir}/{{sample}}_{fqext}_trimmed.{fqsuffix}.gz", **config))
 
+def get_alignment_pipes():
+    pipes = set()
+    if config.get('peak_caller', False):
+        if 'macs2' in config['peak_caller'] or 'hmmratac' in config['peak_caller']:
+            pipes.add(pipe(expand("{result_dir}/{bwa_dir}/{{sample}}-{{assembly}}.samtools.pipe", **config)[0]))
+        if 'genrich' in config['peak_caller']:
+            pipes.add(pipe(expand("{result_dir}/{bwa_dir}/{{sample}}-{{assembly}}.sambamba.pipe", **config)[0]))
+    else:
+        pipes.add(pipe(expand("{result_dir}/{bwa_dir}/{{sample}}-{{assembly}}.{bam_sorter}.pipe", **config)[0]))
+
+    return pipes
 
 if config['aligner'] == 'bowtie2':
     rule bowtie2_index:
@@ -26,7 +37,7 @@ if config['aligner'] == 'bowtie2':
             reads=get_reads,
             index=expand("{genome_dir}/{{assembly}}/index/bowtie2/", **config)
         output:
-            pipe(expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}.bampipe", **config))
+            get_alignment_pipes()
         log:
             expand("{log_dir}/bowtie2_align/{{sample}}-{{assembly}}.log", **config)
         group: 'alignment'
@@ -40,7 +51,7 @@ if config['aligner'] == 'bowtie2':
             "../envs/bowtie2.yaml"
         shell:
             """
-            bowtie2 --threads {threads} -x {input.index}{wildcards.assembly} {params.input} 1> {output} 2> {log}
+            bowtie2 --threads {threads} -x {input.index}{wildcards.assembly} {params.input} 2> {log} | tee {output} 1> /dev/null 2>> {log}
             """
 
 elif config['aligner'] == 'bwa':
@@ -63,26 +74,13 @@ elif config['aligner'] == 'bwa':
         shell:
             "bwa index -p {params.prefix} -a {params.algorithm} {input} > {log} 2>&1"
 
-    def get_pipes():
-        pipes = set()
-        if config.get('peak_caller', False):
-            if 'macs2' in config['peak_caller']:
-                pipes.add(pipe(expand("{result_dir}/{bwa_dir}/{{sample}}-{{assembly}}.samtools.pipe", **config)[0]))
-            if 'genrich' in config['peak_caller']:
-                pipes.add(pipe(expand("{result_dir}/{bwa_dir}/{{sample}}-{{assembly}}.sambamba.pipe", **config)[0]))
-            if 'hmmratac' in config['peak_caller']:
-                pipes.add(pipe(expand("{result_dir}/{bwa_dir}/{{sample}}-{{assembly}}.samtools.pipe", **config)[0]))
-        else:
-            pipes.add(pipe(expand("{result_dir}/{bwa_dir}/{{sample}}-{{assembly}}.{bam_sorter}.pipe", **config)[0]))
-
-        return pipes
 
     rule bwa_mem:
         input:
             reads=get_reads,
             index=expand("{genome_dir}/{{assembly}}/index/bwa/{{assembly}}.{bwaindex_types}", **config)
         output:
-            get_pipes()
+            get_alignment_pipes()
         log:
             expand("{log_dir}/bwa_mem/{{sample}}-{{assembly}}.log", **config)
         group: 'alignment'
@@ -120,7 +118,7 @@ elif config['aligner'] == 'hisat2':
             reads=get_reads,
             index=expand("{genome_dir}/{{assembly}}/index/hisat2/", **config)
         output:
-            pipe(expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}.bampipe", **config))
+            get_alignment_pipes()
         log:
             expand("{log_dir}/hisat2_align/{{sample}}-{{assembly}}.log", **config)
         group: 'alignment'
@@ -134,7 +132,7 @@ elif config['aligner'] == 'hisat2':
             "../envs/hisat2.yaml"
         shell:
             """
-            hisat2 --threads {threads} -x {input.index}{wildcards.assembly} {params.input} 1> {output} 2> {log}
+            hisat2 --threads {threads} -x {input.index}{wildcards.assembly} {params.input} 2> {log} | tee {output} 1> /dev/null 2>> {log}
             """
 
 
