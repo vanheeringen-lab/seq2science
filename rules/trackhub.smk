@@ -4,9 +4,9 @@ rule bedgraphish_to_bedgraph:
     output:
         bedgraph=expand("{result_dir}/genrich/{{sample}}-{{assembly}}.bedgraph", **config)
     log:
-        expand("{log_dir}/bedgraphish_to_bedgraph//{{sample}}-{{assembly}}.log", **config)
+        expand("{log_dir}/bedgraphish_to_bedgraph/{{sample}}-{{assembly}}.log", **config)
     benchmark:
-        expand("{benchmark_dir}/bedgraphish_to_bedgraph//{{sample}}-{{assembly}}.log", **config)
+        expand("{benchmark_dir}/bedgraphish_to_bedgraph/{{sample}}-{{assembly}}.log", **config)[0]
     shell:
         """
         splits=$(grep -Pno "([^\/]*)(?=\.bam)" {input})
@@ -39,9 +39,9 @@ def find_bedgraph(wildcards):
     elif wildcards.peak_caller == 'macs2':
         suffix = '_treat_pileup.bdg'
     else:
-        raise NotImplementedError
+        suffix = '.bedgraph'
 
-    return f"{config['result_dir']}/{{peak_caller}}/{wildcards.sample}-{wildcards.assembly}{suffix}"
+    return f"{config['result_dir']}/{wildcards.peak_caller}/{wildcards.sample}-{wildcards.assembly}{suffix}"
 
 
 rule bedgraph_bigwig:
@@ -54,7 +54,7 @@ rule bedgraph_bigwig:
     log:
         expand("{log_dir}/bedgraph_bigwig/{{peak_caller}}/{{sample}}-{{assembly}}.log", **config)
     benchmark:
-        expand("{benchmark_dir}/bedgraphish_to_bedgraph//{{sample}}-{{assembly}}.log", **config)
+        expand("{benchmark_dir}/bedgraphish_to_bedgraph/{{sample}}-{{assembly}}-{{peak_caller}}.log", **config)[0]
     conda:
         "../envs/ucsc.yaml"
     shell:
@@ -70,6 +70,8 @@ def find_narrowpeak_to_big(wildcards):
         suffix = '.narrowPeak'
     elif wildcards.peak_caller == 'macs2':
         suffix = '_peaks.narrowPeak'
+    else:
+        suffix = '.bedgraph'
 
     return f"{config['result_dir']}/{{peak_caller}}/{{sample}}-{{assembly}}{suffix}"
 
@@ -83,14 +85,18 @@ rule narrowpeak_bignarrowpeak:
         out=     expand("{result_dir}/{{peak_caller}}/{{sample}}-{{assembly}}.bigNarrowPeak", **config),
         tmp=temp(expand("{result_dir}/{{peak_caller}}/{{sample}}-{{assembly}}.tmp.narrowPeak", **config))
     log:
-        expand("{log_dir}/narrowpeak_bignarrowpeak//{{sample}}-{{assembly}}.log", **config)
+        expand("{log_dir}/narrowpeak_bignarrowpeak/{{peak_caller}}/{{sample}}-{{assembly}}.log", **config)
     benchmark:
-        expand("{benchmark_dir}/bedgraphish_to_bedgraph//{{sample}}-{{assembly}}.log", **config)
+        expand("{benchmark_dir}/bedgraphish_to_bedgraph/{{sample}}-{{assembly}}-{{peak_caller}}.log", **config)[0]
     conda:
         "../envs/ucsc.yaml"
     shell:
-         "LC_COLLATE=C sort -k1,1 -k2,2n {input.narrowpeak} > {output.tmp}; "
-         "bedToBigBed -type=bed4+6 -as=../../bigNarrowPeak.as {output.tmp} {input.genome_size} {output.out} 2>&1"
+        """
+        # keep first 10 columns, idr adds extra columns we do not need for our bigpeak
+        cut -d$'\t' -f 1-10 {input.narrowpeak} |
+        LC_COLLATE=C sort -k1,1 -k2,2n > {output.tmp}
+        bedToBigBed -type=bed4+6 -as=../../bigNarrowPeak.as {output.tmp} {input.genome_size} {output.out} 2>&1
+        """
 
 
 def get_bigfiles(wildcards):
@@ -100,14 +106,13 @@ def get_bigfiles(wildcards):
     if 'condition' in samples:
         for condition in set(samples['condition']):
             for assembly in set(samples[samples['condition'] == condition]['assembly']):
-                bigfiles['bigpeaks'].append(f"{config['result_dir']}/genrich/{condition}-{assembly}.bigNarrowPeak")
+                bigfiles['bigpeaks'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{condition}-{assembly}.bigNarrowPeak", **config))
     else:
         for sample in samples.index:
-            bigfiles['bigpeaks'].append(f"{config['result_dir']}/genrich/{sample}-{samples.loc[sample, 'assembly']}.bigNarrowPeak")
+            bigfiles['bigpeaks'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{sample}-{samples.loc[sample, 'assembly']}.bigNarrowPeak", **config))
 
     for sample in samples.index:
-        bigfiles['bigwigs'].append(f"{config['result_dir']}/genrich/{sample}-{samples.loc[sample, 'assembly']}.bw")
-
+        bigfiles['bigwigs'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{sample}-{samples.loc[sample, 'assembly']}.bw", **config))
     return bigfiles
 
 
@@ -119,7 +124,7 @@ rule trackhub:
     log:
         "log/trackhub.log"
     benchmark:
-        expand("{benchmark_dir}/bedgraphish_to_bedgraph//{{sample}}-{{assembly}}.log", **config)
+        expand("{benchmark_dir}/trackhub.log", **config)[0]
     run:
         import os
         import re
@@ -149,33 +154,37 @@ rule trackhub:
                     trackdb = trackhub.trackdb.TrackDb()
                     genome.add_trackdb(trackdb)
                     priority = 1
-                    for bigpeak in [f for f in input.bigpeaks if assembly in f]:
-                        samcon, assembly = re.split('-|/|\.', bigpeak)[-3:-1]
 
-                        track = trackhub.Track(
-                            name=samcon,                # track names can't have any spaces or special chars.
-                            source=bigpeak,             # filename to build this track from
-                            visibility='dense',         # shows the full signal
-                            tracktype='bigNarrowPeak',  # required when making a track
-                            priority=priority
-                        )
-                        priority += 1
-                        trackdb.add_tracks(track)
-
-                        if 'condition' in samples:
-                             bigwigs = [bw for bw in input.bigwigs if any(sample in bw for sample in samples[samples['condition'] == samcon].index)]
-                        else:
-                            bigwigs = [bw for bw in input.bigwigs if assembly in bw and samcon in bw]
-
-                        for bigwig in bigwigs:
+                    for peak_caller in config['peak_caller']:
+                        conditions = set()
+                        for sample in samples[samples['assembly'] == assembly].index:
                             if 'condition' in samples:
-                                sample = re.split('-|/|\.', bigwig)[-3]
-                                name = f"{sample}_{samcon}"
+                                if samples.loc[sample, 'condition'] not in conditions:
+                                    bigpeak = f"{config['result_dir']}/{peak_caller}/{samples.loc[sample, 'condition']}-{assembly}.bigNarrowPeak"
+                                else:
+                                    bigpeak = False
+                                conditions.add(samples.loc[sample, 'condition'])
+                                sample_name = f"{samples.loc[sample, 'condition']}{peak_caller}"
                             else:
-                                name = f"{samcon}_bw"
+                                bigpeak = f"{config['result_dir']}/{peak_caller}/{sample}-{assembly}.bigNarrowPeak"
+                                sample_name = f"{sample}{peak_caller}"
+
+                            if bigpeak:
+                                track = trackhub.Track(
+                                    name=sample_name,           # track names can't have any spaces or special chars.
+                                    source=bigpeak,             # filename to build this track from
+                                    visibility='dense',         # shows the full signal
+                                    tracktype='bigNarrowPeak',  # required when making a track
+                                    priority=priority
+                                )
+                                priority += 1
+                                trackdb.add_tracks(track)
+
+                            bigwig = f"{config['result_dir']}/{peak_caller}/{sample}-{assembly}.bw"
+                            sample_name = f"{sample}{peak_caller}"
 
                             track = trackhub.Track(
-                                name=name,           # track names can't have any spaces or special chars.
+                                name=sample_name,    # track names can't have any spaces or special chars.
                                 source=bigwig,       # filename to build this track from
                                 visibility='full',   # shows the full signal
                                 color='0,0,0',       # black

@@ -1,0 +1,9 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+description: an entry in the sample sheet
+
+properties:
+  condition:
+    type: string
+    description: which experimental condition the sample belongs to, allowing for combining replicates through e.g. idr
+

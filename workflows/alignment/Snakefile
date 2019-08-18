@@ -6,10 +6,10 @@ if not 'validated' in globals():
     validated = True
     configfile: "config.yaml"
     for schema in ['general', 'download', 'alignment']:
-        validate(config, schema=f"../../schemas/config_{schema}.schema.yaml")
+        validate(config, schema=f"../../schemas/config/{schema}.schema.yaml")
 
 # do onstart/onexit things
-schema = 'alignment.schema.yaml'
+schemas = ['sample', 'assembly']
 include: f"{config['rule_dir']}/configuration.smk"
 
 
@@ -37,6 +37,6 @@ rule align_all:
     align each sample against its assembly
     """
     input:
-        [expand(f"{{result_dir}}/{{aligner}}/{sample}-{samples.loc[sample]['assembly']}.bam", **config) for sample in samples.index],
-        [expand(f"{{result_dir}}/{{aligner}}/{sample}-{samples.loc[sample]['assembly']}.bai", **config) for sample in samples.index],
+        [expand(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.{{bam_sorter}}-{{bam_sort_order}}.bam", **config) for sample in samples.index],
+        [expand(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.{{bam_sorter}}-{{bam_sort_order}}.bai", **config) for sample in samples.index],
          expand("{result_dir}/qc/multiqc.html", **config)

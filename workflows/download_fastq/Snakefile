@@ -6,10 +6,10 @@ if not 'validated' in globals():
     validated = True
     configfile: "config.yaml"
     for schema in ['general', 'download']:
-        validate(config, schema=f"../../schemas/config_{schema}.schema.yaml")
+        validate(config, schema=f"../../schemas/config/{schema}.schema.yaml")
 
 # do onstart/onexit things
-schema = 'download_fastq.schema.yaml'
+schemas = ['sample']
 include: f"{config['rule_dir']}/configuration.smk"
 
 

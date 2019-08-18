@@ -15,10 +15,3 @@ peak_caller:
       -y -j
 
 
-# when calling genrich peaks the alignment has to be queryname sorted
-bam_sorter: sambamba
-bam_sort_order: queryname
-
-
-fqext1: R1
-fqext2: R2

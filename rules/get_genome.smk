@@ -1,5 +1,5 @@
 # the filetypes genomepy will download
-config['genome_types'] = ['fa', 'fa.fai']
+config['genome_types'] = ['fa', 'fa.fai', "fa.sizes"]
 
 rule get_genome:
     # """
@@ -23,7 +23,7 @@ rule get_genome:
         active_plugins=$(genomepy config show | grep -Po '(?<=- ).*' | paste -s -d, -)
         trap "genomepy plugin enable {{$active_plugins}} > {log} 2>&1" 0
 
-        genomepy plugin disable {{blacklist,bowtie2,bwa,gaps,gmap,hisat2,minimap2,sizes}} >> {log} 2>&1
+        genomepy plugin disable {{blacklist,bowtie2,bwa,gaps,gmap,hisat2,minimap2}} >> {log} 2>&1
 
         genomepy install --genome_dir {params} {wildcards.assembly} UCSC    >> {log} 2>&1 ||
         genomepy install --genome_dir {params} {wildcards.assembly} NCBI    >> {log} 2>&1 ||

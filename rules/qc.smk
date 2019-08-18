@@ -1,6 +1,6 @@
 rule samtools_stats:
     input:
-        expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.bam", **config)
+        expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config)
     output:
         expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.samtools_stats.txt", **config)
     log:
@@ -15,7 +15,7 @@ rule featureCounts:
     # https://www.biostars.org/p/337872/
     # https://www.biostars.org/p/228636/
     input:
-        bam=expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.bam", **config),
+        bam=expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config),
         peak=expand("{result_dir}/{{peak_caller}}/{{sample}}-{{assembly}}_peaks.narrowPeak", **config)
     output:
         tmp_saf=temp(expand("{result_dir}/{{peak_caller}}/{{sample}}-{{assembly}}.saf", **config)),
@@ -84,9 +84,14 @@ def get_trimming_qc(sample):
                        **config)
 
 def get_alignment_qc(sample):
-    return expand([f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.metrics.txt",
-                   f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.samtools_stats.txt"],
-                   **config)
+    output = []
+    if not 'condition' in samples:
+        output.append(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.{{bam_sorter}}-{{bam_sort_order}}.metrics.txt")
+    else:
+        output.append(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.samtools-coordinate.metrics.txt")
+    output.append(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.samtools_stats.txt")
+
+    return expand(output, **config)
 
 
 def get_peak_calling_qc(sample):

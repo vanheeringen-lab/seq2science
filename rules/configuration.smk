@@ -11,23 +11,19 @@ from snakemake.logging import logger
 
 # read the samples file
 samples = pd.read_csv(config["samples"], sep='\t')
-validate(samples, schema=f"../schemas/{schema}")
+for schema in schemas:
+    validate(samples, schema=f"../schemas/samples/{schema}.schema.yaml")
 samples['sample'] = samples['sample'].str.strip() 
 samples = samples.set_index('sample')
 samples.index = samples.index.map(str)
 
 
-# TODO: maybe move to other locations? Cleaner?
 # apply workflow specific changes
-if 'condition' in samples:
-    samples['condition'] = samples['condition'].str.replace(" ","")
-
 if 'assembly' in samples:
     config['assemblies'] = set(samples['assembly'])
 
-if config['peak_caller']:
+if config.get('peak_caller', False):
     config['peak_caller'] = {k: v for d in config['peak_caller'] for k, v in d.items()}
-    assert all(key in ['macs2', 'genrich'] for key in config['peak_caller'].keys())
 
 # cut off trailing slashes and make absolute path
 for key, value in config.items():
@@ -36,7 +32,7 @@ for key, value in config.items():
             value = os.path.abspath(value)
         config[key] = re.split("\/$", value)[0]
 
-# check if paired-end filename suffixes are lexicograpically ordered
+# check if paired-end filename suffixes are lexicographically ordered
 config['fqext'] = [config['fqext1'], config['fqext2']]
 assert sorted(config['fqext'])[0] == config['fqext1']
 
@@ -101,3 +97,10 @@ logger.info("CONFIGURATION VARIABLES:")
 for key, value in config.items():
      logger.info(f"{key: <23}: {value}")
 logger.info("\n\n")
+
+
+# If hmmratac peak caller, check if all samples are paired-end
+if config.get('peak_caller', False) and 'hmmratac' in config['peak_caller']:
+    assert all([config['layout'][sample] == 'PAIRED' for sample in samples.index]), \
+    "HMMRATAC requires all samples to be paired end"
+
