@@ -11,18 +11,14 @@ from snakemake.logging import logger
 
 # read the samples file
 samples = pd.read_csv(config["samples"], sep='\t')
-validate(samples, schema=f"../schemas/{schema}")
+for schema in schemas:
+    validate(samples, schema=f"../schemas/samples/{schema}.schema.yaml")
 samples['sample'] = samples['sample'].str.strip() 
 samples = samples.set_index('sample')
 samples.index = samples.index.map(str)
 
 
 # apply workflow specific changes
-if 'condition' in samples:
-    samples['condition'] = samples['condition'].str.replace(" ","")
-else:
-    del config['combine_replicates']
-
 if 'assembly' in samples:
     config['assemblies'] = set(samples['assembly'])
 

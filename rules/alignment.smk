@@ -205,7 +205,7 @@ rule mark_duplicates:
         expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}.{{sorter}}-{{sorting}}.bam", **config)
     output:
         bam=    expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.{{sorter}}-{{sorting}}.bam", **config),
-        metrics=expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}-{{sorter}}-{{sorting}}.metrics.txt", **config)
+        metrics=expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.{{sorter}}-{{sorting}}.metrics.txt", **config)
     log:
         expand("{log_dir}/mark_duplicates/{{sample}}-{{assembly}}-{{sorter}}-{{sorting}}.log", **config)
     benchmark:

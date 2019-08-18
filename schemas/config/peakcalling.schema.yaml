@@ -8,3 +8,10 @@ properties:
     description: which peak caller(s) to use. Currently macs2 (default) and genrich are supported.
     type: array
     default: [macs2]
+
+  # replicate handling
+  combine_replicates:
+    description: which method to use to combine replicates (idr or fisher)
+    default: idr
+    enum: [idr, fisher]
+    type: string
