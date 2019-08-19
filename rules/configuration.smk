@@ -47,7 +47,7 @@ def get_layout(sample):
     if api_key is not "":
         api_key = f'-api_key {api_key}'
 
-    return sample, subprocess.check_output(
+    return subprocess.check_output(
         f'''esearch {api_key} -db sra -query {sample} | efetch {api_key} | grep -Po "(?<=<LIBRARY_LAYOUT><)[^/><]*"''',
         shell=True).decode('ascii').rstrip()
 
@@ -83,7 +83,7 @@ for sample in [sample for sample in samples.index if sample not in layout_cache]
 
 # now parse the output and store the cache, the local files' layout, and the ones that were fetched online
 config['layout'] = {**layout_cache,
-                    **{k: (v if isinstance(v, str) else v.get()[0]) for k, v in config['layout'].items()}}
+                    **{k: (v if isinstance(v, str) else v.get()) for k, v in config['layout'].items()}}
 
 # if new samples were added, update the cache
 if len([sample for sample in samples.index if sample not in layout_cache]) is not 0:
