@@ -2,9 +2,11 @@
 config['genome_types'] = ['fa', 'fa.fai', "fa.sizes"]
 
 rule get_genome:
-    # """
-    # Download genomes
-    # """
+    """
+    Download a genome through genomepy.
+
+    Automatically turns on/off plugins.
+    """
     output:
         expand("{genome_dir}/{{assembly}}/{{assembly}}.{genome_types}", **config)
     log:
@@ -21,7 +23,7 @@ rule get_genome:
     shell:
         """
         active_plugins=$(genomepy config show | grep -Po '(?<=- ).*' | paste -s -d, -)
-        trap "genomepy plugin enable {{$active_plugins}} > {log} 2>&1" 0
+        trap "genomepy plugin enable {{$active_plugins}} > {log} 2>&1" EXIT
 
         genomepy plugin disable {{blacklist,bowtie2,bwa,gaps,gmap,hisat2,minimap2}} >> {log} 2>&1
 

@@ -1,4 +1,9 @@
 rule id2sra:
+    """
+    Download the SRA of a sample by its unique identifier.
+
+    Tries first downloading with the faster ascp protocol, if that fails it falls back on the slower http protocol.
+    """
     output:
         temp(directory(expand("{result_dir}/{sra_dir}/{{sample}}", **config)))
     log:
@@ -57,6 +62,9 @@ rule id2sra:
 
 
 rule sra2fastq_SE:
+    """
+    Downloaded (raw) SRAs are converted to single-end fastq files.
+    """
     input:
         rules.id2sra.output
     output:
@@ -73,17 +81,20 @@ rule sra2fastq_SE:
         parallel-fastq-dump -s {{input}}/* -O {config['result_dir']}/{config['fastq_dir']} {config['splot']} --threads {{threads}} --gzip >> {{log}} 2>&1
 
         # rename the SRR to GSM
-	SRR=$(basename {{input}}/*)
-	GSM=$(basename {{input}})
+        SRR=$(basename {{input}}/*)
+        GSM=$(basename {{input}})
         src='{config['result_dir']}/{config['fastq_dir']}/'$SRR'_pass.{config['fqsuffix']}.gz'
         dst='{config['result_dir']}/{config['fastq_dir']}/'$GSM'.{config['fqsuffix']}.gz'
-	if [[ ! $src = $dst ]]; then
-          mv -v $src $dst >> {{log}} 2>&1
-	fi
+        if [[ ! $src = $dst ]]; then
+              mv -v $src $dst >> {{log}} 2>&1
+        fi
         """
 
 
 rule sra2fastq_PE:
+    """
+    Downloaded (raw) SRAs are converted to paired-end fastq files.
+    """
     input:
         rules.id2sra.output
     output:
@@ -99,15 +110,15 @@ rule sra2fastq_PE:
         f"""
         parallel-fastq-dump -s {{input}}/* -O {config['result_dir']}/{config['fastq_dir']} {config['split']} --threads {{threads}} --gzip >> {{log}} 2>&1
 
-	# rename the SRRs to GSMs
-	SRR=$(basename {{input}}/*)
-	GSM=$(basename {{input}})
-	if [[ ! $SRR = $GSM ]]; then
-	  src='{config['result_dir']}/{config['fastq_dir']}/'$SRR'_{config['fqext1']}.{config['fqsuffix']}.gz' 
-	  dst='{config['result_dir']}/{config['fastq_dir']}/'$GSM'_{config['fqext1']}.{config['fqsuffix']}.gz' 
-	  mv -v $src $dst >> {{log}} 2>&1
-	  src='{config['result_dir']}/{config['fastq_dir']}/'$SRR'_{config['fqext2']}.{config['fqsuffix']}.gz' 
-	  dst='{config['result_dir']}/{config['fastq_dir']}/'$GSM'_{config['fqext2']}.{config['fqsuffix']}.gz' 
-	  mv -v $src $dst >> {{log}} 2>&1
-	fi
+        # rename the SRRs to GSMs
+        SRR=$(basename {{input}}/*)
+        GSM=$(basename {{input}})
+        if [[ ! $SRR = $GSM ]]; then
+          src='{config['result_dir']}/{config['fastq_dir']}/'$SRR'_{config['fqext1']}.{config['fqsuffix']}.gz'
+          dst='{config['result_dir']}/{config['fastq_dir']}/'$GSM'_{config['fqext1']}.{config['fqsuffix']}.gz'
+          mv -v $src $dst >> {{log}} 2>&1
+          src='{config['result_dir']}/{config['fastq_dir']}/'$SRR'_{config['fqext2']}.{config['fqsuffix']}.gz'
+          dst='{config['result_dir']}/{config['fastq_dir']}/'$GSM'_{config['fqext2']}.{config['fqsuffix']}.gz'
+          mv -v $src $dst >> {{log}} 2>&1
+        fi
         """

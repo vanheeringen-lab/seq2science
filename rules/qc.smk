@@ -1,4 +1,7 @@
 rule samtools_stats:
+    """
+    Get general stats from bam files like percentage mapped.
+    """
     input:
         expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config)
     output:
@@ -12,8 +15,11 @@ rule samtools_stats:
 
 
 rule featureCounts:
-    # https://www.biostars.org/p/337872/
-    # https://www.biostars.org/p/228636/
+    """
+    Use featureCounts to generate the fraction reads in peaks score (frips/assigned reads).
+    https://www.biostars.org/p/337872/
+    https://www.biostars.org/p/228636/
+    """
     input:
         bam=expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config),
         peak=expand("{result_dir}/{{peak_caller}}/{{sample}}-{{assembly}}_peaks.narrowPeak", **config)
@@ -37,6 +43,9 @@ rule featureCounts:
 
 
 rule fastqc:
+    """
+    Generate quality control report for fastq files.
+    """
     input:
         f"{{path}}/{{fname}}.{config['fqsuffix']}.gz"
     output:
@@ -56,6 +65,9 @@ def get_qc_files(wildcards):
 
 
 rule multiqc:
+    """
+    Aggregate all the quality control metrics for every sample into a single multiqc report.
+    """
     input:
        get_qc_files
     output:

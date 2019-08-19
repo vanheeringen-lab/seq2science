@@ -9,6 +9,10 @@ def get_genrich_replicates(wildcards):
 
 
 rule genrich_pileup:
+    """
+    Generate the pileup. We do this separately from peak-calling since these two processes have a very different
+    computational footprint.
+    """
     input:
         get_genrich_replicates
     output:
@@ -31,6 +35,9 @@ rule genrich_pileup:
 
 
 rule call_peak_genrich:
+    """
+    Call peaks with genrich based on the pileup.
+    """
     input:
         log=expand("{result_dir}/genrich/{{fname}}.log", **config)
     output:
@@ -56,9 +63,10 @@ def get_fastqc(wildcards):
     return sorted(expand("{result_dir}/{trimmed_dir}/{{sample}}_{fqext1}_trimmed_fastqc.zip", **config))
 
 rule macs2_callpeak:
-    #
-    # Calculates genome size based on unique kmers of average length
-    #
+    """
+    Call peaks using macs2.
+    Macs2 requires a genome size, which we estimate from the amount of unique kmers of the average read length.
+    """
     input:
         bam=expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config),
         fastqc=get_fastqc
@@ -89,6 +97,10 @@ rule macs2_callpeak:
 
 
 rule hmmratac_genome_info:
+    """
+    Generate the 'genome info' that hmmratac requires for peak calling.
+    https://github.com/LiuLabUB/HMMRATAC/issues/17
+    """
     input:
         bam=expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config)
     output:
@@ -112,6 +124,9 @@ rule hmmratac_genome_info:
 config['hmmratac_types'] = ['.log', '.model', '_peaks.gappedPeak', '_summits.bed', '.bedgraph']
 
 rule hmmratac:
+    """
+    Call 'peaks' with HMMRATAC.
+    """
     input:
         genome_size=expand("{result_dir}/hmmratac/{{sample}}-{{assembly}}.genomesizes", **config),
         bam_index=expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bai", **config),
@@ -140,6 +155,10 @@ if 'condition' in samples:
     if 'idr' in config.get('combine_replicates', "").lower():
         ruleorder: macs2_callpeak > call_peak_genrich > idr
         rule idr:
+            """
+            Combine replicates based on the irreproducible discovery rate (IDR). Can only handle two replicates, not
+            more, not less. For more than two replicates use fisher's method.
+            """
             input:
                 get_replicates
             output:
