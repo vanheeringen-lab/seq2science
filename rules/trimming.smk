@@ -1,6 +1,9 @@
 ruleorder: trim_galore_PE > trim_galore_SE
 
 rule trim_galore_SE:
+    """
+    Automated adapter detection, adapter trimming, and quality trimming through trim galore (single-end).
+    """
     input:
         expand("{result_dir}/{fastq_dir}/{{sample}}.{fqsuffix}.gz", **config)
     output:
@@ -29,6 +32,9 @@ rule trim_galore_SE:
 
 
 rule trim_galore_PE:
+    """
+    Automated adapter detection, adapter trimming, and quality trimming through trim galore (paired-end).
+    """
     input:
         r1=expand("{result_dir}/{fastq_dir}/{{sample}}_{fqext1}.{fqsuffix}.gz", **config),
         r2=expand("{result_dir}/{fastq_dir}/{{sample}}_{fqext2}.{fqsuffix}.gz", **config)

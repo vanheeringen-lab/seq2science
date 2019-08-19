@@ -17,6 +17,9 @@ def get_alignment_pipes():
 
 if config['aligner'] == 'bowtie2':
     rule bowtie2_index:
+        """
+        Make a genome index for bowtie2.
+        """
         input:
             expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config)
         output:
@@ -33,6 +36,9 @@ if config['aligner'] == 'bowtie2':
 
 
     rule bowtie2_align:
+        """
+        Align reads against a genome (index) with bowtie2, and pipe the output to the required sorter(s).
+        """
         input:
             reads=get_reads,
             index=expand("{genome_dir}/{{assembly}}/index/bowtie2/", **config)
@@ -58,6 +64,9 @@ elif config['aligner'] == 'bwa':
     config['bwaindex_types'] = ['amb', 'ann', 'bwt', 'pac', 'sa']
 
     rule bwa_index:
+        """
+        Make a genome index for bwa.
+        """
         input:
             expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config)
         output:
@@ -76,6 +85,9 @@ elif config['aligner'] == 'bwa':
 
 
     rule bwa_mem:
+        """
+        Align reads against a genome (index) with bwa, and pipe the output to the required sorter(s).
+        """
         input:
             reads=get_reads,
             index=expand("{genome_dir}/{{assembly}}/index/bwa/{{assembly}}.{bwaindex_types}", **config)
@@ -98,6 +110,9 @@ elif config['aligner'] == 'bwa':
 
 elif config['aligner'] == 'hisat2':
     rule hisat2_index:
+        """
+        Make a genome index for hisat2.
+        """
         input:
             expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config)
         output:
@@ -114,6 +129,9 @@ elif config['aligner'] == 'hisat2':
 
 
     rule hisat2_align:
+        """
+        Align reads against a genome (index) with hisat2, and pipe the output to the required sorter(s).
+        """
         input:
             reads=get_reads,
             index=expand("{genome_dir}/{{assembly}}/index/hisat2/", **config)
@@ -137,6 +155,9 @@ elif config['aligner'] == 'hisat2':
 
 
 rule sambamba_sort:
+    """
+    Sort the result of alignment with the sambamba sorter.
+    """
     input:
         expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}.sambamba.pipe", **config)
     output:
@@ -159,6 +180,9 @@ rule sambamba_sort:
 
 
 rule samtools_sort:
+    """
+    Sort the result of alignment with the samtools sorter.
+    """
     input:
         expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}.samtools.pipe", **config)
     output:
@@ -182,6 +206,9 @@ rule samtools_sort:
 
 
 rule samtools_index:
+    """
+    Create an index of a bam file which can be used for e.g. visualization.
+    """
     input:
         expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.{bam_sorter}-{{sorting}}.bam", **config)
     output:
@@ -201,6 +228,9 @@ rule samtools_index:
 
 
 rule mark_duplicates:
+    """
+    Mark (but keep) all duplicate reads in a bam file with picard MarkDuplicates
+    """
     input:
         expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}.{{sorter}}-{{sorting}}.bam", **config)
     output:
