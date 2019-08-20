@@ -62,13 +62,20 @@ def get_fastqc(wildcards):
         return expand("{result_dir}/{trimmed_dir}/{{sample}}_trimmed_fastqc.zip", **config)
     return sorted(expand("{result_dir}/{trimmed_dir}/{{sample}}_{fqext1}_trimmed_fastqc.zip", **config))
 
+
+def get_macs2_bam(wildcards):
+    if not config['macs2_keep_mates'] is True or config['layout'].get(wildcards.sample, False) == "SINGLE":
+        return expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config)
+    return rules.keep_mates.output
+
+
 rule macs2_callpeak:
     """
     Call peaks using macs2.
     Macs2 requires a genome size, which we estimate from the amount of unique kmers of the average read length.
     """
     input:
-        bam=expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config),
+        bam=get_macs2_bam,
         fastqc=get_fastqc
     output:
         expand("{result_dir}/macs2/{{sample}}-{{assembly}}_{macs2_types}", **config)
@@ -94,6 +101,39 @@ rule macs2_callpeak:
         macs2 callpeak --bdg -t {{input.bam}} --outdir {config['result_dir']}/macs2/ -n {{wildcards.sample}}-{{wildcards.assembly}} \
         {{params.macs_params}} -g $GENSIZE > {{log}} 2>&1
         """
+
+rule keep_mates:
+    input:
+        expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config)
+    output:
+        expand("{result_dir}/{dedup_dir}/{{sample}}-mates-{{assembly}}.samtools-coordinate.bam", **config)
+    log:
+        expand("{log_dir}/keep_mates/{{sample}}-{{assembly}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/keep_mates/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
+    run:
+        from contextlib import redirect_stdout
+        import pysam
+
+        with open(str(log), 'w') as f:
+            with redirect_stdout(f):
+                paired =         1
+                proper_pair =    2
+                mate_unmapped =  8
+                mate_reverse =   32
+                first_in_pair =  64
+                second_in_pair = 128
+
+                bam_in = pysam.AlignmentFile(input[0], "rb")
+                bam_out = pysam.AlignmentFile(output[0], "wb", template=bam_in)
+                for line in bam_in:
+                    if line.flag & second_in_pair:
+                        line.pos += line.template_length
+                    line.next_reference_id = 0
+                    line.next_reference_start = 0
+                    line.flag &= ~(paired + proper_pair + mate_unmapped + mate_reverse + first_in_pair + second_in_pair)
+
+                    bam_out.write(line)
 
 
 rule hmmratac_genome_info:
