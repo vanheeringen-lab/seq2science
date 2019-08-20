@@ -71,18 +71,6 @@ rule bedgraph_bigwig:
         """
 
 
-def find_narrowpeak_to_big(wildcards):
-    if wildcards.peak_caller == 'genrich':
-        suffix = '.narrowPeak'
-    elif wildcards.peak_caller == 'macs2':
-        suffix = '_peaks.narrowPeak'
-    else:
-        suffix = '.bedgraph'
-
-    return f"{config['result_dir']}/{{peak_caller}}/{{sample}}-{{assembly}}{suffix}"
-
-
-
 rule narrowpeak_bignarrowpeak:
     """
     Convert a narrowpeak file into a bignarrowpeak file.
@@ -122,6 +110,7 @@ def get_bigfiles(wildcards):
 
     for sample in samples.index:
         bigfiles['bigwigs'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{sample}-{samples.loc[sample, 'assembly']}.bw", **config))
+
     return bigfiles
 
 
