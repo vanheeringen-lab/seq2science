@@ -2,34 +2,25 @@ from snakemake.utils import validate
 
 
 # complement the configuration
-if not 'validated' in globals():
-    validated = True
-    configfile: "config.yaml"
-    for schema in ['general', 'download', 'alignment']:
-        validate(config, schema=f"../../schemas/config/{schema}.schema.yaml")
+configfile: "config.yaml"
+for schema in ['general', 'download', 'alignment']:
+    validate(config, schema=f"../../schemas/config/{schema}.schema.yaml")
 
 # do onstart/onexit things
 schemas = ['sample', 'assembly']
 include: f"{config['rule_dir']}/configuration.smk"
 
 
-# load the 'subworkflow' download_fastq
-include: "../download_fastq/Snakefile"
-
-
 # load the remaining relevant rules
-include: f"{config['rule_dir']}/get_genome.smk"
 include: f"{config['rule_dir']}/alignment.smk"
-include: f"{config['rule_dir']}/trimming.smk"
+include: f"{config['rule_dir']}/get_genome.smk"
+include: f"{config['rule_dir']}/get_fastq.smk"
 include: f"{config['rule_dir']}/qc.smk"
+include: f"{config['rule_dir']}/trimming.smk"
 
 
 # load the quality control files
-if 'quality_control' not in globals():
-    quality_control = []
-    for sample in samples.index:
-        quality_control.extend(get_trimming_qc(sample))
-        quality_control.extend(get_alignment_qc(sample))
+quality_control = [get_trimming_qc, get_alignment_qc]
 
 
 rule align_all:
@@ -39,4 +30,4 @@ rule align_all:
     input:
         [expand(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.{{bam_sorter}}-{{bam_sort_order}}.bam", **config) for sample in samples.index],
         [expand(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.{{bam_sorter}}-{{bam_sort_order}}.bai", **config) for sample in samples.index],
-         expand("{result_dir}/qc/multiqc.html", **config)
+         expand("{result_dir}/qc/multiqc_{assemblies}.html", **{**config, **{'assemblies': set(samples['assembly'])}})

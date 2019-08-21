@@ -13,6 +13,11 @@ rule samtools_stats:
     shell:
         "samtools stats {input} 1> {output} 2> {log}"
 
+def get_featureCounts_bam(wildcards):
+    if not 'condition' in samples:
+        return expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config)
+    return expand(f"{{result_dir}}/{{dedup_dir}}/{samples.loc[wildcards.sample, 'condition']}-{wildcards.assembly}.samtools-coordinate.bam", **config)
+
 
 rule featureCounts:
     """
@@ -21,7 +26,7 @@ rule featureCounts:
     https://www.biostars.org/p/228636/
     """
     input:
-        bam=expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config),
+        bam=get_featureCounts_bam,
         peak=expand("{result_dir}/{{peak_caller}}/{{sample}}-{{assembly}}_peaks.narrowPeak", **config)
     output:
         tmp_saf=temp(expand("{result_dir}/{{peak_caller}}/{{sample}}-{{assembly}}.saf", **config)),
@@ -60,8 +65,12 @@ rule fastqc:
 def get_qc_files(wildcards):
     assert 'quality_control' in globals(), "When trying to generate multiqc output, make sure that the "\
                                            "variable 'quality_control' exists and contains all the "\
-                                           "relevant quality control files."
-    return quality_control
+                                           "relevant quality control functions."
+    qc = []
+    for sample in samples[samples['assembly'] == wildcards.assembly].index:
+        for function in quality_control:
+            qc.extend(function(sample))
+    return qc
 
 
 rule multiqc:
@@ -71,16 +80,16 @@ rule multiqc:
     input:
        get_qc_files
     output:
-        expand("{result_dir}/qc/multiqc.html", **config),
-        directory(expand("{result_dir}/qc/multiqc_data", **config))
+        expand("{result_dir}/qc/multiqc_{{assembly}}.html", **config),
+        directory(expand("{result_dir}/qc/multiqc_{{assembly}}_data", **config))
     params:
         "{result_dir}/qc/".format(**config)
     log:
-        expand("{log_dir}/multiqc.log", **config)
+        expand("{log_dir}/multiqc_{{assembly}}.log", **config)
     conda:
         "../envs/qc.yaml"
     shell:
-        "multiqc {input} -o {params} -n multiqc.html --config ../../schemas/multiqc_config.yaml > {log} 2>&1"
+        "multiqc {input} -o {params} -n multiqc_{wildcards.assembly}.html --config ../../schemas/multiqc_config.yaml > {log} 2>&1"
 
 
 def get_trimming_qc(sample):
