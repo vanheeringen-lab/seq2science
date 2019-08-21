@@ -19,9 +19,6 @@ samples.index = samples.index.map(str)
 
 
 # apply workflow specific changes
-if 'assembly' in samples:
-    config['assemblies'] = set(samples['assembly'])
-
 if config.get('peak_caller', False):
     config['peak_caller'] = {k: v for d in config['peak_caller'] for k, v in d.items()}
 
