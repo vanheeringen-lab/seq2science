@@ -66,21 +66,9 @@ rule bedgraph_bigwig:
     shell:
         """
         awk -v OFS='\\t' '{{print $1, $2, $3, $4}}' {input.bedgraph} | sed '/experimental/d' |
-        bedSort /dev/stdin {output.tmp} 2>&1;
-        bedGraphToBigWig {output.tmp} {input.genome_size} {output.out}  2>&1
+        bedSort /dev/stdin {output.tmp} > {log} 2>&1;
+        bedGraphToBigWig {output.tmp} {input.genome_size} {output.out} > {log} 2>&1
         """
-
-
-def find_narrowpeak_to_big(wildcards):
-    if wildcards.peak_caller == 'genrich':
-        suffix = '.narrowPeak'
-    elif wildcards.peak_caller == 'macs2':
-        suffix = '_peaks.narrowPeak'
-    else:
-        suffix = '.bedgraph'
-
-    return f"{config['result_dir']}/{{peak_caller}}/{{sample}}-{{assembly}}{suffix}"
-
 
 
 rule narrowpeak_bignarrowpeak:
@@ -104,7 +92,7 @@ rule narrowpeak_bignarrowpeak:
         # keep first 10 columns, idr adds extra columns we do not need for our bigpeak
         cut -d$'\t' -f 1-10 {input.narrowpeak} |
         LC_COLLATE=C sort -k1,1 -k2,2n > {output.tmp}
-        bedToBigBed -type=bed4+6 -as=../../bigNarrowPeak.as {output.tmp} {input.genome_size} {output.out} 2>&1
+        bedToBigBed -type=bed4+6 -as=../../bigNarrowPeak.as {output.tmp} {input.genome_size} {output.out} > {log} 2>&1
         """
 
 
@@ -122,6 +110,7 @@ def get_bigfiles(wildcards):
 
     for sample in samples.index:
         bigfiles['bigwigs'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{sample}-{samples.loc[sample, 'assembly']}.bw", **config))
+
     return bigfiles
 
 
