@@ -115,9 +115,9 @@ rule hmmratac_genome_info:
         "../envs/samtools.yaml"
     shell:
         """
-        samtools view -H {input} | grep SQ | cut -f 2-3 | cut -d ':' -f 2   | cut -f 1        > {output.tmp1}
-        samtools view -H {input} | grep SQ | cut -f 2-3 | cut -d ':' -f 2,3 | cut -d ':' -f 2 > {output.tmp2}
-        paste {output.tmp1} {output.tmp2} > {output.out}
+        samtools view -H {input} 2>  {log} | grep SQ 2>> {log} | cut -f 2-3 2>> {log} | cut -d ':' -f 2   2>> {log} | cut -f 1        > {output.tmp1} 2> {log}
+        samtools view -H {input} 2>> {log} | grep SQ 2>> {log} | cut -f 2-3 2>> {log} | cut -d ':' -f 2,3 2>> {log} | cut -d ':' -f 2 > {output.tmp2} 2> {log}
+        paste {output.tmp1} {output.tmp2} > {output.out} 2> {log}
         """
 
 
@@ -143,24 +143,25 @@ rule hmmratac:
         "../envs/hmmratac.yaml"
     shell:
         """
-        HMMRATAC --bedgraph true -o {params.basename} -Xmx22G -b {input.bam} -i {input.bam_index} -g {input.genome_size}
+        HMMRATAC --bedgraph true -o {params.basename} -Xmx22G -b {input.bam} -i {input.bam_index} -g {input.genome_size} > {log} 2>&1
         """
 
 
 if 'condition' in samples:
-    def get_replicates(wildcards):
-        return expand([f"{{result_dir}}/{wildcards.peak_caller}/{replicate}-{wildcards.assembly}_peaks.narrowPeak"
-               for replicate in samples[(samples['assembly'] == wildcards.assembly) & (samples['condition'] == wildcards.condition)].index], **config)
-
     if 'idr' in config.get('combine_replicates', "").lower():
         ruleorder: macs2_callpeak > call_peak_genrich > idr
+
+        def get_idr_replicates(wildcards):
+            return expand([f"{{result_dir}}/{wildcards.peak_caller}/{replicate}-{wildcards.assembly}_peaks.narrowPeak"
+                   for replicate in samples[(samples['assembly'] == wildcards.assembly) & (samples['condition'] == wildcards.condition)].index], **config)
+
         rule idr:
             """
             Combine replicates based on the irreproducible discovery rate (IDR). Can only handle two replicates, not
             more, not less. For more than two replicates use fisher's method.
             """
             input:
-                get_replicates
+                get_idr_replicates
             output:
                 expand("{result_dir}/{{peak_caller}}/{{condition}}-{{assembly}}_peaks.narrowPeak", **config),
             log:
@@ -172,8 +173,57 @@ if 'condition' in samples:
                 "../envs/idr.yaml"
             shell:
                 """
-                idr --samples {input} {params} --output-file {output}
+                idr --samples {input} {params} --output-file {output} > {log} 2>&1
                 """
 
-    elif 'fisher' is config.get('combine_replicates', "").lower():
-        raise NotImplementedError
+    elif 'fisher' in config.get('combine_replicates', "").lower():
+        if 'macs2' in config['peak_caller']:
+            ruleorder: macs2_callpeak > call_peak_genrich > macs_cmbreps
+
+            def get_macs_replicates(wildcards):
+                return expand([f"{{result_dir}}/macs2/{replicate}-{wildcards.assembly}_pvalues.bdg"
+                       for replicate in samples[(samples['assembly'] == wildcards.assembly) & (samples['condition'] == wildcards.condition)].index], **config)
+
+            rule macs_bdgcmp:
+                """
+                """
+                input:
+                    treatment=expand("{result_dir}/macs2/{{sample}}-{{assembly}}_treat_pileup.bdg", **config),
+                    control=  expand("{result_dir}/macs2/{{sample}}-{{assembly}}_control_lambda.bdg", **config)
+                output:
+                    expand("{result_dir}/macs2/{{sample}}-{{assembly}}_pvalues.bdg", **config),
+                log:
+                    expand("{log_dir}/macs_bdgcmp/{{sample}}-{{assembly}}.log", **config)
+                benchmark:
+                    expand("{benchmark_dir}/macs_bdgcmp/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
+                conda:
+                    "../envs/macs2.yaml"
+                shell:
+                    """
+                    macs2 bdgcmp -t {input.treatment} -c {input.control} -m ppois -o {output} > {log} 2>&1
+                    """
+
+
+            rule macs_cmbreps:
+                """
+                Combine replicates through
+                """
+                input:
+                    get_macs_replicates
+                output:
+                    bdg=temp(expand("{result_dir}/macs2/{{condition}}-{{assembly,.+(?<!_pvalues)}}.bdg", **config)),
+                    tmppeaks=temp(expand("{result_dir}/macs2/{{condition}}-{{assembly}}_peaks.temp.narrowPeak", **config)),
+                    peaks=expand("{result_dir}/macs2/{{condition}}-{{assembly}}_peaks.narrowPeak", **config)
+                log:
+                    expand("{log_dir}/macs_cmbreps/{{condition}}-{{assembly}}.log", **config)
+                benchmark:
+                    expand("{benchmark_dir}/macs_cmbreps/{{condition}}-{{assembly}}.benchmark.txt", **config)[0]
+                conda:
+                    "../envs/macs2.yaml"
+                shell:
+                    """
+                    macs2 cmbreps -i {input} -o {output.bdg} -m fisher > {log} 2>&1
+                    macs2 bdgpeakcall -i {output.bdg} -o {output.tmppeaks}
+                    cat {output.tmppeaks} | tail -n +2 > {output.peaks}
+                    """
+
