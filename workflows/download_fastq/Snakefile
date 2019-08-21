@@ -16,6 +16,7 @@ include: f"{config['rule_dir']}/configuration.smk"
 # load the relevant rules
 include: f"{config['rule_dir']}/get_fastq.smk"
 
+assert False
 
 rule download_all:
     """
