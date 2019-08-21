@@ -65,8 +65,12 @@ rule fastqc:
 def get_qc_files(wildcards):
     assert 'quality_control' in globals(), "When trying to generate multiqc output, make sure that the "\
                                            "variable 'quality_control' exists and contains all the "\
-                                           "relevant quality control files."
-    return quality_control
+                                           "relevant quality control functions."
+    qc = []
+    for sample in samples[samples['assembly'] == wildcards.assembly].index:
+        for function in quality_control:
+            qc.extend(function(sample))
+    return qc
 
 
 rule multiqc:
@@ -76,16 +80,16 @@ rule multiqc:
     input:
        get_qc_files
     output:
-        expand("{result_dir}/qc/multiqc.html", **config),
-        directory(expand("{result_dir}/qc/multiqc_data", **config))
+        expand("{result_dir}/qc/multiqc_{{assembly}}.html", **config),
+        directory(expand("{result_dir}/qc/multiqc_{{assembly}}_data", **config))
     params:
         "{result_dir}/qc/".format(**config)
     log:
-        expand("{log_dir}/multiqc.log", **config)
+        expand("{log_dir}/multiqc_{{assembly}}.log", **config)
     conda:
         "../envs/qc.yaml"
     shell:
-        "multiqc {input} -o {params} -n multiqc.html --config ../../multiqc_config.yaml > {log} 2>&1"
+        "multiqc {input} -o {params} -n multiqc_{wildcards.assembly}.html --config ../../multiqc_config.yaml > {log} 2>&1"
 
 
 def get_trimming_qc(sample):
