@@ -89,7 +89,7 @@ rule multiqc:
     conda:
         "../envs/qc.yaml"
     shell:
-        "multiqc {input} -o {params} -n multiqc_{wildcards.assembly}.html --config ../../multiqc_config.yaml > {log} 2>&1"
+        "multiqc {input} -o {params} -n multiqc_{wildcards.assembly}.html --config ../../schemas/multiqc_config.yaml > {log} 2>&1"
 
 
 def get_trimming_qc(sample):
