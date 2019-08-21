@@ -74,7 +74,6 @@ rule get_transcripts:
             # get location identifiers from the gtf (always the first element)
             locs = []
             with open(input.gtf[0], 'r') as gtf:
-            #with open(params.gtf[0], 'r') as gtf:
                 for line in gtf:
                     line = line.strip().split('\t')[0]
                     if line not in locs:
@@ -103,4 +102,3 @@ rule get_transcripts:
                         out.write(''.join(line))
 
             shell(conda_gffread + " -w {output} -g {params.purgedfa} {input.gtf} >> {log} 2>&1")
-            
