@@ -22,7 +22,7 @@ rule get_genome:
     conda:
         "../envs/get_genome.yaml"
     shell:
-        """              
+        """
         active_plugins=$(genomepy config show | grep -Po '(?<=- ).*' | paste -s -d, -)
         trap "genomepy plugin enable {{$active_plugins,}} > {log} 2>&1" EXIT
 
@@ -44,7 +44,6 @@ rule get_transcripts:
     """
     input:
         fa=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
-        #gtfgz=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf.gz", **config)
         gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config)
     output:
         expand("{genome_dir}/{{assembly}}/{{assembly}}.transcripts.fa", **config)
@@ -54,29 +53,10 @@ rule get_transcripts:
         expand("{benchmark_dir}/get_genome/{{assembly}}.transcripts.benchmark.txt", **config)[0]
     priority: 1
     params:
-        #gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
         path=conda_path("../../envs/get_genome.yaml"),
         purgedfa=expand("{genome_dir}/{{assembly}}/{{assembly}}.purged.fa", **config)
-    #conda:
-    #    "../envs/get_genome.yaml"
     run:
-        #print(params.path)
-
-
         conda_gffread = os.path.join(params.path, "bin", "gffread")
-        #print(conda_gffread)
-
-
-        #shell("conda activate " + params.path)
-        #shell("gffread --help")
-        #exit(0)
-
-
-        #import subprocess
-
-        #unzip the gtf
-        #subprocess.Popen(("gunzip", input.gtfgz[0]))
-        #shell("gunzip {input.gtfgz}")
 
         # Check if fasta has dirty formatting
         with open(input.fa[0], 'r') as fa:
@@ -88,10 +68,6 @@ rule get_transcripts:
 
         if clean:
             shell(conda_gffread + " -w {output} -g {input.fa} {input.gtf} >> {log} 2>&1")
-            #shell("gffread -w {output} -g {input.fa} {input.gtf} >> {log} 2>&1")
-            #subprocess.Popen(("gffread", "-w", output[0], "-g", input.fa[0], params.gtf[0]))
-            #shell("gffread -w {output} -g {input.fa} {params.gtf} >> {log} 2>&1")
-            #shell("gunzip -c {input.gtfgz} | gffread -w {output} -g {input.fa} - >> {log} 2>&1")
 
         # purge the dirty formatting from the fasta file, then use this in gffread
         else:
@@ -127,6 +103,4 @@ rule get_transcripts:
                         out.write(''.join(line))
 
             shell(conda_gffread + " -w {output} -g {params.purgedfa} {input.gtf} >> {log} 2>&1")
-            #shell("gffread -w {output} -g {params.purgedfa} {input.gtf} >> {log} 2>&1")
-            #subprocess.Popen(("gffread", "-w", output[0], "-g", params.purgedfa[0], params.gtf[0]))
-            #shell("gffread -w {output} -g {params.purgedfa} {params.gtf} >> {log} 2>&1")
+            
