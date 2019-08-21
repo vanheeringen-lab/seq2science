@@ -1,4 +1,6 @@
 # Snakemake workflows
+[![Build Status](https://travis-ci.org/vanheeringen-lab/snakemake-workflows.svg?branch=master)](https://travis-ci.org/vanheeringen-lab/snakemake-workflows)
+
 The comprehensive snakemake workflows repository of the *vanheeringen lab*. Please take a look at our **[wiki](https://github.com/vanheeringen-lab/snakemake-workflows/wiki)** for help with installation, how to run it, and best practices.
 
 ### Why use 
