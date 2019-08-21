@@ -3,7 +3,7 @@ from snakemake.utils import validate
 
 # complement the configuration
 configfile: "config.yaml"
-for schema in ['general', 'download', 'alignment', 'peakcalling']:
+for schema in ['general', 'download', 'alignment_general', 'peakcalling']:
     validate(config, schema=f"../../schemas/config/{schema}.schema.yaml")
 
 # do onstart/onexit things

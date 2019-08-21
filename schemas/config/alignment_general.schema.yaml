@@ -1,6 +1,6 @@
 $schema: "http://json-schema.org/draft-06/schema#"
 
-description: snakemake-workflows alignment configuration
+description: snakemake-workflows general alignment configuration
 
 properties:
   # paths to store results
@@ -42,18 +42,6 @@ properties:
   bwa_algo:
     description: the algorithm bwa index uses for alignment
     default: bwtsw
-    type: string
-
-  # bam sorting
-  bam_sorter:
-    description: which sorting software to use
-    default: samtools
-    enum: [sambamba, samtools]
-    type: string
-  bam_sort_order:
-    description: sort order of aligned reads
-    default: coordinate
-    enum: [queryname, coordinate]
     type: string
 
   # samtools index
