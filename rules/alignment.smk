@@ -154,6 +154,70 @@ elif config['aligner'] == 'hisat2':
             """
 
 
+elif config['aligner'] == 'salmon':
+    rule salmon_index:
+        input:
+            expand("{genome_dir}/{{assembly}}/{{assembly}}.transcripts.fa", **config)
+        output:
+            dir=directory(expand("{genome_dir}/{{assembly}}/index/{aligner}/", **config)),
+            index=expand("{genome_dir}/{{assembly}}/index/{aligner}/hash.bin", **config)
+        log:
+            expand("{log_dir}/{aligner}_index/{{assembly}}.log", **config)
+        benchmark:
+            expand("{benchmark_dir}/{aligner}_index/{{assembly}}.benchmark.txt", **config)[0]
+        params:
+            config['salmon_index']
+        threads: 4
+        conda:
+            "../envs/salmon.yaml"
+        shell:
+            "salmon index -t {input} -i {output.dir} {params} --threads {threads} > {log} 2&1"
+
+
+    rule salmon_quant:
+        input:
+            reads=get_reads,
+            index=expand("{genome_dir}/{{assembly}}/index/{aligner}/hash.bin", **config)
+        output:
+            dir=expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}/{{sample}}", **config),
+            pipe=pipe(expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}.bampipe", **config))
+        log:
+            expand("{log_dir}/{aligner}_align/{{sample}}-{{assembly}}.log", **config)
+        benchmark:
+            expand("{benchmark_dir}/{aligner}_align/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
+        params:
+            input=lambda wildcards, input: f'-r {input.reads}' if config['layout'][wildcards.sample] == 'SINGLE' else \
+                                           f'-1 {input.reads[0]} -2 {input.reads[1]}',
+            flags=config['salmon_aln']
+        threads: 21
+        conda:
+            "../envs/salmon.yaml"
+        shell:
+            """
+            salmon quant -i {input.index} -l A {params.input} {params.flags} -o {output.dir} \
+            --writeMappings --threads $(expr {threads} / 3) 2> {log} | \
+            samtools view -b - -@ $(expr {threads} / 3) | \
+            samtools sort -T sort.tmp -o - -@ $(expr {threads} / 3) > {output.pipe}
+            """
+
+                                ### not sure if -o {output.dir} can be mixed with --writeMappings...
+                                ### source https://github.com/COMBINE-lab/salmon/issues/38
+
+            # """
+            # salmon quant -i {input.index} -l A {params.input} {params.flags} \ #-o {output} --threads {threads} 2> {log} #(if the desired output were quant.sf files)
+            # --writeMappings --threads $(expr {threads} / 3) 2> {log} | \ #output mapping information in a SAM compatible format to stdout.
+            # samtools view -Sb - -@ $(expr {threads} / 3) | \ #convert SAM to BAM. (-S is autodetected. Can be removed)
+            # samtools sort -T sort.tmp -o - -@ $(expr {threads} / 3) > {output} #sort by chromosomal coordinates
+            # """
+
+            # """
+            # salmon quant -i {input.index} {params.input} 2> {log} \
+            # # output stdout in SAM format, and convert this to BAM.
+            # # requires mapping-based mode with a quasi-index (default and current)
+            # --writeMappings | samtools view -Sb - | samtools sort -T sort.tmp -o - > {output}
+            # """
+
+
 rule sambamba_sort:
     """
     Sort the result of alignment with the sambamba sorter.
