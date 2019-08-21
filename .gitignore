@@ -6,3 +6,4 @@ benchmark/
 slurm*.out
 config.yaml
 samples.tsv
+report.html
