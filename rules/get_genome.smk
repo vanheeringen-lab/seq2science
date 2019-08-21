@@ -1,5 +1,5 @@
 # the filetypes genomepy will download
-config['genome_types'] = ['fa', 'fa.fai', "fa.sizes"]
+config['genome_types'] = ['fa', 'fa.fai', "fa.sizes", "annotation.bed.gz", "annotation.gff.gz", "annotation.gtf"]
 
 rule get_genome:
     """
@@ -17,17 +17,116 @@ rule get_genome:
         parallel_downloads=1
     priority: 1
     params:
-        config['genome_dir']
+        dir=config['genome_dir'],
+        gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf.gz", **config),
     conda:
         "../envs/get_genome.yaml"
     shell:
-        """
+        """              
         active_plugins=$(genomepy config show | grep -Po '(?<=- ).*' | paste -s -d, -)
-        trap "genomepy plugin enable {{$active_plugins}} > {log} 2>&1" EXIT
+        trap "genomepy plugin enable {{$active_plugins,}} > {log} 2>&1" EXIT
 
         genomepy plugin disable {{blacklist,bowtie2,bwa,gaps,gmap,hisat2,minimap2}} >> {log} 2>&1
 
-        genomepy install --genome_dir {params} {wildcards.assembly} UCSC    >> {log} 2>&1 ||
-        genomepy install --genome_dir {params} {wildcards.assembly} NCBI    >> {log} 2>&1 ||
-        genomepy install --genome_dir {params} {wildcards.assembly} Ensembl >> {log} 2>&1
+        genomepy install --genome_dir {params.dir} {wildcards.assembly} UCSC --annotation    >> {log} 2>&1 ||
+        genomepy install --genome_dir {params.dir} {wildcards.assembly} NCBI --annotation    >> {log} 2>&1 ||
+        genomepy install --genome_dir {params.dir} {wildcards.assembly} Ensembl --annotation >> {log} 2>&1
+        
+        gunzip {params.gtf} >> {log} 2>&1
         """
+
+
+rule get_transcripts:
+    """
+    Combine genome.fasta and annotation.gtf to create transcripts.fasta using gffread.
+
+    Prepare genome.fasta if needed.
+    """
+    input:
+        fa=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+        #gtfgz=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf.gz", **config)
+        gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config)
+    output:
+        expand("{genome_dir}/{{assembly}}/{{assembly}}.transcripts.fa", **config)
+    log:
+        expand("{log_dir}/get_genome/{{assembly}}.transcripts.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/get_genome/{{assembly}}.transcripts.benchmark.txt", **config)[0]
+    priority: 1
+    params:
+        #gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
+        path=conda_path("../../envs/get_genome.yaml"),
+        purgedfa=expand("{genome_dir}/{{assembly}}/{{assembly}}.purged.fa", **config)
+    #conda:
+    #    "../envs/get_genome.yaml"
+    run:
+        #print(params.path)
+
+
+        conda_gffread = os.path.join(params.path, "bin", "gffread")
+        #print(conda_gffread)
+
+
+        #shell("conda activate " + params.path)
+        #shell("gffread --help")
+        #exit(0)
+
+
+        #import subprocess
+
+        #unzip the gtf
+        #subprocess.Popen(("gunzip", input.gtfgz[0]))
+        #shell("gunzip {input.gtfgz}")
+
+        # Check if fasta has dirty formatting
+        with open(input.fa[0], 'r') as fa:
+            for line in fa:
+                if line.startswith('>'):
+                    line = line.strip().split(' ')
+                    clean = True if len(line) == 1 else False
+                    break
+
+        if clean:
+            shell(conda_gffread + " -w {output} -g {input.fa} {input.gtf} >> {log} 2>&1")
+            #shell("gffread -w {output} -g {input.fa} {input.gtf} >> {log} 2>&1")
+            #subprocess.Popen(("gffread", "-w", output[0], "-g", input.fa[0], params.gtf[0]))
+            #shell("gffread -w {output} -g {input.fa} {params.gtf} >> {log} 2>&1")
+            #shell("gunzip -c {input.gtfgz} | gffread -w {output} -g {input.fa} - >> {log} 2>&1")
+
+        # purge the dirty formatting from the fasta file, then use this in gffread
+        else:
+            # get location identifiers from the gtf (always the first element)
+            locs = []
+            with open(input.gtf[0], 'r') as gtf:
+            #with open(params.gtf[0], 'r') as gtf:
+                for line in gtf:
+                    line = line.strip().split('\t')[0]
+                    if line not in locs:
+                        locs.append(line)
+
+            # determine which element in the line contains the location identifier (checking the first only)
+            with open(input.fa[0], 'r') as fa:
+                for line in fa:
+                    if line.startswith('>'):
+                        line = line.strip(">\n").split(' ')
+                        for loc in locs:
+                            try:
+                                element = line.index(loc)
+                                break
+                            except:
+                                continue
+                        break
+
+            # extract the identifier from the header lines, keep the rest as-is.
+            with open(input.fa[0], 'r') as fa:
+                with open(params.purgedfa[0], 'w') as out:
+                    for line in fa:
+                        if line.startswith('>'):
+                            identifier = line.strip(">").split(' ')[element]
+                            line = '>' + identifier + '\n'
+                        out.write(''.join(line))
+
+            shell(conda_gffread + " -w {output} -g {params.purgedfa} {input.gtf} >> {log} 2>&1")
+            #shell("gffread -w {output} -g {params.purgedfa} {input.gtf} >> {log} 2>&1")
+            #subprocess.Popen(("gffread", "-w", output[0], "-g", params.purgedfa[0], params.gtf[0]))
+            #shell("gffread -w {output} -g {params.purgedfa} {params.gtf} >> {log} 2>&1")

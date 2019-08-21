@@ -5,3 +5,5 @@ channels:
   - defaults
 dependencies:
   - bioconda::genomepy=0.5.5
+  #- bioconda::ucsc-gff3togenepred=357 # temporary. genomepy dependency which is missing from genomepy. bioconda already updated.
+  - bioconda::gffread=0.11.4 # currently used by the default environment. Must be installed there.
