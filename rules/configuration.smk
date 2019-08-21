@@ -119,6 +119,6 @@ def conda_path(yaml):
     with open(env_file, 'rb') as f:
         content = f.read()
     md5hash.update(content)
-    hash = md5hash.hexdigest()[:8]
-    path = os.path.join(env_dir, hash)
+    dir_hash = md5hash.hexdigest()[:8]
+    path = os.path.join(env_dir, dir_hash)
     return path
