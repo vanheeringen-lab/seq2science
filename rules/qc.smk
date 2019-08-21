@@ -13,6 +13,11 @@ rule samtools_stats:
     shell:
         "samtools stats {input} 1> {output} 2> {log}"
 
+def get_featureCounts_bam(wildcards):
+    if not 'condition' in samples:
+        return expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config)
+    return expand(f"{{result_dir}}/{{dedup_dir}}/{samples.loc[wildcards.sample, 'condition']}-{wildcards.assembly}.samtools-coordinate.bam", **config)
+
 
 rule featureCounts:
     """
@@ -21,7 +26,7 @@ rule featureCounts:
     https://www.biostars.org/p/228636/
     """
     input:
-        bam=expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config),
+        bam=get_featureCounts_bam,
         peak=expand("{result_dir}/{{peak_caller}}/{{sample}}-{{assembly}}_peaks.narrowPeak", **config)
     output:
         tmp_saf=temp(expand("{result_dir}/{{peak_caller}}/{{sample}}-{{assembly}}.saf", **config)),
