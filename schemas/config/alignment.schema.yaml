@@ -16,14 +16,11 @@ properties:
     description: directory inside the result dir where to store the workflow trimming quality controls
     default: trimmed_qc
     type: string
-  bwa_dir:
-    description: directory inside the result dir where to store the workflow bwa output
-    default: bwa
-    type: string
   dedup_dir:
     description: directory inside the result dir where to store the workflow deduplicated alignment
     default: dedup
     type: string
+
 
   # trim_galore parameters
   trim_galore:
@@ -31,11 +28,12 @@ properties:
     default: --quality 10 --length 20 --consider_already_trimmed 10
     type: string
 
+
   # aligner
   aligner:
     description: which aligner to use
     default: bwa
-    enum: [bowtie2, bwa, hisat2]
+    enum: [bowtie2, bwa, hisat2, salmon]
     type: string
 
   # bwa alignment parameters
@@ -43,6 +41,17 @@ properties:
     description: the algorithm bwa index uses for alignment
     default: bwtsw
     type: string
+
+  # salmon mapping
+  salmon_index:
+    description: optional arguments for salmon index, such as -k, --gencode and -decoys {decoyfile}
+    default: ''
+    type: string
+  salmon_aln:
+    description: optional arguments for salmon alignment
+    default: --seqBias --gcBias --validateMappings # --fldMean --fldSD (defaults are in use) # --posBias (currently experimental)
+    type: string
+
 
   # bam sorting
   bam_sorter:
