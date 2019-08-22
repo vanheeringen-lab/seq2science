@@ -32,4 +32,4 @@ script:
 # speedup the slow build of our environment
  cache:
     directories:
-     - /home/travis/anaconda3
+     - ${HOME}/anaconda3
