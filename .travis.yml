@@ -6,10 +6,11 @@ install:
   - sudo apt-get update
 
   # install conda if not cached
-  - if [ -d $HOME/miniconda/bin/ ]; then
-      rm -rf $HOME/miniconda
+  - if [ ! -d $HOME/miniconda/bin/ ]; then
+      conda_cached=false;
+      rm -rf $HOME/miniconda;
       wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-      bash miniconda.sh -b -p $HOME/miniconda
+      bash miniconda.sh -b -p $HOME/miniconda;
     fi
   - export PATH="$HOME/miniconda/bin:$PATH"
   - hash -r
@@ -23,7 +24,9 @@ install:
   - conda config --add channels bioconda
 
   # create snakemake env
-  - conda env create -f envs/snakemake-workflows.yaml
+  - if [ "$conda_cached" = false ]; then
+      conda env create -f envs/snakemake-workflows.yaml;
+    fi
 
 script:
   - source activate snakemake-workflows
