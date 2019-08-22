@@ -106,7 +106,7 @@ def get_trimming_qc(sample):
 
 def get_alignment_qc(sample):
     output = []
-    if 'peak_caller' in samples:
+    if 'peak_caller' in config:
         if config['peak_caller'] in ['macs2', 'hmmratac']:
             output.append(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.samtools-coordinate.metrics.txt")
         else:
