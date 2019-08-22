@@ -5,9 +5,15 @@ description: snakemake-workflows peak calling configuration
 properties:
   # peak caller algorithms
   peak_caller:
-    description: which peak caller(s) to use. Currently macs2 (default) and genrich are supported.
-    type: array
-    default: [macs2]
+    type: object
+    properties:
+      genrich:  {type: string}
+      hmmratac: {type: string}
+      macs2:    {type: string}
+    minProperties: 1   # if you want to have at least one
+    additionalProperties: false
+    default:
+      macs2: --shift -100 --extsize 200 --nomodel --keep-dup 1 --buffer-size 10000
 
   # replicate handling
   combine_replicates:
