@@ -28,3 +28,8 @@ script:
   - for i in {1..3}; do snakemake -s workflows/download_fastq/Snakefile --directory workflows/download_fastq -n -j 48 && break; done
   - for i in {1..3}; do snakemake -s workflows/alignment/Snakefile      --directory workflows/alignment      -n -j 48 && break; done
   - for i in {1..3}; do snakemake -s workflows/atac_seq/Snakefile       --directory workflows/atac_seq       -n -j 48 && break; done
+
+# speedup the slow build of our environment
+ cache:
+    directories:
+     - /home/travis/anaconda3
