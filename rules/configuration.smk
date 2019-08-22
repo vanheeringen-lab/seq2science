@@ -120,3 +120,21 @@ if config.get('peak_caller', False) and 'hmmratac' in config['peak_caller']:
     assert all([config['layout'][sample] == 'PAIRED' for sample in samples.index]), \
     "HMMRATAC requires all samples to be paired end"
 
+
+# Find conda directories. Does not work with singularity.
+def conda_path(yaml):
+    """ Find the path to a conda directory """
+    import hashlib
+    import os.path
+
+    env_file = os.path.abspath(yaml)
+    env_dir = os.path.join(os.getcwd(), ".snakemake", "conda")
+
+    md5hash = hashlib.md5()
+    md5hash.update(env_dir.encode())
+    with open(env_file, 'rb') as f:
+        content = f.read()
+    md5hash.update(content)
+    dir_hash = md5hash.hexdigest()[:8]
+    path = os.path.join(env_dir, dir_hash)
+    return path
