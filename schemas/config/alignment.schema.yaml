@@ -16,10 +16,6 @@ properties:
     description: directory inside the result dir where to store the workflow trimming quality controls
     default: trimmed_qc
     type: string
-#  aligner_dir:
-#    description: directory inside the result dir where to store the workflow bwa output
-#    default: bwa
-#    type: string
   dedup_dir:
     description: directory inside the result dir where to store the workflow deduplicated alignment
     default: dedup
