@@ -13,5 +13,5 @@ properties:
   combine_replicates:
     description: which method to use to combine replicates (idr or fisher)
     default: idr
-    enum: [idr, fisher]
+    enum: [fisher, idr, merge]
     type: string

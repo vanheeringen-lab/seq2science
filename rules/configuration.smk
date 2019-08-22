@@ -122,3 +122,8 @@ def conda_path(yaml):
     dir_hash = md5hash.hexdigest()[:8]
     path = os.path.join(env_dir, dir_hash)
     return path
+
+if 'condition' in samples and config.get('combine_replicates', "") == 'merge':
+    for sample in samples.index:
+        condition = samples.loc[sample, 'condition']
+        config['layout'][condition] = config['layout'][sample]

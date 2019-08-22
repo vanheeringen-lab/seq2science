@@ -122,3 +122,29 @@ rule sra2fastq_PE:
           mv -v $src $dst >> {{log}} 2>&1
         fi
         """
+
+
+if 'condition' in samples and config.get('combine_replicates', '') == 'merge':
+    def get_merge_replicates(wildcards):
+            return expand([f"{{result_dir}}/{{trimmed_dir}}/{replicate}{wildcards.fqext}_trimmed.{{fqsuffix}}.gz"
+                   for replicate in samples[samples['condition'] == wildcards.condition].index], **config)
+
+
+    # ruleorder: merge_replicates > sra2fastq_PE > sra2fastq_SE
+    rule merge_replicates:
+        input:
+            get_merge_replicates
+        output:
+            sorted(expand("{result_dir}/{dedup_dir}/merged/{{condition}}{{fqext}}_trimmed.{fqsuffix}.gz", **config))
+        wildcard_constraints:
+            fqext=".*",
+    #         condition="[^_]*"
+    #     log:
+    #         expand("{log_dir}/sra2fastq_PE/{{sample}}.log", **config)
+    #     benchmark:
+    #         expand("{benchmark_dir}/sra2fastq_PE/{{sample}}.benchmark.txt", **config)[0]
+    #     threads: 8
+    #     conda:
+    #         "../envs/get_fastq.yaml"
+        shell:
+            "echo {input}"
