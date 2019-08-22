@@ -178,12 +178,13 @@ rule hmmratac:
     benchmark:
         expand("{benchmark_dir}/hmmratac/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
     params:
-        basename=lambda wildcards: expand(f"{{result_dir}}/hmmratac/{wildcards.sample}-{wildcards.assembly}", **config)
+        basename=lambda wildcards: expand(f"{{result_dir}}/hmmratac/{wildcards.sample}-{wildcards.assembly}", **config),
+        hmmratac_params=config['peak_caller'].get('hmmratac', "")
     conda:
         "../envs/hmmratac.yaml"
     shell:
         """
-        HMMRATAC --bedgraph true -o {params.basename} -Xmx22G -b {input.bam} -i {input.bam_index} -g {input.genome_size} > {log} 2>&1
+        HMMRATAC --bedgraph true -o {params.basename} {params.hmmratac_params} -Xmx22G -b {input.bam} -i {input.bam_index} -g {input.genome_size} > {log} 2>&1
         """
 
 
@@ -192,8 +193,14 @@ if 'condition' in samples:
         ruleorder: macs2_callpeak > call_peak_genrich > idr
 
         def get_idr_replicates(wildcards):
-            return expand([f"{{result_dir}}/{wildcards.peak_caller}/{replicate}-{wildcards.assembly}_peaks.narrowPeak"
+            # if macs2 or genrich return narrowPeak, for hmmratac return gappedPeak
+            if wildcards.peak_caller in ['macs2', 'genrich']:
+                return expand([f"{{result_dir}}/{wildcards.peak_caller}/{replicate}-{wildcards.assembly}_peaks.narrowPeak"
+                       for replicate in samples[(samples['assembly'] == wildcards.assembly) & (samples['condition'] == wildcards.condition)].index], **config)
+
+            return expand([f"{{result_dir}}/{wildcards.peak_caller}/{replicate}-{wildcards.assembly}_peaks.gappedPeak"
                    for replicate in samples[(samples['assembly'] == wildcards.assembly) & (samples['condition'] == wildcards.condition)].index], **config)
+
 
         rule idr:
             """
@@ -208,7 +215,8 @@ if 'condition' in samples:
                 expand("{log_dir}/idr/{{condition}}-{{assembly}}-{{peak_caller}}.log", **config)
             benchmark:
                 expand("{benchmark_dir}/idr/{{condition}}-{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
-            params: ""
+            params:
+                lambda wildcards: "--rank 13" if wildcards.peak_caller == 'hmmratac' else ""
             conda:
                 "../envs/idr.yaml"
             shell:

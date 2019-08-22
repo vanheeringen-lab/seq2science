@@ -23,6 +23,10 @@ if config.get('peak_caller', False):
     config['peak_caller'] = {k: v for d in config['peak_caller'] for k, v in d.items()}
 
 if 'condition' in samples:
+    if 'hmmratac' in config['peak_caller']:
+        assert config['combine_replicates'] == 'idr', \
+        f'HMMRATAC peaks can only be combined through idr'
+
     for condition in set(samples['condition']):
         for assembly in set(samples[samples['condition'] == condition]['assembly']):
             nr_samples = len(samples[(samples['condition'] == condition) & (samples['assembly'] == assembly)])

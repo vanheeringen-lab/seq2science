@@ -106,10 +106,14 @@ def get_trimming_qc(sample):
 
 def get_alignment_qc(sample):
     output = []
-    if not 'condition' in samples:
-        output.append(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.{{bam_sorter}}-{{bam_sort_order}}.metrics.txt")
+    if 'peak_caller' in samples:
+        if config['peak_caller'] in ['macs2', 'hmmratac']:
+            output.append(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.samtools-coordinate.metrics.txt")
+        else:
+            output.append(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.sambamba-queryname.metrics.txt")
     else:
-        output.append(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.samtools-coordinate.metrics.txt")
+        output.append(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.{{bam_sorter}}-{{bam_sort_order}}.metrics.txt")
+
     output.append(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.samtools_stats.txt")
 
     return expand(output, **config)
