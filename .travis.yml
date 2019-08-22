@@ -3,10 +3,14 @@ python:
   - 3.6
 
 install:
-  # install conda
   - sudo apt-get update
-  - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-  - bash miniconda.sh -b -p $HOME/miniconda
+
+  # install conda if not cached
+  - if [ -d $HOME/miniconda/bin/ ]; then
+      rm -rf $HOME/miniconda
+      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+      bash miniconda.sh -b -p $HOME/miniconda
+    fi
   - export PATH="$HOME/miniconda/bin:$PATH"
   - hash -r
   - conda config --set always_yes yes --set changeps1 no
@@ -28,3 +32,8 @@ script:
   - for i in {1..3}; do snakemake -s workflows/download_fastq/Snakefile --directory workflows/download_fastq -n -j 48 && break; done
   - for i in {1..3}; do snakemake -s workflows/alignment/Snakefile      --directory workflows/alignment      -n -j 48 && break; done
   - for i in {1..3}; do snakemake -s workflows/atac_seq/Snakefile       --directory workflows/atac_seq       -n -j 48 && break; done
+
+# speedup the slow build of our environment
+cache:
+    directories:
+     - ${HOME}/miniconda

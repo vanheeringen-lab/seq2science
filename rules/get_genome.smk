@@ -1,5 +1,6 @@
 # the filetypes genomepy will download
-config['genome_types'] = ['fa', 'fa.fai', "fa.sizes", "annotation.bed.gz", "annotation.gff.gz", "annotation.gtf"]
+config['genome_types'] = ['fa', 'fa.fai', "fa.sizes", "annotation.gtf"]
+config['temp_files'] = ["annotation.bed.gz", "annotation.gff.gz"]
 
 rule get_genome:
     """
@@ -8,7 +9,8 @@ rule get_genome:
     Automatically turns on/off plugins.
     """
     output:
-        expand("{genome_dir}/{{assembly}}/{{assembly}}.{genome_types}", **config)
+        expand("{genome_dir}/{{assembly}}/{{assembly}}.{genome_types}", **config),
+        temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.{temp_files}", **config))
     log:
         expand("{log_dir}/get_genome/{{assembly}}.log", **config)
     benchmark:
@@ -69,12 +71,11 @@ rule get_transcripts:
         if clean:
             shell(conda_gffread + " -w {output} -g {input.fa} {input.gtf} >> {log} 2>&1")
 
-        # purge the dirty formatting from the fasta file, then use this in gffread
         else:
+            # purge the dirty formatting from the fasta file, then use this in gffread
             # get location identifiers from the gtf (always the first element)
             locs = []
             with open(input.gtf[0], 'r') as gtf:
-            #with open(params.gtf[0], 'r') as gtf:
                 for line in gtf:
                     line = line.strip().split('\t')[0]
                     if line not in locs:
@@ -103,4 +104,3 @@ rule get_transcripts:
                         out.write(''.join(line))
 
             shell(conda_gffread + " -w {output} -g {params.purgedfa} {input.gtf} >> {log} 2>&1")
-            
