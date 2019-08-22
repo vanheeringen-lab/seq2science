@@ -24,7 +24,7 @@ install:
   - conda config --add channels bioconda
 
   # create snakemake env
-  - if [ ! "$conda_cached" == true ]; then
+  - if [ "$conda_cached" != true ]; then
       conda env create -f envs/snakemake-workflows.yaml;
     fi
 
