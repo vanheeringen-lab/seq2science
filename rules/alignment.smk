@@ -7,13 +7,13 @@ def get_alignment_pipes():
     pipes = set()
     if config.get('peak_caller', False):
         if 'macs2' in config['peak_caller'] or 'hmmratac' in config['peak_caller']:
-            pipes.add(pipe(expand("{result_dir}/{bwa_dir}/{{sample}}-{{assembly}}.samtools.pipe", **config)[0]))
+            pipes.add(pipe(expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}.samtools.pipe", **config)[0])) # renamed all 3 references to {bwa_dir} to {aligner_dir} (and the reference in the schema).
         if 'genrich' in config['peak_caller']:
-            pipes.add(pipe(expand("{result_dir}/{bwa_dir}/{{sample}}-{{assembly}}.sambamba.pipe", **config)[0]))
+            pipes.add(pipe(expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}.sambamba.pipe", **config)[0])) # Samtools and sambamba do not use {aligner_dir}, but instead {aligner}, so this could be renamed to that.
     else:
-        pipes.add(pipe(expand("{result_dir}/{bwa_dir}/{{sample}}-{{assembly}}.{bam_sorter}.pipe", **config)[0]))
-
+        pipes.add(pipe(expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}.{bam_sorter}.pipe", **config)[0])) # That might make the alignment.schema.yaml less clear (but also smaller).
     return pipes
+
 
 if config['aligner'] == 'bowtie2':
     rule bowtie2_index:
@@ -59,6 +59,7 @@ if config['aligner'] == 'bowtie2':
             """
             bowtie2 --threads {threads} -x {input.index}{wildcards.assembly} {params.input} 2> {log} | tee {output} 1> /dev/null 2>> {log}
             """
+
 
 elif config['aligner'] == 'bwa':
     config['bwaindex_types'] = ['amb', 'ann', 'bwt', 'pac', 'sa']
@@ -107,6 +108,7 @@ elif config['aligner'] == 'bwa':
             """
             bwa mem -t {threads} {params.index_dir} {input.reads} 2> {log} | tee {output} 1> /dev/null 2>> {log}
             """
+
 
 elif config['aligner'] == 'hisat2':
     rule hisat2_index:
@@ -159,8 +161,7 @@ elif config['aligner'] == 'salmon':
         input:
             expand("{genome_dir}/{{assembly}}/{{assembly}}.transcripts.fa", **config)
         output:
-            dir=directory(expand("{genome_dir}/{{assembly}}/index/{aligner}/", **config)),
-            index=expand("{genome_dir}/{{assembly}}/index/{aligner}/hash.bin", **config)
+            directory(expand("{genome_dir}/{{assembly}}/index/{aligner}", **config))
         log:
             expand("{log_dir}/{aligner}_index/{{assembly}}.log", **config)
         benchmark:
@@ -171,16 +172,16 @@ elif config['aligner'] == 'salmon':
         conda:
             "../envs/salmon.yaml"
         shell:
-            "salmon index -t {input} -i {output.dir} {params} --threads {threads} > {log} 2&1"
+            "salmon index -t {input} -i {output} {params} --threads {threads} &> {log}"
 
 
     rule salmon_quant:
         input:
             reads=get_reads,
-            index=expand("{genome_dir}/{{assembly}}/index/{aligner}/hash.bin", **config)
+            index=expand("{genome_dir}/{{assembly}}/index/{aligner}", **config)
         output:
-            dir=expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}/{{sample}}", **config),
-            pipe=pipe(expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}.bampipe", **config))
+            dir=directory(expand("{result_dir}/{aligner}/{{assembly}}/{{sample}}", **config)), #this could become a temp() directory, but quant.sf files are useful for other (currently unsupported) analyses
+            pipe=get_alignment_pipes()
         log:
             expand("{log_dir}/{aligner}_align/{{sample}}-{{assembly}}.log", **config)
         benchmark:
@@ -189,16 +190,36 @@ elif config['aligner'] == 'salmon':
             input=lambda wildcards, input: f'-r {input.reads}' if config['layout'][wildcards.sample] == 'SINGLE' else \
                                            f'-1 {input.reads[0]} -2 {input.reads[1]}',
             flags=config['salmon_aln']
-        threads: 21
+        threads: 20
         conda:
             "../envs/salmon.yaml"
         shell:
             """
             salmon quant -i {input.index} -l A {params.input} {params.flags} -o {output.dir} \
-            --writeMappings --threads $(expr {threads} / 3) 2> {log} | \
-            samtools view -b - -@ $(expr {threads} / 3) | \
-            samtools sort -T sort.tmp -o - -@ $(expr {threads} / 3) > {output.pipe}
+            --threads $(expr 4 * {threads} / 5) --writeMappings 2> {log} | \
+            samtools view -b - -@ $(expr {threads} / 5) | tee {output.pipe} 1> /dev/null 2>> {log}
             """
+
+            # works:
+            # salmon quant -i {input.index} -l A {params.input} {params.flags} -o {output.dir} --threads $(expr {threads} / 3)
+
+
+
+            # """
+            # salmon quant -i {input.index}/hash.bin -l A {params.input} {params.flags} -o {output.dir} \
+            # --writeMappings --threads $(expr {threads} / 3) 2> {log} | \
+            # samtools view -b - -@ $(expr {threads} / 3) | tee {output.pipe} 1> /dev/null 2>> {log}
+
+            # """
+            # samtools sort -T sort.tmp -o - -@ $(expr {threads} / 3) > {output.pipe}
+            # """
+
+            # """
+            # salmon quant -i {input.index} -l A {params.input} {params.flags} -o {output.dir} \
+            # --writeMappings --threads $(expr {threads} / 3) 2> {log} | \
+            # samtools view -b - -@ $(expr {threads} / 3) | \
+            # samtools sort -T sort.tmp -o - -@ $(expr {threads} / 3) > {output.pipe}
+            # """
 
                                 ### not sure if -o {output.dir} can be mixed with --writeMappings...
                                 ### source https://github.com/COMBINE-lab/salmon/issues/38

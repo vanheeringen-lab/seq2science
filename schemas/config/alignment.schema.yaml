@@ -16,20 +16,22 @@ properties:
     description: directory inside the result dir where to store the workflow trimming quality controls
     default: trimmed_qc
     type: string
-  bwa_dir:
-    description: directory inside the result dir where to store the workflow bwa output
-    default: bwa
-    type: string
+#  aligner_dir:
+#    description: directory inside the result dir where to store the workflow bwa output
+#    default: bwa
+#    type: string
   dedup_dir:
     description: directory inside the result dir where to store the workflow deduplicated alignment
     default: dedup
     type: string
+
 
   # trim_galore parameters
   trim_galore:
     description: trim_galore settings (note that the adapter is autodetected, so you do not have to set it here)
     default: --quality 10 --length 20 --consider_already_trimmed 10
     type: string
+
 
   # aligner
   aligner:
@@ -51,8 +53,9 @@ properties:
     type: string
   salmon_aln:
     description: optional arguments for salmon alignment
-    default: --seqBias --gcBias #--fldMean --fldSD (defaults are in use) #--posBias (currently experimental)
+    default: --seqBias --gcBias --validateMappings # --fldMean --fldSD (defaults are in use) # --posBias (currently experimental)
     type: string
+
 
   # bam sorting
   bam_sorter:
