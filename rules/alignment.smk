@@ -7,11 +7,11 @@ def get_alignment_pipes():
     pipes = set()
     if config.get('peak_caller', False):
         if 'macs2' in config['peak_caller'] or 'hmmratac' in config['peak_caller']:
-            pipes.add(pipe(expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}.samtools.pipe", **config)[0])) # renamed all 3 references to {bwa_dir} to {aligner_dir} (and the reference in the schema).
+            pipes.add(pipe(expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}.samtools.pipe", **config)[0]))
         if 'genrich' in config['peak_caller']:
-            pipes.add(pipe(expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}.sambamba.pipe", **config)[0])) # Samtools and sambamba do not use {aligner_dir}, but instead {aligner}, so this could be renamed to that.
+            pipes.add(pipe(expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}.sambamba.pipe", **config)[0]))
     else:
-        pipes.add(pipe(expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}.{bam_sorter}.pipe", **config)[0])) # That might make the alignment.schema.yaml less clear (but also smaller).
+        pipes.add(pipe(expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}.{bam_sorter}.pipe", **config)[0]))
     return pipes
 
 
@@ -199,44 +199,6 @@ elif config['aligner'] == 'salmon':
             --threads $(expr 4 * {threads} / 5) --writeMappings 2> {log} | \
             samtools view -b - -@ $(expr {threads} / 5) | tee {output.pipe} 1> /dev/null 2>> {log}
             """
-
-            # works:
-            # salmon quant -i {input.index} -l A {params.input} {params.flags} -o {output.dir} --threads $(expr {threads} / 3)
-
-
-
-            # """
-            # salmon quant -i {input.index}/hash.bin -l A {params.input} {params.flags} -o {output.dir} \
-            # --writeMappings --threads $(expr {threads} / 3) 2> {log} | \
-            # samtools view -b - -@ $(expr {threads} / 3) | tee {output.pipe} 1> /dev/null 2>> {log}
-
-            # """
-            # samtools sort -T sort.tmp -o - -@ $(expr {threads} / 3) > {output.pipe}
-            # """
-
-            # """
-            # salmon quant -i {input.index} -l A {params.input} {params.flags} -o {output.dir} \
-            # --writeMappings --threads $(expr {threads} / 3) 2> {log} | \
-            # samtools view -b - -@ $(expr {threads} / 3) | \
-            # samtools sort -T sort.tmp -o - -@ $(expr {threads} / 3) > {output.pipe}
-            # """
-
-                                ### not sure if -o {output.dir} can be mixed with --writeMappings...
-                                ### source https://github.com/COMBINE-lab/salmon/issues/38
-
-            # """
-            # salmon quant -i {input.index} -l A {params.input} {params.flags} \ #-o {output} --threads {threads} 2> {log} #(if the desired output were quant.sf files)
-            # --writeMappings --threads $(expr {threads} / 3) 2> {log} | \ #output mapping information in a SAM compatible format to stdout.
-            # samtools view -Sb - -@ $(expr {threads} / 3) | \ #convert SAM to BAM. (-S is autodetected. Can be removed)
-            # samtools sort -T sort.tmp -o - -@ $(expr {threads} / 3) > {output} #sort by chromosomal coordinates
-            # """
-
-            # """
-            # salmon quant -i {input.index} {params.input} 2> {log} \
-            # # output stdout in SAM format, and convert this to BAM.
-            # # requires mapping-based mode with a quasi-index (default and current)
-            # --writeMappings | samtools view -Sb - | samtools sort -T sort.tmp -o - > {output}
-            # """
 
 
 rule sambamba_sort:
