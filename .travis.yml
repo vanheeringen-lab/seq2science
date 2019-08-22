@@ -3,7 +3,7 @@ python:
   - 3.6
 
 install:
-  - sudo apt-get update
+  # sudo apt-get update (enable once apt-get is used)
 
   # install conda if not cached
   - if [ ! -d $HOME/miniconda/bin/ ]; then
