@@ -30,6 +30,6 @@ script:
   - for i in {1..3}; do snakemake -s workflows/atac_seq/Snakefile       --directory workflows/atac_seq       -n -j 48 && break; done
 
 # speedup the slow build of our environment
- cache:
+cache:
     directories:
      - ${HOME}/anaconda3
