@@ -3,11 +3,11 @@ rule samtools_stats:
     Get general stats from bam files like percentage mapped.
     """
     input:
-        expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config)
+        expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.{{bam_sorter}}-{{bam_sort_order}}.bam", **config)
     output:
-        expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.samtools_stats.txt", **config)
+        expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.{{bam_sorter}}-{{bam_sort_order}}.samtools_stats.txt", **config)
     log:
-        expand("{log_dir}/samtools_stats/{{sample}}-{{assembly}}.log", **config)
+        expand("{log_dir}/samtools_stats/{{sample}}-{{assembly}}-{{bam_sorter}}-{{bam_sort_order}}.log", **config)
     conda:
         "../envs/samtools.yaml"
     shell:
@@ -114,7 +114,7 @@ def get_alignment_qc(sample):
     else:
         output.append(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.{{bam_sorter}}-{{bam_sort_order}}.metrics.txt")
 
-    output.append(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.samtools_stats.txt")
+    output.append(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.{{bam_sorter}}-{{bam_sort_order}}.samtools_stats.txt")
 
     return expand(output, **config)
 

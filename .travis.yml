@@ -2,10 +2,11 @@ language: python
 python:
   - 3.6
 
+
 install:
   # sudo apt-get update (enable once apt-get is used)
 
-  # install conda if not cached
+  # install (mini)conda if not cached
   - if [ ! -d $HOME/miniconda/bin/ ]; then
       conda_cached=false;
       rm -rf $HOME/miniconda;
@@ -23,20 +24,60 @@ install:
   - conda config --add channels conda-forge
   - conda config --add channels bioconda
 
-  # create snakemake env
+  # create snakemake env if not cached
   - if [ "$conda_cached" = false ]; then
       conda env create -f envs/snakemake-workflows.yaml;
     fi
 
+
 script:
   - source activate snakemake-workflows
 
-  # Do some dry runs
-  - for i in {1..3}; do snakemake -s workflows/download_fastq/Snakefile --directory workflows/download_fastq -n -j 48 && break; done
-  - for i in {1..3}; do snakemake -s workflows/alignment/Snakefile      --directory workflows/alignment      -n -j 48 && break; done
-  - for i in {1..3}; do snakemake -s workflows/atac_seq/Snakefile       --directory workflows/atac_seq       -n -j 48 && break; done
+  # Do some dry runs to test the DAG
+  # test download workflow
+  - echo 'download_default' && echo -en 'travis_fold:start:download_default\\r'
+  - for i in {1..3}; do snakemake -s workflows/download_fastq/Snakefile --directory workflows/download_fastq -n -j 48 --quiet && break; done
+  - echo -en 'travis_fold:end:download_default\\r'
 
-# speedup the slow build of our environment
+  # test alignment workflow
+  # default config
+  - echo 'alignment_default' && echo -en 'travis_fold:start:alignment_default\\r'
+  - for i in {1..5}; do snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --quiet && break; done
+  - echo -en 'travis_fold:end:alignment_default\\r'
+  # test aligners
+  - echo 'alignment_aligners' && echo -en 'travis_fold:start:alignment_aligners\\r'
+  - for i in {1..5}; do snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config aligner=bowtie2 --quiet && break; done
+  - for i in {1..5}; do snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config aligner=bwa     --quiet && break; done
+  - for i in {1..5}; do snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config aligner=hisat2  --quiet && break; done
+  - for i in {1..5}; do snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config aligner=salmon  --quiet && break; done
+  - echo -en 'travis_fold:end:alignment_aligners\\r'
+  # test sorting
+  - echo 'alignment_sorting' && echo -en 'travis_fold:start:alignment_sorting\\r'
+  - for i in {1..5}; do snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config bam_sorter=samtools bam_sort_order=coordinate --quiet && break; done
+  - for i in {1..5}; do snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config bam_sorter=samtools bam_sort_order=queryname  --quiet && break; done
+  - for i in {1..5}; do snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config bam_sorter=sambamba bam_sort_order=coordinate --quiet && break; done
+  - for i in {1..5}; do snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config bam_sorter=sambamba bam_sort_order=queryname  --quiet && break; done
+  - echo -en 'travis_fold:end:alignment_sorting\\r'
+
+  # test atac-seq workflow
+  # default config
+  - echo 'atac_default' && echo -en 'travis_fold:start:atac_default\\r'
+  - for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --quiet && break; done
+  - echo -en 'travis_fold:end:atac_default\\r'
+  # test different peak callers
+  - echo 'atac_peakcallers' && echo -en 'travis_fold:start:atac_peakcaller\\r'
+  - for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --configfile tests/genrich.yaml       --quiet && break; done
+  - for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --configfile tests/macs2.yaml         --quiet && break; done
+  - for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --configfile tests/genrich_macs2.yaml --quiet && break; done
+  - echo -en 'travis_fold:end:atac_peakcaller\\r'
+  # test different conditions
+  - echo 'atac_conditions' && echo -en 'travis_fold:start:atac_conditions\\r'
+  - for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=fisher samples=../../tests/sample_conditions.tsv --quiet && break; done
+  - for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=idr    samples=../../tests/sample_conditions.tsv --quiet && break; done
+  - echo -en 'travis_fold:end:atac_conditions\\r'
+
+
+# speedup the slow build of our environment by caching (mini)conda
 cache:
     directories:
      - ${HOME}/miniconda
