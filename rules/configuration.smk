@@ -22,6 +22,12 @@ samples.index = samples.index.map(str)
 if config.get('peak_caller', False):
     config['peak_caller'] = {k: v for k,v in config['peak_caller'].items()}
 
+if config.get('aligner', False):
+    aligner = list(config['aligner'].keys())[0]
+    for k,v in list(config['aligner'].values())[0].items():
+        config[k] = v
+    config['aligner'] = aligner
+
 if 'condition' in samples:
     if 'hmmratac' in config['peak_caller']:
         assert config['combine_replicates'] == 'idr', \

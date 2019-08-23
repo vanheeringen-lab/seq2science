@@ -32,25 +32,29 @@ properties:
   # aligner
   aligner:
     description: which aligner to use
-    default: bwa
-    enum: [bowtie2, bwa, hisat2, salmon]
-    type: string
+    type: object
+    properties:
+      bowtie2:  {type: object}
+      bwa:      {type: object}
+      hisat2:   {type: object}
+      salmon:   {type: object}
+    minProperties: 1
+    maxProperties: 1
+    additionalProperties: false
+    default:
+      bwa:
+        bwa_algo: bwtsw
 
-  # bwa alignment parameters
-  bwa_algo:
-    description: the algorithm bwa index uses for alignment
-    default: bwtsw
-    type: string
 
-  # salmon mapping
-  salmon_index:
-    description: optional arguments for salmon index, such as -k, --gencode and -decoys {decoyfile}
-    default: ''
-    type: string
-  salmon_aln:
-    description: optional arguments for salmon alignment
-    default: --seqBias --gcBias --validateMappings # --fldMean --fldSD (defaults are in use) # --posBias (currently experimental)
-    type: string
+#  # salmon mapping
+#  salmon_index:
+#    description: optional arguments for salmon index, such as -k, --gencode and -decoys {decoyfile}
+#    default: ''
+#    type: string
+#  salmon_aln:
+#    description: optional arguments for salmon alignment
+#    default: --seqBias --gcBias --validateMappings # --fldMean --fldSD (defaults are in use) # --posBias (currently experimental)
+#    type: string
 
   # samtools index
   samtools_index:
