@@ -39,7 +39,7 @@ script:
 
   # test alignment workflow
   # default config
-  - for i in {1..5}; do snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48
+  - for i in {1..5}; do snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 && break; done
   # test aligners
   - for i in {1..5}; do snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config aligner=bowtie2 && break; done
   - for i in {1..5}; do snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config aligner=bwa     && break; done
