@@ -1,6 +1,6 @@
 # the filetypes genomepy will download
 config['genome_types'] = ['fa', 'fa.fai', "fa.sizes", "annotation.gtf"]
-config['temp_files'] = ["annotation.bed.gz", "annotation.gff.gz"]
+config['genomepy_temp'] = ["annotation.bed.gz", "annotation.gff.gz"]
 
 rule get_genome:
     """
@@ -10,7 +10,7 @@ rule get_genome:
     """
     output:
         expand("{genome_dir}/{{assembly}}/{{assembly}}.{genome_types}", **config),
-        temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.{temp_files}", **config))
+        temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.{genomepy_temp}", **config))
     log:
         expand("{log_dir}/get_genome/{{assembly}}.log", **config)
     benchmark:
