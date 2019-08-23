@@ -52,18 +52,6 @@ properties:
     default: --seqBias --gcBias --validateMappings # --fldMean --fldSD (defaults are in use) # --posBias (currently experimental)
     type: string
 
-  # bam sorting
-  bam_sorter:
-    description: which sorting software to use
-    default: samtools
-    enum: [sambamba, samtools]
-    type: string
-  bam_sort_order:
-    description: sort order of aligned reads
-    default: coordinate
-    enum: [queryname, coordinate]
-    type: string
-
   # samtools index
   samtools_index:
     description: samtools index settings

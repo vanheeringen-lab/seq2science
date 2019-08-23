@@ -1,7 +1,12 @@
 def get_reads(wildcards):
-    if config['layout'].get(wildcards.sample, False) == "SINGLE":
-        return expand("{result_dir}/{trimmed_dir}/{{sample}}_trimmed.{fqsuffix}.gz", **config)
-    return sorted(expand("{result_dir}/{trimmed_dir}/{{sample}}_{fqext}_trimmed.{fqsuffix}.gz", **config))
+    if config.get('combine_replicates', '') == 'merge':
+        if config['layout'].get(wildcards.sample, False) == "SINGLE":
+            return expand("{result_dir}/{trimmed_dir}/merged/{{sample}}_trimmed.{fqsuffix}.gz", **config)
+        return sorted(expand("{result_dir}/{trimmed_dir}/merged/{{sample}}_{fqext}_trimmed.{fqsuffix}.gz", **config))
+    else:
+        if config['layout'].get(wildcards.sample, False) == "SINGLE":
+            return expand("{result_dir}/{trimmed_dir}/{{sample}}_trimmed.{fqsuffix}.gz", **config)
+        return sorted(expand("{result_dir}/{trimmed_dir}/{{sample}}_{fqext}_trimmed.{fqsuffix}.gz", **config))
 
 def get_alignment_pipes():
     pipes = set()
@@ -12,6 +17,7 @@ def get_alignment_pipes():
             pipes.add(pipe(expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}.sambamba.pipe", **config)[0]))
     else:
         pipes.add(pipe(expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}.{bam_sorter}.pipe", **config)[0]))
+
     return pipes
 
 

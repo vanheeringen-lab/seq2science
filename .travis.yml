@@ -74,6 +74,7 @@ script:
   - echo 'atac_conditions' && echo -en 'travis_fold:start:atac_conditions\\r'
   - snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=fisher samples=../../tests/sample_conditions.tsv --quiet
   - snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=idr    samples=../../tests/sample_conditions.tsv --quiet
+  - snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=merge  samples=../../tests/sample_conditions.tsv --quiet
   - echo -en 'travis_fold:end:atac_conditions\\r'
 
 

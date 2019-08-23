@@ -14,9 +14,10 @@ rule samtools_stats:
         "samtools stats {input} 1> {output} 2> {log}"
 
 def get_featureCounts_bam(wildcards):
-    if not 'condition' in samples:
-        return expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config)
-    return expand(f"{{result_dir}}/{{dedup_dir}}/{samples.loc[wildcards.sample, 'condition']}-{wildcards.assembly}.samtools-coordinate.bam", **config)
+    if wildcards.peak_caller == 'macs2':
+            return expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config)
+    else:
+        return expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.sambamba-queryname.bam", **config)
 
 
 rule featureCounts:
@@ -109,16 +110,20 @@ def get_alignment_qc(sample):
     if 'peak_caller' in config:
         if config['peak_caller'] in ['macs2', 'hmmratac']:
             output.append(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.samtools-coordinate.metrics.txt")
-        else:
+            output.append(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.samtools-coordinate.samtools_stats.txt")
+        if config['peak_caller'] in ['genrich']:
             output.append(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.sambamba-queryname.metrics.txt")
+            output.append(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.sambamba-queryname.samtools_stats.txt")
     else:
         output.append(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.{{bam_sorter}}-{{bam_sort_order}}.metrics.txt")
-
-    output.append(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.{{bam_sorter}}-{{bam_sort_order}}.samtools_stats.txt")
+        output.append(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.{{bam_sorter}}-{{bam_sort_order}}.samtools_stats.txt")
 
     return expand(output, **config)
 
 
 def get_peak_calling_qc(sample):
-    return expand(f"{{result_dir}}/{{peak_caller}}/{sample}-{samples.loc[sample]['assembly']}_featureCounts.txt.summary",
-                  **config)
+    assembly = samples.loc[sample]['assembly']
+    if config.get('combine_replicates', "") == 'merge':
+        sample = samples.loc[sample, 'condition']
+
+    return expand(f"{{result_dir}}/{{peak_caller}}/{sample}-{assembly}_featureCounts.txt.summary", **config)

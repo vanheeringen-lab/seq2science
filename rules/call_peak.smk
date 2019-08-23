@@ -1,6 +1,6 @@
 def get_genrich_replicates(wildcards):
     sample_condition, assembly = wildcards.fname.split('-')
-    if not 'condition' in samples.columns \
+    if not 'condition' in samples.columns or config.get('combine_replicates', '') == 'merge' \
     or (sample_condition in samples.index and not sample_condition in samples['condition'].values):
         return expand(f"{{result_dir}}/{{dedup_dir}}/{wildcards.fname}.sambamba-queryname.bam", **config)
     else:
@@ -58,9 +58,14 @@ rule call_peak_genrich:
 config['macs2_types'] = ['control_lambda.bdg', 'summits.bed', 'peaks.narrowPeak',
                          'peaks.xls', 'treat_pileup.bdg']
 def get_fastqc(wildcards):
-    if config['layout'].get(wildcards.sample, False) == "SINGLE":
-        return expand("{result_dir}/{trimmed_dir}/{{sample}}_trimmed_fastqc.zip", **config)
-    return sorted(expand("{result_dir}/{trimmed_dir}/{{sample}}_{fqext1}_trimmed_fastqc.zip", **config))
+    if config.get('combine_replicates', '') == 'merge':
+        if config['layout'][wildcards.sample] == "SINGLE":
+            return expand("{result_dir}/{trimmed_dir}/merged/{{sample}}_trimmed_fastqc.zip", **config)
+        return sorted(expand("{result_dir}/{trimmed_dir}/merged/{{sample}}_{fqext1}_trimmed_fastqc.zip", **config))
+    else:
+        if config['layout'][wildcards.sample] == "SINGLE":
+            return expand("{result_dir}/{trimmed_dir}/{{sample}}_trimmed_fastqc.zip", **config)
+        return sorted(expand("{result_dir}/{trimmed_dir}/{{sample}}_{fqext1}_trimmed_fastqc.zip", **config))
 
 
 def get_macs2_bam(wildcards):

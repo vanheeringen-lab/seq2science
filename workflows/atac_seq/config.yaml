@@ -16,3 +16,5 @@ peak_caller:
 #  hmmratac:
 #      ""
 
+combine_replicates: merge
+
