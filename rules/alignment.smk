@@ -1,8 +1,8 @@
 def get_reads(wildcards):
     if config.get('combine_replicates', '') == 'merge':
         if config['layout'].get(wildcards.sample, False) == "SINGLE":
-            return expand("{result_dir}/{dedup_dir}/merged/{{sample}}_trimmed.{fqsuffix}.gz", **config)
-        return sorted(expand("{result_dir}/{dedup_dir}/merged/{{sample}}_{fqext}_trimmed.{fqsuffix}.gz", **config))
+            return expand("{result_dir}/{trimmed_dir}/merged/{{sample}}_trimmed.{fqsuffix}.gz", **config)
+        return sorted(expand("{result_dir}/{trimmed_dir}/merged/{{sample}}_{fqext}_trimmed.{fqsuffix}.gz", **config))
     else:
         if config['layout'].get(wildcards.sample, False) == "SINGLE":
             return expand("{result_dir}/{trimmed_dir}/{{sample}}_trimmed.{fqsuffix}.gz", **config)

@@ -84,6 +84,9 @@ rule multiqc:
 
 
 def get_trimming_qc(sample):
+    if config.get('combine_replicates', '') == 'merge':
+        sample = samples.loc[sample, 'condition']
+
     if config['layout'][sample] == 'SINGLE':
         return expand([f"{{result_dir}}/{{trimmed_dir}}/{sample}_fastqc.zip",
                        f"{{result_dir}}/{{trimmed_dir}}/{sample}_trimmed_fastqc.zip",

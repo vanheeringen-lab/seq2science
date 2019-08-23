@@ -100,6 +100,7 @@ def get_bigfiles(wildcards):
     bigfiles = {}
     bigfiles['bigwigs'] = []; bigfiles['bigpeaks'] = []
 
+    # get all the peak files for all replicates or for the replicates combined
     if 'condition' in samples:
         for condition in set(samples['condition']):
             for assembly in set(samples[samples['condition'] == condition]['assembly']):
@@ -108,8 +109,14 @@ def get_bigfiles(wildcards):
         for sample in samples.index:
             bigfiles['bigpeaks'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{sample}-{samples.loc[sample, 'assembly']}.bigNarrowPeak", **config))
 
-    for sample in samples.index:
-        bigfiles['bigwigs'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{sample}-{samples.loc[sample, 'assembly']}.bw", **config))
+    # get all the bigwigs
+    if config.get('combine_replicates', '') == 'merge':
+        for condition in set(samples['condition']):
+            for assembly in set(samples[samples['condition'] == condition]['assembly']):
+                bigfiles['bigwigs'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{condition}-{assembly}.bw", **config))
+    else:
+        for sample in samples.index:
+            bigfiles['bigwigs'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{sample}-{samples.loc[sample, 'assembly']}.bw", **config))
 
     return bigfiles
 

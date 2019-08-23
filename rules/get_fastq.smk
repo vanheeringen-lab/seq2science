@@ -71,6 +71,8 @@ rule sra2fastq_SE:
         expand("{result_dir}/{fastq_dir}/{{sample}}.{fqsuffix}.gz", **config)
     log:
         expand("{log_dir}/sra2fastq_SE/{{sample}}.log", **config)
+    wildcard_constraints:
+        sample="[^_/]*"
     benchmark:
         expand("{benchmark_dir}/sra2fastq_SE/{{sample}}.benchmark.txt", **config)[0]
     threads: 8
@@ -126,19 +128,17 @@ rule sra2fastq_PE:
 
 if 'condition' in samples and config.get('combine_replicates', '') == 'merge':
     def get_merge_replicates(wildcards):
-            return expand([f"{{result_dir}}/{{trimmed_dir}}/{replicate}{wildcards.fqext}_trimmed.{{fqsuffix}}.gz"
-                   for replicate in samples[samples['condition'] == wildcards.condition].index], **config)
+        return expand([f"{{result_dir}}/{{trimmed_dir}}/{replicate}{wildcards.fqext}_trimmed.{{fqsuffix}}.gz"
+               for replicate in samples[samples['condition'] == wildcards.condition].index], **config)
 
-
-    # ruleorder: merge_replicates > sra2fastq_PE > sra2fastq_SE
     rule merge_replicates:
         input:
             get_merge_replicates
         output:
-            sorted(expand("{result_dir}/{dedup_dir}/merged/{{condition}}{{fqext}}_trimmed.{fqsuffix}.gz", **config))
+            sorted(expand("{result_dir}/{trimmed_dir}/merged/{{condition}}{{fqext}}_trimmed.{fqsuffix}.gz", **config))
         wildcard_constraints:
             fqext=".*",
-    #         condition="[^_]*"
+            condition="[^_]*"
     #     log:
     #         expand("{log_dir}/sra2fastq_PE/{{sample}}.log", **config)
     #     benchmark:

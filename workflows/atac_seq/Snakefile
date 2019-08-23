@@ -38,4 +38,4 @@ rule call_peaks_all:
     """
     input:
          expand("{result_dir}/trackhub/", **config),
-         expand("{result_dir}/qc/multiqc.html", **config)
+#          expand("{result_dir}/qc/multiqc.html", **config)
