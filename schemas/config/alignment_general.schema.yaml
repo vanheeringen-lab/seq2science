@@ -46,16 +46,6 @@ properties:
         bwa_algo: bwtsw
 
 
-#  # salmon mapping
-#  salmon_index:
-#    description: optional arguments for salmon index, such as -k, --gencode and -decoys {decoyfile}
-#    default: ''
-#    type: string
-#  salmon_aln:
-#    description: optional arguments for salmon alignment
-#    default: --seqBias --gcBias --validateMappings # --fldMean --fldSD (defaults are in use) # --posBias (currently experimental)
-#    type: string
-
   # samtools index
   samtools_index:
     description: samtools index settings

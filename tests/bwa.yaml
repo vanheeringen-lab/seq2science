@@ -1,0 +1,8 @@
+# tab-separated file of the samples
+samples: samples.tsv
+
+
+# which aligner to use
+aligner: bwa
+  bwa_algo: bwtsw
+
