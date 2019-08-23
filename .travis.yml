@@ -46,10 +46,10 @@ script:
   - echo -en 'travis_fold:end:alignment_default\\r'
   # test aligners
   - echo 'alignment_aligners' && echo -en 'travis_fold:start:alignment_aligners\\r'
-  - snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config aligner=bowtie2 --quiet
-  - snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config aligner=bwa     --quiet
-  - snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config aligner=hisat2  --quiet
-  - snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config aligner=salmon  --quiet
+  - snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile tests/bowtie2.yaml --quiet
+  - snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile tests/bwa.yaml     --quiet
+  - snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile tests/hisat2.yaml  --quiet
+  - snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile tests/salmon.yaml  --quiet
   - echo -en 'travis_fold:end:alignment_aligners\\r'
   # test sorting
   - echo 'alignment_sorting' && echo -en 'travis_fold:start:alignment_sorting\\r'
