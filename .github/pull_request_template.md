@@ -1,12 +1,3 @@
----
-name: Pull request
-about: Propose a change
-title: 'PR: [put title here]'
-labels: ''
-assignees: ''
-
----
-
 **What (problem) is the PR solving**
 A description of the problem that is being solved. Please link to other relevant issues/pr if relevant
 
