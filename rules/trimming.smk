@@ -20,7 +20,7 @@ rule trim_galore_SE:
         config=config['trim_galore'],
         fqsuffix=config['fqsuffix']
     wildcard_constraints:
-        sample=".*(?<!{fqext1}|{fqext2})$"
+        sample=f".*(?<!{config['fqext1']}|{config['fqext2']})+"
     shell:
         """
         cpulimit --include-children -l {threads}00 --\
