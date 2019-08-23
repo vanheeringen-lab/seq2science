@@ -121,13 +121,13 @@ for key, value in config.items():
 logger.info("\n\n")
 
 
-# If hmmratac peak caller, check if all samples are paired-end
+# if hmmratac peak caller, check if all samples are paired-end
 if config.get('peak_caller', False) and 'hmmratac' in config['peak_caller']:
     assert all([config['layout'][sample] == 'PAIRED' for sample in samples.index]), \
     "HMMRATAC requires all samples to be paired end"
 
 
-# Find conda directories. Does not work with singularity.
+# find conda directories. Does not work with singularity.
 def conda_path(yaml):
     """ Find the path to a conda directory """
     import hashlib
@@ -145,6 +145,7 @@ def conda_path(yaml):
     path = os.path.join(env_dir, dir_hash)
     return path
 
+#
 if 'condition' in samples and config.get('combine_replicates', "") == 'merge':
     for sample in samples.index:
         condition = samples.loc[sample, 'condition']
