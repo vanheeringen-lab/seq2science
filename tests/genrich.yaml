@@ -1,0 +1,8 @@
+# tab-separated file of the samples
+samples: samples.tsv
+
+
+# peak callers (supported peak callers are macs2, and genrich, and hmmratac is not fully supported yet)
+peak_caller:
+  genrich:
+      -y -j

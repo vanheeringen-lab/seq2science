@@ -19,11 +19,26 @@ samples.index = samples.index.map(str)
 
 
 # apply workflow specific changes
-if 'assembly' in samples:
-    config['assemblies'] = set(samples['assembly'])
-
 if config.get('peak_caller', False):
-    config['peak_caller'] = {k: v for d in config['peak_caller'] for k, v in d.items()}
+    config['peak_caller'] = {k: v for k,v in config['peak_caller'].items()}
+
+if 'condition' in samples:
+    if 'hmmratac' in config['peak_caller']:
+        assert config['combine_replicates'] == 'idr', \
+        f'HMMRATAC peaks can only be combined through idr'
+
+    for condition in set(samples['condition']):
+        for assembly in set(samples[samples['condition'] == condition]['assembly']):
+            nr_samples = len(samples[(samples['condition'] == condition) & (samples['assembly'] == assembly)])
+            assert nr_samples >= 2,\
+            f'When specifying conditions every condition needs at least two samples, however you gave {nr_samples}'\
+            f' sample for condition {condition} and assembly {assembly}'
+
+            if config.get('combine_replicates', '') == 'idr':
+                assert nr_samples == 2,\
+                f'For IDR to work you need two samples per condition, however you gave {nr_samples} samples for'\
+                f' condition {condition} and assembly {assembly}'
+
 
 # cut off trailing slashes and make absolute path
 for key, value in config.items():
@@ -31,6 +46,7 @@ for key, value in config.items():
         if key in ['result_dir', 'genome_dir', 'rule_dir']:
             value = os.path.abspath(value)
         config[key] = re.split("\/$", value)[0]
+
 
 # check if paired-end filename suffixes are lexicographically ordered
 config['fqext'] = [config['fqext1'], config['fqext2']]

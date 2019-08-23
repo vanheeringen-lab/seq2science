@@ -3,15 +3,20 @@ rule samtools_stats:
     Get general stats from bam files like percentage mapped.
     """
     input:
-        expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config)
+        expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.{{bam_sorter}}-{{bam_sort_order}}.bam", **config)
     output:
-        expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.samtools_stats.txt", **config)
+        expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.{{bam_sorter}}-{{bam_sort_order}}.samtools_stats.txt", **config)
     log:
-        expand("{log_dir}/samtools_stats/{{sample}}-{{assembly}}.log", **config)
+        expand("{log_dir}/samtools_stats/{{sample}}-{{assembly}}-{{bam_sorter}}-{{bam_sort_order}}.log", **config)
     conda:
         "../envs/samtools.yaml"
     shell:
         "samtools stats {input} 1> {output} 2> {log}"
+
+def get_featureCounts_bam(wildcards):
+    if not 'condition' in samples:
+        return expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config)
+    return expand(f"{{result_dir}}/{{dedup_dir}}/{samples.loc[wildcards.sample, 'condition']}-{wildcards.assembly}.samtools-coordinate.bam", **config)
 
 
 rule featureCounts:
@@ -21,7 +26,7 @@ rule featureCounts:
     https://www.biostars.org/p/228636/
     """
     input:
-        bam=expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config),
+        bam=get_featureCounts_bam,
         peak=expand("{result_dir}/{{peak_caller}}/{{sample}}-{{assembly}}_peaks.narrowPeak", **config)
     output:
         tmp_saf=temp(expand("{result_dir}/{{peak_caller}}/{{sample}}-{{assembly}}.saf", **config)),
@@ -60,8 +65,12 @@ rule fastqc:
 def get_qc_files(wildcards):
     assert 'quality_control' in globals(), "When trying to generate multiqc output, make sure that the "\
                                            "variable 'quality_control' exists and contains all the "\
-                                           "relevant quality control files."
-    return quality_control
+                                           "relevant quality control functions."
+    qc = []
+    for sample in samples[samples['assembly'] == wildcards.assembly].index:
+        for function in quality_control:
+            qc.extend(function(sample))
+    return qc
 
 
 rule multiqc:
@@ -71,16 +80,16 @@ rule multiqc:
     input:
        get_qc_files
     output:
-        expand("{result_dir}/qc/multiqc.html", **config),
-        directory(expand("{result_dir}/qc/multiqc_data", **config))
+        expand("{result_dir}/qc/multiqc_{{assembly}}.html", **config),
+        directory(expand("{result_dir}/qc/multiqc_{{assembly}}_data", **config))
     params:
         "{result_dir}/qc/".format(**config)
     log:
-        expand("{log_dir}/multiqc.log", **config)
+        expand("{log_dir}/multiqc_{{assembly}}.log", **config)
     conda:
         "../envs/qc.yaml"
     shell:
-        "multiqc {input} -o {params} -n multiqc.html --config ../../multiqc_config.yaml > {log} 2>&1"
+        "multiqc {input} -o {params} -n multiqc_{wildcards.assembly}.html --config ../../schemas/multiqc_config.yaml > {log} 2>&1"
 
 
 def get_trimming_qc(sample):
@@ -97,11 +106,15 @@ def get_trimming_qc(sample):
 
 def get_alignment_qc(sample):
     output = []
-    if not 'condition' in samples:
-        output.append(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.{{bam_sorter}}-{{bam_sort_order}}.metrics.txt")
+    if 'peak_caller' in config:
+        if config['peak_caller'] in ['macs2', 'hmmratac']:
+            output.append(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.samtools-coordinate.metrics.txt")
+        else:
+            output.append(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.sambamba-queryname.metrics.txt")
     else:
-        output.append(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.samtools-coordinate.metrics.txt")
-    output.append(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.samtools_stats.txt")
+        output.append(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.{{bam_sorter}}-{{bam_sort_order}}.metrics.txt")
+
+    output.append(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.{{bam_sorter}}-{{bam_sort_order}}.samtools_stats.txt")
 
     return expand(output, **config)
 
