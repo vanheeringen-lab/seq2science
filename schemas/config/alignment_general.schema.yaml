@@ -39,7 +39,6 @@ properties:
       hisat2:   {type: object}
       salmon:   {type: object}
     minProperties: 1
-    maxProperties: 1
     additionalProperties: false
     default:
       bwa:

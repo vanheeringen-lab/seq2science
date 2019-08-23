@@ -3,6 +3,9 @@ samples: samples.tsv
 
 
 # which aligner to use
-aligner: salmon
-  salmon_index: ''
-  salmon_aln: --seqBias --gcBias --validateMappings
+aligner:
+  salmon:
+    salmon_index:
+      - ''
+    salmon_aln:
+      - '--seqBias --gcBias --validateMappings'

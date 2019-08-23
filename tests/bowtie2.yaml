@@ -3,5 +3,8 @@ samples: samples.tsv
 
 
 # which aligner to use
-aligner: bowtie2
+aligner:
+  bowtie2:
+    bowtie2_params:
+      - ""
 

@@ -24,8 +24,8 @@ if config.get('peak_caller', False):
 
 if config.get('aligner', False):
     aligner = list(config['aligner'].keys())[0]
-    for k,v in list(config['aligner'].values())[0].items():
-        config[k] = v
+    for k, v in list(config['aligner'].values())[0].items():
+        config[k] = v[0]
     config['aligner'] = aligner
 
 if 'condition' in samples:
@@ -145,7 +145,7 @@ def conda_path(yaml):
     path = os.path.join(env_dir, dir_hash)
     return path
 
-#
+# if samples are merged add the layout of the condition to the config
 if 'condition' in samples and config.get('combine_replicates', "") == 'merge':
     for sample in samples.index:
         condition = samples.loc[sample, 'condition']
