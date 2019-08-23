@@ -92,7 +92,7 @@ rule narrowpeak_bignarrowpeak:
         # keep first 10 columns, idr adds extra columns we do not need for our bigpeak
         cut -d$'\t' -f 1-10 {input.narrowpeak} |
         LC_COLLATE=C sort -k1,1 -k2,2n > {output.tmp}
-        bedToBigBed -type=bed4+6 -as=../../bigNarrowPeak.as {output.tmp} {input.genome_size} {output.out} > {log} 2>&1
+        bedToBigBed -type=bed4+6 -as=../../schemas/bigNarrowPeak.as {output.tmp} {input.genome_size} {output.out} > {log} 2>&1
         """
 
 
@@ -166,10 +166,10 @@ rule trackhub:
                                 else:
                                     bigpeak = False
                                 conditions.add(samples.loc[sample, 'condition'])
-                                sample_name = f"{samples.loc[sample, 'condition']}{peak_caller}"
+                                sample_name = f"{samples.loc[sample, 'condition']}{peak_caller}PEAK"
                             else:
                                 bigpeak = f"{config['result_dir']}/{peak_caller}/{sample}-{assembly}.bigNarrowPeak"
-                                sample_name = f"{sample}{peak_caller}"
+                                sample_name = f"{sample}{peak_caller}PEAK"
 
                             if bigpeak:
                                 track = trackhub.Track(
@@ -183,7 +183,7 @@ rule trackhub:
                                 trackdb.add_tracks(track)
 
                             bigwig = f"{config['result_dir']}/{peak_caller}/{sample}-{assembly}.bw"
-                            sample_name = f"{sample}{peak_caller}"
+                            sample_name = f"{sample}{peak_caller}BW"
 
                             track = trackhub.Track(
                                 name=sample_name,    # track names can't have any spaces or special chars.
