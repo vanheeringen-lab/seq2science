@@ -62,6 +62,7 @@ script:
   # test different conditions
   - for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=fisher samples=../../tests/sample_conditions.tsv && break; done
   - for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=idr    samples=../../tests/sample_conditions.tsv && break; done
+  - for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=merge  samples=../../tests/sample_conditions.tsv && break; done
 
 
 # speedup the slow build of our environment by caching (mini)conda
