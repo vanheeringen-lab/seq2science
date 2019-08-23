@@ -35,33 +35,46 @@ script:
 
   # Do some dry runs to test the DAG
   # test download workflow
-  - fold_start for i in {1..3}; do snakemake -s workflows/download_fastq/Snakefile --directory workflows/download_fastq -n -j 48 && break; done)
+  - echo -en 'travis_fold:start:download_default'
+  - for i in {1..3}; do snakemake -s workflows/download_fastq/Snakefile --directory workflows/download_fastq -n -j 48 && break; done
+  - echo -en 'travis_fold:end:download_default'
 
   # test alignment workflow
   # default config
-  - fold_start for i in {1..5}; do snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 && break; done
+  - echo -en 'travis_fold:start:alignment_default'
+  - for i in {1..5}; do snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 && break; done
+  - echo -en 'travis_fold:end:alignment_default'
   # test aligners
-  - fold_start for i in {1..5}; do snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config aligner=bowtie2 && break; done
-  - fold_start for i in {1..5}; do snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config aligner=bwa     && break; done
-  - fold_start for i in {1..5}; do snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config aligner=hisat2  && break; done
-  - fold_start for i in {1..5}; do snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config aligner=salmon  && break; done
+  - echo -en 'travis_fold:start:alignment_aligners'
+  - for i in {1..5}; do snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config aligner=bowtie2 && break; done
+  - for i in {1..5}; do snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config aligner=bwa     && break; done
+  - for i in {1..5}; do snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config aligner=hisat2  && break; done
+  - for i in {1..5}; do snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config aligner=salmon  && break; done
+  - echo -en 'travis_fold:end:alignment_aligners'
   # test sorting
-  - fold_start for i in {1..5}; do snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config bam_sorter=samtools bam_sort_order=coordinate && break; done
-  - fold_start for i in {1..5}; do snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config bam_sorter=samtools bam_sort_order=queryname  && break; done
-  - fold_start for i in {1..5}; do snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config bam_sorter=sambamba bam_sort_order=coordinate && break; done
-  - fold_start for i in {1..5}; do snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config bam_sorter=sambamba bam_sort_order=queryname  && break; done
+  - echo -en 'travis_fold:start:alignment_sorting'
+  - for i in {1..5}; do snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config bam_sorter=samtools bam_sort_order=coordinate && break; done
+  - for i in {1..5}; do snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config bam_sorter=samtools bam_sort_order=queryname  && break; done
+  - for i in {1..5}; do snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config bam_sorter=sambamba bam_sort_order=coordinate && break; done
+  - for i in {1..5}; do snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config bam_sorter=sambamba bam_sort_order=queryname  && break; done
+  - echo -en 'travis_fold:end:alignment_sorting'
 
   # test atac-seq workflow
   # default config
-  - fold_start for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 & break; done
+  - echo -en 'travis_fold:start:atac_default'
+  - for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 & break; done
+  - echo -en 'travis_fold:end:atac_default'
   # test different peak callers
-  - fold_start for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --configfile tests/genrich.yaml & break; done
-  - fold_start for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --configfile tests/macs2.yaml & break; done
-  - fold_start for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --configfile tests/genrich_macs2.yaml & break; done
-
+  - echo -en 'travis_fold:start:atac_peakcaller'
+  - for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --configfile tests/genrich.yaml & break; done
+  - for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --configfile tests/macs2.yaml & break; done
+  - for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --configfile tests/genrich_macs2.yaml & break; done
+  - echo -en 'travis_fold:end:atac_peakcaller'
   # test different conditions
-  - fold_start for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=fisher samples=../../tests/sample_conditions.tsv && break; done
-  - fold_start for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=idr    samples=../../tests/sample_conditions.tsv && break; done
+  - echo -en 'travis_fold:start:atac_conditions'
+  - for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=fisher samples=../../tests/sample_conditions.tsv && break; done
+  - for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=idr    samples=../../tests/sample_conditions.tsv && break; done
+  - echo -en 'travis_fold:end:atac_conditions'
 
 
 # speedup the slow build of our environment by caching (mini)conda
