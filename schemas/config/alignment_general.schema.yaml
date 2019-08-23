@@ -1,6 +1,6 @@
 $schema: "http://json-schema.org/draft-06/schema#"
 
-description: snakemake-workflows alignment configuration
+description: snakemake-workflows general alignment configuration
 
 properties:
   # paths to store results
@@ -51,7 +51,6 @@ properties:
     description: optional arguments for salmon alignment
     default: --seqBias --gcBias --validateMappings # --fldMean --fldSD (defaults are in use) # --posBias (currently experimental)
     type: string
-
 
   # bam sorting
   bam_sorter:
