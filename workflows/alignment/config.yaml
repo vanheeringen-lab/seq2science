@@ -9,3 +9,4 @@ genome_dir: ./  # where to look for or download the genomes
 
 # which aligner to use
 aligner: bwa
+  bwa_algo: bwtsw
