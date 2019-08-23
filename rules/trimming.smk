@@ -11,8 +11,6 @@ rule trim_galore_SE:
         qc=expand("{result_dir}/{trimmed_dir}/{{sample}}.{fqsuffix}.gz_trimming_report.txt", **config)
     conda:
         "../envs/trimgalore.yaml"
-    wildcard_constraints:
-        sample="[^_/]*"
     threads: 6
     log:
         expand("{log_dir}/trim_galore_SE/{{sample}}.log", **config)
@@ -49,8 +47,6 @@ rule trim_galore_PE:
     conda:
         "../envs/trimgalore.yaml"
     threads: 6
-    wildcard_constraints:
-        sample="[^_/]*"
     log:
         expand("{log_dir}/trim_galore_PE/{{sample}}.log", **config)
     benchmark:

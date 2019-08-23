@@ -71,8 +71,6 @@ rule sra2fastq_SE:
         expand("{result_dir}/{fastq_dir}/{{sample}}.{fqsuffix}.gz", **config)
     log:
         expand("{log_dir}/sra2fastq_SE/{{sample}}.log", **config)
-    wildcard_constraints:
-        sample="[^_/]*"
     benchmark:
         expand("{benchmark_dir}/sra2fastq_SE/{{sample}}.benchmark.txt", **config)[0]
     threads: 8
