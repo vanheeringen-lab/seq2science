@@ -111,7 +111,7 @@ def get_alignment_qc(sample):
         if config['peak_caller'] in ['macs2', 'hmmratac']:
             output.append(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.samtools-coordinate.metrics.txt")
             output.append(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.samtools-coordinate.samtools_stats.txt")
-        else:
+        if config['peak_caller'] in ['genrich']:
             output.append(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.sambamba-queryname.metrics.txt")
             output.append(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.sambamba-queryname.samtools_stats.txt")
     else:
@@ -125,7 +125,5 @@ def get_peak_calling_qc(sample):
     assembly = samples.loc[sample]['assembly']
     if config.get('combine_replicates', "") == 'merge':
         sample = samples.loc[sample, 'condition']
-
-    print(expand(f"{{result_dir}}/{{peak_caller}}/{sample}-{assembly}_featureCounts.txt.summary", **config))
 
     return expand(f"{{result_dir}}/{{peak_caller}}/{sample}-{assembly}_featureCounts.txt.summary", **config)
