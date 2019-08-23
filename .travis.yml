@@ -55,9 +55,9 @@ script:
   # default config
   - for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 & break; done
   # test different peak callers
-  # - for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config peak_caller="{'macs2': '--shift -100'}" && break; done
-  # - for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config peak_caller="{'genrich': '-y -j'}" && break; done
-  # - for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config peak_caller="{'hmmratac': ''}" && break; done
+   - "for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config peak_caller=\"{''macs2'': ''--shift -100''}\" && break; done"
+#   - for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config peak_caller="{'genrich': '-y -j'}" && break; done
+#   - for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config peak_caller="{'hmmratac': ''}" && break; done
 
   # test different conditions
   - for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=fisher && break; done
