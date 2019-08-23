@@ -1,4 +1,4 @@
-**What (problem) is the PR solving**
+**What problem is the PR solving**
 A description of the problem that is being solved. Please link to other relevant issues/pr if relevant
 
 **What did change**
