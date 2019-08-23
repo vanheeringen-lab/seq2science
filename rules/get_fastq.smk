@@ -132,6 +132,9 @@ if 'condition' in samples and config.get('combine_replicates', '') == 'merge':
                for replicate in samples[samples['condition'] == wildcards.condition].index], **config)
 
     rule merge_replicates:
+        """
+        Merge replicates (fastqs) simply by concatinating the files.
+        """
         input:
             get_merge_replicates
         output:
@@ -139,12 +142,9 @@ if 'condition' in samples and config.get('combine_replicates', '') == 'merge':
         wildcard_constraints:
             fqext=".*",
             condition="[^_]*"
-    #     log:
-    #         expand("{log_dir}/sra2fastq_PE/{{sample}}.log", **config)
-    #     benchmark:
-    #         expand("{benchmark_dir}/sra2fastq_PE/{{sample}}.benchmark.txt", **config)[0]
-    #     threads: 8
-    #     conda:
-    #         "../envs/get_fastq.yaml"
+        log:
+            expand("{log_dir}/merge_replicates/{{condition}}{{fqext}}.log", **config)
+        benchmark:
+            expand("{benchmark_dir}/merge_replicates/{{condition}}{{fqext}}.benchmark.txt", **config)[0]
         shell:
-            "echo {input}"
+            "cat {input} > {output} 2> {log}"
