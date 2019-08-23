@@ -22,12 +22,11 @@ include: f"{config['rule_dir']}/trimming.smk"
 # load the quality control files
 quality_control = [get_trimming_qc, get_alignment_qc]
 
-
 rule align_all:
     """
     align each sample against its assembly
     """
     input:
         [expand(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.{{bam_sorter}}-{{bam_sort_order}}.bam", **config) for sample in samples.index],
-        [expand(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.{{bam_sorter}}-{{bam_sort_order}}.bai", **config) for sample in samples.index],
+        [expand(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.{{bam_sorter}}-{{bam_sort_order}}.bai", **config) for sample in samples.index if config['bam_sort_order'] == 'coordinate'],
          expand("{result_dir}/qc/multiqc_{assemblies}.html", **{**config, **{'assemblies': set(samples['assembly'])}})
