@@ -55,14 +55,13 @@ script:
   # default config
   - for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 & break; done
   # test different peak callers
-  - "for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config peak_caller=\"{''macs2'': '--shift -100'}\" && break; done"
-
-#   - for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config peak_caller="{'genrich': '-y -j'}" && break; done
-#   - for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config peak_caller="{'hmmratac': ''}" && break; done
+  - for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --configfile tests/genrich.yaml & break; done
+  - for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --configfile tests/macs2.yaml & break; done
+  - for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --configfile tests/genrich_macs2.yaml & break; done
 
   # test different conditions
-  - for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=fisher && break; done
-  - for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=idr    && break; done
+  - for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=fisher samples=../../tests/sample_conditions.tsv && break; done
+  - for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=idr    samples=../../tests/sample_conditions.tsv && break; done
 
 
 # speedup the slow build of our environment by caching (mini)conda
