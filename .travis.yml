@@ -2,10 +2,11 @@ language: python
 python:
   - 3.6
 
+
 install:
   # sudo apt-get update (enable once apt-get is used)
 
-  # install conda if not cached
+  # install (mini)conda if not cached
   - if [ ! -d $HOME/miniconda/bin/ ]; then
       conda_cached=false;
       rm -rf $HOME/miniconda;
@@ -23,20 +24,47 @@ install:
   - conda config --add channels conda-forge
   - conda config --add channels bioconda
 
-  # create snakemake env
+  # create snakemake env if not cached
   - if [ "$conda_cached" = false ]; then
       conda env create -f envs/snakemake-workflows.yaml;
     fi
 
+
 script:
   - source activate snakemake-workflows
 
-  # Do some dry runs
+  # Do some dry runs to test the DAG
+  # test download workflow
   - for i in {1..3}; do snakemake -s workflows/download_fastq/Snakefile --directory workflows/download_fastq -n -j 48 && break; done
-  - for i in {1..3}; do snakemake -s workflows/alignment/Snakefile      --directory workflows/alignment      -n -j 48 && break; done
-  - for i in {1..3}; do snakemake -s workflows/atac_seq/Snakefile       --directory workflows/atac_seq       -n -j 48 && break; done
 
-# speedup the slow build of our environment
+  # test alignment workflow
+  # default config
+  - for i in {1..5}; do snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 && break; done
+  # test aligners
+  - for i in {1..5}; do snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config aligner=bowtie2 && break; done
+  - for i in {1..5}; do snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config aligner=bwa     && break; done
+  - for i in {1..5}; do snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config aligner=hisat2  && break; done
+  - for i in {1..5}; do snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config aligner=salmon  && break; done
+  # test sorting
+  - for i in {1..5}; do snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config bam_sorter=samtools bam_sort_order=coordinate && break; done
+  - for i in {1..5}; do snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config bam_sorter=samtools bam_sort_order=queryname  && break; done
+  - for i in {1..5}; do snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config bam_sorter=sambamba bam_sort_order=coordinate && break; done
+  - for i in {1..5}; do snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config bam_sorter=sambamba bam_sort_order=queryname  && break; done
+
+  # test atac-seq workflow
+  # default config
+  - for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 & break; done
+  # test different peak callers
+  - for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --configfile tests/genrich.yaml & break; done
+  - for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --configfile tests/macs2.yaml & break; done
+  - for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --configfile tests/genrich_macs2.yaml & break; done
+
+  # test different conditions
+  - for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=fisher samples=../../tests/sample_conditions.tsv && break; done
+  - for i in {1..5}; do snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=idr    samples=../../tests/sample_conditions.tsv && break; done
+
+
+# speedup the slow build of our environment by caching (mini)conda
 cache:
     directories:
      - ${HOME}/miniconda
