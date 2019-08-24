@@ -1,6 +1,6 @@
 ---
 name: Question
-about: 'Stuck trying to run the workflow? Let us help you '
+about: 'Stuck trying to run a workflow? Let us help you '
 title: 'Q: [put title here]'
 labels: question
 assignees: ''
