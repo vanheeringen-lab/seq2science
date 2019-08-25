@@ -28,6 +28,11 @@ if config.get('aligner', False):
         config[k] = v
     config['aligner'] = aligner
 
+if config.get('bam_sorter', False):
+    config['bam_sort_order'] = list(config['bam_sorter'].values())[0]
+    config['bam_sorter'] = list(config['bam_sorter'].keys())[0]
+
+
 if 'condition' in samples:
     if 'hmmratac' in config['peak_caller']:
         assert config['combine_replicates'] == 'idr', \
