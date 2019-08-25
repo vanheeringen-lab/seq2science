@@ -53,10 +53,10 @@ script:
   - echo -en 'travis_fold:end:alignment_aligners\\r'
   # test sorting
   - echo 'alignment_sorting' && echo -en 'travis_fold:start:alignment_sorting\\r'
-  - snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config bam_sorter=samtools bam_sort_order=coordinate --quiet
-  - snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config bam_sorter=samtools bam_sort_order=queryname  --quiet
-  - snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config bam_sorter=sambamba bam_sort_order=coordinate --quiet
-  - snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config bam_sorter=sambamba bam_sort_order=queryname  --quiet
+  - snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile tests/samtools_coordinate.yaml --quiet
+  - snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile tests/samtools_queryname.yaml  --quiet
+  - snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile tests/sambamba_coordinate.yaml --quiet
+  - snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile tests/sambamba_queryname.yaml  --quiet
   - echo -en 'travis_fold:end:alignment_sorting\\r'
 
   # test atac-seq workflow
