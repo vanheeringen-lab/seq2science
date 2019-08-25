@@ -6,6 +6,6 @@ samples: samples.tsv
 aligner:
   salmon:
     salmon_index:
-      - ''
+      ''
     salmon_aln:
-      - '--seqBias --gcBias --validateMappings'
+      '--seqBias --gcBias --validateMappings'

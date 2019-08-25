@@ -6,5 +6,5 @@ samples: samples.tsv
 aligner:
   bwa:
     bwa_algo:
-      - bwtsw
+      bwtsw
 

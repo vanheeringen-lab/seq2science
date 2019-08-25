@@ -6,5 +6,5 @@ samples: samples.tsv
 aligner:
   bowtie2:
     bowtie2_params:
-      - ""
+      ""
 

@@ -34,10 +34,19 @@ properties:
     description: which aligner to use
     type: object
     properties:
-      bowtie2:  {type: object}
-      bwa:      {type: object}
-      hisat2:   {type: object}
-      salmon:   {type: object}
+      bowtie2:
+        properties:
+          bowtie2_params: {type: string}
+      bwa:
+        properties:
+          bwa_algo:       {type: string}
+      hisat2:
+        properties:
+          hisat2_params:  {type: string}
+      salmon:
+        properties:
+          salmon_index:   {type: string}
+          salmon_aln:     {type: string}
     minProperties: 1
     additionalProperties: false
     default:

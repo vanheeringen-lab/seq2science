@@ -6,4 +6,4 @@ samples: samples.tsv
 aligner:
   hisat2:
     hisat2_params:
-      - ""
+      ""

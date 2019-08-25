@@ -25,7 +25,7 @@ if config.get('peak_caller', False):
 if config.get('aligner', False):
     aligner = list(config['aligner'].keys())[0]
     for k, v in list(config['aligner'].values())[0].items():
-        config[k] = v[0]
+        config[k] = v
     config['aligner'] = aligner
 
 if 'condition' in samples:

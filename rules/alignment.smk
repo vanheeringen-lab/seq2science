@@ -57,13 +57,14 @@ if config['aligner'] == 'bowtie2':
             expand("{benchmark_dir}/bowtie2_align/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
         params:
             input=lambda wildcards, input: f'-U {input.reads}' if config['layout'][wildcards.sample] == 'SINGLE' else \
-                                           f'-1 {input.reads[0]} -2 {input.reads[1]}'
+                                           f'-1 {input.reads[0]} -2 {input.reads[1]}',
+            params=config['bowtie2_params']
         threads: 20
         conda:
             "../envs/bowtie2.yaml"
         shell:
             """
-            bowtie2 --threads {threads} -x {input.index}{wildcards.assembly} {params.input} 2> {log} | tee {output} 1> /dev/null 2>> {log}
+            bowtie2 {params.params} --threads {threads} -x {input.index}{wildcards.assembly} {params.input} 2> {log} | tee {output} 1> /dev/null 2>> {log}
             """
 
 
@@ -152,13 +153,14 @@ elif config['aligner'] == 'hisat2':
             expand("{benchmark_dir}/hisat2_align/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
         params:
             input=lambda wildcards, input: f'-U {input.reads}' if config['layout'][wildcards.sample] == 'SINGLE' else \
-                                           f'-1 {input.reads[0]} -2 {input.reads[1]}'
+                                           f'-1 {input.reads[0]} -2 {input.reads[1]}',
+            params=config['hisat2_params']
         threads: 20
         conda:
             "../envs/hisat2.yaml"
         shell:
             """
-            hisat2 --threads {threads} -x {input.index}{wildcards.assembly} {params.input} 2> {log} | tee {output} 1> /dev/null 2>> {log}
+            hisat2 {params.params} --threads {threads} -x {input.index}{wildcards.assembly} {params.input} 2> {log} | tee {output} 1> /dev/null 2>> {log}
             """
 
 
