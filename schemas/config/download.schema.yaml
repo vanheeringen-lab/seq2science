@@ -26,11 +26,9 @@ properties:
   ascp_path:
     description: the pipeline supports downloading through ascp if this variable is set.
     type: string
-    default: "NO_ASCP"
   ascp_key:
     description: the public key of ascp
     type: string
-    default: "NO_ASCP_KEY"
 
   # fastq-dump parameters
   split:
