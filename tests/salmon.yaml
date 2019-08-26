@@ -8,3 +8,4 @@ aligner:
     index:  # parameters for indexing
       ''
     align:  # parameters for alignment
+      ''
