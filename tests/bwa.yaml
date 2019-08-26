@@ -5,6 +5,8 @@ samples: samples.tsv
 # which aligner to use
 aligner:
   bwa:
-    bwa_algo:
-      bwtsw
+    index:  # parameters for indexing
+      ''
+    align:  # parameters for alignment
+      ''
 

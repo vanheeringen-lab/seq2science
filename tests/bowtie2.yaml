@@ -5,6 +5,8 @@ samples: samples.tsv
 # which aligner to use
 aligner:
   bowtie2:
-    bowtie2_params:
-      ""
+    index:  # parameters for indexing
+      ''
+    align:  # parameters for alignment
+      ''
 

@@ -5,7 +5,6 @@ samples: samples.tsv
 # which aligner to use
 aligner:
   salmon:
-    salmon_index:
+    index:  # parameters for indexing
       ''
-    salmon_aln:
-      '--seqBias --gcBias --validateMappings'
+    align:  # parameters for alignment

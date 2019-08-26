@@ -36,22 +36,26 @@ properties:
     properties:
       bowtie2:
         properties:
-          bowtie2_params: {type: string}
+          index: {type: string}
+          align: {type: string}
       bwa:
         properties:
-          bwa_algo:       {type: string}
+          index: {type: string}
+          align: {type: string}
       hisat2:
         properties:
-          hisat2_params:  {type: string}
+          index: {type: string}
+          align: {type: string}
       salmon:
         properties:
-          salmon_index:   {type: string}
-          salmon_aln:     {type: string}
+          index: {type: string}
+          align: {type: string}
     minProperties: 1
     additionalProperties: false
     default:
       bwa:
-        bwa_algo: bwtsw
+        index: -a bwtsw
+        align: ''
 
 
   # samtools index

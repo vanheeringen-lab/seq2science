@@ -37,8 +37,9 @@ if config['aligner'] == 'bowtie2':
         threads: 4
         conda:
             "../envs/bowtie2.yaml"
+        params: config['aligner']['index']
         shell:
-            "bowtie2-build --threads {threads} {input} {output}/{wildcards.assembly} > {log} 2>&1"
+            "bowtie2-build {params} --threads {threads} {input} {output}/{wildcards.assembly} > {log} 2>&1"
 
 
     rule bowtie2_align:
@@ -58,7 +59,7 @@ if config['aligner'] == 'bowtie2':
         params:
             input=lambda wildcards, input: f'-U {input.reads}' if config['layout'][wildcards.sample] == 'SINGLE' else \
                                            f'-1 {input.reads[0]} -2 {input.reads[1]}',
-            params=config['bowtie2_params']
+            params=config['aligner']['params']
         threads: 20
         conda:
             "../envs/bowtie2.yaml"
@@ -85,11 +86,11 @@ elif config['aligner'] == 'bwa':
             expand("{benchmark_dir}/bwa_index/{{assembly}}.benchmark.txt", **config)[0]
         params:
             prefix="{genome_dir}/{{assembly}}/index/bwa/{{assembly}}".format(**config),
-            algorithm=config["bwa_algo"]
+            params=config['aligner']['index']
         conda:
             "../envs/bwa.yaml"
         shell:
-            "bwa index -p {params.prefix} -a {params.algorithm} {input} > {log} 2>&1"
+            "bwa index -p {params.prefix} {params.params} {input} > {log} 2>&1"
 
 
     rule bwa_mem:
@@ -107,13 +108,14 @@ elif config['aligner'] == 'bwa':
         benchmark:
             expand("{benchmark_dir}/bwa_mem/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
         params:
-            index_dir=expand("{genome_dir}/{{assembly}}/index/bwa/{{assembly}}", **config)
+            index_dir=expand("{genome_dir}/{{assembly}}/index/bwa/{{assembly}}", **config),
+            params=config['aligner']['align']
         threads: 20
         conda:
             "../envs/bwa.yaml"
         shell:
             """
-            bwa mem -t {threads} {params.index_dir} {input.reads} 2> {log} | tee {output} 1> /dev/null 2>> {log}
+            bwa mem {params.params} -t {threads} {params.index_dir} {input.reads} 2> {log} | tee {output} 1> /dev/null 2>> {log}
             """
 
 
@@ -133,8 +135,9 @@ elif config['aligner'] == 'hisat2':
         threads: 4
         conda:
             "../envs/hisat2.yaml"
+        params: config['aligner']['index']
         shell:
-            "hisat2-build -p {threads} {input} {output}/{wildcards.assembly} > {log} 2>&1"
+            "hisat2-build {params} -p {threads} {input} {output}/{wildcards.assembly} > {log} 2>&1"
 
 
     rule hisat2_align:
@@ -154,7 +157,7 @@ elif config['aligner'] == 'hisat2':
         params:
             input=lambda wildcards, input: f'-U {input.reads}' if config['layout'][wildcards.sample] == 'SINGLE' else \
                                            f'-1 {input.reads[0]} -2 {input.reads[1]}',
-            params=config['hisat2_params']
+            params=config['aligner']['align']
         threads: 20
         conda:
             "../envs/hisat2.yaml"
@@ -175,7 +178,7 @@ elif config['aligner'] == 'salmon':
         benchmark:
             expand("{benchmark_dir}/{aligner}_index/{{assembly}}.benchmark.txt", **config)[0]
         params:
-            config['salmon_index']
+            config['aligner']['index']
         threads: 4
         conda:
             "../envs/salmon.yaml"
@@ -197,13 +200,13 @@ elif config['aligner'] == 'salmon':
         params:
             input=lambda wildcards, input: f'-r {input.reads}' if config['layout'][wildcards.sample] == 'SINGLE' else \
                                            f'-1 {input.reads[0]} -2 {input.reads[1]}',
-            flags=config['salmon_aln']
+            params=config['aligner']['align']
         threads: 20
         conda:
             "../envs/salmon.yaml"
         shell:
             """
-            salmon quant -i {input.index} -l A {params.input} {params.flags} -o {output.dir} \
+            salmon quant -i {input.index} -l A {params.input} {params.params} -o {output.dir} \
             --threads $(expr 4 * {threads} / 5) --writeMappings 2> {log} | \
             samtools view -b - -@ $(expr {threads} / 5) | tee {output.pipe} 1> /dev/null 2>> {log}
             """
