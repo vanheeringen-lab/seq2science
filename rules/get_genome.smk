@@ -1,9 +1,12 @@
 # the filetypes genomepy will download
 config['genome_types'] = ['fa', 'fa.fai', "fa.sizes"]
-# the filetypes genomepy will download if needed
-if config['aligner'] == 'salmon': config['genome_types'].append("annotation.gtf")
 # intermediate filetypes genomepy may download
-config['genomepy_temp'] = ["annotation.bed.gz", "annotation.gff.gz"]
+config['genomepy_temp'] = []
+
+# the filetypes genomepy will download if needed
+if config['aligner'] == 'salmon':
+    config['genome_types'].append("annotation.gtf")
+    config['genomepy_temp'].extend(["annotation.bed.gz", "annotation.gff.gz"])
 
 
 rule get_genome:
