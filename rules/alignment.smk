@@ -37,7 +37,7 @@ if config['aligner'] == 'bowtie2':
         threads: 4
         conda:
             "../envs/bowtie2.yaml"
-        params: config['aligner']['index']
+        params: config['index']
         shell:
             "bowtie2-build {params} --threads {threads} {input} {output}/{wildcards.assembly} > {log} 2>&1"
 
@@ -59,7 +59,7 @@ if config['aligner'] == 'bowtie2':
         params:
             input=lambda wildcards, input: f'-U {input.reads}' if config['layout'][wildcards.sample] == 'SINGLE' else \
                                            f'-1 {input.reads[0]} -2 {input.reads[1]}',
-            params=config['aligner']['params']
+            params=config['params']
         threads: 20
         conda:
             "../envs/bowtie2.yaml"
@@ -86,7 +86,7 @@ elif config['aligner'] == 'bwa':
             expand("{benchmark_dir}/bwa_index/{{assembly}}.benchmark.txt", **config)[0]
         params:
             prefix="{genome_dir}/{{assembly}}/index/bwa/{{assembly}}".format(**config),
-            params=config['aligner']['index']
+            params=config['index']
         conda:
             "../envs/bwa.yaml"
         shell:
@@ -109,7 +109,7 @@ elif config['aligner'] == 'bwa':
             expand("{benchmark_dir}/bwa_mem/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
         params:
             index_dir=expand("{genome_dir}/{{assembly}}/index/bwa/{{assembly}}", **config),
-            params=config['aligner']['align']
+            params=config['align']
         threads: 20
         conda:
             "../envs/bwa.yaml"
@@ -135,7 +135,7 @@ elif config['aligner'] == 'hisat2':
         threads: 4
         conda:
             "../envs/hisat2.yaml"
-        params: config['aligner']['index']
+        params: config['index']
         shell:
             "hisat2-build {params} -p {threads} {input} {output}/{wildcards.assembly} > {log} 2>&1"
 
@@ -157,7 +157,7 @@ elif config['aligner'] == 'hisat2':
         params:
             input=lambda wildcards, input: f'-U {input.reads}' if config['layout'][wildcards.sample] == 'SINGLE' else \
                                            f'-1 {input.reads[0]} -2 {input.reads[1]}',
-            params=config['aligner']['align']
+            params=config['align']
         threads: 20
         conda:
             "../envs/hisat2.yaml"
@@ -178,7 +178,7 @@ elif config['aligner'] == 'salmon':
         benchmark:
             expand("{benchmark_dir}/{aligner}_index/{{assembly}}.benchmark.txt", **config)[0]
         params:
-            config['aligner']['index']
+            config['index']
         threads: 4
         conda:
             "../envs/salmon.yaml"
@@ -200,7 +200,7 @@ elif config['aligner'] == 'salmon':
         params:
             input=lambda wildcards, input: f'-r {input.reads}' if config['layout'][wildcards.sample] == 'SINGLE' else \
                                            f'-1 {input.reads[0]} -2 {input.reads[1]}',
-            params=config['aligner']['align']
+            params=config['align']
         threads: 20
         conda:
             "../envs/salmon.yaml"
