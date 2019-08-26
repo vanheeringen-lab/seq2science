@@ -12,8 +12,11 @@ bam_sorter:
   samtools:
     coordinate
 
+
 # which aligner to use
 aligner:
   bwa:
-    bwa_algo:
-      'bwtsw'
+    index:  # parameters for indexing
+      '-a bwtsw'
+    align:  # parameters for alignment
+      ''
