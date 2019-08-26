@@ -1,16 +1,24 @@
 # the filetypes genomepy will download
-config['genome_types'] = ['fa', 'fa.fai', "fa.sizes", "annotation.gtf"]
-config['temp_files'] = ["annotation.bed.gz", "annotation.gff.gz"]
+config['genome_types'] = ['fa', 'fa.fai', "fa.sizes"]
+# intermediate filetypes genomepy may download
+config['genomepy_temp'] = []
+
+# the filetypes genomepy will download if needed
+if config['aligner'] == 'salmon':
+    config['genome_types'].append("annotation.gtf")
+    config['genomepy_temp'].extend(["annotation.bed.gz", "annotation.gff.gz"])
+
 
 rule get_genome:
     """
     Download a genome through genomepy.
+    
+    Additionally downloads the gene annotation if required downstream.
 
     Automatically turns on/off plugins.
     """
     output:
-        expand("{genome_dir}/{{assembly}}/{{assembly}}.{genome_types}", **config),
-        temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.{temp_files}", **config))
+        expand("{genome_dir}/{{assembly}}/{{assembly}}.{genome_types}", **config)
     log:
         expand("{log_dir}/get_genome/{{assembly}}.log", **config)
     benchmark:
@@ -20,21 +28,30 @@ rule get_genome:
     priority: 1
     params:
         dir=config['genome_dir'],
+        annotation=lambda wildcards, output: '--annotation' if any('annotation.gtf' in file for file in output) else '',
         gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf.gz", **config),
+        temp=expand("{genome_dir}/{{assembly}}/{{assembly}}.{genomepy_temp}", **config)
     conda:
         "../envs/get_genome.yaml"
     shell:
         """
         active_plugins=$(genomepy config show | grep -Po '(?<=- ).*' | paste -s -d, -)
-        trap "genomepy plugin enable {{$active_plugins,}} > {log} 2>&1" EXIT
+        trap "genomepy plugin enable {{$active_plugins,}} >> {log} 2>&1; rm -f {params.temp}" EXIT
 
         genomepy plugin disable {{blacklist,bowtie2,bwa,gaps,gmap,hisat2,minimap2}} >> {log} 2>&1
-
-        genomepy install --genome_dir {params.dir} {wildcards.assembly} UCSC --annotation    >> {log} 2>&1 ||
-        genomepy install --genome_dir {params.dir} {wildcards.assembly} NCBI --annotation    >> {log} 2>&1 ||
-        genomepy install --genome_dir {params.dir} {wildcards.assembly} Ensembl --annotation >> {log} 2>&1
         
-        gunzip {params.gtf} >> {log} 2>&1
+        genomepy install --genome_dir {params.dir} {wildcards.assembly} UCSC    {params.annotation} >> {log} 2>&1 ||
+        genomepy install --genome_dir {params.dir} {wildcards.assembly} NCBI    {params.annotation} >> {log} 2>&1 ||
+        genomepy install --genome_dir {params.dir} {wildcards.assembly} Ensembl {params.annotation} >> {log} 2>&1
+        
+        if [ {params.annotation} ]; then
+            if [ -f {params.gtf} ]; then
+                gunzip {params.gtf} >> {log} 2>&1
+            else
+                echo 'Annotation for {wildcards.assembly} contains no genes. Select a different assembly or provide an annotation file manually.\n\n' > {log}
+                exit 1
+            fi
+        fi
         """
 
 
