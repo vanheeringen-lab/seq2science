@@ -59,7 +59,7 @@ if config['aligner'] == 'bowtie2':
         params:
             input=lambda wildcards, input: f'-U {input.reads}' if config['layout'][wildcards.sample] == 'SINGLE' else \
                                            f'-1 {input.reads[0]} -2 {input.reads[1]}',
-            params=config['params']
+            params=config['align']
         threads: 20
         conda:
             "../envs/bowtie2.yaml"
