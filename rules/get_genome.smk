@@ -1,13 +1,16 @@
 # the filetypes genomepy will download
 config['genome_types'] = ['fa', 'fa.fai', "fa.sizes"]
+# the filetypes genomepy will download if needed
 if config['aligner'] == 'salmon': config['genome_types'].append("annotation.gtf")
+# intermediate filetypes genomepy may download
+config['genomepy_temp'] = ["annotation.bed.gz", "annotation.gff.gz"]
 
-# some of these intermediate files may be downloaded by genomepy
-config['variable_temp_files'] = ["annotation.bed.gz", "annotation.gff.gz"]
 
 rule get_genome:
     """
     Download a genome through genomepy.
+    
+    Additionally downloads the gene annotation if required downstream.
 
     Automatically turns on/off plugins.
     """
@@ -22,10 +25,9 @@ rule get_genome:
     priority: 1
     params:
         dir=config['genome_dir'],
-        #annotation=lambda wildcards, output: 'annotation.gtf' in output[3], # '--annotation' if 'annotation.gtf' in output[3] else '',
-        #gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf.gz", **config),
-        gtf=lambda wildcards, output: expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf.gz", **config) if 'annotation.gtf' in output[3] else '',
-        temp=expand("{genome_dir}/{{assembly}}/{{assembly}}.{variable_temp_files}", **config)
+        annotation=lambda wildcards, output: '--annotation' if any('annotation.gtf' in file for file in output) else '',
+        gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf.gz", **config),
+        temp=expand("{genome_dir}/{{assembly}}/{{assembly}}.{genomepy_temp}", **config)
     conda:
         "../envs/get_genome.yaml"
     shell:
@@ -35,44 +37,19 @@ rule get_genome:
 
         genomepy plugin disable {{blacklist,bowtie2,bwa,gaps,gmap,hisat2,minimap2}} >> {log} 2>&1
         
-        if [ {params.gtf} ]; then
-            (genomepy install --genome_dir {params.dir} {wildcards.assembly} UCSC    --annotation >> {log} 2>&1 && [ -f {params.gtf} ]) ||
-            (genomepy install --genome_dir {params.dir} {wildcards.assembly} NCBI    --annotation >> {log} 2>&1 && [ -f {params.gtf} ]) ||
-            (genomepy install --genome_dir {params.dir} {wildcards.assembly} Ensembl --annotation >> {log} 2>&1 && [ -f {params.gtf} ]) ||
-            (if cat {log} | grep -q "WARNING"; then echo '\n\n \
-            Annotation for {wildcards.assembly} contains no genes. Select a different assembly or provide an annotation file manually.\
-            \n\n' | tee -a {log}; fi && false)
-            
-            gunzip {params.gtf} >> {log} 2>&1
-        else
-            genomepy install --genome_dir {params.dir} {wildcards.assembly} UCSC    >> {log} 2>&1 ||
-            genomepy install --genome_dir {params.dir} {wildcards.assembly} NCBI    >> {log} 2>&1 ||
-            genomepy install --genome_dir {params.dir} {wildcards.assembly} Ensembl >> {log} 2>&1
+        genomepy install --genome_dir {params.dir} {wildcards.assembly} UCSC    {params.annotation} >> {log} 2>&1 ||
+        genomepy install --genome_dir {params.dir} {wildcards.assembly} NCBI    {params.annotation} >> {log} 2>&1 ||
+        genomepy install --genome_dir {params.dir} {wildcards.assembly} Ensembl {params.annotation} >> {log} 2>&1
+        
+        if [ {params.annotation} ]; then
+            if [ -f {params.gtf} ]; then
+                gunzip {params.gtf} >> {log} 2>&1
+            else
+                echo 'Annotation for {wildcards.assembly} contains no genes. Select a different assembly or provide an annotation file manually.\n\n' > {log}
+                exit 1
+            fi
         fi
         """
-
-        # crashes the rul as desired
-        # (genomepy install --genome_dir {params.dir} {wildcards.assembly} UCSC    --annotation  >> {log} 2>&1 && [ -f {params.gtf} ]) ||
-        # (genomepy install --genome_dir {params.dir} {wildcards.assembly} NCBI    --annotation  >> {log} 2>&1 && [ -f {params.gtf} ]) ||
-        # (genomepy install --genome_dir {params.dir} {wildcards.assembly} Ensembl --annotation  >> {log} 2>&1 && [ -f {params.gtf} ])
-
-        # works but is ugly:
-        # dir=$dirname {output[0]}
-        # rm -rf $dir && mkdir $dir
-
-        # tries to find the files before they are generated:
-        # ls -d $(dirname {output[0]})/* | grep -v "$(cat {output})" | xargs rm -v
-
-        # ls -d $(dirname $output)/* | grep -v $(basename $output) | xargs rm
-        # ls -d $(dirname {output}[0])/* | grep -v {output} | xargs rm
-        # ls -d $(dirname {output}[0])/* | grep -v $(basename {output}) | xargs rm
-
-        #echo $(dirname {output}[0])
-        #echo $(dirname /home/siebrenf/git/snakemake-workflows/workflows/alignment/xenTro9/xenTro9.fa)
-        # rm -v $(dirname {output}[0]) !({output})
-        # rm -rf $(dirname {output}[0])
-        # rm -rf $(pwd)/.snakemake/shadow #deletes the whole shadow directory, which should always work, as a new dir is created upon starting a shadow rule
-        # rm -rf $(ls -d $(pwd)/.snakemake/shadow/*) #works, but breaks the pipeline if the rule completes!
 
 
 rule get_transcripts:
