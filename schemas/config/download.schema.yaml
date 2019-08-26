@@ -19,7 +19,6 @@ properties:
     type: string
   ncbi_requests:
     description: the number of lookups per second the key permits
-    default: 3
     type: integer
 
   # downloading through ascp

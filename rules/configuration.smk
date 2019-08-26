@@ -86,7 +86,7 @@ except FileNotFoundError:
     layout_cache = {}
 
 
-tp = ThreadPool(config['ncbi_requests'] // 2)
+tp = ThreadPool(config.get('ncbi_requests', 3) // 2)
 config['layout'] = {}
 
 # now do a request for each sample that was not in the cache
@@ -98,7 +98,7 @@ for sample in [sample for sample in samples.index if sample not in layout_cache]
     elif sample.startswith(('GSM', 'SRR', 'ERR', 'DRR')):
         config['layout'][sample] = tp.apply_async(get_layout, (sample,))
         # sleep 1.25 times the minimum required sleep time
-        time.sleep(1.25 / (config['ncbi_requests'] // 2))
+        time.sleep(1.25 / (config.get('ncbi_requests', 3) // 2))
     else:
         raise ValueError(f"\nsample {sample} was not found..\n"
                          f"We checked for SE file:\n"
