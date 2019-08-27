@@ -255,7 +255,7 @@ elif config['aligner'] == 'star':
             input=lambda wildcards, input: f' {input.reads}' if config['layout'][wildcards.sample] == 'SINGLE' else \
                                            f' {input.reads[0]} {input.reads[1]}',
             flags=config['star_aln']
-        threads: 40
+        threads: 20
         conda:
             "../envs/star.yaml"
         shell:
