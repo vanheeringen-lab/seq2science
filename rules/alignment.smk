@@ -164,6 +164,9 @@ elif config['aligner'] == 'hisat2':
 
 elif config['aligner'] == 'salmon':
     rule salmon_index:
+        """
+        Make a transcript index for Salmon.
+        """
         input:
             expand("{genome_dir}/{{assembly}}/{{assembly}}.transcripts.fa", **config)
         output:
@@ -182,6 +185,11 @@ elif config['aligner'] == 'salmon':
 
 
     rule salmon_quant:
+        """
+        Align reads against a transcriptome (index) with Salmon (mapping-based mode), and pipe the output to the required sorter(s).
+        
+        Using Salmon generates pseudobams, as well as quantification files.
+        """
         input:
             reads=get_reads,
             index=expand("{genome_dir}/{{assembly}}/index/{aligner}", **config)
@@ -209,6 +217,9 @@ elif config['aligner'] == 'salmon':
 
 elif config['aligner'] == 'star':
     rule star_index:
+        """
+        Make a genome index for STAR.
+        """
         input:
             genome = expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
             gtf = expand("{genome_dir}/{{assembly}}/{{assembly}}.gtf", **config)
@@ -241,6 +252,9 @@ elif config['aligner'] == 'star':
 
 
     rule star_quant:
+        """
+        Align reads against a genome (index) with STAR, and pipe the output to the required sorter(s).
+        """
         input:
             reads=get_reads,
             index=expand("{genome_dir}/{{assembly}}/index/{aligner}", **config)
