@@ -20,4 +20,4 @@ markComment: >
   Is this still relevant? If so, what is blocking it? Is there anything you can do to help move it forward?
 
 # Comment to post when closing a stale issue. Set to `false` to disable
-closeComment: true
+closeComment: false
