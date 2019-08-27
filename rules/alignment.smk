@@ -245,7 +245,7 @@ elif config['aligner'] == 'star':
             reads=get_reads,
             index=expand("{genome_dir}/{{assembly}}/index/{aligner}", **config)
         output:
-            dir=temp(directory(expand("{result_dir}/{aligner}/{{assembly}}/{{sample}}", **config))),
+            dir=temp(directory(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}", **config))),
             pipe=get_alignment_pipes()
         log:
             directory(expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}", **config))
