@@ -150,10 +150,7 @@ rule get_transcripts:
     benchmark:
         expand("{benchmark_dir}/get_genome/{{assembly}}.transcripts.benchmark.txt", **config)[0]
     priority: 1
-    params:
-        path=conda_path("../../envs/get_genome.yaml")
+    conda:
+        "../envs/get_genome.yaml"
     shell:
-        """
-        GFFR={params.path}/bin/gffread
-        $GFFR -w {output} -g {input.fa} {input.gtf} >> {log} 2>&1
-        """
+        "gffread -w {output} -g {input.fa} {input.gtf} >> {log} 2>&1"

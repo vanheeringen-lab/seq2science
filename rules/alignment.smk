@@ -213,9 +213,11 @@ elif config['aligner'] == 'star':
             genome = expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
             gtf = expand("{genome_dir}/{{assembly}}/{{assembly}}.gtf", **config)
         output:
-            directory(expand("{genome_dir}/{{assembly}}/index/{aligner}", **config))
+            dir = directory(expand("{genome_dir}/{{assembly}}/index/{aligner}", **config)),
+            tmp = temp(directory(expand("{genome_dir}/{{assembly}}/index/{aligner}_tmp", **config)))
         log:
-            expand("{log_dir}/{aligner}_index/{{assembly}}.log", **config)
+            default = expand("{log_dir}/{aligner}_index/{{assembly}}.log", **config),
+            star = expand("{log_dir}/{aligner}_index/{{assembly}}_Log.out", **config)
         benchmark:
             expand("{benchmark_dir}/{aligner}_index/{{assembly}}.benchmark.txt", **config)[0]
         params:
@@ -225,15 +227,15 @@ elif config['aligner'] == 'star':
             "../envs/star.yaml"
         shell:
             """
-            mkdir {output}
-            STAR --runMode genomeGenerate --genomeFastaFiles {input.genome} --sjdbGTFfile {input.gtf} --genomeDir {output} --runThreadN {threads} {params}
+            mkdir {output.dir}
+            mkdir {output.tmp}
             
-            # STAR is messy and does not have auto cleanup flags
-            if [ -f Log.out ]; then
-                mv -f Log.out {log}
-            fi
-            if [ -d star ]; then
-                rm -rf star
+            STAR --runMode genomeGenerate --genomeFastaFiles {input.genome} --sjdbGTFfile {input.gtf} --genomeDir {output.dir} \
+            --runThreadN {threads} --outFileNamePrefix {output.tmp}/ {params} > {log.default} 2>&1
+            
+            # STAR also creates an extended log.
+            if [ -f {output.tmp}/Log.out ]; then
+                mv {output.tmp}/Log.out {log.star}
             fi
             """
 
@@ -243,25 +245,31 @@ elif config['aligner'] == 'star':
             reads=get_reads,
             index=expand("{genome_dir}/{{assembly}}/index/{aligner}", **config)
         output:
-            dir=directory(expand("{result_dir}/{aligner}/{{assembly}}/{{sample}}", **config)),
+            dir=temp(directory(expand("{result_dir}/{aligner}/{{assembly}}/{{sample}}", **config))),
             pipe=get_alignment_pipes()
         log:
-            expand("{log_dir}/{aligner}_align/{{sample}}-{{assembly}}.log", **config)
+            directory(expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}", **config))
         benchmark:
             expand("{benchmark_dir}/{aligner}_align/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
         params:
             input=lambda wildcards, input: f' {input.reads}' if config['layout'][wildcards.sample] == 'SINGLE' else \
-                                           f' {input.reads[0]} {input.reads[1]}',                                    # must be comma separated(?)
+                                           f' {input.reads[0]} {input.reads[1]}',
             flags=config['star_aln']
-        threads: 20
+        threads: 40
         conda:
             "../envs/star.yaml"
         shell:
             """
             # trap "cat Log.out Log.progress.out Log.final.out >> {log} && rm -f Log.out Log.progress.out Log.final.out" EXIT
+            mkdir {output.dir}
+            mkdir {log}
             
-            STAR --genomeDir {input.index} --readFilesIn {params.input} --outFileNamePrefix {output.dir} --runThreadN {threads} {params.flags} 
-            --outSAMtype BAM Unsorted --outStd BAM_unsorted | tee {output.pipe} 1> /dev/null 2>> {log}
+            STAR --genomeDir {input.index} --readFilesIn {params.input} --outFileNamePrefix {output.dir}/ --runThreadN {threads} {params.flags} \
+            --outSAMtype BAM Unsorted --outStd BAM_Unsorted | tee {output.pipe} 1> /dev/null 2>> {log}/Log.stderr.out
+            
+            if [ -d {output.dir} ]; then
+                mv -f {output.dir}/* {log}/
+            fi
             """
 
 
