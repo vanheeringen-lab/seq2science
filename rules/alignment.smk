@@ -214,7 +214,7 @@ elif config['aligner'] == 'star':
             gtf = expand("{genome_dir}/{{assembly}}/{{assembly}}.gtf", **config)
         output:
             dir = directory(expand("{genome_dir}/{{assembly}}/index/{aligner}", **config)),
-            tmp = temp(directory(expand("{genome_dir}/{{assembly}}/index/{aligner}_tmp", **config)))
+            tmpdir = temp(directory(expand("{genome_dir}/{{assembly}}/index/{aligner}_tmp", **config)))
         log:
             default = expand("{log_dir}/{aligner}_index/{{assembly}}.log", **config),
             star = expand("{log_dir}/{aligner}_index/{{assembly}}_Log.out", **config)
@@ -228,14 +228,14 @@ elif config['aligner'] == 'star':
         shell:
             """
             mkdir {output.dir}
-            mkdir {output.tmp}
+            mkdir {output.tmpdir}
             
             STAR --runMode genomeGenerate --genomeFastaFiles {input.genome} --sjdbGTFfile {input.gtf} --genomeDir {output.dir} \
-            --runThreadN {threads} --outFileNamePrefix {output.tmp}/ {params} > {log.default} 2>&1
+            --runThreadN {threads} --outFileNamePrefix {output.tmpdir}/ {params} > {log.default} 2>&1
             
             # STAR also creates an extended log.
-            if [ -f {output.tmp}/Log.out ]; then
-                mv {output.tmp}/Log.out {log.star}
+            if [ -f {output.tmpdir}/Log.out ]; then
+                mv {output.tmpdir}/Log.out {log.star}
             fi
             """
 
@@ -245,7 +245,7 @@ elif config['aligner'] == 'star':
             reads=get_reads,
             index=expand("{genome_dir}/{{assembly}}/index/{aligner}", **config)
         output:
-            dir=temp(directory(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}", **config))),
+            tmpdir=temp(directory(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}", **config))),
             pipe=get_alignment_pipes()
         log:
             directory(expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}", **config))
@@ -260,15 +260,14 @@ elif config['aligner'] == 'star':
             "../envs/star.yaml"
         shell:
             """
-            # trap "cat Log.out Log.progress.out Log.final.out >> {log} && rm -f Log.out Log.progress.out Log.final.out" EXIT
-            mkdir {output.dir}
+            mkdir {output.tmpdir}
             mkdir {log}
             
-            STAR --genomeDir {input.index} --readFilesIn {params.input} --outFileNamePrefix {output.dir}/ --runThreadN {threads} {params.flags} \
+            STAR --genomeDir {input.index} --readFilesIn {params.input} --outFileNamePrefix {output.tmpdir}/ --runThreadN {threads} {params.flags} \
             --outSAMtype BAM Unsorted --outStd BAM_Unsorted | tee {output.pipe} 1> /dev/null 2>> {log}/Log.stderr.out
             
-            if [ -d {output.dir} ]; then
-                mv -f {output.dir}/* {log}/
+            if [ -d {output.tmpdir} ]; then
+                mv -f {output.tmpdir}/* {log}/
             fi
             """
 
