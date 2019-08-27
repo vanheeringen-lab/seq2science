@@ -164,6 +164,9 @@ elif config['aligner'] == 'hisat2':
 
 elif config['aligner'] == 'salmon':
     rule salmon_index:
+        """
+        Make a transcript index for Salmon.
+        """
         input:
             expand("{genome_dir}/{{assembly}}/{{assembly}}.transcripts.fa", **config)
         output:
@@ -182,6 +185,11 @@ elif config['aligner'] == 'salmon':
 
 
     rule salmon_quant:
+        """
+        Align reads against a transcriptome (index) with Salmon (mapping-based mode), and pipe the output to the required sorter(s).
+        
+        Using Salmon generates pseudobams, as well as quantification files.
+        """
         input:
             reads=get_reads,
             index=expand("{genome_dir}/{{assembly}}/index/{aligner}", **config)
@@ -204,6 +212,77 @@ elif config['aligner'] == 'salmon':
             salmon quant -i {input.index} -l A {params.input} {params.flags} -o {output.dir} \
             --threads $(expr 4 * {threads} / 5) --writeMappings 2> {log} | \
             samtools view -b - -@ $(expr {threads} / 5) | tee {output.pipe} 1> /dev/null 2>> {log}
+            """
+
+
+elif config['aligner'] == 'star':
+    rule star_index:
+        """
+        Make a genome index for STAR.
+        """
+        input:
+            genome = expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+            gtf = expand("{genome_dir}/{{assembly}}/{{assembly}}.gtf", **config)
+        output:
+            dir = directory(expand("{genome_dir}/{{assembly}}/index/{aligner}", **config)),
+            tmpdir = temp(directory(expand("{genome_dir}/{{assembly}}/index/{aligner}_tmp", **config)))
+        log:
+            default = expand("{log_dir}/{aligner}_index/{{assembly}}.log", **config),
+            star = expand("{log_dir}/{aligner}_index/{{assembly}}_Log.out", **config)
+        benchmark:
+            expand("{benchmark_dir}/{aligner}_index/{{assembly}}.benchmark.txt", **config)[0]
+        params:
+            config['star_index']
+        threads: 20
+        conda:
+            "../envs/star.yaml"
+        shell:
+            """
+            mkdir {output.dir}
+            mkdir {output.tmpdir}
+            
+            STAR --runMode genomeGenerate --genomeFastaFiles {input.genome} --sjdbGTFfile {input.gtf} --genomeDir {output.dir} \
+            --runThreadN {threads} --outFileNamePrefix {output.tmpdir}/ {params} > {log.default} 2>&1
+            
+            # STAR also creates an extended log.
+            if [ -f {output.tmpdir}/Log.out ]; then
+                mv {output.tmpdir}/Log.out {log.star}
+            fi
+            """
+
+
+    rule star_quant:
+        """
+        Align reads against a genome (index) with STAR, and pipe the output to the required sorter(s).
+        """
+        input:
+            reads=get_reads,
+            index=expand("{genome_dir}/{{assembly}}/index/{aligner}", **config)
+        output:
+            tmpdir=temp(directory(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}", **config))),
+            pipe=get_alignment_pipes()
+        log:
+            directory(expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}", **config))
+        benchmark:
+            expand("{benchmark_dir}/{aligner}_align/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
+        params:
+            input=lambda wildcards, input: f' {input.reads}' if config['layout'][wildcards.sample] == 'SINGLE' else \
+                                           f' {input.reads[0]} {input.reads[1]}',
+            flags=config['star_aln']
+        threads: 20
+        conda:
+            "../envs/star.yaml"
+        shell:
+            """
+            mkdir {output.tmpdir}
+            mkdir {log}
+            
+            STAR --genomeDir {input.index} --readFilesIn {params.input} --outFileNamePrefix {output.tmpdir}/ --runThreadN {threads} {params.flags} \
+            --outSAMtype BAM Unsorted --outStd BAM_Unsorted | tee {output.pipe} 1> /dev/null 2>> {log}/Log.stderr.out
+            
+            if [ -d {output.tmpdir} ]; then
+                mv -f {output.tmpdir}/* {log}/
+            fi
             """
 
 

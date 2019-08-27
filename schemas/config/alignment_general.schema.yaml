@@ -33,7 +33,7 @@ properties:
   aligner:
     description: which aligner to use
     default: bwa
-    enum: [bowtie2, bwa, hisat2, salmon]
+    enum: [bowtie2, bwa, hisat2, salmon, star]
     type: string
 
   # bwa alignment parameters
@@ -50,6 +50,16 @@ properties:
   salmon_aln:
     description: optional arguments for salmon alignment
     default: --seqBias --gcBias --validateMappings # --fldMean --fldSD (defaults are in use) # --posBias (currently experimental)
+    type: string
+
+  # star mapping
+  star_index:
+    description: optional arguments for star index. Use '--sjdbOverhang max(ReadLength)-1' for ideal situations.
+    default: --sjdbOverhang 100
+    type: string
+  star_aln:
+    description: optional arguments for star alignment, such as --outFilterType and --alignIntronMin.
+    default: --readFilesCommand gunzip -c
     type: string
 
   # samtools index
