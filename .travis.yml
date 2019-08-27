@@ -8,7 +8,7 @@ install:
 
   # install (mini)conda if not cached
   - echo $TRAVIS_EVENT_TYPE
-  - if [ ! -d $HOME/miniconda/bin/ ]; then
+  - if [ ! -d $HOME/miniconda/bin/ || $TRAVIS_EVENT_TYPE =~ "cron"]; then
       conda_cached=false;
       rm -rf $HOME/miniconda;
       wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
