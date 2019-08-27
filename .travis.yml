@@ -7,7 +7,6 @@ install:
   # sudo apt-get update (enable once apt-get is used)
 
   # install (mini)conda if not cached
-  - echo $TRAVIS_EVENT_TYPE
   - if [ ! -d $HOME/miniconda/bin/ || $TRAVIS_EVENT_TYPE =~ "cron"]; then
       conda_cached=false;
       rm -rf $HOME/miniconda;
