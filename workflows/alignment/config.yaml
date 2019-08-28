@@ -13,14 +13,14 @@ bam_sorter:
     coordinate
 
 
-# which aligner to use
+# which aligner to use with the option to specify own parameters
 aligner:
-  bwa
+  bwa:
+    index:  # parameters for indexing
+      '-a bwtsw'
+    align:  # parameters for alignment
+      ''
 
-# or for more control over parameters
+# or use 'our' default parameters
 # aligner:
-#   bwa:
-#     index:  # parameters for indexing
-#       '-a bwtsw'
-#     align:  # parameters for alignment
-#       ''
+#   bwa
