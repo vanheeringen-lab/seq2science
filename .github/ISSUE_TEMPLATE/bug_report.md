@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Create a report to help us improve
+about: Something not working as intended? Create a bug report to help us improve.
 title: 'BUG: [put title here]'
 labels: bug
 assignees: ''
@@ -11,7 +11,7 @@ assignees: ''
 A clear and concise description of what the bug is. Please add the (full) error message.
 
 **To Reproduce**
-Please include your config.yaml, your samples.tsv and a copy of the CONFIGURATION VARIABLES log.
+Please include your **config.yaml**, your **samples.tsv**, and the complete/relevant **output**.
 
 **Expected behavior**
 A clear and concise description of what you expected to happen.

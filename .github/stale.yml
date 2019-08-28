@@ -1,0 +1,23 @@
+# Number of days of inactivity before an issue becomes stale
+daysUntilStale: 28
+
+# Number of days of inactivity before a stale issue is closed
+daysUntilClose: 21
+
+# Issues with these labels will never be considered stale
+exemptLabels:
+  - pinned
+  - security
+
+# Label to use when marking an issue as stale
+staleLabel: stale
+
+# Set to true to ignore issues with an assignee (defaults to false)
+exemptAssignees: true
+
+# Comment to post when marking an issue as stale. Set to `false` to disable
+markComment: >
+  Is this still relevant? If so, what is blocking it? Is there anything you can do to help move it forward?
+
+# Comment to post when closing a stale issue. Set to `false` to disable
+closeComment: false

@@ -32,6 +32,7 @@ properties:
   # aligner
   aligner:
     description: which aligner to use
+<<<<<<< HEAD
     properties:
       bowtie2:
         properties:
@@ -69,6 +70,15 @@ properties:
         default:
           index: ''
           align: '--seqBias --gcBias --validateMappings'
+      star:
+        properties:
+          index:
+            default: '--sjdbOverhang 100'
+          align:
+            default: '--readFilesCommand gunzip -c'
+        default:
+          index: '--sjdbOverhang 100'
+          align: '--readFilesCommand gunzip -c'
     default:
       bwa:
         index: '-a bwtsw'
