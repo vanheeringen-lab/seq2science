@@ -3,6 +3,9 @@ from snakemake.utils import validate
 
 # complement the configuration
 configfile: "config.yaml"
+if isinstance(config['aligner'], str):
+    config['aligner'] = {config['aligner']: {}}
+
 for schema in ['general', 'download', 'alignment_general', 'alignment_specific']:
     validate(config, schema=f"../../schemas/config/{schema}.schema.yaml")
 

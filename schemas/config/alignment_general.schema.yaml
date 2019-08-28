@@ -32,29 +32,46 @@ properties:
   # aligner
   aligner:
     description: which aligner to use
-    type: object
     properties:
       bowtie2:
         properties:
-          index: {type: string}
-          align: {type: string}
+          index:
+            default: ''
+          align:
+            default: ''
+        default:
+          index: ''
+          align: ''
       bwa:
         properties:
-          index: {type: string}
-          align: {type: string}
+          index:
+            default: ''
+          align:
+            default: '-a bwtsw'
+        default:
+          index: ''
+          align: '-a bwtsw'
       hisat2:
         properties:
-          index: {type: string}
-          align: {type: string}
+          index:
+            default: ''
+          align:
+            default: ''
+        default:
+          index: ''
+          align: ''
       salmon:
         properties:
-          index: {type: string}
-          align: {type: string}
-    minProperties: 1
-    additionalProperties: false
+          index:
+            default: ''
+          align:
+            default: '--seqBias --gcBias --validateMappings'
+        default:
+          index: ''
+          align: '--seqBias --gcBias --validateMappings'
     default:
       bwa:
-        index: -a bwtsw
+        index: '-a bwtsw'
         align: ''
 
 
