@@ -18,3 +18,15 @@ peak_caller:
 
 combine_replicates: merge
 
+
+# which aligner to use with the option to specify own parameters
+aligner:
+  bwa:
+    index:  # parameters for indexing
+      '-a bwtsw'
+    align:  # parameters for alignment
+      ''
+
+# or use 'our' default parameters
+# aligner:
+#   bwa

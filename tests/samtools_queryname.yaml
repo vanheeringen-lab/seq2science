@@ -1,0 +1,8 @@
+# tab-separated file of the samples
+samples: samples.tsv
+
+
+# how to sort bam
+bam_sorter:
+  samtools:
+    queryname

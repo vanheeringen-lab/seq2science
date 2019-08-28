@@ -7,5 +7,20 @@ result_dir: ./  # where to store results
 genome_dir: ./  # where to look for or download the genomes
 
 
-# which aligner to use
-aligner: bwa
+# how to sort bam
+bam_sorter:
+  samtools:
+    coordinate
+
+
+# which aligner to use with the option to specify own parameters
+aligner:
+  bwa:
+    index:  # parameters for indexing
+      '-a bwtsw'
+    align:  # parameters for alignment
+      ''
+
+# or use 'our' default parameters
+# aligner:
+#   bwa

@@ -32,35 +32,57 @@ properties:
   # aligner
   aligner:
     description: which aligner to use
-    default: bwa
-    enum: [bowtie2, bwa, hisat2, salmon, star]
-    type: string
+    properties:
+      bowtie2:
+        properties:
+          index:
+            default: ''
+          align:
+            default: ''
+        default:
+          index: ''
+          align: ''
+      bwa:
+        properties:
+          index:
+            default: ''
+          align:
+            default: '-a bwtsw'
+        default:
+          index: ''
+          align: '-a bwtsw'
+      hisat2:
+        properties:
+          index:
+            default: ''
+          align:
+            default: ''
+        default:
+          index: ''
+          align: ''
+      salmon:
+        properties:
+          index:
+            default: ''
+          align:
+            default: '--seqBias --gcBias --validateMappings'
+        default:
+          index: ''
+          align: '--seqBias --gcBias --validateMappings'
+      star:
+        properties:
+          index:
+            default: '--sjdbOverhang 100'
+          align:
+            default: '--readFilesCommand gunzip -c'
+        default:
+          index: '--sjdbOverhang 100'
+          align: '--readFilesCommand gunzip -c'
+    default:
+      bwa:
+        index: '-a bwtsw'
+        align: ''
 
-  # bwa alignment parameters
-  bwa_algo:
-    description: the algorithm bwa index uses for alignment
-    default: bwtsw
-    type: string
-
-  # salmon mapping
-  salmon_index:
-    description: optional arguments for salmon index, such as -k, --gencode and -decoys {decoyfile}
-    default: ''
-    type: string
-  salmon_aln:
-    description: optional arguments for salmon alignment
-    default: --seqBias --gcBias --validateMappings # --fldMean --fldSD (defaults are in use) # --posBias (currently experimental)
-    type: string
-
-  # star mapping
-  star_index:
-    description: optional arguments for star index. Use '--sjdbOverhang max(ReadLength)-1' for ideal situations.
-    default: --sjdbOverhang 100
-    type: string
-  star_aln:
-    description: optional arguments for star alignment, such as --outFilterType and --alignIntronMin.
-    default: --readFilesCommand gunzip -c
-    type: string
 
   # samtools index
   samtools_index:

@@ -22,6 +22,17 @@ samples.index = samples.index.map(str)
 if config.get('peak_caller', False):
     config['peak_caller'] = {k: v for k,v in config['peak_caller'].items()}
 
+if config.get('aligner', False):
+    aligner = list(config['aligner'].keys())[0]
+    for k, v in list(config['aligner'].values())[0].items():
+        config[k] = v
+    config['aligner'] = aligner
+
+if config.get('bam_sorter', False):
+    config['bam_sort_order'] = list(config['bam_sorter'].values())[0]
+    config['bam_sorter'] = list(config['bam_sorter'].keys())[0]
+
+
 if 'condition' in samples:
     if 'hmmratac' in config['peak_caller']:
         assert config['combine_replicates'] == 'idr', \
@@ -75,7 +86,7 @@ except FileNotFoundError:
     layout_cache = {}
 
 
-tp = ThreadPool(config['ncbi_requests'] // 2)
+tp = ThreadPool(config.get('ncbi_requests', 3) // 2)
 config['layout'] = {}
 
 # now do a request for each sample that was not in the cache
@@ -87,7 +98,7 @@ for sample in [sample for sample in samples.index if sample not in layout_cache]
     elif sample.startswith(('GSM', 'SRR', 'ERR', 'DRR')):
         config['layout'][sample] = tp.apply_async(get_layout, (sample,))
         # sleep 1.25 times the minimum required sleep time
-        time.sleep(1.25 / (config['ncbi_requests'] // 2))
+        time.sleep(1.25 / (config.get('ncbi_requests', 3) // 2))
     else:
         raise ValueError(f"\nsample {sample} was not found..\n"
                          f"We checked for SE file:\n"
@@ -115,13 +126,13 @@ for key, value in config.items():
 logger.info("\n\n")
 
 
-# If hmmratac peak caller, check if all samples are paired-end
+# if hmmratac peak caller, check if all samples are paired-end
 if config.get('peak_caller', False) and 'hmmratac' in config['peak_caller']:
     assert all([config['layout'][sample] == 'PAIRED' for sample in samples.index]), \
     "HMMRATAC requires all samples to be paired end"
 
 
-# Find conda directories. Does not work with singularity.
+# find conda directories. Does not work with singularity.
 def conda_path(yaml):
     """ Find the path to a conda directory """
     import hashlib
@@ -139,6 +150,7 @@ def conda_path(yaml):
     path = os.path.join(env_dir, dir_hash)
     return path
 
+# if samples are merged add the layout of the condition to the config
 if 'condition' in samples and config.get('combine_replicates', "") == 'merge':
     for sample in samples.index:
         condition = samples.loc[sample, 'condition']
