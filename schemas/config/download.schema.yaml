@@ -10,7 +10,7 @@ properties:
     type: string
   fastq_dir:
     description: directory inside the result dir where to store the workflow fastqs
-    default: FASTQ
+    default: fastq
     type: string
 
   # NCBI e-utilities key

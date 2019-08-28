@@ -6,15 +6,15 @@ properties:
   # paths to store results
   fastq_dir:
     description: directory inside the result dir where to store the workflow fastqs
-    default: FASTQ
+    default: fastq
     type: string
   trimmed_dir:
     description: directory inside the result dir where to store the workflow trimmed fastqs
-    default: FASTQ
+    default: fastq_trimmed
     type: string
-  trimmedqc_dir:
+  qc_dir:
     description: directory inside the result dir where to store the workflow trimming quality controls
-    default: trimmed_qc
+    default: qc
     type: string
   dedup_dir:
     description: directory inside the result dir where to store the workflow deduplicated alignment

@@ -48,19 +48,37 @@ rule featureCounts:
         """
 
 
+def get_fastqc_input(wildcards):
+    if '_trimmed' in wildcards.fname:
+        # 'condition' in samples and config.get('combine_replicates', '') == 'merge'
+        # os.path.exist(os.path.join(config['result_dir'], config['trimmed_dir'], 'merged', wildcards.fname)):
+        if 'condition' in samples and config.get('combine_replicates', '') == 'merge' and all(sample not in wildcards.fname for sample in samples.index):
+            fqc_input = "{result_dir}/{trimmed_dir}/merged/{{fname}}.{fqsuffix}.gz"
+        else:
+            fqc_input = "{result_dir}/{trimmed_dir}/{{fname}}.{fqsuffix}.gz"
+    else:
+        fqc_input = "{result_dir}/{fastq_dir}/{{fname}}.{fqsuffix}.gz"
+
+    return sorted(expand(fqc_input, **config))
+
+
 rule fastqc:
     """
     Generate quality control report for fastq files.
     """
     input:
-        f"{{path}}/{{fname}}.{config['fqsuffix']}.gz"
+        get_fastqc_input
     output:
-        "{path}/{fname}_fastqc.html",
-        "{path}/{fname}_fastqc.zip"
+        f"{config['result_dir']}/{config['qc_dir']}/fastqc/{{fname}}_fastqc.html",
+        f"{config['result_dir']}/{config['qc_dir']}/fastqc/{{fname}}_fastqc.zip"
+    log:
+        f"{config['log_dir']}/fastqc/{{fname}}.log"
+    params:
+        f"{config['result_dir']}/{config['qc_dir']}/fastqc/"
     conda:
         "../envs/qc.yaml"
     shell:
-        "fastqc {input} -O {wildcards.path} --quiet"
+        "fastqc {input} -O {params} > {log} 2>&1"
 
 
 def get_qc_files(wildcards):
@@ -79,12 +97,12 @@ rule multiqc:
     Aggregate all the quality control metrics for every sample into a single multiqc report.
     """
     input:
-       get_qc_files
+        get_qc_files
     output:
-        expand("{result_dir}/qc/multiqc_{{assembly}}.html", **config),
-        directory(expand("{result_dir}/qc/multiqc_{{assembly}}_data", **config))
+        expand("{result_dir}/{qc_dir}/multiqc_{{assembly}}.html", **config),
+        directory(expand("{result_dir}/{qc_dir}/multiqc_{{assembly}}_data", **config))
     params:
-        "{result_dir}/qc/".format(**config)
+        "{result_dir}/{qc_dir}/".format(**config)
     log:
         expand("{log_dir}/multiqc_{{assembly}}.log", **config)
     conda:
@@ -95,14 +113,14 @@ rule multiqc:
 
 def get_trimming_qc(sample):
     if config['layout'][sample] == 'SINGLE':
-        return expand([f"{{result_dir}}/{{trimmed_dir}}/{sample}_fastqc.zip",
-                       f"{{result_dir}}/{{trimmed_dir}}/{sample}_trimmed_fastqc.zip",
-                       f"{{result_dir}}/{{trimmed_dir}}/{sample}.{{fqsuffix}}.gz_trimming_report.txt"],
+        return expand([f"{{result_dir}}/{{qc_dir}}/fastqc/{sample}_fastqc.zip",
+                       f"{{result_dir}}/{{qc_dir}}/fastqc/{sample}_trimmed_fastqc.zip",
+                       f"{{result_dir}}/{{qc_dir}}/trimming/{sample}.{{fqsuffix}}.gz_trimming_report.txt"],
                        **config)
     else:
-        return expand([f"{{result_dir}}/{{trimmed_dir}}/{sample}_{{fqext}}_fastqc.zip",
-                       f"{{result_dir}}/{{trimmed_dir}}/{sample}_{{fqext}}_trimmed_fastqc.zip",
-                       f"{{result_dir}}/{{trimmed_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz_trimming_report.txt"],
+        return expand([f"{{result_dir}}/{{qc_dir}}/fastqc/{sample}_{{fqext}}_fastqc.zip",
+                       f"{{result_dir}}/{{qc_dir}}/fastqc/{sample}_{{fqext}}_trimmed_fastqc.zip",
+                       f"{{result_dir}}/{{qc_dir}}/trimming/{sample}_{{fqext}}.{{fqsuffix}}.gz_trimming_report.txt"],
                        **config)
 
 def get_alignment_qc(sample):

@@ -58,14 +58,18 @@ rule call_peak_genrich:
 config['macs2_types'] = ['control_lambda.bdg', 'summits.bed', 'peaks.narrowPeak',
                          'peaks.xls', 'treat_pileup.bdg']
 def get_fastqc(wildcards):
-    if config.get('combine_replicates', '') == 'merge':
+    # if config.get('combine_replicates', '') == 'merge':
+    #     if config['layout'][wildcards.sample] == "SINGLE":
+    #         return expand("{result_dir}/{qc_dir}/fastqc/merged/{{sample}}_trimmed_fastqc.zip", **config)
+    #     return sorted(expand("{result_dir}/{qc_dir}/fastqc/merged/{{sample}}_{fqext1}_trimmed_fastqc.zip", **config))
+    # else:
+    #     if config['layout'][wildcards.sample] == "SINGLE":
+    #         return expand("{result_dir}/{qc_dir}/fastqc/{{sample}}_trimmed_fastqc.zip", **config)
+    #     return sorted(expand("{result_dir}/{qc_dir}/fastqc/{{sample}}_{fqext1}_trimmed_fastqc.zip", **config))
+    #
         if config['layout'][wildcards.sample] == "SINGLE":
-            return expand("{result_dir}/{trimmed_dir}/merged/{{sample}}_trimmed_fastqc.zip", **config)
-        return sorted(expand("{result_dir}/{trimmed_dir}/merged/{{sample}}_{fqext1}_trimmed_fastqc.zip", **config))
-    else:
-        if config['layout'][wildcards.sample] == "SINGLE":
-            return expand("{result_dir}/{trimmed_dir}/{{sample}}_trimmed_fastqc.zip", **config)
-        return sorted(expand("{result_dir}/{trimmed_dir}/{{sample}}_{fqext1}_trimmed_fastqc.zip", **config))
+            return expand("{result_dir}/{qc_dir}/fastqc/{{sample}}_trimmed_fastqc.zip", **config)
+        return sorted(expand("{result_dir}/{qc_dir}/fastqc/{{sample}}_{fqext1}_trimmed_fastqc.zip", **config))
 
 
 def get_macs2_bam(wildcards):
