@@ -15,8 +15,12 @@ bam_sorter:
 
 # which aligner to use
 aligner:
-  bwa:
-    index:  # parameters for indexing
-      '-a bwtsw'
-    align:  # parameters for alignment
-      ''
+  bwa
+
+# or for more control over parameters
+# aligner:
+#   bwa:
+#     index:  # parameters for indexing
+#       '-a bwtsw'
+#     align:  # parameters for alignment
+#       ''
