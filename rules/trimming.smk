@@ -33,9 +33,7 @@ rule trim_galore_SE:
         
         # move the trimming report to the desired directory
         report=$(dirname {output.se})/{wildcards.sample}.{params.fqsuffix}.gz_trimming_report.txt
-        if [[ -f $report ]]; then
-            mv $report {output.qc}
-        fi
+        mv $report {output.qc}
         """
 
 
