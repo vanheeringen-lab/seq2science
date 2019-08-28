@@ -32,7 +32,6 @@ properties:
   # aligner
   aligner:
     description: which aligner to use
-<<<<<<< HEAD
     properties:
       bowtie2:
         properties:
