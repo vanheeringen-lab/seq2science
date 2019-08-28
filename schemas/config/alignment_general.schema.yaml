@@ -4,10 +4,6 @@ description: snakemake-workflows general alignment configuration
 
 properties:
   # paths to store results
-  fastq_dir:
-    description: directory inside the result dir where to store the workflow fastqs
-    default: fastq
-    type: string
   trimmed_dir:
     description: directory inside the result dir where to store the workflow trimmed fastqs
     default: fastq_trimmed

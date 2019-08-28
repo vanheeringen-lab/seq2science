@@ -13,6 +13,7 @@ rule samtools_stats:
     shell:
         "samtools stats {input} 1> {output} 2> {log}"
 
+
 def get_featureCounts_bam(wildcards):
     if wildcards.peak_caller == 'macs2':
             return expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config)
@@ -50,8 +51,6 @@ rule featureCounts:
 
 def get_fastqc_input(wildcards):
     if '_trimmed' in wildcards.fname:
-        # 'condition' in samples and config.get('combine_replicates', '') == 'merge'
-        # os.path.exist(os.path.join(config['result_dir'], config['trimmed_dir'], 'merged', wildcards.fname)):
         if 'condition' in samples and config.get('combine_replicates', '') == 'merge' and all(sample not in wildcards.fname for sample in samples.index):
             fqc_input = "{result_dir}/{trimmed_dir}/merged/{{fname}}.{fqsuffix}.gz"
         else:
@@ -122,6 +121,7 @@ def get_trimming_qc(sample):
                        f"{{result_dir}}/{{qc_dir}}/fastqc/{sample}_{{fqext}}_trimmed_fastqc.zip",
                        f"{{result_dir}}/{{qc_dir}}/trimming/{sample}_{{fqext}}.{{fqsuffix}}.gz_trimming_report.txt"],
                        **config)
+
 
 def get_alignment_qc(sample):
     output = []
