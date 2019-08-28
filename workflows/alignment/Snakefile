@@ -4,7 +4,7 @@ from snakemake.utils import validate
 # complement the configuration
 configfile: "config.yaml"
 for kw in ['aligner', 'bam_sorter']:
-    if isinstance(config[kw], str):
+    if isinstance(config.get(kw, None), str):
         config[kw] = {config[kw]: {}}
 
 for schema in ['general', 'download', 'alignment_general', 'alignment_specific']:
