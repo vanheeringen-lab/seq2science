@@ -9,7 +9,7 @@ properties:
     default: fastq_trimmed
     type: string
   qc_dir:
-    description: directory inside the result dir where to store the workflow trimming quality controls
+    description: directory inside the result dir where to store the workflow quality controls
     default: qc
     type: string
   dedup_dir:
