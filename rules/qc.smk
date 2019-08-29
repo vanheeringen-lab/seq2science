@@ -5,7 +5,7 @@ rule samtools_stats:
     input:
         expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.{{bam_sorter}}-{{bam_sort_order}}.bam", **config)
     output:
-        expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.{{bam_sorter}}-{{bam_sort_order}}.samtools_stats.txt", **config)
+        expand("{result_dir}/{qc_dir}/{dedup_dir}/{{sample}}-{{assembly}}.{{bam_sorter}}-{{bam_sort_order}}.samtools_stats.txt", **config)
     log:
         expand("{log_dir}/samtools_stats/{{sample}}-{{assembly}}-{{bam_sorter}}-{{bam_sort_order}}.log", **config)
     conda:
@@ -33,7 +33,7 @@ rule featureCounts:
     output:
         tmp_saf=temp(expand("{result_dir}/{{peak_caller}}/{{sample}}-{{assembly}}.saf", **config)),
         real_out=expand("{result_dir}/{{peak_caller}}/{{sample}}-{{assembly}}_featureCounts.txt", **config),
-        summary=expand("{result_dir}/{{peak_caller}}/{{sample}}-{{assembly}}_featureCounts.txt.summary", **config)
+        summary=expand("{result_dir}/{qc_dir}/{{peak_caller}}/{{sample}}-{{assembly}}_featureCounts.txt.summary", **config)
     log:
         expand("{log_dir}/featureCounts/{{sample}}-{{assembly}}-{{peak_caller}}.log", **config)
     threads: 4
@@ -41,11 +41,14 @@ rule featureCounts:
         "../envs/subread.yaml"
     shell:
         """
-        ## Make a custom "SAF" file which featureCounts needs:
+        # Make a custom "SAF" file which featureCounts needs:
         awk 'BEGIN{{FS=OFS="\t"; print "GeneID\tChr\tStart\tEnd\tStrand"}}{{print $4, $1, $2+1, $3, "."}}' {input.peak} 1> {output.tmp_saf} 2> {log}
 
-        ## run featureCounts
+        # run featureCounts
         featureCounts -T {threads} -p -a {output.tmp_saf} -F SAF -o {output.real_out} {input.bam} > {log} 2>&1
+        
+        # move the summary to qc directory
+        mv $(dirname {output.real_out})/$(basename {output.summary}) {output.summary}
         """
 
 
@@ -127,14 +130,14 @@ def get_alignment_qc(sample):
     output = []
     if 'peak_caller' in config:
         if config['peak_caller'] in ['macs2', 'hmmratac']:
-            output.append(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.samtools-coordinate.metrics.txt")
-            output.append(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.samtools-coordinate.samtools_stats.txt")
+            output.append(f"{{result_dir}}/{{qc_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.samtools-coordinate.metrics.txt")
+            output.append(f"{{result_dir}}/{{qc_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.samtools-coordinate.samtools_stats.txt")
         if config['peak_caller'] in ['genrich']:
-            output.append(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.sambamba-queryname.metrics.txt")
-            output.append(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.sambamba-queryname.samtools_stats.txt")
+            output.append(f"{{result_dir}}/{{qc_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.sambamba-queryname.metrics.txt")
+            output.append(f"{{result_dir}}/{{qc_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.sambamba-queryname.samtools_stats.txt")
     else:
-        output.append(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.{{bam_sorter}}-{{bam_sort_order}}.metrics.txt")
-        output.append(f"{{result_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.{{bam_sorter}}-{{bam_sort_order}}.samtools_stats.txt")
+        output.append(f"{{result_dir}}/{{qc_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.{{bam_sorter}}-{{bam_sort_order}}.metrics.txt")
+        output.append(f"{{result_dir}}/{{qc_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.{{bam_sorter}}-{{bam_sort_order}}.samtools_stats.txt")
 
     return expand(output, **config)
 
@@ -144,4 +147,4 @@ def get_peak_calling_qc(sample):
     if config.get('combine_replicates', "") == 'merge':
         sample = samples.loc[sample, 'condition']
 
-    return expand(f"{{result_dir}}/{{peak_caller}}/{sample}-{assembly}_featureCounts.txt.summary", **config)
+    return expand(f"{{result_dir}}/{{qc_dir}}/{{peak_caller}}/{sample}-{assembly}_featureCounts.txt.summary", **config)

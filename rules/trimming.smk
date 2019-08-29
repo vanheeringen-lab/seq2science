@@ -31,7 +31,7 @@ rule trim_galore_SE:
           mv "$(dirname {output.se})/{wildcards.sample}_trimmed.fq.gz" {output.se}
         fi 
         
-        # move the trimming report to the desired directory
+        # move the trimming report to qc directory
         report=$(dirname {output.se})/{wildcards.sample}.{params.fqsuffix}.gz_trimming_report.txt
         mv $report {output.qc}
         """
@@ -69,7 +69,7 @@ rule trim_galore_PE:
         for f in $(find "$(dirname {output.r1})/" -maxdepth 1 -name "{wildcards.sample}_*val_*.{params.fqsuffix}.gz"); do
             mv "$f" "$(echo "$f" | sed s/_val_./_trimmed/)"; done
 
-        # move the trimming reports
+        # move the trimming reports to qc directory
         for f in $(find "$(dirname {output.r1})/" -name "{wildcards.sample}_*.{params.fqsuffix}.gz_trimming_report.txt"); do
             mv "$f" "$(dirname {output.qc[0]})/$(basename $f)"; done
         """
