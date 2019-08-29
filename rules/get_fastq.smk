@@ -83,8 +83,8 @@ rule sra2fastq_SE:
         # rename the SRR to GSM
         SRR=$(basename {{input}}/*)
         GSM=$(basename {{input}})
-        src='{config['result_dir']}/{config['fastq_dir']}/'$SRR'_pass.{config['fqsuffix']}.gz'
-        dst='{config['result_dir']}/{config['fastq_dir']}/'$GSM'.{config['fqsuffix']}.gz'
+        src='{config['fastq_dir']}/'$SRR'_pass.{config['fqsuffix']}.gz'
+        dst='{config['fastq_dir']}/'$GSM'.{config['fqsuffix']}.gz'
         if [[ ! $src = $dst ]]; then
               mv -v $src $dst >> {{log}} 2>&1
         fi
@@ -114,11 +114,11 @@ rule sra2fastq_PE:
         SRR=$(basename {{input}}/*)
         GSM=$(basename {{input}})
         if [[ ! $SRR = $GSM ]]; then
-          src='{config['result_dir']}/{config['fastq_dir']}/'$SRR'_{config['fqext1']}.{config['fqsuffix']}.gz'
-          dst='{config['result_dir']}/{config['fastq_dir']}/'$GSM'_{config['fqext1']}.{config['fqsuffix']}.gz'
+          src='{config['fastq_dir']}/'$SRR'_{config['fqext1']}.{config['fqsuffix']}.gz'
+          dst='{config['fastq_dir']}/'$GSM'_{config['fqext1']}.{config['fqsuffix']}.gz'
           mv -v $src $dst >> {{log}} 2>&1
-          src='{config['result_dir']}/{config['fastq_dir']}/'$SRR'_{config['fqext2']}.{config['fqsuffix']}.gz'
-          dst='{config['result_dir']}/{config['fastq_dir']}/'$GSM'_{config['fqext2']}.{config['fqsuffix']}.gz'
+          src='{config['fastq_dir']}/'$SRR'_{config['fqext2']}.{config['fqsuffix']}.gz'
+          dst='{config['fastq_dir']}/'$GSM'_{config['fqext2']}.{config['fqsuffix']}.gz'
           mv -v $src $dst >> {{log}} 2>&1
         fi
         """
