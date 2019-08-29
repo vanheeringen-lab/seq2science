@@ -1,6 +1,6 @@
 if 'condition' in samples and config.get('combine_replicates', '') == 'merge':
     def get_merge_replicates(wildcards):
-        return expand([f"{{result_dir}}/{{trimmed_dir}}/{replicate}{wildcards.fqext}_trimmed.{{fqsuffix}}.gz"
+        return expand([f"{{trimmed_dir}}/{replicate}{wildcards.fqext}_trimmed.{{fqsuffix}}.gz"
                for replicate in samples[samples['condition'] == wildcards.condition].index], **config)
 
     rule merge_replicates:
@@ -10,7 +10,7 @@ if 'condition' in samples and config.get('combine_replicates', '') == 'merge':
         input:
             get_merge_replicates
         output:
-            sorted(expand("{result_dir}/{trimmed_dir}/merged/{{condition}}{{fqext}}_trimmed.{fqsuffix}.gz", **config))
+            sorted(expand("{trimmed_dir}/merged/{{condition}}{{fqext}}_trimmed.{fqsuffix}.gz", **config))
         wildcard_constraints:
             fqext=".*",
             condition="[^/_]*"

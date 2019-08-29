@@ -3,9 +3,9 @@ rule samtools_stats:
     Get general stats from bam files like percentage mapped.
     """
     input:
-        expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.{{bam_sorter}}-{{bam_sort_order}}.bam", **config)
+        expand("{dedup_dir}/{{sample}}-{{assembly}}.{{bam_sorter}}-{{bam_sort_order}}.bam", **config)
     output:
-        expand("{result_dir}/{qc_dir}/{dedup_dir}/{{sample}}-{{assembly}}.{{bam_sorter}}-{{bam_sort_order}}.samtools_stats.txt", **config)
+        expand("{qc_dir}/dedup/{{sample}}-{{assembly}}.{{bam_sorter}}-{{bam_sort_order}}.samtools_stats.txt", **config)
     log:
         expand("{log_dir}/samtools_stats/{{sample}}-{{assembly}}-{{bam_sorter}}-{{bam_sort_order}}.log", **config)
     conda:
@@ -16,9 +16,9 @@ rule samtools_stats:
 
 def get_featureCounts_bam(wildcards):
     if wildcards.peak_caller == 'macs2':
-            return expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config)
+            return expand("{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config)
     else:
-        return expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.sambamba-queryname.bam", **config)
+        return expand("{dedup_dir}/{{sample}}-{{assembly}}.sambamba-queryname.bam", **config)
 
 
 rule featureCounts:
@@ -33,7 +33,7 @@ rule featureCounts:
     output:
         tmp_saf=temp(expand("{result_dir}/{{peak_caller}}/{{sample}}-{{assembly}}.saf", **config)),
         real_out=expand("{result_dir}/{{peak_caller}}/{{sample}}-{{assembly}}_featureCounts.txt", **config),
-        summary=expand("{result_dir}/{qc_dir}/{{peak_caller}}/{{sample}}-{{assembly}}_featureCounts.txt.summary", **config)
+        summary=expand("{qc_dir}/{{peak_caller}}/{{sample}}-{{assembly}}_featureCounts.txt.summary", **config)
     log:
         expand("{log_dir}/featureCounts/{{sample}}-{{assembly}}-{{peak_caller}}.log", **config)
     threads: 4
@@ -55,11 +55,11 @@ rule featureCounts:
 def get_fastqc_input(wildcards):
     if '_trimmed' in wildcards.fname:
         if 'condition' in samples and config.get('combine_replicates', '') == 'merge' and all(sample not in wildcards.fname for sample in samples.index):
-            fqc_input = "{result_dir}/{trimmed_dir}/merged/{{fname}}.{fqsuffix}.gz"
+            fqc_input = "{trimmed_dir}/merged/{{fname}}.{fqsuffix}.gz"
         else:
-            fqc_input = "{result_dir}/{trimmed_dir}/{{fname}}.{fqsuffix}.gz"
+            fqc_input = "{trimmed_dir}/{{fname}}.{fqsuffix}.gz"
     else:
-        fqc_input = "{result_dir}/{fastq_dir}/{{fname}}.{fqsuffix}.gz"
+        fqc_input = "{fastq_dir}/{{fname}}.{fqsuffix}.gz"
 
     return sorted(expand(fqc_input, **config))
 
@@ -71,12 +71,12 @@ rule fastqc:
     input:
         get_fastqc_input
     output:
-        f"{config['result_dir']}/{config['qc_dir']}/fastqc/{{fname}}_fastqc.html",
-        f"{config['result_dir']}/{config['qc_dir']}/fastqc/{{fname}}_fastqc.zip"
+        f"{config['qc_dir']}/fastqc/{{fname}}_fastqc.html",
+        f"{config['qc_dir']}/fastqc/{{fname}}_fastqc.zip"
     log:
         f"{config['log_dir']}/fastqc/{{fname}}.log"
     params:
-        f"{config['result_dir']}/{config['qc_dir']}/fastqc/"
+        f"{config['qc_dir']}/fastqc/"
     conda:
         "../envs/qc.yaml"
     shell:
@@ -101,10 +101,10 @@ rule multiqc:
     input:
         get_qc_files
     output:
-        expand("{result_dir}/{qc_dir}/multiqc_{{assembly}}.html", **config),
-        directory(expand("{result_dir}/{qc_dir}/multiqc_{{assembly}}_data", **config))
+        expand("{qc_dir}/multiqc_{{assembly}}.html", **config),
+        directory(expand("{qc_dir}/multiqc_{{assembly}}_data", **config))
     params:
-        "{result_dir}/{qc_dir}/".format(**config)
+        "{qc_dir}/".format(**config)
     log:
         expand("{log_dir}/multiqc_{{assembly}}.log", **config)
     conda:
@@ -115,14 +115,14 @@ rule multiqc:
 
 def get_trimming_qc(sample):
     if config['layout'][sample] == 'SINGLE':
-        return expand([f"{{result_dir}}/{{qc_dir}}/fastqc/{sample}_fastqc.zip",
-                       f"{{result_dir}}/{{qc_dir}}/fastqc/{sample}_trimmed_fastqc.zip",
-                       f"{{result_dir}}/{{qc_dir}}/trimming/{sample}.{{fqsuffix}}.gz_trimming_report.txt"],
+        return expand([f"{{qc_dir}}/fastqc/{sample}_fastqc.zip",
+                       f"{{qc_dir}}/fastqc/{sample}_trimmed_fastqc.zip",
+                       f"{{qc_dir}}/trimming/{sample}.{{fqsuffix}}.gz_trimming_report.txt"],
                        **config)
     else:
-        return expand([f"{{result_dir}}/{{qc_dir}}/fastqc/{sample}_{{fqext}}_fastqc.zip",
-                       f"{{result_dir}}/{{qc_dir}}/fastqc/{sample}_{{fqext}}_trimmed_fastqc.zip",
-                       f"{{result_dir}}/{{qc_dir}}/trimming/{sample}_{{fqext}}.{{fqsuffix}}.gz_trimming_report.txt"],
+        return expand([f"{{qc_dir}}/fastqc/{sample}_{{fqext}}_fastqc.zip",
+                       f"{{qc_dir}}/fastqc/{sample}_{{fqext}}_trimmed_fastqc.zip",
+                       f"{{qc_dir}}/trimming/{sample}_{{fqext}}.{{fqsuffix}}.gz_trimming_report.txt"],
                        **config)
 
 
@@ -130,14 +130,14 @@ def get_alignment_qc(sample):
     output = []
     if 'peak_caller' in config:
         if config['peak_caller'] in ['macs2', 'hmmratac']:
-            output.append(f"{{result_dir}}/{{qc_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.samtools-coordinate.metrics.txt")
-            output.append(f"{{result_dir}}/{{qc_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.samtools-coordinate.samtools_stats.txt")
+            output.append(f"{{qc_dir}}/dedup/{sample}-{samples.loc[sample]['assembly']}.samtools-coordinate.metrics.txt")
+            output.append(f"{{qc_dir}}/dedup/{sample}-{samples.loc[sample]['assembly']}.samtools-coordinate.samtools_stats.txt")
         if config['peak_caller'] in ['genrich']:
-            output.append(f"{{result_dir}}/{{qc_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.sambamba-queryname.metrics.txt")
-            output.append(f"{{result_dir}}/{{qc_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.sambamba-queryname.samtools_stats.txt")
+            output.append(f"{{qc_dir}}/dedup/{sample}-{samples.loc[sample]['assembly']}.sambamba-queryname.metrics.txt")
+            output.append(f"{{qc_dir}}/dedup/{sample}-{samples.loc[sample]['assembly']}.sambamba-queryname.samtools_stats.txt")
     else:
-        output.append(f"{{result_dir}}/{{qc_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.{{bam_sorter}}-{{bam_sort_order}}.metrics.txt")
-        output.append(f"{{result_dir}}/{{qc_dir}}/{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.{{bam_sorter}}-{{bam_sort_order}}.samtools_stats.txt")
+        output.append(f"{{qc_dir}}/dedup/{sample}-{samples.loc[sample]['assembly']}.{{bam_sorter}}-{{bam_sort_order}}.metrics.txt")
+        output.append(f"{{qc_dir}}/dedup/{sample}-{samples.loc[sample]['assembly']}.{{bam_sorter}}-{{bam_sort_order}}.samtools_stats.txt")
 
     return expand(output, **config)
 
@@ -147,4 +147,4 @@ def get_peak_calling_qc(sample):
     if config.get('combine_replicates', "") == 'merge':
         sample = samples.loc[sample, 'condition']
 
-    return expand(f"{{result_dir}}/{{qc_dir}}/{{peak_caller}}/{sample}-{assembly}_featureCounts.txt.summary", **config)
+    return expand(f"{{qc_dir}}/{{peak_caller}}/{sample}-{assembly}_featureCounts.txt.summary", **config)

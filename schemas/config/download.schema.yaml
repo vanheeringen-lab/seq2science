@@ -5,11 +5,11 @@ description: snakemake-workflows downloading configuration
 properties:
   # paths to download and dump to
   sra_dir:
-    description: directory inside the result dir where to store the workflow sras
+    description: directory where to store the workflow sras (defaults inside the result dir)
     default: sra
     type: string
   fastq_dir:
-    description: directory inside the result dir where to store the workflow fastqs
+    description: directory where to store the workflow fastqs (defaults inside the result dir)
     default: fastq
     type: string
 

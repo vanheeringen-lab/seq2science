@@ -5,15 +5,15 @@ description: snakemake-workflows general alignment configuration
 properties:
   # paths to store results
   trimmed_dir:
-    description: directory inside the result dir where to store the workflow trimmed fastqs
+    description: directory where to store the workflow trimmed fastqs (defaults inside the result dir)
     default: fastq_trimmed
     type: string
   qc_dir:
-    description: directory inside the result dir where to store the workflow quality controls
+    description: directory where to store the workflow quality controls (defaults inside the result dir)
     default: qc
     type: string
   dedup_dir:
-    description: directory inside the result dir where to store the workflow deduplicated alignment
+    description: directory where to store the workflow deduplicated alignment (defaults inside the result dir)
     default: dedup
     type: string
 

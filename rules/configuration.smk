@@ -40,12 +40,14 @@ if 'condition' in samples:
                 f' condition {condition} and assembly {assembly}'
 
 
-# cut off trailing slashes and make absolute path
+# make absolute paths, cut off trailing slashes and nestle default directories in result_dir
 for key, value in config.items():
     if '_dir' in key:
         if key in ['result_dir', 'genome_dir', 'rule_dir']:
             value = os.path.abspath(value)
         config[key] = re.split("\/$", value)[0]
+        if key in ['sra_dir', 'fastq_dir', 'trimmed_dir', 'qc_dir', 'dedup_dir'] and key not in user_dirs:
+            config[key] = os.path.join(config['result_dir'], config[key])
 
 
 # check if paired-end filename suffixes are lexicographically ordered
@@ -80,9 +82,9 @@ config['layout'] = {}
 
 # now do a request for each sample that was not in the cache
 for sample in [sample for sample in samples.index if sample not in layout_cache]:
-    if os.path.exists(expand(f'{{result_dir}}/{{fastq_dir}}/{sample}.{{fqsuffix}}.gz', **config)[0]):
+    if os.path.exists(expand(f'{{fastq_dir}}/{sample}.{{fqsuffix}}.gz', **config)[0]):
         config['layout'][sample] ='SINGLE'
-    elif all(os.path.exists(path) for path in expand(f'{{result_dir}}/{{fastq_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz', **config)):
+    elif all(os.path.exists(path) for path in expand(f'{{fastq_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz', **config)):
         config['layout'][sample] ='PAIRED'
     elif sample.startswith(('GSM', 'SRR', 'ERR', 'DRR')):
         config['layout'][sample] = tp.apply_async(get_layout, (sample,))
@@ -91,10 +93,10 @@ for sample in [sample for sample in samples.index if sample not in layout_cache]
     else:
         raise ValueError(f"\nsample {sample} was not found..\n"
                          f"We checked for SE file:\n"
-                         f"\t{config['result_dir']}/{config['fastq_dir']}/{sample}.{config['fqsuffix']}.gz \n"
+                         f"\t/{config['fastq_dir']}/{sample}.{config['fqsuffix']}.gz \n"
                          f"and for PE files:\n"
-                         f"\t{config['result_dir']}/{config['fastq_dir']}/{sample}_{config['fqext1']}.{config['fqsuffix']}.gz \n"
-                         f"\t{config['result_dir']}/{config['fastq_dir']}/{sample}_{config['fqext2']}.{config['fqsuffix']}.gz \n"
+                         f"\t{config['fastq_dir']}/{sample}_{config['fqext1']}.{config['fqsuffix']}.gz \n"
+                         f"\t{config['fastq_dir']}/{sample}_{config['fqext2']}.{config['fqsuffix']}.gz \n"
                          f"and since the sample did not start with either GSM, SRR, ERR, and DRR we couldn't find it online..\n")
 
 # now parse the output and store the cache, the local files' layout, and the ones that were fetched online

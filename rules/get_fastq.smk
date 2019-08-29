@@ -5,7 +5,7 @@ rule id2sra:
     Tries first downloading with the faster ascp protocol, if that fails it falls back on the slower http protocol.
     """
     output:
-        temp(directory(expand("{result_dir}/{sra_dir}/{{sample}}", **config)))
+        temp(directory(expand("{sra_dir}/{{sample}}", **config)))
     log:
         expand("{log_dir}/id2sra/{{sample}}.log", **config)
     benchmark:
@@ -68,7 +68,7 @@ rule sra2fastq_SE:
     input:
         rules.id2sra.output
     output:
-        expand("{result_dir}/{fastq_dir}/{{sample}}.{fqsuffix}.gz", **config)
+        expand("{fastq_dir}/{{sample}}.{fqsuffix}.gz", **config)
     log:
         expand("{log_dir}/sra2fastq_SE/{{sample}}.log", **config)
     benchmark:
@@ -98,7 +98,7 @@ rule sra2fastq_PE:
     input:
         rules.id2sra.output
     output:
-        expand("{result_dir}/{fastq_dir}/{{sample}}_{fqext}.{fqsuffix}.gz", **config)
+        expand("{fastq_dir}/{{sample}}_{fqext}.{fqsuffix}.gz", **config)
     log:
         expand("{log_dir}/sra2fastq_PE/{{sample}}.log", **config)
     benchmark:

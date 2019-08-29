@@ -1,12 +1,12 @@
 def get_reads(wildcards):
     if config.get('combine_replicates', '') == 'merge':
         if config['layout'].get(wildcards.sample, False) == "SINGLE":
-            return expand("{result_dir}/{trimmed_dir}/merged/{{sample}}_trimmed.{fqsuffix}.gz", **config)
-        return sorted(expand("{result_dir}/{trimmed_dir}/merged/{{sample}}_{fqext}_trimmed.{fqsuffix}.gz", **config))
+            return expand("{trimmed_dir}/merged/{{sample}}_trimmed.{fqsuffix}.gz", **config)
+        return sorted(expand("{trimmed_dir}/merged/{{sample}}_{fqext}_trimmed.{fqsuffix}.gz", **config))
     else:
         if config['layout'].get(wildcards.sample, False) == "SINGLE":
-            return expand("{result_dir}/{trimmed_dir}/{{sample}}_trimmed.{fqsuffix}.gz", **config)
-        return sorted(expand("{result_dir}/{trimmed_dir}/{{sample}}_{fqext}_trimmed.{fqsuffix}.gz", **config))
+            return expand("{trimmed_dir}/{{sample}}_trimmed.{fqsuffix}.gz", **config)
+        return sorted(expand("{trimmed_dir}/{{sample}}_{fqext}_trimmed.{fqsuffix}.gz", **config))
 
 def get_alignment_pipes():
     pipes = set()
@@ -342,9 +342,9 @@ rule samtools_index:
     Create an index of a bam file which can be used for e.g. visualization.
     """
     input:
-        expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.{{bam_sorter}}-{{sorting}}.bam", **config)
+        expand("{dedup_dir}/{{sample}}-{{assembly}}.{{bam_sorter}}-{{sorting}}.bam", **config)
     output:
-        expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.{{bam_sorter}}-{{sorting}}.bai", **config)
+        expand("{dedup_dir}/{{sample}}-{{assembly}}.{{bam_sorter}}-{{sorting}}.bai", **config)
     log:
         expand("{log_dir}/samtools_index/{{sample}}-{{assembly}}-{{bam_sorter}}-{{sorting}}.log", **config)
     benchmark:
@@ -366,8 +366,8 @@ rule mark_duplicates:
     input:
         expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}.{{sorter}}-{{sorting}}.bam", **config)
     output:
-        bam=    expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.{{sorter}}-{{sorting}}.bam", **config),
-        metrics=expand("{result_dir}/{qc_dir}/{dedup_dir}/{{sample}}-{{assembly}}.{{sorter}}-{{sorting}}.metrics.txt", **config)
+        bam=    expand("{dedup_dir}/{{sample}}-{{assembly}}.{{sorter}}-{{sorting}}.bam", **config),
+        metrics=expand("{qc_dir}/dedup/{{sample}}-{{assembly}}.{{sorter}}-{{sorting}}.metrics.txt", **config)
     log:
         expand("{log_dir}/mark_duplicates/{{sample}}-{{assembly}}-{{sorter}}-{{sorting}}.log", **config)
     benchmark:
