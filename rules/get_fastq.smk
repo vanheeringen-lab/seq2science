@@ -78,7 +78,7 @@ rule sra2fastq_SE:
         "../envs/get_fastq.yaml"
     shell:
         f"""
-        parallel-fastq-dump -s {{input}}/* -O {config['result_dir']}/{config['fastq_dir']} {config['splot']} --threads {{threads}} --gzip >> {{log}} 2>&1
+        parallel-fastq-dump -s {{input}}/* -O {config['fastq_dir']} {config['splot']} --threads {{threads}} --gzip >> {{log}} 2>&1
 
         # rename the SRR to GSM
         SRR=$(basename {{input}}/*)
@@ -108,7 +108,7 @@ rule sra2fastq_PE:
         "../envs/get_fastq.yaml"
     shell:
         f"""
-        parallel-fastq-dump -s {{input}}/* -O {config['result_dir']}/{config['fastq_dir']} {config['split']} --threads {{threads}} --gzip >> {{log}} 2>&1
+        parallel-fastq-dump -s {{input}}/* -O {config['fastq_dir']} {config['split']} --threads {{threads}} --gzip >> {{log}} 2>&1
 
         # rename the SRRs to GSMs
         SRR=$(basename {{input}}/*)
