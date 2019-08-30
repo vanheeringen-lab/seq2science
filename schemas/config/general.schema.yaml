@@ -15,19 +15,19 @@ properties:
     default: ../../rules
     type: string
   result_dir:
-    description: where to store all the pipeline's results
+    description: where to store the pipeline's results (by default)
     default: ./
     type: string
   genome_dir:
-    description: where to store the pipeline's genome assemblies. NOTE that this is not inside the result_dir
+    description: where to store the pipeline's genome assemblies
     default: ./
     type: string
   log_dir:
-    description: directory where to store the logs
+    description: directory where to store the logs (defaults inside the result dir)
     default: log
     type: string
   benchmark_dir:
-    description: directory where to store the logs
+    description: directory where to store the logs (defaults inside the result dir)
     default: benchmark
     type: string
 

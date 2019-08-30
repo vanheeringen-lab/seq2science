@@ -3,6 +3,12 @@ from snakemake.utils import validate
 
 # complement the configuration
 configfile: "config.yaml"
+
+user_dirs = []
+for key, value in config.items():
+    if '_dir' in key:
+        user_dirs.append(key)
+
 if isinstance(config.get('aligner', None), str):
     config['aligner'] = {config['aligner']: {}}
 
@@ -19,6 +25,7 @@ include: f"{config['rule_dir']}/alignment.smk"
 include: f"{config['rule_dir']}/call_peak.smk"
 include: f"{config['rule_dir']}/get_genome.smk"
 include: f"{config['rule_dir']}/get_fastq.smk"
+include: f"{config['rule_dir']}/merge_replicates.smk"
 include: f"{config['rule_dir']}/qc.smk"
 include: f"{config['rule_dir']}/trackhub.smk"
 include: f"{config['rule_dir']}/trimming.smk"
@@ -34,4 +41,4 @@ rule call_peaks_all:
     """
     input:
          expand("{result_dir}/trackhub/", **config),
-         expand("{result_dir}/qc/multiqc_{assemblies}.html", **{**config, **{'assemblies': set(samples['assembly'])}})
+         expand("{qc_dir}/multiqc_{assemblies}.html", **{**config, **{'assemblies': set(samples['assembly'])}})

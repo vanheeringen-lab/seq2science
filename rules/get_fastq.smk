@@ -5,7 +5,7 @@ rule id2sra:
     Tries first downloading with the faster ascp protocol, if that fails it falls back on the slower http protocol.
     """
     output:
-        temp(directory(expand("{result_dir}/{sra_dir}/{{sample}}", **config)))
+        temp(directory(expand("{sra_dir}/{{sample}}", **config)))
     log:
         expand("{log_dir}/id2sra/{{sample}}.log", **config)
     benchmark:
@@ -68,7 +68,7 @@ rule sra2fastq_SE:
     input:
         rules.id2sra.output
     output:
-        expand("{result_dir}/{fastq_dir}/{{sample}}.{fqsuffix}.gz", **config)
+        expand("{fastq_dir}/{{sample}}.{fqsuffix}.gz", **config)
     log:
         expand("{log_dir}/sra2fastq_SE/{{sample}}.log", **config)
     benchmark:
@@ -78,13 +78,13 @@ rule sra2fastq_SE:
         "../envs/get_fastq.yaml"
     shell:
         f"""
-        parallel-fastq-dump -s {{input}}/* -O {config['result_dir']}/{config['fastq_dir']} {config['splot']} --threads {{threads}} --gzip >> {{log}} 2>&1
+        parallel-fastq-dump -s {{input}}/* -O {config['fastq_dir']} {config['splot']} --threads {{threads}} --gzip >> {{log}} 2>&1
 
         # rename the SRR to GSM
         SRR=$(basename {{input}}/*)
         GSM=$(basename {{input}})
-        src='{config['result_dir']}/{config['fastq_dir']}/'$SRR'_pass.{config['fqsuffix']}.gz'
-        dst='{config['result_dir']}/{config['fastq_dir']}/'$GSM'.{config['fqsuffix']}.gz'
+        src='{config['fastq_dir']}/'$SRR'_pass.{config['fqsuffix']}.gz'
+        dst='{config['fastq_dir']}/'$GSM'.{config['fqsuffix']}.gz'
         if [[ ! $src = $dst ]]; then
               mv -v $src $dst >> {{log}} 2>&1
         fi
@@ -98,7 +98,7 @@ rule sra2fastq_PE:
     input:
         rules.id2sra.output
     output:
-        expand("{result_dir}/{fastq_dir}/{{sample}}_{fqext}.{fqsuffix}.gz", **config)
+        expand("{fastq_dir}/{{sample}}_{fqext}.{fqsuffix}.gz", **config)
     log:
         expand("{log_dir}/sra2fastq_PE/{{sample}}.log", **config)
     benchmark:
@@ -108,41 +108,17 @@ rule sra2fastq_PE:
         "../envs/get_fastq.yaml"
     shell:
         f"""
-        parallel-fastq-dump -s {{input}}/* -O {config['result_dir']}/{config['fastq_dir']} {config['split']} --threads {{threads}} --gzip >> {{log}} 2>&1
+        parallel-fastq-dump -s {{input}}/* -O {config['fastq_dir']} {config['split']} --threads {{threads}} --gzip >> {{log}} 2>&1
 
         # rename the SRRs to GSMs
         SRR=$(basename {{input}}/*)
         GSM=$(basename {{input}})
         if [[ ! $SRR = $GSM ]]; then
-          src='{config['result_dir']}/{config['fastq_dir']}/'$SRR'_{config['fqext1']}.{config['fqsuffix']}.gz'
-          dst='{config['result_dir']}/{config['fastq_dir']}/'$GSM'_{config['fqext1']}.{config['fqsuffix']}.gz'
+          src='{config['fastq_dir']}/'$SRR'_{config['fqext1']}.{config['fqsuffix']}.gz'
+          dst='{config['fastq_dir']}/'$GSM'_{config['fqext1']}.{config['fqsuffix']}.gz'
           mv -v $src $dst >> {{log}} 2>&1
-          src='{config['result_dir']}/{config['fastq_dir']}/'$SRR'_{config['fqext2']}.{config['fqsuffix']}.gz'
-          dst='{config['result_dir']}/{config['fastq_dir']}/'$GSM'_{config['fqext2']}.{config['fqsuffix']}.gz'
+          src='{config['fastq_dir']}/'$SRR'_{config['fqext2']}.{config['fqsuffix']}.gz'
+          dst='{config['fastq_dir']}/'$GSM'_{config['fqext2']}.{config['fqsuffix']}.gz'
           mv -v $src $dst >> {{log}} 2>&1
         fi
         """
-
-
-if 'condition' in samples and config.get('combine_replicates', '') == 'merge':
-    def get_merge_replicates(wildcards):
-        return expand([f"{{result_dir}}/{{trimmed_dir}}/{replicate}{wildcards.fqext}_trimmed.{{fqsuffix}}.gz"
-               for replicate in samples[samples['condition'] == wildcards.condition].index], **config)
-
-    rule merge_replicates:
-        """
-        Merge replicates (fastqs) simply by concatinating the files.
-        """
-        input:
-            get_merge_replicates
-        output:
-            sorted(expand("{result_dir}/{trimmed_dir}/merged/{{condition}}{{fqext}}_trimmed.{fqsuffix}.gz", **config))
-        wildcard_constraints:
-            fqext=".*",
-            condition="[^_]*"
-        log:
-            expand("{log_dir}/merge_replicates/{{condition}}{{fqext}}.log", **config)
-        benchmark:
-            expand("{benchmark_dir}/merge_replicates/{{condition}}{{fqext}}.benchmark.txt", **config)[0]
-        shell:
-            "cat {input} > {output} 2> {log}"

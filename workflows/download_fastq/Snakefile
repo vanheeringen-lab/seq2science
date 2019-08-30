@@ -3,6 +3,12 @@ from snakemake.utils import validate
 
 # complement the configuration
 configfile: "config.yaml"
+
+user_dirs = []
+for key, value in config.items():
+    if '_dir' in key:
+        user_dirs.append(key)
+
 for schema in ['general', 'download']:
     validate(config, schema=f"../../schemas/config/{schema}.schema.yaml")
 
@@ -20,5 +26,5 @@ rule download_all:
     download all samples
     """
     input:
-        [expand(f"{{result_dir}}/{{fastq_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz", **config) if config['layout'][sample] == "PAIRED" else
-         expand(f"{{result_dir}}/{{fastq_dir}}/{sample}.{{fqsuffix}}.gz", **config) for sample in samples.index]
+        [expand(f"{{fastq_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz", **config) if config['layout'][sample] == "PAIRED" else
+         expand(f"{{fastq_dir}}/{sample}.{{fqsuffix}}.gz", **config) for sample in samples.index]

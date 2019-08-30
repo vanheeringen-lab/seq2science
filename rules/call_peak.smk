@@ -2,9 +2,9 @@ def get_genrich_replicates(wildcards):
     sample_condition, assembly = wildcards.fname.split('-')
     if not 'condition' in samples.columns or config.get('combine_replicates', '') == 'merge' \
     or (sample_condition in samples.index and not sample_condition in samples['condition'].values):
-        return expand(f"{{result_dir}}/{{dedup_dir}}/{wildcards.fname}.sambamba-queryname.bam", **config)
+        return expand(f"{{dedup_dir}}/{wildcards.fname}.sambamba-queryname.bam", **config)
     else:
-        return expand([f"{{result_dir}}/{{dedup_dir}}/{replicate}-{assembly}.sambamba-queryname.bam"
+        return expand([f"{{dedup_dir}}/{replicate}-{assembly}.sambamba-queryname.bam"
         for replicate in samples[(samples['assembly'] == assembly) & (samples['condition'] == sample_condition)].index], **config)
 
 
@@ -58,19 +58,14 @@ rule call_peak_genrich:
 config['macs2_types'] = ['control_lambda.bdg', 'summits.bed', 'peaks.narrowPeak',
                          'peaks.xls', 'treat_pileup.bdg']
 def get_fastqc(wildcards):
-    if config.get('combine_replicates', '') == 'merge':
-        if config['layout'][wildcards.sample] == "SINGLE":
-            return expand("{result_dir}/{trimmed_dir}/merged/{{sample}}_trimmed_fastqc.zip", **config)
-        return sorted(expand("{result_dir}/{trimmed_dir}/merged/{{sample}}_{fqext1}_trimmed_fastqc.zip", **config))
-    else:
-        if config['layout'][wildcards.sample] == "SINGLE":
-            return expand("{result_dir}/{trimmed_dir}/{{sample}}_trimmed_fastqc.zip", **config)
-        return sorted(expand("{result_dir}/{trimmed_dir}/{{sample}}_{fqext1}_trimmed_fastqc.zip", **config))
+    if config['layout'][wildcards.sample] == "SINGLE":
+        return expand("{qc_dir}/fastqc/{{sample}}_trimmed_fastqc.zip", **config)
+    return sorted(expand("{qc_dir}/fastqc/{{sample}}_{fqext1}_trimmed_fastqc.zip", **config))
 
 
 def get_macs2_bam(wildcards):
     if not config['macs2_keep_mates'] is True or config['layout'].get(wildcards.sample, False) == "SINGLE":
-        return expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config)
+        return expand("{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config)
     return rules.keep_mates.output
 
 
@@ -109,9 +104,9 @@ rule macs2_callpeak:
 
 rule keep_mates:
     input:
-        expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config)
+        expand("{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config)
     output:
-        expand("{result_dir}/{dedup_dir}/{{sample}}-mates-{{assembly}}.samtools-coordinate.bam", **config)
+        expand("{dedup_dir}/{{sample}}-mates-{{assembly}}.samtools-coordinate.bam", **config)
     log:
         expand("{log_dir}/keep_mates/{{sample}}-{{assembly}}.log", **config)
     benchmark:
@@ -147,7 +142,7 @@ rule hmmratac_genome_info:
     https://github.com/LiuLabUB/HMMRATAC/issues/17
     """
     input:
-        bam=expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config)
+        bam=expand("{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config)
     output:
         out=expand("{result_dir}/hmmratac/{{sample}}-{{assembly}}.genomesizes", **config),
         tmp1=temp(expand("{result_dir}/hmmratac/{{sample}}-{{assembly}}.tmp1", **config)),
@@ -174,8 +169,8 @@ rule hmmratac:
     """
     input:
         genome_size=expand("{result_dir}/hmmratac/{{sample}}-{{assembly}}.genomesizes", **config),
-        bam_index=expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bai", **config),
-        bam=expand("{result_dir}/{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config)
+        bam_index=expand("{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bai", **config),
+        bam=expand("{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config)
     output:
         expand("{result_dir}/hmmratac/{{sample}}-{{assembly}}{hmmratac_types}", **config)
     log:
