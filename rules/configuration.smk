@@ -48,7 +48,7 @@ for key, value in config.items():
         config[key] = re.split("\/$", value)[0]
 
 
-# nestle default directories in result_dir
+# nest default directories in result_dir
 for key, value in config.items():
     if '_dir' in key:
         if key in ['log_dir', 'benchmark_dir', 'sra_dir', 'fastq_dir', 'trimmed_dir', 'qc_dir', 'dedup_dir'] and key not in user_dirs:
