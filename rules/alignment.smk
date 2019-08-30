@@ -237,7 +237,7 @@ elif config['aligner'] == 'star':
         benchmark:
             expand("{benchmark_dir}/{aligner}_index/{{assembly}}.benchmark.txt", **config)[0]
         params:
-            config['star_index']
+            config['index']
         threads: 20
         conda:
             "../envs/star.yaml"
@@ -273,7 +273,7 @@ elif config['aligner'] == 'star':
         params:
             input=lambda wildcards, input: f' {input.reads}' if config['layout'][wildcards.sample] == 'SINGLE' else \
                                            f' {input.reads[0]} {input.reads[1]}',
-            flags=config['star_aln']
+            flags=config['align']
         threads: 20
         conda:
             "../envs/star.yaml"
