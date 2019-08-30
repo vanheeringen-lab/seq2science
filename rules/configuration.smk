@@ -81,9 +81,15 @@ def get_layout(sample):
     if api_key is not "":
         api_key = f'-api_key {api_key}'
 
-    return subprocess.check_output(
-        f'''esearch {api_key} -db sra -query {sample} | efetch {api_key} | grep -Po "(?<=<LIBRARY_LAYOUT><)[^/><]*"''',
-        shell=True).decode('ascii').rstrip()
+    try:
+        return subprocess.check_output(
+            f'''esearch {api_key} -db sra -query {sample} | efetch {api_key} | grep -Po "(?<=<LIBRARY_LAYOUT><)[^/><]*"''',
+            shell=True).decode('ascii').rstrip()
+    except subprocess.CalledProcessError:
+        raise ValueError(f"The command to lookup sample {sample} online failed!\n"
+                         f"Are you sure this sample exists..? Downloading samples with restricted "
+                         f"access is currently not supported. We advise you to download the sample "
+                         f"manually, and continue the pipeline from there on.")
 
 
 # try to load the layout cache, otherwise defaults to empty dictionary
