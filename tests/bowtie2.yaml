@@ -1,0 +1,12 @@
+# tab-separated file of the samples
+samples: samples.tsv
+
+
+# which aligner to use
+aligner:
+  bowtie2:
+    index:  # parameters for indexing
+      ''
+    align:  # parameters for alignment
+      ''
+

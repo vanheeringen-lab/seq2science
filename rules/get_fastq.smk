@@ -17,8 +17,8 @@ rule id2sra:
     conda:
         "../envs/get_fastq.yaml"
     params:
-        ascp_path=config['ascp_path'],
-        ascp_key= config['ascp_key']
+        ascp_path=config.get('ascp_path', "NO_ASCP_PATH_PROVIDED"),
+        ascp_key= config.get('ascp_key', "NO_ASCP_key_PROVIDED")
     shell:
         """
         echo "starting lookup of the sample in the sra database:" > {log}

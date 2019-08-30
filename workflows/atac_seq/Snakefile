@@ -3,10 +3,15 @@ from snakemake.utils import validate
 
 # complement the configuration
 configfile: "config.yaml"
+
 user_dirs = []
 for key, value in config.items():
     if '_dir' in key:
         user_dirs.append(key)
+
+if isinstance(config.get('aligner', None), str):
+    config['aligner'] = {config['aligner']: {}}
+
 for schema in ['general', 'download', 'alignment_general', 'peakcalling']:
     validate(config, schema=f"../../schemas/config/{schema}.schema.yaml")
 

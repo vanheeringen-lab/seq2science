@@ -5,11 +5,13 @@ description: snakemake-workflows alignment configuration
 properties:
   bam_sorter:
     description: which sorting software to use
-    default: samtools
-    enum: [sambamba, samtools]
-    type: string
-  bam_sort_order:
-    description: sort order of aligned reads
-    default: coordinate
-    enum: [queryname, coordinate]
-    type: string
+    type: object
+#    enum: [sambamba, samtools]
+    properties:
+      description: sort order of aligned reads
+      default: coordinate
+      enum: [queryname, coordinate]
+      type: string
+    default:
+      samtools:
+        coordinate
