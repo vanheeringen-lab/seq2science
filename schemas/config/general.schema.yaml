@@ -23,11 +23,11 @@ properties:
     default: ./
     type: string
   log_dir:
-    description: directory where to store the logs
+    description: directory where to store the logs (defaults inside the result dir)
     default: log
     type: string
   benchmark_dir:
-    description: directory where to store the logs
+    description: directory where to store the logs (defaults inside the result dir)
     default: benchmark
     type: string
 
