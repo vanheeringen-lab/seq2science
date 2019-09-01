@@ -1,8 +1,11 @@
 import os
 import re
 import time
+import math
+import psutil
 import pickle
 import subprocess
+import numpy as np
 import pandas as pd
 from multiprocessing.pool import ThreadPool
 from snakemake.utils import validate
@@ -168,3 +171,44 @@ if 'condition' in samples and config.get('combine_replicates', "") == 'merge':
     for sample in samples.index:
         condition = samples.loc[sample, 'condition']
         config['layout'][condition] = config['layout'][sample]
+
+
+# set default parameters (parallel downloads and memory)
+def convert_size(size_bytes, order=None):
+    # https://stackoverflow.com/questions/5194057/better-way-to-convert-file-sizes-in-python/14822210#14822210
+    size_name = ["b", "kb", "mb", "gb"]
+    if order is None:
+        order = int(math.floor(math.log(size_bytes, 1024)))
+    s = int(size_bytes // math.pow(1024, order))
+    return s, size_name[order]
+
+
+def add_default_resources(func):
+    # https://stackoverflow.com/questions/6200270/decorator-to-print-function-call-details-parameters-names-and-effective-values/6278457#6278457
+    def wrapper(*args, **kwargs):
+        # by default only one download in parallel (workflow fails on multiple on a single node)
+        kwargs['resources'] = {**{'parallel_downloads': 1}, **kwargs['resources']}
+
+        # when the user specifies memory, use this and give a warning if it surpasses local memory
+        # (surpassing does not always have to be an issue -> cluster execution)
+        # if none specified set the memory to the max available on the computer
+        mem = psutil.virtual_memory()
+        if kwargs['resources'].get('mem_mb'):
+            if kwargs['resources']['mem_mb'] > convert_size(mem.total, 2)[0]:
+                logger.info(f"WARNING: The specified ram ({kwargs['resources']['mem_mb']} mb) surpasses the local machine\'s RAM ({convert_size(mem.total, 2)[0]} mb)")
+
+            kwargs['resources'] = {**kwargs['resources'],
+                                   **{'mem_mb': np.clip(kwargs['resources']['mem_mb'], 0, convert_size(mem.total, 2)[0])}}
+        else:
+            if kwargs['resources'].get('mem_gb', 0) > convert_size(mem.total, 3)[0]:
+                logger.info(f"WARNING: The specified ram ({kwargs['resources']['mem_gb']} gb) surpasses the local machine\'s RAM ({convert_size(mem.total, 3)[0]} gb)")
+
+            kwargs['resources'] = {**kwargs['resources'],
+                                   **{'mem_gb': np.clip(kwargs['resources'].get('mem_gb', 9999), 0, convert_size(mem.total, 3)[0])}}
+
+        return func(*args, **kwargs)
+    return wrapper
+
+
+# now add the wrapper to the workflow execute function
+workflow.execute = add_default_resources(workflow.execute)
