@@ -1,4 +1,4 @@
-TEST
+TEST2
 # Snakemake workflows
 [![Build Status](https://travis-ci.org/vanheeringen-lab/snakemake-workflows.svg?branch=master)](https://travis-ci.org/vanheeringen-lab/snakemake-workflows)
 [![star this repo](http://githubbadges.com/star.svg?user=vanheeringen-lab&repo=snakemake-workflows&style=flat)](https://github.com/vanheeringen-lab/snakemake-workflows)
