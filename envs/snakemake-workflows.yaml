@@ -2,7 +2,7 @@ name: snakemake-workflows
 
 
 dependencies:
-  - pkgs/main::python==3.6
+  - pkgs/main::python=3.6
   - bioconda::snakemake>=5.5.4
   - pkgs/main::pip=19.2.1
   - bioconda::sra-tools=2.9.1
