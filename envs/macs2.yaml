@@ -4,6 +4,6 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - python=2.7
-  - macs2=2.1.2
+  - pkgs/main::python=2.7
+  - bioconda::macs2=2.1.2
   - bioconda:khmer=2.0
