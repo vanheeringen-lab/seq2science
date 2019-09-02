@@ -2,11 +2,14 @@ name: snakemake-workflows
 
 
 dependencies:
-  - pkgs/main::python>=3.6
+  - pkgs/main::python==3.6
   - bioconda::snakemake>=5.5.4
-  - pip=19.2.1
+  - pkgs/main::pip=19.2.1
   - bioconda::sra-tools=2.9.1
   - bioconda::entrez-direct=11.0
   - bioconda::pysam=0.15.3
+  - pkgs/main::packaging=19.1
+  - conda-forge::pygithub=1.43.6
+  - pkgs/main::conda=4.7.11
   - pip:
     - git+https://github.com/daler/trackhub@params-overhaul
