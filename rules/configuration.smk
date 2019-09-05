@@ -85,9 +85,13 @@ def get_layout(sample):
         api_key = f'-api_key {api_key}'
 
     try:
-        return subprocess.check_output(
-            f'''esearch {api_key} -db sra -query {sample} | efetch {api_key} | grep -Po "(?<=<LIBRARY_LAYOUT><)[^/><]*"''',
+        layout = subprocess.check_output(
+            f'''esearch {api_key} -db sra -query {sample} | efetch {api_key} | grep -Po "(?<=<LIBRARY_LAYOUT><)[^ /><]*"''',
             shell=True).decode('ascii').rstrip()
+        if layout not in ['PAIRED', 'SINGLE']:
+            raise ValueError(f"Sample {sample} was found to be {layout}-end, however the only"
+                             f"acceptable library layouts are SINGLE-end and PAIRED-end.")
+        return layout
     except subprocess.CalledProcessError:
         raise ValueError(f"The command to lookup sample {sample} online failed!\n"
                          f"Are you sure this sample exists..? Downloading samples with restricted "
@@ -127,6 +131,8 @@ for sample in [sample for sample in samples.index if sample not in layout_cache]
 # now parse the output and store the cache, the local files' layout, and the ones that were fetched online
 config['layout'] = {**layout_cache,
                     **{k: (v if isinstance(v, str) else v.get()) for k, v in config['layout'].items()}}
+
+assert all(layout in ['SINGLE', 'PAIRED'] for sample, layout in config['layout'].items())
 
 # if new samples were added, update the cache
 if len([sample for sample in samples.index if sample not in layout_cache]) is not 0:
