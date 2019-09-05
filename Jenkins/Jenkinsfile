@@ -100,7 +100,7 @@ pipeline {
 
                 # test basic downloading 1 PE and 1 SE
                 snakemake -s workflows/download_fastq/Snakefile --directory workflows/download_fastq \
-                --use-conda -j $CORES --quiet --config samples=$WORKSPACE/Jenkins/download_fastq/samples.tsv
+                --use-conda -j $CORES  --config samples=$WORKSPACE/Jenkins/download_fastq/samples.tsv
                 '''
             }
         }
@@ -112,17 +112,17 @@ pipeline {
 
                 # test bowtie2 alignment
                 snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
-                --use-conda -j $CORES --quiet --configfile Jenkins/alignment/bowtie2.yaml \
+                --use-conda -j $CORES  --configfile Jenkins/alignment/bowtie2.yaml \
                 --config samples=$WORKSPACE/Jenkins/alignment/samples.tsv
 
                 # test bwa alignment
                 snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
-                --use-conda -j $CORES --quiet --configfile Jenkins/alignment/bwa.yaml \
+                --use-conda -j $CORES  --configfile Jenkins/alignment/bwa.yaml \
                 --config samples=$WORKSPACE/Jenkins/alignment/samples.tsv
 
                 # test hisat2 alignment
                 snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
-                --use-conda -j $CORES --quiet --configfile Jenkins/alignment/bwa.yaml \
+                --use-conda -j $CORES  --configfile Jenkins/alignment/bwa.yaml \
                 --config samples=$WORKSPACE/Jenkins/alignment/samples.tsv
                 '''
             }
