@@ -4,4 +4,4 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - bioconda::hmmratac=1.2.5
+  - bioconda::hmmratac=1.2.8
