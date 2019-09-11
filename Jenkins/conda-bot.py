@@ -1,11 +1,12 @@
 import re
+import sys
 
 from packaging import version
 import conda.cli.python_api
 from github import Github
 
 
-TOKEN = None
+TOKEN = sys.argv[1]
 g = Github(TOKEN)
 repo = g.get_repo('vanheeringen-lab/snakemake-workflows')
 open_pulls = list(repo.get_pulls(state='open'))
@@ -45,30 +46,27 @@ for file in repo.get_contents("envs", ref='develop'):
                         package not in ['python']:
 
                     # replace the old version with the new version
-                    line = f'  - {channel}::{package}={new_version}\n'
+                    line = f'  - {channel}::{package}={new_version}'
 
                     # add to title
                     pull_request_title += f'{package}={old_version} -> {new_version}; '
                     updated = True
 
-        newfile += line
+        newfile += f"{line}\n"
 
     pull_request_title = pull_request_title[:-2]
 
     if updated:
-        still_open = any([f'auto-update {file}:' in pull_request.title
+        still_open = any([f'auto-update: {file}:' in pull_request.title
                           for pull_request in open_pulls])
-        file = repo.get_file_contents(f'envs/{file}')
+        file = repo.get_file_contents(file.path)
         if not still_open:
-            print(file.decoded_content)
-            print(str.encode(newfile))
-
             source_branch = 'develop'
             target_branch = f'auto_{file.name}'
 
             sb = repo.get_branch(source_branch)
             repo.create_git_ref(ref='refs/heads/' + target_branch, sha=sb.commit.sha)
-            repo.update_file(f'envs/{file.name}', f"auto-update {file}", str.encode(newfile), file.sha, branch=target_branch)
+            repo.update_file(f'envs/{file.name}', f"auto-update: {file}", str.encode(newfile), file.sha, branch=target_branch)
 
             repo.create_pull(title=pull_request_title,head=target_branch, base=source_branch,
                              body='THIS IS AUTOMATED')

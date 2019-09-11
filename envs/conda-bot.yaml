@@ -1,0 +1,5 @@
+name: conda-bot
+dependencies:
+  - pkgs/main::packaging=19.1
+  - conda-forge::pygithub=1.43.6
+  - pkgs/main::conda=4.7.11
