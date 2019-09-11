@@ -1,4 +1,6 @@
 extra_fn_clean_exts:
+    - type: remove
+      pattern: snakemake-workflows
     - '-'
     - type: remove
       pattern: _1
