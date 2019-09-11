@@ -4,5 +4,5 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - bioconda::genomepy=0.5.5
+  - bioconda::genomepy=0.6.0
   - bioconda::gffread=0.11.4
