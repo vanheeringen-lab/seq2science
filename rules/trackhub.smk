@@ -91,7 +91,7 @@ rule narrowpeak_bignarrowpeak:
         """
         # keep first 10 columns, idr adds extra columns we do not need for our bigpeak
         cut -d$'\t' -f 1-10 {input.narrowpeak} |
-        LC_COLLATE=C sort -k1,1 -k2,2n > {output.tmp}
+        bedSort /dev/stdin {output.tmp} > {log} 2>&1;
         bedToBigBed -type=bed4+6 -as=../../schemas/bigNarrowPeak.as {output.tmp} {input.genome_size} {output.out} > {log} 2>&1
         """
 
