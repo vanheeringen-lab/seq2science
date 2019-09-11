@@ -1,5 +1,5 @@
 # Snakemake workflows
-[![Build Status](https://travis-ci.org/vanheeringen-lab/snakemake-workflows.svg?branch=master)](https://travis-ci.org/vanheeringen-lab/snakemake-workflows)
+[![Build Status](http://ocimum.science.ru.nl/jenkins/buildStatus/icon?job=Snakemake-Workflows%2Fmaster)](http://ocimum.science.ru.nl/jenkins/job/Snakemake-Workflows/job/master/)
 [![star this repo](http://githubbadges.com/star.svg?user=vanheeringen-lab&repo=snakemake-workflows&style=flat)](https://github.com/vanheeringen-lab/snakemake-workflows)
 [![fork this repo](http://githubbadges.com/fork.svg?user=vanheeringen-lab&repo=snakemake-workflows&style=flat)](https://github.com/boennemann/badges/fork)
 
