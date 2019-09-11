@@ -6,4 +6,4 @@ channels:
 dependencies:
   - pkgs/main::python=2.7
   - bioconda::macs2=2.1.2
-  - bioconda:khmer=2.0
+  - bioconda::khmer=3.0.0a3
