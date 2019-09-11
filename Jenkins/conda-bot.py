@@ -57,19 +57,21 @@ for file in repo.get_contents("envs", ref='develop'):
     pull_request_title = pull_request_title[:-2]
 
     if updated:
-        still_open = any([f'auto-update: {file}:' in pull_request.title
-                          for pull_request in open_pulls])
-        file = repo.get_file_contents(file.path)
-        if not still_open:
-            source_branch = 'develop'
-            target_branch = f'auto_{file.name}'
+        source_branch = 'develop'
+        target_branch = f'auto_{file.name}'
 
+        still_open = any([f'auto-update: {file}:' in pull_request.title
+                          for pull_request in open_pulls]) or \
+                     target_branch in [branch.name for branch in repo.get_branches()]
+
+        if not still_open:
+            file = repo.get_file_contents(file.path)
+            print(still_open, target_branch)
             sb = repo.get_branch(source_branch)
             repo.create_git_ref(ref='refs/heads/' + target_branch, sha=sb.commit.sha)
             repo.update_file(f'envs/{file.name}', f"auto-update: {file}", str.encode(newfile), file.sha, branch=target_branch)
 
             repo.create_pull(title=pull_request_title,head=target_branch, base=source_branch,
-                             body='THIS IS AUTOMATED')
+                             body='This is an automated pull-request... :robot: ')
 
-        assert False
 
