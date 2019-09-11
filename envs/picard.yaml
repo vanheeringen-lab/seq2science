@@ -4,4 +4,4 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - bioconda::picard=2.9.2
+  - bioconda::picard=2.20.7
