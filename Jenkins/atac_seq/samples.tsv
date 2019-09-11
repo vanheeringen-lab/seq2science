@@ -1,9 +1,2 @@
-sample	assembly	condition
-GSM2837480	Bl71nemr	15h
-GSM2837481	Bl71nemr	15h
-GSM2837483	Bl71nemr	60h
-GSM2837484	Bl71nemr	60h
-GSM2837499	oryLat2	st11
-GSM2837500	oryLat2	st11
-GSM2837501	oryLat2	st13
-GSM2837502	oryLat2	st13
+sample	assembly
+DRR154087	FUGU5

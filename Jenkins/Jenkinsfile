@@ -127,6 +127,20 @@ pipeline {
                 '''
             }
         }
+        stage('Test atac-seq') {
+            steps {
+                sh '''#!/usr/bin/env bash
+                source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+                conda activate miniconda/envs/snakemake-workflows/
+
+                # test simple
+                snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq \
+                --use-conda -j $CORES  --configfile Jenkins/alignment/bowtie2.yaml \
+                --config samples=$WORKSPACE/Jenkins/alignment/samples.tsv
+                '''
+            }
+        }
+
     }
 
     post {
