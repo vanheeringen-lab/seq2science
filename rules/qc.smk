@@ -16,9 +16,8 @@ rule samtools_stats:
 
 def get_featureCounts_bam(wildcards):
     if wildcards.peak_caller == 'macs2':
-            return expand("{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config)
-    else:
-        return expand("{dedup_dir}/{{sample}}-{{assembly}}.sambamba-queryname.bam", **config)
+        return expand("{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config)
+    return expand("{dedup_dir}/{{sample}}-{{assembly}}.sambamba-queryname.bam", **config)
 
 
 rule featureCounts:
@@ -144,7 +143,7 @@ def get_alignment_qc(sample):
 
 def get_peak_calling_qc(sample):
     assembly = samples.loc[sample]['assembly']
-    if config.get('combine_replicates', "") == 'merge':
+    if config.get('combine_replicates', "") == 'merge' and 'condition' in samples:
         sample = samples.loc[sample, 'condition']
 
     return expand(f"{{qc_dir}}/{{peak_caller}}/{sample}-{assembly}_featureCounts.txt.summary", **config)
