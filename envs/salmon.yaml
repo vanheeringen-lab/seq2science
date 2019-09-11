@@ -4,5 +4,5 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - bioconda::salmon=0.14.*
+  - bioconda::salmon=0.14.1
   - bioconda::samtools=1.9
