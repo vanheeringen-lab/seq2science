@@ -1,5 +1,5 @@
 def get_reads(wildcards):
-    if config.get('combine_replicates', '') == 'merge':
+    if config.get('combine_replicates', '') == 'merge' and 'condition' in samples:
         if config['layout'].get(wildcards.sample, False) == "SINGLE":
             return expand("{trimmed_dir}/merged/{{sample}}_trimmed.{fqsuffix}.gz", **config)
         return sorted(expand("{trimmed_dir}/merged/{{sample}}_{fqext}_trimmed.{fqsuffix}.gz", **config))

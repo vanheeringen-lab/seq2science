@@ -144,7 +144,7 @@ def get_alignment_qc(sample):
 
 def get_peak_calling_qc(sample):
     assembly = samples.loc[sample]['assembly']
-    if config.get('combine_replicates', "") == 'merge':
+    if config.get('combine_replicates', "") == 'merge' and 'condition' in samples:
         sample = samples.loc[sample, 'condition']
 
     return expand(f"{{qc_dir}}/{{peak_caller}}/{sample}-{assembly}_featureCounts.txt.summary", **config)

@@ -110,7 +110,7 @@ def get_bigfiles(wildcards):
             bigfiles['bigpeaks'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{sample}-{samples.loc[sample, 'assembly']}.bigNarrowPeak", **config))
 
     # get all the bigwigs
-    if config.get('combine_replicates', '') == 'merge':
+    if config.get('combine_replicates', '') == 'merge' and 'condition' in samples:
         for condition in set(samples['condition']):
             for assembly in set(samples[samples['condition'] == condition]['assembly']):
                 bigfiles['bigwigs'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{condition}-{assembly}.bw", **config))
