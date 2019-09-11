@@ -227,6 +227,7 @@ elif config['aligner'] == 'star':
         """
         input:
             genome = expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+            sizefile= expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
             gtf = expand("{genome_dir}/{{assembly}}/{{assembly}}.gtf", **config)
         output:
             dir = directory(expand("{genome_dir}/{{assembly}}/index/{aligner}", **config)),
@@ -243,11 +244,42 @@ elif config['aligner'] == 'star':
             "../envs/star.yaml"
         shell:
             """
+            # set genome dependent variables
+            function log2 {{
+                    local x=0
+                    for (( y=$1-1 ; $y > 0; y >>= 1 )) ; do
+                        let x=$x+1
+                    done
+                    echo $x
+            }}
+            
+            NBits=""
+            NBases=""
+            GenomeLength=$(awk -F"\t" '{{x+=$2}}END{{printf "%i", x}}' {input.sizefile})
+            NumberOfReferences=$(awk 'END{{print NR}}' {input.sizefile})
+            
+            if [[ $NumberOfReferences>5000 ]]; then
+                # for large genomes, --genomeChrBinNbits should be scaled to min(18,log2[max(GenomeLength/NumberOfReferences,ReadLength)])
+                # ReadLength is skipped here, as it is unknown
+                LpR=$(log2 $((GenomeLength / NumberOfReferences)))
+                NBits="--genomeChrBinNbits $(($LpR<18 ? $LpR : 18))"
+                printf "NBits: $NBits\n\n" >> {log.default} 2>&1
+            fi
+            
+            if [[ $GenomeLength<268435456 ]]; then 
+                # for small genomes, --genomeSAindexNbases must be scaled down to min(14, log2(GenomeLength)/2-1)
+                logG=$(( $(log2 $GenomeLength) / 2 - 1 ))
+                NBases="--genomeSAindexNbases $(( $logG<14 ? $logG : 14 ))"
+                printf "NBases: $NBases\n\n" >> {log.default} 2>&1
+            fi
+            
             mkdir {output.dir}
             mkdir {output.tmpdir}
             
             STAR --runMode genomeGenerate --genomeFastaFiles {input.genome} --sjdbGTFfile {input.gtf} --genomeDir {output.dir} \
-            --runThreadN {threads} --outFileNamePrefix {output.tmpdir}/ {params} > {log.default} 2>&1
+            --runThreadN {threads} --outFileNamePrefix {output.tmpdir}/ $NBits $NBases {params} >> {log.default} 2>&1
+            
+            # --limitGenomeGenerateRAM # can be used in combination with a resource limit rule
             
             # STAR also creates an extended log.
             if [ -f {output.tmpdir}/Log.out ]; then
@@ -264,30 +296,30 @@ elif config['aligner'] == 'star':
             reads=get_reads,
             index=expand("{genome_dir}/{{assembly}}/index/{aligner}", **config)
         output:
-            tmpdir=temp(directory(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}", **config))),
+            dir=directory(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}", **config)),
             pipe=get_alignment_pipes()
         log:
-            directory(expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}", **config))
+            expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}.log", **config)
         benchmark:
             expand("{benchmark_dir}/{aligner}_align/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
         params:
             input=lambda wildcards, input: f' {input.reads}' if config['layout'][wildcards.sample] == 'SINGLE' else \
                                            f' {input.reads[0]} {input.reads[1]}',
             flags=config['align']
-        threads: 20
+        threads: 1
+        resources:
+            # mem_mb=40000,
+            star_limit=1
         conda:
             "../envs/star.yaml"
         shell:
             """
-            mkdir {output.tmpdir}
-            mkdir {log}
+            # STAR seems to claim ~(10 * genome size * threads) in RAM.
+            mkdir {output.dir}
             
-            STAR --genomeDir {input.index} --readFilesIn {params.input} --outFileNamePrefix {output.tmpdir}/ --runThreadN {threads} {params.flags} \
-            --outSAMtype BAM Unsorted --outStd BAM_Unsorted | tee {output.pipe} 1> /dev/null 2>> {log}/Log.stderr.out
-            
-            if [ -d {output.tmpdir} ]; then
-                mv -f {output.tmpdir}/* {log}/
-            fi
+            STAR --genomeDir {input.index} --readFilesIn {params.input} --quantMode GeneCounts \
+            --outFileNamePrefix {output.dir}/ --runThreadN {threads} {params.flags} \
+            --outSAMtype BAM Unsorted --outStd BAM_Unsorted | tee {output.pipe} 1> /dev/null 2>> {log}
             """
 
 

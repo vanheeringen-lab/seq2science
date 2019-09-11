@@ -1,0 +1,59 @@
+from snakemake.utils import validate
+
+
+# complement the configuration
+configfile: "config.yaml"
+
+user_dirs = []
+for key, value in config.items():
+    if '_dir' in key:
+        user_dirs.append(key)
+
+for kw in ['aligner', 'bam_sorter']:
+    if isinstance(config.get(kw, None), str):
+        config[kw] = {config[kw]: {}}
+
+for schema in ['general', 'download', 'alignment_general', 'alignment_specific']:
+    validate(config, schema=f"../../schemas/config/{schema}.schema.yaml")
+
+# do onstart/onexit things
+schemas = ['sample', 'assembly']
+include: f"{config['rule_dir']}/configuration.smk"
+
+
+# load the remaining relevant rules
+include: f"{config['rule_dir']}/alignment.smk"
+include: f"{config['rule_dir']}/DE_analysis.smk"
+include: f"{config['rule_dir']}/gene_counts.smk"
+include: f"{config['rule_dir']}/get_genome.smk"
+include: f"{config['rule_dir']}/get_fastq.smk"
+include: f"{config['rule_dir']}/qc.smk"
+include: f"{config['rule_dir']}/trimming.smk"
+
+
+# load the quality control files
+quality_control = [get_trimming_qc, get_alignment_qc]
+
+# load DE analysis contrasts
+contrasts = get_contrasts()
+# for contrast in contrasts:
+#     print(contrast)
+# exit(0)
+
+rule align_all:
+    """
+    align each sample against its assembly
+    """
+    input:
+        [expand(f"{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.{{bam_sorter}}-{{bam_sort_order}}.bam", **config) for sample in samples.index],
+        [expand(f"{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.{{bam_sorter}}-{{bam_sort_order}}.bai", **config) for sample in samples.index if config['bam_sort_order'] == 'coordinate'],
+
+        expand("{result_dir}/gene_counts/{assemblies}-counts.tsv", **{**config, **{'assemblies': set(samples['assembly'])}}),
+
+        expand("{qc_dir}/multiqc_{assemblies}.html", **{**config, **{'assemblies': set(samples['assembly'])}}),
+
+        [expand(f"{{result_dir}}/{{diffexp}}/{{assemblies}}-{contrast}.diffexp.tsv", **{**config, **{'assemblies': set(samples['assembly'])}}) for contrast in contrasts if config["diffexp"] != 'None'],
+        [expand(f"{{result_dir}}/{{diffexp}}/{{assemblies}}-{contrast}.ma_plot.svg", **{**config, **{'assemblies': set(samples['assembly'])}}) for contrast in contrasts if config["diffexp"] != 'None'],
+
+        #expand("{result_dir}/{diffexp}/{assemblies}-{contrasts}.diffexp.tsv", **{**config, **{'assemblies': set(samples['assembly']), 'contrasts': set(config["diffexp"][list(config["diffexp"])[0]]["contrasts"])}}) if config["diffexp"] != 'None' else '',
+        #expand("{result_dir}/{diffexp}/{assemblies}-{contrasts}.ma_plot.svg", **{**config, **{'assemblies': set(samples['assembly']), 'contrasts': set(config["diffexp"][list(config["diffexp"])[0]]["contrasts"])}}) if config["diffexp"] != 'None' else ''

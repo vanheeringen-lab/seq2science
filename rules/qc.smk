@@ -16,9 +16,8 @@ rule samtools_stats:
 
 def get_featureCounts_bam(wildcards):
     if wildcards.peak_caller == 'macs2':
-            return expand("{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config)
-    else:
-        return expand("{dedup_dir}/{{sample}}-{{assembly}}.sambamba-queryname.bam", **config)
+        return expand("{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config)
+    return expand("{dedup_dir}/{{sample}}-{{assembly}}.sambamba-queryname.bam", **config)
 
 
 rule featureCounts:
