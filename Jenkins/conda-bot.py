@@ -12,17 +12,11 @@ repo = g.get_repo('vanheeringen-lab/snakemake-workflows')
 open_pulls = list(repo.get_pulls(state='open'))
 
 
-pull_request_body = "This is an AUTOMATED pull request"
-
-
 for file in repo.get_contents("envs", ref='develop'):
-    still_open = any([f'auto-update {file.name}:' in pull_request.title
-                      for pull_request in open_pulls])
-
     updated = dependencies = False
     newfile = ''
 
-    pull_request_title = f'auto-update {file.name}: '
+    pull_request_title = f'auto-update: {file.name}: '
 
     lines = list(filter(None, file.decoded_content.decode("utf-8").split('\n')))
     for line in lines:
@@ -66,7 +60,6 @@ for file in repo.get_contents("envs", ref='develop'):
 
         if not still_open:
             file = repo.get_file_contents(file.path)
-            print(still_open, target_branch)
             sb = repo.get_branch(source_branch)
             repo.create_git_ref(ref='refs/heads/' + target_branch, sha=sb.commit.sha)
             repo.update_file(f'envs/{file.name}', f"auto-update: {file}", str.encode(newfile), file.sha, branch=target_branch)
