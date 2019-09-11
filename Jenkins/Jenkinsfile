@@ -6,6 +6,7 @@ pipeline {
         CORES = "28"
     }
     options {
+        disableConcurrentBuilds()
         lock resource: 'building'
     }
 
