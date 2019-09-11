@@ -24,7 +24,7 @@ pipeline {
                 '''
             }
         }
-        stage('Test DAG') {
+        stage('Check for updates') {
             steps {
                 sh '''#!/usr/bin/env bash
                 source $WORKSPACE/miniconda/etc/profile.d/conda.sh
