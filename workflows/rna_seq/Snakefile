@@ -54,6 +54,3 @@ rule align_all:
 
         [expand(f"{{result_dir}}/{{diffexp}}/{{assemblies}}-{contrast}.diffexp.tsv", **{**config, **{'assemblies': set(samples['assembly'])}}) for contrast in contrasts if config["diffexp"] != 'None'],
         [expand(f"{{result_dir}}/{{diffexp}}/{{assemblies}}-{contrast}.ma_plot.svg", **{**config, **{'assemblies': set(samples['assembly'])}}) for contrast in contrasts if config["diffexp"] != 'None'],
-
-        #expand("{result_dir}/{diffexp}/{assemblies}-{contrasts}.diffexp.tsv", **{**config, **{'assemblies': set(samples['assembly']), 'contrasts': set(config["diffexp"][list(config["diffexp"])[0]]["contrasts"])}}) if config["diffexp"] != 'None' else '',
-        #expand("{result_dir}/{diffexp}/{assemblies}-{contrasts}.ma_plot.svg", **{**config, **{'assemblies': set(samples['assembly']), 'contrasts': set(config["diffexp"][list(config["diffexp"])[0]]["contrasts"])}}) if config["diffexp"] != 'None' else ''
