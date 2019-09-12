@@ -11,6 +11,9 @@ g = Github(TOKEN)
 repo = g.get_repo('vanheeringen-lab/snakemake-workflows')
 open_pulls = list(repo.get_pulls(state='open'))
 
+# ignore
+with open('./envs/ignore.txt') as f:
+    ignore = f.read().splitlines()
 
 for file in repo.get_contents("envs", ref='develop'):
     updated = dependencies = False
@@ -22,11 +25,10 @@ for file in repo.get_contents("envs", ref='develop'):
     for line in lines:
         # skip lines until the dependencies are listed
         if not dependencies:
-            if 'dependencies:' in line:
-                dependencies = True
+            dependencies = 'dependencies:' in line
         else:
-            # ignore lines starting with pip, and deeper indented lines
-            if 'pip:' not in line and not line.startswith('    -'):
+            # ignore lines starting with pip, deeper indented lines, and comments
+            if 'pip:' not in line and not line.startswith('    -') and not line.startswith('#'):
                 # parse the line
                 channel, package, old_version = list(filter(None, list(filter(None, re.split(':| |=|\n', ''.join(re.split('-', line, maxsplit=1)))))))
 
@@ -37,7 +39,7 @@ for file in repo.get_contents("envs", ref='develop'):
 
                 # check if package was updated, and whether or not we want automatic updates for it
                 if version.parse(new_version) > version.parse(old_version) and \
-                        package not in ['python']:
+                        package not in ignore:
 
                     # replace the old version with the new version
                     line = f'  - {channel}::{package}={new_version}'
