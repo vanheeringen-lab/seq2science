@@ -17,7 +17,7 @@ for schema in ['general', 'download', 'alignment_general', 'alignment_specific']
     validate(config, schema=f"../../schemas/config/{schema}.schema.yaml")
 
 # do onstart/onexit things
-schemas = ['sample', 'assembly']
+schemas = ['sample', 'assembly', 'strandedness']
 include: f"{config['rule_dir']}/configuration.smk"
 
 

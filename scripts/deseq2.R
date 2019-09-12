@@ -9,9 +9,10 @@ log_file       <- snakemake@log[[1]]
 counts_file    <- snakemake@input[[1]]
 samples_file   <- snakemake@params[[1]]
 contrast       <- snakemake@wildcards$contrast
-mtp            <- snakemake@config$diffexp$deseq2$mtp
-fdr            <- snakemake@config$diffexp$deseq2$alpha
-se             <- snakemake@config$diffexp$deseq2$se
+params         <- snakemake@config$DE_params
+mtp            <- snakemake@config$DE_params$multiple_testing_procedure
+fdr            <- snakemake@config$DE_params$alpha_value
+se             <- snakemake@config$DE_params$shrinkage_estimator
 assembly       <- snakemake@wildcards$assembly
 output_table   <- snakemake@output$table
 output_ma_plot <- snakemake@output$ma_plot
@@ -50,15 +51,15 @@ groups <- contr[-1]
 
 
 ## obtain coldata, the metadata input for DESeq2
-samples = read.delim(samples_file, row.names=1, na.strings = "")
+samples <- read.delim(samples_file, row.names=1, na.strings = "")
 # rename batch and condition (needed as DESeq's design cannot accept variables)
 samples[,"condition"] <- samples[condition]
 samples[,"batch"] <- ifelse(!is.na(batch), samples[batch], NA)
 # filter for assembly and remove NAs
-samples = samples[samples$assembly == assembly & !is.na(samples[condition]), c("condition", "batch"), drop = F]
+samples <- samples[samples$assembly == assembly & !is.na(samples[condition]), c("condition", "batch"), drop = F]
 
 # keep only the samples belonging to our groups
-coldata = samples[(samples["condition"] == groups[1] | samples["condition"] == groups[2]), , drop = F]
+coldata <- samples[(samples["condition"] == groups[1] | samples["condition"] == groups[2]), , drop = F]
 # refactor in case we dropped (several) factor levels
 coldata$condition <- factor(coldata$condition)
 coldata$batch <- factor(coldata$batch)
@@ -86,10 +87,10 @@ dds <- DESeq(dds)
 cat('\n')
 
 ## Extract differentially expressed genes
-DE_contrast = resultsNames(dds)[2]
+DE_contrast <- resultsNames(dds)[2]
 
 # correct for multiple testing
-if(mtp=='ihw'){
+if(mtp=='IHW'){
   res <- results(dds, name=DE_contrast, alpha=fdr, filterFun=ihw)
 } else {
   res <- results(dds, name=DE_contrast, alpha=fdr)
@@ -103,7 +104,7 @@ resLFC <- lfcShrink(dds, coef=DE_contrast, res = res, type=se)
 # create a table with all genes, and analysis results if available
 expressed_genes <- as.data.frame(resLFC[order(resLFC$padj),])
 
-missing_genes = rownames(counts)[!(rownames(counts) %in% rownames(expressed_genes))]
+missing_genes <- rownames(counts)[!(rownames(counts) %in% rownames(expressed_genes))]
 
 unexpressed_genes <- as.data.frame(matrix(data = NA, ncol = ncol(expressed_genes), nrow = length(missing_genes)))
 rownames(unexpressed_genes) <- missing_genes
@@ -115,7 +116,7 @@ write.table(all_genes, file=output_table, quote = F, sep = '\t', col.names=NA)
 
 # plot of log fold change vs mean gene counts
 plot_res <- resLFC[resLFC$padj <= fdr & !is.na(resLFC$padj), ]
-plot_DEGs = length(plot_res[,1])
+plot_DEGs <- length(plot_res[,1])
 
 svg(output_ma_plot)
 plotMA(plot_res, ylim=c(-2,2),

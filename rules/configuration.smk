@@ -25,18 +25,16 @@ samples.index = samples.index.map(str)
 if config.get('peak_caller', False):
     config['peak_caller'] = {k: v for k,v in config['peak_caller'].items()}
 
-if config.get('aligner', False):
-    aligner = list(config['aligner'].keys())[0]
-    for k, v in list(config['aligner'].values())[0].items():
-        config[k] = v
-    config['aligner'] = aligner
+for conf_dict in ['aligner', 'diffexp']:
+    if config.get(conf_dict, False):
+        dict_key = list(config[conf_dict].keys())[0]
+        for k, v in list(config[conf_dict].values())[0].items():
+            config[k] = v
+        config[conf_dict] = dict_key
 
 if config.get('bam_sorter', False):
     config['bam_sort_order'] = list(config['bam_sorter'].values())[0]
     config['bam_sorter'] = list(config['bam_sorter'].keys())[0]
-
-if "strandedness" not in samples:
-    samples["strandedness"]=["unknown"] * len(samples) # TODO: move to schema
 
 
 if 'condition' in samples:
@@ -158,8 +156,8 @@ if config.get('peak_caller', False) and 'hmmratac' in config['peak_caller']:
 
 
 # if differential gene expression analysis is used, check all contrasts
-if config["diffexp"] != 'None':
-    old_contrasts = config["diffexp"][list(config["diffexp"])[0]]["contrasts"]
+if config.get('contrasts', False):
+    old_contrasts = list(config["contrasts"])
     for contrast in old_contrasts:
         original_contrast = contrast
 
@@ -202,23 +200,24 @@ if config["diffexp"] != 'None':
                     f'which cannot be found in column {contrast[0]} of {config["samples"]}'
 
 
-# find conda directories. Does not work with singularity.
-def conda_path(yaml):
-    """ Find the path to a conda directory """
-    import hashlib
-    import os.path
-
-    env_file = os.path.abspath(yaml)
-    env_dir = os.path.join(os.getcwd(), ".snakemake", "conda")
-
-    md5hash = hashlib.md5()
-    md5hash.update(env_dir.encode())
-    with open(env_file, 'rb') as f:
-        content = f.read()
-    md5hash.update(content)
-    dir_hash = md5hash.hexdigest()[:8]
-    path = os.path.join(env_dir, dir_hash)
-    return path
+# functional but currently unused
+# # find conda directories. Does not work with singularity.
+# def conda_path(yaml):
+#     """ Find the path to a conda directory """
+#     import hashlib
+#     import os.path
+#
+#     env_file = os.path.abspath(yaml)
+#     env_dir = os.path.join(os.getcwd(), ".snakemake", "conda")
+#
+#     md5hash = hashlib.md5()
+#     md5hash.update(env_dir.encode())
+#     with open(env_file, 'rb') as f:
+#         content = f.read()
+#     md5hash.update(content)
+#     dir_hash = md5hash.hexdigest()[:8]
+#     path = os.path.join(env_dir, dir_hash)
+#     return path
 
 # if samples are merged add the layout of the condition to the config
 if 'condition' in samples and config.get('combine_replicates', "") == 'merge':

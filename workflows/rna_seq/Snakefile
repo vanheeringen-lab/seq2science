@@ -13,11 +13,11 @@ for kw in ['aligner', 'bam_sorter']:
     if isinstance(config.get(kw, None), str):
         config[kw] = {config[kw]: {}}
 
-for schema in ['general', 'download', 'alignment_general', 'alignment_specific']:
+for schema in ['general', 'download', 'alignment_general', 'alignment_specific', 'gene_expression']:
     validate(config, schema=f"../../schemas/config/{schema}.schema.yaml")
 
 # do onstart/onexit things
-schemas = ['sample', 'assembly']
+schemas = ['sample', 'assembly', 'strandedness']
 include: f"{config['rule_dir']}/configuration.smk"
 
 
@@ -35,13 +35,14 @@ include: f"{config['rule_dir']}/trimming.smk"
 quality_control = [get_trimming_qc, get_alignment_qc]
 
 # load DE analysis contrasts
-if config["diffexp"] != 'None':
+contrasts = []
+if config.get('contrasts', False):
     contrasts = get_contrasts()
 
 
-rule align_all:
+rule count_all:
     """
-    align each sample against its assembly
+    count expressed genes per assembly and (optionally) perform differential expression analysis
     """
     input:
         [expand(f"{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.{{bam_sorter}}-{{bam_sort_order}}.bam", **config) for sample in samples.index],
@@ -51,5 +52,5 @@ rule align_all:
 
         expand("{qc_dir}/multiqc_{assemblies}.html", **{**config, **{'assemblies': set(samples['assembly'])}}),
 
-        [expand(f"{{result_dir}}/{{diffexp}}/{{assemblies}}-{contrast}.diffexp.tsv", **{**config, **{'assemblies': set(samples['assembly'])}}) for contrast in contrasts if config["diffexp"] != 'None'],
-        [expand(f"{{result_dir}}/{{diffexp}}/{{assemblies}}-{contrast}.ma_plot.svg", **{**config, **{'assemblies': set(samples['assembly'])}}) for contrast in contrasts if config["diffexp"] != 'None'],
+        [expand(f"{{result_dir}}/{{diffexp}}/{{assemblies}}-{contrast}.diffexp.tsv", **{**config, **{'assemblies': set(samples['assembly'])}}) for contrast in contrasts if config.get('contrasts', False)],
+        [expand(f"{{result_dir}}/{{diffexp}}/{{assemblies}}-{contrast}.ma_plot.svg", **{**config, **{'assemblies': set(samples['assembly'])}}) for contrast in contrasts if config.get('contrasts', False)]

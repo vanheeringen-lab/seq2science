@@ -2,7 +2,9 @@ def get_contrasts():
     """
     splits contrasts that contain multiple comparisons
     """
-    old_contrasts = config["diffexp"][list(config["diffexp"])[0]]["contrasts"]
+    # contrasts from config
+    old_contrasts = list(config["contrasts"])
+
     new_contrasts = []
     for contrast in old_contrasts:
         original_contrast = contrast
@@ -11,7 +13,7 @@ def get_contrasts():
         contrast = contrast.replace(" ", "")
         contrast = contrast.replace("~", "")
 
-        # remove batch
+        # split and store batch effect
         batch = None
         if '+' in contrast:
             batch = contrast.split('+')[0]

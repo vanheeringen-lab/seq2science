@@ -1,5 +1,5 @@
 # Alignment
-Align samples against an assembly. Samples can your own fastq files, or GSM/ERR/SRR/SRA entries. The pipeline (automatically) handles both paired-end and single-end data:
+Align samples against an assembly. Samples can be your own fastq files, or GSM/ERR/SRR/SRA entries. The pipeline (automatically) handles both paired-end and single-end data:
 
 <p align="center">
     <img src="https://raw.githubusercontent.com/vanheeringen-lab/snakemake-workflows/master/dag/alignment.svg?sanitize=true">

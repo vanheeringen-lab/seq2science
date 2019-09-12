@@ -1,0 +1,26 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+description: snakemake-workflows gene expression configuration
+
+properties:
+  # differential expression analysis parameters
+  diffexp:
+    description: which differential expression analysis to use (DESeq2 or EdgeR, default is DESeq2). Will not run without a contrast.
+    type: object
+    properties:
+      deseq2:
+        properties:
+          DE_params:
+            default:
+              multiple_testing_procedure: BH #alternative: IHW
+              alpha_value: 0.05
+              shrinkage_estimator: apeglm
+          contrasts:
+            default: ''
+        default:
+          # DE_params: ''
+          contrasts: ''
+    default:
+      None:
+        # DE_params: ''
+        contrasts: ''

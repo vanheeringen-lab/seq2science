@@ -19,11 +19,11 @@ rule count_matrix:
         import os.path
 
         def get_column(strandedness):
-            if pd.isnull(strandedness) or strandedness in ["none", "no", "unknown"]:
+            if pd.isnull(strandedness) or strandedness == 'no':
                 return 1 #non stranded protocol
-            elif strandedness in ["forward", 'yes']:
+            elif strandedness in ['forward', 'yes']:
                 return 2 #3rd column
-            elif strandedness == "reverse":
+            elif strandedness == 'reverse':
                 return 3 #4th column, usually for Illumina truseq
             else:
                 raise ValueError(("'strandedness' column should be empty or have the " 
@@ -33,7 +33,7 @@ rule count_matrix:
         counts = pd.DataFrame()
         for sample in input.cts:
             sample_name = os.path.basename(sample).replace(wildcards.assembly + '-', '', 1)
-            strandedness = samples["strandedness"].loc[sample_name]
+            strandedness = samples["strandedness"].loc[sample_name] if 'strandedness' in samples else 'no'
             col = pd.read_csv(sample + '/ReadsPerGene.out.tab', sep='\t', index_col=0,
                               usecols=[0, get_column(strandedness)], header=None, skiprows=4)
             col.columns = [sample_name]

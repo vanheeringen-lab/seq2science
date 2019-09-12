@@ -244,7 +244,6 @@ elif config['aligner'] == 'star':
             "../envs/star.yaml"
         shell:
             """
-            # set genome dependent variables
             function log2 {{
                     local x=0
                     for (( y=$1-1 ; $y > 0; y >>= 1 )) ; do
@@ -253,6 +252,7 @@ elif config['aligner'] == 'star':
                     echo $x
             }}
             
+            # set genome dependent variables
             NBits=""
             NBases=""
             GenomeLength=$(awk -F"\t" '{{x+=$2}}END{{printf "%i", x}}' {input.sizefile})
