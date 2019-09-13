@@ -1,3 +1,32 @@
+import io.jenkins.blueocean.rest.impl.pipeline.PipelineNodeGraphVisitor
+import io.jenkins.blueocean.rest.impl.pipeline.FlowNodeWrapper
+import org.jenkinsci.plugins.workflow.flow.FlowExecution
+import org.jenkinsci.plugins.workflow.graph.FlowNode
+import org.jenkinsci.plugins.workflow.job.WorkflowRun
+
+
+// helper function to check whether a stage failed
+@NonCPS
+List getFailedStages(WorkflowRun run) {
+    List failedStages = []
+    FlowExecution exec = run.getExecution()
+    PipelineNodeGraphVisitor visitor = new PipelineNodeGraphVisitor(run)
+    def flowNodes = visitor.getPipelineNodes()
+
+    for (node in flowNodes) {
+        if (node.getType() != FlowNodeWrapper.NodeType.STAGE ) { continue; }
+        String nodeName = node.getDisplayName()
+        def nodeResult = node.getStatus().getResult()
+        def resultSuccess = io.jenkins.blueocean.rest.model.BlueRun$BlueRunResult.SUCCESS
+        def resultUnknown = io.jenkins.blueocean.rest.model.BlueRun$BlueRunResult.UNKNOWN
+        if (nodeResult != resultSuccess && nodeResult != resultUnknown) {
+            failedStages.add(nodeName)
+        }
+    }
+    return failedStages
+}
+
+
 pipeline {
     agent any
 
@@ -81,19 +110,28 @@ pipeline {
 
 
         stage('Test downloading') {
-//             when {
-//                 anyOf {
-//                     branch 'master' // always build master fully
-//                     changeset 'Jenkins/Jenkinsfile'
-//                     changeset 'Jenkins/download_fastq/*'
+            when {
+                anyOf {
+                    // always fully build develop and master
+                    branch 'master'
+                    branch 'develop'
+
+//                     // always run when jenkins, envs or configuration is changes
+//                     changeset 'Jenkins/*'
+//                     changeset 'envs/*'
+//                     changeset 'rules/configuration.smk'
+//
+//                     // run when relevant rules are changed
 //                     changeset 'workflows/download_fastq/*'
 //                     changeset 'rules/get_fastq.smk'
-//                     changeset 'rules/configuration.smk'
-//                     expression {
-//                       return currentBuild.number == 1
-//                     }
-//                 }
-//             }
+
+                    // run when last time you failed
+                    expression {
+                        return getFailedStages(Jenkins.instance.getItemByFullName("Snakemake-Workflows")\
+                        .getItem("$GIT_BRANCH")._getRuns().last()).contains("Test downloading")
+                    }
+                }
+            }
             steps {
                 sh '''#!/usr/bin/env bash
                 source $WORKSPACE/miniconda/etc/profile.d/conda.sh
@@ -106,6 +144,30 @@ pipeline {
             }
         }
         stage('Test alignment') {
+            when {
+                anyOf {
+                    // always fully build develop and master
+                    branch 'master'
+                    branch 'develop'
+
+//                     // always run when jenkins, envs or configuration is changes
+//                     changeset 'Jenkins/*'
+//                     changeset 'envs/*'
+//                     changeset 'rules/configuration.smk'
+//
+//                     // run when relevant rules are changed
+//                     changeset 'workflows/alignment/*'
+//                     changeset 'rules/alignment.smk'
+//                     changeset 'rules/trimming.smk'
+//                     changeset 'rules/qc.smk'
+
+                    // run when last time you failed
+                    expression {
+                        return getFailedStages(Jenkins.instance.getItemByFullName("Snakemake-Workflows")\
+                        .getItem("$GIT_BRANCH")._getRuns().last()).contains("Test alignment")
+                    }
+                }
+            }
             steps {
                 sh '''#!/usr/bin/env bash
                 source $WORKSPACE/miniconda/etc/profile.d/conda.sh
@@ -129,6 +191,33 @@ pipeline {
             }
         }
         stage('Test atac-seq') {
+            when {
+                anyOf {
+                    // always fully build develop and master
+                    branch 'master'
+                    branch 'develop'
+
+//                     // always run when jenkins, envs or configuration is changes
+//                     changeset 'Jenkins/*'
+//                     changeset 'envs/*'
+//                     changeset 'rules/configuration.smk'
+//
+//                     // run when relevant rules are changed
+//                     changeset 'workflows/atac_seq/*'
+//                     changeset 'rules/alignment.smk'
+//                     changeset 'rules/trimming.smk'
+//                     changeset 'rules/qc.smk'
+//                     changeset 'rules/merge_replicates.smk'
+//                     changeset 'rules/trackhub.smk'
+//                     changeset 'rules/call_peak.smk'
+
+                    // run when last time you failed
+                    expression {
+                        return getFailedStages(Jenkins.instance.getItemByFullName("Snakemake-Workflows")\
+                        .getItem("$GIT_BRANCH")._getRuns().last()).contains("Test atac-seq")
+                    }
+                }
+            }
             steps {
                 sh '''#!/usr/bin/env bash
                 source $WORKSPACE/miniconda/etc/profile.d/conda.sh
