@@ -138,7 +138,7 @@ pipeline {
 
                 # test hisat2 alignment
                 snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
-                --use-conda -j $CORES  --configfile Jenkins/alignment/bwa.yaml \
+                --use-conda -j $CORES  --configfile Jenkins/alignment/hisat2.yaml \
                 --config samples=$WORKSPACE/Jenkins/alignment/samples.tsv
 
 //                # test salmon alignment
