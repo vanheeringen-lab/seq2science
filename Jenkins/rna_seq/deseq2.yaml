@@ -4,14 +4,10 @@ samples: samples.tsv
 
 # which aligner to use
 aligner:
-  star:
-    index:  # parameters for indexing
-      ''
-    align:  # parameters for alignment
-      '--readFilesCommand gunzip -c'
+  star
 
 # differential expression analysis
 diffexp: # which analysis to use (DESeq2 or None, default: None)
   deseq2:
     contrasts:
-      - 'timepoint_34_35'
+      - timepoint_34_35
