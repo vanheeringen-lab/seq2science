@@ -51,6 +51,7 @@ pipeline {
                 snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/bwa.yaml     --quiet
                 snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/hisat2.yaml  --quiet
                 snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/salmon.yaml  --quiet
+                snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/star.yaml    --quiet
 
                 # test sorting
                 echo "testing sorting"
@@ -75,6 +76,20 @@ pipeline {
                 snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=fisher samples=../../Jenkins/atac_seq/samples.tsv --quiet
                 snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=idr    samples=../../Jenkins/atac_seq/samples.tsv --quiet
                 snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=merge  samples=../../Jenkins/atac_seq/samples.tsv --quiet
+
+                # test rna-seq workflow
+                # default config
+                echo "default rna-seq"
+                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --quiet
+
+                # test count matrix generation
+                echo "counts matrix"
+                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/star.yaml   --quiet
+                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/salmon.yaml --quiet
+
+                # test differential expression analysis
+                echo "differential expression"
+                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/deseq2.yaml samples=../../Jenkins/rna_seq/samples.tsv --quiet
                 '''
             }
         }
@@ -125,6 +140,17 @@ pipeline {
                 snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
                 --use-conda -j $CORES  --configfile Jenkins/alignment/bwa.yaml \
                 --config samples=$WORKSPACE/Jenkins/alignment/samples.tsv
+
+                # test salmon alignment
+                # TODO: fix #166
+                snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
+                --use-conda -j $CORES  --configfile Jenkins/alignment/salmon.yaml \
+                --config samples=$WORKSPACE/Jenkins/alignment/samples.tsv
+
+                # test star alignment
+                snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
+                --use-conda -j $CORES  --configfile Jenkins/alignment/star.yaml \
+                --config samples=$WORKSPACE/Jenkins/alignment/samples.tsv
                 '''
             }
         }
@@ -138,6 +164,20 @@ pipeline {
                 snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq \
                 --use-conda -j $CORES  --configfile Jenkins/alignment/bowtie2.yaml \
                 --config samples=$WORKSPACE/Jenkins/alignment/samples.tsv
+                '''
+            }
+        }
+        stage('Test rna-seq') {
+            steps {
+                sh '''#!/usr/bin/env bash
+                source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+                conda activate miniconda/envs/snakemake-workflows/
+
+                # test deseq2
+                # TODO: search 2 small(er) samples of the same assembly for DESeq2
+                snakemake -s workflows/atac_seq/Snakefile --directory workflows/rna_seq \
+                --use-conda -j $CORES  --configfile Jenkins/rna_seq/deseq2.yaml \
+                --config samples=$WORKSPACE/Jenkins/rna_seq/samples.tsv
                 '''
             }
         }
