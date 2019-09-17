@@ -3,9 +3,23 @@ $schema: "http://json-schema.org/draft-06/schema#"
 description: snakemake-workflows gene expression configuration
 
 properties:
+  tximeta:
+    description: tximeta is used to convert salmon output (estimated transcript abundances) to a gene counts matrix. Currently, these values can be ignored.
+    properties:
+      source:
+        default: Ensembl # the source of transcriptome (only works with "Ensembl")
+      organism:
+        default: tximeta_file # organism (e.g. "Homo sapiens")
+      release:
+        default: 42 # release number (e.g. "27")
+    default:
+      soure: Ensembl
+      organism: tximeta_file
+      release: 42
+
   # differential expression analysis parameters
   diffexp:
-    description: which differential expression analysis to use (DESeq2 or EdgeR, default is DESeq2). Will not run without a contrast.
+    description: which differential expression analysis to use (DESeq2 or None, default is None). Will not run without a contrast.
     type: object
     properties:
       deseq2:
@@ -18,9 +32,7 @@ properties:
           contrasts:
             default: ''
         default:
-          # DE_params: ''
           contrasts: ''
     default:
       None:
-        # DE_params: ''
         contrasts: ''

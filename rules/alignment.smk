@@ -199,7 +199,7 @@ elif config['aligner'] == 'salmon':
             reads=get_reads,
             index=expand("{genome_dir}/{{assembly}}/index/{aligner}", **config)
         output:
-            dir=directory(expand("{result_dir}/{aligner}/{{assembly}}/{{sample}}", **config)), #this could become a temp() directory, but quant.sf files are useful for other (currently unsupported) analyses
+            dir=directory(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}", **config)), #this could become a temp() directory, but quant.sf files are useful for other (currently unsupported) analyses
             pipe=get_alignment_pipes()
         log:
             expand("{log_dir}/{aligner}_align/{{sample}}-{{assembly}}.log", **config)
@@ -215,8 +215,8 @@ elif config['aligner'] == 'salmon':
         shell:
             """
             salmon quant -i {input.index} -l A {params.input} {params.params} -o {output.dir} \
-            --threads $(expr 4 * {threads} / 5) --writeMappings 2> {log} | \
-            samtools view -b - -@ $(expr {threads} / 5) | tee {output.pipe} 1> /dev/null 2>> {log}
+            --threads $(( 4 * {threads} / 5)) --writeMappings 2> {log} | \
+            samtools view -b - -@ $(( {threads} / 5)) | tee {output.pipe} 1> /dev/null 2>> {log}
             """
 
 
@@ -332,7 +332,7 @@ rule sambamba_sort:
     output:
         expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}.sambamba-{{sorting}}.bam", **config)
     log:
-        expand("{log_dir}/bwa_mem/{{sample}}-{{assembly}}-sambamba_{{sorting}}.log", **config)
+        expand("{log_dir}/sambamba_sort/{{sample}}-{{assembly}}-sambamba_{{sorting}}.log", **config)
     group: 'alignment'
     benchmark:
         expand("{benchmark_dir}/sambamba_sort/{{sample}}-{{assembly}}-{{sorting}}.benchmark.txt", **config)[0]
@@ -357,7 +357,7 @@ rule samtools_sort:
     output:
         expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}.samtools-{{sorting}}.bam", **config)
     log:
-        expand("{log_dir}/bwa_mem/{{sample}}-{{assembly}}-samtools_{{sorting}}.log", **config)
+        expand("{log_dir}/samtools_sort/{{sample}}-{{assembly}}-samtools_{{sorting}}.log", **config)
     group: 'alignment'
     benchmark:
         expand("{benchmark_dir}/samtools_sort/{{sample}}-{{assembly}}-{{sorting}}.benchmark.txt", **config)[0]

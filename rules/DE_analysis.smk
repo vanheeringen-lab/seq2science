@@ -67,21 +67,3 @@ rule deseq2:
         os.path.abspath(config["samples"])
     script:
         "../scripts/deseq2.R"
-
-
-# rule edger:
-#     """
-#     Differential gene expression analysis with EdgeR.
-#     """
-#     input:
-#         expand("{result_dir}/gene_counts/{{assembly}}-counts.tsv", **config)
-#     output:
-#         table=expand("{result_dir}/edger/{{assembly}}-{{contrast}}.diffexp.tsv", **config),
-#         ma_plot=expand("{result_dir}/edger/{{assembly}}-{{contrast}}.ma_plot.svg", **config)
-#     conda:
-#         "../envs/edger.yaml"
-#     log:
-#         expand("{log_dir}/edger/{{assembly}}-{{contrast}}.diffexp.log", **config)
-#     threads: 4
-#     script:
-#         "../scripts/edger.R"
