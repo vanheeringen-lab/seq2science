@@ -1,7 +1,7 @@
 def get_counts(wildcards):
     output = []
-    for fname in samples[samples['assembly'] == wildcards.assembly].index:
-        output.append(f"{{result_dir}}/{{aligner}}/{wildcards.assembly}-{fname}")
+    for sample in samples[samples['assembly'] == wildcards.assembly].index:
+        output.append(f"{{result_dir}}/{{aligner}}/{wildcards.assembly}-{sample}")
     return expand(output, **config)
 
 if config['aligner'] == 'salmon':
@@ -54,7 +54,7 @@ if config['aligner'] == 'salmon':
 
 
 elif config['aligner'] == 'star':
-    rule count_matrix:
+    rule counts_matrix:
         """
         Merge gene counts per assembly
         

@@ -6,8 +6,6 @@ rule bedgraphish_to_bedgraph:
         expand("{result_dir}/genrich/{{assembly}}-{{sample}}.bdgish", **config)
     output:
         bedgraph=expand("{result_dir}/genrich/{{assembly}}-{{sample}}.bedgraph", **config)
-    wildcard_constraints:
-        sample=any_sample()
     log:
         expand("{log_dir}/bedgraphish_to_bedgraph/{{assembly}}-{{sample}}.log", **config)
     benchmark:
@@ -59,8 +57,6 @@ rule bedgraph_bigwig:
     output:
         out=expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}.bw", **config),
         tmp=temp(expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}.bedgraphtmp", **config))
-    wildcard_constraints:
-        sample=any_sample()
     log:
         expand("{log_dir}/bedgraph_bigwig/{{peak_caller}}/{{assembly}}-{{sample}}.log", **config)
     benchmark:
@@ -85,8 +81,6 @@ rule narrowpeak_bignarrowpeak:
     output:
         out=     expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}.bigNarrowPeak", **config),
         tmp=temp(expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}.tmp.narrowPeak", **config))
-    wildcard_constraints:
-        sample=any_sample()
     log:
         expand("{log_dir}/narrowpeak_bignarrowpeak/{{peak_caller}}/{{assembly}}-{{sample}}.log", **config)
     benchmark:

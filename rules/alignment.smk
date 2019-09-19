@@ -60,8 +60,6 @@ if config['aligner'] == 'bowtie2':
             input=lambda wildcards, input: f'-U {input.reads}' if config['layout'][wildcards.sample] == 'SINGLE' else \
                                            f'-1 {input.reads[0]} -2 {input.reads[1]}',
             params=config['align']
-        wildcard_constraints:
-            sample=any_sample()
         threads: 20
         conda:
             "../envs/bowtie2.yaml"
@@ -112,8 +110,6 @@ elif config['aligner'] == 'bwa':
         params:
             index_dir=expand("{genome_dir}/{{assembly}}/index/bwa/{{assembly}}", **config),
             params=config['align']
-        wildcard_constraints:
-            sample=any_sample()
         threads: 20
         conda:
             "../envs/bwa.yaml"
@@ -162,8 +158,6 @@ elif config['aligner'] == 'hisat2':
             input=lambda wildcards, input: f'-U {input.reads}' if config['layout'][wildcards.sample] == 'SINGLE' else \
                                            f'-1 {input.reads[0]} -2 {input.reads[1]}',
             params=config['align']
-        wildcard_constraints:
-            sample=any_sample()
         threads: 20
         conda:
             "../envs/hisat2.yaml"
@@ -181,7 +175,7 @@ elif config['aligner'] == 'salmon':
         input:
             expand("{genome_dir}/{{assembly}}/{{assembly}}.transcripts.fa", **config)
         output:
-            expand("{genome_dir}/{{assembly}}/index/{aligner}/hash.bin", **config)
+            directory(expand("{genome_dir}/{{assembly}}/index/{aligner}", **config))
         log:
             expand("{log_dir}/{aligner}_index/{{assembly}}.log", **config)
         benchmark:
@@ -192,7 +186,7 @@ elif config['aligner'] == 'salmon':
         conda:
             "../envs/salmon.yaml"
         shell:
-            "salmon index -t {input} -i $(dirname {output}) {params} --threads {threads} &> {log}"
+            "salmon index -t {input} -i {output} {params} --threads {threads} &> {log}"
 
 
     rule salmon_quant:
@@ -205,7 +199,7 @@ elif config['aligner'] == 'salmon':
             reads=get_reads,
             index=expand("{genome_dir}/{{assembly}}/index/{aligner}", **config)
         output:
-            file=expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}/quant.sf", **config),
+            dir=directory(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}", **config)),
             pipe=get_alignment_pipes()
         log:
             expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}.log", **config)
@@ -214,9 +208,7 @@ elif config['aligner'] == 'salmon':
         params:
             input=lambda wildcards, input: f'-r {input.reads}' if config['layout'][wildcards.sample] == 'SINGLE' else \
                                            f'-1 {input.reads[0]} -2 {input.reads[1]}',
-            flags=config['align']
-        wildcard_constraints:
-            sample=any_sample()
+            params=config['align']
         threads: 20
         resources:
             mem_gb=8
@@ -224,7 +216,7 @@ elif config['aligner'] == 'salmon':
             "../envs/salmon.yaml"
         shell:
             """
-            salmon quant -i {input.index} -l A {params.input} {params.flags} -o $(dirname {output.file}) \
+            salmon quant -i {input.index} -l A {params.input} {params.params} -o {output.dir} \
             --threads $(( 4 * {threads} / 5)) --writeMappings 2> {log} | \
             samtools view -b - -@ $(( {threads} / 5)) | tee {output.pipe} 1> /dev/null 2>> {log}
             """
@@ -240,14 +232,13 @@ elif config['aligner'] == 'star':
             sizefile= expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
             gtf = expand("{genome_dir}/{{assembly}}/{{assembly}}.gtf", **config)
         output:
-            expand("{genome_dir}/{{assembly}}/index/{aligner}/SA", **config)
+            directory(expand("{genome_dir}/{{assembly}}/index/{aligner}", **config))
         log:
             expand("{log_dir}/{aligner}_index/{{assembly}}.log", **config)
         benchmark:
             expand("{benchmark_dir}/{aligner}_index/{{assembly}}.benchmark.txt", **config)[0]
         params:
-            flags = config['index'],
-            index_dir = directory(expand("{genome_dir}/{{assembly}}/index/{aligner}", **config)),
+            config['index']
         threads: 20
         resources:
             mem_gb=37
@@ -284,10 +275,10 @@ elif config['aligner'] == 'star':
                 printf "NBases: $NBases\n\n" >> {log} 2>&1
             fi
             
-            mkdir {params.index_dir}
+            mkdir -p {output}
             
-            STAR --runMode genomeGenerate --genomeFastaFiles {input.genome} --sjdbGTFfile {input.gtf} --genomeDir {params.index_dir} \
-            --runThreadN {threads} --outFileNamePrefix {params.index_dir} $NBits $NBases {params.flags} >> {log} 2>&1
+            STAR --runMode genomeGenerate --genomeFastaFiles {input.genome} --sjdbGTFfile {input.gtf} --genomeDir {output} \
+            --runThreadN {threads} --outFileNamePrefix {output} $NBits $NBases {params} >> {log} 2>&1
             """
 
 
@@ -299,7 +290,7 @@ elif config['aligner'] == 'star':
             reads=get_reads,
             index=expand("{genome_dir}/{{assembly}}/index/{aligner}", **config)
         output:
-            file=expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}/ReadsPerGene.out.tab", **config),
+            dir =directory(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}", **config)),
             pipe=get_alignment_pipes()
         log:
             expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}.log", **config)
@@ -308,9 +299,7 @@ elif config['aligner'] == 'star':
         params:
             input=lambda wildcards, input: f' {input.reads}' if config['layout'][wildcards.sample] == 'SINGLE' else \
                                            f' {input.reads[0]} {input.reads[1]}',
-            flags=config['align']
-        wildcard_constraints:
-            sample=any_sample()
+            params=config['align']
         threads: 1
         resources:
             mem_gb=30
@@ -318,11 +307,10 @@ elif config['aligner'] == 'star':
             "../envs/star.yaml"
         shell:
             """
-            # STAR seems to claim ~(10 * genome size * threads) in RAM.
             mkdir {output.dir}
             
             STAR --genomeDir {input.index} --readFilesIn {params.input} --quantMode GeneCounts \
-            --outFileNamePrefix $(dirname {output.file})/ --runThreadN {threads} {params.flags} \
+            --outFileNamePrefix {output.dir}/ --runThreadN {threads} {params.params} \
             --outSAMtype BAM Unsorted --outStd BAM_Unsorted | tee {output.pipe} 1> /dev/null 2>> {log}
             """
 
@@ -342,8 +330,6 @@ rule sambamba_sort:
         expand("{benchmark_dir}/sambamba_sort/{{assembly}}-{{sample}}-{{sorting}}.benchmark.txt", **config)[0]
     params:
         lambda wildcards: "-n" if wildcards.sorting == 'queryname' else '',
-    wildcard_constraints:
-        sample=any_sample()
     threads: 4
     conda:
         "../envs/sambamba.yaml"
@@ -370,8 +356,6 @@ rule samtools_sort:
     params:
         order=lambda wildcards: "-n" if wildcards.sorting == 'queryname' else '',
         threads=lambda wildcards, input, output, threads: threads - 1
-    wildcard_constraints:
-        sample=any_sample()
     threads: 4
     resources:
         mem_mb=2500
@@ -398,8 +382,6 @@ rule samtools_index:
         expand("{benchmark_dir}/samtools_index/{{assembly}}-{{sample}}-{{bam_sorter}}-{{sorting}}.benchmark.txt", **config)[0]
     params:
         config['samtools_index']
-    wildcard_constraints:
-        sample=any_sample()
     conda:
         "../envs/samtools.yaml"
     shell:
@@ -423,8 +405,6 @@ rule mark_duplicates:
         expand("{benchmark_dir}/mark_duplicates/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.benchmark.txt", **config)[0]
     params:
         config['markduplicates']
-    wildcard_constraints:
-        sample=any_sample()
     resources:
         mem_gb=5
     conda:

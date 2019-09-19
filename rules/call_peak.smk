@@ -195,10 +195,10 @@ if 'condition' in samples:
         def get_idr_replicates(wildcards):
             # if macs2 or genrich return narrowPeak, for hmmratac return gappedPeak
             if wildcards.peak_caller in ['macs2', 'genrich']:
-                return expand([f"{{result_dir}}/{wildcards.peak_caller}/{replicate}-{wildcards.assembly}_peaks.narrowPeak"
+                return expand([f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{replicate}_peaks.narrowPeak"
                        for replicate in samples[(samples['assembly'] == wildcards.assembly) & (samples['condition'] == wildcards.condition)].index], **config)
 
-            return expand([f"{{result_dir}}/{wildcards.peak_caller}/{replicate}-{wildcards.assembly}_peaks.gappedPeak"
+            return expand([f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{replicate}_peaks.gappedPeak"
                    for replicate in samples[(samples['assembly'] == wildcards.assembly) & (samples['condition'] == wildcards.condition)].index], **config)
 
 
@@ -210,11 +210,11 @@ if 'condition' in samples:
             input:
                 get_idr_replicates
             output:
-                expand("{result_dir}/{{peak_caller}}/{{condition}}-{{assembly}}_peaks.narrowPeak", **config),
+                expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{condition}}_peaks.narrowPeak", **config),
             log:
-                expand("{log_dir}/idr/{{condition}}-{{assembly}}-{{peak_caller}}.log", **config)
+                expand("{log_dir}/idr/{{assembly}}-{{condition}}-{{peak_caller}}.log", **config)
             benchmark:
-                expand("{benchmark_dir}/idr/{{condition}}-{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
+                expand("{benchmark_dir}/idr/{{assembly}}-{{condition}}-{{peak_caller}}.benchmark.txt", **config)[0]
             params:
                 lambda wildcards: "--rank 13" if wildcards.peak_caller == 'hmmratac' else ""
             conda:
@@ -229,7 +229,7 @@ if 'condition' in samples:
             ruleorder: macs2_callpeak > call_peak_genrich > macs_cmbreps
 
             def get_macs_replicates(wildcards):
-                return expand([f"{{result_dir}}/macs2/{replicate}-{wildcards.assembly}_pvalues.bdg"
+                return expand([f"{{result_dir}}/macs2/{wildcards.assembly}-{replicate}_pvalues.bdg"
                        for replicate in samples[(samples['assembly'] == wildcards.assembly) & (samples['condition'] == wildcards.condition)].index], **config)
 
             rule macs_bdgcmp:

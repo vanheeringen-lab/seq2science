@@ -17,7 +17,6 @@ rule bam_stranded_bigwig:
         flags=config['bam_bigwig']['deeptools'],
         strandedness=get_strandedness
     wildcard_constraints:
-        sample=any_sample(),
         sorting=config['bam_sort_order']
     log:
         expand("{log_dir}/bam_bigwig/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.log", **config),
@@ -52,7 +51,6 @@ rule bam_bigwig:
     params:
         config['bam_bigwig']['deeptools']
     wildcard_constraints:
-        sample=any_sample(),
         sorting=config['bam_sort_order']
     log:
         expand("{log_dir}/bam_bigwig/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.log", **config),

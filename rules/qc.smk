@@ -6,8 +6,6 @@ rule samtools_stats:
         expand("{dedup_dir}/{{assembly}}-{{sample}}.{{bam_sorter}}-{{bam_sort_order}}.bam", **config)
     output:
         expand("{qc_dir}/dedup/{{assembly}}-{{sample}}.{{bam_sorter}}-{{bam_sort_order}}.samtools_stats.txt", **config)
-    wildcard_constraints:
-        sample=any_sample()
     log:
         expand("{log_dir}/samtools_stats/{{assembly}}-{{sample}}-{{bam_sorter}}-{{bam_sort_order}}.log", **config)
     conda:
@@ -35,8 +33,6 @@ rule featureCounts:
         tmp_saf=temp(expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}.saf", **config)),
         real_out=expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}_featureCounts.txt", **config),
         summary=expand("{qc_dir}/{{peak_caller}}/{{assembly}}-{{sample}}_featureCounts.txt.summary", **config)
-    wildcard_constraints:
-        sample=any_sample()
     log:
         expand("{log_dir}/featureCounts/{{assembly}}-{{sample}}-{{peak_caller}}.log", **config)
     threads: 4

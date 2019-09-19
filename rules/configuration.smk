@@ -219,13 +219,28 @@ if config.get('contrasts', False):
 #     path = os.path.join(env_dir, dir_hash)
 #     return path
 
+
 # string of all samples delimited by |, regex-version of any(samples.index)
 def any_sample():
     st = ''
-    for sample in samples.index:
+    for sample in samples.index.unique():
         st += sample + '|'
     st = st[:-1]
     return st
+
+# string of all assemblies delimited by |.
+def any_assembly():
+    st = ''
+    for assembly in samples.assembly.unique():
+        st += assembly + '|'
+    st = st[:-1]
+    return st
+
+# set global constraints on wildcards ({{sample}} or {{assembly}})
+wildcard_constraints:
+    sample=any_sample(),
+    assembly=any_assembly()
+
 
 # if samples are merged add the layout of the condition to the config
 if 'condition' in samples and config.get('combine_replicates', "") == 'merge':
