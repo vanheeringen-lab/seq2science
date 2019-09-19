@@ -220,27 +220,22 @@ if config.get('contrasts', False):
 #     return path
 
 
-# string of all samples delimited by |, regex-version of any(samples.index)
-def any_sample():
-    st = ''
-    for sample in samples.index.unique():
-        st += sample + '|'
-    st = st[:-1]
-    return st
-
 # string of all assemblies delimited by |.
-def any_assembly():
+def any_given(column_name):
     st = ''
-    for assembly in samples.assembly.unique():
-        st += assembly + '|'
+    for element in samples[column_name].unique() if column_name != 'sample' else samples.index.unique():
+        st += element + '|'
     st = st[:-1]
     return st
 
 # set global constraints on wildcards ({{sample}} or {{assembly}})
-wildcard_constraints:
-    sample=any_sample(),
-    assembly=any_assembly()
-
+if 'assembly' in samples:
+    wildcard_constraints:
+        sample=any_given('sample'),
+        assembly=any_given('assembly')
+else:
+    wildcard_constraints:
+        sample=any_sample()
 
 # if samples are merged add the layout of the condition to the config
 if 'condition' in samples and config.get('combine_replicates', "") == 'merge':

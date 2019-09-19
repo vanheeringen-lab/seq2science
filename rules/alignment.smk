@@ -307,7 +307,7 @@ elif config['aligner'] == 'star':
             "../envs/star.yaml"
         shell:
             """
-            mkdir {output.dir}
+            mkdir -p {output.dir}
             
             STAR --genomeDir {input.index} --readFilesIn {params.input} --quantMode GeneCounts \
             --outFileNamePrefix {output.dir}/ --runThreadN {threads} {params.params} \
