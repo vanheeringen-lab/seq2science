@@ -1,6 +1,7 @@
 # tab-separated file of the samples
 samples: samples.tsv
-result_dir: ./star
+
+dedup_dir: ./star
 
 
 # which aligner to use

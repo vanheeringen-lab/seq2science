@@ -1,6 +1,7 @@
 # tab-separated file of the samples
 samples: samples.tsv
-result_dir: ./bowtie
+
+dedup_dir: ./bowtie
 
 
 # which aligner to use
