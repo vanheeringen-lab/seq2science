@@ -126,15 +126,8 @@ plotMA(plot_res, ylim=c(-2,2),
 invisible(dev.off())
 cat('MA plot saved\n\n')
 
-# transform the data and plot the PCA
-# if (nrow(coldata) > 30){
-#   log_counts <- varianceStabilizingTransformation(dds)
-# } else {
-#   log_counts <- rlog(dds, blind = FALSE)
-# }
-#log_counts <- ifelse(nrow(coldata) > 30, vst(dds), rlog(dds, blind = F))
-
-log_counts <- varianceStabilizingTransformation(dds)
+# transform the data and plot the PCA (for outlier detection)
+log_counts <- vst(dds, blind = TRUE)
 
 svg(output_pca_plot)
 plotPCA(log_counts, intgroup="condition")

@@ -178,7 +178,7 @@ rule hmmratac:
     benchmark:
         expand("{benchmark_dir}/hmmratac/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
     params:
-        basename=lambda wildcards: expand(f"{{result_dir}}/hmmratac/{wildcards.sample}-{wildcards.assembly}", **config),
+        basename=lambda wildcards: expand(f"{{result_dir}}/hmmratac/{wildcards.assembly}-{wildcards.sample}", **config),
         hmmratac_params=config['peak_caller'].get('hmmratac', "")
     conda:
         "../envs/hmmratac.yaml"
@@ -274,4 +274,3 @@ if 'condition' in samples:
                     macs2 bdgpeakcall -i {output.bdg} -o {output.tmppeaks}
                     cat {output.tmppeaks} | tail -n +2 > {output.peaks}
                     """
-
