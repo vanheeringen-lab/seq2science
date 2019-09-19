@@ -104,7 +104,7 @@ def get_bigfiles(wildcards):
     if 'condition' in samples:
         for condition in set(samples['condition']):
             for assembly in set(samples[samples['condition'] == condition]['assembly']):
-                bigfiles['bigpeaks'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{condition}-{assembly}.bigNarrowPeak", **config))
+                bigfiles['bigpeaks'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{assembly}-{condition}.bigNarrowPeak", **config))
     else:
         for sample in samples.index:
             bigfiles['bigpeaks'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{samples.loc[sample, 'assembly']}-{sample}.bigNarrowPeak", **config))
@@ -113,7 +113,7 @@ def get_bigfiles(wildcards):
     if config.get('combine_replicates', '') == 'merge' and 'condition' in samples:
         for condition in set(samples['condition']):
             for assembly in set(samples[samples['condition'] == condition]['assembly']):
-                bigfiles['bigwigs'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{condition}-{assembly}.bw", **config))
+                bigfiles['bigwigs'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{assembly}-{condition}.bw", **config))
     else:
         for sample in samples.index:
             bigfiles['bigwigs'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{samples.loc[sample, 'assembly']}-{sample}.bw", **config))
