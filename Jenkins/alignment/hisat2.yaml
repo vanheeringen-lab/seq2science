@@ -1,5 +1,6 @@
 # tab-separated file of the samples
 samples: samples.tsv
+result_dir: ./hisat2
 
 
 # which aligner to use

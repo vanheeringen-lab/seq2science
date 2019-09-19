@@ -131,7 +131,7 @@ pipeline {
                     branch 'master'
                     branch 'develop'
 
-                    // always run when jenkins, envs or configuration is changes
+                    // always run when jenkins, envs or configuration is changed
                     changeset 'Jenkins/*'
                     changeset 'envs/*'
                     changeset 'rules/configuration.smk'
@@ -165,7 +165,7 @@ pipeline {
                     branch 'master'
                     branch 'develop'
 
-                    // always run when jenkins, envs or configuration is changes
+                    // always run when jenkins, envs or configuration is changed
                     changeset 'Jenkins/*'
                     changeset 'envs/*'
                     changeset 'rules/configuration.smk'
@@ -202,19 +202,19 @@ pipeline {
                 snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
                 --use-conda -j $CORES  --configfile Jenkins/alignment/hisat2.yaml \
                 --config samples=$WORKSPACE/Jenkins/alignment/samples.tsv
-
-//                # test salmon alignment
-//                # TODO: fix #166
-//                # TODO: for alignment + salmon + txi + deseq2:
-//                # TODO: find small 2 small RNA-seq samples, the genome of which is also small, the gtf/gff contains genes, and is on Ensembl
-//                snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
-//                --use-conda -j $CORES  --configfile Jenkins/alignment/salmon.yaml \
-//                --config samples=$WORKSPACE/Jenkins/alignment/samples.tsv
-//
-//                # test star alignment
-//                snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
-//                --use-conda -j $CORES  --configfile Jenkins/alignment/star.yaml \
-//                --config samples=$WORKSPACE/Jenkins/alignment/samples.tsv
+#
+#                # test salmon alignment
+#                # TODO: fix #166
+#                # TODO: for alignment + salmon + txi + deseq2:
+#                # TODO: find small 2 small RNA-seq samples, the genome of which is also small, the gtf/gff contains genes, and is on Ensembl
+#                snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
+#                --use-conda -j $CORES  --configfile Jenkins/alignment/salmon.yaml \
+#                --config samples=$WORKSPACE/Jenkins/alignment/samples.tsv
+#
+#                # test star alignment
+#                snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
+#                --use-conda -j $CORES  --configfile Jenkins/alignment/star.yaml \
+#                --config samples=$WORKSPACE/Jenkins/alignment/samples.tsv
                 '''
             }
         }
@@ -225,7 +225,7 @@ pipeline {
                     branch 'master'
                     branch 'develop'
 
-                    // always run when jenkins, envs or configuration is changes
+                    // always run when jenkins, envs or configuration is changed
                     changeset 'Jenkins/*'
                     changeset 'envs/*'
                     changeset 'rules/configuration.smk'
