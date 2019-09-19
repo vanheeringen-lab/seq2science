@@ -57,13 +57,42 @@ rule deseq2:
         expand("{result_dir}/gene_counts/{{assembly}}-counts.tsv", **config)
     output:
         table=expand("{result_dir}/deseq2/{{assembly}}-{{contrast}}.diffexp.tsv", **config),
-        ma_plot=expand("{result_dir}/deseq2/{{assembly}}-{{contrast}}.ma_plot.svg", **config)
+        ma_plot=expand("{result_dir}/deseq2/{{assembly}}-{{contrast}}.ma_plot.svg", **config),
+        pca_plot=expand("{result_dir}/deseq2/{{assembly}}-{{contrast}}.pca_plot.svg", **config)
     conda:
         "../envs/deseq2.yaml"
     log:
         expand("{log_dir}/deseq2/{{assembly}}-{{contrast}}.diffexp.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/deseq2/{{assembly}}-{{contrast}}.diffexp.benchmark.txt", **config)[0]
     threads: 4
     params:
         os.path.abspath(config["samples"])
     script:
         "../scripts/deseq2.R"
+
+# load DE analysis contrasts
+contrasts = ['']
+if config.get('contrasts', False):
+    contrasts = get_contrasts()
+
+rule blind_clustering:
+    """
+    Create a sample distance matrix plot per assembly
+    """
+    input:
+         expand("{result_dir}/gene_counts/{{assembly}}-counts.tsv", **config)
+    output:
+         expand("{result_dir}/deseq2/{{assembly}}-clustering.svg", **config)
+    conda:
+        "../envs/deseq2.yaml"
+    log:
+        expand("{log_dir}/deseq2/{{assembly}}-clustering.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/deseq2/{{assembly}}-clustering.benchmark.txt", **config)[0]
+    threads: 4
+    params:
+        samples=os.path.abspath(config["samples"]),
+        some_contrast=contrasts[0]
+    script:
+        "../scripts/deseq2_clustering.R"

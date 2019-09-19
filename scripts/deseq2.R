@@ -4,18 +4,19 @@ suppressMessages({
 })
 
 # snakemake variables
-threads        <- snakemake@threads[[1]]
-log_file       <- snakemake@log[[1]]
-counts_file    <- snakemake@input[[1]]
-samples_file   <- snakemake@params[[1]]
-contrast       <- snakemake@wildcards$contrast
-params         <- snakemake@config$DE_params
-mtp            <- snakemake@config$DE_params$multiple_testing_procedure
-fdr            <- snakemake@config$DE_params$alpha_value
-se             <- snakemake@config$DE_params$shrinkage_estimator
-assembly       <- snakemake@wildcards$assembly
-output_table   <- snakemake@output$table
-output_ma_plot <- snakemake@output$ma_plot
+threads         <- snakemake@threads[[1]]
+log_file        <- snakemake@log[[1]]
+counts_file     <- snakemake@input[[1]]
+samples_file    <- snakemake@params[[1]]
+contrast        <- snakemake@wildcards$contrast
+params          <- snakemake@config$DE_params
+mtp             <- snakemake@config$DE_params$multiple_testing_procedure
+fdr             <- snakemake@config$DE_params$alpha_value
+se              <- snakemake@config$DE_params$shrinkage_estimator
+assembly        <- snakemake@wildcards$assembly
+output_table    <- snakemake@output$table
+output_ma_plot  <- snakemake@output$ma_plot
+output_pca_plot <- snakemake@output$pca_plot
 
 # #test variables
 # threads        <- 4
@@ -83,7 +84,7 @@ dds <- DESeqDataSetFromMatrix(countData = reduced_counts,
                               colData = coldata,
                               design = if (!is.na(batch)){~ batch + condition} else {~ condition})
 cat('Finished constructing DESeq object.\n\n')
-dds <- DESeq(dds)
+dds <- DESeq(dds, parallel=parallel)
 cat('\n')
 
 ## Extract differentially expressed genes
@@ -98,7 +99,7 @@ if(mtp=='IHW'){
 
 # log transform counts
 resLFC <- lfcShrink(dds, coef=DE_contrast, res = res, type=se)
-
+cat('\n')
 
 ## Save the results
 # create a table with all genes, and analysis results if available
@@ -113,6 +114,7 @@ unexpressed_genes[,'baseMean'] <- 0
 
 all_genes <- rbind(expressed_genes, unexpressed_genes)
 write.table(all_genes, file=output_table, quote = F, sep = '\t', col.names=NA)
+cat('DE genes table saved\n\n')
 
 # plot of log fold change vs mean gene counts
 plot_res <- resLFC[resLFC$padj <= fdr & !is.na(resLFC$padj), ]
@@ -122,3 +124,19 @@ svg(output_ma_plot)
 plotMA(plot_res, ylim=c(-2,2),
        main = paste0(DE_contrast, '\n', plot_DEGs, ' DE genes (a = ', fdr, ')'))
 invisible(dev.off())
+cat('MA plot saved\n\n')
+
+# transform the data and plot the PCA
+# if (nrow(coldata) > 30){
+#   log_counts <- varianceStabilizingTransformation(dds)
+# } else {
+#   log_counts <- rlog(dds, blind = FALSE)
+# }
+#log_counts <- ifelse(nrow(coldata) > 30, vst(dds), rlog(dds, blind = F))
+
+log_counts <- varianceStabilizingTransformation(dds)
+
+svg(output_pca_plot)
+plotPCA(log_counts, intgroup="condition")
+invisible(dev.off())
+cat('PCA plot saved\n')

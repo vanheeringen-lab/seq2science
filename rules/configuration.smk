@@ -219,6 +219,14 @@ if config.get('contrasts', False):
 #     path = os.path.join(env_dir, dir_hash)
 #     return path
 
+# string of all samples delimited by |, regex-version of any(samples.index)
+def any_sample():
+    st = ''
+    for sample in samples.index:
+        st += sample + '|'
+    st = st[:-1]
+    return st
+
 # if samples are merged add the layout of the condition to the config
 if 'condition' in samples and config.get('combine_replicates', "") == 'merge':
     for sample in samples.index:

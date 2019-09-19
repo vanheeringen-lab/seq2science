@@ -1,0 +1,15 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+description: snakemake-workflows gene expression configuration
+
+properties:
+  bam_bigwig:
+    description: bigwigs can be split strand
+    properties:
+      filter_by_strand:
+        default: True
+      deeptools:
+        default: ''
+    default:
+      filter_by_strand: True
+      deeptools: ''

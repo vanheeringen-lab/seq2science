@@ -65,7 +65,7 @@ def get_fastqc(wildcards):
 
 def get_macs2_bam(wildcards):
     if not config['macs2_keep_mates'] is True or config['layout'].get(wildcards.sample, False) == "SINGLE":
-        return expand("{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config)
+        return expand("{dedup_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config)
     return rules.keep_mates.output
 
 
@@ -78,11 +78,11 @@ rule macs2_callpeak:
         bam=get_macs2_bam,
         fastqc=get_fastqc
     output:
-        expand("{result_dir}/macs2/{{sample}}-{{assembly}}_{macs2_types}", **config)
+        expand("{result_dir}/macs2/{{assembly}}-{{sample}}_{macs2_types}", **config)
     log:
-        expand("{log_dir}/macs2_callpeak/{{sample}}-{{assembly}}.log", **config)
+        expand("{log_dir}/macs2_callpeak/{{assembly}}-{{sample}}.log", **config)
     benchmark:
-        expand("{benchmark_dir}/macs2_callpeak/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/macs2_callpeak/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
     params:
         name=lambda wildcards, input: f"{wildcards.sample}" if config['layout'][wildcards.sample] == 'SINGLE' else \
                                       f"{wildcards.sample}_{config['fqext1']}",
@@ -104,13 +104,13 @@ rule macs2_callpeak:
 
 rule keep_mates:
     input:
-        expand("{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config)
+        expand("{dedup_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config)
     output:
         expand("{dedup_dir}/{{sample}}-mates-{{assembly}}.samtools-coordinate.bam", **config)
     log:
-        expand("{log_dir}/keep_mates/{{sample}}-{{assembly}}.log", **config)
+        expand("{log_dir}/keep_mates/{{assembly}}-{{sample}}.log", **config)
     benchmark:
-        expand("{benchmark_dir}/keep_mates/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/keep_mates/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
     run:
         from contextlib import redirect_stdout
         import pysam
@@ -142,15 +142,15 @@ rule hmmratac_genome_info:
     https://github.com/LiuLabUB/HMMRATAC/issues/17
     """
     input:
-        bam=expand("{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config)
+        bam=expand("{dedup_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config)
     output:
-        out=expand("{result_dir}/hmmratac/{{sample}}-{{assembly}}.genomesizes", **config),
-        tmp1=temp(expand("{result_dir}/hmmratac/{{sample}}-{{assembly}}.tmp1", **config)),
-        tmp2=temp(expand("{result_dir}/hmmratac/{{sample}}-{{assembly}}.tmp2", **config))
+        out=expand("{result_dir}/hmmratac/{{assembly}}-{{sample}}.genomesizes", **config),
+        tmp1=temp(expand("{result_dir}/hmmratac/{{assembly}}-{{sample}}.tmp1", **config)),
+        tmp2=temp(expand("{result_dir}/hmmratac/{{assembly}}-{{sample}}.tmp2", **config))
     log:
-        expand("{log_dir}/hmmratac_genome_info/{{sample}}-{{assembly}}.log", **config)
+        expand("{log_dir}/hmmratac_genome_info/{{assembly}}-{{sample}}.log", **config)
     benchmark:
-        expand("{benchmark_dir}/hmmratac_genome_info/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/hmmratac_genome_info/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
     conda:
         "../envs/samtools.yaml"
     shell:
@@ -168,15 +168,15 @@ rule hmmratac:
     Call 'peaks' with HMMRATAC.
     """
     input:
-        genome_size=expand("{result_dir}/hmmratac/{{sample}}-{{assembly}}.genomesizes", **config),
-        bam_index=expand("{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bai", **config),
-        bam=expand("{dedup_dir}/{{sample}}-{{assembly}}.samtools-coordinate.bam", **config)
+        genome_size=expand("{result_dir}/hmmratac/{{assembly}}-{{sample}}.genomesizes", **config),
+        bam_index=expand("{dedup_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bai", **config),
+        bam=expand("{dedup_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config)
     output:
-        expand("{result_dir}/hmmratac/{{sample}}-{{assembly}}{hmmratac_types}", **config)
+        expand("{result_dir}/hmmratac/{{assembly}}-{{sample}}{hmmratac_types}", **config)
     log:
-        expand("{log_dir}/hmmratac/{{sample}}-{{assembly}}.log", **config)
+        expand("{log_dir}/hmmratac/{{assembly}}-{{sample}}.log", **config)
     benchmark:
-        expand("{benchmark_dir}/hmmratac/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/hmmratac/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
     params:
         basename=lambda wildcards: expand(f"{{result_dir}}/hmmratac/{wildcards.sample}-{wildcards.assembly}", **config),
         hmmratac_params=config['peak_caller'].get('hmmratac', "")
@@ -236,14 +236,14 @@ if 'condition' in samples:
                 """
                 """
                 input:
-                    treatment=expand("{result_dir}/macs2/{{sample}}-{{assembly}}_treat_pileup.bdg", **config),
-                    control=  expand("{result_dir}/macs2/{{sample}}-{{assembly}}_control_lambda.bdg", **config)
+                    treatment=expand("{result_dir}/macs2/{{assembly}}-{{sample}}_treat_pileup.bdg", **config),
+                    control=  expand("{result_dir}/macs2/{{assembly}}-{{sample}}_control_lambda.bdg", **config)
                 output:
-                    expand("{result_dir}/macs2/{{sample}}-{{assembly}}_pvalues.bdg", **config),
+                    expand("{result_dir}/macs2/{{assembly}}-{{sample}}_pvalues.bdg", **config),
                 log:
-                    expand("{log_dir}/macs_bdgcmp/{{sample}}-{{assembly}}.log", **config)
+                    expand("{log_dir}/macs_bdgcmp/{{assembly}}-{{sample}}.log", **config)
                 benchmark:
-                    expand("{benchmark_dir}/macs_bdgcmp/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
+                    expand("{benchmark_dir}/macs_bdgcmp/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
                 conda:
                     "../envs/macs2.yaml"
                 shell:

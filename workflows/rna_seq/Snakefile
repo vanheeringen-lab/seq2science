@@ -13,7 +13,7 @@ for kw in ['aligner', 'bam_sorter']:
     if isinstance(config.get(kw, None), str):
         config[kw] = {config[kw]: {}}
 
-for schema in ['general', 'download', 'alignment_general', 'alignment_specific', 'gene_expression']:
+for schema in ['general', 'download', 'alignment_general', 'alignment_specific', 'gene_expression', 'assembly_hub']:
     validate(config, schema=f"../../schemas/config/{schema}.schema.yaml")
 
 # do onstart/onexit things
@@ -23,6 +23,7 @@ include: f"{config['rule_dir']}/configuration.smk"
 
 # load the remaining relevant rules
 include: f"{config['rule_dir']}/alignment.smk"
+include: f"{config['rule_dir']}/assembly_hub.smk"
 include: f"{config['rule_dir']}/DE_analysis.smk"
 include: f"{config['rule_dir']}/gene_counts.smk"
 include: f"{config['rule_dir']}/get_genome.smk"
@@ -35,22 +36,32 @@ include: f"{config['rule_dir']}/trimming.smk"
 quality_control = [get_trimming_qc, get_alignment_qc]
 
 # load DE analysis contrasts
-contrasts = []
-if config.get('contrasts', False):
-    contrasts = get_contrasts()
+contrasts = get_contrasts() if config.get('contrasts', False) else []
 
+# returns the list of all required bigwig extensions (none, or .fwd and .rev)
+def get_bigwig(sample):
+    if 'strandedness' in samples and config.get('bam_bigwig', False) and config.get('bam_bigwig').get('filter_by_strand', False) == True:
+        strandedness = samples["strandedness"].loc[sample]
+        if strandedness in ['forward', 'yes', 'reverse']:
+            return ['.fwd', '.rev']
+    return ['']
 
 rule count_all:
     """
     count expressed genes per assembly and (optionally) perform differential expression analysis
     """
     input:
-        [expand(f"{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.{{bam_sorter}}-{{bam_sort_order}}.bam", **config) for sample in samples.index],
-        [expand(f"{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.{{bam_sorter}}-{{bam_sort_order}}.bai", **config) for sample in samples.index if config['bam_sort_order'] == 'coordinate'],
+        [expand(f"{{dedup_dir}}/{samples.loc[sample]['assembly']}-{sample}.{{bam_sorter}}-{{bam_sort_order}}.bam", **config) for sample in samples.index],
+        [expand(f"{{dedup_dir}}/{samples.loc[sample]['assembly']}-{sample}.{{bam_sorter}}-{{bam_sort_order}}.bai", **config) for sample in samples.index if config['bam_sort_order'] == 'coordinate'],
 
         expand("{result_dir}/gene_counts/{assemblies}-counts.tsv", **{**config, **{'assemblies': set(samples['assembly'])}}),
 
         expand("{qc_dir}/multiqc_{assemblies}.html", **{**config, **{'assemblies': set(samples['assembly'])}}),
 
         [expand(f"{{result_dir}}/{{diffexp}}/{{assemblies}}-{contrast}.diffexp.tsv", **{**config, **{'assemblies': set(samples['assembly'])}}) for contrast in contrasts if config.get('contrasts', False)],
-        [expand(f"{{result_dir}}/{{diffexp}}/{{assemblies}}-{contrast}.ma_plot.svg", **{**config, **{'assemblies': set(samples['assembly'])}}) for contrast in contrasts if config.get('contrasts', False)]
+        [expand(f"{{result_dir}}/{{diffexp}}/{{assemblies}}-{contrast}.ma_plot.svg", **{**config, **{'assemblies': set(samples['assembly'])}}) for contrast in contrasts if config.get('contrasts', False)],
+        [expand(f"{{result_dir}}/{{diffexp}}/{{assemblies}}-{contrast}.pca_plot.svg", **{**config, **{'assemblies': set(samples['assembly'])}}) for contrast in contrasts if config.get('contrasts', False)],
+
+        expand("{result_dir}/deseq2/{assemblies}-clustering.svg", **{**config, **{'assemblies': set(samples['assembly'])}}),
+
+        [expand(f"{{result_dir}}/bigwigs/{samples.loc[sample]['assembly']}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw", **config) for sample in samples.index for bw in get_bigwig(sample) if config.get('bam_bigwig', False)] #for bigwig in bigwigs if config.get('bam_bigwig', False)]

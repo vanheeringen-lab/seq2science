@@ -1,11 +1,11 @@
-name: deseq2
+name: txi
 channels:
   - bioconda
   - r
   - conda-forge
   - defaults
 dependencies:
-  - r-base=3.6.1
+  - r::r-base=3.6.1
   - bioconda::bioconductor-tximeta=1.2.2
   - bioconda::bioconductor-singlecellexperiment=1.6.0
   - r::r-tidyverse=1.2.1
