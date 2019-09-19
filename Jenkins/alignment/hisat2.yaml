@@ -1,7 +1,7 @@
 # tab-separated file of the samples
 samples: samples.tsv
 
-dedup_dir: ./hisat2
+dedup_dir: ./hisat2_dedups
 
 
 # which aligner to use

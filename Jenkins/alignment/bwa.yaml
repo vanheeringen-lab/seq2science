@@ -1,7 +1,7 @@
 # tab-separated file of the samples
 samples: samples.tsv
 
-dedup_dir: ./bwa
+dedup_dir: ./bwa_dedups
 
 
 # which aligner to use
