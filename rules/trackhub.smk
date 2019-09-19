@@ -44,7 +44,7 @@ def find_bedgraph(wildcards):
     else:
         suffix = '.bedgraph'
 
-    return f"{config['result_dir']}/{wildcards.peak_caller}/{wildcards.sample}-{wildcards.assembly}{suffix}"
+    return f"{config['result_dir']}/{wildcards.peak_caller}/{wildcards.assembly}-{wildcards.sample}{suffix}"
 
 
 rule bedgraph_bigwig:
