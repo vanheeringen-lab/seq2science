@@ -220,7 +220,7 @@ if config.get('contrasts', False):
 #     return path
 
 
-# string of all assemblies delimited by |.
+# regex compatible string of all elements in the samples.tsv column given by the input
 def any_given(column_name):
     st = ''
     for element in samples[column_name].unique() if column_name != 'sample' else samples.index.unique():
@@ -235,7 +235,7 @@ if 'assembly' in samples:
         assembly=any_given('assembly')
 else:
     wildcard_constraints:
-        sample=any_sample()
+        sample=any_given('sample')
 
 # if samples are merged add the layout of the condition to the config
 if 'condition' in samples and config.get('combine_replicates', "") == 'merge':
