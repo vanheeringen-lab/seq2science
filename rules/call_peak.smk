@@ -98,7 +98,7 @@ rule macs2_callpeak:
         echo "kmer size: $kmer_size, and effective genome size: $GENSIZE" >> {{log}}
 
         # call peaks
-        macs2 callpeak --bdg -t {{input.bam}} --outdir {config['result_dir']}/macs2/ -n {{wildcards.sample}}-{{wildcards.assembly}} \
+        macs2 callpeak --bdg -t {{input.bam}} --outdir {config['result_dir']}/macs2/ -n {{wildcards.assembly}}-{{wildcards.sample}} \
         {{params.macs_params}} -g $GENSIZE > {{log}} 2>&1
         """
 
