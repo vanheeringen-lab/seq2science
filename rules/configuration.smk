@@ -1,4 +1,4 @@
-import os
+import os.path
 import re
 import time
 import math
@@ -25,11 +25,12 @@ samples.index = samples.index.map(str)
 if config.get('peak_caller', False):
     config['peak_caller'] = {k: v for k,v in config['peak_caller'].items()}
 
-if config.get('aligner', False):
-    aligner = list(config['aligner'].keys())[0]
-    for k, v in list(config['aligner'].values())[0].items():
-        config[k] = v
-    config['aligner'] = aligner
+for conf_dict in ['aligner', 'diffexp']:
+    if config.get(conf_dict, False):
+        dict_key = list(config[conf_dict].keys())[0]
+        for k, v in list(config[conf_dict].values())[0].items():
+            config[k] = v
+        config[conf_dict] = dict_key
 
 if config.get('bam_sorter', False):
     config['bam_sort_order'] = list(config['bam_sorter'].values())[0]
@@ -154,23 +155,87 @@ if config.get('peak_caller', False) and 'hmmratac' in config['peak_caller']:
     "HMMRATAC requires all samples to be paired end"
 
 
-# find conda directories. Does not work with singularity.
-def conda_path(yaml):
-    """ Find the path to a conda directory """
-    import hashlib
-    import os.path
+# if differential gene expression analysis is used, check all contrasts
+if config.get('contrasts', False):
+    old_contrasts = list(config["contrasts"])
+    for contrast in old_contrasts:
+        original_contrast = contrast
 
-    env_file = os.path.abspath(yaml)
-    env_dir = os.path.join(os.getcwd(), ".snakemake", "conda")
+        # remove whitespace
+        contrast = contrast.replace(" ", "")
+        contrast = contrast.replace("~", "")
 
-    md5hash = hashlib.md5()
-    md5hash.update(env_dir.encode())
-    with open(env_file, 'rb') as f:
-        content = f.read()
-    md5hash.update(content)
-    dir_hash = md5hash.hexdigest()[:8]
-    path = os.path.join(env_dir, dir_hash)
-    return path
+        # remove batch
+        batch = None
+        if '+' in contrast:
+            batch = contrast.split('+')[0]
+            contrast = contrast.split('+')[1]
+
+        # parse contrast
+        contrast = contrast.split('_')
+
+        # Check if the contrast can be recognized
+        assert contrast[0] in samples.columns, \
+            f'In contrast design {original_contrast}, {contrast[0]} does not match any column name in {config["samples"]}'
+        if batch is not None:
+            assert batch in samples.columns, \
+                f'In contrast design {original_contrast}, the batch effect {batch} does not match any column name in {config["samples"]}'
+
+        l = len(contrast)
+        if l == 1:
+            # check if contrast column has exactly 2 factor levels (per assembly)
+            tmp = samples[['assembly', contrast[0]]].dropna()
+            factors = pd.DataFrame(tmp.groupby('assembly')[contrast[0]].nunique())
+            assert all(factors[contrast[0]] == 2),\
+                f'Your contrast design, {original_contrast}, contains only a column name ({contrast[0]}), '\
+                f'If you wish to compare all groups in this column, add a reference group. \n'\
+                f'number of groups found (per assembly): \n'\
+                f'{factors[contrast[0]]}'
+        if l > 1:
+            # check if contrast column contains the groups
+            for group in contrast[1:]:
+                if group != 'all':
+                    assert str(group) in str(samples[contrast[0]].tolist()),\
+                    f'Your contrast design contains group {group}, '
+                    f'which cannot be found in column {contrast[0]} of {config["samples"]}'
+
+
+# functional but currently unused
+# # find conda directories. Does not work with singularity.
+# def conda_path(yaml):
+#     """ Find the path to a conda directory """
+#     import hashlib
+#     import os.path
+#
+#     env_file = os.path.abspath(yaml)
+#     env_dir = os.path.join(os.getcwd(), ".snakemake", "conda")
+#
+#     md5hash = hashlib.md5()
+#     md5hash.update(env_dir.encode())
+#     with open(env_file, 'rb') as f:
+#         content = f.read()
+#     md5hash.update(content)
+#     dir_hash = md5hash.hexdigest()[:8]
+#     path = os.path.join(env_dir, dir_hash)
+#     return path
+
+
+# regex compatible string of all elements in the samples.tsv column given by the input
+def any_given(column_name):
+    st = ''
+    for element in samples[column_name].unique() if column_name != 'sample' else samples.index.unique():
+        st += element + '|'
+    st = st[:-1]
+    return st
+
+# set global constraints on wildcards ({{sample}} or {{assembly}})
+if 'assembly' in samples:
+    wildcard_constraints:
+        sample=any_given('sample'),
+        assembly=any_given('assembly')
+else:
+    wildcard_constraints:
+        sample=any_given('sample')
 
 # if samples are merged add the layout of the condition to the config
 if 'condition' in samples and config.get('combine_replicates', "") == 'merge':

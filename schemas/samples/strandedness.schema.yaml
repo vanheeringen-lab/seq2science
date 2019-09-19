@@ -1,0 +1,9 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+description: an entry in the sample sheet
+
+properties:
+  strandedness:
+    type: string
+    description: The direction of the reference primer in the case of strand-specific RNA-seq protocol (options are forward (same as yes), reverse and no. default is no)
+

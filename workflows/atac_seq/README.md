@@ -1,5 +1,5 @@
 # ATAC-seq
-Call peaks and generate a trackhub. Samples can your own fastq files, or GSM/ERR/SRR/SRA entries. The pipeline (automatically) handles both paired-end and single-end data.
+Call peaks and generate a trackhub. Samples can be your own fastq files, or GSM/ERR/SRR/SRA entries. The pipeline (automatically) handles both paired-end and single-end data.
 
 TODO figure
 

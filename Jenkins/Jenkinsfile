@@ -80,6 +80,7 @@ pipeline {
                 snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/bwa.yaml     --quiet
                 snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/hisat2.yaml  --quiet
                 snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/salmon.yaml  --quiet
+                snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/star.yaml    --quiet
 
                 # test sorting
                 echo "testing sorting"
@@ -104,6 +105,20 @@ pipeline {
                 snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=fisher samples=../../Jenkins/atac_seq/samples.tsv --quiet
                 snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=idr    samples=../../Jenkins/atac_seq/samples.tsv --quiet
                 snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=merge  samples=../../Jenkins/atac_seq/samples.tsv --quiet
+
+                # test rna-seq workflow
+                # default config
+                echo "default rna-seq"
+                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --quiet
+
+                # test count matrix generation
+                echo "counts matrix"
+                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --config aligner=star   --quiet
+                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --config aligner=salmon --quiet
+
+                # test differential expression analysis
+                echo "differential expression"
+                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/deseq2.yaml --config samples=../../Jenkins/rna_seq/samples.tsv --quiet
                 '''
             }
         }
@@ -116,7 +131,7 @@ pipeline {
                     branch 'master'
                     branch 'develop'
 
-                    // always run when jenkins, envs or configuration is changes
+                    // always run when jenkins, envs or configuration is changed
                     changeset 'Jenkins/*'
                     changeset 'envs/*'
                     changeset 'rules/configuration.smk'
@@ -150,7 +165,7 @@ pipeline {
                     branch 'master'
                     branch 'develop'
 
-                    // always run when jenkins, envs or configuration is changes
+                    // always run when jenkins, envs or configuration is changed
                     changeset 'Jenkins/*'
                     changeset 'envs/*'
                     changeset 'rules/configuration.smk'
@@ -185,8 +200,21 @@ pipeline {
 
                 # test hisat2 alignment
                 snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
-                --use-conda -j $CORES  --configfile Jenkins/alignment/bwa.yaml \
+                --use-conda -j $CORES  --configfile Jenkins/alignment/hisat2.yaml \
                 --config samples=$WORKSPACE/Jenkins/alignment/samples.tsv
+#
+#                # test salmon alignment
+#                # TODO: fix #166
+#                # TODO: for alignment + salmon + txi + deseq2:
+#                # TODO: find small 2 small RNA-seq samples, the genome of which is also small, the gtf/gff contains genes, and is on Ensembl
+#                snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
+#                --use-conda -j $CORES  --configfile Jenkins/alignment/salmon.yaml \
+#                --config samples=$WORKSPACE/Jenkins/alignment/samples.tsv
+#
+#                # test star alignment
+#                snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
+#                --use-conda -j $CORES  --configfile Jenkins/alignment/star.yaml \
+#                --config samples=$WORKSPACE/Jenkins/alignment/samples.tsv
                 '''
             }
         }
@@ -197,7 +225,7 @@ pipeline {
                     branch 'master'
                     branch 'develop'
 
-                    // always run when jenkins, envs or configuration is changes
+                    // always run when jenkins, envs or configuration is changed
                     changeset 'Jenkins/*'
                     changeset 'envs/*'
                     changeset 'rules/configuration.smk'
@@ -230,6 +258,20 @@ pipeline {
                 '''
             }
         }
+//        stage('Test rna-seq') {
+//            steps {
+//                sh '''#!/usr/bin/env bash
+//                source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+//                conda activate miniconda/envs/snakemake-workflows/
+//
+//                # test deseq2
+//                snakemake -s workflows/atac_seq/Snakefile --directory workflows/rna_seq \
+//                --use-conda -j $CORES  --configfile Jenkins/rna_seq/deseq2.yaml \
+//                --config samples=$WORKSPACE/Jenkins/rna_seq/samples.tsv
+//                '''
+//            }
+//        }
+
 
     }
 

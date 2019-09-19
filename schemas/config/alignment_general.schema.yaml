@@ -68,11 +68,11 @@ properties:
       star:
         properties:
           index:
-            default: '--sjdbOverhang 100'
+            default: ''
           align:
             default: '--readFilesCommand gunzip -c'
         default:
-          index: '--sjdbOverhang 100'
+          index: ''
           align: '--readFilesCommand gunzip -c'
     default:
       bwa:
