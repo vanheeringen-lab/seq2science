@@ -5,15 +5,13 @@ from snakemake.utils import validate
 configfile: "config.yaml"
 
 
-if isinstance(config.get('aligner', None), str):
-    config['aligner'] = {config['aligner']: {}}
-
 for schema in ['general', 'download', 'alignment_general', 'peakcalling']:
     validate(config, schema=f"../../schemas/config/{schema}.schema.yaml")
 
 # do onstart/onexit things
-schemas = ['sample', 'assembly', 'condition']
-include: f"{config['rule_dir']}/configuration.smk"
+config_schemas = ['general', 'download', 'alignment_general', 'peakcalling']
+sample_schemas = ['sample', 'assembly', 'condition']
+include: "../../rules/configuration.smk"
 
 
 # load all the relevant rules

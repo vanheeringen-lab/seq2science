@@ -13,9 +13,17 @@ from snakemake.utils import validate
 from snakemake.logging import logger
 
 
+for kw in ['aligner', 'bam_sorter']:
+    if isinstance(config.get(kw, None), str):
+        config[kw] = {config[kw]: {}}
+
+for schema in config_schemas:
+    validate(config, schema=f"../schemas/config/{schema}.schema.yaml")
+
+
 # read the samples file
 samples = pd.read_csv(config["samples"], sep='\t')
-for schema in schemas:
+for schema in sample_schemas:
     validate(samples, schema=f"../schemas/samples/{schema}.schema.yaml")
 samples['sample'] = samples['sample'].str.strip() 
 samples = samples.set_index('sample')

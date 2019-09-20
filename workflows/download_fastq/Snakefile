@@ -5,12 +5,10 @@ from snakemake.utils import validate
 configfile: "config.yaml"
 
 
-for schema in ['general', 'download']:
-    validate(config, schema=f"../../schemas/config/{schema}.schema.yaml")
-
 # do onstart/onexit things
-schemas = ['sample']
-include: f"{config['rule_dir']}/configuration.smk"
+sample_schemas = ['sample']
+config_schemas = ['general', 'download']
+include: "../../rules/configuration.smk"
 
 
 # load the relevant rules
