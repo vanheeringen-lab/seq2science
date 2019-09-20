@@ -11,9 +11,9 @@ config_schemas = ['general', 'download']
 include: "../../rules/configuration.smk"
 
 
-
 # load the relevant rules
 include: f"{config['rule_dir']}/get_fastq.smk"
+
 
 
 rule download_all:
