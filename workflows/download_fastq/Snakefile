@@ -8,7 +8,7 @@ configfile: "config.yaml"
 # do onstart/onexit things
 sample_schemas = ['sample']
 config_schemas = ['general', 'download']
-include: "../../rules/configuration.smk"
+include: f"../../rules/configuration.smk"
 
 
 # load the relevant rules
