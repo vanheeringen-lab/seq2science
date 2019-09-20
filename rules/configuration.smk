@@ -2,6 +2,7 @@ import os.path
 import re
 import time
 import math
+import norns
 import psutil
 import pickle
 import subprocess
@@ -56,18 +57,12 @@ if 'condition' in samples:
 
 
 # make absolute paths, cut off trailing slashes
+user_config = norns.config(config_file=workflow.overwrite_configfile)
 for key, value in config.items():
     if '_dir' in key:
-        if key in ['result_dir', 'genome_dir', 'rule_dir']:
+        if key in ['result_dir', 'genome_dir', 'rule_dir'] or key in user_config:
             value = os.path.abspath(value)
         config[key] = re.split("\/$", value)[0]
-
-
-# nest default directories in result_dir
-for key, value in config.items():
-    if '_dir' in key:
-        if key in ['log_dir', 'benchmark_dir', 'sra_dir', 'fastq_dir', 'trimmed_dir', 'qc_dir', 'dedup_dir'] and key not in user_dirs:
-            config[key] = os.path.join(config['result_dir'], config[key])
 
 
 # check if paired-end filename suffixes are lexicographically ordered

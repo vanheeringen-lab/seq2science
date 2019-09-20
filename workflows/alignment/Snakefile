@@ -4,10 +4,6 @@ from snakemake.utils import validate
 # complement the configuration
 configfile: "config.yaml"
 
-user_dirs = []
-for key, value in config.items():
-    if '_dir' in key:
-        user_dirs.append(key)
 
 for kw in ['aligner', 'bam_sorter']:
     if isinstance(config.get(kw, None), str):
