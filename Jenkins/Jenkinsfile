@@ -18,7 +18,7 @@ List getFailedStages(WorkflowRun run) {
         String nodeName = node.getDisplayName()
         def nodeResult = node.getStatus().getResult()
         def resultFailure = io.jenkins.blueocean.rest.model.BlueRun$BlueRunResult.FAILURE
-        if (nodeResult == resultFailure) {
+        if (nodeResult == resultFailure || ) {
             failedStages.add(nodeName)
         }
     }
@@ -150,13 +150,14 @@ pipeline {
             steps {
                 sh '''#!/usr/bin/env bash
                 set -e
-                source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                conda activate miniconda/envs/snakemake-workflows/
-
-                # test basic downloading 1 PE and 1 SE
-                snakemake -s workflows/download_fastq/Snakefile --directory workflows/download_fastq \
-                --use-conda -j $CORES  --config samples=$WORKSPACE/Jenkins/download_fastq/samples.tsv
+                sleep 1
                 '''
+//                 source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+//                 conda activate miniconda/envs/snakemake-workflows/
+//
+//                 # test basic downloading 1 PE and 1 SE
+//                 snakemake -s workflows/download_fastq/Snakefile --directory workflows/download_fastq \
+//                 --use-conda -j $CORES  --config samples=$WORKSPACE/Jenkins/download_fastq/samples.tsv
             }
         }
         stage('Test alignment') {
@@ -187,37 +188,38 @@ pipeline {
             steps {
                 sh '''#!/usr/bin/env bash
                 set -e
-                source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                conda activate miniconda/envs/snakemake-workflows/
-
-                # test bowtie2 alignment
-                snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
-                --use-conda -j $CORES  --configfile Jenkins/alignment/bowtie2.yaml \
-                --config samples=$WORKSPACE/Jenkins/alignment/samples.tsv
-
-                # test bwa alignment
-                snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
-                --use-conda -j $CORES  --configfile Jenkins/alignment/bwa.yaml \
-                --config samples=$WORKSPACE/Jenkins/alignment/samples.tsv
-
-                # test hisat2 alignment
-                snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
-                --use-conda -j $CORES  --configfile Jenkins/alignment/hisat2.yaml \
-                --config samples=$WORKSPACE/Jenkins/alignment/samples.tsv
-#
-#                # test salmon alignment
-#                # TODO: fix #166
-#                # TODO: for alignment + salmon + txi + deseq2:
-#                # TODO: find small 2 small RNA-seq samples, the genome of which is also small, the gtf/gff contains genes, and is on Ensembl
-#                snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
-#                --use-conda -j $CORES  --configfile Jenkins/alignment/salmon.yaml \
-#                --config samples=$WORKSPACE/Jenkins/alignment/samples.tsv
-#
-#                # test star alignment
-#                snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
-#                --use-conda -j $CORES  --configfile Jenkins/alignment/star.yaml \
-#                --config samples=$WORKSPACE/Jenkins/alignment/samples.tsv
+                sleep 1
                 '''
+//                 source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+//                 conda activate miniconda/envs/snakemake-workflows/
+//
+//                 # test bowtie2 alignment
+//                 snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
+//                 --use-conda -j $CORES  --configfile Jenkins/alignment/bowtie2.yaml \
+//                 --config samples=$WORKSPACE/Jenkins/alignment/samples.tsv
+//
+//                 # test bwa alignment
+//                 snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
+//                 --use-conda -j $CORES  --configfile Jenkins/alignment/bwa.yaml \
+//                 --config samples=$WORKSPACE/Jenkins/alignment/samples.tsv
+//
+//                 # test hisat2 alignment
+//                 snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
+//                 --use-conda -j $CORES  --configfile Jenkins/alignment/hisat2.yaml \
+//                 --config samples=$WORKSPACE/Jenkins/alignment/samples.tsv
+// #
+// #                # test salmon alignment
+// #                # TODO: fix #166
+// #                # TODO: for alignment + salmon + txi + deseq2:
+// #                # TODO: find small 2 small RNA-seq samples, the genome of which is also small, the gtf/gff contains genes, and is on Ensembl
+// #                snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
+// #                --use-conda -j $CORES  --configfile Jenkins/alignment/salmon.yaml \
+// #                --config samples=$WORKSPACE/Jenkins/alignment/samples.tsv
+// #
+// #                # test star alignment
+// #                snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
+// #                --use-conda -j $CORES  --configfile Jenkins/alignment/star.yaml \
+// #                --config samples=$WORKSPACE/Jenkins/alignment/samples.tsv
             }
         }
         stage('Test atac-seq') {
@@ -251,14 +253,15 @@ pipeline {
             steps {
                 sh '''#!/usr/bin/env bash
                 set -e
-                source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                conda activate miniconda/envs/snakemake-workflows/
-
-                # test simple
-                snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq \
-                --use-conda -j $CORES  --configfile Jenkins/alignment/bowtie2.yaml \
-                --config samples=$WORKSPACE/Jenkins/alignment/samples.tsv
+                sleep 1
                 '''
+//                 source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+//                 conda activate miniconda/envs/snakemake-workflows/
+//
+//                 # test simple
+//                 snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq \
+//                 --use-conda -j $CORES  --configfile Jenkins/alignment/bowtie2.yaml \
+//                 --config samples=$WORKSPACE/Jenkins/alignment/samples.tsv
             }
         }
 //        stage('Test rna-seq') {
