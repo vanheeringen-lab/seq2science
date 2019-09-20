@@ -222,16 +222,13 @@ if config.get('contrasts', False):
 
 # regex compatible string of all elements in the samples.tsv column given by the input
 def any_given(column_name):
-    st = ''
-    for element in samples[column_name].unique() if column_name != 'sample' else samples.index.unique():
-        st += element + '|'
-    st = st[:-1]
-    return st
+    return '|'.join(samples[column_name].unique()
+                    if column_name != 'sample' else samples.index.unique())
 
 # set global constraints on wildcards ({{sample}} or {{assembly}})
 if 'assembly' in samples:
     wildcard_constraints:
-        sample=any_given('sample'),
+        sample=any_given('sample') + '|' + any_given('condition'),
         assembly=any_given('assembly')
 else:
     wildcard_constraints:
