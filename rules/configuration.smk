@@ -36,7 +36,7 @@ if config.get('peak_caller', False):
         assert all([config['layout'][sample] == 'PAIRED' for sample in samples.index]), \
         "HMMRATAC requires all samples to be paired end"
 
-# for rna-seq
+# for alignment and rna-seq
 for conf_dict in ['aligner', 'diffexp']:
     if config.get(conf_dict, False):
         dict_key = list(config[conf_dict].keys())[0]
@@ -89,6 +89,11 @@ for key, value in config.items():
             value = os.path.abspath(value)
         config[key] = re.split("\/$", value)[0]
 
+# nest default directories in result_dir
+for key, value in config.items():
+    if '_dir' in key:
+        if key not in ['result_dir', 'genome_dir', 'rule_dir'] and key not in user_config:
+            config[key] = os.path.join(config['result_dir'], config[key])
 
 # check if a sample is single-end or paired end, and store it
 logger.info("Checking if samples are single-end or paired-end...")
@@ -219,11 +224,11 @@ def any_given(*args):
     elements = []
     for column_name in args:
         if column_name in samples:
-            elements.extend(samples[column_name].unique())
+            elements.extend(samples[column_name])
         elif column_name is 'sample':
-            elements.extend(samples.index.unique())
+            elements.extend(samples.index)
 
-    return '|'.join(elements)
+    return '|'.join(set(elements))
 
 # set global constraints on wildcards ({{sample}} or {{assembly}})
 if 'assembly' in samples:
