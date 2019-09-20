@@ -13,27 +13,30 @@ from snakemake.utils import validate
 from snakemake.logging import logger
 
 
+# make sure that difficult data-types (yaml objects) are in correct data format
 for kw in ['aligner', 'bam_sorter']:
     if isinstance(config.get(kw, None), str):
         config[kw] = {config[kw]: {}}
 
+# validate and complement the config dict
 for schema in config_schemas:
     validate(config, schema=f"../schemas/config/{schema}.schema.yaml")
 
-
-# read the samples file
-samples = pd.read_csv(config["samples"], sep='\t')
-for schema in sample_schemas:
-    validate(samples, schema=f"../schemas/samples/{schema}.schema.yaml")
-samples['sample'] = samples['sample'].str.strip() 
-samples = samples.set_index('sample')
-samples.index = samples.index.map(str)
-
+# check if paired-end filename suffixes are lexicographically ordered
+config['fqext'] = [config['fqext1'], config['fqext2']]
+assert sorted(config['fqext'])[0] == config['fqext1']
 
 # apply workflow specific changes
+# for atac-seq
 if config.get('peak_caller', False):
     config['peak_caller'] = {k: v for k,v in config['peak_caller'].items()}
 
+    # if hmmratac peak caller, check if all samples are paired-end
+    if 'hmmratac' in config['peak_caller']:
+        assert all([config['layout'][sample] == 'PAIRED' for sample in samples.index]), \
+        "HMMRATAC requires all samples to be paired end"
+
+# for rna-seq
 for conf_dict in ['aligner', 'diffexp']:
     if config.get(conf_dict, False):
         dict_key = list(config[conf_dict].keys())[0]
@@ -41,11 +44,21 @@ for conf_dict in ['aligner', 'diffexp']:
             config[k] = v
         config[conf_dict] = dict_key
 
+# for alignment
 if config.get('bam_sorter', False):
     config['bam_sort_order'] = list(config['bam_sorter'].values())[0]
     config['bam_sorter'] = list(config['bam_sorter'].keys())[0]
 
 
+# read and validate the samples file
+samples = pd.read_csv(config["samples"], sep='\t')
+for schema in sample_schemas:
+    validate(samples, schema=f"../schemas/samples/{schema}.schema.yaml")
+samples['sample'] = samples['sample'].str.strip()
+samples = samples.set_index('sample')
+samples.index = samples.index.map(str)
+
+# make sure that our samples.tsv and configuration work together (e.g. conditions)
 if 'condition' in samples:
     if 'hmmratac' in config['peak_caller']:
         assert config['combine_replicates'] == 'idr', \
@@ -64,22 +77,17 @@ if 'condition' in samples:
                 f' condition {condition} and assembly {assembly}'
 
 
-# make absolute paths, cut off trailing slashes
 try:
     user_config = norns.config(config_file=workflow.overwrite_configfile)
 except:
     user_config = norns.config(config_file='config.yaml')
 
+# make absolute paths, cut off trailing slashes
 for key, value in config.items():
     if '_dir' in key:
         if key in ['result_dir', 'genome_dir', 'rule_dir'] or key in user_config:
             value = os.path.abspath(value)
         config[key] = re.split("\/$", value)[0]
-
-
-# check if paired-end filename suffixes are lexicographically ordered
-config['fqext'] = [config['fqext1'], config['fqext2']]
-assert sorted(config['fqext'])[0] == config['fqext1']
 
 
 # check if a sample is single-end or paired end, and store it
@@ -148,18 +156,17 @@ if len([sample for sample in samples.index if sample not in layout_cache]) is no
 
 logger.info("Done!\n\n")
 
+# if samples are merged add the layout of the condition to the config
+if 'condition' in samples and config.get('combine_replicates', "") == 'merge':
+    for sample in samples.index:
+        condition = samples.loc[sample, 'condition']
+        config['layout'][condition] = config['layout'][sample]
 
 # after all is done, log (print) the configuration
 logger.info("CONFIGURATION VARIABLES:")
 for key, value in config.items():
      logger.info(f"{key: <23}: {value}")
 logger.info("\n\n")
-
-
-# if hmmratac peak caller, check if all samples are paired-end
-if config.get('peak_caller', False) and 'hmmratac' in config['peak_caller']:
-    assert all([config['layout'][sample] == 'PAIRED' for sample in samples.index]), \
-    "HMMRATAC requires all samples to be paired end"
 
 
 # if differential gene expression analysis is used, check all contrasts
@@ -207,26 +214,6 @@ if config.get('contrasts', False):
                     f'which cannot be found in column {contrast[0]} of {config["samples"]}'
 
 
-# functional but currently unused
-# # find conda directories. Does not work with singularity.
-# def conda_path(yaml):
-#     """ Find the path to a conda directory """
-#     import hashlib
-#     import os.path
-#
-#     env_file = os.path.abspath(yaml)
-#     env_dir = os.path.join(os.getcwd(), ".snakemake", "conda")
-#
-#     md5hash = hashlib.md5()
-#     md5hash.update(env_dir.encode())
-#     with open(env_file, 'rb') as f:
-#         content = f.read()
-#     md5hash.update(content)
-#     dir_hash = md5hash.hexdigest()[:8]
-#     path = os.path.join(env_dir, dir_hash)
-#     return path
-
-
 # regex compatible string of all elements in the samples.tsv column given by the input
 def any_given(*args):
     elements = []
@@ -246,12 +233,6 @@ if 'assembly' in samples:
 else:
     wildcard_constraints:
         sample=any_given('sample', 'condition')
-
-# if samples are merged add the layout of the condition to the config
-if 'condition' in samples and config.get('combine_replicates', "") == 'merge':
-    for sample in samples.index:
-        condition = samples.loc[sample, 'condition']
-        config['layout'][condition] = config['layout'][sample]
 
 
 # set default parameters (parallel downloads and memory)
@@ -293,3 +274,24 @@ def add_default_resources(func):
 
 # now add the wrapper to the workflow execute function
 workflow.execute = add_default_resources(workflow.execute)
+
+
+
+# functional but currently unused
+# # find conda directories. Does not work with singularity.
+# def conda_path(yaml):
+#     """ Find the path to a conda directory """
+#     import hashlib
+#     import os.path
+#
+#     env_file = os.path.abspath(yaml)
+#     env_dir = os.path.join(os.getcwd(), ".snakemake", "conda")
+#
+#     md5hash = hashlib.md5()
+#     md5hash.update(env_dir.encode())
+#     with open(env_file, 'rb') as f:
+#         content = f.read()
+#     md5hash.update(content)
+#     dir_hash = md5hash.hexdigest()[:8]
+#     path = os.path.join(env_dir, dir_hash)
+#     return path
