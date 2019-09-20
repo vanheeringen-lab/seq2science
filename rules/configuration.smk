@@ -57,7 +57,11 @@ if 'condition' in samples:
 
 
 # make absolute paths, cut off trailing slashes
-user_config = norns.config(config_file=workflow.overwrite_configfile)
+try:
+    user_config = norns.config(config_file=workflow.overwrite_configfile)
+except:
+    user_config = norns.config(config_file='config.yaml')
+
 for key, value in config.items():
     if '_dir' in key:
         if key in ['result_dir', 'genome_dir', 'rule_dir'] or key in user_config:
