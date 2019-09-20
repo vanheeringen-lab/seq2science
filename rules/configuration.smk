@@ -221,18 +221,24 @@ if config.get('contrasts', False):
 
 
 # regex compatible string of all elements in the samples.tsv column given by the input
-def any_given(column_name):
-    return '|'.join(samples[column_name].unique()
-                    if column_name != 'sample' else samples.index.unique())
+def any_given(*args):
+    elements = []
+    for column_name in args:
+        if column_name in samples:
+            elements.extend(samples[column_name].unique())
+        elif column_name is 'sample':
+            elements.extend(samples.index.unique())
+
+    return '|'.join(elements)
 
 # set global constraints on wildcards ({{sample}} or {{assembly}})
 if 'assembly' in samples:
     wildcard_constraints:
-        sample=any_given('sample') + '|' + any_given('condition'),
+        sample=any_given('sample', 'condition'),
         assembly=any_given('assembly')
 else:
     wildcard_constraints:
-        sample=any_given('sample')
+        sample=any_given('sample', 'condition')
 
 # if samples are merged add the layout of the condition to the config
 if 'condition' in samples and config.get('combine_replicates', "") == 'merge':
