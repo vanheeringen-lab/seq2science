@@ -4,21 +4,16 @@ from snakemake.utils import validate
 # complement the configuration
 configfile: "config.yaml"
 
-user_dirs = []
-for key, value in config.items():
-    if '_dir' in key:
-        user_dirs.append(key)
-
-for schema in ['general', 'download']:
-    validate(config, schema=f"../../schemas/config/{schema}.schema.yaml")
 
 # do onstart/onexit things
-schemas = ['sample']
-include: f"{config['rule_dir']}/configuration.smk"
+sample_schemas = ['sample']
+config_schemas = ['general', 'download']
+include: "../../rules/configuration.smk"
 
 
 # load the relevant rules
 include: f"{config['rule_dir']}/get_fastq.smk"
+
 
 
 rule download_all:
