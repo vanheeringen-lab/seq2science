@@ -45,7 +45,8 @@ rule bam_bigwig:
     Convert a bam file into a bigwig file
     """
     input:
-        expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config)
+        bam=expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config),
+        bai=expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bai", **config)
     output:
         expand("{result_dir}/bigwigs/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bw", **config)
     params:
@@ -63,5 +64,5 @@ rule bam_bigwig:
         deeptools_limit=1
     shell:
         """
-        bamCoverage --bam {input} --outFileName {output} --numberOfProcessors {threads} {params} --verbose >> {log} 2>&1
+        bamCoverage --bam {input.bam} --outFileName {output} --numberOfProcessors {threads} {params} --verbose >> {log} 2>&1
         """
