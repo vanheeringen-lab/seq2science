@@ -4,6 +4,7 @@ from snakemake.utils import validate
 # complement the configuration
 configfile: "config.yaml"
 
+<<<<<<< HEAD
 user_dirs = []
 for key, value in config.items():
     if '_dir' in key:
@@ -19,6 +20,14 @@ for schema in ['general', 'download', 'alignment_general', 'alignment_specific',
 # do onstart/onexit things
 schemas = ['sample', 'assembly', 'strandedness']
 include: f"{config['rule_dir']}/configuration.smk"
+=======
+
+# do onstart/onexit things
+sample_schemas = ['sample', 'assembly', 'strandedness']
+config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific',
+                  'gene_expression', 'assembly_hub']
+include: f"../../rules/configuration.smk"
+>>>>>>> 93b904104ca195e3a92ae6887a5a692326e95449
 
 
 # load the remaining relevant rules
