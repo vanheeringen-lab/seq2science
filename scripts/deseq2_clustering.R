@@ -9,8 +9,7 @@ suppressMessages({
 threads        <- snakemake@threads[[1]]
 log_file       <- snakemake@log[[1]]
 counts_file    <- snakemake@input[[1]]
-samples_file   <- snakemake@params$samples
-contrast       <- snakemake@params$some_contrast
+samples_file   <- snakemake@params[[1]]
 assembly       <- snakemake@wildcards$assembly
 out_plot       <- snakemake@output[[1]]
 
@@ -20,20 +19,10 @@ sink(log)
 sink(log, type="message")
 
 
-## parse the design contrast
-# a contrast is always in the form 'batch+condition_group1_group2', where batch(+) is optional
-# extracting batch, condition and groups
-contr <- gsub('~' ,'' , contrast)
-if (grepl('\\+', contr)) {
-  contr <- strsplit(contr, '\\+')[[1]][2]
-}
-condition <- strsplit(contr, '_')[[1]][1]
-
-
 ## obtain coldata, the metadata input for DESeq2
 samples <- read.delim(samples_file, row.names=1, na.strings = "")
 # filter for assembly and remove NAs
-coldata  <- samples[samples$assembly == assembly, condition, drop = F]
+coldata  <- samples[samples$assembly == assembly, 'assembly', drop = F]
 
 
 ## filter counts to speed up DESeq
@@ -62,11 +51,13 @@ cat('\n')
 # transform the data
 main = 'Sample distance clustering (blind)'
 log_counts <- vst(dds, blind = TRUE)
-sampleDistMatrix <- dist(t(assay(log_counts)))
+sampleDistMatrix <- as.matrix(dist(t(assay(log_counts))))
+rownames(sampleDistMatrix) <- colnames(counts(dds))
 colors <- colorRampPalette( rev(brewer.pal(9, "Blues")) )(255)
 
 svg(file=out_plot)
 pheatmap(sampleDistMatrix,
          main = main,
+         angle_col = 45,
          col=colors)
 invisible(dev.off())

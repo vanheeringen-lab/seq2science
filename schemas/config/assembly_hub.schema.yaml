@@ -8,6 +8,7 @@ properties:
     properties:
       filter_by_strand:
         default: True
+        enum: [True, False]
       deeptools:
         default: ''
     default:
