@@ -103,13 +103,21 @@ rule multiqc:
         expand("{qc_dir}/multiqc_{{assembly}}.html", **config),
         directory(expand("{qc_dir}/multiqc_{{assembly}}_data", **config))
     params:
-        "{qc_dir}/".format(**config)
+        dir = "{qc_dir}/".format(**config),
+        fqext1 = '_' + config['fqext1']
     log:
         expand("{log_dir}/multiqc_{{assembly}}.log", **config)
     conda:
         "../envs/qc.yaml"
     shell:
-        "multiqc {input} -o {params} -n multiqc_{wildcards.assembly}.html --config ../../schemas/multiqc_config.yaml > {log} 2>&1"
+        """
+        multiqc {input} -o {params.dir} -n multiqc_{wildcards.assembly}.html \
+        --config ../../schemas/multiqc_config.yaml                           \
+        --cl_config "extra_fn_clean_exts: [                                  \
+            {{'pattern': ^.*{wildcards.assembly}-, 'type': 'regex'}},        \
+            {{'pattern': {params.fqext1},          'type': 'regex'}},        \
+            ]" > {log} 2>&1
+        """
 
 
 def get_trimming_qc(sample):

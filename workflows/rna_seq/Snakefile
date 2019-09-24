@@ -1,15 +1,11 @@
-from snakemake.utils import validate
-
-
 # complement the configuration
 configfile: "config.yaml"
 
 
 # do onstart/onexit things
 sample_schemas = ['sample', 'assembly', 'strandedness']
-config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific',
-                  'gene_expression', 'assembly_hub']
-include: f"../../rules/configuration.smk"
+config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific', 'gene_expression', 'assembly_hub']
+include: "../../rules/configuration.smk"
 
 
 # load the remaining relevant rules
@@ -55,4 +51,6 @@ rule count_all:
 
         expand("{result_dir}/deseq2/{assemblies}-clustering.svg", **{**config, **{'assemblies': set(samples['assembly'])}}),
 
-        [expand(f"{{result_dir}}/bigwigs/{samples.loc[sample]['assembly']}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw", **config) for sample in samples.index for bw in get_bigwig(sample) if config.get('bam_bigwig', False)] #for bigwig in bigwigs if config.get('bam_bigwig', False)]
+        [expand(f"{{result_dir}}/bigwigs/{samples.loc[sample]['assembly']}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw", **config) for sample in samples.index for bw in get_bigwig(sample) if config.get('bam_bigwig', False)],
+
+        #expand("{result_dir}/trackhub", **config)

@@ -1,16 +1,10 @@
-from snakemake.utils import validate
-
-
 # complement the configuration
 configfile: "config.yaml"
 
 
-for schema in ['general', 'download', 'alignment_general', 'peakcalling']:
-    validate(config, schema=f"../../schemas/config/{schema}.schema.yaml")
-
 # do onstart/onexit things
+sample_schemas = ['sample', 'assembly', 'strandedness', 'condition']
 config_schemas = ['general', 'download', 'alignment_general', 'peakcalling']
-sample_schemas = ['sample', 'assembly', 'condition']
 include: "../../rules/configuration.smk"
 
 
@@ -28,11 +22,10 @@ include: f"{config['rule_dir']}/trimming.smk"
 # set the quality_control functions
 quality_control = [get_trimming_qc, get_alignment_qc, get_peak_calling_qc]
 
-
 rule call_peaks_all:
     """
     call peaks for each sample (or condition if applies)
     """
     input:
-         expand("{result_dir}/trackhub/", **config),
+         expand("{result_dir}/trackhub", **config),
          expand("{qc_dir}/multiqc_{assemblies}.html", **{**config, **{'assemblies': set(samples['assembly'])}})

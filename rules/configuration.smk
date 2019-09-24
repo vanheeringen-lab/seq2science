@@ -281,7 +281,6 @@ def add_default_resources(func):
 workflow.execute = add_default_resources(workflow.execute)
 
 
-
 # functional but currently unused
 # # find conda directories. Does not work with singularity.
 # def conda_path(yaml):

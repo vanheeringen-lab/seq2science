@@ -5,5 +5,5 @@ description: an entry in the sample sheet
 properties:
   strandedness:
     type: string
-    description: The direction of the reference primer in the case of strand-specific RNA-seq protocol (options are forward (same as yes), reverse and no. default is no)
-
+    description: The direction of the reference primer in the case of strand-specific sequencing protocol (options are forward, yes (same as forward), reverse and no. Default is no)
+    enum: [forward, yes, reverse, no]
