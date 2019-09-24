@@ -129,7 +129,7 @@ rule trackhub:
     input:
         unpack(get_bigfiles)
     output:
-        f"{config['result_dir']}/trackhub"
+        directory(f"{config['result_dir']}/trackhub")
     log:
         f"{config['log_dir']}/trackhub.log"
     benchmark:
