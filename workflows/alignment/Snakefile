@@ -1,9 +1,5 @@
-from snakemake.utils import validate
-
-
 # complement the configuration
 configfile: "config.yaml"
-
 
 
 # do onstart/onexit things

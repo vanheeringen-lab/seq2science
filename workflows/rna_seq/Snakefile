@@ -1,33 +1,11 @@
-from snakemake.utils import validate
-
-
 # complement the configuration
 configfile: "config.yaml"
 
-<<<<<<< HEAD
-user_dirs = []
-for key, value in config.items():
-    if '_dir' in key:
-        user_dirs.append(key)
-
-for kw in ['aligner', 'bam_sorter']:
-    if isinstance(config.get(kw, None), str):
-        config[kw] = {config[kw]: {}}
-
-for schema in ['general', 'download', 'alignment_general', 'alignment_specific', 'gene_expression', 'assembly_hub']:
-    validate(config, schema=f"../../schemas/config/{schema}.schema.yaml")
-
-# do onstart/onexit things
-schemas = ['sample', 'assembly', 'strandedness']
-include: f"{config['rule_dir']}/configuration.smk"
-=======
 
 # do onstart/onexit things
 sample_schemas = ['sample', 'assembly', 'strandedness']
-config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific',
-                  'gene_expression', 'assembly_hub']
-include: f"../../rules/configuration.smk"
->>>>>>> 93b904104ca195e3a92ae6887a5a692326e95449
+config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific', 'gene_expression', 'assembly_hub']
+include: "../../rules/configuration.smk"
 
 
 # load the remaining relevant rules
