@@ -129,11 +129,11 @@ rule trackhub:
     input:
         unpack(get_bigfiles)
     output:
-        directory(expand("{result_dir}/trackhub", **config))
+        f"{config['result_dir']}/trackhub"
     log:
-        "{log_dir}/trackhub.log"
+        f"{config['log_dir']}/trackhub.log"
     benchmark:
-        expand("{benchmark_dir}/trackhub.log", **config)[0]
+        f"{config['benchmark_dir']}/trackhub.benchmark.txt"
     run:
         import os
         import re
