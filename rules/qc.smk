@@ -3,11 +3,11 @@ rule samtools_stats:
     Get general stats from bam files like percentage mapped.
     """
     input:
-        expand("{dedup_dir}/{{assembly}}-{{sample}}.{{bam_sorter}}-{{bam_sort_order}}.bam", **config)
+        expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config)
     output:
-        expand("{qc_dir}/dedup/{{assembly}}-{{sample}}.{{bam_sorter}}-{{bam_sort_order}}.samtools_stats.txt", **config)
+        expand("{qc_dir}/dedup/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.samtools_stats.txt", **config)
     log:
-        expand("{log_dir}/samtools_stats/{{assembly}}-{{sample}}-{{bam_sorter}}-{{bam_sort_order}}.log", **config)
+        expand("{log_dir}/samtools_stats/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config)
     conda:
         "../envs/samtools.yaml"
     shell:

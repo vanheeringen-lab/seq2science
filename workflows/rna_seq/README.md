@@ -1,13 +1,13 @@
 # RNA-seq
-Align samples against an assembly & count expressed genes. The pipeline can optionally perform differential expression analysis. 
+Align samples against an assembly, count expressed genes, generate bigwigs and perform differential expression analysis. 
+Bigwigs can be split for stranded protocols, and can be visualized in the automatically generated  assembly hub.  
 
 Samples can be your own fastq files, or GSM/ERR/SRR/SRA entries. The pipeline (automatically) handles both paired-end and single-end data.
-Alignment can be performed with multiple aligners. For RNA-seq, you can use STAR (or Salmon, WIP).
-Differential expression (DE) analysis can be performed either with DESeq2 (or EdgeR, WIP). 
+Alignment can be performed with multiple aligners. For RNA-seq, you can use STAR and Salmon (the latter requires an Ensembl assembly).
+Differential expression (DE) analysis is optional, but can be performed with DESeq2.
 
 <p align="center">
-    #DAG picture TODO
-    <#img src="https://raw.githubusercontent.com/vanheeringen-lab/snakemake-workflows/master/dag/alignment.svg?sanitize=true">
+    <img src="https://raw.githubusercontent.com/vanheeringen-lab/snakemake-workflows/master/dag/rna-seq.svg?sanitize=true">
 </p>
 
 ### Configuration

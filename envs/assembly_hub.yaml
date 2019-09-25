@@ -1,0 +1,7 @@
+name: assembly_hub
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - bioconda::ucsc-fatotwobit=377

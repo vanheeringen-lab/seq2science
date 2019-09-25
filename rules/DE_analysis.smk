@@ -2,6 +2,9 @@ def get_contrasts():
     """
     splits contrasts that contain multiple comparisons
     """
+    if not config.get('contrasts', False):
+        return []
+
     # contrasts from config
     old_contrasts = list(config["contrasts"])
 
@@ -71,10 +74,6 @@ rule deseq2:
     script:
         "../scripts/deseq2.R"
 
-# load DE analysis contrasts
-contrasts = ['']
-if config.get('contrasts', False):
-    contrasts = get_contrasts()
 
 rule blind_clustering:
     """
@@ -92,7 +91,6 @@ rule blind_clustering:
         expand("{benchmark_dir}/deseq2/{{assembly}}-clustering.benchmark.txt", **config)[0]
     threads: 4
     params:
-        samples=os.path.abspath(config["samples"]),
-        some_contrast=contrasts[0]
+        os.path.abspath(config["samples"])
     script:
         "../scripts/deseq2_clustering.R"
