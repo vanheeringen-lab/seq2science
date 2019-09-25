@@ -373,13 +373,13 @@ rule samtools_index:
     Create an index of a bam file which can be used for e.g. visualization.
     """
     input:
-        expand("{dedup_dir}/{{assembly}}-{{sample}}.{{bam_sorter}}-{{sorting}}.bam", **config)
+        expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config)
     output:
-        expand("{dedup_dir}/{{assembly}}-{{sample}}.{{bam_sorter}}-{{sorting}}.bai", **config)
+        expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bai", **config)
     log:
-        expand("{log_dir}/samtools_index/{{assembly}}-{{sample}}-{{bam_sorter}}-{{sorting}}.log", **config)
+        expand("{log_dir}/samtools_index/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config)
     benchmark:
-        expand("{benchmark_dir}/samtools_index/{{assembly}}-{{sample}}-{{bam_sorter}}-{{sorting}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/samtools_index/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.benchmark.txt", **config)[0]
     params:
         config['samtools_index']
     conda:
