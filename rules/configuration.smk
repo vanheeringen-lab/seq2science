@@ -275,7 +275,7 @@ def add_default_resources(func):
 
 
 # now add the wrapper to the workflow execute function
-# workflow.execute = add_default_resources(workflow.execute)
+workflow.execute = add_default_resources(workflow.execute)
 
 
 # functional but currently unused
