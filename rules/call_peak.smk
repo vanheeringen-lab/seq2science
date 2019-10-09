@@ -235,6 +235,12 @@ if 'condition' in samples:
                 return expand([f"{{result_dir}}/macs2/{wildcards.assembly}-{replicate}_pvalues.bdg"
                        for replicate in samples[(samples['assembly'] == wildcards.assembly) & (samples['condition'] == wildcards.condition)].index], **config)
 
+            def get_macs_replicate(wildcards):
+                assembly = wildcards.assembly
+                sample = (samples['condition'] == wildcards.condition).index
+                assert len(sample) == 1
+                return expand(f"{{result_dir}}/macs2/{assembly}-{sample[0]}_peaks.narrowPeak", **config)
+
             rule macs_bdgcmp:
                 """
                 """
@@ -254,13 +260,13 @@ if 'condition' in samples:
                     macs2 bdgcmp -t {input.treatment} -c {input.control} -m ppois -o {output} > {log} 2>&1
                     """
 
-            print(expand("{result_dir}/macs2/{{condition}}-{{assembly}}_peaks.narrowPeak", **config))
             rule macs_cmbreps:
                 """
                 Combine replicates through
                 """
                 input:
-                    get_macs_replicates
+                    bdgcmp=get_macs_replicates,
+                    treatment=get_macs_replicate
                 output:
                     bdg=temp(expand("{result_dir}/macs2/{{assembly,.+(?<!_pvalues)}}-{{condition}}.bdg", **config)),
                     tmppeaks=temp(expand("{result_dir}/macs2/{{assembly}}-{{condition}}_peaks.temp.narrowPeak", **config)),
@@ -274,10 +280,16 @@ if 'condition' in samples:
                 wildcard_constraints:
                     assembly=any_given('assembly'),
                     condition=any_given('condition')
-                params: nr_reps=lambda input: len(input)
+                params:
+                    nr_reps=lambda wildcards, input: len(input.bdgcmp)
                 shell:
                     """
-                    macs2 cmbreps -i {input} -o {output.bdg} -m fisher > {log} 2>&1
-                    macs2 bdgpeakcall -i {output.bdg} -o {output.tmppeaks}
-                    cat {output.tmppeaks} | tail -n +2 > {output.peaks}
+                    if [ "{params.nr_reps}" == "1" ]; then
+                        touch {output.bdg} {output.tmppeaks}
+                        cp {input.treatment} {output.peaks}
+                    else
+                        macs2 cmbreps -i {input.bdgcmp} -o {output.bdg} -m fisher > {log} 2>&1
+                        macs2 bdgpeakcall -i {output.bdg} -o {output.tmppeaks}
+                        cat {output.tmppeaks} | tail -n +2 > {output.peaks}
+                    fi
                     """

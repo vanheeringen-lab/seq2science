@@ -67,9 +67,6 @@ if 'condition' in samples:
     for condition in set(samples['condition']):
         for assembly in set(samples[samples['condition'] == condition]['assembly']):
             nr_samples = len(samples[(samples['condition'] == condition) & (samples['assembly'] == assembly)])
-            assert nr_samples >= 2,\
-            f'When specifying conditions every condition needs at least two samples, however you gave {nr_samples}'\
-            f' sample for condition {condition} and assembly {assembly}'
 
             if config.get('combine_replicates', '') == 'idr':
                 assert nr_samples == 2,\
@@ -278,7 +275,7 @@ def add_default_resources(func):
 
 
 # now add the wrapper to the workflow execute function
-workflow.execute = add_default_resources(workflow.execute)
+# workflow.execute = add_default_resources(workflow.execute)
 
 
 # functional but currently unused

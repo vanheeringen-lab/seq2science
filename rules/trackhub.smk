@@ -175,7 +175,7 @@ rule trackhub:
                         for sample in samples[samples['assembly'] == assembly].index:
                             if 'condition' in samples:
                                 if samples.loc[sample, 'condition'] not in conditions:
-                                    bigpeak = f"{config['result_dir']}/{peak_caller}/{samples.loc[sample, 'condition']}-{assembly}.bigNarrowPeak"
+                                    bigpeak = f"{config['result_dir']}/{peak_caller}/{assembly}-{samples.loc[sample, 'condition']}.bigNarrowPeak"
                                 else:
                                     bigpeak = False
                                 conditions.add(samples.loc[sample, 'condition'])
