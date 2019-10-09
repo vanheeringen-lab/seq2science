@@ -90,7 +90,8 @@ rule macs2_callpeak:
         genome=f"{config['genome_dir']}/{{assembly}}/{{assembly}}.fa",
         macs_params=config['peak_caller'].get('macs2', "")  # TODO: move to config.schema.yaml
     wildcard_constraints:
-        sample=any_given('sample')
+        sample=any_given('condition') if config.get('combine_replicates', '') == 'merge' else \
+               any_given('sample')
     conda:
         "../envs/macs2.yaml"
     shell:
