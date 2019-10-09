@@ -1,10 +1,10 @@
 def get_genrich_replicates(wildcards):
-    sample_condition, assembly = wildcards.fname.split('-')
+    assembly, sample_condition = wildcards.fname.split('-')
     if not 'condition' in samples.columns or config.get('combine_replicates', '') == 'merge' \
     or (sample_condition in samples.index and not sample_condition in samples['condition'].values):
         return expand(f"{{dedup_dir}}/{wildcards.fname}.sambamba-queryname.bam", **config)
     else:
-        return expand([f"{{dedup_dir}}/{replicate}-{assembly}.sambamba-queryname.bam"
+        return expand([f"{{dedup_dir}}/{assembly}-{replicate}.sambamba-queryname.bam"
         for replicate in samples[(samples['assembly'] == assembly) & (samples['condition'] == sample_condition)].index], **config)
 
 
