@@ -239,7 +239,6 @@ if 'condition' in samples:
             def get_macs_replicate(wildcards):
                 assembly = wildcards.assembly
                 sample = (samples['condition'] == wildcards.condition).index
-                assert len(sample) == 1
                 return expand(f"{{result_dir}}/macs2/{assembly}-{sample[0]}_peaks.narrowPeak", **config)
 
             rule macs_bdgcmp:
