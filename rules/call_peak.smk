@@ -1,10 +1,10 @@
 def get_genrich_replicates(wildcards):
-    sample_condition, assembly = wildcards.fname.split('-')
+    assembly, sample_condition = wildcards.fname.split('-')
     if not 'condition' in samples.columns or config.get('combine_replicates', '') == 'merge' \
     or (sample_condition in samples.index and not sample_condition in samples['condition'].values):
         return expand(f"{{dedup_dir}}/{wildcards.fname}.sambamba-queryname.bam", **config)
     else:
-        return expand([f"{{dedup_dir}}/{replicate}-{assembly}.sambamba-queryname.bam"
+        return expand([f"{{dedup_dir}}/{assembly}-{replicate}.sambamba-queryname.bam"
         for replicate in samples[(samples['assembly'] == assembly) & (samples['condition'] == sample_condition)].index], **config)
 
 
@@ -58,7 +58,8 @@ rule call_peak_genrich:
 config['macs2_types'] = ['control_lambda.bdg', 'summits.bed', 'peaks.narrowPeak',
                          'peaks.xls', 'treat_pileup.bdg']
 def get_fastqc(wildcards):
-    if config['layout'][wildcards.sample] == "SINGLE":
+    if config['layout'].get(wildcards.sample, False) == "SINGLE" or \
+       config['layout'].get(wildcards.assembly, False) == "SINGLE":
         return expand("{qc_dir}/fastqc/{{sample}}_trimmed_fastqc.zip", **config)
     return sorted(expand("{qc_dir}/fastqc/{{sample}}_{fqext1}_trimmed_fastqc.zip", **config))
 
@@ -88,6 +89,9 @@ rule macs2_callpeak:
                                       f"{wildcards.sample}_{config['fqext1']}",
         genome=f"{config['genome_dir']}/{{assembly}}/{{assembly}}.fa",
         macs_params=config['peak_caller'].get('macs2', "")  # TODO: move to config.schema.yaml
+    wildcard_constraints:
+        sample=any_given('condition') if config.get('combine_replicates', '') == 'merge' else \
+               any_given('sample')
     conda:
         "../envs/macs2.yaml"
     shell:
@@ -232,6 +236,12 @@ if 'condition' in samples:
                 return expand([f"{{result_dir}}/macs2/{wildcards.assembly}-{replicate}_pvalues.bdg"
                        for replicate in samples[(samples['assembly'] == wildcards.assembly) & (samples['condition'] == wildcards.condition)].index], **config)
 
+            def get_macs_replicate(wildcards):
+                assembly = wildcards.assembly
+                sample = (samples['condition'] == wildcards.condition).index
+                assert len(sample) == 1
+                return expand(f"{{result_dir}}/macs2/{assembly}-{sample[0]}_peaks.narrowPeak", **config)
+
             rule macs_bdgcmp:
                 """
                 """
@@ -251,26 +261,36 @@ if 'condition' in samples:
                     macs2 bdgcmp -t {input.treatment} -c {input.control} -m ppois -o {output} > {log} 2>&1
                     """
 
-
             rule macs_cmbreps:
                 """
                 Combine replicates through
                 """
                 input:
-                    get_macs_replicates
+                    bdgcmp=get_macs_replicates,
+                    treatment=get_macs_replicate
                 output:
-                    bdg=temp(expand("{result_dir}/macs2/{{condition}}-{{assembly,.+(?<!_pvalues)}}.bdg", **config)),
-                    tmppeaks=temp(expand("{result_dir}/macs2/{{condition}}-{{assembly}}_peaks.temp.narrowPeak", **config)),
-                    peaks=expand("{result_dir}/macs2/{{condition}}-{{assembly}}_peaks.narrowPeak", **config)
+                    bdg=temp(expand("{result_dir}/macs2/{{assembly,.+(?<!_pvalues)}}-{{condition}}.bdg", **config)),
+                    tmppeaks=temp(expand("{result_dir}/macs2/{{assembly}}-{{condition}}_peaks.temp.narrowPeak", **config)),
+                    peaks=expand("{result_dir}/macs2/{{assembly}}-{{condition}}_peaks.narrowPeak", **config)
                 log:
-                    expand("{log_dir}/macs_cmbreps/{{condition}}-{{assembly}}.log", **config)
+                    expand("{log_dir}/macs_cmbreps/{{assembly}}-{{condition}}.log", **config)
                 benchmark:
-                    expand("{benchmark_dir}/macs_cmbreps/{{condition}}-{{assembly}}.benchmark.txt", **config)[0]
+                    expand("{benchmark_dir}/macs_cmbreps/{{assembly}}-{{condition}}.benchmark.txt", **config)[0]
                 conda:
                     "../envs/macs2.yaml"
+                wildcard_constraints:
+                    assembly=any_given('assembly'),
+                    condition=any_given('condition')
+                params:
+                    nr_reps=lambda wildcards, input: len(input.bdgcmp)
                 shell:
                     """
-                    macs2 cmbreps -i {input} -o {output.bdg} -m fisher > {log} 2>&1
-                    macs2 bdgpeakcall -i {output.bdg} -o {output.tmppeaks}
-                    cat {output.tmppeaks} | tail -n +2 > {output.peaks}
+                    if [ "{params.nr_reps}" == "1" ]; then
+                        touch {output.bdg} {output.tmppeaks}
+                        cp {input.treatment} {output.peaks}
+                    else
+                        macs2 cmbreps -i {input.bdgcmp} -o {output.bdg} -m fisher > {log} 2>&1
+                        macs2 bdgpeakcall -i {output.bdg} -o {output.tmppeaks}
+                        cat {output.tmppeaks} | tail -n +2 > {output.peaks}
+                    fi
                     """
