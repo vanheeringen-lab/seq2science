@@ -58,7 +58,8 @@ rule call_peak_genrich:
 config['macs2_types'] = ['control_lambda.bdg', 'summits.bed', 'peaks.narrowPeak',
                          'peaks.xls', 'treat_pileup.bdg']
 def get_fastqc(wildcards):
-    if config['layout'][wildcards.sample] == "SINGLE":
+    if config['layout'].get(wildcards.sample, False) == "SINGLE" or \
+       config['layout'].get(wildcards.assembly, False) == "SINGLE":
         return expand("{qc_dir}/fastqc/{{sample}}_trimmed_fastqc.zip", **config)
     return sorted(expand("{qc_dir}/fastqc/{{sample}}_{fqext1}_trimmed_fastqc.zip", **config))
 
@@ -88,6 +89,8 @@ rule macs2_callpeak:
                                       f"{wildcards.sample}_{config['fqext1']}",
         genome=f"{config['genome_dir']}/{{assembly}}/{{assembly}}.fa",
         macs_params=config['peak_caller'].get('macs2', "")  # TODO: move to config.schema.yaml
+    wildcard_constraints:
+        sample=any_given('sample')
     conda:
         "../envs/macs2.yaml"
     shell:
@@ -251,7 +254,7 @@ if 'condition' in samples:
                     macs2 bdgcmp -t {input.treatment} -c {input.control} -m ppois -o {output} > {log} 2>&1
                     """
 
-
+            print(expand("{result_dir}/macs2/{{condition}}-{{assembly}}_peaks.narrowPeak", **config))
             rule macs_cmbreps:
                 """
                 Combine replicates through
@@ -259,15 +262,19 @@ if 'condition' in samples:
                 input:
                     get_macs_replicates
                 output:
-                    bdg=temp(expand("{result_dir}/macs2/{{condition}}-{{assembly,.+(?<!_pvalues)}}.bdg", **config)),
-                    tmppeaks=temp(expand("{result_dir}/macs2/{{condition}}-{{assembly}}_peaks.temp.narrowPeak", **config)),
-                    peaks=expand("{result_dir}/macs2/{{condition}}-{{assembly}}_peaks.narrowPeak", **config)
+                    bdg=temp(expand("{result_dir}/macs2/{{assembly,.+(?<!_pvalues)}}-{{condition}}.bdg", **config)),
+                    tmppeaks=temp(expand("{result_dir}/macs2/{{assembly}}-{{condition}}_peaks.temp.narrowPeak", **config)),
+                    peaks=expand("{result_dir}/macs2/{{assembly}}-{{condition}}_peaks.narrowPeak", **config)
                 log:
-                    expand("{log_dir}/macs_cmbreps/{{condition}}-{{assembly}}.log", **config)
+                    expand("{log_dir}/macs_cmbreps/{{assembly}}-{{condition}}.log", **config)
                 benchmark:
-                    expand("{benchmark_dir}/macs_cmbreps/{{condition}}-{{assembly}}.benchmark.txt", **config)[0]
+                    expand("{benchmark_dir}/macs_cmbreps/{{assembly}}-{{condition}}.benchmark.txt", **config)[0]
                 conda:
                     "../envs/macs2.yaml"
+                wildcard_constraints:
+                    assembly=any_given('assembly'),
+                    condition=any_given('condition')
+                params: nr_reps=lambda input: len(input)
                 shell:
                     """
                     macs2 cmbreps -i {input} -o {output.bdg} -m fisher > {log} 2>&1
