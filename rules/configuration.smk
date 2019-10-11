@@ -36,6 +36,14 @@ if config.get('peak_caller', False):
         assert all([config['layout'][sample] == 'PAIRED' for sample in samples.index]), \
         "HMMRATAC requires all samples to be paired end"
 
+    # collect which sorting we use
+    config['bam_sortings'] = []
+    if any([peak_caller in ['idr', 'macs2'] for peak_caller in config['peak_caller'].keys()]):
+        config['bam_sortings'].append('samtools-coordinate')
+    if any([peak_caller in ['genrich'] for peak_caller in config['peak_caller'].keys()]):
+        config['bam_sortings'].append('sambamba-queryname')
+
+
 # for alignment and rna-seq
 for conf_dict in ['aligner', 'diffexp']:
     if config.get(conf_dict, False):
@@ -275,7 +283,7 @@ def add_default_resources(func):
 
 
 # now add the wrapper to the workflow execute function
-workflow.execute = add_default_resources(workflow.execute)
+# workflow.execute = add_default_resources(workflow.execute)
 
 
 # functional but currently unused

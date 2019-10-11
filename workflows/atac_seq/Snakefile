@@ -14,6 +14,7 @@ include: f"{config['rule_dir']}/call_peak.smk"
 include: f"{config['rule_dir']}/get_genome.smk"
 include: f"{config['rule_dir']}/get_fastq.smk"
 include: f"{config['rule_dir']}/merge_replicates.smk"
+include: f"{config['rule_dir']}/peak_count.smk"
 include: f"{config['rule_dir']}/qc.smk"
 include: f"{config['rule_dir']}/trackhub.smk"
 include: f"{config['rule_dir']}/trimming.smk"
@@ -28,4 +29,8 @@ rule call_peaks_all:
     """
     input:
          expand("{result_dir}/trackhub", **config),
-         expand("{qc_dir}/multiqc_{assemblies}.html", **{**config, **{'assemblies': set(samples['assembly'])}})
+         # expand("{qc_dir}/multiqc_{assemblies}.html", **{**config, **{'assemblies': set(samples['assembly'])}})
+         expand(["{result_dir}/count_table/{peak_caller}/count_table_{assemblies}.{bam_sortings}.bed",
+                 "{qc_dir}/multiqc_{assemblies}.html"],
+                **{**config,
+                   **{'assemblies': set(samples['assembly']), 'peak_caller': config['peak_caller'].keys()}})
