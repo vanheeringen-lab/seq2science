@@ -41,7 +41,7 @@ rule call_peak_genrich:
     input:
         log=expand("{result_dir}/genrich/{{fname}}.log", **config)
     output:
-        narrowpeak= expand("{result_dir}/genrich/{{fname}}_peaks.narrowPeak", **config)
+        narrowpeak=expand("{result_dir}/genrich/{{fname}}_peaks.narrowPeak", **config)
     log:
         expand("{log_dir}/call_peak_genrich/{{fname}}_peak.log", **config)
     benchmark:
