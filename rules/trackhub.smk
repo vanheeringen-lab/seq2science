@@ -183,6 +183,7 @@ rule trackhub:
                             else:
                                 bigpeak = f"{config['result_dir']}/{peak_caller}/{assembly}-{sample}.bigNarrowPeak"
                                 sample_name = f"{sample}{peak_caller}PEAK"
+                            sample_name = trackhub.helpers.sanitize(sample_name)
 
                             if bigpeak:
                                 track = trackhub.Track(
