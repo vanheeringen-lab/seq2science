@@ -20,11 +20,28 @@ include: f"{config['rule_dir']}/trimming.smk"
 # load the quality control files
 quality_control = [get_trimming_qc, get_alignment_qc]
 
+def get_bams():
+    bamfiles = {}
+    bamfiles['bams'] = []; bamfiles['bais'] = []
+
+    # get all the bams
+    if config.get('combine_replicates', '') == 'merge' and 'condition' in samples:
+        for condition in set(samples['condition']):
+            for assembly in set(samples[samples['condition'] == condition]['assembly']):
+                bamfiles['bams'].extend(expand(f"{{dedup_dir}}/{assembly}-{condition}.{{bam_sorter}}-{{bam_sort_order}}.bam", **config))
+                if config['bam_sort_order'] == 'coordinate':
+                    bamfiles['bais'].extend(expand(f"{{dedup_dir}}/{assembly}-{condition}.{{bam_sorter}}-{{bam_sort_order}}.bai", **config))
+    else:
+        bamfiles['bams'] = [expand(f"{{dedup_dir}}/{samples.loc[sample]['assembly']}-{sample}.{{bam_sorter}}-{{bam_sort_order}}.bam", **config) for sample in samples.index]
+        bamfiles['bais'] = [expand(f"{{dedup_dir}}/{samples.loc[sample]['assembly']}-{sample}.{{bam_sorter}}-{{bam_sort_order}}.bai", **config) for sample in samples.index if config['bam_sort_order'] == 'coordinate']
+
+    return bamfiles
+
 rule align_all:
     """
     align each sample against its assembly
     """
     input:
-        [expand(f"{{dedup_dir}}/{samples.loc[sample]['assembly']}-{sample}.{{bam_sorter}}-{{bam_sort_order}}.bam", **config) for sample in samples.index],
-        [expand(f"{{dedup_dir}}/{samples.loc[sample]['assembly']}-{sample}.{{bam_sorter}}-{{bam_sort_order}}.bai", **config) for sample in samples.index if config['bam_sort_order'] == 'coordinate'],
+         get_bams()['bams'],
+         get_bams()['bais'],
          expand("{qc_dir}/multiqc_{assemblies}.html", **{**config, **{'assemblies': set(samples['assembly'])}})
