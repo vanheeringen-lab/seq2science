@@ -1,0 +1,11 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+description: snakemake-workflows replciate merging configuration
+
+properties:
+  # replicate handling
+  combine_replicates:
+    description: which method to use to combine replicates (concatenation, idr or fisher)
+    default: merge # for technical replicates
+    enum: [fisher, idr, merge]
+    type: string

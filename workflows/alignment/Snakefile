@@ -4,7 +4,7 @@ configfile: "config.yaml"
 
 # do onstart/onexit things
 sample_schemas = ['sample', 'assembly', 'strandedness']
-config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific']
+config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific', 'merge_replicates']
 include: "../../rules/configuration.smk"
 
 
@@ -12,6 +12,7 @@ include: "../../rules/configuration.smk"
 include: f"{config['rule_dir']}/alignment.smk"
 include: f"{config['rule_dir']}/get_genome.smk"
 include: f"{config['rule_dir']}/get_fastq.smk"
+include: f"{config['rule_dir']}/merge_replicates.smk"
 include: f"{config['rule_dir']}/qc.smk"
 include: f"{config['rule_dir']}/trimming.smk"
 
