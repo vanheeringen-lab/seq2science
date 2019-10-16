@@ -375,7 +375,7 @@ rule samtools_index:
     input:
         expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config)
     output:
-        expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bai", **config)
+        expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam.bai", **config)
     log:
         expand("{log_dir}/samtools_index/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config)
     benchmark:
