@@ -41,12 +41,12 @@ properties:
       bwa:
         properties:
           index:
-            default: '' # '-a bwtsw'
+            default: '-a bwtsw'
           align:
-            default: ''
+            default: '-M'
         default:
-          index: '' # '-a bwtsw'
-          align: ''
+          index: '-a bwtsw'
+          align: '-M'
       hisat2:
         properties:
           index:
