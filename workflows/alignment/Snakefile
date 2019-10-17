@@ -30,10 +30,10 @@ def get_bams():
             for assembly in set(samples[samples['condition'] == condition]['assembly']):
                 bamfiles['bams'].extend(expand(f"{{dedup_dir}}/{assembly}-{condition}.{{bam_sorter}}-{{bam_sort_order}}.bam", **config))
                 if config['bam_sort_order'] == 'coordinate':
-                    bamfiles['bais'].extend(expand(f"{{dedup_dir}}/{assembly}-{condition}.{{bam_sorter}}-{{bam_sort_order}}.bai", **config))
+                    bamfiles['bais'].extend(expand(f"{{dedup_dir}}/{assembly}-{condition}.{{bam_sorter}}-{{bam_sort_order}}.bam.bai", **config))
     else:
         bamfiles['bams'] = [expand(f"{{dedup_dir}}/{samples.loc[sample]['assembly']}-{sample}.{{bam_sorter}}-{{bam_sort_order}}.bam", **config) for sample in samples.index]
-        bamfiles['bais'] = [expand(f"{{dedup_dir}}/{samples.loc[sample]['assembly']}-{sample}.{{bam_sorter}}-{{bam_sort_order}}.bai", **config) for sample in samples.index if config['bam_sort_order'] == 'coordinate']
+        bamfiles['bais'] = [expand(f"{{dedup_dir}}/{samples.loc[sample]['assembly']}-{sample}.{{bam_sorter}}-{{bam_sort_order}}.bam.bai", **config) for sample in samples.index if config['bam_sort_order'] == 'coordinate']
 
     return bamfiles
 
