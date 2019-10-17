@@ -93,7 +93,8 @@ def get_qc_files(wildcards):
             qc.extend(get_trimming_qc(sample))
 
         for condition in set(samples.condition):
-            for function in quality_control[1:]:
+            for function in [func for func in quality_control if
+                             'get_trimming_qc' is not func.__name__]:
                 qc.extend(function(condition))
     else:
         for sample in samples[samples['assembly'] == wildcards.assembly].index:
