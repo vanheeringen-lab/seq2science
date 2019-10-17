@@ -4,7 +4,7 @@ configfile: "config.yaml"
 
 # do onstart/onexit things
 sample_schemas = ['sample', 'assembly', 'strandedness', 'condition']
-config_schemas = ['general', 'download', 'merge_replicates', 'alignment_general', 'peakcalling']
+config_schemas = ['general', 'download', 'alignment_general', 'peakcalling']
 include: "../../rules/configuration.smk"
 
 
