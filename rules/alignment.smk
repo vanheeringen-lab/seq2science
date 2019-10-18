@@ -87,6 +87,8 @@ elif config['aligner'] == 'bwa':
         params:
             prefix="{genome_dir}/{{assembly}}/index/bwa/{{assembly}}".format(**config),
             params=config['index']
+        resources:
+            mem_gb=5
         conda:
             "../envs/bwa.yaml"
         shell:
@@ -110,6 +112,8 @@ elif config['aligner'] == 'bwa':
         params:
             index_dir=expand("{genome_dir}/{{assembly}}/index/bwa/{{assembly}}", **config),
             params=config['align']
+        resources:
+            mem_gb=23
         threads: 20
         conda:
             "../envs/bwa.yaml"

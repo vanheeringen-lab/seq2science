@@ -24,6 +24,12 @@ properties:
     default: --quality 10 --length 20 --consider_already_trimmed 10
     type: string
 
+  # replicate handling
+  combine_replicates:
+    description: which method to use to combine replicates (concatenation, idr or fisher)
+    default: merge # for technical replicates
+    enum: [fisher, idr, merge]
+    type: string
 
   # aligner
   aligner:
@@ -41,12 +47,12 @@ properties:
       bwa:
         properties:
           index:
-            default: ''
-          align:
             default: '-a bwtsw'
+          align:
+            default: '-M'
         default:
-          index: ''
-          align: '-a bwtsw'
+          index: '-a bwtsw'
+          align: '-M'
       hisat2:
         properties:
           index:

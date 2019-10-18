@@ -68,9 +68,10 @@ samples.index = samples.index.map(str)
 
 # make sure that our samples.tsv and configuration work together (e.g. conditions)
 if 'condition' in samples:
-    if 'hmmratac' in config['peak_caller']:
-        assert config['combine_replicates'] == 'idr', \
-        f'HMMRATAC peaks can only be combined through idr'
+    if config['combine_replicates'] != 'merge':
+        if 'hmmratac' in config['peak_caller']:
+            assert config['combine_replicates'] == 'idr', \
+            f'HMMRATAC peaks can only be combined through idr'
 
     for condition in set(samples['condition']):
         for assembly in set(samples[samples['condition'] == condition]['assembly']):

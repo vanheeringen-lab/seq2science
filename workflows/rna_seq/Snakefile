@@ -15,6 +15,7 @@ include: f"{config['rule_dir']}/DE_analysis.smk"
 include: f"{config['rule_dir']}/gene_counts.smk"
 include: f"{config['rule_dir']}/get_genome.smk"
 include: f"{config['rule_dir']}/get_fastq.smk"
+include: f"{config['rule_dir']}/merge_replicates.smk"
 include: f"{config['rule_dir']}/qc.smk"
 include: f"{config['rule_dir']}/trimming.smk"
 

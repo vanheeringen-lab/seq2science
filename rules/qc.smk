@@ -87,9 +87,19 @@ def get_qc_files(wildcards):
                                            "variable 'quality_control' exists and contains all the "\
                                            "relevant quality control functions."
     qc = []
-    for sample in samples[samples['assembly'] == wildcards.assembly].index:
-        for function in quality_control:
-            qc.extend(function(sample))
+    if 'condition' in samples and config.get('combine_replicates', '') == 'merge':
+        # trimming qc on individual samples, other qc on merged replicates
+        for sample in samples[samples['assembly'] == wildcards.assembly].index:
+            qc.extend(get_trimming_qc(sample))
+
+        for condition in set(samples.condition):
+            for function in [func for func in quality_control if
+                             'get_trimming_qc' is not func.__name__]:
+                qc.extend(function(condition))
+    else:
+        for sample in samples[samples['assembly'] == wildcards.assembly].index:
+            for function in quality_control:
+                qc.extend(function(sample))
     return qc
 
 
@@ -137,21 +147,16 @@ def get_alignment_qc(sample):
     output = []
     if 'peak_caller' in config:
         if config['peak_caller'] in ['macs2', 'hmmratac']:
-            output.append(f"{{qc_dir}}/dedup/{samples.loc[sample]['assembly']}-{sample}.samtools-coordinate.metrics.txt")
-            output.append(f"{{qc_dir}}/dedup/{samples.loc[sample]['assembly']}-{sample}.samtools-coordinate.samtools_stats.txt")
+            output.append(f"{{qc_dir}}/dedup/{{{{assembly}}}}-{sample}.samtools-coordinate.metrics.txt")
+            output.append(f"{{qc_dir}}/dedup/{{{{assembly}}}}-{sample}.samtools-coordinate.samtools_stats.txt")
         if config['peak_caller'] in ['genrich']:
-            output.append(f"{{qc_dir}}/dedup/{samples.loc[sample]['assembly']}-{sample}.sambamba-queryname.metrics.txt")
-            output.append(f"{{qc_dir}}/dedup/{samples.loc[sample]['assembly']}-{sample}.sambamba-queryname.samtools_stats.txt")
+            output.append(f"{{qc_dir}}/dedup/{{{{assembly}}}}-{sample}.sambamba-queryname.metrics.txt")
+            output.append(f"{{qc_dir}}/dedup/{{{{assembly}}}}-{sample}.sambamba-queryname.samtools_stats.txt")
     else:
-        output.append(f"{{qc_dir}}/dedup/{samples.loc[sample]['assembly']}-{sample}.{{bam_sorter}}-{{bam_sort_order}}.metrics.txt")
-        output.append(f"{{qc_dir}}/dedup/{samples.loc[sample]['assembly']}-{sample}.{{bam_sorter}}-{{bam_sort_order}}.samtools_stats.txt")
-
+        output.append(f"{{qc_dir}}/dedup/{{{{assembly}}}}-{sample}.{{bam_sorter}}-{{bam_sort_order}}.metrics.txt")
+        output.append(f"{{qc_dir}}/dedup/{{{{assembly}}}}-{sample}.{{bam_sorter}}-{{bam_sort_order}}.samtools_stats.txt")
     return expand(output, **config)
 
 
 def get_peak_calling_qc(sample):
-    assembly = samples.loc[sample]['assembly']
-    if config.get('combine_replicates', "") == 'merge' and 'condition' in samples:
-        sample = samples.loc[sample, 'condition']
-
-    return expand(f"{{qc_dir}}/{{peak_caller}}/{assembly}-{sample}_featureCounts.txt.summary", **config)
+    return expand(f"{{qc_dir}}/{{peak_caller}}/{{{{assembly}}}}-{sample}_featureCounts.txt.summary", **config)
