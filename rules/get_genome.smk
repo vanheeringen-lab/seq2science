@@ -9,7 +9,7 @@ if config['aligner'] in ['salmon', 'star']:
     config['genomepy_temp'].extend(["annotation.bed.gz", "annotation.gff.gz"])
 
 
-rule get_genome:
+checkpoint get_genome:
     """
     Download a genome through genomepy.
     
@@ -97,35 +97,35 @@ rule get_annotation:
                             header = line.strip(">\n").split(' ')
                             break
 
-            with open(input.gtf[0], 'r') as gtf:
-                for line in gtf:
-                    if not line.startswith('#'):
-                        loc_id = line.strip().split('\t')[0]
-                        try:
-                            element = header.index(loc_id)
-                            break
-                        except:
-                            continue
+        with open(input.gtf[0], 'r') as gtf:
+            for line in gtf:
+                if not line.startswith('#'):
+                    loc_id = line.strip().split('\t')[0]
+                    try:
+                        element = header.index(loc_id)
+                        break
+                    except:
+                        continue
 
-            # build a conversion table
-            ids = {}
-            with open(input.fa[0], 'r') as fa:
-                for line in fa:
-                    if line.startswith('>'):
-                        line = line.strip(">\n").split(' ')
-                        if line[element] not in ids.keys():
-                            ids.update({line[element] : line[0]})
+        # build a conversion table
+        ids = {}
+        with open(input.fa[0], 'r') as fa:
+            for line in fa:
+                if line.startswith('>'):
+                    line = line.strip(">\n").split(' ')
+                    if line[element] not in ids.keys():
+                        ids.update({line[element] : line[0]})
 
-            # rename the location identifier in the gtf (using the conversion table)
-            with open(input.gtf[0], 'r') as oldgtf, open(output[0], 'w') as newgtf:
-                for line in oldgtf:
-                    line = line.split('\t')
-                    line[0] = ids[line[0]]
-                    line = '\t'.join(line)
-                    newgtf.write(line)
+        # rename the location identifier in the gtf (using the conversion table)
+        with open(input.gtf[0], 'r') as oldgtf, open(output[0], 'w') as newgtf:
+            for line in oldgtf:
+                line = line.split('\t')
+                line[0] = ids[line[0]]
+                line = '\t'.join(line)
+                newgtf.write(line)
 
-            shell("echo '\nRenaming successful! Deleting mismatched gtf file.' >> {log}")
-            shell('rm -f {input.gtf}')
+        shell("echo '\nRenaming successful! Deleting mismatched gtf file.' >> {log}")
+        shell('rm -f {input.gtf}')
 
 
 rule get_transcripts:
