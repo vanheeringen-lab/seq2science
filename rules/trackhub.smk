@@ -183,6 +183,7 @@ rule trackhub:
         import trackhub
         import pandas as pd
         from contextlib import redirect_stdout
+        orderkey = 4800
 
         # output to log
         with open(str(log), 'w') as f, redirect_stdout(f):
@@ -256,7 +257,8 @@ rule trackhub:
                             color='0,0,0',       # black
                             autoScale='on',      # allow the track to autoscale
                             tracktype='bigWig',  # required when making a track
-                            priority = priority
+                            priority=priority,
+                            maxHeightPixels='100:32:8'
                         )
 
                         # each track is added to the trackdb
