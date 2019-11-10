@@ -1,11 +1,17 @@
 #!/bin/bash
 
-for i in $1*/cell_ID_BAMs; do
-    truncate -s 0 ${i%cell_ID_BAMs}bam_file_list.txt
+#generate a empty bam_file_list.txt document
+
+for plate in $1plate*/
+do
+    truncate -s 0 ${plate}bam_file_list.txt
 done
 
-for bam in $(ls -l $1*/cell_ID_BAMs/*.bam | awk '{print $NF}'); do
-    path=$(echo ${bam} | cut -f 2 -d/)
-    echo ${bam} >> $1${path}/bam_file_list.txt
+for plate in $1plate*/
+do
+    for bamfile in ${plate}cell_ID_BAMs/*.bam
+    do
+        echo ${bamfile} >> ${plate}bam_file_list.txt
+    done
 done
 

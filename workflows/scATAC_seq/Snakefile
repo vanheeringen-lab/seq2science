@@ -6,10 +6,10 @@ include: "../../rules/trimming_scATAC.smk"
 include: "../../rules/hisat2_scATAC.smk"
 include: "../../rules/cell_id_BAM_scATAC.smk"
 include: "../../rules/list_bam_files_scATAC.smk"
-#include: "../../rules/merge_plates_scATAC.smk"
-#include: "../../rules/sort_plates_scATAC.smk"
-#include: "../../rules/create_SNAP_scATAC.smk"
-#include: "../../rules/bin_SNAP_scATAC"
+include: "../../rules/merge_plates_scATAC.smk"
+include: "../../rules/sort_plates_scATAC.smk"
+include: "../../rules/create_SNAP_scATAC.smk"
+include: "../../rules/bin_SNAP_scATAC.smk"
 
 from glob import iglob
 import pandas as pd
@@ -32,5 +32,5 @@ rule all:
         list(config['result_dir'] + samples['plate'] + '/hisat2_hg38_log/' + samples['cell'] + '_aln_sum.txt'),
         list(config['result_dir'] + samples['plate'] + '/cell_ID_BAMs/' + samples['cell'] + '.bam'),
         [config['result_dir'] + '{}/bam_file_list.txt'.format(i) for i in plate_vallues],
-        #[config['result_dir'] + '{}/f2q30_merged_sorted.bam'.format(i) for i in plate_vallues],
-        #[config['result_dir'] + 'Snapfiles/{}_binned_ordered.snap'.format(i) for i in plate_vallues]
+        [config['result_dir'] + '{}/f2q30_merged_sorted.bam'.format(i) for i in plate_vallues],
+        [config['result_dir'] + 'Snapfiles/{}_binned_ordered.snap'.format(i) for i in plate_vallues]
