@@ -1,12 +1,21 @@
-raw_data_loc = 'raw_data2/tet/'
-output_loc = 'processed_data_bitches/'
-genome_loc = '/home/jsmits/tools/hg38_scATAC/genome'
+# complement the configuration
+configfile: "config.yaml"
+
+# load the rules
+include: "../../rules/trimming_scATAC.smk"
+include: "../../rules/hisat2_scATAC.smk"
+include: "../../rules/cell_id_BAM_scATAC.smk"
+include: "../../rules/list_bam_files_scATAC.smk"
+#include: "../../rules/merge_plates_scATAC.smk"
+#include: "../../rules/sort_plates_scATAC.smk"
+#include: "../../rules/create_SNAP_scATAC.smk"
+#include: "../../rules/bin_SNAP_scATAC"
 
 from glob import iglob
 import pandas as pd
 
 #I make a list of all folders (./plate1, ./plate2 etc.) containing a fastq folder containing 'cell_identifier.fastq.gz' 
-r1 = iglob(str(raw_data_loc + '*/*_R1.fastq.gz'))
+r1 = iglob(str(config['raw_data_loc'] + '*/*_R1.fastq.gz'))
 samples = pd.DataFrame()
 samples['r1'] = [i for i in r1]
 
@@ -16,149 +25,12 @@ samples[['plate', 'cell']] = tmp[tmp.columns[-2:]]
 samples['cell'].replace(regex=True,inplace=True,to_replace=r'_R1.fastq.gz',value=r'')
 plate_vallues  = list(set(samples['plate'].values))
 
-
 rule all:
     input:
-        list(output_loc + samples['plate'] + '/trim_fq/' + samples['cell'] + '_R1_val_1.fq.gz'),
-        list(output_loc + samples['plate'] + '/hisat2_hg38_mapped/' + samples['cell'] + '_f2q30.bam'),
-        list(output_loc + samples['plate'] + '/hisat2_hg38_log/' + samples['cell'] + '_aln_sum.txt'),
-        list(output_loc + samples['plate'] + '/cell_ID_BAMs/' + samples['cell'] + '.bam'),
-        [output_loc + '{}/bam_file_list.txt'.format(i) for i in plate_vallues],
-        [output_loc + '{}/f2q30_merged_sorted.bam'.format(i) for i in plate_vallues],
-        [output_loc + 'Snapfiles/{}_binned_ordered.snap'.format(i) for i in plate_vallues]
-
-rule trim_galore_PE:
-    '''
-    Automated adapter detection, adapter trimming, and quality trimming through trim galore (paired-end).
-    '''	
-    input:
-        r1= raw_data_loc + '{plate}/{cell}_R1.fastq.gz',
-        r2= raw_data_loc + '{plate}/{cell}_R2.fastq.gz'
-    output:
-        r1= output_loc + '{plate}/trim_fq/{cell}_R1_val_1.fq.gz',
-        r2= output_loc + '{plate}/trim_fq/{cell}_R2_val_2.fq.gz'
-    conda:
-        'envs/trim_galore.yml'
-    params:
-        loc=raw_data_loc
-    shell:
-        '''trim_galore \
-        --paired \
-        -j 4 \
-        --quality 10 \
-        --length 20 \
-        --consider_already_trimmed 10 \
-        -o $(dirname {output.r1}) \
-        {input.r1} {input.r2}'''
-
-
-rule hisat2:
-    '''Use hisat2 to map the reads files to the genome hg38'''
-    input:
-        r1=output_loc + '{plate}/trim_fq/{cell}_R1_val_1.fq.gz',
-        r2=output_loc + '{plate}/trim_fq/{cell}_R2_val_2.fq.gz'
-    output:
-        bam=output_loc + '{plate}/hisat2_hg38_mapped/{cell}_f2q30.bam',
-        stats=output_loc + '{plate}/hisat2_hg38_log/{cell}_aln_sum.txt'
-    threads: 4
-    params:
-        genome=genome_loc
-    conda:
-        "envs/hisat2.yml"
-    shell:
-        ''' 
-        hisat2 -X 2000 -p {threads} --no-spliced-alignment -x {params.genome} -1 {input.r1} -2 {input.r2} --summary-file {output.stats} | \
-            samtools view -ShuF 4 -f 2 -q 30 - | \
-            samtools sort - -T {wildcards.cell}_tmp -o {output.bam}
-        '''
-
-rule cell_id_BAM:
-    '''add the cell ID to the Qname of the BAMfile of each cell'''
-    input:
-        output_loc + '{plate}/hisat2_hg38_mapped/{cell}_f2q30.bam',
-    output:
-        output_loc + '{plate}/cell_ID_BAMs/{cell}.bam'
-    conda:
-        "envs/python3.yml"
-    script:
-        'scripts/add_cell_ID.py'
-
-rule list_bam:
-    '''create a txt file containing a list of all BAM files per plate to merge the cingle cell BAM into a whole plate BAM'''
-    input:
-        expand(output_loc + '{plate}/cell_ID_BAMs/{cell}.bam', zip,
-               plate=samples['plate'],
-               cell=samples['cell'])
-    output:
-        expand(output_loc + '{plate}/bam_file_list.txt', plate= plate_vallues)
-    conda:
-        "envs/python3.yml"
-    shell:
-        ''' scripts/list_bam.sh {output_loc}
-        '''
-
-rule merge_plates:
-    '''Merge the bam files of individual cells (containing the cell ID in the qName of the BAM file) into one bam file per plate'''
-    input:
-        output_loc + '{plate}/bam_file_list.txt'
-    output:
-        output_loc + '{plate}/f2q30_merged.bam'
-    conda:
-        "envs/python3.yml"
-    shell:
-        ''' samtools merge -b {input} {output}
-        ''' 
-
-rule sort_plates_bam:
-    '''Sort the plate bamfiles'''
-    input:
-        output_loc + '{plate}/f2q30_merged.bam'
-    output:
-        output_loc + '{plate}/f2q30_merged_sorted.bam'
-    conda:
-        "envs/python3_2.yml"
-    shell:
-        '''samtools sort -n {input}>{output}
-        '''
-
-rule create_SNAP_object:
-    '''Create a snapobject for each BAM file, these snapobjects can be merged later using snaptools in R'''
-    input:
-        output_loc + '{plate}/f2q30_merged_sorted.bam'
-    output:
-        output_loc + '{plate}/merged_ordered.snap'
-    threads: 4
-    conda:
-        "envs/Snaptools.yml"
-    shell:
-        '''
-        snaptools snap-pre  \
-        --input-file={input}  \
-        --output-snap={output}  \
-        --genome-name=hg38  \
-        --genome-size="genome_files/HG38_chrom_sizes" \
-        --min-mapq=30  \
-        --min-flen=0  \
-        --max-flen=1000  \
-        --keep-chrm=TRUE  \
-        --keep-single=FALSE  \
-        --keep-secondary=FALSE  \
-        --overwrite=True  \
-        --min-cov=100  \
-        --verbose=True
-        '''
-
-rule create_bins_SNAP_object:
-    '''Add a Binned genome matrix with 5kb bins to the SNAPobject, after which it is renamed and moved to the Snapfiles folder for downstream analysis in R using Snaptools'''
-    input:
-        output_loc + '{plate}/merged_ordered.snap'
-    output:
-        output_loc + 'Snapfiles/{plate}_binned_ordered.snap'
-    conda:
-        "envs/Snaptools.yml"
-    shell:
-        ''' 
-        snaptools snap-add-bmat --snap-file={input} --bin-size-list 5000 --verbose=True
-        echo 'bmat added,moving file'
-        mv {input} {output}	
-        '''
+        list(config['result_dir'] + samples['plate'] + '/trim_fq/' + samples['cell'] + '_R1_val_1.fq.gz'),
+        list(config['result_dir'] + samples['plate'] + '/hisat2_hg38_mapped/' + samples['cell'] + '_f2q30.bam'),
+        list(config['result_dir'] + samples['plate'] + '/hisat2_hg38_log/' + samples['cell'] + '_aln_sum.txt'),
+        list(config['result_dir'] + samples['plate'] + '/cell_ID_BAMs/' + samples['cell'] + '.bam'),
+        [config['result_dir'] + '{}/bam_file_list.txt'.format(i) for i in plate_vallues],
+        #[config['result_dir'] + '{}/f2q30_merged_sorted.bam'.format(i) for i in plate_vallues],
+        #[config['result_dir'] + 'Snapfiles/{}_binned_ordered.snap'.format(i) for i in plate_vallues]
