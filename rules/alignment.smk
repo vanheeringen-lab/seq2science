@@ -11,10 +11,11 @@ def get_reads(wildcards):
 def get_alignment_pipes():
     pipes = {pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0])}
     if config.get('peak_caller', False) and 'genrich' in config['peak_caller']:
-        pipes.add(pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.sambamba.pipe", **config)[0]))
+        pipes.add(pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.sambamba-queryname.pipe", **config)[0]))
     else:
         pipes.add(pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{bam_sorter}-{bam_sort_order}.pipe", **config)[0]))
 
+    print(pipes)
     return pipes
 
 
