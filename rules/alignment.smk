@@ -15,7 +15,6 @@ def get_alignment_pipes():
     else:
         pipes.add(pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{bam_sorter}-{bam_sort_order}.pipe", **config)[0]))
 
-    print(pipes)
     return pipes
 
 
