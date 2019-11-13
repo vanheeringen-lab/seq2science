@@ -1,12 +1,4 @@
 import requests
-import re
-
-
-def get_defaultPos(sizefile):
-    # extract a default position spanning the first scaffold/chromosome in the sizefile.
-    with open(sizefile, 'r') as file:
-        dflt = file.readline().strip('\n').split('\t')
-    return dflt[0] + ':0-' + str(min(int(dflt[1]), 100000))
 
 
 rule bedgraphish_to_bedgraph:
@@ -107,6 +99,76 @@ rule narrowpeak_bignarrowpeak:
         """
 
 
+def get_strandedness(wildcards):
+    sample = f"{wildcards.sample}"
+    strandedness = samples["strandedness"].loc[sample]
+    return strandedness
+
+rule bam_stranded_bigwig:
+    """
+    Convert a bam file into two bigwig files, one for each strand    
+    """
+    input:
+        bam=expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config),
+        bai=expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam.bai", **config)
+    output:
+        forward=expand("{result_dir}/bigwigs/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.fwd.bw", **config),
+        reverse=expand("{result_dir}/bigwigs/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.rev.bw", **config),
+    params:
+        flags=config['bam_bigwig']['deeptools'],
+        strandedness=get_strandedness
+    wildcard_constraints:
+        sorting=config['bam_sort_order']
+    log:
+        expand("{log_dir}/bam_bigwig/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.log", **config),
+    benchmark:
+        expand("{benchmark_dir}/bam_bigwig/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.benchmark.txt", **config)[0]
+    conda:
+        "../envs/deeptools.yaml"
+    threads: 20
+    resources:
+        deeptools_limit=1
+    shell:
+        """       
+        direction1=forward
+        direction2=reverse
+        if [ {params.strandedness} == 'reverse' ]; then
+            direction1=reverse
+            direction2=forward
+        fi
+                    
+        bamCoverage --bam {input.bam} --outFileName {output.forward} --filterRNAstrand $direction1 --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1 &&        
+        bamCoverage --bam {input.bam} --outFileName {output.reverse} --filterRNAstrand $direction2 --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1
+        """
+
+rule bam_bigwig:
+    """
+    Convert a bam file into a bigwig file
+    """
+    input:
+        bam=expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config),
+        bai=expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam.bai", **config)
+    output:
+        expand("{result_dir}/bigwigs/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bw", **config)
+    params:
+        config['bam_bigwig']['deeptools']
+    wildcard_constraints:
+        sorting=config['bam_sort_order']
+    log:
+        expand("{log_dir}/bam_bigwig/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.log", **config),
+    benchmark:
+        expand("{benchmark_dir}/bam_bigwig/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.benchmark.txt", **config)[0]
+    conda:
+        "../envs/deeptools.yaml"
+    threads: 20
+    resources:
+        deeptools_limit=1
+    shell:
+        """
+        bamCoverage --bam {input.bam} --outFileName {output} --numberOfProcessors {threads} {params} --verbose >> {log} 2>&1
+        """
+
+
 rule twobit:
     """
     Generate a 2bit file for each assembly
@@ -126,6 +188,9 @@ rule twobit:
 
 
 def get_trackhub_files(wildcards):
+    """
+
+    """
     trackfiles = {key: [] for key in ['bigwigs', 'bigpeaks', 'twobits', 'annotations']}
 
     # check whether or not each assembly is supported by ucsc
@@ -143,31 +208,56 @@ def get_trackhub_files(wildcards):
         # now check if we have annotation for
         # TODO
 
-    # get all the peak files for all replicates or for the replicates combined
-    if 'condition' in samples:
-        for condition in set(samples['condition']):
-            for assembly in set(samples[samples['condition'] == condition]['assembly']):
-                trackfiles['bigpeaks'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{assembly}-{condition}.bigNarrowPeak", **config))
-    else:
-        for sample in samples.index:
-            trackfiles['bigpeaks'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{samples.loc[sample, 'assembly']}-{sample}.bigNarrowPeak", **config))
+    # Get the ATAC or RNA seq files
+    if 'atac_seq' in workflow.snakefile.split('/')[-2]:
+        # get all the peak files for all replicates or for the replicates combined
+        if 'condition' in samples:
+            for condition in set(samples['condition']):
+                for assembly in set(samples[samples['condition'] == condition]['assembly']):
+                    trackfiles['bigpeaks'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{assembly}-{condition}.bigNarrowPeak", **config))
+        else:
+            for sample in samples.index:
+                trackfiles['bigpeaks'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{samples.loc[sample, 'assembly']}-{sample}.bigNarrowPeak", **config))
 
-    # get all the bigwigs
-    if config.get('combine_replicates', '') == 'merge' and 'condition' in samples:
-        for condition in set(samples['condition']):
-            for assembly in set(samples[samples['condition'] == condition]['assembly']):
-                trackfiles['bigwigs'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{assembly}-{condition}.bw", **config))
-    else:
-        for sample in samples.index:
-            trackfiles['bigwigs'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{samples.loc[sample, 'assembly']}-{sample}.bw", **config))
+        # get all the bigwigs
+        if config.get('combine_replicates', '') == 'merge' and 'condition' in samples:
+            for condition in set(samples['condition']):
+                for assembly in set(samples[samples['condition'] == condition]['assembly']):
+                    trackfiles['bigwigs'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{assembly}-{condition}.bw", **config))
+        else:
+            for sample in samples.index:
+                trackfiles['bigwigs'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{samples.loc[sample, 'assembly']}-{sample}.bw", **config))
 
+    elif 'rna_seq' in workflow.snakefile.split('/')[-2]:
+        def get_bigwig_strand(sample):
+            if 'strandedness' in samples and config.get('bam_bigwig', False) and config.get('bam_bigwig').get('filter_by_strand', False):
+                strandedness = samples["strandedness"].loc[sample]
+                if strandedness in ['forward', 'yes', 'reverse']:
+                    return ['.fwd', '.rev']
+            return ['']
+
+        bigwigs = []
+        for sample in samples.index:
+            for bw in get_bigwig_strand(sample):
+                bw = expand(f"{{result_dir}}/bigwigs/{samples.loc[sample]['assembly']}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw", **config)
+                bigwigs.extend(bw)
+        return bigwigs
     return trackfiles
+
+
+def get_defaultPos(sizefile):
+    # extract a default position spanning the first scaffold/chromosome in the sizefile.
+    with open(sizefile, 'r') as file:
+        dflt = file.readline().strip('\n').split('\t')
+    return dflt[0] + ':0-' + str(min(int(dflt[1]), 100000))
 
 
 rule trackhub:
     """
-    Generate a trackhub which has to be hosted on your own machine, but can then be viewed through the UCSC genome
-    browser.
+    Generate a trackhub which has to be hosted on your own machine, but can then be viewed through 
+    the UCSC genome browser.
+    
+    Must be hosted on your own machine in order to be viewed through the UCSC genome browser.
     """
     input:
         unpack(get_trackhub_files)
