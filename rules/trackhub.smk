@@ -116,10 +116,10 @@ rule bam_stranded_bigwig:
         forward=expand("{result_dir}/bigwigs/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.fwd.bw", **config),
         reverse=expand("{result_dir}/bigwigs/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.rev.bw", **config),
     params:
-        flags=config['bam_bigwig']['deeptools'] if config.get('bam_bigwig', False) else ""
+        flags=config['bam_bigwig']['deeptools'] if config.get('bam_bigwig', False) else "",
         strandedness=get_strandedness
     wildcard_constraints:
-        sorting=config['bam_sort_order']
+        sorting=config['bam_sort_order'] if config.get('bam_sort_order', False) else ""
     log:
         expand("{log_dir}/bam_bigwig/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.log", **config),
     benchmark:
@@ -152,9 +152,9 @@ rule bam_bigwig:
     output:
         expand("{result_dir}/bigwigs/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bw", **config)
     params:
-        config['bam_bigwig']['deeptools']
+        config['bam_bigwig']['deeptools'] if config.get('bam_bigwig', False) else ""
     wildcard_constraints:
-        sorting=config['bam_sort_order']
+        sorting=config['bam_sort_order'] if config.get('bam_sort_order') else ""
     log:
         expand("{log_dir}/bam_bigwig/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.log", **config),
     benchmark:
