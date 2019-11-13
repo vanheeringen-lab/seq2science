@@ -82,6 +82,25 @@ rule fastqc:
         "fastqc {input} -O {params} > {log} 2>&1"
 
 
+rule InsertSizeMetrics:
+    """
+    Get the insert size metrics from a (paired-end) bam.
+    """
+    input:
+        expand("{dedup_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config)
+    output:
+        tsv=expand("{qc_dir}/InsertSizeMetrics/{{assembly}}-{{sample}}.tsv", **config),
+        pdf=expand("{qc_dir}/InsertSizeMetrics/{{assembly}}-{{sample}}.pdf", **config)
+    log:
+        f"{config['log_dir']}/InsertSizeMetrics/{{assembly}}-{{sample}}.log"
+    conda:
+        "../envs/picard.yaml"
+    shell:
+        """
+        picard CollectInsertSizeMetrics INPUT={input} OUTPUT={output.tsv} H={output.pdf} > {log} 2>&1
+        """
+
+
 def get_qc_files(wildcards):
     assert 'quality_control' in globals(), "When trying to generate multiqc output, make sure that the "\
                                            "variable 'quality_control' exists and contains all the "\
@@ -155,6 +174,10 @@ def get_alignment_qc(sample):
     else:
         output.append(f"{{qc_dir}}/dedup/{{{{assembly}}}}-{sample}.{{bam_sorter}}-{{bam_sort_order}}.metrics.txt")
         output.append(f"{{qc_dir}}/dedup/{{{{assembly}}}}-{sample}.{{bam_sorter}}-{{bam_sort_order}}.samtools_stats.txt")
+
+    if config['layout'][sample] == "PAIRED":
+        output.append(f"{{qc_dir}}/InsertSizeMetrics/{{{{assembly}}}}-{sample}.tsv")
+
     return expand(output, **config)
 
 
