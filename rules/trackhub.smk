@@ -104,6 +104,7 @@ def get_strandedness(wildcards):
     strandedness = samples["strandedness"].loc[sample]
     return strandedness
 
+
 rule bam_stranded_bigwig:
     """
     Convert a bam file into two bigwig files, one for each strand    
@@ -115,7 +116,7 @@ rule bam_stranded_bigwig:
         forward=expand("{result_dir}/bigwigs/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.fwd.bw", **config),
         reverse=expand("{result_dir}/bigwigs/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.rev.bw", **config),
     params:
-        flags=config['bam_bigwig']['deeptools'],
+        flags=config['bam_bigwig']['deeptools'] if config.get('bam_bigwig', False) else ""
         strandedness=get_strandedness
     wildcard_constraints:
         sorting=config['bam_sort_order']
