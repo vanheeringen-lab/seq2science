@@ -2,6 +2,7 @@
 configfile: "config.yaml"
 
 # load the rules
+
 include: "../../rules/trimming_scATAC.smk"
 include: "../../rules/hisat2_scATAC.smk"
 include: "../../rules/cell_id_BAM_scATAC.smk"
@@ -33,4 +34,4 @@ rule all:
         list(config['result_dir'] + samples['plate'] + '/cell_ID_BAMs/' + samples['cell'] + '.bam'),
         [config['result_dir'] + '{}/bam_file_list.txt'.format(i) for i in plate_vallues],
         [config['result_dir'] + '{}/f2q30_merged_sorted.bam'.format(i) for i in plate_vallues],
-        [config['result_dir'] + 'Snapfiles/{}_binned_ordered.snap'.format(i) for i in plate_vallues]
+        [config['result_dir'] + 'Snapfiles/{}_binned_ordered.snap'.format(i) for i in plate_vallues],
