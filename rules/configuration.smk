@@ -158,6 +158,9 @@ assert all(layout in ['SINGLE', 'PAIRED'] for sample, layout in config['layout']
 if len([sample for sample in samples.index if sample not in layout_cache]) is not 0:
     pickle.dump(config['layout'], open(layout_cachefile, "wb"))
 
+# now only keep the layout of samples that are in samples.tsv
+config['layout'] = {key: value for key, value in config['layout'].items() if key in samples.index}
+
 logger.info("Done!\n\n")
 
 # if samples are merged add the layout of the condition to the config
