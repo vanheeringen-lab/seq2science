@@ -1,3 +1,6 @@
+import os
+
+
 def get_reads(wildcards):
     if config.get('combine_replicates', '') == 'merge' and 'condition' in samples:
         if config['layout'].get(wildcards.sample, False) == "SINGLE":
@@ -372,6 +375,56 @@ rule samtools_sort:
         """
 
 
+rule blacklist:
+    """
+
+    """
+    input:
+        blacklist=expand("{genome_dir}/{{assembly}}/{{assembly}}.blacklist.bed.gz", **config),
+        bam=expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config)
+    output:
+        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.blacklisted.bam", **config)
+    conda:
+        "../envs/bedtools.yaml"
+    shell:
+        "intersectbed -v -abam {input.bam} -b {input.blacklist} > {output}"
+
+
+def get_bam(wildcards):
+    # make sure we downloaded the genome
+    checkpoints.get_genome.get(assembly=wildcards.assembly)
+
+    # get the blacklist file
+    blacklist = expand(f"{{genome_dir}}/{wildcards.assembly}/{wildcards.assembly}.blacklist.bed.gz", **config)
+
+    ext = "blacklisted.bam" if os.exists(blacklist) else "bam"
+    return expand(f"{{result_dir}}/{{aligner}}/{wildcards.assembly}-{wildcards.sample}.{wildcards.sorter}-{wildcards.sorting}.{ext}", **config)
+
+
+rule mark_duplicates:
+    """
+    Mark (but keep) all duplicate reads in a bam file with picard MarkDuplicates
+    """
+    input:
+        get_bam
+    output:
+        bam=    expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config),
+        metrics=expand("{qc_dir}/dedup/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.metrics.txt", **config)
+    log:
+        expand("{log_dir}/mark_duplicates/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/mark_duplicates/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.benchmark.txt", **config)[0]
+    params:
+        config['markduplicates']
+    resources:
+        mem_gb=5
+    conda:
+        "../envs/picard.yaml"
+    shell:
+        "picard MarkDuplicates {params} INPUT={input} "
+        "OUTPUT={output.bam} METRICS_FILE={output.metrics} > {log} 2>&1"
+
+
 rule samtools_index:
     """
     Create an index of a bam file which can be used for e.g. visualization.
@@ -392,27 +445,3 @@ rule samtools_index:
         """
         samtools index {params} {input} {output}
         """
-
-
-rule mark_duplicates:
-    """
-    Mark (but keep) all duplicate reads in a bam file with picard MarkDuplicates
-    """
-    input:
-        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config)
-    output:
-        bam=    expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config),
-        metrics=expand("{qc_dir}/dedup/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.metrics.txt", **config)
-    log:
-        expand("{log_dir}/mark_duplicates/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config)
-    benchmark:
-        expand("{benchmark_dir}/mark_duplicates/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.benchmark.txt", **config)[0]
-    params:
-        config['markduplicates']
-    resources:
-        mem_gb=5
-    conda:
-        "../envs/picard.yaml"
-    shell:
-        "picard MarkDuplicates {params} INPUT={input} "
-        "OUTPUT={output.bam} METRICS_FILE={output.metrics} > {log} 2>&1"
