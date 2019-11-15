@@ -34,6 +34,7 @@ rule count_all:
     count expressed genes per assembly and (optionally) perform differential expression analysis
     """
     input:
+        [expand(f"{{result_dir}}/{{aligner}}/{samples.loc[sample]['assembly']}-{sample}.{{bam_sorter}}-{{bam_sort_order}}.bam", **config) for sample in samples.index if config['bam_sort_order'] == 'coordinate'],
         bigwigs, # [expand(f"{{result_dir}}/bigwigs/{samples.loc[sample]['assembly']}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw", **config) for sample in samples.index for bw in get_bigwig_strand(sample) if config.get('bam_bigwig', False)],
         expand("{result_dir}/gene_counts/{assemblies}-counts.tsv",              **{**config, **{'assemblies': set(samples['assembly'])}}),
 
