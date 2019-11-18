@@ -276,6 +276,9 @@ rule trackhub:
         from contextlib import redirect_stdout
         orderkey = 4800
 
+        # make the output directory
+        shell(f"mkdir -p {output[0]}")
+
         # output to log
         with open(str(log), 'w') as f, redirect_stdout(f):
             # start a shared hub
