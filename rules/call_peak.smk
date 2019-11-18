@@ -1,5 +1,5 @@
 def get_genrich_replicates(wildcards):
-    assembly, sample_condition = wildcards.fname.split('-')
+    assembly, sample_condition = "-".join(wildcards.fname.split('-')[:-1]), wildcards.fname.split('-')[-1]
     if not 'condition' in samples.columns or config.get('combine_replicates', '') == 'merge' \
     or (sample_condition in samples.index and not sample_condition in samples['condition'].values):
         return expand(f"{{dedup_dir}}/{wildcards.fname}.sambamba-queryname.bam", **config)
@@ -131,11 +131,17 @@ rule keep_mates:
                 bam_in = pysam.AlignmentFile(input[0], "rb")
                 bam_out = pysam.AlignmentFile(output[0], "wb", template=bam_in)
                 for line in bam_in:
-                    if line.flag & second_in_pair:
-                        line.pos += line.template_length
+                    line.qname = line.qname + ('\\1' if line.flag & first_in_pair else '\\2')
                     line.next_reference_id = 0
                     line.next_reference_start = 0
-                    line.flag &= ~(paired + proper_pair + mate_unmapped + mate_reverse + first_in_pair + second_in_pair)
+                    line.flag &= ~(
+                                paired +
+                                proper_pair +
+                                mate_unmapped +
+                                mate_reverse +
+                                first_in_pair +
+                                second_in_pair
+                    )
 
                     bam_out.write(line)
 

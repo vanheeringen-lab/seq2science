@@ -22,18 +22,23 @@ quality_control = [get_trimming_qc, get_alignment_qc]
 
 def get_bams():
     bamfiles = {}
-    bamfiles['bams'] = []; bamfiles['bais'] = []
+    bamfiles['bams'] = set(); bamfiles['bais'] = set()
 
     # get all the bams
     if config.get('combine_replicates', '') == 'merge' and 'condition' in samples:
         for condition in set(samples['condition']):
             for assembly in set(samples[samples['condition'] == condition]['assembly']):
-                bamfiles['bams'].extend(expand(f"{{dedup_dir}}/{assembly}-{condition}.{{bam_sorter}}-{{bam_sort_order}}.bam", **config))
-                if config['bam_sort_order'] == 'coordinate':
-                    bamfiles['bais'].extend(expand(f"{{dedup_dir}}/{assembly}-{condition}.{{bam_sorter}}-{{bam_sort_order}}.bam.bai", **config))
+                bamfiles['bams'].update(expand(f"{{dedup_dir}}/{assembly}-{condition}.{{bam_sorter}}-{{bam_sort_order}}.bam", **config)[0])
+                bamfiles['bais'].update(expand(f"{{dedup_dir}}/{assembly}-{condition}.{{bam_sorter}}-{{bam_sort_order}}.bam.bai", **config)[0])
+                # always output samtools-coordinate
+                bamfiles['bams'].update(expand(f"{{dedup_dir}}/{assembly}-{condition}.samtools-coordinate.bam", **config)[0])
+                bamfiles['bais'].update(expand(f"{{dedup_dir}}/{assembly}-{condition}.samtools-coordinate.bam.bai", **config)[0])
     else:
-        bamfiles['bams'] = [expand(f"{{dedup_dir}}/{samples.loc[sample]['assembly']}-{sample}.{{bam_sorter}}-{{bam_sort_order}}.bam", **config) for sample in samples.index]
-        bamfiles['bais'] = [expand(f"{{dedup_dir}}/{samples.loc[sample]['assembly']}-{sample}.{{bam_sorter}}-{{bam_sort_order}}.bam.bai", **config) for sample in samples.index if config['bam_sort_order'] == 'coordinate']
+        bamfiles['bams'].update(expand(f"{{dedup_dir}}/{samples.loc[sample]['assembly']}-{sample}.{{bam_sorter}}-{{bam_sort_order}}.bam", **config)[0] for sample in samples.index)
+        bamfiles['bais'].update(expand(f"{{dedup_dir}}/{samples.loc[sample]['assembly']}-{sample}.{{bam_sorter}}-{{bam_sort_order}}.bam.bai", **config)[0] for sample in samples.index if config['bam_sort_order'] == 'coordinate')
+        # always output samtools-coordinate
+        bamfiles['bams'].update({expand(f"{{dedup_dir}}/{samples.loc[sample]['assembly']}-{sample}.samtools-coordinate.bam", **config)[0] for sample in samples.index})
+        bamfiles['bais'].update({expand(f"{{dedup_dir}}/{samples.loc[sample]['assembly']}-{sample}.samtools-coordinate.bam.bai", **config)[0] for sample in samples.index if config['bam_sort_order'] == 'coordinate'})
 
     return bamfiles
 
