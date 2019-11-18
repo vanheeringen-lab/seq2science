@@ -27,10 +27,10 @@ def get_multicov_replicates(file_ext):
     def wrapped(wildcards):
         if 'condition' in samples and config.get('combine_replicates', '') == 'merge':
             # if replicates' fastqs are merged get the merged bam
-            return expand([f"{{result_dir}}/dedup/{wildcards.assembly}-{replicate}.{wildcards.sorter}-{wildcards.sorting}.{file_ext}"
+            return expand([f"{{dedup_dir}}/{wildcards.assembly}-{replicate}.{wildcards.sorter}-{wildcards.sorting}.{file_ext}"
                 for replicate in set(samples[samples['assembly'] == wildcards.assembly]['condition'])], **config)
         # otherwise all the separate ones
-        return expand([f"{{result_dir}}/dedup/{wildcards.assembly}-{replicate}.{wildcards.sorter}-{wildcards.sorting}.{file_ext}"
+        return expand([f"{{dedup_dir}}/{wildcards.assembly}-{replicate}.{wildcards.sorter}-{wildcards.sorting}.{file_ext}"
             for replicate in samples[samples['assembly'] == wildcards.assembly].index], **config)
     return wrapped
 

@@ -21,8 +21,9 @@ sink(log, type="message")
 
 ## obtain coldata, the metadata input for DESeq2
 samples <- read.delim(samples_file, row.names=1, na.strings = "")
-# filter for assembly and remove NAs
+# filter for assembly, remove NAs and add random variables (not needed for blind clustering)
 coldata  <- samples[samples$assembly == assembly, 'assembly', drop = F]
+coldata[,1] <- factor(as.character(c(1:nrow(coldata))))
 
 
 ## filter counts to speed up DESeq
@@ -50,7 +51,7 @@ cat('\n')
 
 # transform the data
 main = 'Sample distance clustering (blind)'
-log_counts <- vst(dds, blind = TRUE)
+log_counts <- varianceStabilizingTransformation(dds, blind = TRUE)
 sampleDistMatrix <- as.matrix(dist(t(assay(log_counts))))
 rownames(sampleDistMatrix) <- colnames(counts(dds))
 colors <- colorRampPalette( rev(brewer.pal(9, "Blues")) )(255)
