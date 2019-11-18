@@ -40,10 +40,6 @@ def get_bams():
         bamfiles['bams'].update([expand(f"{{dedup_dir}}/{samples.loc[sample]['assembly']}-{sample}.samtools-coordinate.bam", **config)[0] for sample in samples.index])
         bamfiles['bais'].update([expand(f"{{dedup_dir}}/{samples.loc[sample]['assembly']}-{sample}.samtools-coordinate.bam.bai", **config)[0] for sample in samples.index if config['bam_sort_order'] == 'coordinate'])
 
-    # TODO: check if all 4 inputs for get_bams() is now correct. Maarten used update({...}) in the else statement for samtools and update(...) for the other 3 options (which crashed)
-    # print(bamfiles)
-    # exit(0)
-
     return bamfiles
 
 rule align_all:
