@@ -10,20 +10,7 @@ def get_contrasts():
 
     new_contrasts = []
     for contrast in old_contrasts:
-        original_contrast = contrast
-
-        # remove whitespaces (and '~'s if used)
-        contrast = contrast.replace(" ", "")
-        contrast = contrast.replace("~", "")
-
-        # split and store batch effect
-        batch = None
-        if '+' in contrast:
-            batch = contrast.split('+')[0]
-            contrast = contrast.split('+')[1]
-
-        # parse contrast
-        contrast = contrast.split('_')
+        original_contrast, contrast, batch = parse_DE_contrasts(contrast)
 
         l = len(contrast)
         if l == 1:
@@ -48,7 +35,6 @@ def get_contrasts():
 
     # get unique elements
     new_contrasts = list(set(new_contrasts))
-
     return new_contrasts
 
 
@@ -59,9 +45,7 @@ rule deseq2:
     input:
         expand("{result_dir}/gene_counts/{{assembly}}-counts.tsv", **config)
     output:
-        table=expand("{result_dir}/deseq2/{{assembly}}-{{contrast}}.diffexp.tsv", **config),
-        ma_plot=expand("{result_dir}/deseq2/{{assembly}}-{{contrast}}.ma_plot.svg", **config),
-        pca_plot=expand("{result_dir}/deseq2/{{assembly}}-{{contrast}}.pca_plot.svg", **config)
+        expand("{result_dir}/deseq2/{{assembly}}-{{contrast}}.diffexp.tsv", **config)
     conda:
         "../envs/deseq2.yaml"
     log:
