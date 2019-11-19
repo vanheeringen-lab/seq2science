@@ -47,11 +47,13 @@ rule merge_plates:
         get_all_cells_per_plate
     output:
         expand("{dedup_dir}/{{plate,plate\d}}.bam", **config)
+    log:
+        expand("{log_dir}/merge_plates/{{plate}}.log", **config)
     conda:
         "envs/samtools.yml"
     shell:
         ''' 
-        samtools merge -b {input} {output}
+        samtools merge -b {input} {output} > {log} 2>&1
         '''
 
 # TODO: implement sorting, best to reuse existing rule.
@@ -68,6 +70,8 @@ rule create_SNAP_object:
         expand("{dedup_dir}/{{plate}}.bam", **config)
     output:
         expand("{result_dir}/snap/{{plate}}.snap", **config)
+    log:
+        expand("{log_dir}/create_SNAP_object/{{plate}}.log", **config)
     threads: 4
     conda:
         "../envs/Snaptools.yml"
@@ -75,7 +79,7 @@ rule create_SNAP_object:
         config['snaptools_opt']
     shell:
         '''
-        snaptools snap-pre --input-file={input} --output-snap={output} {params}
+        snaptools snap-pre --input-file={input} --output-snap={output} {params} > {log} 2>&1
         '''
 
 
@@ -88,13 +92,15 @@ rule create_bins_SNAP_object:
         expand("{result_dir}/snap/{{plate}}.snap", **config)
     output:
         expand("{result_dir}/snap/{{plate}}.binned.snap", **config)
+    log:
+        expand("{log_dir}/create_bins_SNAP_object/{{plate}}.log", **config)
     conda:
         "../envs/Snaptools.yml"
     params:
         config['bin_opt']
     shell:
         ''' 
-        snaptools snap-add-bmat --snap-file={input} {params}
-        echo 'bmat added, moving file'
-        mv {input} {output}	
+        snaptools snap-add-bmat --snap-file={input} {params} > {log} 2>&1
+        echo 'bmat added, moving file' > {log} 2>&1
+        mv {input} {output}	> {log} 2>&1
         '''
