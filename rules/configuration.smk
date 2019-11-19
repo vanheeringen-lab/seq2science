@@ -36,13 +36,6 @@ if config.get('peak_caller', False):
         assert all([config['layout'][sample] == 'PAIRED' for sample in samples.index]), \
         "HMMRATAC requires all samples to be paired end"
 
-    # collect which sorting we use
-    config['bam_sortings'] = []
-    if any([peak_caller in ['idr', 'macs2'] for peak_caller in config['peak_caller'].keys()]):
-        config['bam_sortings'].append('samtools-coordinate')
-    if any([peak_caller in ['genrich'] for peak_caller in config['peak_caller'].keys()]):
-        config['bam_sortings'].append('sambamba-queryname')
-
 
 # for alignment and rna-seq
 for conf_dict in ['aligner', 'diffexp']:
@@ -164,6 +157,9 @@ assert all(layout in ['SINGLE', 'PAIRED'] for sample, layout in config['layout']
 # if new samples were added, update the cache
 if len([sample for sample in samples.index if sample not in layout_cache]) is not 0:
     pickle.dump(config['layout'], open(layout_cachefile, "wb"))
+
+# now only keep the layout of samples that are in samples.tsv
+config['layout'] = {key: value for key, value in config['layout'].items() if key in samples.index}
 
 logger.info("Done!\n\n")
 
