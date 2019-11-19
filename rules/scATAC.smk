@@ -45,7 +45,7 @@ rule merge_plates:
     input:
         get_all_cells_per_plate
     output:
-        expand("{{result_dir}}/{{aligner}}/{{assembly}}-{{plate,plate\d}}.samtools-coordinate.pipe", **config)
+        expand("{result_dir}/{aligner}/{{assembly}}-{{plate,plate\d}}.samtools-coordinate.pipe", **config)
     log:
         expand("{log_dir}/merge_plates/{{assembly}}-{{plate}}.log", **config)
     conda:
