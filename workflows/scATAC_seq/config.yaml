@@ -1,11 +1,22 @@
 # pipeline file locations
-result_dir: '../../../scATAC_Freya/' # where to store results
-raw_data_loc: '../../../raw_scATAC_fastq/'
-genome_dir: '/home/jsmits/tools/hg38_scATAC/genome'
+result_dir: ./  # where to store results
+genome_dir: ./  # where to look for or download the genomes
 
-#options of rules:
-trim_galore: "--paired -j 4 --quality 10 --length 20 --consider_already_trimmed 10"
-hisat2: "-X 2000 --no-spliced-alignment"
-samtools: "-ShuF 4 -f 2 -q 30 - " 
+#raw_data_loc: '../../../raw_scATAC_fastq/'
+
+aligner:
+  hisat2:
+    index:  # parameters for indexing
+      ''
+    align:  # parameters for alignment
+      '-X 2000 --no-spliced-alignment'
+
+fqext1: R1
+fqext2: R2
+
+##options of rules:
+#trim_galore: "--paired -j 4 --quality 10 --length 20 --consider_already_trimmed 10"
+#hisat2: "-X 2000 --no-spliced-alignment"
+#samtools: "-ShuF 4 -f 2 -q 30 - "
 snaptools_opt: --genome-name=hg38  --genome-size="genome_files/HG38_chrom_sizes" --min-mapq=30  --min-flen=0  --max-flen=1000  --keep-chrm=TRUE  --keep-single=FALSE  --keep-secondary=FALSE  --overwrite=True  --min-cov=100  --verbose=True
 bin_opt: --bin-size-list 5000 --verbose=True

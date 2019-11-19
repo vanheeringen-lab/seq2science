@@ -1,37 +1,29 @@
 # complement the configuration
 configfile: "config.yaml"
 
-# load the rules
+# do onstart/onexit things
+sample_schemas = ['sample', 'assembly']
+config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific']
+include: "../../rules/configuration.smk"
 
-include: "../../rules/trimming_scATAC.smk"
-include: "../../rules/hisat2_scATAC.smk"
-include: "../../rules/cell_id_BAM_scATAC.smk"
-include: "../../rules/list_bam_files_scATAC.smk"
-include: "../../rules/merge_plates_scATAC.smk"
-include: "../../rules/sort_plates_scATAC.smk"
-include: "../../rules/create_SNAP_scATAC.smk"
-include: "../../rules/bin_SNAP_scATAC.smk"
 
-from glob import iglob
-import pandas as pd
+# load all the relevant rules
+include: f"{config['rule_dir']}/alignment.smk"
+include: f"{config['rule_dir']}/get_genome.smk"
+include: f"{config['rule_dir']}/qc.smk"
+include: f"{config['rule_dir']}/scATAC.smk"
+include: f"{config['rule_dir']}/trimming.smk"
 
-#I make a list of all folders (./plate1, ./plate2 etc.) containing a fastq folder containing 'cell_identifier.fastq.gz' 
-r1 = iglob(str(config['raw_data_loc'] + '*/*_R1.fastq.gz'))
-samples = pd.DataFrame()
-samples['r1'] = [i for i in r1]
 
-#I save the variable of the folder name as a list of 'plate' variables, while the cell_identifier is saved as a list of 'cell' variables. These variables will be used in snakemake to make sure for each cell the pipeline runs correctly
-tmp = samples["r1"].str.split("/", expand = True) 
-samples[['plate', 'cell']] = tmp[tmp.columns[-2:]]
-samples['cell'].replace(regex=True,inplace=True,to_replace=r'_R1.fastq.gz',value=r'')
-plate_vallues  = list(set(samples['plate'].values))
+# set the quality_control functions
+quality_control = [get_trimming_qc, get_alignment_qc]
 
-rule all:
+
+rule snapATAC_all:
+    """
+    
+    """
     input:
-        list(config['result_dir'] + samples['plate'] + '/trim_fq/' + samples['cell'] + '_R1_val_1.fq.gz'),
-        list(config['result_dir'] + samples['plate'] + '/hisat2_hg38_mapped/' + samples['cell'] + '_f2q30.bam'),
-        list(config['result_dir'] + samples['plate'] + '/hisat2_hg38_log/' + samples['cell'] + '_aln_sum.txt'),
-        list(config['result_dir'] + samples['plate'] + '/cell_ID_BAMs/' + samples['cell'] + '.bam'),
-        [config['result_dir'] + '{}/bam_file_list.txt'.format(i) for i in plate_vallues],
-        [config['result_dir'] + '{}/f2q30_merged_sorted.bam'.format(i) for i in plate_vallues],
-        [config['result_dir'] + 'Snapfiles/{}_binned_ordered.snap'.format(i) for i in plate_vallues],
+         expand(["{qc_dir}/multiqc_{assemblies}.html"],
+                 **{**config,
+                    **{'assemblies': set(samples['assembly'])}})
