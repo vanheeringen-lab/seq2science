@@ -30,7 +30,7 @@ assert sorted(config['fqext'])[0] == config['fqext1']
 samples = pd.read_csv(config["samples"], sep='\t')
 # sanitize column names
 samples.columns = samples.columns.str.strip().str.replace(' ', '_')
-samples.columns = samples.columns.str.replace('[^A-Za-z0-9_.]+', '', regex=True)
+samples.columns = samples.columns.str.replace('[^A-Za-z0-9_.\-]+', '', regex=True)
 for column in samples.columns:
     assert column[0:7] not in ["Unnamed", ''], \
         ("\nEncountered unnamed column in " + config["samples"] +
@@ -38,7 +38,7 @@ for column in samples.columns:
 # sanitize table content
 samples = samples.applymap(lambda x: x.strip() if isinstance(x, str) else x)
 samples = samples.replace(' ', '_', regex=True)
-samples = samples.replace('[^A-Za-z0-9_.]+', '', regex=True)
+samples = samples.replace('[^A-Za-z0-9_.\-]+', '', regex=True)
 assert len(samples["sample"]) == len(set(samples["sample"])), \
     ("\nDuplicate samples found in " + config["samples"] + ":\n" +
      samples[samples.duplicated(['sample'], keep=False)].to_string() + '\n')
