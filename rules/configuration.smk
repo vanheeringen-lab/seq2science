@@ -235,11 +235,11 @@ def any_given(*args):
 # set global constraints on wildcards ({{sample}} or {{assembly}})
 if 'assembly' in samples:
     wildcard_constraints:
-        sample=any_given('sample', 'condition'),
+        sample=any_given('sample', 'condition') + '|plate\d',
         assembly=any_given('assembly')
 else:
     wildcard_constraints:
-        sample=any_given('sample', 'condition')
+        sample=any_given('sample', 'condition') + '|plate\d'
 
 
 # set default parameters (parallel downloads and memory)

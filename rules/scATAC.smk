@@ -3,9 +3,9 @@ rule cell_id_BAM:
     Add the cell ID to the Qname of the BAMfile of each cell.
     '''
     input:
-        expand("{dedup_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config)
+        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config)
     output:
-        expand("{dedup_dir}/{{assembly}}-{{sample}}.samtools-coordinate.cell_id.bam", **config)
+        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.cell_id.bam", **config)
     run:
         import pysam
         import os
@@ -30,11 +30,10 @@ def get_all_cells_per_plate(wildcards):
     Function that returns all bams that belong to a plate
     """
     cells = [cell for cell in samples.index if wildcards.plate in cell]
-    assembly = samples['assembly'][0]
     assert len(set(samples['assembly'])) == 1, "this logic has not been implemented (yet) for " \
-                                            "multiple assemblies."
+                                               "multiple assemblies at the same time."
 
-    bams = [expand(f"{{dedup_dir}}/{assembly}-{cell}.samtools-coordinate.cell_id.bam", **config)[0] for cell in cells]
+    bams = [expand(f"{{result_dir}}/{{aligner}}/{wildcards.assembly}-{cell}.samtools-coordinate.cell_id.bam", **config)[0] for cell in cells]
     return bams
 
 
@@ -46,9 +45,9 @@ rule merge_plates:
     input:
         get_all_cells_per_plate
     output:
-        expand("{dedup_dir}/{{plate,plate\d}}.bam", **config)
+        expand("{{result_dir}}/{{aligner}}/{{assembly}}-{{plate,plate\d}}.samtools-coordinate.pipe", **config)
     log:
-        expand("{log_dir}/merge_plates/{{plate}}.log", **config)
+        expand("{log_dir}/merge_plates/{{assembly}}-{{plate}}.log", **config)
     conda:
         "envs/samtools.yml"
     shell:
@@ -56,9 +55,12 @@ rule merge_plates:
         samtools merge -b {input} {output} > {log} 2>&1
         '''
 
-# TODO: implement sorting, best to reuse existing rule.
-# TODO: not sure how this would be done most easily (we could rename {{plate}}.bam -> {{plate}}.pipe
-# TODO: not sure how misleading that is :)
+
+def get_plate_bam(wildcards):
+    assert len(set(samples['assembly'])) == 1, "this logic has not been implemented (yet) for " \
+                                               "multiple assemblies at the same time."
+    return expand(f"{{dedup_dir}}/{samples['assembly'][0]}-{wildcards.plate}.samtools-coordinate.bam", **config)
+
 
 rule create_SNAP_object:
     '''
@@ -67,7 +69,7 @@ rule create_SNAP_object:
     These snapobjects can be merged later using snaptools in R.
     '''
     input:
-        expand("{dedup_dir}/{{plate}}.bam", **config)
+        get_plate_bam
     output:
         expand("{result_dir}/snap/{{plate}}.snap", **config)
     log:
