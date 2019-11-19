@@ -26,8 +26,31 @@ for schema in config_schemas:
 config['fqext'] = [config['fqext1'], config['fqext2']]
 assert sorted(config['fqext'])[0] == config['fqext1']
 
-# apply workflow specific changes
-# for atac-seq
+# read and sanitize the samples file
+samples = pd.read_csv(config["samples"], sep='\t')
+# sanitize column names
+samples.columns = samples.columns.str.strip().str.replace(' ', '_')
+samples.columns = samples.columns.str.replace('[^A-Za-z0-9_.]+', '', regex=True)
+for column in samples.columns:
+    assert column[0:7] not in ["Unnamed", ''], \
+        ("\nEncountered unnamed column in " + config["samples"] +
+         ".\nColumn names: " + str(', '.join(samples.columns)) + '.\n')
+# sanitize table content
+samples = samples.replace(' ', '_', regex=True)
+samples = samples.replace('[^A-Za-z0-9_.]+', '', regex=True)
+assert not samples.isnull().values.any() and '_' not in samples.values, \
+    ("\nEmpty values found in " + config["samples"] + '.:\n' +
+     samples.to_string() + '\n')
+
+# validate samples file
+for schema in sample_schemas:
+    validate(samples, schema=f"../schemas/samples/{schema}.schema.yaml")
+samples = samples.set_index('sample')
+samples.index = samples.index.map(str)
+
+
+# apply workflow specific changes...
+# ...for atac-seq
 if config.get('peak_caller', False):
     config['peak_caller'] = {k: v for k,v in config['peak_caller'].items()}
 
@@ -36,8 +59,7 @@ if config.get('peak_caller', False):
         assert all([config['layout'][sample] == 'PAIRED' for sample in samples.index]), \
         "HMMRATAC requires all samples to be paired end"
 
-
-# for alignment and rna-seq
+# ...for alignment and rna-seq
 for conf_dict in ['aligner', 'diffexp']:
     if config.get(conf_dict, False):
         dict_key = list(config[conf_dict].keys())[0]
@@ -45,21 +67,19 @@ for conf_dict in ['aligner', 'diffexp']:
             config[k] = v
         config[conf_dict] = dict_key
 
-# for alignment
+# ...for alignment
 if config.get('bam_sorter', False):
     config['bam_sort_order'] = list(config['bam_sorter'].values())[0]
     config['bam_sorter'] = list(config['bam_sorter'].keys())[0]
 
+try:
+    user_config = norns.config(config_file=workflow.overwrite_configfile)
+except:
+    user_config = norns.config(config_file='config.yaml')
 
-# read and validate the samples file
-samples = pd.read_csv(config["samples"], sep='\t')
-for schema in sample_schemas:
-    validate(samples, schema=f"../schemas/samples/{schema}.schema.yaml")
-samples['sample'] = samples['sample'].str.strip()
-samples = samples.set_index('sample')
-samples.index = samples.index.map(str)
 
-# make sure that our samples.tsv and configuration work together (e.g. conditions)
+# make sure that our samples.tsv and configuration work together...
+# ...on replicates
 if 'condition' in samples:
     if config['combine_replicates'] != 'merge':
         if 'hmmratac' in config['peak_caller']:
@@ -75,11 +95,66 @@ if 'condition' in samples:
                 f'For IDR to work you need two samples per condition, however you gave {nr_samples} samples for'\
                 f' condition {condition} and assembly {assembly}'
 
+# ...on DE contrasts
+def parse_DE_contrasts(de_contrast):
+    """
+    Extract batch and contrast groups from a DE contrast design
+    """
+    original_contrast = de_contrast
 
-try:
-    user_config = norns.config(config_file=workflow.overwrite_configfile)
-except:
-    user_config = norns.config(config_file='config.yaml')
+    # remove whitespaces (and '~'s if used)
+    de_contrast = de_contrast.replace(" ", "").replace("~", "")
+
+    # split and store batch effect
+    batch = None
+    if '+' in de_contrast:
+        batch =  de_contrast.split('+')[0]
+        de_contrast = de_contrast.split('+')[1]
+
+    # parse contrast
+    parsed_contrast = de_contrast.split('_')
+    return original_contrast, parsed_contrast, batch
+
+if config.get('contrasts', False):
+    # check differential gene expression contrasts
+    old_contrasts = list(config["contrasts"])
+    for contrast in old_contrasts:
+        original_contrast, parsed_contrast, batch = parse_DE_contrasts(contrast)
+
+        # Check if the column names can be recognized in the contrast
+        assert parsed_contrast[0] in samples.columns and parsed_contrast[0] not in ["sample", "assembly"], \
+            ('\nIn contrast design "' + original_contrast + '", "' + parsed_contrast[0] +
+             '" does not match any valid column name in ' + config["samples"] + '.\n')
+        if batch is not None:
+            assert batch in samples.columns and batch not in ["sample", "assembly"], \
+                ('\nIn contrast design "' + original_contrast + '", the batch effect "' +
+                 batch + '" does not match any valid column name in ' + config["samples"] + '.\n')
+
+        # Check if the groups described by the contrast can be identified and found in samples.tsv
+        l = len(parsed_contrast)
+        assert l < 4, ("\nA differential expression contrast couldn't be parsed correctly. "
+                       + str(l-1) + " groups were found in \n" + original_contrast + ' (groups: ' +
+                       ', '.join(parsed_contrast[1:]) + ').' +
+                       '\nPlease do not use whitespaces or underscores in your contrast, ' +
+                       '\nor in the columns in ' + config['samples'] + ' referenced by your contrast.\n')
+        if l == 1:
+            # check if contrast column has exactly 2 factor levels (per assembly)
+            tmp = samples[['assembly', parsed_contrast[0]]].dropna()
+            factors = pd.DataFrame(tmp.groupby('assembly')[parsed_contrast[0]].nunique())
+            assert all(factors[parsed_contrast[0]] == 2),\
+                ('\nYour contrast design, ' + original_contrast +
+                 ', contains only a column name (' + parsed_contrast[0] +
+                 '). \nIf you wish to compare all groups in this column, add a reference group. ' +
+                 'Number of groups found (per assembly): \n' + str(factors[parsed_contrast[0]]))
+        else:
+            # check if contrast column contains the groups
+            for group in parsed_contrast[1:]:
+                if group != 'all':
+                    assert str(group) in [str(i) for i in samples[parsed_contrast[0]].tolist()],\
+                        ('\nYour contrast design contains group ' + group +
+                        ' which cannot be found in column ' + parsed_contrast[0] +
+                         'of' + config["samples"] + '.\n')
+
 
 # make absolute paths, cut off trailing slashes
 for key, value in config.items():
@@ -93,6 +168,7 @@ for key, value in config.items():
     if '_dir' in key:
         if key not in ['result_dir', 'genome_dir', 'rule_dir'] and key not in user_config:
             config[key] = os.path.join(config['result_dir'], config[key])
+
 
 # check if a sample is single-end or paired end, and store it
 logger.info("Checking if samples are single-end or paired-end...")
@@ -176,53 +252,10 @@ for key, value in config.items():
 logger.info("\n\n")
 
 
-# if differential gene expression analysis is used, check all contrasts
-if config.get('contrasts', False):
-    old_contrasts = list(config["contrasts"])
-    for contrast in old_contrasts:
-        original_contrast = contrast
-
-        # remove whitespace
-        contrast = contrast.replace(" ", "")
-        contrast = contrast.replace("~", "")
-
-        # remove batch
-        batch = None
-        if '+' in contrast:
-            batch = contrast.split('+')[0]
-            contrast = contrast.split('+')[1]
-
-        # parse contrast
-        contrast = contrast.split('_')
-
-        # Check if the contrast can be recognized
-        assert contrast[0] in samples.columns, \
-            f'In contrast design {original_contrast}, {contrast[0]} does not match any column name in {config["samples"]}'
-        if batch is not None:
-            assert batch in samples.columns, \
-                f'In contrast design {original_contrast}, the batch effect {batch} does not match any column name in {config["samples"]}'
-
-        l = len(contrast)
-        if l == 1:
-            # check if contrast column has exactly 2 factor levels (per assembly)
-            tmp = samples[['assembly', contrast[0]]].dropna()
-            factors = pd.DataFrame(tmp.groupby('assembly')[contrast[0]].nunique())
-            assert all(factors[contrast[0]] == 2),\
-                f'Your contrast design, {original_contrast}, contains only a column name ({contrast[0]}), '\
-                f'If you wish to compare all groups in this column, add a reference group. \n'\
-                f'number of groups found (per assembly): \n'\
-                f'{factors[contrast[0]]}'
-        if l > 1:
-            # check if contrast column contains the groups
-            for group in contrast[1:]:
-                if group != 'all':
-                    assert str(group) in str(samples[contrast[0]].tolist()),\
-                    f'Your contrast design contains group {group}, '
-                    f'which cannot be found in column {contrast[0]} of {config["samples"]}'
-
-
-# regex compatible string of all elements in the samples.tsv column given by the input
 def any_given(*args):
+    """
+    returns a regex compatible string of all elements in the samples.tsv column given by the input
+    """
     elements = []
     for column_name in args:
         if column_name in samples:

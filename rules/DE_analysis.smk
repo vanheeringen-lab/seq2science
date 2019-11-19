@@ -10,20 +10,7 @@ def get_contrasts():
 
     new_contrasts = []
     for contrast in old_contrasts:
-        original_contrast = contrast
-
-        # remove whitespaces (and '~'s if used)
-        contrast = contrast.replace(" ", "")
-        contrast = contrast.replace("~", "")
-
-        # split and store batch effect
-        batch = None
-        if '+' in contrast:
-            batch = contrast.split('+')[0]
-            contrast = contrast.split('+')[1]
-
-        # parse contrast
-        contrast = contrast.split('_')
+        original_contrast, contrast, batch = parse_DE_contrasts(contrast)
 
         l = len(contrast)
         if l == 1:
@@ -41,17 +28,13 @@ def get_contrasts():
             for lvl in lvls:
                 new_contrast = batch + '+' + contrast[0] + '_' + reflvl + '_' + lvl if batch is not None else contrast[0] + '_' + reflvl + '_' + lvl
                 new_contrasts.append(new_contrast)
-        elif l == 3:
+        else:
             # remove '~', for uniformity
             new_contrast = original_contrast.replace("~", "").replace(" ", "")
             new_contrasts.append(new_contrast)
-        else:
-            print("Please do not use underscores in the samples file, column " + contrast[0] + '.\nDESeq2 suggests using only numbers, letters and periods.\n')
-            raise ImportError
 
     # get unique elements
     new_contrasts = list(set(new_contrasts))
-
     return new_contrasts
 
 
