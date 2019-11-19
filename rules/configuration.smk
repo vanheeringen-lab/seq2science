@@ -36,11 +36,12 @@ for column in samples.columns:
         ("\nEncountered unnamed column in " + config["samples"] +
          ".\nColumn names: " + str(', '.join(samples.columns)) + '.\n')
 # sanitize table content
+samples = samples.applymap(lambda x: x.strip() if isinstance(x, str) else x)
 samples = samples.replace(' ', '_', regex=True)
 samples = samples.replace('[^A-Za-z0-9_.]+', '', regex=True)
-assert not samples.isnull().values.any() and '_' not in samples.values, \
-    ("\nEmpty values found in " + config["samples"] + '.:\n' +
-     samples.to_string() + '\n')
+assert len(samples["sample"]) == len(set(samples["sample"])), \
+    ("\nDuplicate samples found in " + config["samples"] + ":\n" +
+     samples[samples.duplicated(['sample'], keep=False)].to_string() + '\n')
 
 # validate samples file
 for schema in sample_schemas:
