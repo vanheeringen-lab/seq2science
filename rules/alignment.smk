@@ -9,14 +9,12 @@ def get_reads(wildcards):
         return sorted(expand("{trimmed_dir}/{{sample}}_{fqext}_trimmed.{fqsuffix}.gz", **config))
 
 def get_alignment_pipes():
-    pipes = set()
-    if config.get('peak_caller', False):
-        if 'macs2' in config['peak_caller'] or 'hmmratac' in config['peak_caller']:
-            pipes.add(pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools.pipe", **config)[0]))
-        if 'genrich' in config['peak_caller']:
-            pipes.add(pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.sambamba.pipe", **config)[0]))
+    pipes = {pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0])}
+    if (config.get('peak_caller', False) and 'genrich' in config['peak_caller']) or \
+            config.get('snaptools_opt', False):
+        pipes.add(pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.sambamba-queryname.pipe", **config)[0]))
     else:
-        pipes.add(pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{bam_sorter}.pipe", **config)[0]))
+        pipes.add(pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{bam_sorter}-{bam_sort_order}.pipe", **config)[0]))
 
     return pipes
 
@@ -324,7 +322,7 @@ rule sambamba_sort:
     Sort the result of alignment with the sambamba sorter.
     """
     input:
-        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.sambamba.pipe", **config)
+        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.sambamba-{{sorting}}.pipe", **config)
     output:
         expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.sambamba-{{sorting}}.bam", **config)
     log:
@@ -349,7 +347,7 @@ rule samtools_sort:
     Sort the result of alignment with the samtools sorter.
     """
     input:
-        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools.pipe", **config)
+        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-{{sorting}}.pipe", **config)
     output:
         expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-{{sorting}}.bam", **config)
     log:
