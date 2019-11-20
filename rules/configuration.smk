@@ -236,10 +236,14 @@ def any_given(*args):
 if 'assembly' in samples:
     wildcard_constraints:
         sample=any_given('sample', 'condition') + '|plate\d',
-        assembly=any_given('assembly')
+        assembly=any_given('assembly'),
+        sorter="samtools|sambamba",
+        sorting="queryname|coordinate"
 else:
     wildcard_constraints:
-        sample=any_given('sample', 'condition') + '|plate\d'
+        sample=any_given('sample', 'condition') + '|plate\d',
+        sorter="samtools|sambamba",
+        sorting="queryname|coordinate"
 
 
 # set default parameters (parallel downloads and memory)

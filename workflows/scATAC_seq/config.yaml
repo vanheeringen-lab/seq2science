@@ -18,5 +18,5 @@ fqext2: R2
 #trim_galore: "--paired -j 4 --quality 10 --length 20 --consider_already_trimmed 10"
 #hisat2: "-X 2000 --no-spliced-alignment"
 #samtools: "-ShuF 4 -f 2 -q 30 - "
-snaptools_opt: --genome-name=hg38  --genome-size="genome_files/HG38_chrom_sizes" --min-mapq=30  --min-flen=0  --max-flen=1000  --keep-chrm=TRUE  --keep-single=FALSE  --keep-secondary=FALSE  --overwrite=True  --min-cov=100  --verbose=True
+snaptools_opt: --min-mapq=30  --min-flen=0  --max-flen=1000  --keep-chrm=TRUE  --keep-single=FALSE  --keep-secondary=FALSE  --overwrite=True  --min-cov=100  --verbose=True
 bin_opt: --bin-size-list 5000 --verbose=True

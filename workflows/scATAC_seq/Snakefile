@@ -19,8 +19,8 @@ include: f"{config['rule_dir']}/trimming.smk"
 
 # set the quality_control functions
 quality_control = [get_trimming_qc, get_alignment_qc]
-
 plates = set(re.findall('plate\d', ''.join(samples.index)))
+
 rule snapATAC_all:
     """
 

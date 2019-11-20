@@ -3,22 +3,22 @@ rule cell_id_BAM:
     Add the cell ID to the Qname of the BAMfile of each cell.
     '''
     input:
-        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config)
+        expand("{dedup_dir}/{{assembly}}-{{sample}}.sambamba-queryname.bam", **config)
     output:
-        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.cell_id.bam", **config)
+        expand("{result_dir}/cell_id/{{assembly}}-{{sample}}.sambamba-queryname.bam", **config)
     run:
         import pysam
         import os
 
-        path = output.split('/')[:-1]
+        path = '/'.join(output[0].split('/')[:-1])
         if not os.path.exists(path):
             os.makedirs(path)
 
-        samfile = pysam.AlignmentFile(input, "rb")
-        sam_out = pysam.AlignmentFile(output, "wb", template=samfile)
+        samfile = pysam.AlignmentFile(input[0], "rb")
+        sam_out = pysam.AlignmentFile(output[0], "wb", template=samfile)
 
         for read in samfile:
-            read.qname = f"{wildcards.sample}:{read.qname}"
+            read.qname = f"{wildcards.sample}-{read.qname}"
             sam_out.write(read)
 
         sam_out.close()
@@ -33,7 +33,7 @@ def get_all_cells_per_plate(wildcards):
     assert len(set(samples['assembly'])) == 1, "this logic has not been implemented (yet) for " \
                                                "multiple assemblies at the same time."
 
-    bams = [expand(f"{{result_dir}}/{{aligner}}/{wildcards.assembly}-{cell}.samtools-coordinate.cell_id.bam", **config)[0] for cell in cells]
+    bams = [expand(f"{{result_dir}}/cell_id/{wildcards.assembly}-{cell}.sambamba-queryname.bam", **config)[0] for cell in cells]
     return bams
 
 
@@ -45,21 +45,21 @@ rule merge_plates:
     input:
         get_all_cells_per_plate
     output:
-        expand("{result_dir}/{aligner}/{{assembly}}-{{plate,plate\d}}.samtools-coordinate.pipe", **config)
+        expand("{dedup_dir}/{{assembly}}-{{plate,plate\d}}.merged.sambamba-queryname.bam", **config)
     log:
         expand("{log_dir}/merge_plates/{{assembly}}-{{plate}}.log", **config)
     conda:
-        "envs/samtools.yml"
+        "../envs/samtools.yaml"
     shell:
         ''' 
-        samtools merge -b {input} {output} > {log} 2>&1
+        samtools merge {output} {input} > {log} 2>&1
         '''
 
 
 def get_plate_bam(wildcards):
     assert len(set(samples['assembly'])) == 1, "this logic has not been implemented (yet) for " \
                                                "multiple assemblies at the same time."
-    return expand(f"{{dedup_dir}}/{samples['assembly'][0]}-{wildcards.plate}.samtools-coordinate.bam", **config)
+    return expand(f"{{dedup_dir}}/{samples['assembly'][0]}-{wildcards.plate}.merged.sambamba-queryname.bam", **config)
 
 
 rule create_SNAP_object:
@@ -69,19 +69,22 @@ rule create_SNAP_object:
     These snapobjects can be merged later using snaptools in R.
     '''
     input:
-        get_plate_bam
+        bams=get_plate_bam,
+        genome_size=f"{config['genome_dir']}/{samples['assembly'][0]}/{samples['assembly'][0]}.fa.sizes"
     output:
-        expand("{result_dir}/snap/{{plate}}.snap", **config)
+        expand("{result_dir}/snap/{{plate,plate\d}}.snap", **config)
     log:
         expand("{log_dir}/create_SNAP_object/{{plate}}.log", **config)
     threads: 4
     conda:
-        "../envs/Snaptools.yml"
+        "../envs/snaptools.yaml"
     params:
-        config['snaptools_opt']
+        params=config['snaptools_opt'],
+        assembly=samples['assembly'][0]
     shell:
         '''
-        snaptools snap-pre --input-file={input} --output-snap={output} {params} > {log} 2>&1
+        snaptools snap-pre --input-file={input.bams} --output-snap={output} --genome-name={params.assembly} \
+        --genome-size={input.genome_size} {params.params} > {log} 2>&1
         '''
 
 
@@ -97,7 +100,7 @@ rule create_bins_SNAP_object:
     log:
         expand("{log_dir}/create_bins_SNAP_object/{{plate}}.log", **config)
     conda:
-        "../envs/Snaptools.yml"
+        "../envs/snaptools.yaml"
     params:
         config['bin_opt']
     shell:
