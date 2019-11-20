@@ -33,7 +33,6 @@ samples.columns = samples.columns.str.strip().str.replace(' ', '_')
 assert not any(samples.columns.str.contains('[^A-Za-z0-9_.\-]+', regex=True)), \
     ("\n" + config["samples"] + " may only contain letters, numbers and " +
     "underscores (_), periods (.), or minuses (-).\n")
-# samples.columns = samples.columns.str.replace('[^A-Za-z0-9_.\-]+', '', regex=True)
 for column in samples.columns:
     assert column[0:7] not in ["Unnamed", ''], \
         ("\nEncountered unnamed column in " + config["samples"] +
