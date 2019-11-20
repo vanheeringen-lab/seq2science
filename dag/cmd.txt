@@ -1,0 +1,2 @@
+cd into workflow
+$ snakemake --profile passer --rulegraph | dot -Tsvg > graph.svg
