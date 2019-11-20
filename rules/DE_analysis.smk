@@ -26,7 +26,7 @@ def get_contrasts():
             lvls.remove(reflvl)
 
             for lvl in lvls:
-                new_contrast = batch + '+' + contrast[0] + '_' + reflvl + '_' + lvl if batch is not None else contrast[0] + '_' + reflvl + '_' + lvl
+                new_contrast = batch + '+' + contrast[0] + '_' + '_' + lvl + reflvl if batch is not None else contrast[0] + '_' + '_' + lvl + reflvl
                 new_contrasts.append(new_contrast)
         else:
             # remove '~', for uniformity
