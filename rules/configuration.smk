@@ -39,7 +39,6 @@ for column in samples.columns:
          ".\nColumn names: " + str(', '.join(samples.columns)) + '.\n')
 # sanitize table content
 samples = samples.applymap(lambda x: x.strip() if isinstance(x, str) else x)
-samples = samples.replace(' ', '_', regex=True)
 assert not any([any(samples[col].str.contains('[^A-Za-z0-9_.\-]+', regex=True)) for col in samples]), \
     ("\n" + config["samples"] + " may only contain letters, numbers and " +
     "underscores (_), periods (.), or minuses (-).\n")
