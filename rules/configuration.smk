@@ -29,16 +29,18 @@ assert sorted(config['fqext'])[0] == config['fqext1']
 # read and sanitize the samples file
 samples = pd.read_csv(config["samples"], sep='\t')
 # sanitize column names
-samples.columns = samples.columns.str.strip().str.replace(' ', '_')
-samples.columns = samples.columns.str.replace('[^A-Za-z0-9_.]+', '', regex=True)
-for column in samples.columns:
-    assert column[0:7] not in ["Unnamed", ''], \
-        ("\nEncountered unnamed column in " + config["samples"] +
-         ".\nColumn names: " + str(', '.join(samples.columns)) + '.\n')
+samples.columns = samples.columns.str.strip()
+assert all([col[0:7] not in ["Unnamed", ''] for col in samples]), \
+    ("\nEncountered unnamed column in " + config["samples"] +
+     ".\nColumn names: " + str(', '.join(samples.columns)) + '.\n')
+assert not any(samples.columns.str.contains('[^A-Za-z0-9_.\-]+', regex=True)), \
+    ("\n" + config["samples"] + " may only contain letters, numbers and " +
+    "underscores (_), periods (.), or minuses (-).\n")
 # sanitize table content
-samples = samples.applymap(lambda x: x.strip() if isinstance(x, str) else x)
-samples = samples.replace(' ', '_', regex=True)
-samples = samples.replace('[^A-Za-z0-9_.]+', '', regex=True)
+samples = samples.applymap(lambda x: str(x).strip())
+assert not any([any(samples[col].str.contains('[^A-Za-z0-9_.\-]+', regex=True)) for col in samples]), \
+    ("\n" + config["samples"] + " may only contain letters, numbers and " +
+    "underscores (_), periods (.), or minuses (-).\n")
 assert len(samples["sample"]) == len(set(samples["sample"])), \
     ("\nDuplicate samples found in " + config["samples"] + ":\n" +
      samples[samples.duplicated(['sample'], keep=False)].to_string() + '\n')
