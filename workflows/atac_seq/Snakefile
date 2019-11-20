@@ -1,23 +1,11 @@
-from snakemake.utils import validate
-
-
 # complement the configuration
 configfile: "config.yaml"
 
-user_dirs = []
-for key, value in config.items():
-    if '_dir' in key:
-        user_dirs.append(key)
-
-if isinstance(config.get('aligner', None), str):
-    config['aligner'] = {config['aligner']: {}}
-
-for schema in ['general', 'download', 'alignment_general', 'peakcalling']:
-    validate(config, schema=f"../../schemas/config/{schema}.schema.yaml")
 
 # do onstart/onexit things
-schemas = ['sample', 'assembly', 'condition']
-include: f"{config['rule_dir']}/configuration.smk"
+sample_schemas = ['sample', 'assembly', 'strandedness', 'condition']
+config_schemas = ['general', 'download', 'alignment_general', 'peakcalling']
+include: "../../rules/configuration.smk"
 
 
 # load all the relevant rules
@@ -26,6 +14,7 @@ include: f"{config['rule_dir']}/call_peak.smk"
 include: f"{config['rule_dir']}/get_genome.smk"
 include: f"{config['rule_dir']}/get_fastq.smk"
 include: f"{config['rule_dir']}/merge_replicates.smk"
+include: f"{config['rule_dir']}/peak_count.smk"
 include: f"{config['rule_dir']}/qc.smk"
 include: f"{config['rule_dir']}/trackhub.smk"
 include: f"{config['rule_dir']}/trimming.smk"
@@ -34,11 +23,13 @@ include: f"{config['rule_dir']}/trimming.smk"
 # set the quality_control functions
 quality_control = [get_trimming_qc, get_alignment_qc, get_peak_calling_qc]
 
-
 rule call_peaks_all:
     """
     call peaks for each sample (or condition if applies)
     """
     input:
-         expand("{result_dir}/trackhub/", **config),
-         expand("{qc_dir}/multiqc_{assemblies}.html", **{**config, **{'assemblies': set(samples['assembly'])}})
+         expand("{result_dir}/trackhub", **config),
+         expand(["{result_dir}/count_table/{peak_caller}/count_table_{assemblies}.samtools-coordinate.bed",
+                 "{qc_dir}/multiqc_{assemblies}.html"],
+                **{**config,
+                   **{'assemblies': set(samples['assembly']), 'peak_caller': config['peak_caller'].keys()}})

@@ -1,0 +1,13 @@
+# tab-separated file of the samples
+samples: samples.tsv
+
+dedup_dir: ./star_dedups
+
+
+# which aligner to use
+aligner:
+  star:
+    index:  # parameters for indexing
+      ''
+    align:  # parameters for alignment
+      --readFilesCommand gunzip -c

@@ -1,5 +1,5 @@
 def get_reads(wildcards):
-    if config.get('combine_replicates', '') == 'merge':
+    if config.get('combine_replicates', '') == 'merge' and 'condition' in samples:
         if config['layout'].get(wildcards.sample, False) == "SINGLE":
             return expand("{trimmed_dir}/merged/{{sample}}_trimmed.{fqsuffix}.gz", **config)
         return sorted(expand("{trimmed_dir}/merged/{{sample}}_{fqext}_trimmed.{fqsuffix}.gz", **config))
@@ -9,14 +9,11 @@ def get_reads(wildcards):
         return sorted(expand("{trimmed_dir}/{{sample}}_{fqext}_trimmed.{fqsuffix}.gz", **config))
 
 def get_alignment_pipes():
-    pipes = set()
-    if config.get('peak_caller', False):
-        if 'macs2' in config['peak_caller'] or 'hmmratac' in config['peak_caller']:
-            pipes.add(pipe(expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}.samtools.pipe", **config)[0]))
-        if 'genrich' in config['peak_caller']:
-            pipes.add(pipe(expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}.sambamba.pipe", **config)[0]))
+    pipes = {pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0])}
+    if config.get('peak_caller', False) and 'genrich' in config['peak_caller']:
+        pipes.add(pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.sambamba-queryname.pipe", **config)[0]))
     else:
-        pipes.add(pipe(expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}.{bam_sorter}.pipe", **config)[0]))
+        pipes.add(pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{bam_sorter}-{bam_sort_order}.pipe", **config)[0]))
 
     return pipes
 
@@ -52,10 +49,10 @@ if config['aligner'] == 'bowtie2':
         output:
             get_alignment_pipes()
         log:
-            expand("{log_dir}/bowtie2_align/{{sample}}-{{assembly}}.log", **config)
+            expand("{log_dir}/bowtie2_align/{{assembly}}-{{sample}}.log", **config)
         group: 'alignment'
         benchmark:
-            expand("{benchmark_dir}/bowtie2_align/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
+            expand("{benchmark_dir}/bowtie2_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
         params:
             input=lambda wildcards, input: f'-U {input.reads}' if config['layout'][wildcards.sample] == 'SINGLE' else \
                                            f'-1 {input.reads[0]} -2 {input.reads[1]}',
@@ -87,6 +84,8 @@ elif config['aligner'] == 'bwa':
         params:
             prefix="{genome_dir}/{{assembly}}/index/bwa/{{assembly}}".format(**config),
             params=config['index']
+        resources:
+            mem_gb=5
         conda:
             "../envs/bwa.yaml"
         shell:
@@ -103,13 +102,15 @@ elif config['aligner'] == 'bwa':
         output:
             get_alignment_pipes()
         log:
-            expand("{log_dir}/bwa_mem/{{sample}}-{{assembly}}.log", **config)
+            expand("{log_dir}/bwa_mem/{{assembly}}-{{sample}}.log", **config)
         group: 'alignment'
         benchmark:
-            expand("{benchmark_dir}/bwa_mem/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
+            expand("{benchmark_dir}/bwa_mem/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
         params:
             index_dir=expand("{genome_dir}/{{assembly}}/index/bwa/{{assembly}}", **config),
             params=config['align']
+        resources:
+            mem_gb=23
         threads: 20
         conda:
             "../envs/bwa.yaml"
@@ -150,10 +151,10 @@ elif config['aligner'] == 'hisat2':
         output:
             get_alignment_pipes()
         log:
-            expand("{log_dir}/hisat2_align/{{sample}}-{{assembly}}.log", **config)
+            expand("{log_dir}/hisat2_align/{{assembly}}-{{sample}}.log", **config)
         group: 'alignment'
         benchmark:
-            expand("{benchmark_dir}/hisat2_align/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
+            expand("{benchmark_dir}/hisat2_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
         params:
             input=lambda wildcards, input: f'-U {input.reads}' if config['layout'][wildcards.sample] == 'SINGLE' else \
                                            f'-1 {input.reads[0]} -2 {input.reads[1]}',
@@ -199,24 +200,26 @@ elif config['aligner'] == 'salmon':
             reads=get_reads,
             index=expand("{genome_dir}/{{assembly}}/index/{aligner}", **config)
         output:
-            dir=directory(expand("{result_dir}/{aligner}/{{assembly}}/{{sample}}", **config)), #this could become a temp() directory, but quant.sf files are useful for other (currently unsupported) analyses
+            dir=directory(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}", **config)),
             pipe=get_alignment_pipes()
         log:
-            expand("{log_dir}/{aligner}_align/{{sample}}-{{assembly}}.log", **config)
+            expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}.log", **config)
         benchmark:
-            expand("{benchmark_dir}/{aligner}_align/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
+            expand("{benchmark_dir}/{aligner}_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
         params:
             input=lambda wildcards, input: f'-r {input.reads}' if config['layout'][wildcards.sample] == 'SINGLE' else \
                                            f'-1 {input.reads[0]} -2 {input.reads[1]}',
             params=config['align']
         threads: 20
+        resources:
+            mem_gb=8
         conda:
             "../envs/salmon.yaml"
         shell:
             """
             salmon quant -i {input.index} -l A {params.input} {params.params} -o {output.dir} \
-            --threads $(expr 4 * {threads} / 5) --writeMappings 2> {log} | \
-            samtools view -b - -@ $(expr {threads} / 5) | tee {output.pipe} 1> /dev/null 2>> {log}
+            --threads $(( 4 * {threads} / 5)) --writeMappings 2> {log} | \
+            samtools view -b - -@ $(( {threads} / 5)) | tee {output.pipe} 1> /dev/null 2>> {log}
             """
 
 
@@ -227,32 +230,56 @@ elif config['aligner'] == 'star':
         """
         input:
             genome = expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+            sizefile= expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
             gtf = expand("{genome_dir}/{{assembly}}/{{assembly}}.gtf", **config)
         output:
-            dir = directory(expand("{genome_dir}/{{assembly}}/index/{aligner}", **config)),
-            tmpdir = temp(directory(expand("{genome_dir}/{{assembly}}/index/{aligner}_tmp", **config)))
+            directory(expand("{genome_dir}/{{assembly}}/index/{aligner}", **config))
         log:
-            default = expand("{log_dir}/{aligner}_index/{{assembly}}.log", **config),
-            star = expand("{log_dir}/{aligner}_index/{{assembly}}_Log.out", **config)
+            expand("{log_dir}/{aligner}_index/{{assembly}}.log", **config)
         benchmark:
             expand("{benchmark_dir}/{aligner}_index/{{assembly}}.benchmark.txt", **config)[0]
         params:
-            config['star_index']
+            config['index']
         threads: 20
+        resources:
+            mem_gb=37
         conda:
             "../envs/star.yaml"
         shell:
             """
-            mkdir {output.dir}
-            mkdir {output.tmpdir}
+            function log2 {{
+                    local x=0
+                    for (( y=$1-1 ; $y > 0; y >>= 1 )) ; do
+                        let x=$x+1
+                    done
+                    echo $x
+            }}
             
-            STAR --runMode genomeGenerate --genomeFastaFiles {input.genome} --sjdbGTFfile {input.gtf} --genomeDir {output.dir} \
-            --runThreadN {threads} --outFileNamePrefix {output.tmpdir}/ {params} > {log.default} 2>&1
+            # set genome dependent variables
+            NBits=""
+            NBases=""
+            GenomeLength=$(awk -F"\t" '{{x+=$2}}END{{printf "%i", x}}' {input.sizefile})
+            NumberOfReferences=$(awk 'END{{print NR}}' {input.sizefile})
             
-            # STAR also creates an extended log.
-            if [ -f {output.tmpdir}/Log.out ]; then
-                mv {output.tmpdir}/Log.out {log.star}
+            if [[ $NumberOfReferences>5000 ]]; then
+                # for large genomes, --genomeChrBinNbits should be scaled to min(18,log2[max(GenomeLength/NumberOfReferences,ReadLength)])
+                # ReadLength is skipped here, as it is unknown
+                LpR=$(log2 $((GenomeLength / NumberOfReferences)))
+                NBits="--genomeChrBinNbits $(($LpR<18 ? $LpR : 18))"
+                printf "NBits: $NBits\n\n" >> {log} 2>&1
             fi
+            
+            if [[ $GenomeLength<268435456 ]]; then 
+                # for small genomes, --genomeSAindexNbases must be scaled down to min(14, log2(GenomeLength)/2-1)
+                logG=$(( $(log2 $GenomeLength) / 2 - 1 ))
+                NBases="--genomeSAindexNbases $(( $logG<14 ? $logG : 14 ))"
+                printf "NBases: $NBases\n\n" >> {log} 2>&1
+            fi
+            
+            mkdir -p {output}
+            
+            STAR --runMode genomeGenerate --genomeFastaFiles {input.genome} --sjdbGTFfile {input.gtf} --genomeDir {output} \
+            --runThreadN {threads} --outFileNamePrefix {output} $NBits $NBases {params} >> {log} 2>&1
             """
 
 
@@ -264,30 +291,28 @@ elif config['aligner'] == 'star':
             reads=get_reads,
             index=expand("{genome_dir}/{{assembly}}/index/{aligner}", **config)
         output:
-            tmpdir=temp(directory(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}", **config))),
+            dir =directory(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}", **config)),
             pipe=get_alignment_pipes()
         log:
-            directory(expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}", **config))
+            expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}.log", **config)
         benchmark:
-            expand("{benchmark_dir}/{aligner}_align/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
+            expand("{benchmark_dir}/{aligner}_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
         params:
             input=lambda wildcards, input: f' {input.reads}' if config['layout'][wildcards.sample] == 'SINGLE' else \
                                            f' {input.reads[0]} {input.reads[1]}',
-            flags=config['star_aln']
-        threads: 20
+            params=config['align']
+        threads: 1
+        resources:
+            mem_gb=30
         conda:
             "../envs/star.yaml"
         shell:
             """
-            mkdir {output.tmpdir}
-            mkdir {log}
+            mkdir -p {output.dir}
             
-            STAR --genomeDir {input.index} --readFilesIn {params.input} --outFileNamePrefix {output.tmpdir}/ --runThreadN {threads} {params.flags} \
-            --outSAMtype BAM Unsorted --outStd BAM_Unsorted | tee {output.pipe} 1> /dev/null 2>> {log}/Log.stderr.out
-            
-            if [ -d {output.tmpdir} ]; then
-                mv -f {output.tmpdir}/* {log}/
-            fi
+            STAR --genomeDir {input.index} --readFilesIn {params.input} --quantMode GeneCounts \
+            --outFileNamePrefix {output.dir}/ --runThreadN {threads} {params.params} \
+            --outSAMtype BAM Unsorted --outStd BAM_Unsorted | tee {output.pipe} 1> /dev/null 2>> {log}
             """
 
 
@@ -296,14 +321,14 @@ rule sambamba_sort:
     Sort the result of alignment with the sambamba sorter.
     """
     input:
-        expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}.sambamba.pipe", **config)
+        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.sambamba-{{sorting}}.pipe", **config)
     output:
-        expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}.sambamba-{{sorting}}.bam", **config)
+        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.sambamba-{{sorting}}.bam", **config)
     log:
-        expand("{log_dir}/bwa_mem/{{sample}}-{{assembly}}-sambamba_{{sorting}}.log", **config)
+        expand("{log_dir}/sambamba_sort/{{assembly}}-{{sample}}-sambamba_{{sorting}}.log", **config)
     group: 'alignment'
     benchmark:
-        expand("{benchmark_dir}/sambamba_sort/{{sample}}-{{assembly}}-{{sorting}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/sambamba_sort/{{assembly}}-{{sample}}-{{sorting}}.benchmark.txt", **config)[0]
     params:
         lambda wildcards: "-n" if wildcards.sorting == 'queryname' else '',
     threads: 4
@@ -321,18 +346,20 @@ rule samtools_sort:
     Sort the result of alignment with the samtools sorter.
     """
     input:
-        expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}.samtools.pipe", **config)
+        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-{{sorting}}.pipe", **config)
     output:
-        expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}.samtools-{{sorting}}.bam", **config)
+        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-{{sorting}}.bam", **config)
     log:
-        expand("{log_dir}/bwa_mem/{{sample}}-{{assembly}}-samtools_{{sorting}}.log", **config)
+        expand("{log_dir}/samtools_sort/{{assembly}}-{{sample}}-samtools_{{sorting}}.log", **config)
     group: 'alignment'
     benchmark:
-        expand("{benchmark_dir}/samtools_sort/{{sample}}-{{assembly}}-{{sorting}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/samtools_sort/{{assembly}}-{{sample}}-{{sorting}}.benchmark.txt", **config)[0]
     params:
         order=lambda wildcards: "-n" if wildcards.sorting == 'queryname' else '',
         threads=lambda wildcards, input, output, threads: threads - 1
     threads: 4
+    resources:
+        mem_mb=2500
     conda:
         "../envs/samtools.yaml"
     shell:
@@ -347,13 +374,13 @@ rule samtools_index:
     Create an index of a bam file which can be used for e.g. visualization.
     """
     input:
-        expand("{dedup_dir}/{{sample}}-{{assembly}}.{{bam_sorter}}-{{sorting}}.bam", **config)
+        expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config)
     output:
-        expand("{dedup_dir}/{{sample}}-{{assembly}}.{{bam_sorter}}-{{sorting}}.bai", **config)
+        expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam.bai", **config)
     log:
-        expand("{log_dir}/samtools_index/{{sample}}-{{assembly}}-{{bam_sorter}}-{{sorting}}.log", **config)
+        expand("{log_dir}/samtools_index/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config)
     benchmark:
-        expand("{benchmark_dir}/samtools_index/{{sample}}-{{assembly}}-{{bam_sorter}}-{{sorting}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/samtools_index/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.benchmark.txt", **config)[0]
     params:
         config['samtools_index']
     conda:
@@ -369,16 +396,18 @@ rule mark_duplicates:
     Mark (but keep) all duplicate reads in a bam file with picard MarkDuplicates
     """
     input:
-        expand("{result_dir}/{aligner}/{{sample}}-{{assembly}}.{{sorter}}-{{sorting}}.bam", **config)
+        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config)
     output:
-        bam=    expand("{dedup_dir}/{{sample}}-{{assembly}}.{{sorter}}-{{sorting}}.bam", **config),
-        metrics=expand("{qc_dir}/dedup/{{sample}}-{{assembly}}.{{sorter}}-{{sorting}}.metrics.txt", **config)
+        bam=    expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config),
+        metrics=expand("{qc_dir}/dedup/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.metrics.txt", **config)
     log:
-        expand("{log_dir}/mark_duplicates/{{sample}}-{{assembly}}-{{sorter}}-{{sorting}}.log", **config)
+        expand("{log_dir}/mark_duplicates/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config)
     benchmark:
-        expand("{benchmark_dir}/mark_duplicates/{{sample}}-{{assembly}}-{{sorter}}-{{sorting}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/mark_duplicates/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.benchmark.txt", **config)[0]
     params:
         config['markduplicates']
+    resources:
+        mem_gb=5
     conda:
         "../envs/picard.yaml"
     shell:

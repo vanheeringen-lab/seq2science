@@ -1,11 +1,3 @@
-extra_fn_clean_exts:
-    - '-'
-    - type: remove
-      pattern: _1
-    - type: remove
-      pattern: _pass
-
-
 module_order:
     - fastqc:
         name: 'FastQC (raw)'

@@ -1,6 +1,8 @@
 # tab-separated file of the samples
 samples: samples.tsv
 
+dedup_dir: ./salmon_dedups
+
 
 # which aligner to use
 aligner:

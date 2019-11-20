@@ -9,7 +9,7 @@ if config['aligner'] in ['salmon', 'star']:
     config['genomepy_temp'].extend(["annotation.bed.gz", "annotation.gff.gz"])
 
 
-rule get_genome:
+checkpoint get_genome:
     """
     Download a genome through genomepy.
     
@@ -78,60 +78,54 @@ rule get_annotation:
                     gtf_id = line.split('\t')[0]
                     break
 
-        matching = False
         with open(input.sizefile[0], 'r') as sizes:
             for line in sizes:
                 fa_id = line.split('\t')[0]
                 if fa_id == gtf_id:
-                    matching = True
+                    shell("echo 'genome and annotation have matching chromosome/scaffold names!' >> {log}")
+                    shell('mv {input.gtf} {output}')
                     break
+            else:
+                # generate a gtf with matching scaffold/chromosome IDs
+                shell("echo 'genome and annotation do not match, renaming gtf...' >> {log}")
 
-        if matching:
-            shell("echo 'genome and annotation have matching chromosome/scaffold names!' >> {log}")
-            shell('mv {input.gtf} {output}')
-
-        else:
-            # generate a gtf with matching scaffold/chromosome IDs
-            shell("echo 'genome and annotation do not match, renaming gtf...' >> {log}")
-
-            # determine which element in the genome.fasta's header contains the location identifiers used in the annotation.gtf
-            header = []
-            with open(input.fa[0], 'r') as fa:
-                for line in fa:
-                    if line.startswith('>'):
-                        header = line.strip(">\n").split(' ')
-                        break
-
-            with open(input.gtf[0], 'r') as gtf:
-                for line in gtf:
-                    if not line.startswith('#'):
-                        loc_id = line.strip().split('\t')[0]
-                        try:
-                            element = header.index(loc_id)
+                # determine which element in the genome.fasta's header contains the location identifiers used in the annotation.gtf
+                header = []
+                with open(input.fa[0], 'r') as fa:
+                    for line in fa:
+                        if line.startswith('>'):
+                            header = line.strip(">\n").split(' ')
                             break
-                        except:
-                            continue
 
-            # build a conversion table
-            ids = {}
-            with open(input.fa[0], 'r') as fa:
-                for line in fa:
-                    if line.startswith('>'):
-                        line = line.strip(">\n").split(' ')
-                        if line[element] not in ids.keys():
-                            ids.update({line[element] : line[0]})
+                with open(input.gtf[0], 'r') as gtf:
+                    for line in gtf:
+                        if not line.startswith('#'):
+                            loc_id = line.strip().split('\t')[0]
+                            try:
+                                element = header.index(loc_id)
+                                break
+                            except:
+                                continue
 
-            # rename the location identifier in the gtf (using the conversion table)
-            with open(input.gtf[0], 'r') as oldgtf:
-                with open(output[0], 'w') as newgtf:
+                # build a conversion table
+                ids = {}
+                with open(input.fa[0], 'r') as fa:
+                    for line in fa:
+                        if line.startswith('>'):
+                            line = line.strip(">\n").split(' ')
+                            if line[element] not in ids.keys():
+                                ids.update({line[element] : line[0]})
+
+                # rename the location identifier in the gtf (using the conversion table)
+                with open(input.gtf[0], 'r') as oldgtf, open(output[0], 'w') as newgtf:
                     for line in oldgtf:
                         line = line.split('\t')
                         line[0] = ids[line[0]]
                         line = '\t'.join(line)
                         newgtf.write(line)
 
-            shell("echo '\nRenaming successful! Deleting mismatched gtf file.' >> {log}")
-            shell('rm -f {input.gtf}')
+                shell("echo '\nRenaming successful! Deleting mismatched gtf file.' >> {log}")
+                shell('rm -f {input.gtf}')
 
 
 rule get_transcripts:

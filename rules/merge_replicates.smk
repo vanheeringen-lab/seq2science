@@ -12,8 +12,8 @@ if 'condition' in samples and config.get('combine_replicates', '') == 'merge':
         output:
             sorted(expand("{trimmed_dir}/merged/{{condition}}{{fqext}}_trimmed.{fqsuffix}.gz", **config))
         wildcard_constraints:
-            fqext=".*",
-            condition="[^/_]*"
+            condition=any_given('condition'),
+            fqext=f"_{config['fqext1']}|_{config['fqext2']}|" # nothing (SE), or fqext with an underscore (PE)
         log:
             expand("{log_dir}/merge_replicates/{{condition}}{{fqext}}.log", **config)
         benchmark:

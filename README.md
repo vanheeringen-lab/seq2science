@@ -18,3 +18,4 @@ The comprehensive snakemake workflows repository of the *vanheeringen lab*. Plea
 * [download fastq](https://github.com/vanheeringen-lab/snakemake-workflows/tree/master/workflows/download_fastq) for fast and easy downloading of SRAs and parsing of fastq files from the European Nucleotide Archive and the NCBI servers.
 * [alignment](https://github.com/vanheeringen-lab/snakemake-workflows/tree/master/workflows/alignment) for alignment of samples against any assembly with virtually any aligner.
 * [atac seq](https://github.com/vanheeringen-lab/snakemake-workflows/tree/master/workflows/atac_seq) for a complete atac-seq pipeline including peak calling and automated trackhub generation.
+* [rna seq](https://github.com/vanheeringen-lab/snakemake-workflows/tree/master/workflows/rna_seq) for basic gene counting and (optional) advanced differential expression analysis.
