@@ -19,14 +19,13 @@ include: f"{config['rule_dir']}/trimming.smk"
 
 # set the quality_control functions
 quality_control = [get_trimming_qc, get_alignment_qc]
-plates = set(re.findall('plate\d', ''.join(samples.index)))
 
 rule snapATAC_all:
     """
 
     """
     input:
-        [expand(f"{{result_dir}}/snap/{plate}.binned.snap", **config)[0] for plate in plates],
+        [expand(f"{{result_dir}}/snap/{plate}-{samples.loc[plate, 'assembly']}.binned.snap", **config)[0] for plate in samples.index],
         expand(["{qc_dir}/multiqc_{assemblies}.html"],
                  **{**config,
                     **{'assemblies': set(samples['assembly'])}})

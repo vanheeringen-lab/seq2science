@@ -139,6 +139,8 @@ for sample in [sample for sample in samples.index if sample not in layout_cache]
         config['layout'][sample] = tp.apply_async(get_layout, (sample,))
         # sleep 1.25 times the minimum required sleep time
         time.sleep(1.25 / (config.get('ncbi_requests', 3) // 2))
+    elif sample.startswith('plate'):
+        config['layout'][sample] ='PAIRED'
     else:
         raise ValueError(f"\nsample {sample} was not found..\n"
                          f"We checked for SE file:\n"
@@ -284,7 +286,7 @@ def add_default_resources(func):
 
 
 # now add the wrapper to the workflow execute function
-workflow.execute = add_default_resources(workflow.execute)
+# workflow.execute = add_default_resources(workflow.execute)
 
 
 # functional but currently unused
