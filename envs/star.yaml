@@ -4,4 +4,4 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - bioconda::star=2.7.2a
+  - bioconda::star=2.7.*

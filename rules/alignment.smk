@@ -260,8 +260,7 @@ elif config['aligner'] == 'star':
             NBases=""
             GenomeLength=$(awk -F"\t" '{{x+=$2}}END{{printf "%i", x}}' {input.sizefile})
             NumberOfReferences=$(awk 'END{{print NR}}' {input.sizefile})
-            
-            if [[ $NumberOfReferences>5000 ]]; then
+            if [ $NumberOfReferences -gt 5000 ]; then
                 # for large genomes, --genomeChrBinNbits should be scaled to min(18,log2[max(GenomeLength/NumberOfReferences,ReadLength)])
                 # ReadLength is skipped here, as it is unknown
                 LpR=$(log2 $((GenomeLength / NumberOfReferences)))
@@ -269,7 +268,7 @@ elif config['aligner'] == 'star':
                 printf "NBits: $NBits\n\n" >> {log} 2>&1
             fi
             
-            if [[ $GenomeLength<268435456 ]]; then 
+            if [ $GenomeLength -lt 268435456 ]; then
                 # for small genomes, --genomeSAindexNbases must be scaled down to min(14, log2(GenomeLength)/2-1)
                 logG=$(( $(log2 $GenomeLength) / 2 - 1 ))
                 NBases="--genomeSAindexNbases $(( $logG<14 ? $logG : 14 ))"
@@ -278,8 +277,9 @@ elif config['aligner'] == 'star':
             
             mkdir -p {output}
             
-            STAR --runMode genomeGenerate --genomeFastaFiles {input.genome} --sjdbGTFfile {input.gtf} --genomeDir {output} \
-            --runThreadN {threads} --outFileNamePrefix {output} $NBits $NBases {params} >> {log} 2>&1
+            STAR --runMode genomeGenerate --genomeFastaFiles {input.genome} --sjdbGTFfile {input.gtf} \
+            --genomeDir {output} --outFileNamePrefix {output}/ \
+            --runThreadN {threads} $NBits $NBases {params} >> {log} 2>&1
             """
 
 
