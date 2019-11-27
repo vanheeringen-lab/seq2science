@@ -1,11 +1,9 @@
 *config*.yaml
-*.tsv
+*samples*.tsv
 *.pyc
+slurm*.out
+report.html
 .idea/
 .snakemake/
-log/
-benchmark/
-slurm*.out
-config.yaml
-samples.tsv
-report.html
+test_GRCh38.p12/
+results/
