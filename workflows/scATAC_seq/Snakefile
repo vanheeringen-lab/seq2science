@@ -22,9 +22,9 @@ quality_control = [get_trimming_qc, get_alignment_qc]
 
 rule snapATAC_all:
     """
-
     """
     input:
+        config['result_dir'] + '/plates_overview.csv' ,
         [expand(f"{{result_dir}}/snap/{plate}-{samples.loc[plate, 'assembly']}.binned.snap", **config)[0] for plate in samples.index],
         expand(["{qc_dir}/multiqc_{assemblies}.html"],
                  **{**config,

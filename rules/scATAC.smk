@@ -2,6 +2,18 @@ def all_cells_for_plate(wildcards):
     import glob
     return glob.glob(expand(f"{{fastq_dir}}/{wildcards.sample}/*{{fqsuffix}}.gz", **config)[0])
 
+rule annotation_scATAC:
+    '''Generates a file mapping all plates and wells to primer numbers. Needed for downstream cell type linking in the SNAPobject'''
+    input:
+        config['annotation_file']
+    output:
+        config['result_dir'] + '/plates_overview.csv'
+    conda:
+        "../envs/annotation_scATAC.yml"
+    params:
+        config['result_dir'] + '/scATAC_plate_primer_well.tsv'
+    script:
+        '../scripts/annotate_scATAC.py'
 
 rule cell_ID2_fastq_ID:
     '''
@@ -10,8 +22,8 @@ rule cell_ID2_fastq_ID:
     input:
         all_cells_for_plate
     output:
-        R1=temp(expand("{fastq_dir}/{{sample}}_{fqext1}.{fqsuffix}.gz", **config)),
-        R2=temp(expand("{fastq_dir}/{{sample}}_{fqext2}.{fqsuffix}.gz", **config))
+        R1=temp(expand("{fastq_dir}/pre-{{sample}}_{fqext1}.{fqsuffix}.gz", **config)),
+        R2=temp(expand("{fastq_dir}/pre-{{sample}}_{fqext2}.{fqsuffix}.gz", **config))
     run:
         cells = set(cell[:-(3+len(config['fqsuffix'])+1+len(config['fqext1']))] for cell in input)
         assert len(cells) * 2 == len(input)
@@ -25,70 +37,29 @@ rule cell_ID2_fastq_ID:
             shell(f"""cell_id='@'$(echo {cell_r} | awk -F"_" '{{{{ print $2 }}}}'| awk -F"-" '{{{{ print $NF }}}}')':'; """
                   f"""zcat {cell_r}|awk -v var=$cell_id '{{{{gsub(/@/, var )}}}}1' | gzip >> {output.R2}""")
 
+        r1=expand("{fastq_dir}/pre-{{sample}}_{fqext1}.{fqsuffix}.gz", **config),
+        r2=expand("{fastq_dir}/pre-{{sample}}_{fqext2}.{fqsuffix}.gz", **config)
 
-# rule cell_id_BAM:
-#     '''
-#     Add the cell ID to the Qname of the BAMfile of each cell.
-#     '''
-#     input:
-#         expand("{dedup_dir}/{{assembly}}-{{sample}}.sambamba-queryname.bam", **config)
-#     output:
-#         expand("{result_dir}/cell_id/{{assembly}}-{{sample}}.sambamba-queryname.bam", **config)
-#     run:
-#         import pysam
-#         import os
-#
-#         path = '/'.join(output[0].split('/')[:-1])
-#         if not os.path.exists(path):
-#             os.makedirs(path)
-#
-#         samfile = pysam.AlignmentFile(input[0], "rb")
-#         sam_out = pysam.AlignmentFile(output[0], "wb", template=samfile)
-#
-#         for read in samfile:
-#             read.qname = f"{wildcards.sample}-{read.qname}"
-#             sam_out.write(read)
-#
-#         sam_out.close()
-#         samfile.close()
-#
-#
-# def get_all_cells_per_plate(wildcards):
-#     """
-#     Function that returns all bams that belong to a plate
-#     """
-#     cells = [cell for cell in samples.index if wildcards.plate in cell]
-#     assert len(set(samples['assembly'])) == 1, "this logic has not been implemented (yet) for " \
-#                                                "multiple assemblies at the same time."
-#
-#     bams = [expand(f"{{result_dir}}/cell_id/{wildcards.assembly}-{cell}.sambamba-queryname.bam", **config)[0] for cell in cells]
-#     return bams
-#
-#
-# rule merge_plates:
-#     '''
-#     Merge the bam files of individual cells (containing the cell ID in the qName of the BAM file)
-#     into one bam file per plate
-#     '''
-#     input:
-#         get_all_cells_per_plate
-#     output:
-#         expand("{dedup_dir}/{{assembly}}-{{plate,plate\d}}.merged.sambamba-queryname.bam", **config)
-#     log:
-#         expand("{log_dir}/merge_plates/{{assembly}}-{{plate}}.log", **config)
-#     conda:
-#         "../envs/samtools.yaml"
-#     shell:
-#         '''
-#         samtools merge {output} {input} > {log} 2>&1
-#         '''
-#
-#
-# def get_plate_bam(wildcards):
-#     assert len(set(samples['assembly'])) == 1, "this logic has not been implemented (yet) for " \
-#                                                "multiple assemblies at the same time."
-#     return expand(f"{{dedup_dir}}/{samples['assembly'][0]}-{wildcards.plate}.merged.sambamba-queryname.bam", **config)
-
+rule rmv_identical_readname_artefacts_fastq_ID:
+    '''
+    Checks the readname of all fastqfiles, and removes reads with identical read names (artifact, should not be present in theory).
+    '''
+    input:
+        R1=expand("{fastq_dir}/pre-{{sample}}_{fqext1}.{fqsuffix}.gz", **config),
+        R2=expand("{fastq_dir}/pre-{{sample}}_{fqext2}.{fqsuffix}.gz", **config)
+    output:
+        R1=temp(expand("{fastq_dir}/{{sample}}_{fqext1}.{fqsuffix}.gz", **config)),
+        R2=temp(expand("{fastq_dir}/{{sample}}_{fqext2}.{fqsuffix}.gz", **config))
+    conda:
+        "../envs/rmv_dup_readnames_fastq.yml"
+    log:
+        R1=expand("{log_dir}/remove_identical_fastq_Names/{{sample}}_{fqext1}.log", **config),
+        R2=expand("{log_dir}/remove_identical_fastq_Names/{{sample}}_{fqext2}.log", **config)
+    shell:
+        '''
+        seqkit rmdup {input.R1} -n -o {output.R1} > {log.R1}
+        seqkit rmdup {input.R2} -n -o {output.R2} > {log.R2}
+        '''
 
 rule create_SNAP_object:
     '''
@@ -114,7 +85,6 @@ rule create_SNAP_object:
         snaptools snap-pre --input-file={input.bams} --output-snap={output} --genome-name={params.assembly} \
         --genome-size={input.genome_size} {params.params} > {log} 2>&1
         '''
-
 
 rule create_bins_SNAP_object:
     '''

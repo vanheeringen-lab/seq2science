@@ -1,13 +1,16 @@
 # tab-separated file of the samples
 samples: samples.tsv
 
-
 # pipeline file locations
 result_dir: ./  # where to store results
-genome_dir: ./  # where to look for or download the genomes
-
+genome_dir: ../../../Ares_scATAC/  # where to look for or download the genomes
 
 # which aligner to use with the option to specify own parameters
+result_dir: ../../../Ares_scATAC  # where to store results
+genome_dir: ../../../Ares_scATAC  # where to look for or download the genomes
+annotation_file: ../../../Ares_scATAC/Annotation.toml
+plate_primer_file: ../../../Ares_scATAC/scATAC_plate_primer_well.tsv
+
 aligner:
   hisat2:
     index:  # parameters for indexing
