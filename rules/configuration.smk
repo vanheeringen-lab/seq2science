@@ -13,6 +13,15 @@ from snakemake.utils import validate
 from snakemake.logging import logger
 
 
+# check config file for correct directory names
+for key, value in config.items():
+    if '_dir' in key:
+        # allow tilde as the first character only
+        assert not re.match('[^A-Za-z0-9_.\-/~]+', value[0]) and not re.match('[^A-Za-z0-9_.\-/]+', value[1:]) and not " " in value, \
+            ("\n" + "In the config.yaml you set '" + key + "' to '" + value + "'. Please use file paths that only contain letters, " +
+            "numbers and any of the following symbols: underscores (_), periods (.), and minuses (-) (the first symbol may be a tilde (~)).\n")
+        config[key] = os.path.expanduser(value)
+
 # make sure that difficult data-types (yaml objects) are in correct data format
 for kw in ['aligner', 'bam_sorter']:
     if isinstance(config.get(kw, None), str):
