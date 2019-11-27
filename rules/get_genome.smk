@@ -1,5 +1,5 @@
 # the filetypes genomepy will download
-config['genome_types'] = ['fa', 'fa.fai', "fa.sizes"]
+config['genome_types'] = ['fa', 'fa.fai', "fa.sizes", ".gaps.bed"]
 # intermediate filetypes genomepy may download
 config['genomepy_temp'] = []
 
@@ -38,7 +38,7 @@ checkpoint get_genome:
         active_plugins=$(genomepy config show | grep -Po '(?<=- ).*' | paste -s -d, -)
         trap "genomepy plugin enable {{$active_plugins,}} >> {log} 2>&1; rm -f {params.temp}" EXIT
 
-        genomepy plugin disable {{blacklist,bowtie2,bwa,gaps,gmap,hisat2,minimap2}} >> {log} 2>&1
+        genomepy plugin disable {{blacklist,bowtie2,bwa,star,gmap,hisat2,minimap2}} >> {log} 2>&1
         
         genomepy install --genome_dir {params.dir} {wildcards.assembly} UCSC    {params.annotation} >> {log} 2>&1 ||
         genomepy install --genome_dir {params.dir} {wildcards.assembly} NCBI    {params.annotation} >> {log} 2>&1 ||
@@ -53,6 +53,8 @@ checkpoint get_genome:
             fi
         fi
         """
+        # TODO split rules
+        # TODO make sure it uses the same provider
 
 
 rule get_annotation:
@@ -69,7 +71,6 @@ rule get_annotation:
         expand("{log_dir}/get_genome/{{assembly}}.annotation.log", **config)
     benchmark:
         expand("{benchmark_dir}/get_genome/{{assembly}}.annotation.benchmark.txt", **config)[0]
-    priority: 1
     run:
         # Check if genome and annotation have matching chromosome/scaffold names
         with open(input.gtf[0], 'r') as gtf:
@@ -124,8 +125,9 @@ rule get_annotation:
                         line = '\t'.join(line)
                         newgtf.write(line)
 
-                shell("echo '\nRenaming successful! Deleting mismatched gtf file.' >> {log}")
-                shell('rm -f {input.gtf}')
+                shell("echo '\nRenaming successful!' >> {log}")
+                # shell("echo '\nRenaming successful! Deleting mismatched gtf file.' >> {log}")
+                # shell('rm -f {input.gtf}')
 
 
 rule get_transcripts:
