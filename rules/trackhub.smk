@@ -116,7 +116,7 @@ rule bam_stranded_bigwig:
         forward=expand("{result_dir}/bigwigs/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.fwd.bw", **config),
         reverse=expand("{result_dir}/bigwigs/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.rev.bw", **config),
     params:
-        flags=config['bam_bigwig']['deeptools'] if config.get('bam_bigwig', False) else "",
+        flags=config['deeptools'],
         strandedness=get_strandedness
     wildcard_constraints:
         sorting=config['bam_sort_order'] if config.get('bam_sort_order', False) else ""
@@ -152,7 +152,7 @@ rule bam_bigwig:
     output:
         expand("{result_dir}/bigwigs/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bw", **config)
     params:
-        config['bam_bigwig']['deeptools'] if config.get('bam_bigwig', False) else ""
+        config['deeptools']
     wildcard_constraints:
         sorting=config['bam_sort_order'] if config.get('bam_sort_order') else ""
     log:
@@ -231,7 +231,7 @@ def get_trackhub_files(wildcards):
 
     elif 'rna_seq' in workflow.snakefile.split('/')[-2]:
         def get_bigwig_strand(sample):
-            if 'strandedness' in samples and config.get('bam_bigwig', False) and config.get('bam_bigwig').get('filter_by_strand', False):
+            if 'strandedness' in samples and config['filter_bam_by_strand']:
                 strandedness = samples["strandedness"].loc[sample]
                 if strandedness in ['forward', 'yes', 'reverse']:
                     return ['.fwd', '.rev']

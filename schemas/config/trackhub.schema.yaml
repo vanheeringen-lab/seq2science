@@ -1,0 +1,33 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+description: snakemake-workflows gene expression configuration
+
+properties:
+  deeptools:
+    description: option flags for bam to bigwig conversions with deeptools
+    default: ''
+  filter_bam_by_strand:
+    description: split bigwigs by strand?
+    default: True
+    enum: [True, False]
+  normalize_bam:
+    description: apply a normalization method
+    default: None
+    enum: [RPKM, CPM, BPM, RPGC, None]
+  exact_scaling:
+    description: use more heavy (slow) and more accurate scaling factors?
+    default: False
+    enum: [True, False]
+#
+#
+#  bam_bigwig:
+#    description: bigwigs can be split strand
+#    properties:
+#      filter_by_strand:
+#        default: True
+#        enum: [True, False]
+#      deeptools:
+#        default: ''
+#    default:
+#      filter_by_strand: True
+#      deeptools: ''
