@@ -101,6 +101,24 @@ rule InsertSizeMetrics:
         """
 
 
+rule MTNucRatioCalculator:
+    """
+    Calculate the ratio mitochondrial dna in your 
+    """
+    input:
+        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config)
+    output:
+        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.bam.mtnucratiomtnuc.json", **config)
+    conda:
+        "../envs/mtnucratiocalculator.yaml"
+    params:
+        lambda wildcards, input: [chrm for chrm in ['chrM', 'chrm'] if chrm in open({wildcards.input.chr_names}, 'r').read()][0]
+    shell:
+        """
+        mtnucratio {input} {output} {params}
+        """
+
+
 def get_qc_files(wildcards):
     assert 'quality_control' in globals(), "When trying to generate multiqc output, make sure that the "\
                                            "variable 'quality_control' exists and contains all the "\
@@ -119,7 +137,28 @@ def get_qc_files(wildcards):
         for sample in samples[samples['assembly'] == wildcards.assembly].index:
             for function in quality_control:
                 qc.extend(function(sample))
+    qc.extend(expand('{qc_dir}/header_info.yaml', **config))
     return qc
+
+
+rule multiqc_header_info:
+    """
+    Generate a multiqc header file with contact info and date of multiqc generation.
+    """
+    output:
+        temp(expand('{qc_dir}/header_info.yaml', **config))
+    run:
+        import os
+        from datetime import date
+
+        cwd = os.getcwd().split('/')[-1]
+        mail = config.get('email', 'none@provided.com')
+        date = date.today().strftime("%B %d, %Y")
+        with open(output[0], "w") as f:
+            f.write(f"report_header_info:\n"
+                    f"    - Contact E-mail: '{mail}'\n"
+                    f"    - Workflow: '{cwd}'\n"
+                    f"    - Date: '{date}'\n")
 
 
 rule multiqc:
@@ -177,6 +216,8 @@ def get_alignment_qc(sample):
 
     if config['layout'][sample] == "PAIRED":
         output.append(f"{{qc_dir}}/InsertSizeMetrics/{{{{assembly}}}}-{sample}.tsv")
+
+    output.append(f"{{qc_dir}}/MTNucRatioCalculator/{{{{assembly}}}}-{sample}.txt")
 
     return expand(output, **config)
 

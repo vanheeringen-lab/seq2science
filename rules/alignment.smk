@@ -15,7 +15,7 @@ def get_alignment_pipes():
     pipes = {pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0])}
     if config.get('peak_caller', False) and 'genrich' in config['peak_caller']:
         pipes.add(pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.sambamba-queryname.pipe", **config)[0]))
-    else:
+    elif config.get('bam_sorter', False):
         pipes.add(pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{bam_sorter}-{bam_sort_order}.pipe", **config)[0]))
 
     return pipes
@@ -372,28 +372,44 @@ rule samtools_sort:
         """
 
 
+def get_blacklist(wildcards):
+    # make sure we downloaded the genome
+    checkpoints.get_genome.get(assembly=wildcards.assembly)
+
+    #
+    blacklist = expand(f"{{genome_dir}}/{wildcards.assembly}/{wildcards.assembly}.blacklist.bed.gz", **config)[0]
+    if os.exists(blacklist):
+        return {'blacklist': blacklist}
+    return {}
+
+
 rule blacklist_and_mito:
     """
 
     """
     input:
-        blacklist=expand("{genome_dir}/{{assembly}}/{{assembly}}.blacklist.bed.gz", **config),
+        unpack(get_blacklist),
+        chr_names=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
         bam=expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config)
     output:
-        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.blacklisted.bam", **config)
-    shell:
-        "intersectbed -v -abam {input.bam} -b {input.blacklist} > {output}"
+        bam=expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.clean.bam", **config),
+        mito_count=expand("{qc_dir}/mito/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.samtools_stats.txt", **config)
+    params:
+        lambda wildcards, input: \
+          [chrm for chrm in ['chrM', 'chrm'] if chrm in open({wildcards.input.chr_names}, 'r').read()][0]
+    run:
+        # remove blacklisted regions if blacklist exists
+        if hasattr(input, 'blacklist'):
+            shell("bedtools intersect -v -abam  {input.bam} -b {input.blacklist} > {input.bam}.tmp;"
+                  "mv {input.bam}.tmp {input.bam}")
+        if config.get('remove_mito', False):
+            shell("cat {input.chr_names} | cut -f 1 | grep -v {params} | xargs samtools view -b {input.bam} > {output.bam}")
 
 
 def get_bam(wildcards):
-    # make sure we downloaded the genome
-    checkpoints.get_genome.get(assembly=wildcards.assembly)
-
-    # get the blacklist file
-    blacklist = expand(f"{{genome_dir}}/{wildcards.assembly}/{wildcards.assembly}.blacklist.bed.gz", **config)
-
-    ext = "blacklisted.bam" if os.exists(blacklist) else "bam"
-    return expand(f"{{result_dir}}/{{aligner}}/{wildcards.assembly}-{wildcards.sample}.{wildcards.sorter}-{wildcards.sorting}.{ext}", **config)
+    if get_blacklist(**wildcards) or config.get('remove_mito', False):
+        return rules.blacklist_and_mito.output.bam
+    return expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config)
 
 
 rule mark_duplicates:
@@ -402,6 +418,7 @@ rule mark_duplicates:
     """
     input:
         get_bam
+        # expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config)
     output:
         bam=    expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config),
         metrics=expand("{qc_dir}/dedup/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.metrics.txt", **config)

@@ -231,7 +231,6 @@ for sample in [sample for sample in samples.index if sample not in layout_cache]
 config['layout'] = {**layout_cache,
                     **{k: (v if isinstance(v, str) else v.get()) for k, v in config['layout'].items()}}
 
-print(config['layout'])
 assert all(layout in ['SINGLE', 'PAIRED'] for sample, layout in config['layout'].items())
 
 # if new samples were added, update the cache
