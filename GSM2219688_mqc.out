@@ -1,0 +1,10 @@
+# section_name: 'Custom data file'
+# description: 'This output is described in the file header. Any MultiQC installation will understand it without prior configuration.'
+# format: 'csv'
+# plot_type: 'table'
+# pconfig:
+#    id: 'custom_bargraph_w_header'
+#    ylab: 'Number of things'
+Sample Name,some feature
+GSM2219688_pass_1,42
+GSM2219689_pass_1,44

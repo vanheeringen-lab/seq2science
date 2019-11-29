@@ -159,6 +159,7 @@ for sample in [sample for sample in samples.index if sample not in layout_cache]
 config['layout'] = {**layout_cache,
                     **{k: (v if isinstance(v, str) else v.get()) for k, v in config['layout'].items()}}
 
+print(config['layout'])
 assert all(layout in ['SINGLE', 'PAIRED'] for sample, layout in config['layout'].items())
 
 # if new samples were added, update the cache
@@ -285,23 +286,3 @@ def add_default_resources(func):
 
 # now add the wrapper to the workflow execute function
 workflow.execute = add_default_resources(workflow.execute)
-
-
-# functional but currently unused
-# # find conda directories. Does not work with singularity.
-# def conda_path(yaml):
-#     """ Find the path to a conda directory """
-#     import hashlib
-#     import os.path
-#
-#     env_file = os.path.abspath(yaml)
-#     env_dir = os.path.join(os.getcwd(), ".snakemake", "conda")
-#
-#     md5hash = hashlib.md5()
-#     md5hash.update(env_dir.encode())
-#     with open(env_file, 'rb') as f:
-#         content = f.read()
-#     md5hash.update(content)
-#     dir_hash = md5hash.hexdigest()[:8]
-#     path = os.path.join(env_dir, dir_hash)
-#     return path

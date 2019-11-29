@@ -375,7 +375,7 @@ rule samtools_sort:
         """
 
 
-rule blacklist:
+rule blacklist_and_mito:
     """
 
     """
@@ -384,8 +384,6 @@ rule blacklist:
         bam=expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config)
     output:
         expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.blacklisted.bam", **config)
-    conda:
-        "../envs/bedtools.yaml"
     shell:
         "intersectbed -v -abam {input.bam} -b {input.blacklist} > {output}"
 
