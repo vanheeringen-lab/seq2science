@@ -91,6 +91,7 @@ rule sra2fastq_SE:
         """
 
 
+ruleorder: sra2fastq_PE> renamefastq_PE
 rule sra2fastq_PE:
     """
     Downloaded (raw) SRAs are converted to paired-end fastq files.
