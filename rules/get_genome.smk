@@ -1,5 +1,5 @@
 # the filetypes genomepy will download
-config['genome_types'] = ['fa', 'fa.fai', "fa.sizes"]
+config['genome_types'] = ['fa', 'fa.fai', "fa.sizes", ".gaps.bed"]
 # intermediate filetypes genomepy may download
 config['genomepy_temp'] = []
 
@@ -38,7 +38,7 @@ checkpoint get_genome:
         active_plugins=$(genomepy config show | grep -Po '(?<=- ).*' | paste -s -d, -)
         trap "genomepy plugin enable {{$active_plugins,}} >> {log} 2>&1; rm -f {params.temp}" EXIT
 
-        genomepy plugin disable {{bowtie2,bwa,gaps,gmap,hisat2,minimap2}} >> {log} 2>&1
+        genomepy plugin disable {{blacklist,bowtie2,bwa,gaps,gmap,hisat2,minimap2}} >> {log} 2>&1
         
         genomepy install --genome_dir {params.dir} {wildcards.assembly} UCSC    {params.annotation} >> {log} 2>&1 ||
         genomepy install --genome_dir {params.dir} {wildcards.assembly} NCBI    {params.annotation} >> {log} 2>&1 ||
@@ -53,6 +53,8 @@ checkpoint get_genome:
             fi
         fi
         """
+        # TODO split rules
+        # TODO make sure it uses the same provider
 
 
 rule get_annotation:
@@ -69,7 +71,6 @@ rule get_annotation:
         expand("{log_dir}/get_genome/{{assembly}}.annotation.log", **config)
     benchmark:
         expand("{benchmark_dir}/get_genome/{{assembly}}.annotation.benchmark.txt", **config)[0]
-    priority: 1
     run:
         # Check if genome and annotation have matching chromosome/scaffold names
         with open(input.gtf[0], 'r') as gtf:
@@ -78,60 +79,55 @@ rule get_annotation:
                     gtf_id = line.split('\t')[0]
                     break
 
-        matching = False
         with open(input.sizefile[0], 'r') as sizes:
             for line in sizes:
                 fa_id = line.split('\t')[0]
                 if fa_id == gtf_id:
-                    matching = True
+                    shell("echo 'genome and annotation have matching chromosome/scaffold names!' >> {log}")
+                    shell('mv {input.gtf} {output}')
                     break
+            else:
+                # generate a gtf with matching scaffold/chromosome IDs
+                shell("echo 'genome and annotation do not match, renaming gtf...' >> {log}")
 
-        if matching:
-            shell("echo 'genome and annotation have matching chromosome/scaffold names!' >> {log}")
-            shell('mv {input.gtf} {output}')
-
-        else:
-            # generate a gtf with matching scaffold/chromosome IDs
-            shell("echo 'genome and annotation do not match, renaming gtf...' >> {log}")
-
-            # determine which element in the genome.fasta's header contains the location identifiers used in the annotation.gtf
-            header = []
-            with open(input.fa[0], 'r') as fa:
-                for line in fa:
-                    if line.startswith('>'):
-                        header = line.strip(">\n").split(' ')
-                        break
-
-            with open(input.gtf[0], 'r') as gtf:
-                for line in gtf:
-                    if not line.startswith('#'):
-                        loc_id = line.strip().split('\t')[0]
-                        try:
-                            element = header.index(loc_id)
+                # determine which element in the genome.fasta's header contains the location identifiers used in the annotation.gtf
+                header = []
+                with open(input.fa[0], 'r') as fa:
+                    for line in fa:
+                        if line.startswith('>'):
+                            header = line.strip(">\n").split(' ')
                             break
-                        except:
-                            continue
 
-            # build a conversion table
-            ids = {}
-            with open(input.fa[0], 'r') as fa:
-                for line in fa:
-                    if line.startswith('>'):
-                        line = line.strip(">\n").split(' ')
-                        if line[element] not in ids.keys():
-                            ids.update({line[element] : line[0]})
+                with open(input.gtf[0], 'r') as gtf:
+                    for line in gtf:
+                        if not line.startswith('#'):
+                            loc_id = line.strip().split('\t')[0]
+                            try:
+                                element = header.index(loc_id)
+                                break
+                            except:
+                                continue
 
-            # rename the location identifier in the gtf (using the conversion table)
-            with open(input.gtf[0], 'r') as oldgtf:
-                with open(output[0], 'w') as newgtf:
+                # build a conversion table
+                ids = {}
+                with open(input.fa[0], 'r') as fa:
+                    for line in fa:
+                        if line.startswith('>'):
+                            line = line.strip(">\n").split(' ')
+                            if line[element] not in ids.keys():
+                                ids.update({line[element] : line[0]})
+
+                # rename the location identifier in the gtf (using the conversion table)
+                with open(input.gtf[0], 'r') as oldgtf, open(output[0], 'w') as newgtf:
                     for line in oldgtf:
                         line = line.split('\t')
                         line[0] = ids[line[0]]
                         line = '\t'.join(line)
                         newgtf.write(line)
 
-            shell("echo '\nRenaming successful! Deleting mismatched gtf file.' >> {log}")
-            shell('rm -f {input.gtf}')
+                shell("echo '\nRenaming successful!' >> {log}")
+                # shell("echo '\nRenaming successful! Deleting mismatched gtf file.' >> {log}")
+                # shell('rm -f {input.gtf}')
 
 
 rule get_transcripts:

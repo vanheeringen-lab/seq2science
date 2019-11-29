@@ -240,6 +240,7 @@ pipeline {
                     changeset 'rules/merge_replicates.smk'
                     changeset 'rules/trackhub.smk'
                     changeset 'rules/call_peak.smk'
+                    changeset 'rules/get_genome.smk'
 
                     // run when last time you failed
                     expression {

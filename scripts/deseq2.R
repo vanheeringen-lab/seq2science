@@ -14,28 +14,13 @@ mtp             <- snakemake@config$DE_params$multiple_testing_procedure
 fdr             <- snakemake@config$DE_params$alpha_value
 se              <- snakemake@config$DE_params$shrinkage_estimator
 assembly        <- snakemake@wildcards$assembly
-output_table    <- snakemake@output$table
-output_ma_plot  <- snakemake@output$ma_plot
-output_pca_plot <- snakemake@output$pca_plot
+output          <- snakemake@output[[1]]
 
-# #test variables
-# threads        <- 4
-# log_file       <- '/mnt/passer/bank/experiments/2019-09/dirk_nextseq/results/log/deseq2/GRCh38.p12-diseaseTest_control_disease.diffexp.log'
-# counts_file    <- '/mnt/passer/bank/experiments/2019-09/dirk_nextseq/results/gene_counts/GRCh38.p12-counts.tsv'
-# samples_file   <- '/home/siebrenf/git/snakemake-workflows/workflows/rna_seq/samples.tsv'
-# contrast       <- 'stageTest_1_2'
-# mtp            <- 'ihw'
-# fdr            <- 0.05
-# se             <- 'apeglm'
-# assembly       <- 'GRCh38.p12'
-# output_table   <- '/mnt/passer/bank/experiments/2019-09/dirk_nextseq/results/deseq2/GRCh38.p12-diseaseTest_control_disease.diffexp.tsv'
-# output_ma_plot <- '/mnt/passer/bank/experiments/2019-09/dirk_nextseq/results/deseq2/GRCh38.p12-diseaseTest_control_disease.ma_plot.svg'
 
 # log all console output
 log <- file(log_file, open="wt")
 sink(log)
 sink(log, type="message")
-
 
 ## parse the design contrast
 # a contrast is always in the form 'batch+condition_group1_group2', where batch(+) is optional
@@ -79,7 +64,7 @@ if (threads > 1) {
   parallel <- TRUE
 }
 
-cat('Constructing DESeq object. If an error is found below this line, it is between you and DESeq2 to to solve it!\n')
+cat('Constructing DESeq object... \nTip: errors directly below this line are most likely DESeq2 related.\n\n')
 dds <- DESeqDataSetFromMatrix(countData = reduced_counts,
                               colData = coldata,
                               design = if (!is.na(batch)){~ batch + condition} else {~ condition})
@@ -88,7 +73,14 @@ dds <- DESeq(dds, parallel=parallel)
 cat('\n')
 
 ## Extract differentially expressed genes
-DE_contrast <- resultsNames(dds)[2]
+cat('batches & contrasts:\n', resultsNames(dds), '\n')
+DE_contrast_names <- resultsNames(dds)
+for (DE_contrast in DE_contrast_names){
+  if (startsWith(DE_contrast, 'condition')){
+    break
+  }
+}
+cat('selected contrast: ', DE_contrast, '\n\n')
 
 # correct for multiple testing
 if(mtp=='IHW'){
@@ -98,37 +90,46 @@ if(mtp=='IHW'){
 }
 
 # log transform counts
-resLFC <- lfcShrink(dds, coef=DE_contrast, res = res, type=se)
+resLFC <- lfcShrink(dds, coef = DE_contrast, res = res, type=se)
 cat('\n')
 
 ## Save the results
-# create a table with all genes, and analysis results if available
+# create a table with all genes, and plot differentially expressed genes if found
 expressed_genes <- as.data.frame(resLFC[order(resLFC$padj),])
 
 missing_genes <- rownames(counts)[!(rownames(counts) %in% rownames(expressed_genes))]
-
 unexpressed_genes <- as.data.frame(matrix(data = NA, ncol = ncol(expressed_genes), nrow = length(missing_genes)))
 rownames(unexpressed_genes) <- missing_genes
 colnames(unexpressed_genes) <- colnames(expressed_genes)
 unexpressed_genes[,'baseMean'] <- 0
 
 all_genes <- rbind(expressed_genes, unexpressed_genes)
-write.table(all_genes, file=output_table, quote = F, sep = '\t', col.names=NA)
+write.table(all_genes, file=output, quote = F, sep = '\t', col.names=NA)
 cat('DE genes table saved\n\n')
 
-# plot of log fold change vs mean gene counts
+
+# determine DE genes
 plot_res <- resLFC[resLFC$padj <= fdr & !is.na(resLFC$padj), ]
 plot_DEGs <- length(plot_res[,1])
+if(plot_DEGs == 0){
+  cat("No differentially expressed genes found! Skipping plot generation...\n")
+  quit(save = "no" , status = 0)
+} else {
+  cat(plot_DEGs, " differentially expressed genes found! Plotting...\n\n")
+}
 
+# generate MA plot (log fold change vs mean gene counts)
+output_ma_plot <- sub(".diffexp.tsv", ".ma_plot.svg", output)
 svg(output_ma_plot)
 plotMA(plot_res, ylim=c(-2,2),
        main = paste0(DE_contrast, '\n', plot_DEGs, ' DE genes (a = ', fdr, ')'))
 invisible(dev.off())
 cat('MA plot saved\n\n')
 
-# transform the data and plot the PCA (for outlier detection)
+# transform the data and generate a PCA plot (for outlier detection)
 log_counts <- vst(dds, blind = TRUE)
 
+output_pca_plot <- sub(".diffexp.tsv", ".pca_plot.svg", output)
 svg(output_pca_plot)
 plotPCA(log_counts, intgroup="condition")
 invisible(dev.off())
