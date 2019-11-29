@@ -407,7 +407,7 @@ rule blacklist_and_mito:
 
 
 def get_bam(wildcards):
-    if get_blacklist(**wildcards) or config.get('remove_mito', False):
+    if get_blacklist(wildcards) or config.get('remove_mito', False):
         return rules.blacklist_and_mito.output.bam
     return expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config)
 
