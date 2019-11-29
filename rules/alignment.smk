@@ -279,7 +279,7 @@ elif config['aligner'] == 'star':
             
             STAR --runMode genomeGenerate --genomeFastaFiles {input.genome} --sjdbGTFfile {input.gtf} \
             --genomeDir {output} --outFileNamePrefix {output}/ \
-            --runThreadN {threads} $NBits $NBases {params} >> {log} 2>&1
+            --limitGenomeGenerateRAM 37000000000 --runThreadN {threads} $NBits $NBases {params} >> {log} 2>&1
             """
 
 
