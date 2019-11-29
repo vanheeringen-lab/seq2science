@@ -18,16 +18,3 @@ properties:
     description: use more heavy (slow) and more accurate scaling factors?
     default: False
     enum: [True, False]
-#
-#
-#  bam_bigwig:
-#    description: bigwigs can be split strand
-#    properties:
-#      filter_by_strand:
-#        default: True
-#        enum: [True, False]
-#      deeptools:
-#        default: ''
-#    default:
-#      filter_by_strand: True
-#      deeptools: ''
