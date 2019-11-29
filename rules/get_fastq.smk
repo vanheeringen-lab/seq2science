@@ -134,7 +134,7 @@ def get_wrong_fqext(wildcards):
 
 rule renamefastq_PE:
     """
-    Create symlinks to fastqs with incorrect fqexts (default pass_1/pass_2).
+    Create symlinks to fastqs with incorrect fqexts (default R1/R2).
     Forward and reverse samples will be switched if forward/reverse names are not lexicographically ordered.
     """
     input:
