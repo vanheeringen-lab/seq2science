@@ -101,7 +101,11 @@ rule narrowpeak_bignarrowpeak:
 
 def get_strandedness(wildcards):
     sample = f"{wildcards.sample}"
-    strandedness = samples["strandedness"].loc[sample]
+    if config.get('combine_replicates', '') == 'merge' and 'condition' in samples:
+        s2 = samples[['condition', 'strandedness']].drop_duplicates().set_index('condition')
+        strandedness = s2["strandedness"].loc[sample]
+    else:
+        strandedness = samples["strandedness"].loc[sample]
     return strandedness
 
 
@@ -193,9 +197,15 @@ def get_bigwig_strand(sample):
     return a list of extensions for (un)stranded bigwigs
     """
     if 'strandedness' in samples and config['filter_bam_by_strand']:
-        strandedness = samples["strandedness"].loc[sample]
-        if strandedness in ['forward', 'yes', 'reverse']:
-            return ['.fwd', '.rev']
+        if config.get('combine_replicates', '') == 'merge' and 'condition' in samples:
+            s2 = samples[['condition', 'strandedness']].drop_duplicates().set_index('condition')
+            strandedness = s2["strandedness"].loc[sample]
+            if strandedness in ['forward', 'yes', 'reverse']:
+                return ['.fwd', '.rev']
+        else:
+            strandedness = samples["strandedness"].loc[sample]
+            if strandedness in ['forward', 'yes', 'reverse']:
+                return ['.fwd', '.rev']
     return ['']
 
 
@@ -245,7 +255,7 @@ def get_trackhub_files(wildcards):
         if config.get('combine_replicates', '') == 'merge' and 'condition' in samples:
             for condition in set(samples['condition']):
                 for assembly in set(samples[samples['condition'] == condition]['assembly']):
-                    for bw in get_bigwig_strand(sample):
+                    for bw in get_bigwig_strand(condition):
                         bw = expand(f"{{result_dir}}/bigwigs/{assembly}-{condition}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw", **config)
                         trackfiles['bigwigs'].extend(bw)
         else:
@@ -253,9 +263,7 @@ def get_trackhub_files(wildcards):
                 for bw in get_bigwig_strand(sample):
                     bw = expand(f"{{result_dir}}/bigwigs/{samples.loc[sample]['assembly']}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw", **config)
                     trackfiles['bigwigs'].extend(bw)
-
     return trackfiles
-
 
 def get_defaultPos(sizefile):
     # extract a default position spanning the first scaffold/chromosome in the sizefile.

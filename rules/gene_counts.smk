@@ -1,6 +1,10 @@
 def get_counts(wildcards):
+    iterator = samples[samples['assembly'] == wildcards.assembly].index
+    if config.get('combine_replicates', '') == 'merge' and 'condition' in samples:
+        iterator = set(samples[samples['assembly'] == wildcards.assembly].condition)# samples[samples['assembly'] == wildcards.assembly]
     output = []
-    for sample in samples[samples['assembly'] == wildcards.assembly].index:
+    # for sample in samples[samples['assembly'] == wildcards.assembly].index:
+    for sample in iterator:
         output.append(f"{{result_dir}}/{{aligner}}/{wildcards.assembly}-{sample}")
     return expand(output, **config)
 
@@ -86,7 +90,14 @@ elif config['aligner'] == 'star':
                 counts = pd.DataFrame()
                 for sample in input.cts:
                     sample_name = os.path.basename(sample).replace(wildcards.assembly + '-', '', 1)
-                    strandedness = samples["strandedness"].loc[sample_name] if 'strandedness' in samples else 'no'
+
+                    # retrieve strandedness
+                    if config.get('combine_replicates', '') == 'merge' and 'condition' in samples:
+                        s2 = samples[['condition', 'strandedness']].drop_duplicates().set_index('condition')
+                        strandedness = s2["strandedness"].loc[sample_name] if 'strandedness' in samples else 'no'
+                    else:
+                        strandedness = samples["strandedness"].loc[sample_name] if 'strandedness' in samples else 'no'
+
                     col = pd.read_csv(sample + '/ReadsPerGene.out.tab', sep='\t', index_col=0,
                                       usecols=[0, get_column(strandedness)], header=None, skiprows=4)
                     col.columns = [sample_name]
