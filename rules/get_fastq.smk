@@ -122,3 +122,27 @@ rule sra2fastq_PE:
           mv -v $src $dst >> {{log}} 2>&1
         fi
         """
+
+def get_wrong_fqext(wildcards):
+    """get all samples with fqexts that are not in the config"""
+    fastqs = glob.glob(os.path.join(config["fastq_dir"], wildcards.sample + "*" + config["fqsuffix"] + ".gz"))
+    # exclude samples with the correct fqext
+    r1 = wildcards.sample + "_" + config["fqext1"] + "." + config["fqsuffix"] + ".gz"
+    r2 = wildcards.sample + "_" + config["fqext2"] + "." + config["fqsuffix"] + ".gz"
+    fastqs = [f for f in fastqs if not re.match(r1+"|"+r2, f)]
+    return sorted(fastqs)
+
+rule renamefastq_PE:
+    """
+    Create symlinks to fastqs with incorrect fqexts (default pass_1/pass_2).
+    Forward and reverse samples will be switched if forward/reverse names are not lexicographically ordered.
+    """
+    input:
+        get_wrong_fqext
+    output:
+         temp(expand("{fastq_dir}/{{sample}}_{fqext}.{fqsuffix}.gz", **config))
+    shell:
+         """
+         ln {input[0]} {output[0]}
+         ln {input[1]} {output[1]}
+         """
