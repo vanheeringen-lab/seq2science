@@ -1,5 +1,5 @@
 # the filetypes genomepy will download
-config['genome_types'] = ['fa', 'fa.fai', "fa.sizes", ".gaps.bed"]
+config['genome_types'] = ['fa', 'fa.fai', "fa.sizes", "gaps.bed"]
 # intermediate filetypes genomepy may download
 config['genomepy_temp'] = []
 

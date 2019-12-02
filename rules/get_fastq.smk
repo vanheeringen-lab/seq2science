@@ -91,10 +91,11 @@ rule sra2fastq_SE:
         """
 
 
-ruleorder: sra2fastq_PE> renamefastq_PE
+ruleorder: renamefastq_PE > sra2fastq_PE
 rule sra2fastq_PE:
     """
     Downloaded (raw) SRAs are converted to paired-end fastq files.
+    Forward and reverse samples will be switched if forward/reverse names are not lexicographically ordered.
     """
     input:
         rules.id2sra.output
@@ -111,16 +112,40 @@ rule sra2fastq_PE:
         f"""
         parallel-fastq-dump -s {{input}}/* -O {config['fastq_dir']} {config['split']} --threads {{threads}} --gzip >> {{log}} 2>&1
 
-        # rename the SRRs to GSMs
+        # renaming SRRs to GSMs
         SRR=$(basename {{input}}/*)
         GSM=$(basename {{input}})
         if [[ ! $SRR = $GSM ]]; then
+          echo "\nrenaming SRRs to GSMs:" >> {{log}}
+
           src='{config['fastq_dir']}/'$SRR'_{config['fqext1']}.{config['fqsuffix']}.gz'
           dst='{config['fastq_dir']}/'$GSM'_{config['fqext1']}.{config['fqsuffix']}.gz'
           mv -v $src $dst >> {{log}} 2>&1
+
           src='{config['fastq_dir']}/'$SRR'_{config['fqext2']}.{config['fqsuffix']}.gz'
           dst='{config['fastq_dir']}/'$GSM'_{config['fqext2']}.{config['fqsuffix']}.gz'
           mv -v $src $dst >> {{log}} 2>&1
+        fi
+
+        # renaming fqexts
+        all_files=$(ls -1q {config['fastq_dir']} | grep -c $GSM'_.*.{config['fqsuffix']}.gz')
+        # Snakemake throws an error if variable assignment is based on a grep command without output (0 hits)
+        correct_files=$(( $(ls -1q {config['fastq_dir']} | grep -c $GSM'_{config['fqext1']}.{config['fqsuffix']}.gz') + \
+                          $(ls -1q {config['fastq_dir']} | grep -c $GSM'_{config['fqext2']}.{config['fqsuffix']}.gz') )) \
+                      || correct_files=0
+        if [[ ! $all_files = $correct_files ]]; then
+            echo "\nrenaming fqexts:" >> {{log}}
+
+            n=1
+            for f in $(ls -1q {config['fastq_dir']} | grep $GSM'_.*.{config['fqsuffix']}.gz'); do
+              src='{config['fastq_dir']}/'$f
+              dst='{config['fastq_dir']}/'$GSM'_{config['fqext1']}.{config['fqsuffix']}.gz'
+              if [[ $n = 2 ]]; then
+                dst='{config['fastq_dir']}/'$GSM'_{config['fqext2']}.{config['fqsuffix']}.gz'
+              fi
+              mv -v $src $dst >> {{log}} 2>&1
+              n=$(( $n + 1 ))
+            done
         fi
         """
 
@@ -131,6 +156,8 @@ def get_wrong_fqext(wildcards):
     r1 = wildcards.sample + "_" + config["fqext1"] + "." + config["fqsuffix"] + ".gz"
     r2 = wildcards.sample + "_" + config["fqext2"] + "." + config["fqsuffix"] + ".gz"
     fastqs = [f for f in fastqs if not re.match(r1+"|"+r2, f)]
+    if len(fastqs) == 0:
+        fastqs.append("impossible input to prevent Snakemake from running the rule without input")
     return sorted(fastqs)
 
 rule renamefastq_PE:
@@ -139,7 +166,7 @@ rule renamefastq_PE:
     Forward and reverse samples will be switched if forward/reverse names are not lexicographically ordered.
     """
     input:
-        get_wrong_fqext
+         get_wrong_fqext
     output:
          temp(expand("{fastq_dir}/{{sample}}_{fqext}.{fqsuffix}.gz", **config))
     shell:
