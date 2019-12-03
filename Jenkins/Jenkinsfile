@@ -79,7 +79,6 @@ pipeline {
                 snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/bowtie2.yaml --quiet
                 snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/bwa.yaml     --quiet
                 snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/hisat2.yaml  --quiet
-                snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/salmon.yaml  --quiet
                 snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/star.yaml    --quiet
 
                 # test sorting
@@ -113,8 +112,8 @@ pipeline {
 
                 # test count matrix generation
                 echo "counts matrix"
-                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --config aligner=star   --quiet
-                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --config aligner=salmon --quiet
+                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --config quantifier=star   --quiet
+                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --config quantifier=salmon --quiet
 
                 # test differential expression analysis
                 echo "differential expression"
