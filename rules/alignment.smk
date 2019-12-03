@@ -168,62 +168,7 @@ elif config['aligner'] == 'hisat2':
             """
 
 
-elif config['aligner'] == 'salmon':
-    rule salmon_index:
-        """
-        Make a transcript index for Salmon.
-        """
-        input:
-            expand("{genome_dir}/{{assembly}}/{{assembly}}.transcripts.fa", **config)
-        output:
-            directory(expand("{genome_dir}/{{assembly}}/index/{aligner}", **config))
-        log:
-            expand("{log_dir}/{aligner}_index/{{assembly}}.log", **config)
-        benchmark:
-            expand("{benchmark_dir}/{aligner}_index/{{assembly}}.benchmark.txt", **config)[0]
-        params:
-            config['index']
-        threads: 4
-        conda:
-            "../envs/salmon.yaml"
-        shell:
-            "salmon index -t {input} -i {output} {params} --threads {threads} &> {log}"
-
-
-    rule salmon_quant:
-        """
-        Align reads against a transcriptome (index) with Salmon (mapping-based mode), and pipe the output to the required sorter(s).
-        
-        Using Salmon generates pseudobams, as well as quantification files.
-        """
-        input:
-            reads=get_reads,
-            index=expand("{genome_dir}/{{assembly}}/index/{aligner}", **config)
-        output:
-            dir=directory(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}", **config)),
-            pipe=get_alignment_pipes()
-        log:
-            expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}.log", **config)
-        benchmark:
-            expand("{benchmark_dir}/{aligner}_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
-        params:
-            input=lambda wildcards, input: f'-r {input.reads}' if config['layout'][wildcards.sample] == 'SINGLE' else \
-                                           f'-1 {input.reads[0]} -2 {input.reads[1]}',
-            params=config['align']
-        threads: 20
-        resources:
-            mem_gb=8
-        conda:
-            "../envs/salmon.yaml"
-        shell:
-            """
-            salmon quant -i {input.index} -l A {params.input} {params.params} -o {output.dir} \
-            --threads $(( 4 * {threads} / 5)) --writeMappings 2> {log} | \
-            samtools view -b - -@ $(( {threads} / 5)) | tee {output.pipe} 1> /dev/null 2>> {log}
-            """
-
-
-elif config['aligner'] == 'star':
+elif config['aligner'] == 'star' or config.get('quantifier', '') == 'star':
     rule star_index:
         """
         Make a genome index for STAR.
@@ -282,38 +227,38 @@ elif config['aligner'] == 'star':
             --limitGenomeGenerateRAM 37000000000 --runThreadN {threads} $NBits $NBases {params} >> {log} 2>&1
             """
 
-
-    rule star_quant:
-        """
-        Align reads against a genome (index) with STAR, and pipe the output to the required sorter(s).
-        """
-        input:
-            reads=get_reads,
-            index=expand("{genome_dir}/{{assembly}}/index/{aligner}", **config)
-        output:
-            dir =directory(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}", **config)),
-            pipe=get_alignment_pipes()
-        log:
-            expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}.log", **config)
-        benchmark:
-            expand("{benchmark_dir}/{aligner}_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
-        params:
-            input=lambda wildcards, input: f' {input.reads}' if config['layout'][wildcards.sample] == 'SINGLE' else \
-                                           f' {input.reads[0]} {input.reads[1]}',
-            params=config['align']
-        threads: 1
-        resources:
-            mem_gb=30
-        conda:
-            "../envs/star.yaml"
-        shell:
+    if config.get('run_alignment', True):
+        rule star_align:
             """
-            mkdir -p {output.dir}
-            
-            STAR --genomeDir {input.index} --readFilesIn {params.input} --quantMode GeneCounts \
-            --outFileNamePrefix {output.dir}/ --runThreadN {threads} {params.params} \
-            --outSAMtype BAM Unsorted --outStd BAM_Unsorted | tee {output.pipe} 1> /dev/null 2>> {log}
+            Align reads against a genome (index) with STAR, and pipe the output to the required sorter(s).
             """
+            input:
+                reads=get_reads,
+                index=expand("{genome_dir}/{{assembly}}/index/{aligner}", **config)
+            output:
+                dir =directory(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}", **config)),
+                pipe=get_alignment_pipes()
+            log:
+                expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}.log", **config)
+            benchmark:
+                expand("{benchmark_dir}/{aligner}_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
+            params:
+                input=lambda wildcards, input: f' {input.reads}' if config['layout'][wildcards.sample] == 'SINGLE' else \
+                                               f' {input.reads[0]} {input.reads[1]}',
+                params=config['align']
+            threads: 1
+            resources:
+                mem_gb=30
+            conda:
+                "../envs/star.yaml"
+            shell:
+                """
+                mkdir -p {output.dir}
+                
+                STAR --genomeDir {input.index} --readFilesIn {params.input} --quantMode GeneCounts \
+                --outFileNamePrefix {output.dir}/ --runThreadN {threads} {params.params} \
+                --outSAMtype BAM Unsorted --outStd BAM_Unsorted | tee {output.pipe} 1> /dev/null 2>> {log}
+                """
 
 
 rule sambamba_sort:

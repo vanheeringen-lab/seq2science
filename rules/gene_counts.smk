@@ -1,26 +1,25 @@
 def get_counts(wildcards):
     iterator = samples[samples['assembly'] == wildcards.assembly].index
     if config.get('combine_replicates', '') == 'merge' and 'condition' in samples:
-        iterator = set(samples[samples['assembly'] == wildcards.assembly].condition)# samples[samples['assembly'] == wildcards.assembly]
+        iterator = set(samples[samples['assembly'] == wildcards.assembly].condition)
     output = []
-    # for sample in samples[samples['assembly'] == wildcards.assembly].index:
     for sample in iterator:
-        output.append(f"{{result_dir}}/{{aligner}}/{wildcards.assembly}-{sample}")
+        output.append(f"{{result_dir}}/{{quantifier}}/{wildcards.assembly}-{sample}")
     return expand(output, **config)
 
-if config['aligner'] == 'salmon':
+if config['quantifier'] == 'salmon':
     rule linked_txome:
         """
         Generate a linked transcriptome for tximeta
         
         Also creates a symlink to the gtf in an Ensembl format (required by tximeta)
-          
+        
         Required to converting salmon output (estimated transcript abundances) to gene counts
         """
         input:
             fasta=expand("{genome_dir}/{{assembly}}/{{assembly}}.transcripts.fa", **config),
             gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.gtf", **config),
-            index_dir=expand("{genome_dir}/{{assembly}}/index/{aligner}", **config)
+            index_dir=expand("{genome_dir}/{{assembly}}/index/{quantifier}", **config)
         output:
             index=expand("{genome_dir}/{{assembly}}/index/tximeta/linked_txome.json", **config),
             symlink=expand(f"{{genome_dir}}/{{{{assembly}}}}/index/tximeta/{config['tximeta']['organism']}.{{{{assembly}}}}.{config['tximeta']['release']}.gtf", **config)
@@ -31,7 +30,7 @@ if config['aligner'] == 'salmon':
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-linked_txome.log", **config)
         conda:
-            "../envs/txi.yaml"
+            "../envs/gene_counts.yaml"
         script:
             "../scripts/linked_txome.R"
 
@@ -52,12 +51,12 @@ if config['aligner'] == 'salmon':
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-txi_counts_matrix.log", **config)
         conda:
-            "../envs/txi.yaml"
+            "../envs/gene_counts.yaml"
         script:
             "../scripts/txi.R"
 
 
-elif config['aligner'] == 'star':
+elif config['quantifier'] == 'star':
     rule counts_matrix:
         """
         Merge gene counts per assembly
@@ -105,3 +104,31 @@ elif config['aligner'] == 'star':
 
                 counts.index.name = "gene"
                 counts.to_csv(output[0], sep="\t")
+
+#
+# else:
+#     def get_counts(wildcards):
+#         iterator = samples[samples['assembly'] == wildcards.assembly].index
+#         if config.get('combine_replicates', '') == 'merge' and 'condition' in samples:
+#             iterator = set(samples[samples['assembly'] == wildcards.assembly].condition)
+#         output = []
+#         for sample in iterator:
+#             output.append(f"{{result_dir}}/{{quantifier}}/{wildcards.assembly}-{sample}.samtools-coordinate.bam")
+#         return expand(output, **config)
+#
+#     rule counts_matrix:
+#         input:
+#             cts=get_counts,
+#             gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.gtf", **config),
+#         output:
+#             expand("{result_dir}/gene_counts/{{assembly}}-counts.tsv", **config)
+#         log:
+#             expand("{log_dir}/counts_matrix/{{assembly}}-counts_matrix.log", **config)
+#         conda:
+#             "../envs/gene_counts.yaml"
+#         shell:
+#              """
+#              htseq-count -f bam -r pos -m union {input.cts} {input.gtf} &> {log}
+#              grep -v -- 'SAM\|GFF\|Warning' {log} > {output}
+#              """
+#

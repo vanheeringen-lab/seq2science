@@ -128,7 +128,7 @@ rule sra2fastq_PE:
         fi
 
         # renaming fqexts
-        all_files=$(ls -1q {config['fastq_dir']} | grep -c $GSM'_.*.{config['fqsuffix']}.gz')
+        all_files=$(ls -1q {config['fastq_dir']} | grep -c $GSM'_.*.gz')
         # Snakemake throws an error if variable assignment is based on a grep command without output (0 hits)
         correct_files=$(( $(ls -1q {config['fastq_dir']} | grep -c $GSM'_{config['fqext1']}.{config['fqsuffix']}.gz') + \
                           $(ls -1q {config['fastq_dir']} | grep -c $GSM'_{config['fqext2']}.{config['fqsuffix']}.gz') )) \

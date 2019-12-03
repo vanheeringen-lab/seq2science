@@ -40,9 +40,9 @@ checkpoint get_genome:
 
         genomepy plugin disable {{blacklist,bowtie2,bwa,star,gmap,hisat2,minimap2}} >> {log} 2>&1
         
+        genomepy install --genome_dir {params.dir} {wildcards.assembly} Ensembl {params.annotation} >> {log} 2>&1 ||
         genomepy install --genome_dir {params.dir} {wildcards.assembly} UCSC    {params.annotation} >> {log} 2>&1 ||
-        genomepy install --genome_dir {params.dir} {wildcards.assembly} NCBI    {params.annotation} >> {log} 2>&1 ||
-        genomepy install --genome_dir {params.dir} {wildcards.assembly} Ensembl {params.annotation} >> {log} 2>&1
+        genomepy install --genome_dir {params.dir} {wildcards.assembly} NCBI    {params.annotation} >> {log} 2>&1
         
         if [ {params.annotation} ]; then
             if [ -f {params.gtf} ]; then

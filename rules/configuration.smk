@@ -24,7 +24,7 @@ for key, value in config.items():
         config[key] = os.path.expanduser(value)
 
 # make sure that difficult data-types (yaml objects) are in correct data format
-for kw in ['aligner', 'bam_sorter']:
+for kw in ['aligner', 'quantifier', 'bam_sorter']:
     if isinstance(config.get(kw, None), str):
         config[kw] = {config[kw]: {}}
 
@@ -73,7 +73,7 @@ if config.get('peak_caller', False):
         "HMMRATAC requires all samples to be paired end"
 
 # ...for alignment and rna-seq
-for conf_dict in ['aligner', 'diffexp']:
+for conf_dict in ['aligner', 'quantifier', 'diffexp']:
     if config.get(conf_dict, False):
         dict_key = list(config[conf_dict].keys())[0]
         for k, v in list(config[conf_dict].values())[0].items():

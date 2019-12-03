@@ -3,6 +3,37 @@ $schema: "http://json-schema.org/draft-06/schema#"
 description: snakemake-workflows gene expression configuration
 
 properties:
+  run_alignment:
+    description: Run aligning to the genome or only output a counts table
+    enum: [True, False]
+    default: True
+
+  quantifier:
+    description: which quantifier to use
+    properties:
+      star:
+        properties:
+          quantifier_index_flags:
+            default: ''
+          quantifier_flags:
+            default: '--readFilesCommand gunzip -c'
+        default:
+          quantifier_index_flags: ''
+          quantifier_flags: '--readFilesCommand gunzip -c'
+      salmon:
+        properties:
+          quantifier_index_flags:
+            default: ''
+          quantifier_flags:
+            default: '--seqBias --gcBias --validateMappings'
+        default:
+          quantifier_index_flags: ''
+          quantifier_flags: '--seqBias --gcBias --validateMappings'
+    default:
+      salmon:
+        quantifier_index_flags: ''
+        quantifier_flags: '--seqBias --gcBias --validateMappings'
+
   tximeta:
     description: tximeta is used to convert salmon output (estimated transcript abundances) to a gene counts matrix. Currently, these values can be ignored.
     properties:
