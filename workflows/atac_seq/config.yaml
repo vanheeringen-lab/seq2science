@@ -20,8 +20,9 @@ peak_caller:
 #  hmmratac:
 #      ""
 
-combine_replicates: merge
-
+combine_replicates: fisher
+remove_blacklist: True
+remove_mito: True
 
 # which aligner to use with the option to specify own parameters
 aligner:

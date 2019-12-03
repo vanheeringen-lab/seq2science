@@ -15,6 +15,7 @@ genome_dir: ./  # where to look for or download the genomes
 aligner:
   star
 
+remove_blacklist: True
 
 ## differential expression analysis
 #diffexp: # which analysis to use (DESeq2 or None, default: None)
