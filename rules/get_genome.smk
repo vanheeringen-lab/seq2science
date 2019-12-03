@@ -145,8 +145,36 @@ rule get_transcripts:
         expand("{log_dir}/get_genome/{{assembly}}.transcripts.log", **config)
     benchmark:
         expand("{benchmark_dir}/get_genome/{{assembly}}.transcripts.benchmark.txt", **config)[0]
-    priority: 1
     conda:
         "../envs/get_genome.yaml"
     shell:
         "gffread -w {output} -g {input.fa} {input.gtf} >> {log} 2>&1"
+
+
+rule decoy_transcripts:
+    """
+    Generate decoy_transcripts.txt
+    
+    script source: https://github.com/COMBINE-lab/SalmonTools
+    """
+    input:
+        script="../../scripts/generateDecoyTranscriptome.sh",
+        genome=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+        gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.gtf", **config),
+        transcripts=expand("{genome_dir}/{{assembly}}/{{assembly}}.transcripts.fa", **config),
+    output:
+        expand("{genome_dir}/{{assembly}}/decoy_transcripts/decoys.txt", **config)
+    log:
+        expand("{log_dir}/get_genome/{{assembly}}.decoy_transcripts.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/get_genome/{{assembly}}.decoy_transcripts.benchmark.txt", **config)[0]
+    threads: 40
+    resources:
+        mem_gb=63
+    conda:
+        "../envs/decoy.yaml"
+    shell:
+         """
+         cpulimit --include-children -l {threads}00 --\
+         sh {input.script} -j {threads} -g {input.genome} -a {input.gtf} -t {input.transcripts} -o dirname({output}) > {log} 2>&1
+         """
