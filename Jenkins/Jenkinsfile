@@ -110,14 +110,14 @@ pipeline {
                 echo "default rna-seq"
                 snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --quiet
 
-                # test count matrix generation
-                echo "counts matrix"
-                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --config quantifier=star   --quiet
-                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --config quantifier=salmon --quiet
+                # # test count matrix generation
+                # echo "counts matrix"
+                # snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --config quantifier=star   --quiet
+                # snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --config quantifier=salmon --quiet
 
-                # test differential expression analysis
-                echo "differential expression"
-                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/deseq2.yaml --config samples=../../Jenkins/rna_seq/samples.tsv --quiet
+                # # test differential expression analysis
+                # echo "differential expression"
+                # snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/deseq2.yaml --config samples=../../Jenkins/rna_seq/samples.tsv --quiet
                 '''
             }
         }

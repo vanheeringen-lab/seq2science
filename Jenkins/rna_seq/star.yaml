@@ -1,0 +1,8 @@
+# tab-separated file of the samples
+samples: samples.tsv
+
+# produce bams, bigwigs and QC statistics?
+run_alignment: False
+
+# which method to use in order to generate the counts (salmon or star)
+quantifier: star
