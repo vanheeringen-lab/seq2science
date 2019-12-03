@@ -170,11 +170,13 @@ rule decoy_transcripts:
         expand("{benchmark_dir}/get_genome/{{assembly}}.decoy_transcripts.benchmark.txt", **config)[0]
     threads: 40
     resources:
-        mem_gb=63
+        mem_gb=65 # this is not affected by the number of threads
     conda:
         "../envs/decoy.yaml"
     shell:
          """
+         outdir=$(dirname {output})
+         
          cpulimit --include-children -l {threads}00 --\
-         sh {input.script} -j {threads} -g {input.genome} -a {input.gtf} -t {input.transcripts} -o dirname({output}) > {log} 2>&1
+         sh {input.script} -j {threads} -g {input.genome} -a {input.gtf} -t {input.transcripts} -o $outdir > {log} 2>&1
          """

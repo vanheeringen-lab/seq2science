@@ -6,3 +6,4 @@ channels:
 dependencies:
   - bioconda::bedtools=2.29.0
   - bioconda::mashmap=2.0
+  - conda-forge::cpulimit=0.2
