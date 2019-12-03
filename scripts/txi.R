@@ -1,3 +1,5 @@
+# source: https://github.com/csoneson/ARMOR/blob/master/scripts/run_tximeta.R
+
 suppressMessages({
   library(tidyverse)
   library(tximeta)
@@ -23,13 +25,33 @@ sink(log, type="message")
 loadLinkedTxome(linked_txome)
 
 samplenames <- gsub(paste0(assembly, '-'), '', basename(samples))
-coldata <- data.frame(names = samplenames, files = file.path(samples, 'quant.sf'), stringsAsFactors = F)
+coldata <- data.frame(names = samplenames, files = file.path(samples, 'quant.sf'), stringsAsFactors = F, check.names = F)
 
 ## import annotated abundances in transcript level
 st <- tximeta::tximeta(coldata)
 
 ## Summarize to gene level
 sg <- summarizeToGene(st)
+
+
+## This section deviates from the source script
+## It outputs a unnormalized counts matrix
+## (for consistency between quantifiers)
+
+## Extract a count table
+counts <- assay(sg, "counts")
+
+## Convert float to int
+for(i in 1:ncol(counts)){
+  class(counts[, i]) = "integer"
+}
+
+## Save gene counts matrix
+counts <- data.frame(counts, stringsAsFactors = F, check.names = F) %>% rownames_to_column("gene")
+write.table(counts, file=out_matrix, quote = F, sep = '\t', row.names = F)
+
+## Returning to source script
+
 
 ## If rowData(st)$gene_id is a CharacterList, convert it to character to allow 
 ## the joining below
@@ -40,20 +62,6 @@ if (is(rowData(st)$gene_id, "CharacterList")) {
   }
   rowData(st)$gene_id <- vapply(rowData(st)$gene_id, function(w) w[[1]], "")
 }
-
-## Extract gene counts
-sgc <- as(sg, "SingleCellExperiment")
-counts = data.frame(counts(sgc), stringsAsFactors = F) %>%
-  rownames_to_column('gene')
-
-## Convert float to int
-for(i in 2:ncol(counts)){
-  class(counts[, i]) = "integer"
-}
-
-## Save gene counts matrix
-write.table(counts, file=out_matrix, quote = F, sep = '\t', row.names = F)
-
 
 ## If rowData(st)$tx_id is of class integer, replace it with the tx_name 
 ## column
