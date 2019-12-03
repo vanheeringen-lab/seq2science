@@ -12,11 +12,14 @@ fastq_dir: ../../Jenkins/test_fastq
 run_alignment: False
 
 # which method to use in order to generate the counts (salmon or star)
-quantifier: star # star or salmon
-
+quantifier:
+  salmon:
+    quantifier_index_flags: '-k 31'
+    quantifier_flags: '--seqBias --gcBias --validateMappings --recoverOrphans'
+    decoy_aware_index: True # salmon only. Generating a decoy requires ~65 GB RAM for GRCh38 (default is False)
 
 ## differential expression analysis
-#diffexp: # which analysis to use (DESeq2 or None, default: None)
+#diffexp:
 #  deseq2:
 #    DE_params:
 #      multiple_testing_procedure: IWH # default is BH
