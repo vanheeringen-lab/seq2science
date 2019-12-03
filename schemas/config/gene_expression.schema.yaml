@@ -27,16 +27,16 @@ properties:
           quantifier_flags:
             default: '--seqBias --gcBias --validateMappings --recoverOrphans' # --posBias experimental flag
           decoy_aware_index:
-            default: True
+            default: False
         default:
           quantifier_index_flags: '-k 31'
           quantifier_flags: '--seqBias --gcBias --validateMappings --recoverOrphans'
-          decoy_aware_index: True
+          decoy_aware_index: False
     default:
       salmon:
         quantifier_index_flags: '-k 31'
         quantifier_flags: '--seqBias --gcBias --validateMappings --recoverOrphans'
-        decoy_aware_index: True
+        decoy_aware_index: False
 
   tximeta:
     description: tximeta is used to convert salmon output (estimated transcript abundances) to a gene counts matrix. Currently, these values can be ignored.
