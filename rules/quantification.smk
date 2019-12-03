@@ -82,9 +82,9 @@ elif config['quantifier'] == 'salmon':
                 """
 
 
-    def get_index(wildcards):
-        index="{genome_dir}/" + wildcards.assembly + "/index/{quantifier}_decoy_aware" if config["decoy_aware_index"] else "{genome_dir}/" + wildcards.assembly + "/index/{quantifier}"
-        return expand(index, **config)
+    # def get_index(wildcards):
+    #     index="{genome_dir}/" + wildcards.assembly + "/index/{quantifier}_decoy_aware" if config["decoy_aware_index"] else "{genome_dir}/" + wildcards.assembly + "/index/{quantifier}"
+    #     return expand(index, **config)
 
     rule salmon_quant:
         """

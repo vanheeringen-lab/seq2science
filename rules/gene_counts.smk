@@ -8,6 +8,10 @@ def get_counts(wildcards):
     return expand(output, **config)
 
 if config['quantifier'] == 'salmon':
+    def get_index(wildcards):
+        index="{genome_dir}/" + wildcards.assembly + "/index/{quantifier}_decoy_aware" if config["decoy_aware_index"] else "{genome_dir}/" + wildcards.assembly + "/index/{quantifier}"
+        return expand(index, **config)
+
     rule linked_txome:
         """
         Generate a linked transcriptome for tximeta
@@ -19,7 +23,7 @@ if config['quantifier'] == 'salmon':
         input:
             fasta=expand("{genome_dir}/{{assembly}}/{{assembly}}.transcripts.fa", **config),
             gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.gtf", **config),
-            index_dir=expand("{genome_dir}/{{assembly}}/index/{quantifier}", **config)
+            index_dir=get_index  # expand("{genome_dir}/{{assembly}}/index/{quantifier}", **config)
         output:
             index=expand("{genome_dir}/{{assembly}}/index/tximeta/linked_txome.json", **config),
             symlink=expand(f"{{genome_dir}}/{{{{assembly}}}}/index/tximeta/{config['tximeta']['organism']}.{{{{assembly}}}}.{config['tximeta']['release']}.gtf", **config)
