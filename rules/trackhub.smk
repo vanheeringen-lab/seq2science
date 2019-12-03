@@ -210,7 +210,7 @@ def get_trackhub_files(wildcards):
         # TODO
 
     # Get the ATAC or RNA seq files
-    if 'atac_seq' in workflow.snakefile.split('/')[-2]:
+    if workflow.snakefile.split('/')[-2] in ['atac_seq', 'chip_seq']:
         # get all the peak files for all replicates or for the replicates combined
         if 'condition' in samples:
             for condition in set(samples['condition']):

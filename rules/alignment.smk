@@ -372,43 +372,79 @@ rule samtools_sort:
         """
 
 
-def get_blacklist(wildcards):
-    # make sure we downloaded the genome
-    checkpoints.get_genome.get(assembly=wildcards.assembly)
-
-    #
-    blacklist = expand(f"{{genome_dir}}/{wildcards.assembly}/{wildcards.assembly}.blacklist.bed.gz", **config)[0]
-    if os.exists(blacklist):
-        return {'blacklist': blacklist}
-    return {}
-
-
-rule blacklist_and_mito:
+rule remove_mito:
     """
 
     """
     input:
-        unpack(get_blacklist),
-        chr_names=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
-        bam=expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config)
+        bam=expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config),
+        chr_names=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config)
     output:
-        bam=expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.clean.bam", **config),
-        mito_count=expand("{qc_dir}/mito/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.samtools_stats.txt", **config)
+        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.mito.bam", **config)
+#    group: 'clean_bam'
     params:
         lambda wildcards, input: \
-          [chrm for chrm in ['chrM', 'chrm'] if chrm in open({wildcards.input.chr_names}, 'r').read()][0]
-    run:
-        # remove blacklisted regions if blacklist exists
-        if hasattr(input, 'blacklist'):
-            shell("bedtools intersect -v -abam  {input.bam} -b {input.blacklist} > {input.bam}.tmp;"
-                  "mv {input.bam}.tmp {input.bam}")
-        if config.get('remove_mito', False):
-            shell("cat {input.chr_names} | cut -f 1 | grep -v {params} | xargs samtools view -b {input.bam} > {output.bam}")
+          [chrm for chrm in ['chrM', 'MT'] if chrm in open(input.chr_names, 'r').read()][0]
+    conda:
+        "../envs/samtools.yaml"
+    shell:
+        """
+        cat {input.chr_names} | cut -f 1 | grep -v {params} | xargs samtools view -b {input.bam} > {output}
+        """
 
 
-def get_bam(wildcards):
-    if get_blacklist(wildcards) or config.get('remove_mito', False):
-        return rules.blacklist_and_mito.output.bam
+def get_bam_remove_blacklist(wildcards):
+    # check if we want to remove mitochondrial reads
+    if config.get('remove_mito', False):
+        return rules.remove_mito.output
+
+    # if we don't want to do anything get the untreated bam
+    return expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config)
+
+
+def get_blacklist_remove_blacklist(wildcards):
+    if workflow.persistence.dag.dryrun or workflow.persistence.dag.ignore_incomplete:
+        return expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config)
+    return expand("{genome_dir}/{{assembly}}/{{assembly}}.blacklist.bed.gz", **config)
+
+
+rule remove_blacklist:
+    """
+
+    """
+    input:
+        bam=get_bam_remove_blacklist,
+        blacklist=get_blacklist_remove_blacklist
+    output:
+        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.black.bam", **config)
+#    group: 'clean_bam'
+    conda:
+        "../envs/bedtools.yaml"
+    shell:
+        """
+        bedtools intersect -v -abam  {input.bam} -b {input.blacklist} > {output}
+        """
+
+
+def get_bam_mark_duplicates(wildcards):
+    if config.get('remove_blacklist', False):
+        # get the blacklist if we are dryrunning
+        if config.get('remove_blacklist', False) and \
+                (workflow.persistence.dag.dryrun or workflow.persistence.dag.ignore_incomplete):
+            return rules.remove_blacklist.output
+
+        # or if it actually exists
+        # TODO: make genomepy checkpoint again!
+        # checkpoints.get_genome.get(assembly=wildcards.assembly)
+        blacklist = expand(f"{{genome_dir}}/{wildcards.assembly}/{wildcards.assembly}.blacklist.bed.gz", **config)[0]
+        if os.path.exists(blacklist):
+            return rules.remove_blacklist.output
+
+    # otherwise check if we want to remove mitochondrial reads
+    if config.get('remove_mito', False):
+        return rules.remove_mito.output
+
+    # if we don't want to do anything get the untreated bam
     return expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config)
 
 
@@ -417,13 +453,13 @@ rule mark_duplicates:
     Mark (but keep) all duplicate reads in a bam file with picard MarkDuplicates
     """
     input:
-        get_bam
-        # expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config)
+        get_bam_mark_duplicates
     output:
         bam=    expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config),
         metrics=expand("{qc_dir}/dedup/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.metrics.txt", **config)
     log:
         expand("{log_dir}/mark_duplicates/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config)
+#    group: 'clean_bam'
     benchmark:
         expand("{benchmark_dir}/mark_duplicates/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.benchmark.txt", **config)[0]
     params:

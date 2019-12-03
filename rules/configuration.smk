@@ -272,7 +272,9 @@ def any_given(*args):
 if 'assembly' in samples:
     wildcard_constraints:
         sample=any_given('sample', 'condition'),
-        assembly=any_given('assembly')
+        assembly=any_given('assembly'),
+        sorting='coordinate|queryname',
+        sorter='samtools|sambamba'
 else:
     wildcard_constraints:
         sample=any_given('sample', 'condition')

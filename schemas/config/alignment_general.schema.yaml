@@ -97,3 +97,9 @@ properties:
     description: the parameters of picard markduplicates
     default: REMOVE_DUPLICATES=false -Xms4G -Xmx6G MAX_FILE_HANDLES_FOR_READ_ENDS_MAP=999
     type: string
+
+  # email
+  email:
+    description: email to reach you, required for trackhub and multiqc report
+    default: 'none@provided.com'
+    type: string

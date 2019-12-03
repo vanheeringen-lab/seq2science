@@ -103,20 +103,100 @@ rule InsertSizeMetrics:
 
 rule MTNucRatioCalculator:
     """
-    Calculate the ratio mitochondrial dna in your 
+    Calculate the ratio mitochondrial dna in your sample.
+    Note: version 0.5 is bugged in what output it uses, and currently the {output} is just there
+    for form.
     """
     input:
-        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config)
+        bam=expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config),
+        chr_names=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config)
     output:
         expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.bam.mtnucratiomtnuc.json", **config)
     conda:
-        "../envs/mtnucratiocalculator.yaml"
+        "../envs/mtnucratio.yaml"
     params:
-        lambda wildcards, input: [chrm for chrm in ['chrM', 'chrm'] if chrm in open({wildcards.input.chr_names}, 'r').read()][0]
+        lambda wildcards, input: [chrm for chrm in ['chrM', 'MT'] if chrm in open(str(input.chr_names), 'r').read()][0]
     shell:
         """
-        mtnucratio {input} {output} {params}
+        mtnucratio {input.bam} {output} {params}
         """
+
+
+rule multiqc_header_info:
+    """
+    Generate a multiqc header file with contact info and date of multiqc generation.
+    """
+    output:
+        expand('{qc_dir}/header_info.yaml', **config)
+    run:
+        import os
+        import copy
+        from datetime import date
+
+        cwd = os.getcwd().split('/')[-1]
+        mail = config.get('email', 'none@provided.com')
+        date = date.today().strftime("%B %d, %Y")
+
+        description = ['        <dl class=dl-horizontal>']
+        for key, value in config.items():
+            if not any([i in key for i in ['dir', 'ascp', 'ncbi']]):
+                # description.append(f'{key}:\t\t{value}<br /> ')
+                description.append(f'            <dt>{key}</dt><dd>{value}</dd>')
+        description.append('        </dl>')
+
+        # make a table of our samples
+        samples_table = copy.copy(samples)
+        samples_table.index.name = None
+        samples_table = samples_table.to_html().split('\n')
+        samples_table = ['        ' + sample for sample in samples_table]
+        description.extend(samples_table)
+
+        description = '\n'.join(description)
+        description = description.replace('\'', '').replace(':', '\:')
+
+        with open(output[0], "w") as f:
+            f.write(f"report_header_info:\n"
+                    f"    - Contact E-mail: '{mail}'\n"
+                    f"    - Workflow: '{cwd}'\n"
+                    f"    - Date: '{date}'\n"
+                    f"\n\n"
+                    f"custom_data:\n"
+                    f"    id: 'Whatup fellas'\n"
+                    f"    section_name: 'Let me tell you a story'\n"
+                    f"    plot_type: 'html'\n"
+                    f"    data: |\n"
+                    f"        The pipeline was run with these configuration options and samples\:\n"
+                    f"{description}"
+                    # f"custom_data:\n"
+                    # f"    my_data_type:\n"
+                    # f"        id: 'mqc_config_file_section'\n"
+                    # f"        section_name: 'Configuration options<br /> '\n"
+                    # f"        description: {description}\n"
+                    # f"        plot_type: 'bargraph'\n"
+                    # f"        data:\n"
+                    # f"            sample_a:\n"
+                    # f"                empty: 100\n"
+                    )
+
+
+rule multiqc_config_info:
+    """
+    Generate a multiqc header file with contact info and date of multiqc generation.
+    """
+    output:
+        expand('{qc_dir}/config_info.yaml', **config)
+    run:
+        with open(output[0], "w") as f:
+            f.write(
+                "# section_name: 'Custom data file'"
+                "# description: 'This output is described in the file header. Any MultiQC installation will understand it without prior configuration.'"
+                "# format: 'csv'"
+                "# plot_type: 'table'"
+                "# pconfig:"
+                "#    id: 'custom_bargraph_w_header'"
+                "#    ylab: 'Number of things'"
+                "Sample Name,some feature"
+                "GSM2219688_pass_1,42")
 
 
 def get_qc_files(wildcards):
@@ -137,28 +217,7 @@ def get_qc_files(wildcards):
         for sample in samples[samples['assembly'] == wildcards.assembly].index:
             for function in quality_control:
                 qc.extend(function(sample))
-    qc.extend(expand('{qc_dir}/header_info.yaml', **config))
     return qc
-
-
-rule multiqc_header_info:
-    """
-    Generate a multiqc header file with contact info and date of multiqc generation.
-    """
-    output:
-        temp(expand('{qc_dir}/header_info.yaml', **config))
-    run:
-        import os
-        from datetime import date
-
-        cwd = os.getcwd().split('/')[-1]
-        mail = config.get('email', 'none@provided.com')
-        date = date.today().strftime("%B %d, %Y")
-        with open(output[0], "w") as f:
-            f.write(f"report_header_info:\n"
-                    f"    - Contact E-mail: '{mail}'\n"
-                    f"    - Workflow: '{cwd}'\n"
-                    f"    - Date: '{date}'\n")
 
 
 rule multiqc:
@@ -166,7 +225,9 @@ rule multiqc:
     Aggregate all the quality control metrics for every sample into a single multiqc report.
     """
     input:
-        get_qc_files
+        qc=get_qc_files,
+        header=expand('{qc_dir}/header_info.yaml', **config),
+        # config=expand('{qc_dir}/config_info.yaml', **config)
     output:
         expand("{qc_dir}/multiqc_{{assembly}}.html", **config),
         directory(expand("{qc_dir}/multiqc_{{assembly}}_data", **config))
@@ -181,6 +242,7 @@ rule multiqc:
         """
         multiqc {input} -o {params.dir} -n multiqc_{wildcards.assembly}.html \
         --config ../../schemas/multiqc_config.yaml                           \
+        --config {input.header}                                              \
         --cl_config "extra_fn_clean_exts: [                                  \
             {{'pattern': ^.*{wildcards.assembly}-, 'type': 'regex'}},        \
             {{'pattern': {params.fqext1},          'type': 'regex'}},        \
@@ -203,21 +265,17 @@ def get_trimming_qc(sample):
 
 def get_alignment_qc(sample):
     output = []
-    if 'peak_caller' in config:
-        if config['peak_caller'] in ['macs2', 'hmmratac']:
-            output.append(f"{{qc_dir}}/dedup/{{{{assembly}}}}-{sample}.samtools-coordinate.metrics.txt")
-            output.append(f"{{qc_dir}}/dedup/{{{{assembly}}}}-{sample}.samtools-coordinate.samtools_stats.txt")
-        if config['peak_caller'] in ['genrich']:
-            output.append(f"{{qc_dir}}/dedup/{{{{assembly}}}}-{sample}.sambamba-queryname.metrics.txt")
-            output.append(f"{{qc_dir}}/dedup/{{{{assembly}}}}-{sample}.sambamba-queryname.samtools_stats.txt")
-    else:
-        output.append(f"{{qc_dir}}/dedup/{{{{assembly}}}}-{sample}.{{bam_sorter}}-{{bam_sort_order}}.metrics.txt")
-        output.append(f"{{qc_dir}}/dedup/{{{{assembly}}}}-{sample}.{{bam_sorter}}-{{bam_sort_order}}.samtools_stats.txt")
 
+    # add samtools stats
+    output.append(f"{{qc_dir}}/dedup/{{{{assembly}}}}-{sample}.samtools-coordinate.metrics.txt")
+    output.append(f"{{qc_dir}}/dedup/{{{{assembly}}}}-{sample}.samtools-coordinate.samtools_stats.txt")
+
+    # add insert size metrics
     if config['layout'][sample] == "PAIRED":
         output.append(f"{{qc_dir}}/InsertSizeMetrics/{{{{assembly}}}}-{sample}.tsv")
 
-    output.append(f"{{qc_dir}}/MTNucRatioCalculator/{{{{assembly}}}}-{sample}.txt")
+    # get the ratio mitochondrial dna
+    output.append(f"{{result_dir}}/{config['aligner']}/{{{{assembly}}}}-{sample}.samtools-coordinate.bam.mtnucratiomtnuc.json")
 
     return expand(output, **config)
 

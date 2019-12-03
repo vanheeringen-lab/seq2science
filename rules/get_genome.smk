@@ -1,5 +1,5 @@
 # the filetypes genomepy will download
-config['genome_types'] = ['fa', 'fa.fai', "fa.sizes", ".gaps.bed"]
+config['genome_types'] = ['fa', 'fa.fai', "fa.sizes", "gaps.bed"]
 # intermediate filetypes genomepy may download
 config['genomepy_temp'] = []
 
@@ -9,7 +9,7 @@ if config['aligner'] in ['salmon', 'star']:
     config['genomepy_temp'].extend(["annotation.bed.gz", "annotation.gff.gz"])
 
 
-checkpoint get_genome:
+rule get_genome:
     """
     Download a genome through genomepy.
     
