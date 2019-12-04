@@ -1,5 +1,5 @@
-# complement the configuration
-if not any(config):
+# complement the configuration (if none/no complete one has been added already)
+if (not any(config)) or config.get('ncbi_requests', False):
     configfile: "config.yaml"
 # RNA-seq alignment is currently only compatible with STAR
 if 'star' not in config.get('aligner', ''):
