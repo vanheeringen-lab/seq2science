@@ -1,5 +1,6 @@
 # complement the configuration
-configfile: "config.yaml"
+if not any(config):
+    configfile: "config.yaml"
 # RNA-seq alignment is currently only compatible with STAR
 if 'star' not in config.get('aligner', ''):
     config['aligner'] = 'star'

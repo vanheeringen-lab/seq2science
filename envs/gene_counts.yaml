@@ -7,7 +7,7 @@ channels:
 dependencies:
   # linked_txome & txi count table
   - r::r-base=3.6.1
-  - bioconda::bioconductor-tximeta=1.4
+  - bioconda::bioconductor-tximeta=1.4.0 # needs to be updated to >1.4.2 when updated on conda!
 
   # linked_txome
   - r::r-r.utils=2.8.0

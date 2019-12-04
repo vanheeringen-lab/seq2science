@@ -66,7 +66,7 @@ pipeline {
 
                 # Do some dry runs to test the DAG
                 # test download workflow
-                echo "download_default"
+                echo "download default"
                 snakemake -s workflows/download_fastq/Snakefile --directory workflows/download_fastq -n -j 48 --quiet
 
                 # test alignment workflow
@@ -110,14 +110,20 @@ pipeline {
                 echo "default rna-seq"
                 snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --quiet
 
-                # # test count matrix generation
-                # echo "counts matrix"
-                # snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --config quantifier=star   --quiet
-                # snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --config quantifier=salmon --quiet
+                # test count matrix generation
+                echo "counts matrix"
+                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/star.yaml   --quiet
+                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/salmon.yaml --quiet
 
-                # # test differential expression analysis
-                # echo "differential expression"
-                # snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/deseq2.yaml --config samples=../../Jenkins/rna_seq/samples.tsv --quiet
+                # test differential expression analysis
+                echo "differential expression"
+                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/deseq2.yaml --config samples=../../Jenkins/rna_seq/samples.tsv --quiet
+                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/deseq2.yaml --config samples=../../Jenkins/rna_seq/samples.tsv quantifier=star --quiet
+
+                # test trackhub generation
+                echo "trackhub"
+                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/star.yaml   --config run_alignment=True --quiet
+                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/salmon.yaml --config run_alignment=True --quiet
                 '''
             }
         }

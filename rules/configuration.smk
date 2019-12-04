@@ -166,7 +166,7 @@ if config.get('contrasts', False):
                     assert str(group) in [str(i) for i in samples[parsed_contrast[0]].tolist()],\
                         ('\nYour contrast design contains group ' + group +
                         ' which cannot be found in column ' + parsed_contrast[0] +
-                         'of' + config["samples"] + '.\n')
+                         ' of ' + config["samples"] + '.\n')
 
 
 # make absolute paths, cut off trailing slashes

@@ -1,3 +1,9 @@
-sample	assembly	timepoint
-GSM1483769	GRCz11	34
-GSM1483770	GRCz11	35
+sample	assembly	timepoint	batch
+s1_1	test_GRCh38.p12	1a	fake
+s1_2	test_GRCh38.p12	1b	fake
+s1_3	test_GRCh38.p12	1a	unreal
+s1_4	test_GRCh38.p12	1b	unreal
+s2_1	test_GRCh38.p12	2a	fake
+s2_2	test_GRCh38.p12	2b	fake
+s2_3	test_GRCh38.p12	2a	unreal
+s2_4	test_GRCh38.p12	2b	unrea
