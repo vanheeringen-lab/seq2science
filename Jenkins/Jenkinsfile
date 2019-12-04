@@ -66,23 +66,23 @@ pipeline {
 
                 # Do some dry runs to test the DAG
                 # test download workflow
-                echo "download default"
+                printf "\ndownload default\n\n"
                 snakemake -s workflows/download_fastq/Snakefile --directory workflows/download_fastq -n -j 48 --quiet
 
                 # test alignment workflow
                 # default config
-                echo "alignment default"
+                printf "\nalignment default\n\n"
                 snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --quiet
 
                 # test aligners
-                echo "testing aligners"
+                printf "\ntesting aligners\n\n"
                 snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/bowtie2.yaml --quiet
                 snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/bwa.yaml     --quiet
                 snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/hisat2.yaml  --quiet
                 snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/star.yaml    --quiet
 
                 # test sorting
-                echo "testing sorting"
+                printf "\ntesting sorting\n\n"
                 snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/samtools_coordinate.yaml --quiet
                 snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/samtools_queryname.yaml  --quiet
                 snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/sambamba_coordinate.yaml --quiet
@@ -90,38 +90,38 @@ pipeline {
 
                 # test atac-seq workflow
                 # default config
-                echo "default atac-seq"
+                printf "\ndefault atac-seq\n\n"
                 snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --quiet
 
                 # test different peak callers
-                echo "atac peakcaller"
+                printf "\natac peakcaller\n\n"
                 snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --configfile Jenkins/atac_seq/genrich.yaml       --quiet
                 snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --configfile Jenkins/atac_seq/macs2.yaml         --quiet
                 snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --configfile Jenkins/atac_seq/genrich_macs2.yaml --quiet
 
                 # test different replicate settings
-                echo "atac combine replicates"
+                printf "\natac combine replicates\n\n"
                 snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=fisher samples=../../Jenkins/atac_seq/samples.tsv --quiet
                 snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=idr    samples=../../Jenkins/atac_seq/samples.tsv --quiet
                 snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=merge  samples=../../Jenkins/atac_seq/samples.tsv --quiet
 
                 # test rna-seq workflow
                 # default config
-                echo "default rna-seq"
+                printf "\ndefault rna-seq\n\n"
                 snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --quiet
 
                 # test count matrix generation
-                echo "counts matrix"
+                printf "\ncounts matrix\n\n"
                 snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/star.yaml   --quiet
                 snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/salmon.yaml --quiet
 
                 # test differential expression analysis
-                echo "differential expression"
+                printf "\ndifferential expression\n\n"
                 snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/deseq2.yaml --config samples=../../Jenkins/rna_seq/samples.tsv --quiet
                 snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/deseq2.yaml --config samples=../../Jenkins/rna_seq/samples.tsv quantifier=star --quiet
 
                 # test trackhub generation
-                echo "trackhub"
+                printf "\ntrackhub\n\n"
                 snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/star.yaml   --config run_alignment=True --quiet
                 snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/salmon.yaml --config run_alignment=True --quiet
                 '''
