@@ -78,16 +78,16 @@ rule sra2fastq_SE:
         "../envs/get_fastq.yaml"
     shell:
         f"""
-        parallel-fastq-dump -s {{input}}/* -O {config['fastq_dir']} {config['splot']} --threads {{threads}} --gzip >> {{log}} 2>&1
+        # setup tmp dir
+        tmpdir={config['sra_dir']}/{{wildcards.sample}}/tmp
+        mkdir -p $tmpdir; trap "rm -rf $tmpdir" EXIT
 
-        # rename the SRR to GSM
-        SRR=$(basename {{input}}/*)
-        GSM=$(basename {{input}})
-        src='{config['fastq_dir']}/'$SRR'_pass.{config['fqsuffix']}.gz'
-        dst='{config['fastq_dir']}/'$GSM'.{config['fqsuffix']}.gz'
-        if [[ ! $src = $dst ]]; then
-              mv -v $src $dst >> {{log}} 2>&1
-        fi
+        # dump to tmp dir
+        parallel-fastq-dump -s {{input}}/* -O $tmpdir {config['splot']} --threads {{threads}} --gzip >> {{log}} 2>&1
+
+        # rename file and move to output dir
+        f=$(ls -1q $tmpdir | grep .*.{config['fqsuffix']}.gz)
+        mv -v $tmpdir'/'$f {{output[0]}} >> {{log}} 2>&1
         """
 
 
@@ -110,47 +110,27 @@ rule sra2fastq_PE:
         "../envs/get_fastq.yaml"
     shell:
         f"""
-        parallel-fastq-dump -s {{input}}/* -O {config['fastq_dir']} {config['split']} --threads {{threads}} --gzip >> {{log}} 2>&1
+        # setup tmp dir
+        tmpdir={config['sra_dir']}/{{wildcards.sample}}/tmp
+        mkdir -p $tmpdir; trap "rm -rf $tmpdir" EXIT
 
-        # renaming SRRs to GSMs
-        SRR=$(basename {{input}}/*)
-        GSM=$(basename {{input}})
-        if [[ ! $SRR = $GSM ]]; then
-          echo "\nrenaming SRRs to GSMs:" >> {{log}}
+        # dump to tmp dir
+        parallel-fastq-dump -s {{input}}/* -O $tmpdir {config['split']} --threads {{threads}} --gzip >> {{log}} 2>&1
 
-          src='{config['fastq_dir']}/'$SRR'_{config['fqext1']}.{config['fqsuffix']}.gz'
-          dst='{config['fastq_dir']}/'$GSM'_{config['fqext1']}.{config['fqsuffix']}.gz'
-          mv -v $src $dst >> {{log}} 2>&1
-
-          src='{config['fastq_dir']}/'$SRR'_{config['fqext2']}.{config['fqsuffix']}.gz'
-          dst='{config['fastq_dir']}/'$GSM'_{config['fqext2']}.{config['fqsuffix']}.gz'
-          mv -v $src $dst >> {{log}} 2>&1
-        fi
-
-        # renaming fqexts
-        all_files=$(ls -1q {config['fastq_dir']} | grep -c $GSM'_.*.gz')
-        # Snakemake throws an error if variable assignment is based on a grep command without output (0 hits)
-        correct_files=$(( $(ls -1q {config['fastq_dir']} | grep -c $GSM'_{config['fqext1']}.{config['fqsuffix']}.gz') + \
-                          $(ls -1q {config['fastq_dir']} | grep -c $GSM'_{config['fqext2']}.{config['fqsuffix']}.gz') )) \
-                      || correct_files=0
-        if [[ ! $all_files = $correct_files ]]; then
-            echo "\nrenaming fqexts:" >> {{log}}
-
-            n=1
-            for f in $(ls -1q {config['fastq_dir']} | grep $GSM'_.*.{config['fqsuffix']}.gz'); do
-              src='{config['fastq_dir']}/'$f
-              dst='{config['fastq_dir']}/'$GSM'_{config['fqext1']}.{config['fqsuffix']}.gz'
-              if [[ $n = 2 ]]; then
-                dst='{config['fastq_dir']}/'$GSM'_{config['fqext2']}.{config['fqsuffix']}.gz'
-              fi
-              mv -v $src $dst >> {{log}} 2>&1
-              n=$(( $n + 1 ))
-            done
-        fi
+        # rename files and move to output dir
+        for f in $(ls -1q $tmpdir | grep .*.{config['fqsuffix']}.gz); do
+            src=$tmpdir'/'$f
+            dst={config['fastq_dir']}/{{wildcards.sample}}_{config['fqext1']}.{config['fqsuffix']}.gz
+            if [ -f $dst ]; then
+                dst={config['fastq_dir']}/{{wildcards.sample}}_{config['fqext2']}.{config['fqsuffix']}.gz
+            fi
+            mv -v $src $dst >> {{log}} 2>&1
+        done
         """
 
+
 def get_wrong_fqext(wildcards):
-    """get all samples with fqexts that are not in the config"""
+    """get all local samples with fqexts that do not match the config"""
     fastqs = glob.glob(os.path.join(config["fastq_dir"], wildcards.sample + "*" + config["fqsuffix"] + ".gz"))
     # exclude samples with the correct fqext
     r1 = wildcards.sample + "_" + config["fqext1"] + "." + config["fqsuffix"] + ".gz"
