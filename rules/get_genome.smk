@@ -1,22 +1,23 @@
 # the filetypes genomepy will download
 config['genome_types'] = ['fa', 'fa.fai', "fa.sizes", "gaps.bed"]
-# # intermediate filetypes genomepy may download
-# config['genomepy_temp'] = []
+config['genomepy_temp'] = ["annotation.bed.gz", "annotation.gff.gz"]
+# add annotation to the expected output if it is required
+if 'rna_seq' in workflow.snakefile.split('/')[-2] or config['aligner'] == 'star':
+    config['genome_types'].append("annotation.gtf")
 
-# # transcript & annotation related filetypes
-# if config['aligner'] in ['salmon', 'star']:
-#     config['genome_types'].append("annotation.gtf")
-#     config['genomepy_temp'].extend(["annotation.bed.gz", "annotation.gff.gz"])
-
-
-# checkpoint get_genome:
-rule get_genome:
+checkpoint get_genome:
     """
     Download a genome through genomepy.
+    Additionally downloads the gene annotation if required downstream.
+    
+    If assemblies with the same name can be downloaded from multiple providers, 
+    a provider may be specified in the config (example: provider: NCBI). Otherwise,
+    each provider will be tried in turn, stopping at the first success.
+    
+    Automatically turns on/off plugins.
     """
     output:
-        files=expand("{genome_dir}/{{assembly}}/{{assembly}}.{genome_types}", **config),
-        readme=expand("{genome_dir}/{{assembly}}/README.txt", **config)
+        expand("{genome_dir}/{{assembly}}/{{assembly}}.{genome_types}", **config)
     log:
         expand("{log_dir}/get_genome/{{assembly}}.genome.log", **config)
     benchmark:
@@ -25,78 +26,39 @@ rule get_genome:
         parallel_downloads=1
     priority: 1
     params:
-        config['genome_dir']
-        # dir=config['genome_dir'],
-        # annotation=lambda wildcards, output: '--annotation' if any('annotation.gtf' in file for file in output) else '',
-        # gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf.gz", **config),
-        # temp=expand("{genome_dir}/{{assembly}}/{{assembly}}.{genomepy_temp}", **config)
+        dir=config['genome_dir'],
+        provider=config.get('provider', None),
+        gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf.gz", **config),
+        temp=expand("{genome_dir}/{{assembly}}/{{assembly}}.{genomepy_temp}", **config)
     conda:
         "../envs/get_genome.yaml"
     shell:
         """
+        # turn off plugins and reset on exit. delete temp files on exit.
         active_plugins=$(genomepy config show | grep -Po '(?<=- ).*' | paste -s -d, -)
-        trap "genomepy plugin enable {{$active_plugins,}} >> {log} 2>&1" EXIT
-
+        trap "genomepy plugin enable {{$active_plugins,}} >> {log} 2>&1; rm -f {params.temp}" EXIT
         genomepy plugin disable {{blacklist,bowtie2,bwa,star,gmap,hisat2,minimap2}} >> {log} 2>&1
         
-        genomepy install --genome_dir {params} {wildcards.assembly} Ensembl >> {log} 2>&1 ||
-        genomepy install --genome_dir {params} {wildcards.assembly} UCSC    >> {log} 2>&1 ||
-        genomepy install --genome_dir {params} {wildcards.assembly} NCBI    >> {log} 2>&1
+        # download the genome and attempt to download the annotation
+        if [[ ! {params.provider} = None  ]]; then
+            genomepy install --genome_dir {params.dir} {wildcards.assembly} {params.provider} --annotation >> {log} 2>&1
+        else
+            genomepy install --genome_dir {params.dir} {wildcards.assembly} Ensembl --annotation >> {log} 2>&1 ||
+            genomepy install --genome_dir {params.dir} {wildcards.assembly} UCSC    --annotation >> {log} 2>&1 ||
+            genomepy install --genome_dir {params.dir} {wildcards.assembly} NCBI    --annotation >> {log} 2>&1
+        fi
+        
+        # unzip annotation if downloaded, warn if required but empty
+        if [ -f {params.gtf} ]; then
+            gunzip {params.gtf} >> {log} 2>&1
+        elif echo {output} | grep -q annotation.gtf; then
+            echo '\nAnnotation for {wildcards.assembly} contains no genes. Select a different assembly or provide an annotation file manually.\n\n' > {log}
+            exit 1
+        fi
         """
-                 # if [ {params.annotation} ]; then
-        #     if [ -f {params.gtf} ]; then
-        #         gunzip {params.gtf} >> {log} 2>&1
-        #     else
-        #         echo 'Annotation for {wildcards.assembly} contains no genes. Select a different assembly or provide an annotation file manually.\n\n' > {log}
-        #         exit 1
-        #     fi
-        # fi
-        # TODO split rules
-        # TODO make sure it uses the same provider
 
 
 rule get_annotation:
-    """
-    Download annotation via genomepy
-    """
-    input:
-        expand("{genome_dir}/{{assembly}}/README.txt", **config)
-        # genome=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
-        # readme=expand("{genome_dir}/{{assembly}}/README.txt", **config)
-    output:
-        expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config)
-    log:
-        expand("{log_dir}/get_genome/{{assembly}}.annotation1.log", **config)
-    benchmark:
-        expand("{benchmark_dir}/get_genome/{{assembly}}.annotation1.benchmark.txt", **config)[0]
-    resources:
-        parallel_downloads=1
-    priority: 1
-    params:
-        config['genome_dir']
-    conda:
-        "../envs/get_genome.yaml"
-    shell:
-        """
-        url=$(grep ^url {input})
-        provider=ncbi
-        if echo $url | grep -q ensembl.org; then 
-            provider=ensembl
-        elif echo $url | grep -q ucsc.edu; then 
-            provider=ucsc
-        fi
-        
-        active_plugins=$(genomepy config show | grep -Po '(?<=- ).*' | paste -s -d, -)
-        trap "genomepy plugin enable {{$active_plugins,}} >> {log} 2>&1" EXIT
-    
-        genomepy plugin disable {{blacklist,bowtie2,bwa,star,gmap,hisat2,minimap2}} >> {log} 2>&1
-        
-        genomepy install --genome_dir {params} {wildcards.assembly} $provider --annotation >> {log} 2>&1
-        
-        gunzip {output}.gz >> {log} 2>&1
-        """
-
-rule get_annotation_correct:
     """
     Matches the chromosome/scaffold names in annotation.gtf to those in the genome.fa.
     """
@@ -107,9 +69,9 @@ rule get_annotation_correct:
     output:
         expand("{genome_dir}/{{assembly}}/{{assembly}}.gtf", **config)
     log:
-        expand("{log_dir}/get_genome/{{assembly}}.annotation2.log", **config)
+        expand("{log_dir}/get_genome/{{assembly}}.annotation.log", **config)
     benchmark:
-        expand("{benchmark_dir}/get_genome/{{assembly}}.annotation2.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/get_genome/{{assembly}}.annotation.benchmark.txt", **config)[0]
     run:
         # Check if genome and annotation have matching chromosome/scaffold names
         with open(input.gtf[0], 'r') as gtf:
