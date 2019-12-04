@@ -164,6 +164,8 @@ pipeline {
                 '''
             }
         }
+
+
         stage('Test alignment') {
             when {
                 anyOf {
@@ -209,22 +211,16 @@ pipeline {
                 snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
                 --use-conda -j $CORES  --configfile Jenkins/alignment/hisat2.yaml \
                 --config samples=$WORKSPACE/Jenkins/alignment/samples.tsv
-#
-#                # test salmon alignment
-#                # TODO: fix #166
-#                # TODO: for alignment + salmon + txi + deseq2:
-#                # TODO: find small 2 small RNA-seq samples, the genome of which is also small, the gtf/gff contains genes, and is on Ensembl
-#                snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
-#                --use-conda -j $CORES  --configfile Jenkins/alignment/salmon.yaml \
-#                --config samples=$WORKSPACE/Jenkins/alignment/samples.tsv
-#
-#                # test star alignment
-#                snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
-#                --use-conda -j $CORES  --configfile Jenkins/alignment/star.yaml \
-#                --config samples=$WORKSPACE/Jenkins/alignment/samples.tsv
+
+                # test star alignment
+                snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
+                --use-conda -j $CORES  --configfile Jenkins/alignment/star.yaml \
+                --config samples=$WORKSPACE/Jenkins/alignment/test_samples.tsv
                 '''
             }
         }
+
+
         stage('Test atac-seq') {
             when {
                 anyOf {
@@ -267,19 +263,65 @@ pipeline {
                 '''
             }
         }
-//        stage('Test rna-seq') {
-//            steps {
-//                sh '''#!/usr/bin/env bash
-//                source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-//                conda activate miniconda/envs/snakemake-workflows/
+
+// TEST DATA IS NOT DISSIMILAR ENOUGH FOR DGE ANALYSIS. This causes issues.
+//         stage('Test rna-seq') {
+//             when {
+//                 anyOf {
+//                     // always fully build develop and master
+//                     branch 'master'
+//                     branch 'develop'
 //
-//                # test deseq2
-//                snakemake -s workflows/atac_seq/Snakefile --directory workflows/rna_seq \
-//                --use-conda -j $CORES  --configfile Jenkins/rna_seq/deseq2.yaml \
-//                --config samples=$WORKSPACE/Jenkins/rna_seq/samples.tsv
-//                '''
-//            }
-//        }
+//                     // always run when jenkins, envs or configuration is changed
+//                     changeset 'Jenkins/*'
+//                     changeset 'envs/*'
+//                     changeset 'rules/configuration.smk'
+//
+//                     // run when relevant rules are changed
+//                     changeset 'workflows/rna_seq/*'
+//                     changeset 'rules/get_genome.smk'
+//                     changeset 'rules/trimming.smk'
+//                     changeset 'rules/alignment.smk'
+//                     changeset 'rules/quantification.smk'
+//                     changeset 'rules/gene_counts.smk'
+//                     changeset 'rules/DGE_analysis.smk'
+//                     changeset 'rules/qc.smk'
+//                     changeset 'rules/trackhub.smk'
+//
+//                     // run when last time you failed
+//                     expression {
+//                         return getFailedStages(Jenkins.instance.getItemByFullName("Snakemake-Workflows")\
+//                         .getItem("$GIT_BRANCH")._getRuns().last()).contains("Test rna-seq")
+//                     }
+//                 }
+//             }
+//             steps {
+//                 sh '''#!/usr/bin/env bash
+//                 set -e
+//                 source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+//                 conda activate miniconda/envs/snakemake-workflows/
+//
+//                 # TXIMETA BUG: needs to be updated on bioconda before salmon works again!
+//                 # # test salmon
+//                 # snakemake -s workflows/atac_seq/Snakefile --directory workflows/rna_seq \
+//                 # --use-conda -j $CORES  --configfile Jenkins/rna_seq/deseq2.yaml \
+//                 # --config samples=$WORKSPACE/Jenkins/rna_seq/test_samples.tsv  decoy_aware_index=False
+//                 #
+//                 # rm -rf $WORKSPACE/workflows/rna_seq/gene_counts
+//                 # rm -rf $WORKSPACE/workflows/rna_seq/deseq2
+//
+//                 # test star (builds on last run)
+//                 snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq \
+//                 --use-conda -j $CORES --configfile Jenkins/rna_seq/deseq2.yaml \
+//                 --config samples=$WORKSPACE/Jenkins/rna_seq/samples.tsv quantifier=star run_alignment=False
+//
+//                 # test trackhub (builds on last run)
+//                 snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq \
+//                 --use-conda -j $CORES --configfile Jenkins/rna_seq/deseq2.yaml \
+//                 --config samples=$WORKSPACE/Jenkins/rna_seq/samples.tsv quantifier=star run_alignment=True
+//                 '''
+//             }
+//         }
 
 
     }
