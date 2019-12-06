@@ -139,6 +139,8 @@ for sample in [sample for sample in samples.index if sample not in layout_cache]
         config['layout'][sample] = tp.apply_async(get_layout, (sample,))
         # sleep 1.25 times the minimum required sleep time
         time.sleep(1.25 / (config.get('ncbi_requests', 3) // 2))
+    elif sample.startswith('plate'):
+        config['layout'][sample] ='PAIRED'
     else:
         raise ValueError(f"\nsample {sample} was not found..\n"
                          f"We checked for SE file:\n"
@@ -157,6 +159,9 @@ assert all(layout in ['SINGLE', 'PAIRED'] for sample, layout in config['layout']
 # if new samples were added, update the cache
 if len([sample for sample in samples.index if sample not in layout_cache]) is not 0:
     pickle.dump(config['layout'], open(layout_cachefile, "wb"))
+
+# now only keep the layout of samples that are in samples.tsv
+config['layout'] = {key: value for key, value in config['layout'].items() if key in samples.index}
 
 logger.info("Done!\n\n")
 
@@ -232,11 +237,15 @@ def any_given(*args):
 # set global constraints on wildcards ({{sample}} or {{assembly}})
 if 'assembly' in samples:
     wildcard_constraints:
-        sample=any_given('sample', 'condition'),
-        assembly=any_given('assembly')
+        sample=any_given('sample', 'condition') + '|plate\d',
+        assembly=any_given('assembly'),
+        sorter="samtools|sambamba",
+        sorting="queryname|coordinate"
 else:
     wildcard_constraints:
-        sample=any_given('sample', 'condition')
+        sample=any_given('sample', 'condition') + '|plate\d',
+        sorter="samtools|sambamba",
+        sorting="queryname|coordinate"
 
 
 # set default parameters (parallel downloads and memory)
@@ -277,7 +286,7 @@ def add_default_resources(func):
 
 
 # now add the wrapper to the workflow execute function
-workflow.execute = add_default_resources(workflow.execute)
+# workflow.execute = add_default_resources(workflow.execute)
 
 
 # functional but currently unused

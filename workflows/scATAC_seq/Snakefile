@@ -1,0 +1,31 @@
+import re
+
+# complement the configuration
+configfile: "config.yaml"
+
+# do onstart/onexit things
+sample_schemas = ['sample', 'assembly']
+config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific']
+include: "../../rules/configuration.smk"
+
+
+# load all the relevant rules
+include: f"{config['rule_dir']}/alignment.smk"
+include: f"{config['rule_dir']}/get_genome.smk"
+include: f"{config['rule_dir']}/qc.smk"
+include: f"{config['rule_dir']}/scATAC.smk"
+include: f"{config['rule_dir']}/trimming.smk"
+
+
+# set the quality_control functions
+quality_control = [get_trimming_qc, get_alignment_qc]
+
+rule snapATAC_all:
+    """
+    """
+    input:
+        config['result_dir'] + '/plates_overview.csv' ,
+        [expand(f"{{result_dir}}/snap/{plate}-{samples.loc[plate, 'assembly']}.binned.snap", **config)[0] for plate in samples.index],
+        expand(["{qc_dir}/multiqc_{assemblies}.html"],
+                 **{**config,
+                    **{'assemblies': set(samples['assembly'])}})
