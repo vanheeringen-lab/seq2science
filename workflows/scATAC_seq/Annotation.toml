@@ -12,7 +12,11 @@
 [plate.iPSC-2-KC-diff-eLSC-and-KC-PKC19-A0005-plate6-17128]
    primer_plate = "nextera"
 [plate.iPSC-2-KC-diff-eLSC-and-KC-PKC19-A0005-plate7-17129]
+   primer_plate = "nextera"
+[plate.scATAC-LSC-LSC-159-17689]
    primer_plate = "GF_plate1_COL_1&2"
+[plate.scATAC-LSC-LSC-AN40-17690]
+   primer_plate = "GF_plate1_COL_3&4"
 
 #Input here the cell types sorted in each well. For more information on how to imput e.g specific paterns in the plate see "https://bio96.readthedocs.io/en/latest/file_format.html"
 [plate.iPSC-2-KC-diff-iPSC-scATAC-16561.row.'A,B,...,P']
@@ -46,4 +50,13 @@
   cell_type = "LSCs"
 [plate.iPSC-2-KC-diff-eLSC-and-KC-PKC19-A0005-plate7-17129.col.'13,14,...,24']
   cell_type = "KCs"
+  
+[plate.scATAC-LSC-LSC-159-17689.row.'A,B,...,P']
+[plate.scATAC-LSC-LSC-159-17689.col.'1,2,...,24']
+  cell_type = "LSC_177"
+
+[plate.scATAC-LSC-LSC-AN40-17690.row.'A,B,...,P']
+[plate.scATAC-LSC-LSC-AN40-17690.'1,2,...,24']
+  cell_type = "LSC_AN40"
+
 

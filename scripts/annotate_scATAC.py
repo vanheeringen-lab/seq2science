@@ -13,6 +13,7 @@ annotation_df['plate_well'] = annotation_df['primer_plate'] + "_" + annotation_d
 #merge dfs to extract primer combi info from plate_primer_well
 ann_primers = pd.merge(annotation_df, plate_primer_well, on ='plate_well')
 ann_primers['sample_name'] = ann_primers['plate'] + ann_primers['primer_combi']
+ann_primers['well'] = ann_primers['well']
 
-ann_file = ann_primers[['sample_name','cell_type']]
+ann_file = ann_primers[['sample_name','cell_type','well']]
 ann_file.to_csv(snakemake.output[0],index=False)
