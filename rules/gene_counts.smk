@@ -23,7 +23,7 @@ if config['quantifier'] == 'salmon':
         input:
             fasta=expand("{genome_dir}/{{assembly}}/{{assembly}}.transcripts.fa", **config),
             gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.gtf", **config),
-            index_dir=get_index  # expand("{genome_dir}/{{assembly}}/index/{quantifier}", **config)
+            index_dir=get_index
         output:
             index=expand("{genome_dir}/{{assembly}}/index/tximeta/linked_txome.json", **config),
             symlink=expand(f"{{genome_dir}}/{{{{assembly}}}}/index/tximeta/{config['tximeta']['organism']}.{{{{assembly}}}}.{config['tximeta']['release']}.gtf", **config)
@@ -108,7 +108,7 @@ elif config['quantifier'] == 'star':
 
                 counts.index.name = "gene"
                 counts.to_csv(output[0], sep="\t")
-
+#
 #
 # else:
 #     def get_counts(wildcards):
@@ -135,4 +135,3 @@ elif config['quantifier'] == 'star':
 #              htseq-count -f bam -r pos -m union {input.cts} {input.gtf} &> {log}
 #              grep -v -- 'SAM\|GFF\|Warning' {log} > {output}
 #              """
-#
