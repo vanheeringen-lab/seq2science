@@ -112,18 +112,18 @@ pipeline {
 
                 # test count matrix generation
                 printf "\ncounts matrix\n\n"
-                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/star.yaml   --quiet
-                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/salmon.yaml --quiet
+                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/counts.yaml --config quantifier=star   --quiet
+                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/counts.yaml --config quantifier=salmon --quiet
 
                 # test differential expression analysis
                 printf "\ndifferential expression\n\n"
                 snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/deseq2.yaml --config samples=../../Jenkins/rna_seq/samples.tsv --quiet
-                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/deseq2.yaml --config samples=../../Jenkins/rna_seq/samples.tsv quantifier=star --quiet
+                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/deseq2.yaml --config samples=../../Jenkins/rna_seq/samples.tsv quantifier=salmon --quiet
 
                 # test trackhub generation
                 printf "\ntrackhub\n\n"
-                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/star.yaml   --config run_alignment=True --quiet
-                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/salmon.yaml --config run_alignment=True --quiet
+                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/counts.yaml --config quantifier=star   run_alignment=True --quiet
+                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/counts.yaml --config quantifier=salmon run_alignment=True --quiet
                 '''
             }
         }
@@ -264,64 +264,79 @@ pipeline {
             }
         }
 
-// TEST DATA IS NOT DISSIMILAR ENOUGH FOR DGE ANALYSIS. This causes issues.
-//         stage('Test rna-seq') {
-//             when {
-//                 anyOf {
-//                     // always fully build develop and master
-//                     branch 'master'
-//                     branch 'develop'
-//
-//                     // always run when jenkins, envs or configuration is changed
-//                     changeset 'Jenkins/*'
-//                     changeset 'envs/*'
-//                     changeset 'rules/configuration.smk'
-//
-//                     // run when relevant rules are changed
-//                     changeset 'workflows/rna_seq/*'
-//                     changeset 'rules/get_genome.smk'
-//                     changeset 'rules/trimming.smk'
-//                     changeset 'rules/alignment.smk'
-//                     changeset 'rules/quantification.smk'
-//                     changeset 'rules/gene_counts.smk'
-//                     changeset 'rules/DGE_analysis.smk'
-//                     changeset 'rules/qc.smk'
-//                     changeset 'rules/trackhub.smk'
-//
-//                     // run when last time you failed
-//                     expression {
-//                         return getFailedStages(Jenkins.instance.getItemByFullName("Snakemake-Workflows")\
-//                         .getItem("$GIT_BRANCH")._getRuns().last()).contains("Test rna-seq")
-//                     }
-//                 }
-//             }
-//             steps {
-//                 sh '''#!/usr/bin/env bash
-//                 set -e
-//                 source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-//                 conda activate miniconda/envs/snakemake-workflows/
-//
-//                 # TXIMETA BUG: needs to be updated on bioconda before salmon works again!
-//                 # # test salmon
-//                 # snakemake -s workflows/atac_seq/Snakefile --directory workflows/rna_seq \
-//                 # --use-conda -j $CORES  --configfile Jenkins/rna_seq/deseq2.yaml \
-//                 # --config samples=$WORKSPACE/Jenkins/rna_seq/test_samples.tsv  decoy_aware_index=False
-//                 #
-//                 # rm -rf $WORKSPACE/workflows/rna_seq/gene_counts
-//                 # rm -rf $WORKSPACE/workflows/rna_seq/deseq2
-//
-//                 # test star (builds on last run)
-//                 snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq \
-//                 --use-conda -j $CORES --configfile Jenkins/rna_seq/deseq2.yaml \
-//                 --config samples=$WORKSPACE/Jenkins/rna_seq/samples.tsv quantifier=star run_alignment=False
-//
-//                 # test trackhub (builds on last run)
-//                 snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq \
-//                 --use-conda -j $CORES --configfile Jenkins/rna_seq/deseq2.yaml \
-//                 --config samples=$WORKSPACE/Jenkins/rna_seq/samples.tsv quantifier=star run_alignment=True
-//                 '''
-//             }
-//         }
+
+        stage('Test rna-seq') {
+            when {
+                anyOf {
+                    // always fully build develop and master
+                    branch 'master'
+                    branch 'develop'
+
+                    // always run when jenkins, envs or configuration is changed
+                    changeset 'Jenkins/*'
+                    changeset 'envs/*'
+                    changeset 'rules/configuration.smk'
+
+                    // run when relevant rules are changed
+                    changeset 'workflows/rna_seq/*'
+                    changeset 'rules/get_genome.smk'
+                    changeset 'rules/trimming.smk'
+                    changeset 'rules/alignment.smk'
+                    changeset 'rules/quantification.smk'
+                    changeset 'rules/gene_counts.smk'
+                    changeset 'rules/DGE_analysis.smk'
+                    changeset 'rules/qc.smk'
+                    changeset 'rules/trackhub.smk'
+
+                    // run when last time you failed
+                    expression {
+                        return getFailedStages(Jenkins.instance.getItemByFullName("Snakemake-Workflows")\
+                        .getItem("$GIT_BRANCH")._getRuns().last()).contains("Test rna-seq")
+                    }
+                }
+            }
+            steps {
+                sh '''#!/usr/bin/env bash
+                set -e
+                source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+                conda activate miniconda/envs/snakemake-workflows/
+
+                # TXIMETA BUG: needs to be updated on bioconda (to 1.4.4 or higher) before salmon works again!
+
+                #test salmon
+                # create regular counts
+                # snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq \
+                # --use-conda -j $CORES --configfile Jenkins/rna_seq/counts.yaml \
+                # --config samples=../../Jenkins/rna_seq/sample.tsv quantifier=salmon decoy_aware_index=False
+
+                # rm -rf Jenkins/tinydata/index workflows/rna_seq/gene_counts workflows/rna_seq/salmon
+
+                # create counts with a decoys-aware index (builds on last run)
+                # snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq \
+                # --use-conda -j $CORES --configfile Jenkins/rna_seq/counts.yaml \
+                # --config samples=../../Jenkins/rna_seq/sample.tsv quantifier=salmon decoy_aware_index=True
+
+                # rm -rf workflows/rna_seq/gene_counts
+
+
+                # test STAR
+                # create counts matrix (builds on last run)
+                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq \
+                --use-conda -j $CORES --configfile Jenkins/rna_seq/counts.yaml \
+                --config samples=../../Jenkins/rna_seq/samples.tsv quantifier=star run_alignment=False
+
+                # perform DGE (builds on last run)
+                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq \
+                --use-conda -j $CORES --configfile Jenkins/rna_seq/deseq2.yaml \
+                --config samples=../../Jenkins/rna_seq/samples.tsv quantifier=star run_alignment=False
+
+                # create trackhub (builds on last run)
+                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq \
+                --use-conda -j $CORES --configfile Jenkins/rna_seq/counts.yaml \
+                --config samples=../../Jenkins/rna_seq/samples.tsv quantifier=star run_alignment=True
+                '''
+            }
+        }
 
 
     }

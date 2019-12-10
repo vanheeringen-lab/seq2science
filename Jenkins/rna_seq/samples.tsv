@@ -1,9 +1,9 @@
-sample	assembly	timepoint	batch
-s1_1	test_GRCh38.p12	1a	fake
-s1_2	test_GRCh38.p12	1b	fake
-s1_3	test_GRCh38.p12	1a	unreal
-s1_4	test_GRCh38.p12	1b	unreal
-s2_1	test_GRCh38.p12	2a	fake
-s2_2	test_GRCh38.p12	2b	fake
-s2_3	test_GRCh38.p12	2a	unreal
-s2_4	test_GRCh38.p12	2b	unrea
+sample	assembly	disease	stage	batch
+T1_1	tinydata	control	1	fake
+T1_2	tinydata	control	1	unreal
+T1_3	tinydata	disease	2	fake
+T1_4	tinydata	disease	2	unreal
+T2_1	tinydata	disease	1	fake
+T2_2	tinydata	disease	2	unreal
+T2_3	tinydata	disease	3	fake
+T2_4	tinydata	disease	3	unreal

@@ -6,5 +6,5 @@ slurm*.out
 report.html
 .idea/
 .snakemake/
-test_GRCh38.p12/
+tinydata/
 results/
