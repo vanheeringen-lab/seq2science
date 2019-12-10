@@ -84,12 +84,12 @@ rule get_annotation:
             for line in sizes:
                 fa_id = line.split('\t')[0]
                 if fa_id == gtf_id:
-                    shell("echo 'genome and annotation have matching chromosome/scaffold names!' >> {log}")
-                    shell('mv {input.gtf} {output}')
+                    shell("echo 'Genome and annotation have matching chromosome/scaffold names!' >> {log}")
+                    shell('ln {input.gtf} {output}')
                     break
             else:
                 # generate a gtf with matching scaffold/chromosome IDs
-                shell("echo 'genome and annotation do not match, renaming gtf...' >> {log}")
+                shell("echo 'Genome and annotation do not have matching chromosome/scaffold names! Creating matching gtf...' >> {log}")
 
                 # determine which element in the genome.fasta's header contains the location identifiers used in the annotation.gtf
                 header = []
@@ -126,9 +126,7 @@ rule get_annotation:
                         line = '\t'.join(line)
                         newgtf.write(line)
 
-                # shell("echo '\nRenaming successful!' >> {log}")
-                shell("echo '\nRenaming successful! Deleting mismatched gtf file.' >> {log}")
-                shell('rm -f {input.gtf}')
+                shell("echo '\nCorrected GTF creation completed.' >> {log}")
 
 
 rule get_transcripts:
@@ -171,7 +169,7 @@ rule decoy_transcripts:
         expand("{benchmark_dir}/get_genome/{{assembly}}.decoy_transcripts.benchmark.txt", **config)[0]
     threads: 40
     resources:
-        mem_gb=65 # this is not affected by the number of threads
+        mem_gb=65
     conda:
         "../envs/decoy.yaml"
     shell:

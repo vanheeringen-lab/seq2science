@@ -31,6 +31,7 @@ if config['aligner'] == 'bowtie2':
             expand("{log_dir}/bowtie2_index/{{assembly}}.log", **config)
         benchmark:
             expand("{benchmark_dir}/bowtie2_index/{{assembly}}.benchmark.txt", **config)[0]
+        priority: 1
         threads: 4
         conda:
             "../envs/bowtie2.yaml"
@@ -84,6 +85,7 @@ elif config['aligner'] == 'bwa':
         params:
             prefix="{genome_dir}/{{assembly}}/index/bwa/{{assembly}}".format(**config),
             params=config['index']
+        priority: 1
         resources:
             mem_gb=5
         conda:
@@ -133,6 +135,7 @@ elif config['aligner'] == 'hisat2':
             expand("{log_dir}/hisat2_index/{{assembly}}.log", **config)
         benchmark:
             expand("{benchmark_dir}/hisat2_index/{{assembly}}.benchmark.txt", **config)[0]
+        priority: 1
         threads: 4
         conda:
             "../envs/hisat2.yaml"
@@ -185,6 +188,7 @@ elif config['aligner'] == 'star' or config.get('quantifier', '') == 'star':
             expand("{benchmark_dir}/{aligner}_index/{{assembly}}.benchmark.txt", **config)[0]
         params:
             config['index']
+        priority: 1
         threads: 20
         resources:
             mem_gb=37

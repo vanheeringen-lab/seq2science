@@ -1,6 +1,7 @@
 *config*.yaml
 *samples*.tsv
 *.pyc
+*.Rhistory
 slurm*.out
 report.html
 .idea/
