@@ -86,7 +86,7 @@ if config.get('bam_sorter', False):
     config['bam_sorter'] = list(config['bam_sorter'].keys())[0]
 
 try:
-    user_config = norns.config(config_file=workflow.overwrite_configfile)
+    user_config = norns.config(config_file=workflow.overwrite_configfiles[-1])
 except:
     user_config = norns.config(config_file='config.yaml')
 

@@ -23,7 +23,7 @@ quantifier: star
 #    quantifier_flags: '--seqBias --gcBias --validateMappings --recoverOrphans'
 #    decoy_aware_index: True # salmon only. Generating a decoy requires ~65 GB RAM for GRCh38 (default is False)
 
-## differential expression analysis
+# differential expression analysis
 diffexp:
   deseq2:
     DE_params:

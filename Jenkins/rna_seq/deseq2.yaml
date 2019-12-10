@@ -3,7 +3,6 @@ samples: samples.tsv
 
 
 # pipeline file locations
-result_dir: ./  # where to store results
 genome_dir: ../../Jenkins  # where to look for or download the genomes
 fastq_dir: ../../Jenkins/tinyfastq
 
@@ -17,7 +16,4 @@ quantifier: star
 diffexp: # which analysis to use (DESeq2 or None, default: None)
   deseq2:
     contrasts:
-      - disease_control_disease
-      - stage_2_1
-      - stage_all_1
       - batch + stage_2_1

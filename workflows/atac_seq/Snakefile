@@ -1,10 +1,11 @@
 # complement the configuration
-configfile: "config.yaml"
+if (not any(config)) or config.get('ncbi_requests', False):
+    configfile: "config.yaml"
 
 
 # do onstart/onexit things
 sample_schemas = ['sample', 'assembly', 'strandedness', 'condition']
-config_schemas = ['general', 'download', 'alignment_general', 'peakcalling', 'trackhub']
+config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific', 'peakcalling', 'trackhub']
 include: "../../rules/configuration.smk"
 
 
