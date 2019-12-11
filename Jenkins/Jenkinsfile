@@ -161,14 +161,15 @@ pipeline {
                 # test basic downloading 1 PE and 1 SE
                 printf "\ndownload SE and PE fastqs\n\n"
                 snakemake -s workflows/download_fastq/Snakefile --directory workflows/download_fastq \
-                --use-conda -j 16 --config samples=../../Jenkins/download_fastq/samples.tsv \
+                --use-conda -j $CORES --config samples=../../Jenkins/download_fastq/samples.tsv \
                 --resources parallel_downloads=1
 
                 # test genome & annotation downloading
                 printf "\ndownload genome & annotation\n\n"
                 snakemake -s workflows/alignment/Snakefile --directory workflows/download_fastq \
                 --use-conda -j $CORES --config samples=../../Jenkins/alignment/remote_sample.tsv \
-                --configfile Jenkins/download_fastq/genome.yaml -O fastqc trim_galore_PE get_annotation
+                --configfile Jenkins/download_fastq/genome.yaml \
+                -O id2sra sra2fastq_SE sra2fastq_PE fastqc trim_galore_PE get_annotation
 
                 # note: workflows/download_fastq now contains the (PE) fastq and genome from Jenkins/alignment/remote_sample.tsv
                 '''

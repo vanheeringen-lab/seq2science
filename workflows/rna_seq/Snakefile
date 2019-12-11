@@ -1,6 +1,5 @@
-# complement the configuration (if none/no complete one has been added already)
-if (not any(config)) or config.get('ncbi_requests', False):
-    configfile: "config.yaml"
+# complement the configuration
+configfile: "config.yaml"
 # RNA-seq alignment is currently only compatible with STAR
 if 'star' not in config.get('aligner', ''):
     config['aligner'] = 'star'
@@ -40,7 +39,8 @@ rule count_all:
 
         expand("{qc_dir}/multiqc_{assemblies}.html",                                 **{**config, **{'assemblies': set(samples['assembly'])}}),
 
-        [expand(f"{{result_dir}}/{{diffexp}}/{{assemblies}}-{contrast}.diffexp.tsv", **{**config, **{'assemblies': set(samples['assembly'])}}) for contrast in contrasts if config.get('contrasts', False)],
-        [expand("{result_dir}/deseq2/{assemblies}-clustering.svg",                   **{**config, **{'assemblies': set(samples['assembly'])}}) for i in "i" if len(samples.index) > 1 and any([len(samples['condition'].drop_duplicates()) > 1 if 'condition' in samples else True])],
+        [expand(f"{{result_dir}}/{{diffexp}}/{{assemblies}}-{contrast}.diffexp.tsv", **{**config, **{'assemblies': set(samples['assembly'])}}) for contrast in contrasts] if config.get('contrasts', False) else [],
 
-        [expand("{result_dir}/trackhub", **config) for i in "i" if config['run_alignment']]
+        [expand("{result_dir}/deseq2/{assemblies}-clustering.svg",                   **{**config, **{'assemblies': set(samples['assembly'])}})] if len(samples.index) > 1 and any([len(samples['condition'].drop_duplicates()) > 1 if 'condition' in samples else True]) else [],
+
+        [expand("{result_dir}/trackhub", **config)] if config['run_alignment'] else []

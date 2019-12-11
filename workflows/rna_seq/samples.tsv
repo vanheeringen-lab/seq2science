@@ -1,9 +1,3 @@
-sample	assembly	disease	stage
-T1_1	tinydata	control	1
-T1_2	tinydata	control	1
-T1_3	tinydata	disease	2
-T1_4	tinydata	disease	2
-T2_1	tinydata	disease	1
-T2_2	tinydata	disease	2
-T2_3	tinydata	disease	3
-T2_4	tinydata	disease	3
+sample	assembly	timepoint
+GSM1483769	GRCz11	34
+GSM1483770	GRCz11	35

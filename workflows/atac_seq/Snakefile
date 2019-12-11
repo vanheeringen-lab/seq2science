@@ -1,6 +1,5 @@
 # complement the configuration
-if (not any(config)) or config.get('ncbi_requests', False):
-    configfile: "config.yaml"
+configfile: "config.yaml"
 
 
 # do onstart/onexit things

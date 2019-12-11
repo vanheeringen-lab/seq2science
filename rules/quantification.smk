@@ -1,5 +1,5 @@
 # STAR can produce bams and gene counts at the same time. This will be done by the rules in alignment,smk
-if config['quantifier'] == 'star' and not config['run_alignment']:
+if config['quantifier'] == 'star' and (config['run_alignment'] == False or config['aligner'] != 'star'):
     # rule star_index can be found in alignment.smk
     rule star_quant:
         """
