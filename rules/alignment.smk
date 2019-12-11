@@ -326,7 +326,7 @@ rule sambamba_sort:
     input:
         expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.sambamba-{{sorting}}.pipe", **config)
     output:
-        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.sambamba-{{sorting}}.bam", **config)
+        temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.sambamba-{{sorting}}.bam", **config))
     log:
         expand("{log_dir}/sambamba_sort/{{assembly}}-{{sample}}-sambamba_{{sorting}}.log", **config)
     group: 'alignment'
@@ -351,7 +351,7 @@ rule samtools_sort:
     input:
         expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-{{sorting}}.pipe", **config)
     output:
-        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-{{sorting}}.bam", **config)
+        temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-{{sorting}}.bam", **config))
     log:
         expand("{log_dir}/samtools_sort/{{assembly}}-{{sample}}-samtools_{{sorting}}.log", **config)
     group: 'alignment'
@@ -380,17 +380,28 @@ rule remove_mito:
         bam=expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config),
         chr_names=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config)
     output:
-        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.mito.bam", **config)
+        temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.mito.bam", **config))
 #    group: 'clean_bam'
-    params:
-        lambda wildcards, input: \
-          [chrm for chrm in ['chrM', 'MT'] if chrm in open(input.chr_names, 'r').read()][0]
-    conda:
-        "../envs/samtools.yaml"
-    shell:
-        """
-        cat {input.chr_names} | cut -f 1 | grep -v {params} | xargs samtools view -b {input.bam} > {output}
-        """
+#     conda:
+#         "../envs/samtools.yaml"
+#    shell:
+#        """
+#        cat {input.chr_names} | cut -f 1 | grep -v {params} | xargs samtools view -b {input.bam} > {output}
+#        """
+    run:
+        import pysam
+        from shutil import copyfile
+
+        chrom_name = [chrm for chrm in ['chrM', 'MT'] if chrm in open(input.chr_names[0], 'r').read()]
+        if len(chrom_name) == 0:
+            copyfile(input.bam[0], output[0])
+        else:
+            chrom_name = chrom_name[0]
+            bam_in = pysam.AlignmentFile(input.bam[0], "rb")
+            bam_out = pysam.AlignmentFile(output[0], "wb", template=bam_in)
+            for read in bam_in:
+                if bam_in.getrname(read.rname) != chrom_name:
+                    bam_out.write(read)
 
 
 def get_bam_remove_blacklist(wildcards):
@@ -416,7 +427,7 @@ rule remove_blacklist:
         bam=get_bam_remove_blacklist,
         blacklist=get_blacklist_remove_blacklist
     output:
-        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.black.bam", **config)
+        temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.black.bam", **config))
 #    group: 'clean_bam'
     conda:
         "../envs/bedtools.yaml"

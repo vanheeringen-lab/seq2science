@@ -275,7 +275,10 @@ def get_alignment_qc(sample):
         output.append(f"{{qc_dir}}/InsertSizeMetrics/{{{{assembly}}}}-{sample}.tsv")
 
     # get the ratio mitochondrial dna
-    output.append(f"{{result_dir}}/{config['aligner']}/{{{{assembly}}}}-{sample}.samtools-coordinate.bam.mtnucratiomtnuc.json")
+    assembly = samples.loc[sample, 'assembly']
+    #checkpoints.get_genome.get(assembly=assembly)
+    if len([chrm for chrm in ['chrM', 'MT'] if chrm in open(f"{config['genome_dir']}/{assembly}/{assembly}.fa.sizes", 'r').read()]) > 0:
+        output.append(f"{{result_dir}}/{config['aligner']}/{{{{assembly}}}}-{sample}.samtools-coordinate.bam.mtnucratiomtnuc.json")
 
     return expand(output, **config)
 

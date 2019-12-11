@@ -30,20 +30,20 @@ assert sorted(config['fqext'])[0] == config['fqext1']
 samples = pd.read_csv(config["samples"], sep='\t')
 # sanitize column names
 samples.columns = samples.columns.str.strip()
-assert all([col[0:7] not in ["Unnamed", ''] for col in samples]), \
-    ("\nEncountered unnamed column in " + config["samples"] +
-     ".\nColumn names: " + str(', '.join(samples.columns)) + '.\n')
-assert not any(samples.columns.str.contains('[^A-Za-z0-9_.\-]+', regex=True)), \
-    ("\n" + config["samples"] + " may only contain letters, numbers and " +
-    "underscores (_), periods (.), or minuses (-).\n")
+#assert all([col[0:7] not in ["Unnamed", ''] for col in samples]), \
+#    ("\nEncountered unnamed column in " + config["samples"] +
+#     ".\nColumn names: " + str(', '.join(samples.columns)) + '.\n')
+#assert not any(samples.columns.str.contains('[^A-Za-z0-9_.\-]+', regex=True)), \
+#    ("\n" + config["samples"] + " may only contain letters, numbers and " +
+#    "underscores (_), periods (.), or minuses (-).\n")
 # sanitize table content
 samples = samples.applymap(lambda x: str(x).strip())
-assert not any([any(samples[col].str.contains('[^A-Za-z0-9_.\-]+', regex=True)) for col in samples]), \
-    ("\n" + config["samples"] + " may only contain letters, numbers and " +
-    "underscores (_), periods (.), or minuses (-).\n")
-assert len(samples["sample"]) == len(set(samples["sample"])), \
-    ("\nDuplicate samples found in " + config["samples"] + ":\n" +
-     samples[samples.duplicated(['sample'], keep=False)].to_string() + '\n')
+#assert not any([any(samples[col].str.contains('[^A-Za-z0-9_.\-]+', regex=True)) for col in samples]), \
+#    ("\n" + config["samples"] + " may only contain letters, numbers and " +
+#    "underscores (_), periods (.), or minuses (-).\n")
+#assert len(samples["sample"]) == len(set(samples["sample"])), \
+#    ("\nDuplicate samples found in " + config["samples"] + ":\n" +
+#     samples[samples.duplicated(['sample'], keep=False)].to_string() + '\n')
 
 # validate samples file
 for schema in sample_schemas:
@@ -318,4 +318,4 @@ def add_default_resources(func):
 
 
 # now add the wrapper to the workflow execute function
-workflow.execute = add_default_resources(workflow.execute)
+#workflow.execute = add_default_resources(workflow.execute)

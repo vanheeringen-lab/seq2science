@@ -195,17 +195,19 @@ def get_trackhub_files(wildcards):
     trackfiles = {key: [] for key in ['bigwigs', 'bigpeaks', 'twobits', 'annotations']}
 
     # check whether or not each assembly is supported by ucsc
-    for assembly in set(samples['assembly']):
-        # check for response of ucsc
-        response = requests.get(f"https://genome.ucsc.edu/cgi-bin/hgTracks?db={assembly}",
-                                allow_redirects=True)
-        assert response.ok, "Make sure you are connected to the internet"
+    #for assembly in set(samples['assembly']):
+    #    # check for response of ucsc
+    #    response = requests.get(f"https://genome.ucsc.edu/cgi-bin/hgTracks?db={assembly}",
+    #                            allow_redirects=True)
+    #    assert response.ok, "Make sure you are connected to the internet"
 
-        # see if the title of the page mentions our assembly
-        if not any(assembly == x for x in
-                   re.search(r'<TITLE>(.*?)</TITLE>', response.text).group(1).split(' ')):
-            trackfiles['twobits'].append(f"{config['genome_dir']}/{assembly}/{assembly}.2bit")
+    #    # see if the title of the page mentions our assembly
+    #    if not any(assembly == x for x in
+    #               re.search(r'<TITLE>(.*?)</TITLE>', response.text).group(1).split(' ')):
+    #        trackfiles['twobits'].append(f"{config['genome_dir']}/{assembly}/{assembly}.2bit")
 
+     #   import time
+     #   time.sleep(1)
         # now check if we have annotation for
         # TODO
 
