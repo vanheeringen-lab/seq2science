@@ -1,3 +1,5 @@
+# source: https://github.com/csoneson/ARMOR/blob/master/scripts/run_tximeta.R
+
 suppressMessages({
   library(tidyverse)
   library(tximeta)
@@ -5,7 +7,7 @@ suppressMessages({
   library(SingleCellExperiment)
 })
 
-# snakemake variables
+## snakemake variables
 linked_txome <- snakemake@input$linked_txome
 samples      <- snakemake@input$cts
 assembly     <- snakemake@wildcards$assembly
@@ -13,7 +15,7 @@ out_matrix   <- snakemake@output$counts
 out_SCE      <- snakemake@output$SCE
 log_file     <- snakemake@log[[1]]
 
-# log all console output
+## log all console output
 log <- file(log_file, open="wt")
 sink(log)
 sink(log, type="message")
@@ -22,16 +24,34 @@ sink(log, type="message")
 ## Load linked_txome.json
 loadLinkedTxome(linked_txome)
 
-# assembly <- substr(basename(out_SCE), 1, (nchar(basename(out_SCE))-7))
-samplenames <- gsub(paste0(assembly, '-'), '', basename(samples)) #strsplit(basename(samples), paste0(assembly, '-'))[[1]][1]
-coldata <- data.frame(names = samplenames, files = file.path(samples, 'quant.sf'), stringsAsFactors = F)
-
+samplenames <- gsub(paste0(assembly, '-'), '', basename(samples))
+coldata <- data.frame(names = samplenames, files = file.path(samples, 'quant.sf'), stringsAsFactors = F, check.names = F)
 
 ## import annotated abundances in transcript level
 st <- tximeta::tximeta(coldata)
 
 ## Summarize to gene level
 sg <- summarizeToGene(st)
+
+
+## This section deviates from the source script
+## It outputs a unnormalized counts matrix
+## (for consistency between quantifiers)
+
+## Extract a count table
+counts <- assay(sg, "counts")
+
+## Convert float to int
+for(i in 1:ncol(counts)){
+  class(counts[, i]) = "integer"
+}
+
+## Save gene counts matrix
+counts <- data.frame(counts, stringsAsFactors = F, check.names = F) %>% rownames_to_column("gene")
+write.table(counts, file=out_matrix, quote = F, sep = '\t', row.names = F)
+
+## Returning to source script
+
 
 ## If rowData(st)$gene_id is a CharacterList, convert it to character to allow 
 ## the joining below
@@ -42,21 +62,6 @@ if (is(rowData(st)$gene_id, "CharacterList")) {
   }
   rowData(st)$gene_id <- vapply(rowData(st)$gene_id, function(w) w[[1]], "")
 }
-
-
-# Extract gene counts
-sgc <- as(sg, "SingleCellExperiment")
-counts = data.frame(counts(sgc), stringsAsFactors = F) %>%
-  rownames_to_column('gene')
-
-#convert float to int
-for(i in 2:ncol(counts)){
-  class(counts[, i]) = "integer"
-}
-
-# Save gene counts matrix
-write.table(counts, file=out_matrix, quote = F, sep = '\t', row.names = F)
-
 
 ## If rowData(st)$tx_id is of class integer, replace it with the tx_name 
 ## column
@@ -74,12 +79,9 @@ rowData(st) <- rowData(st) %>%
 ## Change the row names in sg to have geneID__geneSymbol
 rownames(sg) <- paste(rowData(sg)$gene_id, rowData(sg)$gene_name, sep = "__")
 
-## Change the row names in sg to have geneID__geneSymbol
-rownames(sg) <- paste(rowData(sg)$gene_id, rowData(sg)$gene_name, sep = "__")
-
-# Coerce the object from SummarizedExperiment to SingleCellExperiment
+## Coerce the object from SummarizedExperiment to SingleCellExperiment
 st <- as(st, "SingleCellExperiment")
 sg <- as(sg, "SingleCellExperiment")
 
-# Save single cell experiment object
+## Save single cell experiment object
 saveRDS(list(st = st, sg = sg), file = out_SCE)
