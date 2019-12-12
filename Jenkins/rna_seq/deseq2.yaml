@@ -1,0 +1,19 @@
+# tab-separated file of the samples
+samples: samples.tsv
+
+
+# pipeline file locations
+genome_dir: ../../Jenkins  # where to look for or download the genomes
+fastq_dir: ../../Jenkins/tinyfastq
+
+# produce bams, bigwigs and QC statistics?
+run_alignment: False
+
+# which method to use in order to generate the counts (salmon or star)
+quantifier: star
+
+# differential expression analysis
+diffexp: # which analysis to use (DESeq2 or None, default: None)
+  deseq2:
+    contrasts:
+      - batch + stage_2_1

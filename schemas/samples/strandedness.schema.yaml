@@ -1,0 +1,9 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+description: an entry in the sample sheet
+
+properties:
+  strandedness:
+    type: string
+    description: The direction of the reference primer in the case of strand-specific sequencing protocol (options are forward, yes (same as forward), reverse and no. Default is no)
+    enum: ['forward', 'yes', 'reverse', 'no']

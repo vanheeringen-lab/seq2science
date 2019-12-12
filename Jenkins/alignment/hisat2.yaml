@@ -2,10 +2,11 @@
 samples: samples.tsv
 
 
+# pipeline file locations
+dedup_dir: ./hisat2_dedups
+qc_dir: ./hisat2_qc
+genome_dir: ../../Jenkins  # where to look for or download the genomes
+fastq_dir: ../../Jenkins/tinyfastq
+
 # which aligner to use
-aligner:
-  hisat2:
-    index:  # parameters for indexing
-      ''
-    align:  # parameters for alignment
-      ''
+aligner: hisat2

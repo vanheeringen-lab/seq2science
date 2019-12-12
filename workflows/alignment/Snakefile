@@ -1,30 +1,18 @@
-from snakemake.utils import validate
-
-
 # complement the configuration
 configfile: "config.yaml"
 
-user_dirs = []
-for key, value in config.items():
-    if '_dir' in key:
-        user_dirs.append(key)
-
-for kw in ['aligner', 'bam_sorter']:
-    if isinstance(config.get(kw, None), str):
-        config[kw] = {config[kw]: {}}
-
-for schema in ['general', 'download', 'alignment_general', 'alignment_specific']:
-    validate(config, schema=f"../../schemas/config/{schema}.schema.yaml")
 
 # do onstart/onexit things
-schemas = ['sample', 'assembly']
-include: f"{config['rule_dir']}/configuration.smk"
+sample_schemas = ['sample', 'assembly', 'strandedness']
+config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific']
+include: "../../rules/configuration.smk"
 
 
 # load the remaining relevant rules
 include: f"{config['rule_dir']}/alignment.smk"
 include: f"{config['rule_dir']}/get_genome.smk"
 include: f"{config['rule_dir']}/get_fastq.smk"
+include: f"{config['rule_dir']}/merge_replicates.smk"
 include: f"{config['rule_dir']}/qc.smk"
 include: f"{config['rule_dir']}/trimming.smk"
 
@@ -32,11 +20,33 @@ include: f"{config['rule_dir']}/trimming.smk"
 # load the quality control files
 quality_control = [get_trimming_qc, get_alignment_qc]
 
+def get_bams():
+    bamfiles = {}
+    bamfiles['bams'] = set(); bamfiles['bais'] = set()
+
+    # get all the bams
+    if config.get('combine_replicates', '') == 'merge' and 'condition' in samples:
+        for condition in set(samples['condition']):
+            for assembly in set(samples[samples['condition'] == condition]['assembly']):
+                bamfiles['bams'].update([expand(f"{{dedup_dir}}/{assembly}-{condition}.{{bam_sorter}}-{{bam_sort_order}}.bam", **config)[0]])
+                bamfiles['bais'].update([expand(f"{{dedup_dir}}/{assembly}-{condition}.{{bam_sorter}}-{{bam_sort_order}}.bam.bai", **config)[0]])
+                # always output samtools-coordinate
+                bamfiles['bams'].update([expand(f"{{dedup_dir}}/{assembly}-{condition}.samtools-coordinate.bam", **config)[0]])
+                bamfiles['bais'].update([expand(f"{{dedup_dir}}/{assembly}-{condition}.samtools-coordinate.bam.bai", **config)[0]])
+    else:
+        bamfiles['bams'].update([expand(f"{{dedup_dir}}/{samples.loc[sample]['assembly']}-{sample}.{{bam_sorter}}-{{bam_sort_order}}.bam", **config)[0] for sample in samples.index])
+        bamfiles['bais'].update([expand(f"{{dedup_dir}}/{samples.loc[sample]['assembly']}-{sample}.{{bam_sorter}}-{{bam_sort_order}}.bam.bai", **config)[0] for sample in samples.index if config['bam_sort_order'] == 'coordinate'])
+        # always output samtools-coordinate
+        bamfiles['bams'].update([expand(f"{{dedup_dir}}/{samples.loc[sample]['assembly']}-{sample}.samtools-coordinate.bam", **config)[0] for sample in samples.index])
+        bamfiles['bais'].update([expand(f"{{dedup_dir}}/{samples.loc[sample]['assembly']}-{sample}.samtools-coordinate.bam.bai", **config)[0] for sample in samples.index if config['bam_sort_order'] == 'coordinate'])
+
+    return bamfiles
+
 rule align_all:
     """
     align each sample against its assembly
     """
     input:
-        [expand(f"{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.{{bam_sorter}}-{{bam_sort_order}}.bam", **config) for sample in samples.index],
-        [expand(f"{{dedup_dir}}/{sample}-{samples.loc[sample]['assembly']}.{{bam_sorter}}-{{bam_sort_order}}.bai", **config) for sample in samples.index if config['bam_sort_order'] == 'coordinate'],
+         get_bams()['bams'],
+         get_bams()['bais'],
          expand("{qc_dir}/multiqc_{assemblies}.html", **{**config, **{'assemblies': set(samples['assembly'])}})
