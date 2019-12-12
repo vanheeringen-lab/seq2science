@@ -15,7 +15,7 @@ open_pulls = list(repo.get_pulls(state='open'))
 with open('./envs/ignore.txt') as f:
     ignore = f.read().splitlines()
 
-for file in repo.get_contents("envs", ref='master'):
+for file in repo.get_contents("envs", ref='develop'):
     updated = dependencies = False
     newfile = ''
 
