@@ -7,19 +7,29 @@ result_dir: ./  # where to store results
 genome_dir: ./  # where to look for or download the genomes
 
 
-# which aligner to use with the option to specify own parameters
-aligner:
-  star
+# produce bams, bigwigs and QC statistics?
+run_alignment: False
 
+# which method to use in order to generate the counts (salmon or star)
+quantifier: star
+
+### package Tximeta must be updated (to 1.4.4 or higher) on conda before salmon works again ###
+
+## which method to use in order to generate the counts (salmon or star)
+#quantifier:
+#  salmon:
+#    quantifier_index_flags: '-k 31'
+#    quantifier_flags: '--seqBias --gcBias --validateMappings --recoverOrphans'
+#    decoy_aware_index: True # salmon only. Generating a decoy requires ~65 GB RAM for GRCh38 (default is False)
 
 ## differential expression analysis
-#diffexp: # which analysis to use (DESeq2 or None, default: None)
+#diffexp:
 #  deseq2:
 #    DE_params:
-#      multiple_testing_procedure: IWH # default is BH
+#      multiple_testing_procedure: IHW # options: BH/IHW. Default is BH
 #      alpha_value: 0.05
 #      shrinkage_estimator: apeglm
 #    contrasts:
 #      - 'disease_control_disease'
-#      - 'stage_1_2'
-#      - 'stage_1_all'
+#      - 'stage_2_1'
+#      - 'stage_all_1'

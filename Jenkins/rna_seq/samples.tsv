@@ -1,3 +1,9 @@
-sample	assembly	timepoint
-GSM1483769	GRCz11	34
-GSM1483770	GRCz11	35
+sample	assembly	disease	stage	batch
+T1_1	tinydata	control	1	fake
+T1_2	tinydata	control	1	unreal
+T1_3	tinydata	disease	2	fake
+T1_4	tinydata	disease	2	unreal
+T2_1	tinydata	disease	1	fake
+T2_2	tinydata	disease	2	unreal
+T2_3	tinydata	disease	3	fake
+T2_4	tinydata	disease	3	unreal

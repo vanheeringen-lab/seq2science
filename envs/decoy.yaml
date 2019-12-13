@@ -1,0 +1,9 @@
+name: decoy
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - bioconda::bedtools=2.29.1
+  - bioconda::mashmap=2.0
+  - conda-forge::cpulimit=0.2

@@ -1,4 +1,5 @@
 import os.path
+import glob
 import re
 import time
 import math
@@ -13,8 +14,17 @@ from snakemake.utils import validate
 from snakemake.logging import logger
 
 
+# check config file for correct directory names
+for key, value in config.items():
+    if '_dir' in key:
+        # allow tilde as the first character only
+        assert not re.match('[^A-Za-z0-9_.\-/~]+', value[0]) and not re.match('[^A-Za-z0-9_.\-/]+', value[1:]) and not " " in value, \
+            ("\n" + "In the config.yaml you set '" + key + "' to '" + value + "'. Please use file paths that only contain letters, " +
+            "numbers and any of the following symbols: underscores (_), periods (.), and minuses (-) (the first symbol may be a tilde (~)).\n")
+        config[key] = os.path.expanduser(value)
+
 # make sure that difficult data-types (yaml objects) are in correct data format
-for kw in ['aligner', 'bam_sorter']:
+for kw in ['aligner', 'quantifier', 'bam_sorter']:
     if isinstance(config.get(kw, None), str):
         config[kw] = {config[kw]: {}}
 
@@ -63,7 +73,7 @@ if config.get('peak_caller', False):
         "HMMRATAC requires all samples to be paired end"
 
 # ...for alignment and rna-seq
-for conf_dict in ['aligner', 'diffexp']:
+for conf_dict in ['aligner', 'quantifier', 'diffexp']:
     if config.get(conf_dict, False):
         dict_key = list(config[conf_dict].keys())[0]
         for k, v in list(config[conf_dict].values())[0].items():
@@ -76,7 +86,7 @@ if config.get('bam_sorter', False):
     config['bam_sorter'] = list(config['bam_sorter'].keys())[0]
 
 try:
-    user_config = norns.config(config_file=workflow.overwrite_configfile)
+    user_config = norns.config(config_file=workflow.overwrite_configfiles[-1])
 except:
     user_config = norns.config(config_file='config.yaml')
 
@@ -156,7 +166,7 @@ if config.get('contrasts', False):
                     assert str(group) in [str(i) for i in samples[parsed_contrast[0]].tolist()],\
                         ('\nYour contrast design contains group ' + group +
                         ' which cannot be found in column ' + parsed_contrast[0] +
-                         'of' + config["samples"] + '.\n')
+                         ' of ' + config["samples"] + '.\n')
 
 
 # make absolute paths, cut off trailing slashes

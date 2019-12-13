@@ -62,15 +62,6 @@ properties:
         default:
           index: ''
           align: ''
-      salmon:
-        properties:
-          index:
-            default: ''
-          align:
-            default: '--seqBias --gcBias --validateMappings'
-        default:
-          index: ''
-          align: '--seqBias --gcBias --validateMappings'
       star:
         properties:
           index:
