@@ -4,4 +4,4 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - bioconda::bedtools=2.29.0
+  - bioconda::bedtools=2.29.1
