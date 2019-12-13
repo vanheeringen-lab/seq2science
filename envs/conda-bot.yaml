@@ -3,4 +3,4 @@ dependencies:
   - pkgs/main::packaging=19.1
   - conda-forge::pygithub=1.43.6
   - pkgs/main::conda=4.7.11
-  - conda-forge::yaml=0.2.2
+  - conda-forge::pyyaml=5.2
