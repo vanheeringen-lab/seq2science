@@ -14,5 +14,6 @@ dependencies:
   - conda-forge::pygithub=1.43.6
   - pkgs/main::conda=4.7.11
   - bioconda::norns=0.1.5
+  - pkgs/main::yaml=0.2.2
   - pip:
     - git+https://github.com/daler/trackhub@params-overhaul
