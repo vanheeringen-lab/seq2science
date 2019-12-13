@@ -7,3 +7,4 @@ dependencies:
   - bioconda::ucsc-bedsort=377
   - bioconda::ucsc-bedGraphToBigWig=377
   - bioconda::ucsc-bedToBigBed=377
+  - bioconda::ucsc-fatotwobit=377

@@ -15,13 +15,6 @@ properties:
     default:
       macs2: --shift -100 --extsize 200 --nomodel --keep-dup 1 --buffer-size 10000
 
-  # replicate handling
-  combine_replicates:
-    description: which method to use to combine replicates (idr or fisher)
-    default: idr
-    enum: [fisher, idr, merge]
-    type: string
-
   # keep macs2 mates when peak calling with shift
   macs2_keep_mates:
     description: which method to use to combine replicates (idr or fisher)
