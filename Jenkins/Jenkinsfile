@@ -137,12 +137,12 @@ pipeline {
                     branch 'develop'
 
                     // always run when jenkins, envs or configuration is changed
-                    changeset 'Jenkins/*'
-                    changeset 'envs/*'
+                    changeset pattern 'Jenkins/*'
+                    changeset pattern 'envs/*'
                     changeset 'rules/configuration.smk'
 
                     // run when relevant rules are changed
-                    changeset 'workflows/download_fastq/*'
+                    changeset pattern 'workflows/download_fastq/*'
                     changeset 'rules/get_fastq.smk'
 
                     // run when last time you failed
@@ -185,12 +185,12 @@ pipeline {
                     branch 'develop'
 
                     // always run when jenkins, envs or configuration is changed
-                    changeset 'Jenkins/*'
-                    changeset 'envs/*'
+                    changeset pattern 'Jenkins/*'
+                    changeset pattern 'envs/*'
                     changeset 'rules/configuration.smk'
 
                     // run when relevant rules are changed
-                    changeset 'workflows/alignment/*'
+                    changeset pattern 'workflows/alignment/*'
                     changeset 'rules/alignment.smk'
                     changeset 'rules/trimming.smk'
                     changeset 'rules/qc.smk'
@@ -240,12 +240,12 @@ pipeline {
                     branch 'develop'
 
                     // always run when jenkins, envs or configuration is changed
-                    changeset 'Jenkins/*'
-                    changeset 'envs/*'
+                    changeset pattern 'Jenkins/*'
+                    changeset pattern 'envs/*'
                     changeset 'rules/configuration.smk'
 
                     // run when relevant rules are changed
-                    changeset 'workflows/atac_seq/*'
+                    changeset pattern 'workflows/atac_seq/*'
                     changeset 'rules/alignment.smk'
                     changeset 'rules/trimming.smk'
                     changeset 'rules/qc.smk'
@@ -286,12 +286,12 @@ pipeline {
                     branch 'develop'
 
                     // always run when jenkins, envs or configuration is changed
-                    changeset 'Jenkins/*'
-                    changeset 'envs/*'
+                    changeset pattern 'Jenkins/*'
+                    changeset pattern 'envs/*'
                     changeset 'rules/configuration.smk'
 
                     // run when relevant rules are changed
-                    changeset 'workflows/rna_seq/*'
+                    changeset pattern 'workflows/rna_seq/*'
                     changeset 'rules/get_genome.smk'
                     changeset 'rules/trimming.smk'
                     changeset 'rules/alignment.smk'
