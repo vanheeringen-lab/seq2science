@@ -33,10 +33,6 @@ pipeline {
         PATH = "$WORKSPACE/miniconda/bin:$PATH"
         CORES = "28"
     }
-    options {
-        disableConcurrentBuilds()
-        lock resource: 'building'
-    }
 
     stages {
         stage('setup miniconda') {
