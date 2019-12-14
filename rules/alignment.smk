@@ -13,10 +13,11 @@ def get_reads(wildcards):
 
 def get_alignment_pipes():
     pipes = {pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0])}
-    if config.get('peak_caller', False) and 'genrich' in config['peak_caller']:
-        pipes.add(pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.sambamba-queryname.pipe", **config)[0]))
-    elif config.get('bam_sorter', False):
-        pipes.add(pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{bam_sorter}-{bam_sort_order}.pipe", **config)[0]))
+    # if not use_alignmentsieve(config):
+    #     if config.get('peak_caller', False) and 'genrich' in config['peak_caller']:
+    #         pipes.add(pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.sambamba-queryname.pipe", **config)[0]))
+    #     elif config.get('bam_sorter', False):
+    #         pipes.add(pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{bam_sorter}-{bam_sort_order}.pipe", **config)[0]))
 
     return pipes
 
@@ -318,23 +319,47 @@ elif config['aligner'] == 'star':
             --outSAMtype BAM Unsorted --outStd BAM_Unsorted | tee {output.pipe} 1> /dev/null 2>> {log}
             """
 
+rule samtools_presort:
+    """
+    Sort the result of alignment with the samtools sorter.
+    """
+    input:
+        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)
+    output:
+        temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-unsieved.bam", **config))
+    shell:
+        """
+        trap \"rm -f {output}*\" INT;
+        samtools sort -@ {params.threads} {params.order} {input} -o {output}  2> {log}
+        """
+
+
+def get_sambamba_sort_bam(wildcards):
+    if wildcards.sieve == '-sievsort':
+        return rules.alignmentsieve.output
+    return expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-unsieved.bam", **config)
+
 
 rule sambamba_sort:
     """
     Sort the result of alignment with the sambamba sorter.
     """
     input:
-        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.sambamba-{{sorting}}.pipe", **config)
+        get_sambamba_sort_bam
+        # expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.sambamba-{{sorting}}.pipe", **config)
     output:
-        temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.sambamba-{{sorting}}.bam", **config))
-    log:
-        expand("{log_dir}/sambamba_sort/{{assembly}}-{{sample}}-sambamba_{{sorting}}.log", **config)
-    group: 'alignment'
-    benchmark:
-        expand("{benchmark_dir}/sambamba_sort/{{assembly}}-{{sample}}-{{sorting}}.benchmark.txt", **config)[0]
-    params:
-        lambda wildcards: "-n" if wildcards.sorting == 'queryname' else '',
-    threads: 4
+        temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.sambamba-{{sorting}}{{sieve}}.bam", **config))
+    wildcard_constraints:
+        # sieve="^$|-sievsort"
+        sieve=".*"
+    # log:
+    #     expand("{log_dir}/sambamba_sort/{{assembly}}-{{sample}}-sambamba_{{sorting}}.log", **config)
+    # group: 'alignment'
+    # benchmark:
+    #     expand("{benchmark_dir}/sambamba_sort/{{assembly}}-{{sample}}-{{sorting}}.benchmark.txt", **config)[0]
+    # params:
+    #     lambda wildcards: "-n" if wildcards.sorting == 'queryname' else '',
+    # threads: 4
     conda:
         "../envs/sambamba.yaml"
     shell:
@@ -344,19 +369,27 @@ rule sambamba_sort:
         """
 
 
+def get_samtools_sort_bam(wildcards):
+    if wildcards.sieve == '-sievsort':
+        return rules.alignmentsieve.output
+
+
 rule samtools_sort:
     """
     Sort the result of alignment with the samtools sorter.
     """
     input:
-        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-{{sorting}}.pipe", **config)
+        get_samtools_sort_bam
+        # expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-{{sorting}}.pipe", **config)
     output:
-        temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-{{sorting}}.bam", **config))
-    log:
-        expand("{log_dir}/samtools_sort/{{assembly}}-{{sample}}-samtools_{{sorting}}.log", **config)
-    group: 'alignment'
-    benchmark:
-        expand("{benchmark_dir}/samtools_sort/{{assembly}}-{{sample}}-{{sorting}}.benchmark.txt", **config)[0]
+        temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-{{sorting}}{{sieve}}.bam", **config))
+    wildcard_constraints:
+        sieve="^$|-sievsort"
+    # log:
+    #     expand("{log_dir}/samtools_sort/{{assembly}}-{{sample}}-samtools_{{sorting}}.log", **config)
+    # group: 'alignment'
+    # benchmark:
+    #     expand("{benchmark_dir}/samtools_sort/{{assembly}}-{{sample}}-{{sorting}}.benchmark.txt", **config)[0]
     params:
         order=lambda wildcards: "-n" if wildcards.sorting == 'queryname' else '',
         threads=lambda wildcards, input, output, threads: threads - 1
@@ -372,90 +405,33 @@ rule samtools_sort:
         """
 
 
-rule remove_mito:
-    """
-
-    """
+rule alignmentsieve:
     input:
-        bam=expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config),
-        chr_names=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config)
+        rules.samtools_presort.output
     output:
-        temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.mito.bam", **config))
-#    group: 'clean_bam'
-#     conda:
-#         "../envs/samtools.yaml"
-#    shell:
-#        """
-#        cat {input.chr_names} | cut -f 1 | grep -v {params} | xargs samtools view -b {input.bam} > {output}
-#        """
-    run:
-        import pysam
-        from shutil import copyfile
-
-        chrom_name = [chrm for chrm in ['chrM', 'MT'] if chrm in open(input.chr_names[0], 'r').read()]
-        if len(chrom_name) == 0:
-            copyfile(input.bam[0], output[0])
-        else:
-            chrom_name = chrom_name[0]
-            bam_in = pysam.AlignmentFile(input.bam[0], "rb")
-            bam_out = pysam.AlignmentFile(output[0], "wb", template=bam_in)
-            for read in bam_in:
-                if bam_in.getrname(read.rname) != chrom_name:
-                    bam_out.write(read)
-
-
-def get_bam_remove_blacklist(wildcards):
-    # check if we want to remove mitochondrial reads
-    if config.get('remove_mito', False):
-        return rules.remove_mito.output
-
-    # if we don't want to do anything get the untreated bam
-    return expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config)
-
-
-def get_blacklist_remove_blacklist(wildcards):
-    if workflow.persistence.dag.dryrun or workflow.persistence.dag.ignore_incomplete:
-        return expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config)
-    return expand("{genome_dir}/{{assembly}}/{{assembly}}.blacklist.bed.gz", **config)
-
-
-rule remove_blacklist:
-    """
-
-    """
-    input:
-        bam=get_bam_remove_blacklist,
-        blacklist=get_blacklist_remove_blacklist
-    output:
-        temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.black.bam", **config))
-#    group: 'clean_bam'
-    conda:
-        "../envs/bedtools.yaml"
+        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-sieved.bam", **config)
     shell:
-        """
-        bedtools intersect -v -abam  {input.bam} -b {input.blacklist} > {output}
-        """
-
+        "touch {output}"
 
 def get_bam_mark_duplicates(wildcards):
-    if config.get('remove_blacklist', False):
-        # get the blacklist if we are dryrunning
-        if config.get('remove_blacklist', False) and \
-                (workflow.persistence.dag.dryrun or workflow.persistence.dag.ignore_incomplete):
-            return rules.remove_blacklist.output
-
-        # or if it actually exists
-        # TODO: make genomepy checkpoint again!
-        # checkpoints.get_genome.get(assembly=wildcards.assembly)
-        blacklist = expand(f"{{genome_dir}}/{wildcards.assembly}/{wildcards.assembly}.blacklist.bed.gz", **config)[0]
-        if os.path.exists(blacklist):
-            return rules.remove_blacklist.output
-
-    # otherwise check if we want to remove mitochondrial reads
-    if config.get('remove_mito', False):
-        return rules.remove_mito.output
+    if use_alignmentsieve(config):
+        return expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}-sievsort.bam", **config)
+        # # get the blacklist if we are dryrunning
+        # if config.get('remove_blacklist', False) and \
+        #         (workflow.persistence.dag.dryrun or workflow.persistence.dag.ignore_incomplete):
+        #     return rules.remove_blacklist.output
+        #
+        # # or if it actually exists
+        # # TODO: make genomepy checkpoint again!
+        # # checkpoints.get_genome.get(assembly=wildcards.assembly)
+        # blacklist = expand(f"{{genome_dir}}/{wildcards.assembly}/{wildcards.assembly}.blacklist.bed.gz", **config)[0]
+        # if os.path.exists(blacklist):
+        #     return rules.remove_blacklist.output
 
     # if we don't want to do anything get the untreated bam
+    if wildcards.sorter == 'samtools' and wildcards.sorting == 'coordinate':
+        return rules.samtools_presort.output
+    print(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config))
     return expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config)
 
 

@@ -319,3 +319,13 @@ def add_default_resources(func):
 
 # now add the wrapper to the workflow execute function
 #workflow.execute = add_default_resources(workflow.execute)
+
+def use_alignmentsieve(configdict):
+    """
+
+    """
+    # return False
+    return config.get('min_mapping_quality', 0) > 0 or \
+           config.get('tn5_shift', False) or \
+           config.get('remove_blacklist', False) or \
+           config.get('remove_mito', False)

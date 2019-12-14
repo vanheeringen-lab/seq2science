@@ -103,3 +103,21 @@ properties:
     description: email to reach you, required for trackhub and multiqc report
     default: 'none@provided.com'
     type: string
+
+  #
+  min_mapping_quality:
+    default: 0
+    type: integer
+
+  #
+  tn5_shift:
+    default: False
+    type: boolean
+
+  #
+  remove_blacklist:
+    default: False
+
+  #
+  remove_mito:
+    default: False
