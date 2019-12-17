@@ -43,12 +43,12 @@ samples.columns = samples.columns.str.strip()
 assert all([col[0:7] not in ["Unnamed", ''] for col in samples]), \
     ("\nEncountered unnamed column in " + config["samples"] +
      ".\nColumn names: " + str(', '.join(samples.columns)) + '.\n')
-assert not any(samples.columns.str.contains('[^A-Za-z0-9_.\-]+', regex=True)), \
+assert not any(samples.columns.str.contains('[^A-Za-z0-9_.\-%]+', regex=True)), \
     ("\n" + config["samples"] + " may only contain letters, numbers and " +
     "underscores (_), periods (.), or minuses (-).\n")
 # sanitize table content
 samples = samples.applymap(lambda x: str(x).strip())
-assert not any([any(samples[col].str.contains('[^A-Za-z0-9_.\-]+', regex=True)) for col in samples]), \
+assert not any([any(samples[col].str.contains('[^A-Za-z0-9_.\-%]+', regex=True)) for col in samples]), \
     ("\n" + config["samples"] + " may only contain letters, numbers and " +
     "underscores (_), periods (.), or minuses (-).\n")
 assert len(samples["sample"]) == len(set(samples["sample"])), \
