@@ -215,6 +215,28 @@ except FileNotFoundError:
     layout_cache = {}
 
 
+for sample in [sample for sample in samples.index if sample not in layout_cache]:
+    import urllib.request
+    import requests
+    from bs4 import BeautifulSoup
+    url = f"https://www.ncbi.nlm.nih.gov/sra/?term={sample}"
+
+    conn = urllib.request.urlopen(url)
+    html = conn.read()
+
+    soup = BeautifulSoup(html, features="html5lib")
+    links = soup.find_all('a')
+
+    for tag in links:
+        link = tag.get('href',None)
+        if link is not None and 'SRR' in link:
+            trace_conn = urllib.request.urlopen("https:" + link)
+            trace_html = trace_conn.read()
+            x = re.search("This run has (\d) read", str(trace_html))
+            print(x.group(1))
+
+
+assert False
 tp = ThreadPool(config.get('ncbi_requests', 3) // 2)
 config['layout'] = {}
 
