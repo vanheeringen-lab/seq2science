@@ -333,6 +333,28 @@ rule samtools_presort:
         samtools sort -@ {params.threads} {params.order} {input} -o {output}  2> {log}
         """
 
+rule setup_blacklist:
+    output:
+        "whatever.txt"
+    shell:
+        ""
+
+
+rule alignmentsieve:
+    input:
+        bam=rules.samtools_presort.output,
+        bai=expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-unsieved.bam.bai", **config),
+        blacklist=rules.setup_blacklist.output if config['remove_blacklist'] or config["remove_mito"] else ""
+    output:
+        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-sieved.bam", **config)
+    params:
+        minqual=f"--minMappingQuality {config['minqual']}",
+        atacshift="--ATACshift" if config['atac_shift'] else '',
+        blacklist=lambda wildcards, input: "" if "" == input.blacklist[0] else \
+                                           f"--blackListFileName {input.blacklist}"
+    shell:
+        "alignmentSieve -b {input.bam} -o {output} {params.minqual} {params.atacshift} {params.blacklist}"
+
 
 def get_sambamba_sort_bam(wildcards):
     if wildcards.sieve == '-sievsort':
@@ -369,9 +391,9 @@ rule sambamba_sort:
         """
 
 
-def get_samtools_sort_bam(wildcards):
-    if wildcards.sieve == '-sievsort':
-        return rules.alignmentsieve.output
+# def get_samtools_sort_bam(wildcards):
+#     if wildcards.sieve == '-sievsort':
+#         return
 
 
 rule samtools_sort:
@@ -379,7 +401,7 @@ rule samtools_sort:
     Sort the result of alignment with the samtools sorter.
     """
     input:
-        get_samtools_sort_bam
+        rules.alignmentsieve.output
         # expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-{{sorting}}.pipe", **config)
     output:
         temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-{{sorting}}{{sieve}}.bam", **config))
@@ -405,33 +427,18 @@ rule samtools_sort:
         """
 
 
-rule alignmentsieve:
-    input:
-        rules.samtools_presort.output
-    output:
-        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-sieved.bam", **config)
-    shell:
-        "touch {output}"
-
 def get_bam_mark_duplicates(wildcards):
     if use_alignmentsieve(config):
-        return expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}-sievsort.bam", **config)
-        # # get the blacklist if we are dryrunning
-        # if config.get('remove_blacklist', False) and \
-        #         (workflow.persistence.dag.dryrun or workflow.persistence.dag.ignore_incomplete):
-        #     return rules.remove_blacklist.output
-        #
-        # # or if it actually exists
-        # # TODO: make genomepy checkpoint again!
-        # # checkpoints.get_genome.get(assembly=wildcards.assembly)
-        # blacklist = expand(f"{{genome_dir}}/{wildcards.assembly}/{wildcards.assembly}.blacklist.bed.gz", **config)[0]
-        # if os.path.exists(blacklist):
-        #     return rules.remove_blacklist.output
+        # when alignmentsieving but not shifting we do not have to re-sort samtools-coordinate
+        if wildcards.sorter == 'samtools' and wildcards.sorting == 'coordinate' and \
+                not config.get('atac_shift', False):
+            return rules.alignmentsieve.output
+        else:
+            return expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}-sievsort.bam", **config)
 
     # if we don't want to do anything get the untreated bam
     if wildcards.sorter == 'samtools' and wildcards.sorting == 'coordinate':
         return rules.samtools_presort.output
-    print(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config))
     return expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config)
 
 
@@ -465,13 +472,9 @@ rule samtools_index:
     Create an index of a bam file which can be used for e.g. visualization.
     """
     input:
-        expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config)
+        "{filepath}.bam"
     output:
-        expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam.bai", **config)
-    log:
-        expand("{log_dir}/samtools_index/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config)
-    benchmark:
-        expand("{benchmark_dir}/samtools_index/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.benchmark.txt", **config)[0]
+        temp("{filepath}.bam.bai")
     params:
         config['samtools_index']
     conda:

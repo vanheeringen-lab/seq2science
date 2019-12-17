@@ -166,7 +166,7 @@ rule multiqc_header_info:
                     f"    plot_type: 'html'\n"
                     f"    data: |\n"
                     f"        The pipeline was run with these configuration options and samples\:\n"
-                    f"{description}"
+                    f"{description}\n"
                     # f"custom_data:\n"
                     # f"    my_data_type:\n"
                     # f"        id: 'mqc_config_file_section'\n"

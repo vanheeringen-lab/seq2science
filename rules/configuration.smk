@@ -57,6 +57,11 @@ samples.index = samples.index.map(str)
 if config.get('peak_caller', False):
     config['peak_caller'] = {k: v for k,v in config['peak_caller'].items()}
 
+    # if genrich is peak caller, make sure to not double shift reads
+    if 'genrich' in config['peak_caller']:
+        if not '-D' in config['peak_caller']['genrich']:
+            config['peak_caller']['genrich'] += ' -D'
+
     # if hmmratac peak caller, check if all samples are paired-end
     if 'hmmratac' in config['peak_caller']:
         assert all([config['layout'][sample] == 'PAIRED' for sample in samples.index]), \

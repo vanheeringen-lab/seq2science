@@ -21,7 +21,7 @@ include: f"{config['rule_dir']}/trimming.smk"
 
 
 # set the quality_control functions
-quality_control = [get_trimming_qc, get_alignment_qc, get_peak_calling_qc]
+quality_control = []
 
 rule call_peaks_all:
     """
