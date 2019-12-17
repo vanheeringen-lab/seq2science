@@ -1,6 +1,8 @@
 name: snakemake-workflows
-
-
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
 dependencies:
   - pkgs/main::python=3.6
   - bioconda::snakemake>=5.8.1

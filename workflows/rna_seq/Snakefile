@@ -1,27 +1,31 @@
 # complement the configuration
 configfile: "config.yaml"
+# RNA-seq alignment is currently only compatible with STAR
+if 'star' not in config.get('aligner', ''):
+    config['aligner'] = 'star'
 
 
 # do onstart/onexit things
 sample_schemas = ['sample', 'assembly', 'strandedness']
-config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific', 'gene_expression', 'rna_trackhub']
+config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific', 'gene_expression', 'trackhub']
 include: "../../rules/configuration.smk"
 
 
 # load the remaining relevant rules
 include: f"{config['rule_dir']}/alignment.smk"
-include: f"{config['rule_dir']}/DE_analysis.smk"
+include: f"{config['rule_dir']}/DGE_analysis.smk"
 include: f"{config['rule_dir']}/gene_counts.smk"
 include: f"{config['rule_dir']}/get_genome.smk"
 include: f"{config['rule_dir']}/get_fastq.smk"
 include: f"{config['rule_dir']}/merge_replicates.smk"
 include: f"{config['rule_dir']}/trackhub.smk"
 include: f"{config['rule_dir']}/trimming.smk"
+include: f"{config['rule_dir']}/quantification.smk"
 include: f"{config['rule_dir']}/qc.smk"
 
 
 # load the quality control files
-quality_control = [get_trimming_qc, get_alignment_qc]
+quality_control = [get_trimming_qc, get_alignment_qc] if config['run_alignment'] else [get_trimming_qc]
 
 # load DE analysis contrasts
 contrasts = get_contrasts()
@@ -35,7 +39,8 @@ rule count_all:
 
         expand("{qc_dir}/multiqc_{assemblies}.html",                                 **{**config, **{'assemblies': set(samples['assembly'])}}),
 
-        [expand(f"{{result_dir}}/{{diffexp}}/{{assemblies}}-{contrast}.diffexp.tsv", **{**config, **{'assemblies': set(samples['assembly'])}}) for contrast in contrasts if config.get('contrasts', False)],
-        expand("{result_dir}/deseq2/{assemblies}-clustering.svg",                    **{**config, **{'assemblies': set(samples['assembly'])}}),
+        [expand(f"{{result_dir}}/{{diffexp}}/{{assemblies}}-{contrast}.diffexp.tsv", **{**config, **{'assemblies': set(samples['assembly'])}}) for contrast in contrasts] if config.get('contrasts', False) else [],
 
-        expand("{result_dir}/trackhub", **config)
+        [expand("{result_dir}/deseq2/{assemblies}-clustering.svg",                   **{**config, **{'assemblies': set(samples['assembly'])}})] if len(samples.index) > 1 and any([len(samples['condition'].drop_duplicates()) > 1 if 'condition' in samples else True]) else [],
+
+        [expand("{result_dir}/trackhub", **config)] if config['run_alignment'] else []

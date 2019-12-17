@@ -34,11 +34,11 @@ properties:
   # filename conventions
   fqext1:
     description: filename suffix when handling paired-end data, describing the forward read
-    default: pass_1
+    default: R1
     type: string
   fqext2:
     description: filename suffix when handling paired-end data, describing the reverse read
-    default: pass_2
+    default: R2
     type: string
   fqsuffix:
     description: file descriptor for fastq files (often fastq or fq)

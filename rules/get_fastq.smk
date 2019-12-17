@@ -78,22 +78,24 @@ rule sra2fastq_SE:
         "../envs/get_fastq.yaml"
     shell:
         f"""
-        parallel-fastq-dump -s {{input}}/* -O {config['fastq_dir']} {config['splot']} --threads {{threads}} --gzip >> {{log}} 2>&1
+        # setup tmp dir
+        tmpdir={config['sra_dir']}/{{wildcards.sample}}/tmp
+        mkdir -p $tmpdir; trap "rm -rf $tmpdir" EXIT
 
-        # rename the SRR to GSM
-        SRR=$(basename {{input}}/*)
-        GSM=$(basename {{input}})
-        src='{config['fastq_dir']}/'$SRR'_pass.{config['fqsuffix']}.gz'
-        dst='{config['fastq_dir']}/'$GSM'.{config['fqsuffix']}.gz'
-        if [[ ! $src = $dst ]]; then
-              mv -v $src $dst >> {{log}} 2>&1
-        fi
+        # dump to tmp dir
+        parallel-fastq-dump -s {{input}}/* -O $tmpdir {config['splot']} --threads {{threads}} --gzip >> {{log}} 2>&1
+
+        # rename file and move to output dir
+        f=$(ls -1q $tmpdir | grep .*.{config['fqsuffix']}.gz)
+        mv -v $tmpdir'/'$f {{output[0]}} >> {{log}} 2>&1
         """
 
 
+ruleorder: renamefastq_PE > sra2fastq_PE
 rule sra2fastq_PE:
     """
     Downloaded (raw) SRAs are converted to paired-end fastq files.
+    Forward and reverse samples will be switched if forward/reverse names are not lexicographically ordered.
     """
     input:
         rules.id2sra.output
@@ -108,17 +110,47 @@ rule sra2fastq_PE:
         "../envs/get_fastq.yaml"
     shell:
         f"""
-        parallel-fastq-dump -s {{input}}/* -O {config['fastq_dir']} {config['split']} --threads {{threads}} --gzip >> {{log}} 2>&1
+        # setup tmp dir
+        tmpdir={config['sra_dir']}/{{wildcards.sample}}/tmp
+        mkdir -p $tmpdir; trap "rm -rf $tmpdir" EXIT
 
-        # rename the SRRs to GSMs
-        SRR=$(basename {{input}}/*)
-        GSM=$(basename {{input}})
-        if [[ ! $SRR = $GSM ]]; then
-          src='{config['fastq_dir']}/'$SRR'_{config['fqext1']}.{config['fqsuffix']}.gz'
-          dst='{config['fastq_dir']}/'$GSM'_{config['fqext1']}.{config['fqsuffix']}.gz'
-          mv -v $src $dst >> {{log}} 2>&1
-          src='{config['fastq_dir']}/'$SRR'_{config['fqext2']}.{config['fqsuffix']}.gz'
-          dst='{config['fastq_dir']}/'$GSM'_{config['fqext2']}.{config['fqsuffix']}.gz'
-          mv -v $src $dst >> {{log}} 2>&1
-        fi
+        # dump to tmp dir
+        parallel-fastq-dump -s {{input}}/* -O $tmpdir {config['split']} --threads {{threads}} --gzip >> {{log}} 2>&1
+
+        # rename files and move to output dir
+        for f in $(ls -1q $tmpdir | grep .*.{config['fqsuffix']}.gz); do
+            src=$tmpdir'/'$f
+            dst={config['fastq_dir']}/{{wildcards.sample}}_{config['fqext1']}.{config['fqsuffix']}.gz
+            if [ -f $dst ]; then
+                dst={config['fastq_dir']}/{{wildcards.sample}}_{config['fqext2']}.{config['fqsuffix']}.gz
+            fi
+            mv -v $src $dst >> {{log}} 2>&1
+        done
         """
+
+
+def get_wrong_fqext(wildcards):
+    """get all local samples with fqexts that do not match the config"""
+    fastqs = glob.glob(os.path.join(config["fastq_dir"], wildcards.sample + "*" + config["fqsuffix"] + ".gz"))
+    # exclude samples with the correct fqext
+    r1 = wildcards.sample + "_" + config["fqext1"] + "." + config["fqsuffix"] + ".gz"
+    r2 = wildcards.sample + "_" + config["fqext2"] + "." + config["fqsuffix"] + ".gz"
+    fastqs = [f for f in fastqs if not re.match(r1+"|"+r2, f)]
+    if len(fastqs) == 0:
+        fastqs.append("impossible input to prevent Snakemake from running the rule without input")
+    return sorted(fastqs)
+
+rule renamefastq_PE:
+    """
+    Create symlinks to fastqs with incorrect fqexts (default R1/R2).
+    Forward and reverse samples will be switched if forward/reverse names are not lexicographically ordered.
+    """
+    input:
+         get_wrong_fqext
+    output:
+         temp(expand("{fastq_dir}/{{sample}}_{fqext}.{fqsuffix}.gz", **config))
+    shell:
+         """
+         ln {input[0]} {output[0]}
+         ln {input[1]} {output[1]}
+         """

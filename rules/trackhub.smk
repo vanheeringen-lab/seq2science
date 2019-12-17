@@ -101,7 +101,11 @@ rule narrowpeak_bignarrowpeak:
 
 def get_strandedness(wildcards):
     sample = f"{wildcards.sample}"
-    strandedness = samples["strandedness"].loc[sample]
+    if config.get('combine_replicates', '') == 'merge' and 'condition' in samples:
+        s2 = samples[['condition', 'strandedness']].drop_duplicates().set_index('condition')
+        strandedness = s2["strandedness"].loc[sample]
+    else:
+        strandedness = samples["strandedness"].loc[sample]
     return strandedness
 
 
@@ -116,7 +120,7 @@ rule bam_stranded_bigwig:
         forward=expand("{result_dir}/bigwigs/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.fwd.bw", **config),
         reverse=expand("{result_dir}/bigwigs/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.rev.bw", **config),
     params:
-        flags=config['bam_bigwig']['deeptools'] if config.get('bam_bigwig', False) else "",
+        flags=config['deeptools'],
         strandedness=get_strandedness
     wildcard_constraints:
         sorting=config['bam_sort_order'] if config.get('bam_sort_order', False) else ""
@@ -152,7 +156,7 @@ rule bam_bigwig:
     output:
         expand("{result_dir}/bigwigs/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bw", **config)
     params:
-        config['bam_bigwig']['deeptools'] if config.get('bam_bigwig', False) else ""
+        config['deeptools']
     wildcard_constraints:
         sorting=config['bam_sort_order'] if config.get('bam_sort_order') else ""
     log:
@@ -186,6 +190,23 @@ rule twobit:
         "../envs/ucsc.yaml"
     shell:
         "faToTwoBit {input} {output}"
+
+
+def get_bigwig_strand(sample):
+    """
+    return a list of extensions for (un)stranded bigwigs
+    """
+    if 'strandedness' in samples and config['filter_bam_by_strand']:
+        if config.get('combine_replicates', '') == 'merge' and 'condition' in samples:
+            s2 = samples[['condition', 'strandedness']].drop_duplicates().set_index('condition')
+            strandedness = s2["strandedness"].loc[sample]
+            if strandedness in ['forward', 'yes', 'reverse']:
+                return ['.fwd', '.rev']
+        else:
+            strandedness = samples["strandedness"].loc[sample]
+            if strandedness in ['forward', 'yes', 'reverse']:
+                return ['.fwd', '.rev']
+    return ['']
 
 
 def get_trackhub_files(wildcards):
@@ -232,21 +253,19 @@ def get_trackhub_files(wildcards):
                 trackfiles['bigwigs'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{samples.loc[sample, 'assembly']}-{sample}.bw", **config))
 
     elif 'rna_seq' in workflow.snakefile.split('/')[-2]:
-        def get_bigwig_strand(sample):
-            if 'strandedness' in samples and config.get('bam_bigwig', False) and config.get('bam_bigwig').get('filter_by_strand', False):
-                strandedness = samples["strandedness"].loc[sample]
-                if strandedness in ['forward', 'yes', 'reverse']:
-                    return ['.fwd', '.rev']
-            return ['']
-
-        bigwigs = []
-        for sample in samples.index:
-            for bw in get_bigwig_strand(sample):
-                bw = expand(f"{{result_dir}}/bigwigs/{samples.loc[sample]['assembly']}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw", **config)
-                bigwigs.extend(bw)
-        return bigwigs
+        # get all the bigwigs
+        if config.get('combine_replicates', '') == 'merge' and 'condition' in samples:
+            for condition in set(samples['condition']):
+                for assembly in set(samples[samples['condition'] == condition]['assembly']):
+                    for bw in get_bigwig_strand(condition):
+                        bw = expand(f"{{result_dir}}/bigwigs/{assembly}-{condition}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw", **config)
+                        trackfiles['bigwigs'].extend(bw)
+        else:
+            for sample in samples.index:
+                for bw in get_bigwig_strand(sample):
+                    bw = expand(f"{{result_dir}}/bigwigs/{samples.loc[sample]['assembly']}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw", **config)
+                    trackfiles['bigwigs'].extend(bw)
     return trackfiles
-
 
 def get_defaultPos(sizefile):
     # extract a default position spanning the first scaffold/chromosome in the sizefile.
@@ -271,95 +290,126 @@ rule trackhub:
     benchmark:
         f"{config['benchmark_dir']}/trackhub.benchmark.txt"
     run:
-        import os
         import re
         import trackhub
-        import pandas as pd
         from contextlib import redirect_stdout
-        orderkey = 4800
 
-        # make the output directory
-        shell(f"mkdir -p {output[0]}")
+        with open(log[0], 'w') as f:
+            # contextlib.redirect_stderr doesn't work. Probably an issue with trackhub
+            with redirect_stdout(f):
+                orderkey = 4800
 
-        # output to log
-        with open(str(log), 'w') as f, redirect_stdout(f):
-            # start a shared hub
-            hub = trackhub.Hub(
-                hub        =config.get('hubname',    'trackhub'), #f"{os.path.basename(os.getcwd())} trackhub",
-                short_label=config.get('shortlabel', 'trackhub'), # 17 characters max
-                long_label =config.get('longlabel',  "Automated trackhub generated by the snakemake-workflows tool: \n"
-                                                     "https://github.com/vanheeringen-lab/snakemake-workflows"),
-                email      =config.get('email',      'none@provided.com'))
+                # make the output directory
+                shell(f"mkdir -p {output[0]}")
 
-            # link the genomes file to the hub
-            genomes_file = trackhub.genomes_file.GenomesFile()
-            hub.add_genomes_file(genomes_file)
+                # start a shared hub
+                hub = trackhub.Hub(
+                    hub        =config.get('hubname',    'trackhub'),
+                    short_label=config.get('shortlabel', 'trackhub'), # 17 characters max
+                    long_label =config.get('longlabel',  "Automated trackhub generated by the snakemake-workflows tool: \n"
+                                                         "https://github.com/vanheeringen-lab/snakemake-workflows"),
+                    email      =config.get('email',      'none@provided.com'))
 
-            for assembly in set(samples['assembly']):
-                # now add each assembly to the genomes_file
-                if any(assembly in twobit for twobit in input.twobits):
-                    basename = f"{config['genome_dir']}/{assembly}/{assembly}"
-                    genome = trackhub.Assembly(
-                        genome=assembly,
-                        twobit_file=basename + '.2bit',
-                        organism=assembly,
-                        defaultPos=get_defaultPos(basename + '.fa.sizes'),
-                        scientificName=assembly,
-                        description=assembly
-                    )
-                else:
-                    genome = trackhub.Genome(assembly)
+                # link the genomes file to the hub
+                genomes_file = trackhub.genomes_file.GenomesFile()
+                hub.add_genomes_file(genomes_file)
 
-                genomes_file.add_genome(genome)
-
-                # each trackdb is added to the genome
-                trackdb = trackhub.trackdb.TrackDb()
-                genome.add_trackdb(trackdb)
-                priority = 1
-
-                for peak_caller in config['peak_caller']:
-                    conditions = set()
-                    for sample in samples[samples['assembly'] == assembly].index:
-                        if 'condition' in samples:
-                            if samples.loc[sample, 'condition'] not in conditions:
-                                bigpeak = f"{config['result_dir']}/{peak_caller}/{assembly}-{samples.loc[sample, 'condition']}.bigNarrowPeak"
-                            else:
-                                bigpeak = False
-                            conditions.add(samples.loc[sample, 'condition'])
-                            sample_name = f"{samples.loc[sample, 'condition']}{peak_caller}PEAK"
-                        else:
-                            bigpeak = f"{config['result_dir']}/{peak_caller}/{assembly}-{sample}.bigNarrowPeak"
-                            sample_name = f"{sample}{peak_caller}PEAK"
-                        sample_name = trackhub.helpers.sanitize(sample_name)
-
-                        if bigpeak:
-                            track = trackhub.Track(
-                                name=sample_name,           # track names can't have any spaces or special chars.
-                                source=bigpeak,             # filename to build this track from
-                                visibility='dense',         # shows the full signal
-                                tracktype='bigNarrowPeak',  # required when making a track
-                                priority=priority
-                            )
-                            priority += 1
-                            trackdb.add_tracks(track)
-
-                        bigwig = f"{config['result_dir']}/{peak_caller}/{assembly}-{sample}.bw"
-                        sample_name = f"{sample}{peak_caller}BW"
-
-                        track = trackhub.Track(
-                            name=sample_name,    # track names can't have any spaces or special chars.
-                            source=bigwig,       # filename to build this track from
-                            visibility='full',   # shows the full signal
-                            color='0,0,0',       # black
-                            autoScale='on',      # allow the track to autoscale
-                            tracktype='bigWig',  # required when making a track
-                            priority=priority,
-                            maxHeightPixels='100:32:8'
+                for assembly in set(samples['assembly']):
+                    # now add each assembly to the genomes_file
+                    if any(assembly in twobit for twobit in input.twobits):
+                        basename = f"{config['genome_dir']}/{assembly}/{assembly}"
+                        genome = trackhub.Assembly(
+                            genome=assembly,
+                            twobit_file=basename + '.2bit',
+                            organism=assembly,
+                            defaultPos=get_defaultPos(basename + '.fa.sizes'),
+                            scientificName=assembly,
+                            description=assembly
                         )
+                    else:
+                        genome = trackhub.Genome(assembly)
 
-                        # each track is added to the trackdb
-                        trackdb.add_tracks(track)
-                        priority += 1
+                    genomes_file.add_genome(genome)
 
-            # now finish by storing the result
-            trackhub.upload.upload_hub(hub=hub, host='localhost', remote_dir=output[0])
+                    # each trackdb is added to the genome
+                    trackdb = trackhub.trackdb.TrackDb()
+                    genome.add_trackdb(trackdb)
+                    priority = 1
+
+                    # now add the data files depending on the workflow
+                    # ATAC-seq trackhub
+                    if 'atac_seq' in workflow.snakefile.split('/')[-2]:
+                        for peak_caller in config['peak_caller']:
+                            conditions = set()
+                            for sample in samples[samples['assembly'] == assembly].index:
+                                if 'condition' in samples:
+                                    if samples.loc[sample, 'condition'] not in conditions:
+                                        bigpeak = f"{config['result_dir']}/{peak_caller}/{assembly}-{samples.loc[sample, 'condition']}.bigNarrowPeak"
+                                    else:
+                                        bigpeak = False
+                                    conditions.add(samples.loc[sample, 'condition'])
+                                    sample_name = f"{samples.loc[sample, 'condition']}{peak_caller}PEAK"
+                                else:
+                                    bigpeak = f"{config['result_dir']}/{peak_caller}/{assembly}-{sample}.bigNarrowPeak"
+                                    sample_name = f"{sample}{peak_caller}PEAK"
+                                sample_name = trackhub.helpers.sanitize(sample_name)
+
+                                if bigpeak:
+                                    track = trackhub.Track(
+                                        name=sample_name,           # track names can't have any spaces or special chars.
+                                        source=bigpeak,             # filename to build this track from
+                                        visibility='dense',         # shows the full signal
+                                        tracktype='bigNarrowPeak',  # required when making a track
+                                        priority=priority
+                                    )
+                                    priority += 1
+                                    trackdb.add_tracks(track)
+
+                                bigwig = f"{config['result_dir']}/{peak_caller}/{assembly}-{sample}.bw"
+                                sample_name = f"{sample}{peak_caller}BW"
+
+                                track = trackhub.Track(
+                                    name=sample_name,    # track names can't have any spaces or special chars.
+                                    source=bigwig,       # filename to build this track from
+                                    visibility='full',   # shows the full signal
+                                    color='0,0,0',       # black
+                                    autoScale='on',      # allow the track to autoscale
+                                    tracktype='bigWig',  # required when making a track
+                                    priority=priority,
+                                    maxHeightPixels='100:32:8'
+                                )
+
+                                # each track is added to the trackdb
+                                trackdb.add_tracks(track)
+                                priority += 1
+
+                    # RNA-seq trackhub
+                    elif 'rna_seq' in workflow.snakefile.split('/')[-2]:
+                        iterator = samples.index
+                        if config.get('combine_replicates', '') == 'merge' and 'condition' in samples:
+                            iterator = set(samples['condition'])
+
+                        for sample in iterator:
+                            for bw in get_bigwig_strand(sample):
+                                bigwig = f"{config['result_dir']}/bigwigs/{assembly}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw"
+                                sample_name = f"{sample}{bw}"
+                                # remove characters trackhub doesn't allow
+                                sample_name = re.sub(r'\W+', '', sample_name)
+
+                                track = trackhub.Track(
+                                    name=sample_name,    # track names can't have any spaces or special chars.
+                                    source=bigwig,       # filename to build this track from
+                                    visibility='full',   # shows the full signal
+                                    color='0,0,0',       # black
+                                    autoScale='on',      # allow the track to autoscale
+                                    tracktype='bigWig',  # required when making a track
+                                    priority=priority,
+                                    maxHeightPixels='100:32:8'
+                                )
+
+                                # each track is added to the trackdb
+                                trackdb.add_tracks(track)
+                                priority += 1
+
+                # now finish by storing the result
+                trackhub.upload.upload_hub(hub=hub, host='localhost', remote_dir=output[0])
