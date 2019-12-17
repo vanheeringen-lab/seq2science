@@ -33,19 +33,28 @@ for file in repo.get_contents("envs", ref='develop'):
 
             # check for newer version
             stdout, stderr, return_code = conda.cli.python_api.run_command('search', package, channel=channel)
-            most_recent = stdout.split('\n')[-2]  # last line is empty line, so -2
-            new_version = most_recent.split()[1]
 
-            # check if package was updated, and whether or not we want automatic updates for it
-            if version.parse(new_version) > version.parse(old_version) and \
-                    package not in ignore:
+            versions = []
+            for line in stdout.split('\n'):
+                if not line == '':
+                    output = [sub for sub in line.split(' ') if sub != '']
 
-                # replace the old version with the new version
-                line = line.replace(old_version, new_version)
+                    if output[-1] == 'conda-forge':
+                        versions.append(output)
 
-                # add to title
-                pull_request_title += f'{package}={old_version} -> {new_version}; '
-                updated = True
+            if len(versions):
+                new_version = versions[-1][1]
+
+                # check if package was updated, and whether or not we want automatic updates for it
+                if version.parse(new_version) > version.parse(old_version) and \
+                        package not in ignore:
+
+                    # replace the old version with the new version
+                    line = line.replace(old_version, new_version)
+
+                    # add to title
+                    pull_request_title += f'{package}={old_version} -> {new_version}; '
+                    updated = True
 
         newfile += f"{line}\n"
 
