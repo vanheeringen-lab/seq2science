@@ -5,7 +5,7 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - r::r-base=3.6.1
+  - r::r-base=3.6.2
   - bioconda::bioconductor-deseq2=1.26.0
   - bioconda::bioconductor-ihw=1.14.0
   - bioconda::bioconductor-apeglm=1.8.0
