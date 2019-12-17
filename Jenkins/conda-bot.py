@@ -39,7 +39,7 @@ for file in repo.get_contents("envs", ref='develop'):
                 if not subline == '':
                     output = [sub for sub in subline.split(' ') if sub != '']
 
-                    if output[-1] == 'conda-forge':
+                    if output[-1] == channel:
                         versions.append(output)
 
             if len(versions):
