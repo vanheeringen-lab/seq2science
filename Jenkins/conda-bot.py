@@ -35,9 +35,9 @@ for file in repo.get_contents("envs", ref='develop'):
             stdout, stderr, return_code = conda.cli.python_api.run_command('search', package, channel=channel)
 
             versions = []
-            for line in stdout.split('\n'):
-                if not line == '':
-                    output = [sub for sub in line.split(' ') if sub != '']
+            for subline in stdout.split('\n'):
+                if not subline == '':
+                    output = [sub for sub in subline.split(' ') if sub != '']
 
                     if output[-1] == 'conda-forge':
                         versions.append(output)
