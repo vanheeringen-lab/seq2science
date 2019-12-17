@@ -1,19 +1,20 @@
-import urllib.request
-from bs4 import BeautifulSoup
-import os.path
-import glob
-import re
-import time
 import math
-import norns
+import os.path
 import psutil
 import pickle
+import re
 import subprocess
+import time
+
+import norns
 import numpy as np
 import pandas as pd
+import urllib.request
+from bs4 import BeautifulSoup
 from multiprocessing.pool import ThreadPool
-from snakemake.utils import validate
+
 from snakemake.logging import logger
+from snakemake.utils import validate
 
 
 # check config file for correct directory names

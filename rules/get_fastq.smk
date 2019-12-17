@@ -1,3 +1,8 @@
+import glob
+import os
+import re
+
+
 rule id2sra:
     """
     Download the SRA of a sample by its unique identifier.
@@ -139,6 +144,7 @@ def get_wrong_fqext(wildcards):
     if len(fastqs) == 0:
         fastqs.append("impossible input to prevent Snakemake from running the rule without input")
     return sorted(fastqs)
+
 
 rule renamefastq_PE:
     """
