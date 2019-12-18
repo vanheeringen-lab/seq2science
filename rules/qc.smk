@@ -108,7 +108,7 @@ rule MTNucRatioCalculator:
     for form.
     """
     input:
-        bam=expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config),
+        bam=expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-unsieved.bam", **config),
         chr_names=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config)
     output:
         expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.bam.mtnucratiomtnuc.json", **config)
@@ -276,10 +276,9 @@ def get_alignment_qc(sample):
 
     # get the ratio mitochondrial dna
     assembly = samples.loc[sample, 'assembly']
-    #checkpoints.get_genome.get(assembly=assembly)
+    checkpoints.get_genome.get(assembly=assembly)
     if len([chrm for chrm in ['chrM', 'MT'] if chrm in open(f"{config['genome_dir']}/{assembly}/{assembly}.fa.sizes", 'r').read()]) > 0:
         output.append(f"{{result_dir}}/{config['aligner']}/{{{{assembly}}}}-{sample}.samtools-coordinate.bam.mtnucratiomtnuc.json")
-
     return expand(output, **config)
 
 

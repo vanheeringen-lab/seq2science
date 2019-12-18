@@ -5,7 +5,7 @@ config['genomepy_temp'] = ["annotation.bed.gz", "annotation.gff.gz"]
 if 'rna_seq' in workflow.snakefile.split('/')[-2] or config['aligner'] == 'star':
     config['genome_types'].append("annotation.gtf")
 
-rule get_genome:
+checkpoint get_genome:
     """
     Download a genome through genomepy.
     Additionally downloads the gene annotation if required downstream.

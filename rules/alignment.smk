@@ -1,4 +1,5 @@
 import os
+import re
 
 
 def get_reads(wildcards):
@@ -10,16 +11,6 @@ def get_reads(wildcards):
         if config['layout'].get(wildcards.sample, False) == "SINGLE":
             return expand("{trimmed_dir}/{{sample}}_trimmed.{fqsuffix}.gz", **config)
         return sorted(expand("{trimmed_dir}/{{sample}}_{fqext}_trimmed.{fqsuffix}.gz", **config))
-
-def get_alignment_pipes():
-    pipes = {pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0])}
-    # if not use_alignmentsieve(config):
-    #     if config.get('peak_caller', False) and 'genrich' in config['peak_caller']:
-    #         pipes.add(pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.sambamba-queryname.pipe", **config)[0]))
-    #     elif config.get('bam_sorter', False):
-    #         pipes.add(pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{bam_sorter}-{bam_sort_order}.pipe", **config)[0]))
-
-    return pipes
 
 
 if config['aligner'] == 'bowtie2':
@@ -52,7 +43,7 @@ if config['aligner'] == 'bowtie2':
             reads=get_reads,
             index=expand("{genome_dir}/{{assembly}}/index/bowtie2/", **config)
         output:
-            get_alignment_pipes()
+            pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0])
         log:
             expand("{log_dir}/bowtie2_align/{{assembly}}-{{sample}}.log", **config)
         group: 'alignment'
@@ -106,7 +97,7 @@ elif config['aligner'] == 'bwa':
             reads=get_reads,
             index=expand("{genome_dir}/{{assembly}}/index/bwa/{{assembly}}.{bwaindex_types}", **config)
         output:
-            get_alignment_pipes()
+            pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0])
         log:
             expand("{log_dir}/bwa_mem/{{assembly}}-{{sample}}.log", **config)
         group: 'alignment'
@@ -156,7 +147,7 @@ elif config['aligner'] == 'hisat2':
             reads=get_reads,
             index=expand("{genome_dir}/{{assembly}}/index/hisat2/", **config)
         output:
-            get_alignment_pipes()
+            pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0])
         log:
             expand("{log_dir}/hisat2_align/{{assembly}}-{{sample}}.log", **config)
         group: 'alignment'
@@ -245,7 +236,7 @@ elif config['aligner'] == 'star' or config.get('quantifier', '') == 'star':
                 index=expand("{genome_dir}/{{assembly}}/index/{aligner}", **config)
             output:
                 dir =directory(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}", **config)),
-                pipe=get_alignment_pipes()
+                pipe=pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0])
             log:
                 expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}.log", **config)
             benchmark:
@@ -268,6 +259,7 @@ elif config['aligner'] == 'star' or config.get('quantifier', '') == 'star':
                 --outSAMtype BAM Unsorted --outStd BAM_Unsorted | tee {output.pipe} 1> /dev/null 2>> {log}
                 """
 
+
 rule samtools_presort:
     """
     Sort the result of alignment with the samtools sorter.
@@ -276,33 +268,79 @@ rule samtools_presort:
         expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)
     output:
         temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-unsieved.bam", **config))
+    log:
+        expand("{log_dir}/samtools_presort/{{assembly}}-{{sample}}.log", **config)
+    group: 'alignment'
+    benchmark:
+        expand("{benchmark_dir}/samtools_presort/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
+    params:
+        threads=lambda wildcards, input, output, threads: threads - 1
+    threads: 2
+    resources:
+        mem_mb=2500
     shell:
         """
         trap \"rm -f {output}*\" INT;
-        samtools sort -@ {params.threads} {params.order} {input} -o {output}  2> {log}
+        samtools sort -@ {params.threads} {input} -o {output}  2> {log}
         """
 
+
+def get_blacklist_files(wildcards):
+    files = {}
+    checkpoints.get_genome.get(assembly=wildcards.assembly)
+    if config.get('remove_blacklist'):
+        blacklist = f"{config['genome_dir']}/{wildcards.assembly}/{wildcards.assembly}.blacklist.bed"
+        if os.path.exists(blacklist):
+            files['blacklist'] = blacklist
+
+    if config.get('remove_mito'):
+        sizes = f"{config['genome_dir']}/{wildcards.assembly}/{wildcards.assembly}.fa.sizes"
+        with open(sizes) as f:
+            matches = re.findall("chrM|chrm|MT", f.read())
+            if matches:
+                files['sizes'] = sizes
+
+    return files
+
+
 rule setup_blacklist:
+    input:
+        unpack(get_blacklist_files)
     output:
-        "whatever.txt"
-    shell:
-        ""
+        temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.customblacklist.bed", **config))
+    run:
+        newblacklist = ""
+        if any('.blacklist.bed' in inputfile for inputfile in input):
+            with open(input.blacklist, 'r') as file:
+                newblacklist += file.read()
+
+        if any('.fa.sizes' in inputfile for inputfile in input):
+            with open(input.sizes, 'r') as file:
+                sizesfile = file.read().strip()
+                for match in re.findall("chrM.*|chrm.*|MT.*", sizesfile):
+                    chrm, size = match.split('\t')
+                    newblacklist += f"{chrm}\t0\t{size}\n"
+
+        with open(output[0], 'w') as f:
+            f.write(newblacklist)
 
 
 rule alignmentsieve:
     input:
         bam=rules.samtools_presort.output,
         bai=expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-unsieved.bam.bai", **config),
-        blacklist=rules.setup_blacklist.output if config['remove_blacklist'] or config["remove_mito"] else ""
+        blacklist=rules.setup_blacklist.output
     output:
         expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-sieved.bam", **config)
     params:
         minqual=f"--minMappingQuality {config['minqual']}",
         atacshift="--ATACshift" if config['atac_shift'] else '',
-        blacklist=lambda wildcards, input: "" if "" == input.blacklist[0] else \
+        blacklist=lambda wildcards, input: "" if not len(get_blacklist_files(wildcards).keys()) else \
                                            f"--blackListFileName {input.blacklist}"
+    conda:
+        "../envs/alignmentsieve.yaml"
     shell:
-        "alignmentSieve -b {input.bam} -o {output} {params.minqual} {params.atacshift} {params.blacklist}"
+        "alignmentSieve -b {input.bam} -o {output} {params.minqual} {params.atacshift} {params.blacklist} -p 10"
 
 
 def get_sambamba_sort_bam(wildcards):
@@ -321,28 +359,22 @@ rule sambamba_sort:
     output:
         temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.sambamba-{{sorting}}{{sieve}}.bam", **config))
     wildcard_constraints:
-        # sieve="^$|-sievsort"
         sieve=".*"
-    # log:
-    #     expand("{log_dir}/sambamba_sort/{{assembly}}-{{sample}}-sambamba_{{sorting}}.log", **config)
-    # group: 'alignment'
-    # benchmark:
-    #     expand("{benchmark_dir}/sambamba_sort/{{assembly}}-{{sample}}-{{sorting}}.benchmark.txt", **config)[0]
-    # params:
-    #     lambda wildcards: "-n" if wildcards.sorting == 'queryname' else '',
-    # threads: 4
+    log:
+        expand("{log_dir}/sambamba_sort/{{assembly}}-{{sample}}-sambamba_{{sorting}}{{sieve}}.log", **config)
+    group: 'alignment'
+    benchmark:
+        expand("{benchmark_dir}/sambamba_sort/{{assembly}}-{{sample}}-{{sorting}}{{sieve}}.benchmark.txt", **config)[0]
+    params:
+        lambda wildcards: "-n" if wildcards.sorting == 'queryname' else '',
+    threads: 2
     conda:
         "../envs/sambamba.yaml"
     shell:
         """
-        sambamba view --nthreads {threads} -S -f bam  {input[0]} -o /dev/stdout  2> {log} |
+        sambamba view --nthreads {threads} -f bam  {input[0]} -o /dev/stdout  2> {log} |
         sambamba sort --nthreads {threads} {params}   /dev/stdin -o {output[0]}  2> {log}
         """
-
-
-# def get_samtools_sort_bam(wildcards):
-#     if wildcards.sieve == '-sievsort':
-#         return
 
 
 rule samtools_sort:
@@ -351,20 +383,19 @@ rule samtools_sort:
     """
     input:
         rules.alignmentsieve.output
-        # expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-{{sorting}}.pipe", **config)
     output:
         temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-{{sorting}}{{sieve}}.bam", **config))
     wildcard_constraints:
         sieve="^$|-sievsort"
-    # log:
-    #     expand("{log_dir}/samtools_sort/{{assembly}}-{{sample}}-samtools_{{sorting}}.log", **config)
-    # group: 'alignment'
-    # benchmark:
-    #     expand("{benchmark_dir}/samtools_sort/{{assembly}}-{{sample}}-{{sorting}}.benchmark.txt", **config)[0]
+    log:
+        expand("{log_dir}/samtools_sort/{{assembly}}-{{sample}}-samtools_{{sorting}}{{sieve}}.log", **config)
+    group: 'alignment'
+    benchmark:
+        expand("{benchmark_dir}/samtools_sort/{{assembly}}-{{sample}}-{{sorting}}{{sieve}}.benchmark.txt", **config)[0]
     params:
         order=lambda wildcards: "-n" if wildcards.sorting == 'queryname' else '',
         threads=lambda wildcards, input, output, threads: threads - 1
-    threads: 4
+    threads: 2
     resources:
         mem_mb=2500
     conda:
