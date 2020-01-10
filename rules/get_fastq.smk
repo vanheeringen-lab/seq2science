@@ -84,7 +84,7 @@ rule sra2fastq_SE:
     shell:
         f"""
         # setup tmp dir
-        tmpdir={config['sra_dir']}/{{wildcards.sample}}/tmp
+        tmpdir={config['sra_dir']}/tmp/{{wildcards.sample}}
         mkdir -p $tmpdir; trap "rm -rf $tmpdir" EXIT
 
         # dump to tmp dir
@@ -116,7 +116,7 @@ rule sra2fastq_PE:
     shell:
         f"""
         # setup tmp dir
-        tmpdir={config['sra_dir']}/{{wildcards.sample}}/tmp
+        tmpdir={config['sra_dir']}/tmp/{{wildcards.sample}}
         mkdir -p $tmpdir; trap "rm -rf $tmpdir" EXIT
 
         # dump to tmp dir
