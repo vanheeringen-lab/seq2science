@@ -348,7 +348,7 @@ def convert_size(size_bytes, order=None):
 
 
 # by default only one download in parallel (workflow fails on multiple on a single node)
-workflow.global_resources = {**{'parallel_downloads': 1}, **workflow.global_resources}
+workflow.global_resources = {**{'parallel_downloads': 1, 'deeptools_limit': 1}, **workflow.global_resources}
 
 # when the user specifies memory, use this and give a warning if it surpasses local memory
 # (surpassing does not always have to be an issue -> cluster execution)
