@@ -347,52 +347,22 @@ def convert_size(size_bytes, order=None):
     return s, size_name[order]
 
 
-def add_default_resources(func):
-    # https://stackoverflow.com/questions/6200270/decorator-to-print-function-call-details-parameters-names-and-effective-values/6278457#6278457
-    def wrapper(*args, **kwargs):
-        # by default only one download in parallel (workflow fails on multiple on a single node)
-        kwargs['resources'] = {**{'parallel_downloads': 1}, **kwargs['resources']}
+# by default only one download in parallel (workflow fails on multiple on a single node)
+workflow.global_resources = {**{'parallel_downloads': 1}, **workflow.global_resources}
 
-        # when the user specifies memory, use this and give a warning if it surpasses local memory
-        # (surpassing does not always have to be an issue -> cluster execution)
-        # if none specified set the memory to the max available on the computer
-        mem = psutil.virtual_memory()
-        if kwargs['resources'].get('mem_mb'):
-            if kwargs['resources']['mem_mb'] > convert_size(mem.total, 2)[0]:
-                logger.info(f"WARNING: The specified ram ({kwargs['resources']['mem_mb']} mb) surpasses the local machine\'s RAM ({convert_size(mem.total, 2)[0]} mb)")
+# when the user specifies memory, use this and give a warning if it surpasses local memory
+# (surpassing does not always have to be an issue -> cluster execution)
+# if none specified set the memory to the max available on the computer
+mem = psutil.virtual_memory()
+if workflow.global_resources.get('mem_mb'):
+    if workflow.global_resources['mem_mb'] > convert_size(mem.total, 2)[0]:
+        logger.info(f"WARNING: The specified ram ({workflow.global_resources['mem_mb']} mb) surpasses the local machine\'s RAM ({convert_size(mem.total, 2)[0]} mb)")
 
-            kwargs['resources'] = {**kwargs['resources'],
-                                   **{'mem_mb': np.clip(kwargs['resources']['mem_mb'], 0, convert_size(mem.total, 2)[0])}}
-        else:
-            if kwargs['resources'].get('mem_gb', 0) > convert_size(mem.total, 3)[0]:
-                logger.info(f"WARNING: The specified ram ({kwargs['resources']['mem_gb']} gb) surpasses the local machine\'s RAM ({convert_size(mem.total, 3)[0]} gb)")
+    workflow.global_resources = {**workflow.global_resources,
+                                 **{'mem_mb': np.clip(workflow.global_resources['mem_mb'], 0, convert_size(mem.total, 2)[0])}}
+else:
+    if workflow.global_resources.get('mem_gb', 0) > convert_size(mem.total, 3)[0]:
+        logger.info(f"WARNING: The specified ram ({workflow.global_resources['mem_gb']} gb) surpasses the local machine\'s RAM ({convert_size(mem.total, 3)[0]} gb)")
 
-            kwargs['resources'] = {**kwargs['resources'],
-                                   **{'mem_gb': np.clip(kwargs['resources'].get('mem_gb', 9999), 0, convert_size(mem.total, 3)[0])}}
-
-        return func(*args, **kwargs)
-    return wrapper
-
-
-# now add the wrapper to the workflow execute function
-workflow.execute = add_default_resources(workflow.execute)
-
-
-# functional but currently unused
-# # find conda directories. Does not work with singularity.
-# def conda_path(yaml):
-#     """ Find the path to a conda directory """
-#     import hashlib
-#     import os.path
-#
-#     env_file = os.path.abspath(yaml)
-#     env_dir = os.path.join(os.getcwd(), ".snakemake", "conda")
-#
-#     md5hash = hashlib.md5()
-#     md5hash.update(env_dir.encode())
-#     with open(env_file, 'rb') as f:
-#         content = f.read()
-#     md5hash.update(content)
-#     dir_hash = md5hash.hexdigest()[:8]
-#     path = os.path.join(env_dir, dir_hash)
-#     return path
+    workflow.global_resources = {**workflow.global_resources,
+                                 **{'mem_gb': np.clip(workflow.global_resources.get('mem_gb', 9999), 0, convert_size(mem.total, 3)[0])}}
