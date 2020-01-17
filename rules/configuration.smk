@@ -1,17 +1,20 @@
-import os.path
-import glob
-import re
-import time
 import math
-import norns
+import os.path
 import psutil
 import pickle
+import re
 import subprocess
+import time
+
+import norns
 import numpy as np
 import pandas as pd
+import urllib.request
+from bs4 import BeautifulSoup
 from multiprocessing.pool import ThreadPool
-from snakemake.utils import validate
+
 from snakemake.logging import logger
+from snakemake.utils import validate
 
 
 # check config file for correct directory names
@@ -43,12 +46,12 @@ samples.columns = samples.columns.str.strip()
 assert all([col[0:7] not in ["Unnamed", ''] for col in samples]), \
     ("\nEncountered unnamed column in " + config["samples"] +
      ".\nColumn names: " + str(', '.join(samples.columns)) + '.\n')
-assert not any(samples.columns.str.contains('[^A-Za-z0-9_.\-]+', regex=True)), \
+assert not any(samples.columns.str.contains('[^A-Za-z0-9_.\-%]+', regex=True)), \
     ("\n" + config["samples"] + " may only contain letters, numbers and " +
     "underscores (_), periods (.), or minuses (-).\n")
 # sanitize table content
 samples = samples.applymap(lambda x: str(x).strip())
-assert not any([any(samples[col].str.contains('[^A-Za-z0-9_.\-]+', regex=True)) for col in samples]), \
+assert not any([any(samples[col].str.contains('[^A-Za-z0-9_.\-%]+', regex=True)) for col in samples]), \
     ("\n" + config["samples"] + " may only contain letters, numbers and " +
     "underscores (_), periods (.), or minuses (-).\n")
 assert len(samples["sample"]) == len(set(samples["sample"])), \
@@ -187,8 +190,12 @@ for key, value in config.items():
 logger.info("Checking if samples are single-end or paired-end...")
 layout_cachefile = './.snakemake/layouts.p'
 
-def get_layout(sample):
-    """ sends a request to ncbi checking whether a sample is single-end or paired-end """
+def get_layout_eutils(sample):
+    """
+    Sends a request to ncbi checking whether a sample is single-end or paired-end.
+    Robust method (always returns result), however manually filled in by uploader, so can be wrong.
+    Complementary method of get_layout_trace
+    """
     api_key = config.get('ncbi_key', "")
     if api_key is not "":
         api_key = f'-api_key {api_key}'
@@ -208,6 +215,41 @@ def get_layout(sample):
                          f"manually, and continue the pipeline from there on.")
 
 
+def get_layout_trace(sample):
+    """
+    Parse the ncbi trace website to check if a read has 1, 2, or 3 spots.
+    Will fail if sample is not on ncbi database, however does not have the problem that uploader
+    filled out the form wrongly.
+    Complementary method of get_layout_eutils
+    """
+    try:
+        url = f"https://www.ncbi.nlm.nih.gov/sra/?term={sample}"
+
+        conn = urllib.request.urlopen(url)
+        html = conn.read()
+
+        soup = BeautifulSoup(html, features="html5lib")
+        links = soup.find_all('a')
+
+        for tag in links:
+            link = tag.get('href', None)
+            if link is not None and 'SRR' in link:
+                trace_conn = urllib.request.urlopen("https:" + link)
+                trace_html = trace_conn.read()
+                x = re.search("This run has (\d) read", str(trace_html))
+
+                # if there are spots without info, then just ignore this sample
+                if len(re.findall(", average length: 0", str(trace_html))) > 0:
+                    break
+                elif x.group(1) == '1':
+                    return 'SINGLE'
+                elif x.group(1) == '2':
+                    return 'PAIRED'
+    except:
+        pass
+    return None
+
+
 # try to load the layout cache, otherwise defaults to empty dictionary
 try:
     layout_cache = pickle.load(open(layout_cachefile, "rb"))
@@ -215,23 +257,29 @@ except FileNotFoundError:
     layout_cache = {}
 
 
-tp = ThreadPool(config.get('ncbi_requests', 3) // 2)
+trace_tp = ThreadPool(20)
+eutils_tp = ThreadPool(config.get('ncbi_requests', 3) // 2)
+
+trace_layout = {}
 config['layout'] = {}
 
 # now do a request for each sample that was not in the cache
 for sample in [sample for sample in samples.index if sample not in layout_cache]:
+    config['layout'][sample] = eutils_tp.apply_async(get_layout_eutils, (sample,))
     if os.path.exists(expand(f'{{fastq_dir}}/{sample}.{{fqsuffix}}.gz', **config)[0]):
         config['layout'][sample] ='SINGLE'
     elif all(os.path.exists(path) for path in expand(f'{{fastq_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz', **config)):
         config['layout'][sample] ='PAIRED'
     elif sample.startswith(('GSM', 'SRR', 'ERR', 'DRR')):
-        config['layout'][sample] = tp.apply_async(get_layout, (sample,))
-        # sleep 1.25 times the minimum required sleep time
+        # config['layout'][sample] = eutils_tp.apply_async(get_layout_eutils, (sample,))
+        trace_layout[sample] = trace_tp.apply_async(get_layout_trace, (sample,))
+
+        # sleep 1.25 times the minimum required sleep time so eutils don't complain
         time.sleep(1.25 / (config.get('ncbi_requests', 3) // 2))
     else:
         raise ValueError(f"\nsample {sample} was not found..\n"
                          f"We checked for SE file:\n"
-                         f"\t/{config['fastq_dir']}/{sample}.{config['fqsuffix']}.gz \n"
+                         f"\t{config['fastq_dir']}/{sample}.{config['fqsuffix']}.gz \n"
                          f"and for PE files:\n"
                          f"\t{config['fastq_dir']}/{sample}_{config['fqext1']}.{config['fqsuffix']}.gz \n"
                          f"\t{config['fastq_dir']}/{sample}_{config['fqext2']}.{config['fqsuffix']}.gz \n"
@@ -239,7 +287,8 @@ for sample in [sample for sample in samples.index if sample not in layout_cache]
 
 # now parse the output and store the cache, the local files' layout, and the ones that were fetched online
 config['layout'] = {**layout_cache,
-                    **{k: (v if isinstance(v, str) else v.get()) for k, v in config['layout'].items()}}
+                    **{k: (v if isinstance(v, str) else v.get()) for k, v in config['layout'].items()},
+                    **{k: v.get() for k, v in trace_layout.items() if v.get() is not None}}
 
 assert all(layout in ['SINGLE', 'PAIRED'] for sample, layout in config['layout'].items())
 
@@ -298,52 +347,22 @@ def convert_size(size_bytes, order=None):
     return s, size_name[order]
 
 
-def add_default_resources(func):
-    # https://stackoverflow.com/questions/6200270/decorator-to-print-function-call-details-parameters-names-and-effective-values/6278457#6278457
-    def wrapper(*args, **kwargs):
-        # by default only one download in parallel (workflow fails on multiple on a single node)
-        kwargs['resources'] = {**{'parallel_downloads': 1}, **kwargs['resources']}
+# by default only one download in parallel (workflow fails on multiple on a single node)
+workflow.global_resources = {**{'parallel_downloads': 1, 'deeptools_limit': 1}, **workflow.global_resources}
 
-        # when the user specifies memory, use this and give a warning if it surpasses local memory
-        # (surpassing does not always have to be an issue -> cluster execution)
-        # if none specified set the memory to the max available on the computer
-        mem = psutil.virtual_memory()
-        if kwargs['resources'].get('mem_mb'):
-            if kwargs['resources']['mem_mb'] > convert_size(mem.total, 2)[0]:
-                logger.info(f"WARNING: The specified ram ({kwargs['resources']['mem_mb']} mb) surpasses the local machine\'s RAM ({convert_size(mem.total, 2)[0]} mb)")
+# when the user specifies memory, use this and give a warning if it surpasses local memory
+# (surpassing does not always have to be an issue -> cluster execution)
+# if none specified set the memory to the max available on the computer
+mem = psutil.virtual_memory()
+if workflow.global_resources.get('mem_mb'):
+    if workflow.global_resources['mem_mb'] > convert_size(mem.total, 2)[0]:
+        logger.info(f"WARNING: The specified ram ({workflow.global_resources['mem_mb']} mb) surpasses the local machine\'s RAM ({convert_size(mem.total, 2)[0]} mb)")
 
-            kwargs['resources'] = {**kwargs['resources'],
-                                   **{'mem_mb': np.clip(kwargs['resources']['mem_mb'], 0, convert_size(mem.total, 2)[0])}}
-        else:
-            if kwargs['resources'].get('mem_gb', 0) > convert_size(mem.total, 3)[0]:
-                logger.info(f"WARNING: The specified ram ({kwargs['resources']['mem_gb']} gb) surpasses the local machine\'s RAM ({convert_size(mem.total, 3)[0]} gb)")
+    workflow.global_resources = {**workflow.global_resources,
+                                 **{'mem_mb': np.clip(workflow.global_resources['mem_mb'], 0, convert_size(mem.total, 2)[0])}}
+else:
+    if workflow.global_resources.get('mem_gb', 0) > convert_size(mem.total, 3)[0]:
+        logger.info(f"WARNING: The specified ram ({workflow.global_resources['mem_gb']} gb) surpasses the local machine\'s RAM ({convert_size(mem.total, 3)[0]} gb)")
 
-            kwargs['resources'] = {**kwargs['resources'],
-                                   **{'mem_gb': np.clip(kwargs['resources'].get('mem_gb', 9999), 0, convert_size(mem.total, 3)[0])}}
-
-        return func(*args, **kwargs)
-    return wrapper
-
-
-# now add the wrapper to the workflow execute function
-workflow.execute = add_default_resources(workflow.execute)
-
-
-# functional but currently unused
-# # find conda directories. Does not work with singularity.
-# def conda_path(yaml):
-#     """ Find the path to a conda directory """
-#     import hashlib
-#     import os.path
-#
-#     env_file = os.path.abspath(yaml)
-#     env_dir = os.path.join(os.getcwd(), ".snakemake", "conda")
-#
-#     md5hash = hashlib.md5()
-#     md5hash.update(env_dir.encode())
-#     with open(env_file, 'rb') as f:
-#         content = f.read()
-#     md5hash.update(content)
-#     dir_hash = md5hash.hexdigest()[:8]
-#     path = os.path.join(env_dir, dir_hash)
-#     return path
+    workflow.global_resources = {**workflow.global_resources,
+                                 **{'mem_gb': np.clip(workflow.global_resources.get('mem_gb', 9999), 0, convert_size(mem.total, 3)[0])}}
