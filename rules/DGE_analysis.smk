@@ -55,6 +55,8 @@ rule deseq2:
     threads: 4
     params:
         os.path.abspath(config["samples"])
+    resources:
+        R_scripts=1 # can run ~10 scripts at once
     script:
         "../scripts/deseq2.R"
 

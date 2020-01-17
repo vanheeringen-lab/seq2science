@@ -122,7 +122,7 @@ if(plot_DEGs == 0){
 output_ma_plot <- sub(".diffexp.tsv", ".ma_plot.svg", output)
 svg(output_ma_plot)
 plotMA(plot_res, ylim=c(-2,2),
-       main = paste0(DE_contrast, '\n', plot_DEGs, ' DE genes (a = ', fdr, ')'))
+       main = paste0(contrast, '\n', plot_DEGs, ' DE genes (a = ', fdr, ')'))
 invisible(dev.off())
 cat('MA plot saved\n\n')
 
