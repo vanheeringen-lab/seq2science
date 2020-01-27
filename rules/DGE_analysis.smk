@@ -37,7 +37,18 @@ def get_contrasts():
     new_contrasts = list(set(new_contrasts))
     return new_contrasts
 
+"""
+Current issue with R:
+when starting, ldpaths is updated. During this process it is opened and deleted.
+Simultaneous R scripts can incidentally crash because it is missing.
 
+active issue: https://github.com/conda-forge/r-base-feedstock/issues/67
+active PR: https://github.com/conda/conda/pull/8776
+
+workarounds:
+-the workflow can be rerun until all scripts have finished
+-the max number of parallel R-scripts can be set to 1
+"""
 rule deseq2:
     """
     Differential gene expression analysis with DESeq2.
@@ -56,7 +67,7 @@ rule deseq2:
     params:
         os.path.abspath(config["samples"])
     resources:
-        R_scripts=1 # can run ~10 scripts at once
+        R_scripts=1 # conda's R can have issues when starting multiple times
     script:
         "../scripts/deseq2.R"
 
@@ -79,6 +90,6 @@ rule blind_clustering:
     params:
         os.path.abspath(config["samples"])
     resources:
-        R_scripts=1 # can run ~10 scripts at once
+        R_scripts=1 # conda's R can have issues when starting multiple times
     script:
         "../scripts/deseq2_clustering.R"

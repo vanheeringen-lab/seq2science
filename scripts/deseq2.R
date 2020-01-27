@@ -32,36 +32,35 @@ cat('fdr          <-',   fdr, '\n')
 cat('se           <- "', se,           '"\n', sep = "")
 cat('assembly     <- "', assembly,     '"\n', sep = "")
 cat('output       <- "', output,       '"\n', sep = "")
-cat('\n\n')
+cat('\n')
+
 
 ## parse the design contrast
 # a contrast is always in the form 'batch+condition_group1_group2', where batch(+) is optional
-# extracting batch, condition and groups
-contr <- gsub('~' ,'' , contrast)
 batch <- NA
-if (grepl('\\+', contr)) {
-  batch <- strsplit(contr, '\\+')[[1]][1]
-  contr <- strsplit(contr, '\\+')[[1]][2]
+contr <- contrast
+if (grepl('\\+', contrast)) {
+  batch <- strsplit(contrast, '\\+')[[1]][1]
+  contr <- strsplit(contrast, '\\+')[[1]][2]
 }
 contr <- strsplit(contr, '_')[[1]]
 condition <- contr[1]
 groups <- contr[-1]
+rm(contr)
 
 
 ## obtain coldata, the metadata input for DESeq2
-samples <- read.delim(samples_file, row.names=1, na.strings = "")
-# rename batch and condition (needed as DESeq's design cannot accept variables)
-samples[,"condition"] <- samples[condition]
-samples[,"batch"] <- ifelse(!is.na(batch), samples[batch], NA)
-# filter for assembly and remove NAs
-samples <- samples[samples$assembly == assembly & !is.na(samples[condition]), c("condition", "batch"), drop = F]
+coldata <- read.delim(samples_file, row.names=1, na.strings = "")
 
-# keep only the samples belonging to our groups
-coldata <- samples[(samples["condition"] == groups[1] | samples["condition"] == groups[2]), , drop = F]
-# refactor & relevel in case we dropped (several) factor levels
+# rename batch and condition (required as DESeq's design cannot accept variables)
+coldata[,"condition"] <- coldata[condition]
+coldata[,"batch"]     <- ifelse(!is.na(batch), coldata[batch], NA)
+
+# filter for assembly and condition & order data for DESeq
+coldata <- coldata[coldata$assembly == assembly & coldata$condition %in% c(groups[1], groups[2]), c("condition", "batch")]
 coldata$condition <- factor(coldata$condition)
 coldata$condition <- relevel(coldata$condition, ref = groups[2])
-coldata$batch <- factor(coldata$batch)
+coldata$batch     <- factor(coldata$batch)
 
 
 ## filter counts to speed up DESeq
@@ -85,6 +84,7 @@ cat('\nFinished constructing DESeq object.\n\n')
 dds <- DESeq(dds, parallel=parallel)
 cat('\n')
 
+
 ## Extract differentially expressed genes
 cat('batches & contrasts:\n', resultsNames(dds), '\n')
 DE_contrast_names <- resultsNames(dds)
@@ -93,7 +93,7 @@ for (DE_contrast in DE_contrast_names){
     break
   }
 }
-cat('selected contrast: ', DE_contrast, '\n\n')
+cat('selected contrast:', DE_contrast, '\n\n')
 
 # correct for multiple testing
 if(mtp=='IHW'){
@@ -106,8 +106,9 @@ if(mtp=='IHW'){
 resLFC <- lfcShrink(dds, coef = DE_contrast, res = res, type=se)
 cat('\n')
 
+
 ## Save the results
-# create a table with all genes, and plot differentially expressed genes if found
+# create a table with all genes
 expressed_genes <- as.data.frame(resLFC[order(resLFC$padj),])
 
 missing_genes <- rownames(counts)[!(rownames(counts) %in% rownames(expressed_genes))]
@@ -121,14 +122,14 @@ write.table(all_genes, file=output, quote = F, sep = '\t', col.names=NA)
 cat('DE genes table saved\n\n')
 
 
-# determine DE genes
+## determine DE genes and plot if found
 plot_res <- resLFC[resLFC$padj <= fdr & !is.na(resLFC$padj), ]
 plot_DEGs <- length(plot_res[,1])
 if(plot_DEGs == 0){
   cat("No differentially expressed genes found! Skipping plot generation...\n")
   quit(save = "no" , status = 0)
 } else {
-  cat(plot_DEGs, " differentially expressed genes found! Plotting...\n\n")
+  cat(plot_DEGs, "differentially expressed genes found! Plotting MA and PCA...\n")
 }
 
 # generate MA plot (log fold change vs mean gene counts)
@@ -137,7 +138,7 @@ svg(output_ma_plot)
 plotMA(plot_res, ylim=c(-2,2),
        main = paste0(contrast, '\n', plot_DEGs, ' DE genes (a = ', fdr, ')'))
 invisible(dev.off())
-cat('MA plot saved\n\n')
+cat('-MA plot saved\n')
 
 # transform the data and generate a PCA plot (for outlier detection)
 log_counts <- vst(dds, blind = TRUE)
@@ -146,4 +147,4 @@ output_pca_plot <- sub(".diffexp.tsv", ".pca_plot.svg", output)
 svg(output_pca_plot)
 plotPCA(log_counts, intgroup="condition")
 invisible(dev.off())
-cat('PCA plot saved\n')
+cat('-PCA plot saved\n')

@@ -12,6 +12,9 @@ if config['quantifier'] == 'salmon':
         index="{genome_dir}/" + wildcards.assembly + "/index/{quantifier}_decoy_aware" if config["decoy_aware_index"] else "{genome_dir}/" + wildcards.assembly + "/index/{quantifier}"
         return expand(index, **config)
 
+    """
+    currently does not work. Requires an updated version of tximeta on conda cloud ~1.4.4
+    """
     rule linked_txome:
         """
         Generate a linked transcriptome for tximeta
@@ -35,6 +38,8 @@ if config['quantifier'] == 'salmon':
             expand("{log_dir}/counts_matrix/{{assembly}}-linked_txome.log", **config)
         conda:
             "../envs/gene_counts.yaml"
+        resources:
+            R_scripts=1 # conda's R can have issues when starting multiple times
         script:
             "../scripts/linked_txome.R"
 
@@ -56,6 +61,8 @@ if config['quantifier'] == 'salmon':
             expand("{log_dir}/counts_matrix/{{assembly}}-txi_counts_matrix.log", **config)
         conda:
             "../envs/gene_counts.yaml"
+        resources:
+            R_scripts=1 # conda's R can have issues when starting multiple times
         script:
             "../scripts/txi.R"
 
