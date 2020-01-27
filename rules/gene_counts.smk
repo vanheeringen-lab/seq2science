@@ -50,8 +50,8 @@ if config['quantifier'] == 'salmon':
             linked_txome = expand("{genome_dir}/{{assembly}}/index/tximeta/linked_txome.json", **config),
             cts = get_counts
         output:
-            counts = expand("{result_dir}/gene_counts/{{assembly}}-counts.tsv", **config),
-            SCE = expand("{result_dir}/gene_counts/{{assembly}}-se.rds", **config),
+            counts = expand("{counts_dir}/{{assembly}}-counts.tsv", **config),
+            SCE = expand("{counts_dir}/{{assembly}}-se.rds", **config),
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-txi_counts_matrix.log", **config)
         conda:
@@ -70,7 +70,7 @@ elif config['quantifier'] == 'star':
         input:
             cts = get_counts
         output:
-            expand("{result_dir}/gene_counts/{{assembly}}-counts.tsv", **config)
+            expand("{counts_dir}/{{assembly}}-counts.tsv", **config)
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-counts_matrix.log", **config)
         run:

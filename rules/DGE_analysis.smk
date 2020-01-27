@@ -43,9 +43,9 @@ rule deseq2:
     Differential gene expression analysis with DESeq2.
     """
     input:
-        expand("{result_dir}/gene_counts/{{assembly}}-counts.tsv", **config)
+        expand("{counts_dir}/{{assembly}}-counts.tsv", **config)
     output:
-        expand("{result_dir}/deseq2/{{assembly}}-{{contrast}}.diffexp.tsv", **config)
+        expand("{dge_dir}/{{assembly}}-{{contrast}}.diffexp.tsv", **config)
     conda:
         "../envs/deseq2.yaml"
     log:
@@ -66,9 +66,9 @@ rule blind_clustering:
     Create a sample distance matrix plot per assembly
     """
     input:
-         expand("{result_dir}/gene_counts/{{assembly}}-counts.tsv", **config)
+         expand("{counts_dir}/{{assembly}}-counts.tsv", **config)
     output:
-         expand("{result_dir}/deseq2/{{assembly}}-clustering.svg", **config)
+         expand("{dge_dir}/{{assembly}}-clustering.svg", **config)
     conda:
         "../envs/deseq2.yaml"
     log:
@@ -78,5 +78,7 @@ rule blind_clustering:
     threads: 4
     params:
         os.path.abspath(config["samples"])
+    resources:
+        R_scripts=1 # can run ~10 scripts at once
     script:
         "../scripts/deseq2_clustering.R"

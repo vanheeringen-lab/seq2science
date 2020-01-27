@@ -3,10 +3,21 @@ $schema: "http://json-schema.org/draft-06/schema#"
 description: snakemake-workflows gene expression configuration
 
 properties:
+  # paths to store results
+  counts_dir:
+    description: directory where to store the gene counts for DGE analysis (defaults inside the result dir)
+    default: gene_counts
+    type: string
+  dge_dir:
+    description: directory where to store the workflow differential gene analysis output (defaults inside the result dir)
+    default: deseq2
+    type: string
+
+  # scope of analysis: align and quantify or quantify only
   run_alignment:
     description: Run aligning to the genome or only output a counts table
     enum: [True, False]
-    default: True
+    default: False
 
   quantifier:
     description: which quantifier to use
@@ -33,10 +44,9 @@ properties:
           quantifier_flags: '--seqBias --gcBias --validateMappings --recoverOrphans'
           decoy_aware_index: False
     default:
-      salmon:
-        quantifier_index_flags: '-k 31'
-        quantifier_flags: '--seqBias --gcBias --validateMappings --recoverOrphans'
-        decoy_aware_index: False
+      star:
+        quantifier_index_flags: ''
+        quantifier_flags: '--readFilesCommand gunzip -c'
 
   tximeta:
     description: tximeta is used to convert salmon output (estimated transcript abundances) to a gene counts matrix. Currently, these values can be ignored.
@@ -52,7 +62,7 @@ properties:
       organism: tximeta_file
       release: 42
 
-  # differential expression analysis parameters
+  # optional: differential expression analysis
   diffexp:
     description: which differential expression analysis to use (DESeq2 or None, default is None). Will not run without a contrast.
     type: object

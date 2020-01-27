@@ -9,18 +9,30 @@ log_file        <- snakemake@log[[1]]
 counts_file     <- snakemake@input[[1]]
 samples_file    <- snakemake@params[[1]]
 contrast        <- snakemake@wildcards$contrast
-params          <- snakemake@config$DE_params
 mtp             <- snakemake@config$DE_params$multiple_testing_procedure
 fdr             <- snakemake@config$DE_params$alpha_value
 se              <- snakemake@config$DE_params$shrinkage_estimator
 assembly        <- snakemake@wildcards$assembly
 output          <- snakemake@output[[1]]
 
-
 # log all console output
 log <- file(log_file, open="wt")
 sink(log)
 sink(log, type="message")
+
+# log all variables for debugging purposes
+cat('# variables used for this analysis:\n')
+cat('threads      <-',   threads, '\n')
+cat('log_file     <- "', log_file,     '"\n', sep = "")
+cat('counts_file  <- "', counts_file,  '"\n', sep = "")
+cat('samples_file <- "', samples_file, '"\n', sep = "")
+cat('contrast     <- "', contrast,     '"\n', sep = "")
+cat('mtp          <- "', mtp,          '"\n', sep = "")
+cat('fdr          <-',   fdr, '\n')
+cat('se           <- "', se,           '"\n', sep = "")
+cat('assembly     <- "', assembly,     '"\n', sep = "")
+cat('output       <- "', output,       '"\n', sep = "")
+cat('\n\n')
 
 ## parse the design contrast
 # a contrast is always in the form 'batch+condition_group1_group2', where batch(+) is optional
@@ -46,8 +58,9 @@ samples <- samples[samples$assembly == assembly & !is.na(samples[condition]), c(
 
 # keep only the samples belonging to our groups
 coldata <- samples[(samples["condition"] == groups[1] | samples["condition"] == groups[2]), , drop = F]
-# refactor in case we dropped (several) factor levels
+# refactor & relevel in case we dropped (several) factor levels
 coldata$condition <- factor(coldata$condition)
+coldata$condition <- relevel(coldata$condition, ref = groups[2])
 coldata$batch <- factor(coldata$batch)
 
 
@@ -68,7 +81,7 @@ cat('Constructing DESeq object... \nTip: errors directly below this line are mos
 dds <- DESeqDataSetFromMatrix(countData = reduced_counts,
                               colData = coldata,
                               design = if (!is.na(batch)){~ batch + condition} else {~ condition})
-cat('Finished constructing DESeq object.\n\n')
+cat('\nFinished constructing DESeq object.\n\n')
 dds <- DESeq(dds, parallel=parallel)
 cat('\n')
 
