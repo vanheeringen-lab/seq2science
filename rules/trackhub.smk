@@ -1,4 +1,5 @@
 import requests
+from Bio import SeqIO
 
 
 rule bedgraphish_to_bedgraph:
@@ -183,13 +184,217 @@ rule twobit:
     output:
         expand("{genome_dir}/{{assembly}}/{{assembly}}.2bit", **config)
     log:
-        expand("{log_dir}/assembly_hub/{{assembly}}.2bit.log", **config)
+        expand("{log_dir}/trackhub/{{assembly}}.2bit.log", **config)
     benchmark:
-        expand("{benchmark_dir}/assembly_hub/{{assembly}}.2bit.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/trackhub/{{assembly}}.2bit.benchmark.txt", **config)[0]
     conda:
         "../envs/ucsc.yaml"
     shell:
-        "faToTwoBit {input} {output}"
+        "faToTwoBit {input} {output} >> {log} 2>&1"
+
+
+rule gcPercent:
+    """
+    Generate a gc content track
+    
+    source: http://hgdownload.cse.ucsc.edu/goldenPath/hg19/gc5Base/
+    """
+    input:
+        twobit = expand("{genome_dir}/{{assembly}}/{{assembly}}.2bit", **config),
+        sizes  = expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
+    output:
+        gcpcvar = temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.gc5Base.wigVarStep.txt.gz", **config)),
+        gcpc    =      expand("{genome_dir}/{{assembly}}/{{assembly}}.gc5Base.bw", **config),
+    log:
+        expand("{log_dir}/trackhub/{{assembly}}.gc5Base.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/trackhub/{{assembly}}.gc5Base.benchmark.txt", **config)[0]
+    conda:
+        "../envs/ucsc.yaml"
+    shell:
+        """
+        hgGcPercent -wigOut -doGaps -file=stdout -win=5 -verbose=0 {wildcards.assembly} {input.twobit} \
+            | gzip > {output.gcpcvar}
+        
+        wigToBigWig {output.gcpcvar} {input.sizes} {output.gcpc} >> {log} 2>&1
+        """
+
+
+rule cytoband:
+    """
+    Generate a cytoband track for each assembly
+    source: http://genomewiki.ucsc.edu/index.php/Assembly_Hubs#Cytoband_Track
+    """
+    input:
+        genome = expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+        sizes = expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
+    output:
+        cytoband_bb = expand("{genome_dir}/{{assembly}}/cytoBandIdeo.bb", **config),
+        cytoband_bd = temp(expand("{genome_dir}/{{assembly}}/cytoBandIdeo.bed", **config)),
+    log:
+        expand("{log_dir}/trackhub/{{assembly}}.cytoband.log", **config)
+    conda:
+        "../envs/ucsc.yaml"
+    shell:
+        """
+        cat {input.sizes} | sort -k1,1 -k2,2n | awk '{{print $1,0,$2,$1,"gneg"}}' > {output.cytoband_bd}
+
+        bedToBigBed -type=bed4 {output.cytoband_bd} -as=../../schemas/cytoBand.as {input.sizes} {output.cytoband_bb} >> {log} 2>&1
+        """
+
+
+rule RMsoft_1:
+    """
+    Generate a softmask track
+    
+    source: https://github.com/Gaius-Augustus/MakeHub/blob/master/make_hub.py
+    """
+    input:
+        genome = expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+    output:
+        mask_unsorted = temp(expand("{genome_dir}/{{assembly}}/{{assembly}}_softmasking_unsorted.bed", **config)),
+    log:
+        expand("{log_dir}/trackhub/{{assembly}}.softmask.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/trackhub/{{assembly}}.softmask1.benchmark.txt", **config)[0]
+    run:
+        masked_intervals = []
+        with open(str(input.genome), "r") as genome_handle, open(str(output.mask_unsorted), "w+") as bed_handle:
+            for contig in SeqIO.parse(genome_handle, "fasta"):
+                masked_seq = str(contig.seq)
+                inMasked = False
+                mmEnd = 0
+                for x in range(0, len(masked_seq)):
+                    # mark the starting position of a softmasked region
+                    if masked_seq[x].islower() and inMasked == False:
+                        mmStart = x + 1
+                        inMasked = True
+
+                    # mark end position of softmasked region (can be end of contig)
+                    elif (not(masked_seq[x].islower()) or x == len(masked_seq)-1) and inMasked == True:
+                        mmEnd = x
+                        inMasked = False
+
+                        # store softmasked region in a bed3 (chr, start, end) file
+                        bed_handle.write(contig.id + '\t' + str(mmStart) + '\t' + str(mmEnd) + '\n')
+
+
+rule RMsoft_2:
+    """
+    Generate a softmask track
+    
+    source: https://github.com/Gaius-Augustus/MakeHub/blob/master/make_hub.py
+    """
+    input:
+        mask_unsorted = expand("{genome_dir}/{{assembly}}/{{assembly}}_softmasking_unsorted.bed", **config),
+        sizes         = expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
+    output:
+        maskbed = temp(expand("{genome_dir}/{{assembly}}/{{assembly}}_softmasking.bed", **config)),
+        mask    =      expand("{genome_dir}/{{assembly}}/{{assembly}}_softmasking.bb", **config),
+    log:
+        expand("{log_dir}/trackhub/{{assembly}}.softmask.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/trackhub/{{assembly}}.softmask2.benchmark.txt", **config)[0]
+    conda:
+        "../envs/ucsc.yaml"
+    shell:
+        """
+        bedSort {input.mask_unsorted} {output.maskbed} >> {log} 2>&1
+        
+        bedToBigBed -type=bed3 {output.maskbed} {input.sizes} {output.mask} >> {log} 2>&1
+        """
+
+
+# TODO sanity check GTF?
+# '''
+# Function that sanity checks and fixes a gtf file, e.g. for strand problems
+#
+# creates a gtf with lines containing transcript ids
+# checks if all transcripts with the same ID are noted on the same strand
+# creates a new transcript ID for references on the other strand
+# '''
+#
+#
+# def make_gtf_sane(annot_file, ucsc_file):
+#     with open(annot_file, "r") as annot_handle:
+#         txs = {}
+#         for line in annot_handle:
+#             if ('transcript_id' in line):
+#                 seq, first_part, strand, second_part, txid = re.search(
+#                     r'(\S+)(\t\S+\t\S+\t\d+\t\d+\t\S+\t)(\S+)(\t\S+\t).*transcript_id\s\"(\S+)\"', line).groups()
+#                 if txid not in txs:
+#                     txs[txid] = {'strand': strand,
+#                                  'lines': [], 'sane': True}
+#                 else:
+#                     # check if all recurring txids have the same strand, otherwise overwrite sane to False
+#                     if not(strand == txs[txid]['strand']):
+#                         txs[txid]['sane'] = False
+#
+#                 txs[txid]['lines'].append(line)
+#
+#     with open(ucsc_file, "w") as ucsc_handle:
+#         for key, value in txs.items():
+#             if value['sane']:
+#                 for line in value['lines']:
+#                     ucsc_handle.write(line)
+#             else:
+#                 for line in value['lines']:
+#                     seq, first_part, strand, second_part, txid = re.search(
+#                         r'^(\S+)(\t\S+\t\S+\t\d+\t\d+\t\S+\t)(\S+)(\t\S+\t).*transcript_id\s\"(\S+)\"', line).groups()
+#                     new_gid = txid + "_" + seq + "_" + strand
+#                     new_txid = new_gid + ".t1"
+#                     ucsc_handle.write(seq + first_part + strand + second_part +
+#                                       "gene_id \"" + new_gid + "\"; transcript_id \"" + new_txid + "\";\n")
+
+
+rule trackhub_index:
+    """
+    Generate a searchable annotation index for each assembly
+    source: https://genome.ucsc.edu/goldenPath/help/hubQuickStartSearch.html
+    """
+    input:
+        sizes = expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
+        gtf   = expand("{genome_dir}/{{assembly}}/{{assembly}}.gtf", **config),
+    output:
+        genePred =       temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.gp",  **config)),
+        genePredbed =    temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.gp.bed", **config)),
+        genePredbigbed =      expand("{genome_dir}/{{assembly}}/{{assembly}}.bb",  **config),
+        input =          temp(expand("{genome_dir}/{{assembly}}/input.txt",        **config)),
+        ix =                  expand("{genome_dir}/{{assembly}}/{{assembly}}.ix",  **config),
+        ixx =                 expand("{genome_dir}/{{assembly}}/{{assembly}}.ixx", **config),
+    log:
+        expand("{log_dir}/trackhub/{{assembly}}.index.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/trackhub/{{assembly}}.index.benchmark.txt", **config)[0]
+    conda:
+        "../envs/ucsc.yaml"
+    shell:
+        """
+        gtfToGenePred -geneNameAsName2 -genePredExt {input.gtf} {output.genePred} >> {log} 2>&1
+
+        genePredToBed {output.genePred} {output.genePredbed} >> {log} 2>&1
+        
+        bedSort {output.genePredbed} {output.genePredbed} >> {log} 2>&1
+        
+        bedToBigBed -extraIndex=name {output.genePredbed} {input.sizes} {output.genePredbigbed} >> {log} 2>&1
+        
+        cat {output.genePred} | awk '{{print $1, $12, $1}}' > {output.input}
+
+        ixIxx {output.input} {output.ix} {output.ixx} >> {log} 2>&1
+        """
+        # gtfToGenePred -infoOut={output.info} -genePredExt {input.gtf} {output.genePred}
+        #
+        # genePredToBed {output.genePred} stdout | sort -k1,1 -k2,2n > {output.genePredbed}
+        #
+        # # Convert BED to bigBed
+        # # extraIndex required for position/search
+        # bedToBigBed -type=bed12 -extraIndex=name {output.genePredbed} {input.sizes} {output.genePredbigbed}
+        #
+        # # Required for indexing step
+        # grep -v "^#" {output.info} | awk '{printf "%s\t%s,%s,%s,%s,%s\n", $1,$2,$3,$8,$9,$10}' > {output.nameindex}
+        #
+        # # Create index for position/search function in browser
+        # ixIxx {output.nameindex} {output.index} {output.indexx}
 
 
 def get_bigwig_strand(sample):
@@ -211,9 +416,13 @@ def get_bigwig_strand(sample):
 
 def get_trackhub_files(wildcards):
     """
+    Assemble all files used in a trackhub/assembly hub.
 
+    If an assembly hub already exist for an assembly, only list trackhub files.
+
+    Includes assembly hub files, annotation dependent assembly hub files and workflow dependent files.
     """
-    trackfiles = {key: [] for key in ['bigwigs', 'bigpeaks', 'twobits', 'annotations']}
+    trackfiles = {key: [] for key in ['bigwigs', 'bigpeaks', 'twobits', 'gcPercent', 'cytobands', 'RMsoft', 'annotations']}
 
     # check whether or not each assembly is supported by ucsc
     for assembly in set(samples['assembly']):
@@ -226,9 +435,15 @@ def get_trackhub_files(wildcards):
         if not any(assembly == x for x in
                    re.search(r'<TITLE>(.*?)</TITLE>', response.text).group(1).split(' ')):
             trackfiles['twobits'].append(f"{config['genome_dir']}/{assembly}/{assembly}.2bit")
+            trackfiles['gcPercent'].append(f"{config['genome_dir']}/{assembly}/{assembly}.gc5Base.bw")
+            trackfiles['cytobands'].append(f"{config['genome_dir']}/{assembly}/cytoBandIdeo.bb")
+            trackfiles['RMsoft'].append(f"{config['genome_dir']}/{assembly}/{assembly}_softmasking.bb")
 
-        # now check if we have annotation for
-        # TODO
+            # TODO: Add index if an annotation is present for the assembly
+            if "annotation" == "annotation":
+                trackfiles['annotations'].append(f"{config['genome_dir']}/{assembly}/{assembly}.bb")
+                #trackfiles['annotations'].append(f"{config['genome_dir']}/{assembly}/{assembly}.ix")
+                #trackfiles['annotations'].append(f"{config['genome_dir']}/{assembly}/{assembly}.ixx")
 
     # Get the ATAC or RNA seq files
     if 'atac_seq' in workflow.snakefile.split('/')[-2]:
@@ -265,6 +480,7 @@ def get_trackhub_files(wildcards):
                     trackfiles['bigwigs'].extend(bw)
     return trackfiles
 
+
 def get_defaultPos(sizefile):
     # extract a default position spanning the first scaffold/chromosome in the sizefile.
     with open(sizefile, 'r') as file:
@@ -274,140 +490,199 @@ def get_defaultPos(sizefile):
 
 rule trackhub:
     """
-    Generate a trackhub which has to be hosted on your own machine, but can then be viewed through 
-    the UCSC genome browser.
-    
-    Must be hosted on your own machine in order to be viewed through the UCSC genome browser.
+    Generate a trackhub which has to be hosted on an internet accessible location, 
+    but can then be viewed through the UCSC genome browser.
     """
     input:
         unpack(get_trackhub_files)
     output:
         directory(f"{config['result_dir']}/trackhub")
     log:
-        f"{config['log_dir']}/trackhub.log"
+        expand("{log_dir}/trackhub/trackhub.log", **config)
     benchmark:
-        f"{config['benchmark_dir']}/trackhub.benchmark.txt"
+        expand("{benchmark_dir}/trackhub/trackhub.benchmark.txt", **config)[0]
     run:
         import re
+        import sys
         import trackhub
-        from contextlib import redirect_stdout
 
         with open(log[0], 'w') as f:
-            # contextlib.redirect_stderr doesn't work. Probably an issue with trackhub
-            with redirect_stdout(f):
-                orderkey = 4800
+            sys.stderr = sys.stdout = f
+            orderkey = 4800
 
-                # make the output directory
-                shell(f"mkdir -p {output[0]}")
+            # start a shared hub
+            hub = trackhub.Hub(
+                hub        =config.get('hubname',    'trackhub'),
+                short_label=config.get('shortlabel', 'trackhub'), # 17 characters max
+                long_label =config.get('longlabel',  "Automated trackhub generated by the snakemake-workflows tool: \n"
+                                                     "https://github.com/vanheeringen-lab/snakemake-workflows"),
+                email      =config.get('email',      'none@provided.com'))
 
-                # start a shared hub
-                hub = trackhub.Hub(
-                    hub        =config.get('hubname',    'trackhub'),
-                    short_label=config.get('shortlabel', 'trackhub'), # 17 characters max
-                    long_label =config.get('longlabel',  "Automated trackhub generated by the snakemake-workflows tool: \n"
-                                                         "https://github.com/vanheeringen-lab/snakemake-workflows"),
-                    email      =config.get('email',      'none@provided.com'))
+            # link the genomes file to the hub
+            genomes_file = trackhub.genomes_file.GenomesFile()
+            hub.add_genomes_file(genomes_file)
 
-                # link the genomes file to the hub
-                genomes_file = trackhub.genomes_file.GenomesFile()
-                hub.add_genomes_file(genomes_file)
+            for assembly in set(samples['assembly']):
+                # now add each assembly to the genomes_file
+                if any(assembly in twobit for twobit in input.twobits):
+                    basename = f"{config['genome_dir']}/{assembly}/{assembly}"
+                    genome = trackhub.Assembly(
+                        genome=assembly,
+                        twobit_file=basename + '.2bit',
+                        organism=assembly,
+                        defaultPos=get_defaultPos(basename + '.fa.sizes'),
+                        scientificName=assembly,
+                        description=assembly
+                    )
+                else:
+                    genome = trackhub.Genome(assembly)
 
-                for assembly in set(samples['assembly']):
-                    # now add each assembly to the genomes_file
-                    if any(assembly in twobit for twobit in input.twobits):
-                        basename = f"{config['genome_dir']}/{assembly}/{assembly}"
-                        genome = trackhub.Assembly(
-                            genome=assembly,
-                            twobit_file=basename + '.2bit',
-                            organism=assembly,
-                            defaultPos=get_defaultPos(basename + '.fa.sizes'),
-                            scientificName=assembly,
-                            description=assembly
-                        )
-                    else:
-                        genome = trackhub.Genome(assembly)
+                genomes_file.add_genome(genome)
 
-                    genomes_file.add_genome(genome)
+                # each trackdb is added to the genome
+                trackdb = trackhub.trackdb.TrackDb()
+                genome.add_trackdb(trackdb)
+                # order tracks in the browser. 1-4 are used for annotation files
+                priority = 5
 
-                    # each trackdb is added to the genome
-                    trackdb = trackhub.trackdb.TrackDb()
-                    genome.add_trackdb(trackdb)
-                    priority = 1
+                for file in input:
+                    if assembly in file and file not in input.bigwigs and file not in input.bigpeaks and file not in input.twobits:
 
-                    # now add the data files depending on the workflow
-                    # ATAC-seq trackhub
-                    if 'atac_seq' in workflow.snakefile.split('/')[-2]:
+                                # name=sample_name,    # track names can't have any spaces or special chars.
+                                # source=bigwig,       # filename to build this track from
+                                # visibility='full',   # shows the full signal
+                                # color='0,0,0',       # black
+                                # autoScale='on',      # allow the track to autoscale
+                                # tracktype='bigWig',  # required when making a track
+                                # priority=priority,
+                                # maxHeightPixels='100:32:8'
+
+                        if "cytoBand" in file:
+                            track = trackhub.Track(
+                                name='cytoBandIdeo',
+                                source=file,
+                                tracktype='bigBed',
+                                visibility='dense',   # shows the full signal
+                                color='0,0,0',        # black
+                                priority=1,
+                            )
+                            trackdb.add_tracks(track)
+
+                        elif "gc5Base" in file:
+                            track = trackhub.Track(
+                                name='gcPercent',
+                                source=file,
+                                tracktype='bigWig',
+                                visibility='dense',   # shows the full signal
+                                color='0,0,0',        # black
+                                priority=3,
+                            )
+                            trackdb.add_tracks(track)
+
+                        elif "softmasking" in file:
+                            track = trackhub.Track(
+                                name='softmasked',
+                                source=file,
+                                tracktype='bigBed',
+                                visibility='dense',   # shows the full signal
+                                color='0,0,0',        # black
+                                priority=4,
+                            )
+                            trackdb.add_tracks(track)
+
+                        elif assembly + ".bb" in file:
+                            # ixfile=basename+".ix"
+                            track = trackhub.Track(
+                                name='annotation',
+                                source=file,
+                                tracktype='bigBed',
+                                visibility='pack',   # shows the full signal
+                                color='0,0,0',       # black
+                                priority=2,
+                                searchIndex="name",
+                                searchTrix=assembly + ".ix",
+                            )
+                            trackdb.add_tracks(track)
+
+                            # copy the trix files (requires the directory to exist)
+                            dir = os.path.join(str(output), assembly)
+                            shell(f"mkdir -p {dir}")
+                            for ext in ['.ix', '.ixx']:
+                                file_loc = basename + ext
+                                link_loc = os.path.join(str(output), assembly, assembly + ext)
+                                shell(f"ln {file_loc} {link_loc}")
+
+                # now add the data files depending on the workflow
+                # ATAC-seq trackhub
+                if 'atac_seq' in workflow.snakefile.split('/')[-2]:
+                    iterator = samples.index
+                    if config.get('combine_replicates', False) == 'merge' and 'condition' in samples:
+                        iterator = set(samples['condition'])
+
+                    for sample in iterator:
                         for peak_caller in config['peak_caller']:
-                            conditions = set()
-                            for sample in samples[samples['assembly'] == assembly].index:
-                                if 'condition' in samples:
-                                    if samples.loc[sample, 'condition'] not in conditions:
-                                        bigpeak = f"{config['result_dir']}/{peak_caller}/{assembly}-{samples.loc[sample, 'condition']}.bigNarrowPeak"
-                                    else:
-                                        bigpeak = False
-                                    conditions.add(samples.loc[sample, 'condition'])
-                                    sample_name = f"{samples.loc[sample, 'condition']}{peak_caller}PEAK"
-                                else:
-                                    bigpeak = f"{config['result_dir']}/{peak_caller}/{assembly}-{sample}.bigNarrowPeak"
-                                    sample_name = f"{sample}{peak_caller}PEAK"
-                                sample_name = trackhub.helpers.sanitize(sample_name)
+                            bigpeak = f"{config['result_dir']}/{peak_caller}/{assembly}-{sample}.bigNarrowPeak"
+                            sample_name = f"{sample}{peak_caller}PEAK"
+                            sample_name = trackhub.helpers.sanitize(sample_name)
 
-                                if bigpeak:
-                                    track = trackhub.Track(
-                                        name=sample_name,           # track names can't have any spaces or special chars.
-                                        source=bigpeak,             # filename to build this track from
-                                        visibility='dense',         # shows the full signal
-                                        tracktype='bigNarrowPeak',  # required when making a track
-                                        priority=priority
-                                    )
-                                    priority += 1
-                                    trackdb.add_tracks(track)
-
-                                bigwig = f"{config['result_dir']}/{peak_caller}/{assembly}-{sample}.bw"
-                                sample_name = f"{sample}{peak_caller}BW"
-
+                            if bigpeak:
                                 track = trackhub.Track(
-                                    name=sample_name,    # track names can't have any spaces or special chars.
-                                    source=bigwig,       # filename to build this track from
-                                    visibility='full',   # shows the full signal
-                                    color='0,0,0',       # black
-                                    autoScale='on',      # allow the track to autoscale
-                                    tracktype='bigWig',  # required when making a track
-                                    priority=priority,
-                                    maxHeightPixels='100:32:8'
+                                    name=sample_name,           # track names can't have any spaces or special chars.
+                                    source=bigpeak,             # filename to build this track from
+                                    visibility='dense',         # shows the full signal
+                                    tracktype='bigNarrowPeak',  # required when making a track
+                                    priority=priority
                                 )
-
-                                # each track is added to the trackdb
-                                trackdb.add_tracks(track)
                                 priority += 1
-
-                    # RNA-seq trackhub
-                    elif 'rna_seq' in workflow.snakefile.split('/')[-2]:
-                        iterator = samples.index
-                        if config.get('combine_replicates', '') == 'merge' and 'condition' in samples:
-                            iterator = set(samples['condition'])
-
-                        for sample in iterator:
-                            for bw in get_bigwig_strand(sample):
-                                bigwig = f"{config['result_dir']}/bigwigs/{assembly}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw"
-                                sample_name = f"{sample}{bw}"
-                                # remove characters trackhub doesn't allow
-                                sample_name = re.sub(r'\W+', '', sample_name)
-
-                                track = trackhub.Track(
-                                    name=sample_name,    # track names can't have any spaces or special chars.
-                                    source=bigwig,       # filename to build this track from
-                                    visibility='full',   # shows the full signal
-                                    color='0,0,0',       # black
-                                    autoScale='on',      # allow the track to autoscale
-                                    tracktype='bigWig',  # required when making a track
-                                    priority=priority,
-                                    maxHeightPixels='100:32:8'
-                                )
-
-                                # each track is added to the trackdb
                                 trackdb.add_tracks(track)
-                                priority += 1
 
-                # now finish by storing the result
-                trackhub.upload.upload_hub(hub=hub, host='localhost', remote_dir=output[0])
+                            bigwig = f"{config['result_dir']}/{peak_caller}/{assembly}-{sample}.bw"
+                            sample_name = f"{sample}{peak_caller}BW"
+                            sample_name = trackhub.helpers.sanitize(sample_name)
+
+                            track = trackhub.Track(
+                                name=sample_name,    # track names can't have any spaces or special chars.
+                                source=bigwig,       # filename to build this track from
+                                visibility='full',   # shows the full signal
+                                color='0,0,0',       # black
+                                autoScale='on',      # allow the track to autoscale
+                                tracktype='bigWig',  # required when making a track
+                                priority=priority,
+                                maxHeightPixels='100:32:8'
+                            )
+
+                            # each track is added to the trackdb
+                            trackdb.add_tracks(track)
+                            priority += 1
+
+                # RNA-seq trackhub
+                elif 'rna_seq' in workflow.snakefile.split('/')[-2]:
+                    iterator = samples.index
+                    if config.get('combine_replicates', False) == 'merge' and 'condition' in samples:
+                        iterator = set(samples['condition'])
+
+                    for sample in iterator:
+                        for bw in get_bigwig_strand(sample):
+                            bigwig = f"{config['result_dir']}/bigwigs/{assembly}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw"
+                            sample_name = f"{sample}{bw}"
+                            # remove characters trackhub doesn't allow
+                            sample_name = re.sub(r'\W+', '', sample_name)
+                            # sample_name = trackhub.helpers.sanitize(sample_name) # TODO check if this works too
+
+                            track = trackhub.Track(
+                                name=sample_name,    # track names can't have any spaces or special chars.
+                                source=bigwig,       # filename to build this track from
+                                visibility='full',   # shows the full signal
+                                color='0,0,0',       # black
+                                autoScale='on',      # allow the track to autoscale
+                                tracktype='bigWig',  # required when making a track
+                                priority=priority,
+                                maxHeightPixels='100:32:8'
+                            )
+
+                            # each track is added to the trackdb
+                            trackdb.add_tracks(track)
+                            priority += 1
+
+            # now finish by storing the result
+            trackhub.upload.upload_hub(hub=hub, host='localhost', remote_dir=output[0])
