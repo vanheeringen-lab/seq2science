@@ -334,7 +334,8 @@ rule trackhub_index:
         genePred =       temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.gp",  **config)),
         genePredbed =    temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.gp.bed", **config)),
         genePredbigbed =      expand("{genome_dir}/{{assembly}}/{{assembly}}.bb",  **config),
-        input =          temp(expand("{genome_dir}/{{assembly}}/input.txt",        **config)),
+        info =           temp(expand("{genome_dir}/{{assembly}}/info.txt",        **config)),
+        indexinfo =      temp(expand("{genome_dir}/{{assembly}}/indexinfo.txt",        **config)),
         ix =                  expand("{genome_dir}/{{assembly}}/{{assembly}}.ix",  **config),
         ixx =                 expand("{genome_dir}/{{assembly}}/{{assembly}}.ixx", **config),
     log:
@@ -345,7 +346,8 @@ rule trackhub_index:
         "../envs/ucsc.yaml"
     shell:
         """
-        gtfToGenePred -geneNameAsName2 -genePredExt {input.gtf} {output.genePred} >> {log} 2>&1
+        # generate annotation files
+        gtfToGenePred -geneNameAsName2 -genePredExt {input.gtf} {output.genePred} -infoOut={output.info} >> {log} 2>&1
 
         genePredToBed {output.genePred} {output.genePredbed} >> {log} 2>&1
         
@@ -353,9 +355,10 @@ rule trackhub_index:
         
         bedToBigBed -extraIndex=name {output.genePredbed} {input.sizes} {output.genePredbigbed} >> {log} 2>&1
         
-        cat {output.genePred} | awk '{{print $1, $12, $1}}' > {output.input}
+        # generate searchable indexes (by 2: geneId, 8: proteinID, 9: geneName, 10: transcriptName and 1: transcriptID)
+        grep -v "^#" {output.info} | awk '{{print $1, $2, $8, $9, $10, $1}}' > {output.indexinfo}
 
-        ixIxx {output.input} {output.ix} {output.ixx} >> {log} 2>&1
+        ixIxx {output.indexinfo} {output.ix} {output.ixx} >> {log} 2>&1
         """
 
 
