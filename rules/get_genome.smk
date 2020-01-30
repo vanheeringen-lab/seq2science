@@ -72,6 +72,7 @@ rule get_annotation:
         expand("{log_dir}/get_genome/{{assembly}}.annotation.log", **config)
     benchmark:
         expand("{benchmark_dir}/get_genome/{{assembly}}.annotation.benchmark.txt", **config)[0]
+    priority: 1
     run:
         # Check if genome and annotation have matching chromosome/scaffold names
         with open(input.gtf[0], 'r') as gtf:
@@ -146,6 +147,7 @@ rule get_transcripts:
         expand("{benchmark_dir}/get_genome/{{assembly}}.transcripts.benchmark.txt", **config)[0]
     conda:
         "../envs/get_genome.yaml"
+    priority: 1
     shell:
         "gffread -w {output} -g {input.fa} {input.gtf} >> {log} 2>&1"
 
@@ -172,6 +174,7 @@ rule decoy_transcripts:
         mem_gb=65
     conda:
         "../envs/decoy.yaml"
+    priority: 1
     shell:
          """
          outdir=$(dirname {output})
