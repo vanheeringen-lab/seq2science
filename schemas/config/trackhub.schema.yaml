@@ -5,7 +5,7 @@ description: snakemake-workflows gene expression configuration
 properties:
   deeptools:
     description: option flags for bam to bigwig conversions with deeptools
-    default: ''
+    default: --ignoreDuplicates
   filter_bam_by_strand:
     description: split bigwigs by strand?
     default: True
