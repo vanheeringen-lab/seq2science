@@ -337,6 +337,10 @@ else:
         sample=any_given('sample', 'condition')
 
 
+def get_workflow():
+    return workflow.snakefile.split('/')[-2]
+
+
 # set default parameters (parallel downloads and memory)
 def convert_size(size_bytes, order=None):
     # https://stackoverflow.com/questions/5194057/better-way-to-convert-file-sizes-in-python/14822210#14822210

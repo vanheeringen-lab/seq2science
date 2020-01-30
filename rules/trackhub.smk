@@ -1,5 +1,6 @@
 import requests
 from Bio import SeqIO
+from multiprocessing import Pool
 
 
 rule bedgraphish_to_bedgraph:
@@ -285,8 +286,6 @@ rule RMsoft_1:
         expand("{benchmark_dir}/trackhub/{{assembly}}.softmask1.benchmark.txt", **config)[0]
     threads: 4
     run:
-        from multiprocessing import Pool
-
         with open(str(input.genome), "r") as genome_handle, open(str(output.mask_unsorted), "w+") as bed_handle:
             p = Pool(threads)
             # seqIO.parse returns contig data.
@@ -377,10 +376,6 @@ def get_bigwig_strand(sample):
     return ['']
 
 
-def get_workflow():
-    return workflow.snakefile.split('/')[-2]
-
-
 def get_trackhub_files(wildcards):
     """
     Assemble all files used in a trackhub/assembly hub.
@@ -393,6 +388,11 @@ def get_trackhub_files(wildcards):
 
     # check whether or not each assembly is supported by ucsc
     for assembly in set(samples['assembly']):
+        # first, checks if get_genome still needs to run
+        # second, checks if an annotation file was found
+        f = os.path.splitext(checkpoints.get_genome.get(assembly=assembly).output[0])[0]
+        gtf = any([os.path.isfile(f+".annotation.gtf"), os.path.isfile(f+".gtf")])
+
         # check for response of ucsc
         response = requests.get(f"https://genome.ucsc.edu/cgi-bin/hgTracks?db={assembly}",
                                 allow_redirects=True)
@@ -406,8 +406,8 @@ def get_trackhub_files(wildcards):
             trackfiles['cytobands'].append(f"{config['genome_dir']}/{assembly}/cytoBandIdeo.bb")
             trackfiles['RMsoft'].append(f"{config['genome_dir']}/{assembly}/{assembly}_softmasking.bb")
 
-            # TODO: Add index if an annotation is present for the assembly
-            if "annotation" == "annotation":
+            # add gtf-dependent file(s) only if the gtf has been found
+            if gtf:
                 trackfiles['annotations'].append(f"{config['genome_dir']}/{assembly}/{assembly}.bb")
 
     # Get the ATAC or RNA seq files
