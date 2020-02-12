@@ -25,11 +25,11 @@ properties:
       star:
         properties:
           quantifier_index_flags:
-            default: ''
+            default: '--limitGenomeGenerateRAM 37000000000 --genomeSAsparseD 1'
           quantifier_flags:
             default: '--readFilesCommand gunzip -c'
         default:
-          quantifier_index_flags: ''
+          quantifier_index_flags: '--limitGenomeGenerateRAM 37000000000 --genomeSAsparseD 1'
           quantifier_flags: '--readFilesCommand gunzip -c'
       salmon:
         properties:
@@ -45,7 +45,7 @@ properties:
           decoy_aware_index: False
     default:
       star:
-        quantifier_index_flags: ''
+        quantifier_index_flags: '--limitGenomeGenerateRAM 37000000000 --genomeSAsparseD 1'
         quantifier_flags: '--readFilesCommand gunzip -c'
 
   tximeta:

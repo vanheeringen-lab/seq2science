@@ -175,6 +175,10 @@ elif config['aligner'] == 'star' or config.get('quantifier', '') == 'star':
     rule star_index:
         """
         Make a genome index for STAR.
+        
+        If this step crashes, go to alignment_general.schema.yaml and 
+        increase the RAM available (--limitGenomeGenerateRAM).
+        If that doesn't work, also set --genomeSAsparseD 2.
         """
         input:
             genome = expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
@@ -228,7 +232,7 @@ elif config['aligner'] == 'star' or config.get('quantifier', '') == 'star':
             
             STAR --runMode genomeGenerate --genomeFastaFiles {input.genome} --sjdbGTFfile {input.gtf} \
             --genomeDir {output} --outFileNamePrefix {output}/ \
-            --limitGenomeGenerateRAM 37000000000 --runThreadN {threads} $NBits $NBases {params} >> {log} 2>&1
+            --runThreadN {threads} $NBits $NBases {params} >> {log} 2>&1
             """
 
     if config.get('run_alignment', True):
