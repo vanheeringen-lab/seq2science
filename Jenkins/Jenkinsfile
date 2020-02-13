@@ -73,13 +73,6 @@ pipeline {
                         # default config
                         printf "\nalignment default\n\n"
                         snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --quiet
-                        '''
-                    },
-                    "Aligners" : {
-                        sh '''#!/usr/bin/env bash
-                        set -e
-                        source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate miniconda/envs/snakemake-workflows/
 
                         # test aligners
                         printf "\ntesting aligners\n\n"
@@ -87,13 +80,6 @@ pipeline {
                         snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/bwa.yaml     --config samples=../../Jenkins/alignment/local_sample.tsv --quiet
                         snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/hisat2.yaml  --config samples=../../Jenkins/alignment/local_sample.tsv --quiet
                         snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/star.yaml    --config samples=../../Jenkins/alignment/local_sample.tsv --quiet
-                        '''
-                    },
-                    "Sorters & sorting" : {
-                        sh '''#!/usr/bin/env bash
-                        set -e
-                        source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate miniconda/envs/snakemake-workflows/
 
                         # test sorting
                         printf "\ntesting sorting\n\n"
@@ -113,26 +99,12 @@ pipeline {
                         # default config
                         printf "\ndefault atac-seq\n\n"
                         snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --quiet
-                        '''
-                    },
-                    "Peak callers" : {
-                        sh '''#!/usr/bin/env bash
-                        set -e
-                        source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate miniconda/envs/snakemake-workflows/
 
                         # test different peak callers
                         printf "\natac peakcaller\n\n"
                         snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --configfile Jenkins/atac_seq/genrich.yaml       --quiet
                         snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --configfile Jenkins/atac_seq/macs2.yaml         --quiet
                         snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --configfile Jenkins/atac_seq/genrich_macs2.yaml --quiet
-                        '''
-                    },
-                    "Replicate processing" : {
-                        sh '''#!/usr/bin/env bash
-                        set -e
-                        source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate miniconda/envs/snakemake-workflows/
 
                         # test different replicate settings
                         printf "\natac combine replicates\n\n"
@@ -151,25 +123,11 @@ pipeline {
                         # default config
                         printf "\ndefault rna-seq\n\n"
                         snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --quiet
-                        '''
-                    },
-                    "Differential expression" : {
-                        sh '''#!/usr/bin/env bash
-                        set -e
-                        source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate miniconda/envs/snakemake-workflows/
 
                         # test differential expression analysis
                         printf "\ndifferential expression\n\n"
                         snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/deseq2.yaml --config samples=../../Jenkins/rna_seq/samples.tsv quantifier=star   --quiet
                         snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/deseq2.yaml --config samples=../../Jenkins/rna_seq/samples.tsv quantifier=salmon --quiet
-                        '''
-                    },
-                    "Trackhub" : {
-                        sh '''#!/usr/bin/env bash
-                        set -e
-                        source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate miniconda/envs/snakemake-workflows/
 
                         # test trackhub generation
                         printf "\ntrackhub\n\n"
@@ -262,8 +220,6 @@ pipeline {
                 # set up parallel alignment environments
                 source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                 conda activate miniconda/envs/snakemake-workflows/
-
-                # snakemake -s workflows/alignment/Snakefile --directory workflows/alignment --use-conda --create-envs-only
 
                 snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
                 --use-conda --configfile Jenkins/alignment/bowtie2.yaml \
@@ -485,29 +441,3 @@ pipeline {
         }
     }
 }
-
-
-
-
-
-
-
-
-
-//         stage('Test alignment') {
-//             steps {
-//                 sh '''#!/usr/bin/env bash
-//                 set -e
-//                 source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-//                 conda activate miniconda/envs/snakemake-workflows/
-//
-//                 # test bowtie2 alignment
-//                 snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
-//                 --use-conda -j $CORES --configfile Jenkins/alignment/bowtie2.yaml \
-//                 --config samples=../../Jenkins/alignment/local_sample.tsv
-//
-//                 # calculate number of cores for the parallel alignments
-//                 let "c = $CORES / 3"
-//                 '''
-//             }
-//         }
