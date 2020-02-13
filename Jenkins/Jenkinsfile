@@ -69,7 +69,10 @@ pipeline {
                 # calculate number of cores for the parallel alignments
                 let "c = $CORES / 3"
                 '''
-
+            }
+        }
+        stage('alignment 2') {
+            steps {
                 parallel (
                     "BWA" : {
                         sh '''#!/usr/bin/env bash
