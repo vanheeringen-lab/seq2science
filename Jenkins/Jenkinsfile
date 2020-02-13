@@ -430,15 +430,20 @@ pipeline {
 
 
                 # test STAR
-                # create trackhub (builds on last run)
+                # create counts matrix (builds on last run)
                 snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq \
                 --use-conda -j $CORES --configfile Jenkins/rna_seq/counts.yaml \
-                --config samples=../../Jenkins/alignment/local_sample.tsv run_alignment=True
+                --config samples=../../Jenkins/rna_seq/samples.tsv
 
                 # perform DGE (builds on last run)
                 snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq \
                 --use-conda -j $CORES --configfile Jenkins/rna_seq/deseq2.yaml \
                 --config samples=../../Jenkins/rna_seq/samples.tsv
+
+                # create trackhub (builds on last run)
+                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq \
+                --use-conda -j $CORES --configfile Jenkins/rna_seq/counts.yaml \
+                --config samples=../../Jenkins/alignment/local_sample.tsv run_alignment=True
                 '''
             }
         }
