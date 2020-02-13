@@ -50,30 +50,28 @@ pipeline {
 
                 # create snakemake-workflows env
                 conda env create -f envs/snakemake-workflows.yaml > /dev/null
+
+                let "c = $CORES / 4"
                 '''
             }
         }
 
         stage('Test alignment') {
             steps {
-                sh '''#!/usr/bin/env bash
-                set -e
-                source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                conda activate miniconda/envs/snakemake-workflows/
-
-                # test bowtie2 alignment
-                snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
-                --use-conda -j $CORES --configfile Jenkins/alignment/bowtie2.yaml \
-                --config samples=../../Jenkins/alignment/local_sample.tsv
-
-                # calculate number of cores for the parallel alignments
-                let "c = $CORES / 3"
-                '''
-            }
-        }
-        stage('alignment 2') {
-            steps {
                 parallel (
+                    "bowtie2" : {
+                        sh '''#!/usr/bin/env bash
+                        set -e
+                        source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+                        conda activate miniconda/envs/snakemake-workflows/
+
+                        # test bowtie2 alignment
+                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
+                        --use-conda -j $c --configfile Jenkins/alignment/bowtie2.yaml \
+                        --config samples=../../Jenkins/alignment/local_sample.tsv \
+                        --nolock
+                        '''
+                    },
                     "BWA" : {
                         sh '''#!/usr/bin/env bash
                         set -e
@@ -250,6 +248,25 @@ pipeline {
 
 
 
+
+
+//         stage('Test alignment') {
+//             steps {
+//                 sh '''#!/usr/bin/env bash
+//                 set -e
+//                 source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+//                 conda activate miniconda/envs/snakemake-workflows/
+//
+//                 # test bowtie2 alignment
+//                 snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
+//                 --use-conda -j $CORES --configfile Jenkins/alignment/bowtie2.yaml \
+//                 --config samples=../../Jenkins/alignment/local_sample.tsv
+//
+//                 # calculate number of cores for the parallel alignments
+//                 let "c = $CORES / 3"
+//                 '''
+//             }
+//         }
 
 
 
