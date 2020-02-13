@@ -17,8 +17,8 @@ List getFailedStages(WorkflowRun run) {
         if (node.getType() != FlowNodeWrapper.NodeType.STAGE ) { continue; }
         String nodeName = node.getDisplayName()
         def nodeResult = node.getStatus().getResult()
-        def resultFailure = io.jenkins.blueocean.rest.model.BlueRun$BlueRunResult.FAILURE
-        if (nodeResult == resultFailure) {
+        def resultFailure = io.jenkins.blueocean.rest.model.BlueRun$BlueRunResult.SUCCESS
+        if (nodeResult != resultFailure) {
             failedStages.add(nodeName)
         }
     }
