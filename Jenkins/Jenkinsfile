@@ -67,12 +67,12 @@ pipeline {
                         # Do some dry runs to test the DAG
                         # test download workflow
                         printf "\ndownload default\n\n"
-                        snakemake -s workflows/download_fastq/Snakefile --directory workflows/download_fastq -n -j 48 --quiet
+                        snakemake -s workflows/download_fastq/Snakefile --directory workflows/download_fastq -n -j 48 --config ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 ncbi_requests=10 --quiet
 
                         # test alignment workflow
                         # default config
                         printf "\nalignment default\n\n"
-                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --quiet
+                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 ncbi_requests=10 --quiet
 
                         # test aligners
                         printf "\ntesting aligners\n\n"
@@ -98,7 +98,7 @@ pipeline {
                         # test atac-seq workflow
                         # default config
                         printf "\ndefault atac-seq\n\n"
-                        snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --quiet
+                        snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 ncbi_requests=10 --quiet
 
                         # test different peak callers
                         printf "\natac peakcaller\n\n"
@@ -122,7 +122,7 @@ pipeline {
                         # test rna-seq workflow
                         # default config
                         printf "\ndefault rna-seq\n\n"
-                        snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --quiet
+                        snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --config ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 ncbi_requests=10 --quiet
 
                         # test differential expression analysis
                         printf "\ndifferential expression\n\n"
