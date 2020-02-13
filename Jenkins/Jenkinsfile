@@ -53,6 +53,76 @@ pipeline {
                 '''
             }
         }
+
+        stage('Test alignment') {
+            steps {
+                sh '''#!/usr/bin/env bash
+                set -e
+                source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+                conda activate miniconda/envs/snakemake-workflows/
+
+                # test bowtie2 alignment
+                snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
+                --use-conda -j $CORES --configfile Jenkins/alignment/bowtie2.yaml \
+                --config samples=../../Jenkins/alignment/local_sample.tsv
+
+                # calculate number of cores for the parallel alignments
+                let "c = $CORES / 3"
+                '''
+
+                parallel (
+                    "BWA" : {
+                        sh '''#!/usr/bin/env bash
+                        set -e
+                        source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+                        conda activate miniconda/envs/snakemake-workflows/
+
+                        # test bwa alignment
+                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
+                        --use-conda -j $c --configfile Jenkins/alignment/bwa.yaml \
+                        --config samples=../../Jenkins/alignment/local_sample.tsv
+                        '''
+                    },
+                    "hisat2" : {
+                        sh '''#!/usr/bin/env bash
+                        set -e
+                        source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+                        conda activate miniconda/envs/snakemake-workflows/
+
+                        # test hisat2 alignment
+                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
+                        --use-conda -j $c --configfile Jenkins/alignment/hisat2.yaml \
+                        --config samples=../../Jenkins/alignment/local_sample.tsv
+                        '''
+                    },
+                    "STAR" : {
+                        sh '''#!/usr/bin/env bash
+                        set -e
+                        source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+                        conda activate miniconda/envs/snakemake-workflows/
+
+                        # test star alignment
+                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
+                        --use-conda -j $c --configfile Jenkins/alignment/star.yaml \
+                        --config samples=../../Jenkins/alignment/local_sample.tsv
+                        '''
+                    }
+                )
+            }
+        }
+    }
+
+    post {
+        always {
+            dir("$WORKSPACE") {
+                deleteDir()
+            }
+        }
+    }
+}
+
+
+
 //         stage('Test DAG') {
 //             steps {
 //                 sh '''#!/usr/bin/env bash
@@ -173,7 +243,12 @@ pipeline {
 //         }
 
 
-        stage('Test alignment') {
+
+
+
+
+
+
 //             when {
 //                 anyOf {
 //                     // always fully build develop and master
@@ -198,57 +273,15 @@ pipeline {
 //                     }
 //                 }
 //             }
-            steps {
-                sh '''#!/usr/bin/env bash
-                set -e
-                source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                conda activate miniconda/envs/snakemake-workflows/
 
-                # test bowtie2 alignment
-                snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
-                --use-conda -j $CORES --configfile Jenkins/alignment/bowtie2.yaml \
-                --config samples=../../Jenkins/alignment/local_sample.tsv
 
-                # calculate number of cores for the parallel alignments
-                let "c = $CORES / 3"
-                '''
 
-                parallel (
-                    sh '''#!/usr/bin/env bash
-                    set -e
-                    source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                    conda activate miniconda/envs/snakemake-workflows/
 
-                    # test bwa alignment
-                    snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
-                    --use-conda -j $c --configfile Jenkins/alignment/bwa.yaml \
-                    --config samples=../../Jenkins/alignment/local_sample.tsv
-                    '''
 
-                    sh '''#!/usr/bin/env bash
-                    set -e
-                    source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                    conda activate miniconda/envs/snakemake-workflows/
 
-                    # test hisat2 alignment
-                    snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
-                    --use-conda -j $c --configfile Jenkins/alignment/hisat2.yaml \
-                    --config samples=../../Jenkins/alignment/local_sample.tsv
-                    '''
 
-                    sh '''#!/usr/bin/env bash
-                    set -e
-                    source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                    conda activate miniconda/envs/snakemake-workflows/
 
-                    # test star alignment
-                    snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
-                    --use-conda -j $c --configfile Jenkins/alignment/star.yaml \
-                    --config samples=../../Jenkins/alignment/local_sample.tsv
-                    '''
-                )
-            }
-        }
+
 
 
 //         stage('Test atac-seq') {
@@ -371,14 +404,3 @@ pipeline {
 //             }
 //         }
 
-
-    }
-
-    post {
-        always {
-            dir("$WORKSPACE") {
-                deleteDir()
-            }
-        }
-    }
-}
