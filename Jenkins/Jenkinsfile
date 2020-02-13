@@ -50,6 +50,11 @@ pipeline {
 
                 # create snakemake-workflows env
                 conda env create -f envs/snakemake-workflows.yaml > /dev/null
+
+                # start the conda env
+                set -e
+                source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+                conda activate miniconda/envs/snakemake-workflows/
                 '''
             }
         }
@@ -57,9 +62,9 @@ pipeline {
         stage('Test alignment') {
             steps {
                 sh '''#!/usr/bin/env bash
-                set -e
-                source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                conda activate miniconda/envs/snakemake-workflows/
+                #set -e
+                #source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+                #conda activate miniconda/envs/snakemake-workflows/
 
                 # test bowtie2 alignment
                 snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
@@ -76,38 +81,41 @@ pipeline {
                 parallel (
                     "BWA" : {
                         sh '''#!/usr/bin/env bash
-                        set -e
-                        source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate miniconda/envs/snakemake-workflows/
+                        #set -e
+                        #source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+                        #conda activate miniconda/envs/snakemake-workflows/
 
                         # test bwa alignment
                         snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
                         --use-conda -j $c --configfile Jenkins/alignment/bwa.yaml \
-                        --config samples=../../Jenkins/alignment/local_sample.tsv
+                        --config samples=../../Jenkins/alignment/local_sample.tsv \
+                        --nolock
                         '''
                     },
                     "hisat2" : {
                         sh '''#!/usr/bin/env bash
-                        set -e
-                        source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate miniconda/envs/snakemake-workflows/
+                        #set -e
+                        #source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+                        #conda activate miniconda/envs/snakemake-workflows/
 
                         # test hisat2 alignment
                         snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
                         --use-conda -j $c --configfile Jenkins/alignment/hisat2.yaml \
-                        --config samples=../../Jenkins/alignment/local_sample.tsv
+                        --config samples=../../Jenkins/alignment/local_sample.tsv \
+                        --nolock
                         '''
                     },
                     "STAR" : {
                         sh '''#!/usr/bin/env bash
-                        set -e
-                        source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate miniconda/envs/snakemake-workflows/
+                        #set -e
+                        #source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+                        #conda activate miniconda/envs/snakemake-workflows/
 
                         # test star alignment
                         snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
                         --use-conda -j $c --configfile Jenkins/alignment/star.yaml \
-                        --config samples=../../Jenkins/alignment/local_sample.tsv
+                        --config samples=../../Jenkins/alignment/local_sample.tsv \
+                        --nolock
                         '''
                     }
                 )
