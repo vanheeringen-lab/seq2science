@@ -51,7 +51,11 @@ pipeline {
                 # create snakemake-workflows env
                 conda env create -f envs/snakemake-workflows.yaml > /dev/null
 
+                # set up parallel alignment environments
+                source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+                conda activate miniconda/envs/snakemake-workflows/
                 let "c = $CORES / 4"
+
                 snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
                 --use-conda -j $c --configfile Jenkins/alignment/bowtie2.yaml \
                 --config samples=../../Jenkins/alignment/local_sample.tsv \
