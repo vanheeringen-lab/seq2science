@@ -286,7 +286,7 @@ pipeline {
         }
 
 
-        stage('Test alignment') {
+        stage('Setup alignment') {
             when {
                 anyOf {
                     // always fully build develop and master
