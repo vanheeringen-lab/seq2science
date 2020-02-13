@@ -210,6 +210,8 @@ rule gcPercent:
         expand("{log_dir}/trackhub/{{assembly}}.gc5Base.log", **config)
     benchmark:
         expand("{benchmark_dir}/trackhub/{{assembly}}.gc5Base.benchmark.txt", **config)[0]
+    resources:
+        mem_gb=5
     conda:
         "../envs/ucsc.yaml"
     shell:
@@ -235,11 +237,13 @@ rule cytoband:
         cytoband_bd = temp(expand("{genome_dir}/{{assembly}}/cytoBandIdeo.bed", **config)),
     log:
         expand("{log_dir}/trackhub/{{assembly}}.cytoband.log", **config)
+    benchmark:
+        expand("{log_dir}/trackhub/{{assembly}}.cytoband.benchmark.txt", **config)[0]
     conda:
         "../envs/ucsc.yaml"
     shell:
         """
-        cat {input.sizes} | sort -k1,1 -k2,2n | awk '{{print $1,0,$2,$1,"gneg"}}' > {output.cytoband_bd}
+        cat {input.sizes} | bedSort /dev/stdin /dev/stdout | awk '{{print $1,0,$2,$1,"gneg"}}' > {output.cytoband_bd}
 
         bedToBigBed -type=bed4 {output.cytoband_bd} -as=../../schemas/cytoBand.as {input.sizes} {output.cytoband_bb} >> {log} 2>&1
         """
@@ -270,7 +274,7 @@ def get_masked_regions(contig):
     return masked_regions
 
 
-rule RMsoft_1:
+rule softmask_track_1:
     """
     Generate a track of all softmasked regions
     
@@ -281,10 +285,12 @@ rule RMsoft_1:
     output:
         mask_unsorted = temp(expand("{genome_dir}/{{assembly}}/{{assembly}}_softmasking_unsorted.bed", **config)),
     log:
-        expand("{log_dir}/trackhub/{{assembly}}.softmask.log", **config)
+        expand("{log_dir}/trackhub/{{assembly}}.softmask1.log", **config)
     benchmark:
         expand("{benchmark_dir}/trackhub/{{assembly}}.softmask1.benchmark.txt", **config)[0]
     threads: 4
+    resources:
+        mem_gb=2
     run:
         with open(str(input.genome), "r") as genome_handle, open(str(output.mask_unsorted), "w+") as bed_handle:
             p = Pool(threads)
@@ -295,7 +301,7 @@ rule RMsoft_1:
                 bed_handle.write(softmasked_regions_per_contig)
 
 
-rule RMsoft_2:
+rule softmask_track_2:
     """
     Generate a track of all softmasked regions
     
@@ -308,7 +314,7 @@ rule RMsoft_2:
         maskbed = temp(expand("{genome_dir}/{{assembly}}/{{assembly}}_softmasking.bed", **config)),
         mask    =      expand("{genome_dir}/{{assembly}}/{{assembly}}_softmasking.bb", **config),
     log:
-        expand("{log_dir}/trackhub/{{assembly}}.softmask.log", **config)
+        expand("{log_dir}/trackhub/{{assembly}}.softmask2.log", **config)
     benchmark:
         expand("{benchmark_dir}/trackhub/{{assembly}}.softmask2.benchmark.txt", **config)[0]
     conda:

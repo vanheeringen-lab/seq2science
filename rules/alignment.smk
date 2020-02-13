@@ -176,14 +176,16 @@ elif config['aligner'] == 'star' or config.get('quantifier', '') == 'star':
         """
         Make a genome index for STAR.
         
-        If this step crashes, increase the RAM available (--limitGenomeGenerateRAM).
-        If that doesn't work, also set --genomeSAsparseD 2.
+        Troubleshooting:
+        1) sufficient disk space?
+        2) increase the RAM available (--limitGenomeGenerateRAM)
+        3) reduce the number of threads (snakemake -j 5)
+        4) reduce accuracy (--genomeSAsparseD 2)
                 
-        For example, in your config.yaml, set:
-        
-        aligner:  # or "quantifier:" for RNA-seq
+        For example, in your config.yaml, set aligner/quantifier:
+        aligner:
             star:
-                index: '--limitGenomeGenerateRAM 60000000000 --genomeSAsparseD 1'        
+                index: --limitGenomeGenerateRAM 60000000000 --genomeSAsparseD 1
         """
         input:
             genome = expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
@@ -198,7 +200,7 @@ elif config['aligner'] == 'star' or config.get('quantifier', '') == 'star':
         params:
             config['index']
         priority: 1
-        threads: 20
+        threads: 10
         resources:
             mem_gb=37
         conda:
@@ -240,13 +242,6 @@ elif config['aligner'] == 'star' or config.get('quantifier', '') == 'star':
             --runThreadN {threads} $NBits $NBases {params} >> {log} 2>&1
             """
 
-            # best option: increase RAM. 2nd best: genomeSAsparseD to 2 (not higher). Other options seem to be fine as implemented.
-            # --limitGenomeGenerateRAM 60000000000 --runThreadN {threads} --genomeSAsparseD 2 $NBits $NBases {params.flags} >> {log} 2>&1
-            # --limitGenomeGenerateRAM 37000000000 --runThreadN {threads} --genomeChrBinNbits 3 {params} >> {log} 2>&1 # works for hg19, result doesnt align anything
-            # --limitGenomeGenerateRAM 60000000000 --runThreadN {threads} --genomeChrBinNbits 3 --genomeSAindexNbases 3 {params}
-            # --limitGenomeGenerateRAM 60000000000 --runThreadN 40 --genomeChrBinNbits 3 --genomeSAindexNbases 14 # this worked for danRer11
-            # --limitGenomeGenerateRAM 60000000000 --runThreadN 40 {params} --genomeSAindexNbases 6 # this worked for GRCz11
-            # --limitGenomeGenerateRAM 37000000000 --runThreadN {threads} $NBases {params} >> {log} 2>&1 #
 
     if config.get('run_alignment', True):
         rule star_align:
