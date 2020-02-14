@@ -17,7 +17,7 @@ if config['quantifier'] == 'star' and (config['run_alignment'] == False or confi
         params:
             input=lambda wildcards, input: f' {input.reads}' if config['layout'][wildcards.sample] == 'SINGLE' else \
                                            f' {input.reads[0]} {input.reads[1]}',
-            params=config['quantify']
+            params=config['quantifier_flags']
         threads: 1
         resources:
             mem_gb=30
@@ -49,7 +49,7 @@ elif config['quantifier'] == 'salmon':
             benchmark:
                 expand("{benchmark_dir}/{quantifier}_index/{{assembly}}.benchmark.txt", **config)[0]
             params:
-                config['quantifier_index']
+                config['quantifier_index_flags']
             threads: 40
             conda:
                 "../envs/salmon.yaml"
@@ -72,7 +72,7 @@ elif config['quantifier'] == 'salmon':
             benchmark:
                 expand("{benchmark_dir}/{quantifier}_index/{{assembly}}.benchmark.txt", **config)[0]
             params:
-                config['quantifier_index']
+                config['quantifier_index_flags']
             threads: 40
             conda:
                 "../envs/salmon.yaml"
@@ -98,7 +98,7 @@ elif config['quantifier'] == 'salmon':
         params:
             input=lambda wildcards, input: f'-r {input.reads}' if config['layout'][wildcards.sample] == 'SINGLE' else \
                                            f'-1 {input.reads[0]} -2 {input.reads[1]}',
-            params=config['quantify']
+            params=config['quantifier_flags']
         threads: 20
         resources:
             mem_gb=8

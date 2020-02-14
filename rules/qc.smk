@@ -78,7 +78,6 @@ rule fastqc:
         f"{config['qc_dir']}/fastqc/"
     conda:
         "../envs/qc.yaml"
-    priority: -10
     shell:
         "fastqc {input} -O {params} > {log} 2>&1"
 

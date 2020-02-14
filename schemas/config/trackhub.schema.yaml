@@ -4,9 +4,17 @@ description: snakemake-workflows gene expression configuration
 
 properties:
   deeptools:
-    description: option flags for bam to bigwig conversions with deeptools bamCoverage
-    default: --samFlagExclude 1024 # exclude duplicates marked by Picard
+    description: option flags for bam to bigwig conversions with deeptools
+    default: ''
   filter_bam_by_strand:
     description: split bigwigs by strand?
     default: True
+    enum: [True, False]
+  normalize_bam:
+    description: apply a normalization method
+    default: None
+    enum: [RPKM, CPM, BPM, RPGC, None]
+  exact_scaling:
+    description: use more heavy (slow) and more accurate scaling factors?
+    default: False
     enum: [True, False]
