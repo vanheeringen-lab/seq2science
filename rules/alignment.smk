@@ -175,17 +175,6 @@ elif config['aligner'] == 'star' or config.get('quantifier', '') == 'star':
     rule star_index:
         """
         Make a genome index for STAR.
-        
-        Troubleshooting:
-        1) sufficient disk space?
-        2) increase the RAM available (--limitGenomeGenerateRAM)
-        3) reduce the number of threads (snakemake -j 5)
-        4) reduce accuracy (--genomeSAsparseD 2)
-                
-        For example, in your config.yaml, set aligner/quantifier:
-        aligner:
-            star:
-                index: --limitGenomeGenerateRAM 60000000000 --genomeSAsparseD 1
         """
         input:
             genome = expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
@@ -200,7 +189,7 @@ elif config['aligner'] == 'star' or config.get('quantifier', '') == 'star':
         params:
             config['index']
         priority: 1
-        threads: 10
+        threads: 20
         resources:
             mem_gb=37
         conda:
@@ -239,9 +228,8 @@ elif config['aligner'] == 'star' or config.get('quantifier', '') == 'star':
             
             STAR --runMode genomeGenerate --genomeFastaFiles {input.genome} --sjdbGTFfile {input.gtf} \
             --genomeDir {output} --outFileNamePrefix {output}/ \
-            --runThreadN {threads} $NBits $NBases {params} >> {log} 2>&1
+            --limitGenomeGenerateRAM 37000000000 --runThreadN {threads} $NBits $NBases {params} >> {log} 2>&1
             """
-
 
     if config.get('run_alignment', True):
         rule star_align:

@@ -37,26 +37,15 @@ def get_contrasts():
     new_contrasts = list(set(new_contrasts))
     return new_contrasts
 
-"""
-Current issue with R:
-when starting, ldpaths is updated. During this process it is opened and deleted.
-Simultaneous R scripts can incidentally crash because it is missing.
 
-active issue: https://github.com/conda-forge/r-base-feedstock/issues/67
-active PR: https://github.com/conda/conda/pull/8776
-
-workarounds:
--the workflow can be rerun until all scripts have finished
--the max number of parallel R-scripts can be set to 1
-"""
 rule deseq2:
     """
     Differential gene expression analysis with DESeq2.
     """
     input:
-        expand("{counts_dir}/{{assembly}}-counts.tsv", **config)
+        expand("{result_dir}/gene_counts/{{assembly}}-counts.tsv", **config)
     output:
-        expand("{dge_dir}/{{assembly}}-{{contrast}}.diffexp.tsv", **config)
+        expand("{result_dir}/deseq2/{{assembly}}-{{contrast}}.diffexp.tsv", **config)
     conda:
         "../envs/deseq2.yaml"
     log:
@@ -66,8 +55,6 @@ rule deseq2:
     threads: 4
     params:
         os.path.abspath(config["samples"])
-    resources:
-        R_scripts=1 # conda's R can have issues when starting multiple times
     script:
         "../scripts/deseq2.R"
 
@@ -77,9 +64,9 @@ rule blind_clustering:
     Create a sample distance matrix plot per assembly
     """
     input:
-         expand("{counts_dir}/{{assembly}}-counts.tsv", **config)
+         expand("{result_dir}/gene_counts/{{assembly}}-counts.tsv", **config)
     output:
-         expand("{dge_dir}/{{assembly}}-clustering.svg", **config)
+         expand("{result_dir}/deseq2/{{assembly}}-clustering.svg", **config)
     conda:
         "../envs/deseq2.yaml"
     log:
@@ -89,7 +76,5 @@ rule blind_clustering:
     threads: 4
     params:
         os.path.abspath(config["samples"])
-    resources:
-        R_scripts=1 # conda's R can have issues when starting multiple times
     script:
         "../scripts/deseq2_clustering.R"
