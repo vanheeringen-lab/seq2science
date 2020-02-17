@@ -5,25 +5,25 @@ import org.jenkinsci.plugins.workflow.graph.FlowNode
 import org.jenkinsci.plugins.workflow.job.WorkflowRun
 
 
-// helper function to check whether a stage failed
-@NonCPS
-List getFailedStages(WorkflowRun run) {
-    List failedStages = []
-    FlowExecution exec = run.getExecution()
-    PipelineNodeGraphVisitor visitor = new PipelineNodeGraphVisitor(run)
-    def flowNodes = visitor.getPipelineNodes()
-
-    for (node in flowNodes) {
-        if (node.getType() != FlowNodeWrapper.NodeType.STAGE ) { continue; }
-        String nodeName = node.getDisplayName()
-        def nodeResult = node.getStatus().getResult()
-        def resultSuccess = io.jenkins.blueocean.rest.model.BlueRun$BlueRunResult.SUCCESS
-        if (nodeResult != resultSuccess) {
-            failedStages.add(nodeName)
-        }
-    }
-    return failedStages
-}
+// // helper function to check whether a stage failed
+// @NonCPS
+// List getFailedStages(WorkflowRun run) {
+//     List failedStages = []
+//     FlowExecution exec = run.getExecution()
+//     PipelineNodeGraphVisitor visitor = new PipelineNodeGraphVisitor(run)
+//     def flowNodes = visitor.getPipelineNodes()
+//
+//     for (node in flowNodes) {
+//         if (node.getType() != FlowNodeWrapper.NodeType.STAGE ) { continue; }
+//         String nodeName = node.getDisplayName()
+//         def nodeResult = node.getStatus().getResult()
+//         def resultSuccess = io.jenkins.blueocean.rest.model.BlueRun$BlueRunResult.SUCCESS
+//         if (nodeResult != resultSuccess) {
+//             failedStages.add(nodeName)
+//         }
+//     }
+//     return failedStages
+// }
 
 
 pipeline {
@@ -141,28 +141,28 @@ pipeline {
 
 
         stage('Test downloading') {
-            when {
-                anyOf {
-                    // always fully build develop and master
-                    branch 'master'
-                    branch 'develop'
-
-                    // always run when jenkins, envs or configuration is changed
-                    changeset glob: 'Jenkins/*'
-                    changeset glob: 'envs/*'
-                    changeset 'rules/configuration.smk'
-
-                    // run when relevant rules are changed
-                    changeset glob: 'workflows/download_fastq/*'
-                    changeset 'rules/get_fastq.smk'
-
-                    // run when last time you failed
-                    expression {
-                        return getFailedStages(Jenkins.instance.getItemByFullName("Snakemake-Workflows")\
-                        .getItem("$GIT_BRANCH")._getRuns().last()).contains("Test downloading")
-                    }
-                }
-            }
+//             when {
+//                 anyOf {
+//                     // always fully build develop and master
+//                     branch 'master'
+//                     branch 'develop'
+//
+//                     // always run when jenkins, envs or configuration is changed
+//                     changeset glob: 'Jenkins/*'
+//                     changeset glob: 'envs/*'
+//                     changeset 'rules/configuration.smk'
+//
+//                     // run when relevant rules are changed
+//                     changeset glob: 'workflows/download_fastq/*'
+//                     changeset 'rules/get_fastq.smk'
+//
+//                     // run when last time you failed
+//                     expression {
+//                         return getFailedStages(Jenkins.instance.getItemByFullName("Snakemake-Workflows")\
+//                         .getItem("$GIT_BRANCH")._getRuns().last()).contains("Test downloading")
+//                     }
+//                 }
+//             }
             steps {
                 sh '''#!/usr/bin/env bash
                 set -e
@@ -189,30 +189,30 @@ pipeline {
 
 
         stage('Setup alignment') {
-            when {
-                anyOf {
-                    // always fully build develop and master
-                    branch 'master'
-                    branch 'develop'
-
-                    // always run when jenkins, envs or configuration is changed
-                    changeset glob: 'Jenkins/*'
-                    changeset glob: 'envs/*'
-                    changeset 'rules/configuration.smk'
-
-                    // run when relevant rules are changed
-                    changeset glob: 'workflows/alignment/*'
-                    changeset 'rules/alignment.smk'
-                    changeset 'rules/trimming.smk'
-                    changeset 'rules/qc.smk'
-
-                    // run when last time you failed
-                    expression {
-                        return getFailedStages(Jenkins.instance.getItemByFullName("Snakemake-Workflows")\
-                        .getItem("$GIT_BRANCH")._getRuns().last()).contains("Test alignment")
-                    }
-                }
-            }
+//             when {
+//                 anyOf {
+//                     // always fully build develop and master
+//                     branch 'master'
+//                     branch 'develop'
+//
+//                     // always run when jenkins, envs or configuration is changed
+//                     changeset glob: 'Jenkins/*'
+//                     changeset glob: 'envs/*'
+//                     changeset 'rules/configuration.smk'
+//
+//                     // run when relevant rules are changed
+//                     changeset glob: 'workflows/alignment/*'
+//                     changeset 'rules/alignment.smk'
+//                     changeset 'rules/trimming.smk'
+//                     changeset 'rules/qc.smk'
+//
+//                     // run when last time you failed
+//                     expression {
+//                         return getFailedStages(Jenkins.instance.getItemByFullName("Snakemake-Workflows")\
+//                         .getItem("$GIT_BRANCH")._getRuns().last()).contains("Test alignment")
+//                     }
+//                 }
+//             }
             steps {
                 sh '''#!/usr/bin/env bash
                 set -e
@@ -231,30 +231,30 @@ pipeline {
 
 
         stage('Test alignment') {
-            when {
-                anyOf {
-                    // always fully build develop and master
-                    branch 'master'
-                    branch 'develop'
-
-                    // always run when jenkins, envs or configuration is changed
-                    changeset glob: 'Jenkins/*'
-                    changeset glob: 'envs/*'
-                    changeset 'rules/configuration.smk'
-
-                    // run when relevant rules are changed
-                    changeset glob: 'workflows/alignment/*'
-                    changeset 'rules/alignment.smk'
-                    changeset 'rules/trimming.smk'
-                    changeset 'rules/qc.smk'
-
-                    // run when last time you failed
-                    expression {
-                        return getFailedStages(Jenkins.instance.getItemByFullName("Snakemake-Workflows")\
-                        .getItem("$GIT_BRANCH")._getRuns().last()).contains("Test alignment")
-                    }
-                }
-            }
+//             when {
+//                 anyOf {
+//                     // always fully build develop and master
+//                     branch 'master'
+//                     branch 'develop'
+//
+//                     // always run when jenkins, envs or configuration is changed
+//                     changeset glob: 'Jenkins/*'
+//                     changeset glob: 'envs/*'
+//                     changeset 'rules/configuration.smk'
+//
+//                     // run when relevant rules are changed
+//                     changeset glob: 'workflows/alignment/*'
+//                     changeset 'rules/alignment.smk'
+//                     changeset 'rules/trimming.smk'
+//                     changeset 'rules/qc.smk'
+//
+//                     // run when last time you failed
+//                     expression {
+//                         return getFailedStages(Jenkins.instance.getItemByFullName("Snakemake-Workflows")\
+//                         .getItem("$GIT_BRANCH")._getRuns().last()).contains("Test alignment")
+//                     }
+//                 }
+//             }
             steps {
                 parallel (
                     "Bowtie2" : {
@@ -329,34 +329,34 @@ pipeline {
 
 
         stage('Test atac-seq') {
-            when {
-                anyOf {
-                    // always fully build develop and master
-                    branch 'master'
-                    branch 'develop'
-
-                    // always run when jenkins, envs or configuration is changed
-                    changeset glob: 'Jenkins/*'
-                    changeset glob: 'envs/*'
-                    changeset 'rules/configuration.smk'
-
-                    // run when relevant rules are changed
-                    changeset glob: 'workflows/atac_seq/*'
-                    changeset 'rules/alignment.smk'
-                    changeset 'rules/trimming.smk'
-                    changeset 'rules/qc.smk'
-                    changeset 'rules/merge_replicates.smk'
-                    changeset 'rules/trackhub.smk'
-                    changeset 'rules/call_peak.smk'
-                    changeset 'rules/get_genome.smk'
-
-                    // run when last time you failed
-                    expression {
-                        return getFailedStages(Jenkins.instance.getItemByFullName("Snakemake-Workflows")\
-                        .getItem("$GIT_BRANCH")._getRuns().last()).contains("Test atac-seq")
-                    }
-                }
-            }
+//             when {
+//                 anyOf {
+//                     // always fully build develop and master
+//                     branch 'master'
+//                     branch 'develop'
+//
+//                     // always run when jenkins, envs or configuration is changed
+//                     changeset glob: 'Jenkins/*'
+//                     changeset glob: 'envs/*'
+//                     changeset 'rules/configuration.smk'
+//
+//                     // run when relevant rules are changed
+//                     changeset glob: 'workflows/atac_seq/*'
+//                     changeset 'rules/alignment.smk'
+//                     changeset 'rules/trimming.smk'
+//                     changeset 'rules/qc.smk'
+//                     changeset 'rules/merge_replicates.smk'
+//                     changeset 'rules/trackhub.smk'
+//                     changeset 'rules/call_peak.smk'
+//                     changeset 'rules/get_genome.smk'
+//
+//                     // run when last time you failed
+//                     expression {
+//                         return getFailedStages(Jenkins.instance.getItemByFullName("Snakemake-Workflows")\
+//                         .getItem("$GIT_BRANCH")._getRuns().last()).contains("Test atac-seq")
+//                     }
+//                 }
+//             }
             steps {
                 sh '''#!/usr/bin/env bash
                 set -e
@@ -375,35 +375,35 @@ pipeline {
 
 
         stage('Test rna-seq') {
-            when {
-                anyOf {
-                    // always fully build develop and master
-                    branch 'master'
-                    branch 'develop'
-
-                    // always run when jenkins, envs or configuration is changed
-                    changeset glob: 'Jenkins/*'
-                    changeset glob: 'envs/*'
-                    changeset 'rules/configuration.smk'
-
-                    // run when relevant rules are changed
-                    changeset glob: 'workflows/rna_seq/*'
-                    changeset 'rules/get_genome.smk'
-                    changeset 'rules/trimming.smk'
-                    changeset 'rules/alignment.smk'
-                    changeset 'rules/quantification.smk'
-                    changeset 'rules/gene_counts.smk'
-                    changeset 'rules/DGE_analysis.smk'
-                    changeset 'rules/qc.smk'
-                    changeset 'rules/trackhub.smk'
-
-                    // run when last time you failed
-                    expression {
-                        return getFailedStages(Jenkins.instance.getItemByFullName("Snakemake-Workflows")\
-                        .getItem("$GIT_BRANCH")._getRuns().last()).contains("Test rna-seq")
-                    }
-                }
-            }
+//             when {
+//                 anyOf {
+//                     // always fully build develop and master
+//                     branch 'master'
+//                     branch 'develop'
+//
+//                     // always run when jenkins, envs or configuration is changed
+//                     changeset glob: 'Jenkins/*'
+//                     changeset glob: 'envs/*'
+//                     changeset 'rules/configuration.smk'
+//
+//                     // run when relevant rules are changed
+//                     changeset glob: 'workflows/rna_seq/*'
+//                     changeset 'rules/get_genome.smk'
+//                     changeset 'rules/trimming.smk'
+//                     changeset 'rules/alignment.smk'
+//                     changeset 'rules/quantification.smk'
+//                     changeset 'rules/gene_counts.smk'
+//                     changeset 'rules/DGE_analysis.smk'
+//                     changeset 'rules/qc.smk'
+//                     changeset 'rules/trackhub.smk'
+//
+//                     // run when last time you failed
+//                     expression {
+//                         return getFailedStages(Jenkins.instance.getItemByFullName("Snakemake-Workflows")\
+//                         .getItem("$GIT_BRANCH")._getRuns().last()).contains("Test rna-seq")
+//                     }
+//                 }
+//             }
             steps {
                 sh '''#!/usr/bin/env bash
                 set -e
