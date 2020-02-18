@@ -65,11 +65,11 @@ properties:
       star:
         properties:
           index:
-            default: ''
+            default: '--limitGenomeGenerateRAM 37000000000 --genomeSAsparseD 1'
           align:
             default: '--readFilesCommand gunzip -c'
         default:
-          index: ''
+          index: '--limitGenomeGenerateRAM 37000000000 --genomeSAsparseD 1'
           align: '--readFilesCommand gunzip -c'
     default:
       bwa:
