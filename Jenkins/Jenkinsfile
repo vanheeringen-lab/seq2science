@@ -314,12 +314,14 @@ pipeline {
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                         conda activate miniconda/envs/snakemake-workflows/
                         let "c = $CORES / 4"
+                        let "a = $CORES / 5"
+                        let "s = $c - $a"
 
                         # test star alignment
                         snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
                         --use-conda --configfile Jenkins/alignment/star.yaml \
                         --config samples=../../Jenkins/alignment/local_sample.tsv \
-                        -j $c \
+                        -j $c --set-threads star_align=$a samtools_sort=$s \
                         --nolock
                         '''
                     }
