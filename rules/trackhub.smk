@@ -1,3 +1,4 @@
+import os.path
 import requests
 from Bio import SeqIO
 from multiprocessing import Pool
@@ -579,9 +580,10 @@ rule trackhub:
 
                 # next add the data files depending on the workflow
                 # use condition instead of samples if samples are being merged
-                iterator = samples.index
+                subsamples = samples[samples['assembly'] == assembly]
+                iterator = set(subsamples.index)
                 if config.get('combine_replicates', False) == 'merge' and 'condition' in samples:
-                    iterator = set(samples['condition'])
+                    iterator = set(subsamples['condition'])
 
                 # ATAC-seq trackhub
                 if 'atac_seq' in get_workflow():
@@ -603,6 +605,7 @@ rule trackhub:
                                 trackdb.add_tracks(track)
 
                             bigwig = f"{config['result_dir']}/{peak_caller}/{assembly}-{sample}.bw"
+                            assert os.path.exists(bigwig), bigwig + " not found!"
                             sample_name = f"{sample}{peak_caller}BW"
                             sample_name = trackhub.helpers.sanitize(sample_name)
 
@@ -626,6 +629,7 @@ rule trackhub:
                     for sample in iterator:
                         for bw in get_bigwig_strand(sample):
                             bigwig = f"{config['result_dir']}/bigwigs/{assembly}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw"
+                            assert os.path.exists(bigwig), bigwig + " not found!"
                             sample_name = f"{sample}{bw}"
                             sample_name = trackhub.helpers.sanitize(sample_name)
 

@@ -18,18 +18,23 @@ if config['quantifier'] == 'star' and (config['run_alignment'] == False or confi
             input=lambda wildcards, input: f' {input.reads}' if config['layout'][wildcards.sample] == 'SINGLE' else \
                                            f' {input.reads[0]} {input.reads[1]}',
             params=config['quantify']
-        threads: 1
+        threads: 8
         resources:
             mem_gb=30
         conda:
             "../envs/star.yaml"
         shell:
             """
-            mkdir -p {output.dir}
+            trap "find {log} -type f ! -name Log* -exec rm {{}} \;" EXIT
+            mkdir -p {log}
+            mkdir -p {output.dir}                
             
             STAR --genomeDir {input.index} --readFilesIn {params.input} --quantMode GeneCounts \
-            --outFileNamePrefix {output.dir}/ --runThreadN {threads} {params.params} \
-            --outSAMtype None &> {log}
+            --outFileNamePrefix {log}/ --outTmpDir {output.dir}/STARtmp --runThreadN {threads} {params.params} \
+            --outSAMtype BAM Unsorted --outStd BAM_Unsorted > {output.pipe} 2> {log}/Log.stderr.out
+            
+            # move all non-log files to output directory (this way the log files are kept on error)
+            find {log} -type f ! -name Log* -exec mv {{}} {output.dir} \;
             """
 
 
