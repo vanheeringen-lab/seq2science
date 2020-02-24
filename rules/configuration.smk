@@ -15,7 +15,11 @@ from multiprocessing.pool import ThreadPool
 
 from snakemake.logging import logger
 from snakemake.utils import validate
+from snakemake.utils import min_version
 
+
+# make sure the snakemake version corresponds to version in environment
+min_version("5.10")
 
 # check config file for correct directory names
 for key, value in config.items():
