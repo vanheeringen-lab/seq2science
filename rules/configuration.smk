@@ -320,8 +320,8 @@ logger.info("\n\n")
 # check if a newer version of the Snakemake-workflows (master branch) is available
 # if so, provide update instructions depending on the current branch
 shell("""
-    status=$(git fetch --dry-run -v 2>&1 | grep origin/master | cut -d "[" -f2 | cut -d "]" -f1)
-    if [[ $status != "up to date" ]]; then
+    git_status=$(git fetch --dry-run -v 2>&1 | grep origin/master | cut -d "[" -f2 | cut -d "]" -f1)
+    if [[ $git_status != "up to date" ]]; then
         current_branch=$(git branch | grep \* | awk '{{print $2}}')
         [[ $current_branch != "master" ]] && change_branch="git checkout master;" || change_branch=""
         echo "A newer version of Snakemake-workflows is available!"
