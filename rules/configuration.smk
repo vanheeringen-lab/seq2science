@@ -324,11 +324,11 @@ shell("""
     if [[ $status != "up to date" ]]; then
         current_branch=$(git branch | grep \* | awk '{{print $2}}')
         [[ $current_branch != "master" ]] && change_branch="git checkout master;" || change_branch=""
-        echo "\n"\
-            "A newer version of Snakemake-workflows is available!\n\n"\
-            "To update, run:\n"\
-            "  \$" $change_branch "git pull origin master"\
-            "\n"
+        echo "A newer version of Snakemake-workflows is available!"
+        echo ""
+        echo "To update, run:"
+        echo "  \$" $change_branch "git pull origin master"
+        echo ""
     fi
 """)
 
