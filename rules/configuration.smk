@@ -319,8 +319,15 @@ logger.info("\n\n")
 
 # check if a newer version of the Snakemake-workflows (master branch) is available
 # if so, provide update instructions depending on the current branch
-a = subprocess.check_output("""git fetch --dry-run -v 2>&1 | grep origin/master | cut -d "[" -f2 | cut -d "]" -f1""", shell=True).decode('ascii').rstrip()
-print(a)
+git_status = subprocess.check_output("""git fetch --dry-run -v 2>&1 | grep origin/master | cut -d "[" -f2 | cut -d "]" -f1""", shell=True).decode('ascii').strip()
+if git_status == "up to date":
+    current_branch = subprocess.check_output("git branch | grep \* | awk '{{print $2}}'", shell=True).decode('ascii').strip()
+    cmd = " " if current_branch == "master" else " checkout master; git "
+    print(
+        "A newer version of Snakemake-workflows is available!\n\n" +
+        "To update, run:\n" +
+        "\t$git" + cmd + "pull origin master\n"
+    )
 
 def any_given(*args):
     """
