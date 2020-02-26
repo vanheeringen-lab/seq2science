@@ -31,7 +31,7 @@ if config['quantifier'] == 'star' and (config['run_alignment'] == False or confi
             
             STAR --genomeDir {input.index} --readFilesIn {params.input} --quantMode GeneCounts \
             --outFileNamePrefix {log}/ --outTmpDir {output.dir}/STARtmp --runThreadN {threads} {params.params} \
-            --outSAMtype BAM Unsorted --outStd BAM_Unsorted > {output.pipe} 2> {log}/Log.stderr.out
+            --outSAMtype None > {log}/Log.quant.out 2>&1
             
             # move all non-log files to output directory (this way the log files are kept on error)
             find {log} -type f ! -name Log* -exec mv {{}} {output.dir} \;
