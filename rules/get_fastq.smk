@@ -40,7 +40,7 @@ rule id2sra:
         for ID in $IDS;
         do
             PREFIX=$(echo $ID | cut -c1-6);
-            SUFFIX=$(echo $ID | cut -c10-99 | xargs printf "%03d\n");
+            SUFFIX=$(echo -n $ID | tail -c 3);
 
             URL_ENA1="era-fasp@fasp.sra.ebi.ac.uk:/vol1/$TYPE_L/$PREFIX/$SUFFIX/$ID";
             URL_ENA2="era-fasp@fasp.sra.ebi.ac.uk:/vol1/$TYPE_L/$PREFIX/$ID";

@@ -15,7 +15,11 @@ from multiprocessing.pool import ThreadPool
 
 from snakemake.logging import logger
 from snakemake.utils import validate
+from snakemake.utils import min_version
 
+
+# make sure the snakemake version corresponds to version in environment
+min_version("5.10")
 
 # check config file for correct directory names
 for key, value in config.items():
@@ -311,8 +315,19 @@ if 'condition' in samples and config.get('combine_replicates', "") == 'merge':
 logger.info("CONFIGURATION VARIABLES:")
 for key, value in config.items():
      logger.info(f"{key: <23}: {value}")
-logger.info("\n\n")
+logger.info("\n")
 
+# check if a newer version of the Snakemake-workflows (master branch) is available
+# if so, provide update instructions depending on the current branch
+git_status = subprocess.check_output("""git fetch --dry-run -v 2>&1 | grep origin/master | cut -d "[" -f2 | cut -d "]" -f1""", shell=True).decode('ascii').strip()
+if git_status != "up to date":
+    current_branch = subprocess.check_output("""git branch | grep \* | awk '{print $2}'""", shell=True).decode('ascii').strip()
+    cmd = " " if current_branch == "master" else " checkout master; git "
+    logger.info(
+        "A newer version of Snakemake-workflows is available!\n\n" +
+        "To update, run:\n" +
+        "\tgit" + cmd + "pull origin master\n\n"
+    )
 
 def any_given(*args):
     """
