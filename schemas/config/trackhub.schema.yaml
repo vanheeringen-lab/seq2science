@@ -5,7 +5,7 @@ description: snakemake-workflows gene expression configuration
 properties:
   # scope of analysis: create a trackhub or only align and/or quantify (and create gene counts)
   create_trackhub:
-    description: Run aligning to the genome or only output a counts table
+    description: skip generation of bams (except for workflow alignment), bigwigs and a trackhub
     default: True
     enum: [True, False]
 

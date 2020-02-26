@@ -1,6 +1,12 @@
-# STAR can produce bams and gene counts at the same time. This will be done by the rules in alignment,smk
-if config['quantifier'] == 'star' and (config['create_trackhub'] == False or config['aligner'] != 'star'):
+if config['quantifier'] == 'star':
+    # star_align also generates bams, required for the trackhub
+    if config['create_trackhub']:
+        ruleorder: star_align > star_quant
+    else:
+        ruleorder: star_quant > star_align
+
     # rule star_index can be found in alignment.smk
+
     rule star_quant:
         """
         Quantify reads against a genome and transcriptome (index) with STAR and output a counts table per sample.
@@ -11,7 +17,7 @@ if config['quantifier'] == 'star' and (config['create_trackhub'] == False or con
         output:
             dir=directory(expand("{result_dir}/{quantifier}/{{assembly}}-{{sample}}", **config)),
         log:
-            directory(expand("{log_dir}/{aligner}_quant/{{assembly}}-{{sample}}", **config))
+            directory(expand("{log_dir}/{quantifier}_quant/{{assembly}}-{{sample}}", **config))
         benchmark:
             expand("{benchmark_dir}/{quantifier}_quant/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
         params:

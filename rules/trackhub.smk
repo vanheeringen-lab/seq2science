@@ -400,8 +400,11 @@ def get_trackhub_files(wildcards):
     for assembly in set(samples['assembly']):
         # first, checks if get_genome still needs to run
         # second, checks if an annotation file was found
-        f = os.path.splitext(checkpoints.get_genome.get(assembly=assembly).output[0])[0]
-        gtf = any([os.path.isfile(f+".annotation.gtf"), os.path.isfile(f+".gtf")])
+        # TODO: use next 2 lines again when checkpoints are stable
+        #  1) does the trackhub input update? 2) does ruleorder work?
+        # f = os.path.splitext(checkpoints.get_genome.get(assembly=assembly).output[0])[0]
+        #gtf = any([os.path.isfile(f+".annotation.gtf"), os.path.isfile(f+".gtf")])
+        gtf = True if get_workflow() == 'rna_seq' else False
 
         # check for response of ucsc
         response = requests.get(f"https://genome.ucsc.edu/cgi-bin/hgTracks?db={assembly}",
