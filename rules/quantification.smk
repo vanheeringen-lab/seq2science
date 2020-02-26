@@ -1,5 +1,5 @@
 # STAR can produce bams and gene counts at the same time. This will be done by the rules in alignment,smk
-if config['quantifier'] == 'star' and (config['run_alignment'] == False or config['aligner'] != 'star'):
+if config['quantifier'] == 'star' and (config['create_trackhub'] == False or config['aligner'] != 'star'):
     # rule star_index can be found in alignment.smk
     rule star_quant:
         """
@@ -11,7 +11,7 @@ if config['quantifier'] == 'star' and (config['run_alignment'] == False or confi
         output:
             dir=directory(expand("{result_dir}/{quantifier}/{{assembly}}-{{sample}}", **config)),
         log:
-            expand("{log_dir}/{quantifier}_quant/{{assembly}}-{{sample}}.log", **config)
+            directory(expand("{log_dir}/{aligner}_quant/{{assembly}}-{{sample}}", **config))
         benchmark:
             expand("{benchmark_dir}/{quantifier}_quant/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
         params:
@@ -31,7 +31,7 @@ if config['quantifier'] == 'star' and (config['run_alignment'] == False or confi
             
             STAR --genomeDir {input.index} --readFilesIn {params.input} --quantMode GeneCounts \
             --outFileNamePrefix {log}/ --outTmpDir {output.dir}/STARtmp --runThreadN {threads} {params.params} \
-            --outSAMtype None > {log}/Log.quant.out 2>&1
+            --outSAMtype None > {log}/Log.std_stderr.out 2>&1
             
             # move all non-log files to output directory (this way the log files are kept on error)
             find {log} -type f ! -name Log* -exec mv {{}} {output.dir} \;

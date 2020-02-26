@@ -131,8 +131,8 @@ pipeline {
 
                         # test trackhub generation
                         printf "\ntrackhub\n\n"
-                        snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/counts.yaml --config samples=../../Jenkins/alignment/local_sample.tsv quantifier=star   run_alignment=True ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
-                        snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/counts.yaml --config samples=../../Jenkins/alignment/local_sample.tsv quantifier=salmon run_alignment=True ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
+                        snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/counts.yaml --config samples=../../Jenkins/alignment/local_sample.tsv quantifier=star   create_trackhub=True ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
+                        snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/counts.yaml --config samples=../../Jenkins/alignment/local_sample.tsv quantifier=salmon create_trackhub=True ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
                         '''
                     }
                 )
@@ -445,7 +445,7 @@ pipeline {
                 # create trackhub (builds on last run)
                 snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq \
                 --use-conda -j $CORES --configfile Jenkins/rna_seq/counts.yaml \
-                --config samples=../../Jenkins/alignment/local_sample.tsv run_alignment=True
+                --config samples=../../Jenkins/alignment/local_sample.tsv create_trackhub=True
                 '''
             }
         }

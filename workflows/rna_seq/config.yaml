@@ -3,12 +3,13 @@ samples: samples.tsv
 
 
 # pipeline file locations
-result_dir: ./  # where to store results
-genome_dir: ./  # where to look for or download the genomes
+result_dir: ./results  # where to store results
+genome_dir: /bank/genomes  # where to look for or download the genomes
+fastq_dir: /bank/raw/2020/snakemake_defaults
 
 
 # produce bams, bigwigs and QC statistics?
-create_trackhub: True
+create_trackhub: False
 
 # which method to use in order to generate the counts (salmon or star)
 quantifier: star

@@ -4,7 +4,7 @@ configfile: "config.yaml"
 
 # do onstart/onexit things
 sample_schemas = ['sample', 'assembly', 'strandedness']
-config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific']
+config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific', 'trackhub']
 include: "../../rules/configuration.smk"
 
 
@@ -13,6 +13,7 @@ include: f"{config['rule_dir']}/alignment.smk"
 include: f"{config['rule_dir']}/get_genome.smk"
 include: f"{config['rule_dir']}/get_fastq.smk"
 include: f"{config['rule_dir']}/merge_replicates.smk"
+include: f"{config['rule_dir']}/trackhub.smk"
 include: f"{config['rule_dir']}/qc.smk"
 include: f"{config['rule_dir']}/trimming.smk"
 
@@ -47,6 +48,7 @@ rule align_all:
     align each sample against its assembly
     """
     input:
-         get_bams()['bams'],
-         get_bams()['bais'],
-         expand("{qc_dir}/multiqc_{assemblies}.html", **{**config, **{'assemblies': set(samples['assembly'])}})
+         get_bams()['bams'] if not config['create_trackhub'] else [],
+         get_bams()['bais'] if not config['create_trackhub'] else [],
+         expand("{qc_dir}/multiqc_{assemblies}.html", **{**config, **{'assemblies': set(samples['assembly'])}}),
+         [expand("{result_dir}/trackhub", **config)] if config['create_trackhub'] else []

@@ -243,7 +243,7 @@ elif config['aligner'] == 'star' or config.get('quantifier', '') == 'star':
             """
 
 
-    if config.get('run_alignment', True):
+    if config.get('create_trackhub', True):
         rule star_align:
             """
             Align reads against a genome (index) with STAR, and pipe the output to the required sorter(s).
