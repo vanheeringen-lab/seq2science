@@ -1,3 +1,4 @@
+import os.path
 import requests
 from Bio import SeqIO
 from multiprocessing import Pool
@@ -399,8 +400,11 @@ def get_trackhub_files(wildcards):
     for assembly in set(samples['assembly']):
         # first, checks if get_genome still needs to run
         # second, checks if an annotation file was found
-        f = os.path.splitext(checkpoints.get_genome.get(assembly=assembly).output[0])[0]
-        gtf = any([os.path.isfile(f+".annotation.gtf"), os.path.isfile(f+".gtf")])
+        # TODO: use next 2 lines again when checkpoints are stable
+        #  1) does the trackhub input update? 2) does ruleorder work?
+        # f = os.path.splitext(checkpoints.get_genome.get(assembly=assembly).output[0])[0]
+        #gtf = any([os.path.isfile(f+".annotation.gtf"), os.path.isfile(f+".gtf")])
+        gtf = True if get_workflow() == 'rna_seq' else False
 
         # check for response of ucsc
         response = requests.get(f"https://genome.ucsc.edu/cgi-bin/hgTracks?db={assembly}",
@@ -423,8 +427,22 @@ def get_trackhub_files(wildcards):
             if gtf:
                 trackfiles['annotations'].append(f"{config['genome_dir']}/{assembly}/{assembly}.bb")
 
-    # Get the ATAC or RNA seq files
-    if 'atac_seq' in get_workflow():
+    # Get the workflow specific files
+    if get_workflow() in ['alignment', 'rna_seq']:
+        # get all the bigwigs
+        if config.get('combine_replicates', '') == 'merge' and 'condition' in samples:
+            for condition in set(samples['condition']):
+                for assembly in set(samples[samples['condition'] == condition]['assembly']):
+                    for bw in get_bigwig_strand(condition):
+                        bw = expand(f"{{result_dir}}/bigwigs/{assembly}-{condition}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw", **config)
+                        trackfiles['bigwigs'].extend(bw)
+        else:
+            for sample in samples.index:
+                for bw in get_bigwig_strand(sample):
+                    bw = expand(f"{{result_dir}}/bigwigs/{samples.loc[sample]['assembly']}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw", **config)
+                    trackfiles['bigwigs'].extend(bw)
+
+    elif get_workflow() == 'atac_seq':
         # get all the peak files for all replicates or for the replicates combined
         if 'condition' in samples:
             for condition in set(samples['condition']):
@@ -442,20 +460,6 @@ def get_trackhub_files(wildcards):
         else:
             for sample in samples.index:
                 trackfiles['bigwigs'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{samples.loc[sample, 'assembly']}-{sample}.bw", **config))
-
-    elif 'rna_seq' in get_workflow():
-        # get all the bigwigs
-        if config.get('combine_replicates', '') == 'merge' and 'condition' in samples:
-            for condition in set(samples['condition']):
-                for assembly in set(samples[samples['condition'] == condition]['assembly']):
-                    for bw in get_bigwig_strand(condition):
-                        bw = expand(f"{{result_dir}}/bigwigs/{assembly}-{condition}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw", **config)
-                        trackfiles['bigwigs'].extend(bw)
-        else:
-            for sample in samples.index:
-                for bw in get_bigwig_strand(sample):
-                    bw = expand(f"{{result_dir}}/bigwigs/{samples.loc[sample]['assembly']}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw", **config)
-                    trackfiles['bigwigs'].extend(bw)
     return trackfiles
 
 
@@ -583,12 +587,37 @@ rule trackhub:
 
                 # next add the data files depending on the workflow
                 # use condition instead of samples if samples are being merged
-                iterator = samples.index
+                subsamples = samples[samples['assembly'] == assembly]
+                iterator = set(subsamples.index)
                 if config.get('combine_replicates', False) == 'merge' and 'condition' in samples:
-                    iterator = set(samples['condition'])
+                    iterator = set(subsamples['condition'])
+
+                # alignment or RNA-seq trackhub
+                if get_workflow() in ['alignment', 'rna_seq']:
+                    for sample in iterator:
+                        for bw in get_bigwig_strand(sample):
+                            bigwig = f"{config['result_dir']}/bigwigs/{assembly}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw"
+                            assert os.path.exists(bigwig), bigwig + " not found!"
+                            sample_name = f"{sample}{bw}"
+                            sample_name = trackhub.helpers.sanitize(sample_name)
+
+                            track = trackhub.Track(
+                                name=sample_name,    # track names can't have any spaces or special chars.
+                                source=bigwig,       # filename to build this track from
+                                visibility='full',   # shows the full signal
+                                color='0,0,0',       # black
+                                autoScale='on',      # allow the track to autoscale
+                                tracktype='bigWig',  # required when making a track
+                                priority=priority,
+                                maxHeightPixels='100:32:8'
+                            )
+
+                            # each track is added to the trackdb
+                            trackdb.add_tracks(track)
+                            priority += 1
 
                 # ATAC-seq trackhub
-                if 'atac_seq' in get_workflow():
+                elif 'atac_seq' in get_workflow():
                     for sample in iterator:
                         for peak_caller in config['peak_caller']:
                             bigpeak = f"{config['result_dir']}/{peak_caller}/{assembly}-{sample}.bigNarrowPeak"
@@ -607,30 +636,8 @@ rule trackhub:
                                 trackdb.add_tracks(track)
 
                             bigwig = f"{config['result_dir']}/{peak_caller}/{assembly}-{sample}.bw"
+                            assert os.path.exists(bigwig), bigwig + " not found!"
                             sample_name = f"{sample}{peak_caller}BW"
-                            sample_name = trackhub.helpers.sanitize(sample_name)
-
-                            track = trackhub.Track(
-                                name=sample_name,    # track names can't have any spaces or special chars.
-                                source=bigwig,       # filename to build this track from
-                                visibility='full',   # shows the full signal
-                                color='0,0,0',       # black
-                                autoScale='on',      # allow the track to autoscale
-                                tracktype='bigWig',  # required when making a track
-                                priority=priority,
-                                maxHeightPixels='100:32:8'
-                            )
-
-                            # each track is added to the trackdb
-                            trackdb.add_tracks(track)
-                            priority += 1
-
-                # RNA-seq trackhub
-                elif 'rna_seq' in get_workflow():
-                    for sample in iterator:
-                        for bw in get_bigwig_strand(sample):
-                            bigwig = f"{config['result_dir']}/bigwigs/{assembly}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw"
-                            sample_name = f"{sample}{bw}"
                             sample_name = trackhub.helpers.sanitize(sample_name)
 
                             track = trackhub.Track(

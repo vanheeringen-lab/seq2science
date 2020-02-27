@@ -7,6 +7,9 @@ result_dir: ./  # where to store results
 genome_dir: ./  # where to look for or download the genomes
 
 
+# produce bigwigs and a trackhub?
+create_trackhub: False
+
 # how to sort bam
 bam_sorter:
   samtools:

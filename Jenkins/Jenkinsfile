@@ -131,8 +131,8 @@ pipeline {
 
                         # test trackhub generation
                         printf "\ntrackhub\n\n"
-                        snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/counts.yaml --config samples=../../Jenkins/alignment/local_sample.tsv quantifier=star   run_alignment=True ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
-                        snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/counts.yaml --config samples=../../Jenkins/alignment/local_sample.tsv quantifier=salmon run_alignment=True ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
+                        snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/counts.yaml --config samples=../../Jenkins/alignment/local_sample.tsv quantifier=star   create_trackhub=True ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
+                        snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/counts.yaml --config samples=../../Jenkins/alignment/local_sample.tsv quantifier=salmon create_trackhub=True ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
                         '''
                     }
                 )
@@ -314,12 +314,14 @@ pipeline {
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                         conda activate miniconda/envs/snakemake-workflows/
                         let "c = $CORES / 4"
+                        let "a = $CORES / 5"
+                        let "s = $c - $a"
 
                         # test star alignment
                         snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
                         --use-conda --configfile Jenkins/alignment/star.yaml \
                         --config samples=../../Jenkins/alignment/local_sample.tsv \
-                        -j $c \
+                        -j $c --set-threads star_align=$a samtools_sort=$s \
                         --nolock
                         '''
                     }
@@ -443,7 +445,7 @@ pipeline {
                 # create trackhub (builds on last run)
                 snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq \
                 --use-conda -j $CORES --configfile Jenkins/rna_seq/counts.yaml \
-                --config samples=../../Jenkins/alignment/local_sample.tsv run_alignment=True
+                --config samples=../../Jenkins/alignment/local_sample.tsv create_trackhub=True
                 '''
             }
         }
