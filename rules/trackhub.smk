@@ -413,11 +413,11 @@ def get_trackhub_files(wildcards):
 
         # get the name of the assembly without patch number
         assembly_no_patch = \
-            [split for split in re.split(r"(.+)(?=\.p\d)", assembly) if split != ''][0]
+            [split for split in re.split(r"(.+)(?=\.p\d)", assembly) if split != ''][0].lower()
 
         # see if the title of the page mentions our assembly
-        if not any(assembly_no_patch == x for x in
-                   re.search(r'UCSC Genome Browser on (.*?) Assembly', response.text).group(1).split(' ')):        
+        if not any(assembly_no_patch in x.lower() for x in
+                   re.search(r'UCSC Genome Browser on (.*?) Assembly', response.text).group(1).split(' ')):
             trackfiles['twobits'].append(f"{config['genome_dir']}/{assembly}/{assembly}.2bit")
             trackfiles['gcPercent'].append(f"{config['genome_dir']}/{assembly}/{assembly}.gc5Base.bw")
             trackfiles['cytobands'].append(f"{config['genome_dir']}/{assembly}/cytoBandIdeo.bb")
