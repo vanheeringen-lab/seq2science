@@ -104,8 +104,8 @@ rule narrowpeak_bignarrowpeak:
 
 def get_strandedness(wildcards):
     sample = f"{wildcards.sample}"
-    if config.get('combine_replicates', '') == 'merge' and 'condition' in samples:
-        s2 = samples[['condition', 'strandedness']].drop_duplicates().set_index('condition')
+    if 'replicate' in samples and config.get('technical_replicates') == 'merge':
+        s2 = samples[['replicate', 'strandedness']].drop_duplicates().set_index('replicate')
         strandedness = s2["strandedness"].loc[sample]
     else:
         strandedness = samples["strandedness"].loc[sample]
@@ -374,8 +374,8 @@ def get_bigwig_strand(sample):
     return a list of extensions for (un)stranded bigwigs
     """
     if 'strandedness' in samples and config['filter_bam_by_strand']:
-        if config.get('combine_replicates', '') == 'merge' and 'condition' in samples:
-            s2 = samples[['condition', 'strandedness']].drop_duplicates().set_index('condition')
+        if 'replicate' in samples and config.get('technical_replicates') == 'merge':
+            s2 = samples[['replicate', 'strandedness']].drop_duplicates().set_index('replicate')
             strandedness = s2["strandedness"].loc[sample]
             if strandedness in ['forward', 'yes', 'reverse']:
                 return ['.fwd', '.rev']
@@ -400,8 +400,9 @@ def get_trackhub_files(wildcards):
     for assembly in set(samples['assembly']):
         # first, checks if get_genome still needs to run
         # second, checks if an annotation file was found
-        f = os.path.splitext(checkpoints.get_genome.get(assembly=assembly).output[0])[0]
-        gtf = any([os.path.isfile(f+".annotation.gtf"), os.path.isfile(f+".gtf")])
+        # f = os.path.splitext(checkpoints.get_genome.get(assembly=assembly).output[0])[0]
+        # gtf = any([os.path.isfile(f+".annotation.gtf"), os.path.isfile(f+".gtf")])
+        gtf = True if get_workflow() == 'rna_seq' else False
 
         # check for response of ucsc
         response = requests.get(f"https://genome.ucsc.edu/cgi-bin/hgTracks?db={assembly}",
@@ -442,11 +443,11 @@ def get_trackhub_files(wildcards):
 
     elif 'rna_seq' in get_workflow():
         # get all the bigwigs
-        if config.get('combine_replicates', '') == 'merge' and 'condition' in samples:
-            for condition in set(samples['condition']):
-                for assembly in set(samples[samples['condition'] == condition]['assembly']):
-                    for bw in get_bigwig_strand(condition):
-                        bw = expand(f"{{result_dir}}/bigwigs/{assembly}-{condition}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw", **config)
+        if 'replicate' in samples and config.get('technical_replicates') == 'merge':
+            for replicate in set(samples['replicate']):
+                for assembly in set(samples[samples['replicate'] == replicate]['assembly']):
+                    for bw in get_bigwig_strand(replicate):
+                        bw = expand(f"{{result_dir}}/bigwigs/{assembly}-{replicate}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw", **config)
                         trackfiles['bigwigs'].extend(bw)
         else:
             for sample in samples.index:
@@ -579,11 +580,11 @@ rule trackhub:
                                 shell(f"ln {file_loc} {link_loc}")
 
                 # next add the data files depending on the workflow
-                # use condition instead of samples if samples are being merged
+                # use replicate instead of samples if samples are being merged
                 subsamples = samples[samples['assembly'] == assembly]
                 iterator = set(subsamples.index)
-                if config.get('combine_replicates', False) == 'merge' and 'condition' in samples:
-                    iterator = set(subsamples['condition'])
+                if 'replicate' in samples and config.get('technical_replicates') == 'merge':
+                    iterator = set(subsamples['replicate'])
 
                 # ATAC-seq trackhub
                 if 'atac_seq' in get_workflow():

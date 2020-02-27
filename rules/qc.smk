@@ -53,7 +53,7 @@ rule featureCounts:
 
 def get_fastqc_input(wildcards):
     if '_trimmed' in wildcards.fname:
-        if 'condition' in samples and config.get('combine_replicates', '') == 'merge' and all(sample not in wildcards.fname for sample in samples.index):
+        if 'replicate' in samples and config.get('technical_replicates', '') == 'merge' and all(sample not in wildcards.fname for sample in samples.index):
             fqc_input = "{trimmed_dir}/merged/{{fname}}.{fqsuffix}.gz"
         else:
             fqc_input = "{trimmed_dir}/{{fname}}.{fqsuffix}.gz"
@@ -107,21 +107,31 @@ def get_qc_files(wildcards):
                                            "variable 'quality_control' exists and contains all the "\
                                            "relevant quality control functions."
     qc = []
-    if 'condition' in samples and config.get('combine_replicates', '') == 'merge':
+    if 'replicate' in samples and config.get('technical_replicates') == 'merge':
         # trimming qc on individual samples, other qc on merged replicates
         for sample in samples[samples['assembly'] == wildcards.assembly].index:
             qc.extend(get_trimming_qc(sample))
 
-        for condition in set(samples[samples['assembly'] == wildcards.assembly].condition):
+        for replicate in set(samples[samples['assembly'] == wildcards.assembly].replicate):
             for function in [func for func in quality_control if
                              'get_trimming_qc' is not func.__name__]:
-                qc.extend(function(condition))
+                qc.extend(function(replicate))
     else:
         for sample in samples[samples['assembly'] == wildcards.assembly].index:
             for function in quality_control:
                 qc.extend(function(sample))
     return qc
 
+
+# def get_subsamples(assembly):
+#     s = list(samples[samples['assembly'] == assembly].index)
+#     # print(s)
+#     if 'condition' in samples and config.get('combine_replicates', '') == 'merge':
+#         s = list(samples[samples['assembly'] == assembly]['condition'])
+#     print(s)
+#
+# get_subsamples("GRCz11")
+# exit(1)
 
 rule multiqc:
     """

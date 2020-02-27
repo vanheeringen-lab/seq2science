@@ -1,7 +1,7 @@
 def get_counts(wildcards):
     iterator = samples[samples['assembly'] == wildcards.assembly].index
-    if config.get('combine_replicates', '') == 'merge' and 'condition' in samples:
-        iterator = set(samples[samples['assembly'] == wildcards.assembly].condition)
+    if 'replicate' in samples and config.get('technical_replicates') == 'merge':
+        iterator = set(samples[samples['assembly'] == wildcards.assembly].replicate)
     output = []
     for sample in iterator:
         output.append(f"{{result_dir}}/{{quantifier}}/{wildcards.assembly}-{sample}")
@@ -102,8 +102,8 @@ elif config['quantifier'] == 'star':
                     sample_name = os.path.basename(sample).replace(wildcards.assembly + '-', '', 1)
 
                     # retrieve strandedness
-                    if config.get('combine_replicates', '') == 'merge' and 'condition' in samples:
-                        s2 = samples[['condition', 'strandedness']].drop_duplicates().set_index('condition')
+                    if 'replicate' in samples and config.get('technical_replicates') == 'merge':
+                        s2 = samples[['replicate', 'strandedness']].drop_duplicates().set_index('replicate')
                         strandedness = s2["strandedness"].loc[sample_name] if 'strandedness' in samples else 'no'
                     else:
                         strandedness = samples["strandedness"].loc[sample_name] if 'strandedness' in samples else 'no'

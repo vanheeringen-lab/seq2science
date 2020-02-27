@@ -50,6 +50,13 @@ assert not any(samples.columns.str.contains('[^A-Za-z0-9_.\-%]+', regex=True)), 
     ("\n" + config["samples"] + " may only contain letters, numbers and " +
     "underscores (_), periods (.), or minuses (-).\n")
 # sanitize table content
+if 'replicate' in samples:
+    samples['replicate'] = samples['replicate'].mask(pd.isnull, samples['sample'])
+if 'condition' in samples and 'replicate' in samples :
+    samples['condition'] = samples['condition'].mask(pd.isnull, samples['replicate'])
+elif 'condition' in samples:
+    samples['condition'] = samples['condition'].mask(pd.isnull, samples['sample'])
+
 samples = samples.applymap(lambda x: str(x).strip())
 assert not any([any(samples[col].str.contains('[^A-Za-z0-9_.\-%]+', regex=True)) for col in samples]), \
     ("\n" + config["samples"] + " may only contain letters, numbers and " +
@@ -95,16 +102,19 @@ except:
 
 
 # make sure that our samples.tsv and configuration work together...
-# ...on replicates
-if 'condition' in samples:
-    if config['combine_replicates'] != 'merge':
-        if 'hmmratac' in config['peak_caller']:
-            assert config['combine_replicates'] == 'idr', \
-            f'HMMRATAC peaks can only be combined through idr'
+# ...on biological replicates
+if 'condition' in samples and config.get('combine_biological_replicates', '') is not 'keep':
+    if 'hmmratac' in config['peak_caller']:
+        assert config.get('combine_biological_replicates', '') == 'idr', \
+        f'HMMRATAC peaks can only be combined through idr'
 
+    # TODO: use treps for this?
     for condition in set(samples['condition']):
         for assembly in set(samples[samples['condition'] == condition]['assembly']):
-            nr_samples = len(samples[(samples['condition'] == condition) & (samples['assembly'] == assembly)])
+            if 'replicate' in samples and config.get('technical_replicates') == 'merge':
+                nr_samples = len(set(samples[(samples['condition'] == condition) & (samples['assembly'] == assembly)]['replicate']))
+            else:
+                nr_samples = len(samples[(samples['condition'] == condition) & (samples['assembly'] == assembly)])
 
             if config.get('combine_replicates', '') == 'idr':
                 assert nr_samples == 2,\
@@ -301,11 +311,12 @@ config['layout'] = {key: value for key, value in config['layout'].items() if key
 
 logger.info("Done!\n\n")
 
-# if samples are merged add the layout of the condition to the config
-if 'condition' in samples and config.get('combine_replicates', "") == 'merge':
+# if samples are merged add the layout of the technical replicate to the config
+# TODO: add same for biological/(tech and bio) replicate?
+if 'replicate' in samples and config.get('technical_replicates') == 'merge':
     for sample in samples.index:
-        condition = samples.loc[sample, 'condition']
-        config['layout'][condition] = config['layout'][sample]
+        replicate = samples.loc[sample, 'replicate']
+        config['layout'][replicate] = config['layout'][sample]
 
 # after all is done, log (print) the configuration
 logger.info("CONFIGURATION VARIABLES:")
@@ -330,11 +341,11 @@ def any_given(*args):
 # set global constraints on wildcards ({{sample}} or {{assembly}})
 if 'assembly' in samples:
     wildcard_constraints:
-        sample=any_given('sample', 'condition'),
+        sample=any_given('sample', 'replicate'),
         assembly=any_given('assembly')
 else:
     wildcard_constraints:
-        sample=any_given('sample', 'condition')
+        sample=any_given('sample', 'replicate')
 
 
 def get_workflow():

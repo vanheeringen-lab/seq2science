@@ -1,22 +1,69 @@
-if 'condition' in samples and config.get('combine_replicates', '') == 'merge':
+# def replicates_or_samples_per_assembly():
+#     """returns a dict of samples/replicates (values) per assembly (key)"""
+#     rspa = {}
+#     for assembly in set(samples['assembly']):
+#         rspa[assembly] = []
+#
+#         if 'replicate' in samples and config.get('technical_replicates') == 'merge':
+#             for fname in set(samples[samples['assembly'] == assembly].replicate):
+#                 rspa[assembly].append(fname)
+#         else:
+#             for fname in set(samples[samples['assembly'] == assembly].index):
+#                 rspa[assembly].append(fname)
+#     return rspa
+#
+#
+# def peakfiles_per_assembly():
+#     ppa = replicates_or_samples_per_assembly()
+#     if 'condition' in samples and config.get('biological_replicates') != 'keep':
+#         s2 = samples[]
+#
+#         for fname in set(samples[samples['assembly'] == assembly].condition):
+#             rspa[assembly].append(fname)
+#     else:
+#         return ppa
+#
+# print(peakfiles_per_assembly())
+# exit(0)
+
+# dataframe of all technical replicates
+treps = samples
+if 'replicate' in samples and config.get('technical_replicates') == 'merge':
+    treps = treps.set_index('replicate').drop_duplicates()
+
+# dataframe of all biological replicates (after potential merging of technical replicates)
+breps = treps
+if 'condition' in samples and config.get('biological_replicates') != 'keep':
+    breps = breps.set_index('condition').drop_duplicates()
+
+if 'replicate' in samples and config.get('technical_replicates') == 'merge':
     def get_merge_replicates(wildcards):
-        return expand([f"{{trimmed_dir}}/{replicate}{wildcards.fqext}_trimmed.{{fqsuffix}}.gz"
-               for replicate in samples[samples['condition'] == wildcards.condition].index], **config)
+        return expand([f"{{trimmed_dir}}/{sample}{wildcards.fqext}_trimmed.{{fqsuffix}}.gz"
+               for sample in samples[samples['replicate'] == wildcards.replicate].index], **config)
 
     rule merge_replicates:
         """
         Merge replicates (fastqs) simply by concatenating the files.
+        
+        If a replicate has only 1 sample in it, symlink it instead.
         """
         input:
             get_merge_replicates
         output:
-            sorted(expand("{trimmed_dir}/merged/{{condition}}{{fqext}}_trimmed.{fqsuffix}.gz", **config))
+            sorted(expand("{trimmed_dir}/merged/{{replicate}}{{fqext}}_trimmed.{fqsuffix}.gz", **config))
         wildcard_constraints:
-            condition=any_given('condition'),
+            replicate=any_given('replicate'),
             fqext=f"_{config['fqext1']}|_{config['fqext2']}|" # nothing (SE), or fqext with an underscore (PE)
         log:
-            expand("{log_dir}/merge_replicates/{{condition}}{{fqext}}.log", **config)
+            expand("{log_dir}/merge_replicates/{{replicate}}{{fqext}}.log", **config)
         benchmark:
-            expand("{benchmark_dir}/merge_replicates/{{condition}}{{fqext}}.benchmark.txt", **config)[0]
+            expand("{benchmark_dir}/merge_replicates/{{replicate}}{{fqext}}.benchmark.txt", **config)[0]
         shell:
-            "cat {input} > {output} 2> {log}"
+            """
+            arr=({input})
+            if [ ${{#arr[@]}} -eq 1 ]; then
+                ln -s {input} {output}  2> {log}
+            else 
+                cat {input} > {output} 2> {log}
+            fi
+            """
