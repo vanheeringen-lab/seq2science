@@ -15,3 +15,6 @@ properties:
     default:
       samtools:
         coordinate
+  cram_no_bam:
+    type: boolean
+    default: false
