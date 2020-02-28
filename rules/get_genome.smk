@@ -37,9 +37,10 @@ rule get_genome:
     shell:
         """
         # turn off plugins and reset on exit. delete temp files on exit.
-        active_plugins=$(genomepy config show | grep -Po '(?<=- ).*' | paste -s -d, -)
+        active_plugins=$(genomepy config show | grep -Po '(?<=- ).*' | paste -s -d, -) || echo ""
         trap "genomepy plugin enable {{$active_plugins,}} >> {log} 2>&1; rm -f {params.temp}" EXIT
         genomepy plugin disable {{blacklist,bowtie2,bwa,star,gmap,hisat2,minimap2}} >> {log} 2>&1
+        genomepy plugin enable sizes >> {log} 2>&1
         
         # download the genome and attempt to download the annotation
         if [[ ! {params.provider} = None  ]]; then
