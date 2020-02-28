@@ -26,15 +26,35 @@
 # print(peakfiles_per_assembly())
 # exit(0)
 
-# dataframe of all technical replicates
-treps = samples
-if 'replicate' in samples and config.get('technical_replicates') == 'merge':
-    treps = treps.set_index('replicate').drop_duplicates()
+# dataframe with all technical replicates collapsed
+cols = ['sample', 'assembly']
+if 'replicate' in samples: #and config.get('technical_replicates') == 'merge':
+    cols = ['replicate', 'assembly']
+if 'condition' in samples: #and config.get('biological_replicates') != 'keep':
+    cols.append('condition')
+treps = samples.reset_index()[cols].drop_duplicates().set_index(cols[0])
 
-# dataframe of all biological replicates (after potential merging of technical replicates)
+# dataframe with all replicates collapsed
 breps = treps
-if 'condition' in samples and config.get('biological_replicates') != 'keep':
-    breps = breps.set_index('condition').drop_duplicates()
+if 'condition' in samples: # and config.get('biological_replicates') != 'keep':
+    breps = treps.reset_index(drop=True).drop_duplicates().set_index('condition')
+
+# print(treps)
+# print(breps)
+# exit(0)
+
+# # dataframe with all technical replicates collapsed
+# treps = samples
+# if 'replicate' in samples and config.get('technical_replicates') == 'merge':
+#     treps = samples.reset_index(drop=True).drop_duplicates().set_index('replicate')
+#
+# # dataframe with all replicates collapsed
+# breps = treps
+# if 'condition' in samples and config.get('biological_replicates') != 'keep':
+#     breps = treps.reset_index(drop=True).drop_duplicates().set_index('condition')
+#
+# print(treps)
+# print(breps)
 
 if 'replicate' in samples and config.get('technical_replicates') == 'merge':
     def get_merge_replicates(wildcards):

@@ -41,6 +41,7 @@ assert sorted(config['fqext'])[0] == config['fqext1']
 
 # read and sanitize the samples file
 samples = pd.read_csv(config["samples"], sep='\t')
+
 # sanitize column names
 samples.columns = samples.columns.str.strip()
 assert all([col[0:7] not in ["Unnamed", ''] for col in samples]), \
@@ -49,6 +50,7 @@ assert all([col[0:7] not in ["Unnamed", ''] for col in samples]), \
 assert not any(samples.columns.str.contains('[^A-Za-z0-9_.\-%]+', regex=True)), \
     ("\n" + config["samples"] + " may only contain letters, numbers and " +
     "underscores (_), periods (.), or minuses (-).\n")
+
 # sanitize table content
 if 'replicate' in samples:
     samples['replicate'] = samples['replicate'].mask(pd.isnull, samples['sample'])
@@ -56,6 +58,13 @@ if 'condition' in samples and 'replicate' in samples :
     samples['condition'] = samples['condition'].mask(pd.isnull, samples['replicate'])
 elif 'condition' in samples:
     samples['condition'] = samples['condition'].mask(pd.isnull, samples['sample'])
+
+if 'replicate' in samples:
+    r = samples[['assembly', 'replicate']].drop_duplicates().set_index('replicate')
+    for replicate in r.index:
+        assert len(r[r.index == replicate]) == 1, \
+            (f"Replicate names must be different between assemblies.\n" +
+             f"Replicate name '{replicate}' was found in assemblies {r[r.index == replicate]['assembly'].tolist()}.")
 
 samples = samples.applymap(lambda x: str(x).strip())
 assert not any([any(samples[col].str.contains('[^A-Za-z0-9_.\-%]+', regex=True)) for col in samples]), \
@@ -76,11 +85,6 @@ samples.index = samples.index.map(str)
 # ...for atac-seq
 if config.get('peak_caller', False):
     config['peak_caller'] = {k: v for k,v in config['peak_caller'].items()}
-
-    # if hmmratac peak caller, check if all samples are paired-end
-    if 'hmmratac' in config['peak_caller']:
-        assert all([config['layout'][sample] == 'PAIRED' for sample in samples.index]), \
-        "HMMRATAC requires all samples to be paired end"
 
 # ...for alignment and rna-seq
 for conf_dict in ['aligner', 'quantifier', 'diffexp']:
@@ -103,9 +107,9 @@ except:
 
 # make sure that our samples.tsv and configuration work together...
 # ...on biological replicates
-if 'condition' in samples and config.get('combine_biological_replicates', '') is not 'keep':
+if 'condition' in samples and config.get('biological_replicates', '') != 'keep':
     if 'hmmratac' in config['peak_caller']:
-        assert config.get('combine_biological_replicates', '') == 'idr', \
+        assert config.get('biological_replicates', '') == 'idr', \
         f'HMMRATAC peaks can only be combined through idr'
 
     # TODO: use treps for this?
@@ -116,7 +120,7 @@ if 'condition' in samples and config.get('combine_biological_replicates', '') is
             else:
                 nr_samples = len(samples[(samples['condition'] == condition) & (samples['assembly'] == assembly)])
 
-            if config.get('combine_replicates', '') == 'idr':
+            if config.get('biological_replicates', '') == 'idr':
                 assert nr_samples == 2,\
                 f'For IDR to work you need two samples per condition, however you gave {nr_samples} samples for'\
                 f' condition {condition} and assembly {assembly}'
@@ -318,6 +322,11 @@ if 'replicate' in samples and config.get('technical_replicates') == 'merge':
         replicate = samples.loc[sample, 'replicate']
         config['layout'][replicate] = config['layout'][sample]
 
+# if hmmratac peak caller, check if all samples are paired-end
+if 'hmmratac' in config['peak_caller']:
+    assert all([config['layout'][sample] == 'PAIRED' for sample in samples.index]), \
+    "HMMRATAC requires all samples to be paired end"
+
 # after all is done, log (print) the configuration
 logger.info("CONFIGURATION VARIABLES:")
 for key, value in config.items():
@@ -338,14 +347,26 @@ def any_given(*args):
 
     return '|'.join(set(elements))
 
-# set global constraints on wildcards ({{sample}} or {{assembly}})
+# set global wildcard constraints (see workflow._wildcard_constraints)
+wildcard_constraints:
+    sample=any_given('sample'),
+
 if 'assembly' in samples:
     wildcard_constraints:
-        sample=any_given('sample', 'replicate'),
-        assembly=any_given('assembly')
-else:
+        assembly=any_given('assembly'),
+
+if 'replicate' in samples:
     wildcard_constraints:
-        sample=any_given('sample', 'replicate')
+        sample=any_given('sample', 'replicate'),
+        replicate=any_given('replicate'),
+if 'condition' in samples:
+    wildcard_constraints:
+        sample=any_given('sample', 'condition'),
+        condition=any_given('condition'),
+if 'replicate' in samples and 'condition' in samples:
+    wildcard_constraints:
+        sample=any_given('sample', 'replicate', 'condition'),
+
 
 
 def get_workflow():

@@ -77,12 +77,20 @@ rule bedgraph_bigwig:
         """
 
 
+def find_narrowpeak(wildcards):
+    if 'condition' in samples and config['biological_replicates'] != 'keep':
+        return expand(f"{{result_dir}}/{wildcards.peak_caller}/replicate_processed/{wildcards.assembly}-{wildcards.sample}_peaks.narrowPeak", **config)
+    else:
+        ftype = 'narrowPeak' if wildcards.peak_caller in ['macs2', 'genrich'] else 'gappedPeak'
+        return expand(f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{wildcards.sample}_peaks.{ftype}", **config)
+
+
 rule narrowpeak_bignarrowpeak:
     """
     Convert a narrowpeak file into a bignarrowpeak file.
     """
     input:
-        narrowpeak= expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}_peaks.narrowPeak", **config),
+        narrowpeak=find_narrowpeak,
         genome_size=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config)
     output:
         out=     expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}.bigNarrowPeak", **config),
@@ -423,37 +431,21 @@ def get_trackhub_files(wildcards):
 
     # Get the ATAC or RNA seq files
     if 'atac_seq' in get_workflow():
-        # get all the peak files for all replicates or for the replicates combined
-        if 'condition' in samples:
-            for condition in set(samples['condition']):
-                for assembly in set(samples[samples['condition'] == condition]['assembly']):
-                    trackfiles['bigpeaks'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{assembly}-{condition}.bigNarrowPeak", **config))
-        else:
-            for sample in samples.index:
-                trackfiles['bigpeaks'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{samples.loc[sample, 'assembly']}-{sample}.bigNarrowPeak", **config))
+        # get all the peak files
+        for sample in breps.index:
+            trackfiles['bigpeaks'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{breps.loc[sample, 'assembly']}-{sample}.bigNarrowPeak", **config))
 
         # get all the bigwigs
-        if config.get('combine_replicates', '') == 'merge' and 'condition' in samples:
-            for condition in set(samples['condition']):
-                for assembly in set(samples[samples['condition'] == condition]['assembly']):
-                    trackfiles['bigwigs'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{assembly}-{condition}.bw", **config))
-        else:
-            for sample in samples.index:
-                trackfiles['bigwigs'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{samples.loc[sample, 'assembly']}-{sample}.bw", **config))
+        for sample in treps.index:
+            trackfiles['bigwigs'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{treps.loc[sample, 'assembly']}-{sample}.bw", **config))
 
     elif 'rna_seq' in get_workflow():
         # get all the bigwigs
-        if 'replicate' in samples and config.get('technical_replicates') == 'merge':
-            for replicate in set(samples['replicate']):
-                for assembly in set(samples[samples['replicate'] == replicate]['assembly']):
-                    for bw in get_bigwig_strand(replicate):
-                        bw = expand(f"{{result_dir}}/bigwigs/{assembly}-{replicate}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw", **config)
-                        trackfiles['bigwigs'].extend(bw)
-        else:
-            for sample in samples.index:
-                for bw in get_bigwig_strand(sample):
-                    bw = expand(f"{{result_dir}}/bigwigs/{samples.loc[sample]['assembly']}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw", **config)
-                    trackfiles['bigwigs'].extend(bw)
+        for sample in treps.index:
+            for bw in get_bigwig_strand(sample):
+                bw = expand(f"{{result_dir}}/bigwigs/{treps.loc[sample]['assembly']}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw", **config)
+                trackfiles['bigwigs'].extend(bw)
+
     return trackfiles
 
 
@@ -580,16 +572,11 @@ rule trackhub:
                                 shell(f"ln {file_loc} {link_loc}")
 
                 # next add the data files depending on the workflow
-                # use replicate instead of samples if samples are being merged
-                subsamples = samples[samples['assembly'] == assembly]
-                iterator = set(subsamples.index)
-                if 'replicate' in samples and config.get('technical_replicates') == 'merge':
-                    iterator = set(subsamples['replicate'])
-
+                # TODO: check if all input files actually show up in the trackhub folder
                 # ATAC-seq trackhub
                 if 'atac_seq' in get_workflow():
-                    for sample in iterator:
-                        for peak_caller in config['peak_caller']:
+                    for peak_caller in config['peak_caller']:
+                        for sample in breps.index:
                             bigpeak = f"{config['result_dir']}/{peak_caller}/{assembly}-{sample}.bigNarrowPeak"
                             sample_name = f"{sample}{peak_caller}PEAK"
                             sample_name = trackhub.helpers.sanitize(sample_name)
@@ -605,6 +592,8 @@ rule trackhub:
                                 priority += 1
                                 trackdb.add_tracks(track)
 
+                        for sample in treps.index:
+                            # TODO: check if this is also used
                             bigwig = f"{config['result_dir']}/{peak_caller}/{assembly}-{sample}.bw"
                             assert os.path.exists(bigwig), bigwig + " not found!"
                             sample_name = f"{sample}{peak_caller}BW"
@@ -627,7 +616,7 @@ rule trackhub:
 
                 # RNA-seq trackhub
                 elif 'rna_seq' in get_workflow():
-                    for sample in iterator:
+                    for sample in treps.index:
                         for bw in get_bigwig_strand(sample):
                             bigwig = f"{config['result_dir']}/bigwigs/{assembly}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw"
                             assert os.path.exists(bigwig), bigwig + " not found!"
