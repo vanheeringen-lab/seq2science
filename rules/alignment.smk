@@ -396,7 +396,7 @@ rule bam2cram:
     conda:
         "../envs/samtools.yaml"
     shell:
-        "samtools view -@ {threads} -C {input} > {output}"
+        "samtools view -@ {threads} -T {input.assembly} -C {input.bam} > {output}"
 
 
 rule samtools_index_cram:
