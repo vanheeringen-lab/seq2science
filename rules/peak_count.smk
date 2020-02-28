@@ -1,11 +1,11 @@
 def get_peak_replicates(wildcards):
-    if 'condition' in samples and config.get('combine_replicates', False):
-        # if we have conditions use those peaks
-        return expand([f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{condition}_peaks.narrowPeak"
-            for condition in set(samples[samples['assembly'] == wildcards.assembly]['condition'])], **config)
+    ftype = 'narrowPeak' if wildcards.peak_caller in ['macs2', 'genrich'] else 'gappedPeak'
+    if 'replicate' in samples and config['technical_replicates'] == 'merge': #.get('technical_replicates: merge', False):
+        return expand([f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{replicate}_peaks.{ftype}"
+            for replicate in set(samples[samples['assembly'] == wildcards.assembly]['replicate'])], **config)
     # otherwise all the separate ones
-    return expand([f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{replicate}_peaks.narrowPeak"
-        for replicate in samples[samples['assembly'] == wildcards.assembly].index], **config)
+    return expand([f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{sample}_peaks.{ftype}"
+        for sample in samples[samples['assembly'] == wildcards.assembly].index], **config)
 
 
 rule peak_union:
@@ -25,13 +25,12 @@ rule peak_union:
 
 def get_multicov_replicates(file_ext):
     def wrapped(wildcards):
-        if 'condition' in samples and config.get('combine_replicates', '') == 'merge':
-            # if replicates' fastqs are merged get the merged bam
+        if 'replicate' in samples and config['technical_replicates'] == 'merge':
             return expand([f"{{dedup_dir}}/{wildcards.assembly}-{replicate}.{wildcards.sorter}-{wildcards.sorting}.{file_ext}"
-                for replicate in set(samples[samples['assembly'] == wildcards.assembly]['condition'])], **config)
+                for replicate in set(samples[samples['assembly'] == wildcards.assembly]['replicate'])], **config)
         # otherwise all the separate ones
-        return expand([f"{{dedup_dir}}/{wildcards.assembly}-{replicate}.{wildcards.sorter}-{wildcards.sorting}.{file_ext}"
-            for replicate in samples[samples['assembly'] == wildcards.assembly].index], **config)
+        return expand([f"{{dedup_dir}}/{wildcards.assembly}-{sample}.{wildcards.sorter}-{wildcards.sorting}.{file_ext}"
+            for sample in samples[samples['assembly'] == wildcards.assembly].index], **config)
     return wrapped
 
 
