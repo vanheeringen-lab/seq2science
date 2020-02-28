@@ -519,9 +519,9 @@ rule trackhub:
                         description=assembly
                     )
                 else:
-                    genome = trackhub.Genome(assembly)
+                    genome = trackhub.Genome(assembly_no_patch)
 
-                genomes_file.add_genome(assembly_no_patch)
+                genomes_file.add_genome(genome)
 
                 # each trackdb is added to the genome
                 trackdb = trackhub.trackdb.TrackDb()
