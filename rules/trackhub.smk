@@ -505,11 +505,13 @@ rule trackhub:
             hub.add_genomes_file(genomes_file)
 
             for assembly in set(samples['assembly']):
+                assembly_no_patch = \
+                    [split for split in re.split(r"(.+)(?=\.p\d)", assembly) if split != ''][0]
                 # add each assembly to the genomes file
                 if any(assembly in twobit for twobit in input.twobits):
                     basename = f"{config['genome_dir']}/{assembly}/{assembly}"
                     genome = trackhub.Assembly(
-                        genome=assembly,
+                        genome=assembly_no_patch,
                         twobit_file=basename + '.2bit',
                         organism=assembly,
                         defaultPos=get_defaultPos(basename + '.fa.sizes'),
@@ -519,7 +521,7 @@ rule trackhub:
                 else:
                     genome = trackhub.Genome(assembly)
 
-                genomes_file.add_genome(genome)
+                genomes_file.add_genome(assembly_no_patch)
 
                 # each trackdb is added to the genome
                 trackdb = trackhub.trackdb.TrackDb()
