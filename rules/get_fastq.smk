@@ -1,3 +1,8 @@
+import glob
+import os
+import re
+
+
 rule id2sra:
     """
     Download the SRA of a sample by its unique identifier.
@@ -35,7 +40,7 @@ rule id2sra:
         for ID in $IDS;
         do
             PREFIX=$(echo $ID | cut -c1-6);
-            SUFFIX=$(echo $ID | cut -c10-99 | xargs printf "%03d\n");
+            SUFFIX=$(echo -n $ID | tail -c 3);
 
             URL_ENA1="era-fasp@fasp.sra.ebi.ac.uk:/vol1/$TYPE_L/$PREFIX/$SUFFIX/$ID";
             URL_ENA2="era-fasp@fasp.sra.ebi.ac.uk:/vol1/$TYPE_L/$PREFIX/$ID";
@@ -79,7 +84,7 @@ rule sra2fastq_SE:
     shell:
         f"""
         # setup tmp dir
-        tmpdir={config['sra_dir']}/{{wildcards.sample}}/tmp
+        tmpdir={config['sra_dir']}/tmp/{{wildcards.sample}}
         mkdir -p $tmpdir; trap "rm -rf $tmpdir" EXIT
 
         # dump to tmp dir
@@ -111,7 +116,7 @@ rule sra2fastq_PE:
     shell:
         f"""
         # setup tmp dir
-        tmpdir={config['sra_dir']}/{{wildcards.sample}}/tmp
+        tmpdir={config['sra_dir']}/tmp/{{wildcards.sample}}
         mkdir -p $tmpdir; trap "rm -rf $tmpdir" EXIT
 
         # dump to tmp dir
@@ -139,6 +144,7 @@ def get_wrong_fqext(wildcards):
     if len(fastqs) == 0:
         fastqs.append("impossible input to prevent Snakemake from running the rule without input")
     return sorted(fastqs)
+
 
 rule renamefastq_PE:
     """

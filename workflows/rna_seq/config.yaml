@@ -12,7 +12,7 @@ genome_dir: ./  # where to look for or download the genomes
 
 
 # produce bams, bigwigs and QC statistics?
-run_alignment: False
+create_trackhub: False
 
 # which method to use in order to generate the counts (salmon or star)
 quantifier: star

@@ -170,6 +170,17 @@ elif config['aligner'] == 'star' or config.get('quantifier', '') == 'star':
     rule star_index:
         """
         Make a genome index for STAR.
+        
+        Troubleshooting:
+        1) sufficient disk space?
+        2) increase the RAM available (--limitGenomeGenerateRAM)
+        3) reduce the number of threads (snakemake -j 5)
+        4) reduce accuracy (--genomeSAsparseD 2)
+                
+        For example, in your config.yaml, set aligner/quantifier:
+        aligner:
+            star:
+                index: --limitGenomeGenerateRAM 60000000000 --genomeSAsparseD 1
         """
         input:
             genome = expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
@@ -184,7 +195,7 @@ elif config['aligner'] == 'star' or config.get('quantifier', '') == 'star':
         params:
             config['index']
         priority: 1
-        threads: 20
+        threads: 10
         resources:
             mem_gb=37
         conda:
@@ -223,41 +234,46 @@ elif config['aligner'] == 'star' or config.get('quantifier', '') == 'star':
             
             STAR --runMode genomeGenerate --genomeFastaFiles {input.genome} --sjdbGTFfile {input.gtf} \
             --genomeDir {output} --outFileNamePrefix {output}/ \
-            --limitGenomeGenerateRAM 37000000000 --runThreadN {threads} $NBits $NBases {params} >> {log} 2>&1
+            --runThreadN {threads} $NBits $NBases {params} >> {log} 2>&1
             """
 
-    if config.get('run_alignment', True):
-        rule star_align:
+
+    rule star_align:
+        """
+        Align reads against a genome (index) with STAR, and pipe the output to the required sorter(s).
+        """
+        input:
+            reads=get_reads,
+            index=expand("{genome_dir}/{{assembly}}/index/{aligner}", **config)
+        output:
+            dir =directory(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}", **config)),
+            pipe=get_alignment_pipes()
+        log:
+            directory(expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}", **config))
+        benchmark:
+            expand("{benchmark_dir}/{aligner}_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
+        params:
+            input=lambda wildcards, input: f' {input.reads}' if config['layout'][wildcards.sample] == 'SINGLE' else \
+                                           f' {input.reads[0]} {input.reads[1]}',
+            params=config['align']
+        threads: 8
+        resources:
+            mem_gb=30
+        conda:
+            "../envs/star.yaml"
+        shell:
             """
-            Align reads against a genome (index) with STAR, and pipe the output to the required sorter(s).
+            trap "find {log} -type f ! -name Log* -exec rm {{}} \;" EXIT
+            mkdir -p {log}
+            mkdir -p {output.dir}                
+            
+            STAR --genomeDir {input.index} --readFilesIn {params.input} --quantMode GeneCounts \
+            --outFileNamePrefix {log}/ --outTmpDir {output.dir}/STARtmp --runThreadN {threads} {params.params} \
+            --outSAMtype BAM Unsorted --outStd BAM_Unsorted > {output.pipe} 2> {log}/Log.stderr.out
+            
+            # move all non-log files to output directory (this way the log files are kept on error)
+            find {log} -type f ! -name Log* -exec mv {{}} {output.dir} \;
             """
-            input:
-                reads=get_reads,
-                index=expand("{genome_dir}/{{assembly}}/index/{aligner}", **config)
-            output:
-                dir =directory(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}", **config)),
-                pipe=pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0])
-            log:
-                expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}.log", **config)
-            benchmark:
-                expand("{benchmark_dir}/{aligner}_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
-            params:
-                input=lambda wildcards, input: f' {input.reads}' if config['layout'][wildcards.sample] == 'SINGLE' else \
-                                               f' {input.reads[0]} {input.reads[1]}',
-                params=config['align']
-            threads: 1
-            resources:
-                mem_gb=30
-            conda:
-                "../envs/star.yaml"
-            shell:
-                """
-                mkdir -p {output.dir}
-                
-                STAR --genomeDir {input.index} --readFilesIn {params.input} --quantMode GeneCounts \
-                --outFileNamePrefix {output.dir}/ --runThreadN {threads} {params.params} \
-                --outSAMtype BAM Unsorted --outStd BAM_Unsorted | tee {output.pipe} 1> /dev/null 2>> {log}
-                """
 
 
 rule samtools_presort:

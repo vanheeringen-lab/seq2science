@@ -78,6 +78,7 @@ rule fastqc:
         f"{config['qc_dir']}/fastqc/"
     conda:
         "../envs/qc.yaml"
+    priority: -10
     shell:
         "fastqc {input} -O {params} > {log} 2>&1"
 
@@ -209,7 +210,7 @@ def get_qc_files(wildcards):
         for sample in samples[samples['assembly'] == wildcards.assembly].index:
             qc.extend(get_trimming_qc(sample))
 
-        for condition in set(samples.condition):
+        for condition in set(samples[samples['assembly'] == wildcards.assembly].condition):
             for function in [func for func in quality_control if
                              'get_trimming_qc' is not func.__name__]:
                 qc.extend(function(condition))

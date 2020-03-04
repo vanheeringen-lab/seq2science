@@ -5,25 +5,25 @@ import org.jenkinsci.plugins.workflow.graph.FlowNode
 import org.jenkinsci.plugins.workflow.job.WorkflowRun
 
 
-// helper function to check whether a stage failed
-@NonCPS
-List getFailedStages(WorkflowRun run) {
-    List failedStages = []
-    FlowExecution exec = run.getExecution()
-    PipelineNodeGraphVisitor visitor = new PipelineNodeGraphVisitor(run)
-    def flowNodes = visitor.getPipelineNodes()
-
-    for (node in flowNodes) {
-        if (node.getType() != FlowNodeWrapper.NodeType.STAGE ) { continue; }
-        String nodeName = node.getDisplayName()
-        def nodeResult = node.getStatus().getResult()
-        def resultFailure = io.jenkins.blueocean.rest.model.BlueRun$BlueRunResult.FAILURE
-        if (nodeResult == resultFailure) {
-            failedStages.add(nodeName)
-        }
-    }
-    return failedStages
-}
+// // helper function to check whether a stage failed
+// @NonCPS
+// List getFailedStages(WorkflowRun run) {
+//     List failedStages = []
+//     FlowExecution exec = run.getExecution()
+//     PipelineNodeGraphVisitor visitor = new PipelineNodeGraphVisitor(run)
+//     def flowNodes = visitor.getPipelineNodes()
+//
+//     for (node in flowNodes) {
+//         if (node.getType() != FlowNodeWrapper.NodeType.STAGE ) { continue; }
+//         String nodeName = node.getDisplayName()
+//         def nodeResult = node.getStatus().getResult()
+//         def resultSuccess = io.jenkins.blueocean.rest.model.BlueRun$BlueRunResult.SUCCESS
+//         if (nodeResult != resultSuccess) {
+//             failedStages.add(nodeName)
+//         }
+//     }
+//     return failedStages
+// }
 
 
 pipeline {
@@ -35,7 +35,7 @@ pipeline {
     }
 
     stages {
-        stage('setup miniconda') {
+        stage('Setup Miniconda') {
             steps {
                 sh '''#!/usr/bin/env bash
                 wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -nv -O miniconda.sh > /dev/null
@@ -53,101 +53,116 @@ pipeline {
                 '''
             }
         }
+
+
         stage('Test DAG') {
             steps {
-                sh '''#!/usr/bin/env bash
-                set -e
-                source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                conda activate miniconda/envs/snakemake-workflows/
+                parallel (
+                    "1 Download & align" : {
+                        sh '''#!/usr/bin/env bash
+                        set -e
+                        source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+                        conda activate miniconda/envs/snakemake-workflows/
 
-                # Do some dry runs to test the DAG
-                # test download workflow
-                printf "\ndownload default\n\n"
-                snakemake -s workflows/download_fastq/Snakefile --directory workflows/download_fastq -n -j 48 --quiet
+                        # Do some dry runs to test the DAG
+                        # test download workflow
+                        printf "\ndownload default\n\n"
+                        snakemake -s workflows/download_fastq/Snakefile --directory workflows/download_fastq -n -j 48 --config ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
 
-                # test alignment workflow
-                # default config
-                printf "\nalignment default\n\n"
-                snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --quiet
+                        # test alignment workflow
+                        # default config
+                        printf "\nalignment default\n\n"
+                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
 
-                # test aligners
-                printf "\ntesting aligners\n\n"
-                snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/bowtie2.yaml --config samples=../../Jenkins/alignment/local_sample.tsv --quiet
-                snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/bwa.yaml     --config samples=../../Jenkins/alignment/local_sample.tsv --quiet
-                snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/hisat2.yaml  --config samples=../../Jenkins/alignment/local_sample.tsv --quiet
-                snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/star.yaml    --config samples=../../Jenkins/alignment/local_sample.tsv --quiet
+                        # test aligners
+                        printf "\ntesting aligners\n\n"
+                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/bowtie2.yaml --config samples=../../Jenkins/alignment/local_sample.tsv ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
+                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/bwa.yaml     --config samples=../../Jenkins/alignment/local_sample.tsv ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
+                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/hisat2.yaml  --config samples=../../Jenkins/alignment/local_sample.tsv ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
+                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/star.yaml    --config samples=../../Jenkins/alignment/local_sample.tsv ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
 
-                # test sorting
-                printf "\ntesting sorting\n\n"
-                snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/samtools_coordinate.yaml --quiet
-                snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/samtools_queryname.yaml  --quiet
-                snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/sambamba_coordinate.yaml --quiet
-                snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/sambamba_queryname.yaml  --quiet
+                        # test sorting
+                        printf "\ntesting sorting\n\n"
+                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/samtools_coordinate.yaml --config ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
+                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/samtools_queryname.yaml  --config ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
+                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/sambamba_coordinate.yaml --config ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
+                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/sambamba_queryname.yaml  --config ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
+                        '''
+                    },
+                    "2 ATAC-seq" : {
+                        sh '''#!/usr/bin/env bash
+                        set -e
+                        source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+                        conda activate miniconda/envs/snakemake-workflows/
 
-                # test atac-seq workflow
-                # default config
-                printf "\ndefault atac-seq\n\n"
-                snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --quiet
+                        # test atac-seq workflow
+                        # default config
+                        printf "\ndefault atac-seq\n\n"
+                        snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
 
-                # test different peak callers
-                printf "\natac peakcaller\n\n"
-                snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --configfile Jenkins/atac_seq/genrich.yaml       --quiet
-                snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --configfile Jenkins/atac_seq/macs2.yaml         --quiet
-                snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --configfile Jenkins/atac_seq/genrich_macs2.yaml --quiet
+                        # test different peak callers
+                        printf "\natac peakcaller\n\n"
+                        snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --configfile Jenkins/atac_seq/genrich.yaml       --config ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
+                        snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --configfile Jenkins/atac_seq/macs2.yaml         --config ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
+                        snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --configfile Jenkins/atac_seq/genrich_macs2.yaml --config ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
 
-                # test different replicate settings
-                printf "\natac combine replicates\n\n"
-                snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=fisher samples=../../Jenkins/atac_seq/samples.tsv --quiet
-                snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=idr    samples=../../Jenkins/atac_seq/samples.tsv --quiet
-                snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=merge  samples=../../Jenkins/atac_seq/samples.tsv --quiet
+                        # test different replicate settings
+                        printf "\natac combine replicates\n\n"
+                        snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=fisher samples=../../Jenkins/atac_seq/samples.tsv ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
+                        snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=idr    samples=../../Jenkins/atac_seq/samples.tsv ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
+                        snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=merge  samples=../../Jenkins/atac_seq/samples.tsv ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
+                        '''
+                    },
+                    "3 RNA-seq" : {
+                        sh '''#!/usr/bin/env bash
+                        set -e
+                        source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+                        conda activate miniconda/envs/snakemake-workflows/
 
-                # test rna-seq workflow
-                # default config
-                printf "\ndefault rna-seq\n\n"
-                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --quiet
+                        # test rna-seq workflow
+                        # default config
+                        printf "\ndefault rna-seq\n\n"
+                        snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --config ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
 
-                # test count matrix generation
-                printf "\ncounts matrix\n\n"
-                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/counts.yaml --config samples=../../Jenkins/alignment/local_sample.tsv quantifier=star   --quiet
-                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/counts.yaml --config samples=../../Jenkins/alignment/local_sample.tsv quantifier=salmon --quiet
+                        # test differential expression analysis
+                        printf "\ndifferential expression\n\n"
+                        snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/deseq2.yaml --config samples=../../Jenkins/rna_seq/samples.tsv quantifier=star   ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
+                        snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/deseq2.yaml --config samples=../../Jenkins/rna_seq/samples.tsv quantifier=salmon ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
 
-                # test differential expression analysis
-                printf "\ndifferential expression\n\n"
-                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/deseq2.yaml --config samples=../../Jenkins/rna_seq/samples.tsv quantifier=star   --quiet
-                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/deseq2.yaml --config samples=../../Jenkins/rna_seq/samples.tsv quantifier=salmon --quiet
-
-                # test trackhub generation
-                printf "\ntrackhub\n\n"
-                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/counts.yaml --config samples=../../Jenkins/alignment/local_sample.tsv quantifier=star   run_alignment=True --quiet
-                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/counts.yaml --config samples=../../Jenkins/alignment/local_sample.tsv quantifier=salmon run_alignment=True --quiet
-                '''
+                        # test trackhub generation
+                        printf "\ntrackhub\n\n"
+                        snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/counts.yaml --config samples=../../Jenkins/alignment/local_sample.tsv quantifier=star   create_trackhub=True ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
+                        snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/counts.yaml --config samples=../../Jenkins/alignment/local_sample.tsv quantifier=salmon create_trackhub=True ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
+                        '''
+                    }
+                )
             }
         }
 
 
         stage('Test downloading') {
-            when {
-                anyOf {
-                    // always fully build develop and master
-                    branch 'master'
-                    branch 'develop'
-
-                    // always run when jenkins, envs or configuration is changed
-                    changeset glob: 'Jenkins/*'
-                    changeset glob: 'envs/*'
-                    changeset 'rules/configuration.smk'
-
-                    // run when relevant rules are changed
-                    changeset glob: 'workflows/download_fastq/*'
-                    changeset 'rules/get_fastq.smk'
-
-                    // run when last time you failed
-                    expression {
-                        return getFailedStages(Jenkins.instance.getItemByFullName("Snakemake-Workflows")\
-                        .getItem("$GIT_BRANCH")._getRuns().last()).contains("Test downloading")
-                    }
-                }
-            }
+//             when {
+//                 anyOf {
+//                     // always fully build develop and master
+//                     branch 'master'
+//                     branch 'develop'
+//
+//                     // always run when jenkins, envs or configuration is changed
+//                     changeset glob: 'Jenkins/*'
+//                     changeset glob: 'envs/*'
+//                     changeset 'rules/configuration.smk'
+//
+//                     // run when relevant rules are changed
+//                     changeset glob: 'workflows/download_fastq/*'
+//                     changeset 'rules/get_fastq.smk'
+//
+//                     // run when last time you failed
+//                     expression {
+//                         return getFailedStages(Jenkins.instance.getItemByFullName("Snakemake-Workflows")\
+//                         .getItem("$GIT_BRANCH")._getRuns().last()).contains("Test downloading")
+//                     }
+//                 }
+//             }
             steps {
                 sh '''#!/usr/bin/env bash
                 set -e
@@ -173,90 +188,177 @@ pipeline {
         }
 
 
-        stage('Test alignment') {
-            when {
-                anyOf {
-                    // always fully build develop and master
-                    branch 'master'
-                    branch 'develop'
-
-                    // always run when jenkins, envs or configuration is changed
-                    changeset glob: 'Jenkins/*'
-                    changeset glob: 'envs/*'
-                    changeset 'rules/configuration.smk'
-
-                    // run when relevant rules are changed
-                    changeset glob: 'workflows/alignment/*'
-                    changeset 'rules/alignment.smk'
-                    changeset 'rules/trimming.smk'
-                    changeset 'rules/qc.smk'
-
-                    // run when last time you failed
-                    expression {
-                        return getFailedStages(Jenkins.instance.getItemByFullName("Snakemake-Workflows")\
-                        .getItem("$GIT_BRANCH")._getRuns().last()).contains("Test alignment")
-                    }
-                }
-            }
+        stage('Setup alignment') {
+//             when {
+//                 anyOf {
+//                     // always fully build develop and master
+//                     branch 'master'
+//                     branch 'develop'
+//
+//                     // always run when jenkins, envs or configuration is changed
+//                     changeset glob: 'Jenkins/*'
+//                     changeset glob: 'envs/*'
+//                     changeset 'rules/configuration.smk'
+//
+//                     // run when relevant rules are changed
+//                     changeset glob: 'workflows/alignment/*'
+//                     changeset 'rules/alignment.smk'
+//                     changeset 'rules/trimming.smk'
+//                     changeset 'rules/qc.smk'
+//
+//                     // run when last time you failed
+//                     expression {
+//                         return getFailedStages(Jenkins.instance.getItemByFullName("Snakemake-Workflows")\
+//                         .getItem("$GIT_BRANCH")._getRuns().last()).contains("Test alignment")
+//                     }
+//                 }
+//             }
             steps {
                 sh '''#!/usr/bin/env bash
                 set -e
+
+                # set up parallel alignment environments
                 source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                 conda activate miniconda/envs/snakemake-workflows/
 
-                # test bowtie2 alignment
                 snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
-                --use-conda -j $CORES --configfile Jenkins/alignment/bowtie2.yaml \
-                --config samples=../../Jenkins/alignment/local_sample.tsv
-
-                # test bwa alignment
-                snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
-                --use-conda -j $CORES --configfile Jenkins/alignment/bwa.yaml \
-                --config samples=../../Jenkins/alignment/local_sample.tsv
-
-                # test hisat2 alignment
-                snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
-                --use-conda -j $CORES --configfile Jenkins/alignment/hisat2.yaml \
-                --config samples=../../Jenkins/alignment/local_sample.tsv
-
-                # test star alignment
-                snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
-                --use-conda -j $CORES --configfile Jenkins/alignment/star.yaml \
-                --config samples=../../Jenkins/alignment/local_sample.tsv
+                --use-conda --configfile Jenkins/alignment/bowtie2.yaml \
+                --config samples=../../Jenkins/alignment/local_sample.tsv \
+                --create-envs-only
                 '''
             }
         }
 
 
-        stage('Test atac-seq') {
-            when {
-                anyOf {
-                    // always fully build develop and master
-                    branch 'master'
-                    branch 'develop'
+        stage('Test alignment') {
+//             when {
+//                 anyOf {
+//                     // always fully build develop and master
+//                     branch 'master'
+//                     branch 'develop'
+//
+//                     // always run when jenkins, envs or configuration is changed
+//                     changeset glob: 'Jenkins/*'
+//                     changeset glob: 'envs/*'
+//                     changeset 'rules/configuration.smk'
+//
+//                     // run when relevant rules are changed
+//                     changeset glob: 'workflows/alignment/*'
+//                     changeset 'rules/alignment.smk'
+//                     changeset 'rules/trimming.smk'
+//                     changeset 'rules/qc.smk'
+//
+//                     // run when last time you failed
+//                     expression {
+//                         return getFailedStages(Jenkins.instance.getItemByFullName("Snakemake-Workflows")\
+//                         .getItem("$GIT_BRANCH")._getRuns().last()).contains("Test alignment")
+//                     }
+//                 }
+//             }
+            steps {
+                parallel (
+                    "Bowtie2" : {
+                        sh '''#!/usr/bin/env bash
+                        set -e
+                        source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+                        conda activate miniconda/envs/snakemake-workflows/
+                        let "c = $CORES / 4"
+                        let "a = $CORES / 5"
+                        let "s = $c - $a"
 
-                    // always run when jenkins, envs or configuration is changed
-                    changeset glob: 'Jenkins/*'
-                    changeset glob: 'envs/*'
-                    changeset 'rules/configuration.smk'
+                        # test bowtie2 alignment
+                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
+                        --use-conda --configfile Jenkins/alignment/bowtie2.yaml \
+                        --config samples=../../Jenkins/alignment/local_sample.tsv \
+                        -j $c --set-threads bowtie2_align=$a samtools_sort=$s \
+                        --nolock
+                        '''
+                    },
+                    "BWA" : {
+                        sh '''#!/usr/bin/env bash
+                        set -e
+                        source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+                        conda activate miniconda/envs/snakemake-workflows/
+                        let "c = $CORES / 4"
+                        let "a = $CORES / 5"
+                        let "s = $c - $a"
 
-                    // run when relevant rules are changed
-                    changeset glob: 'workflows/atac_seq/*'
-                    changeset 'rules/alignment.smk'
-                    changeset 'rules/trimming.smk'
-                    changeset 'rules/qc.smk'
-                    changeset 'rules/merge_replicates.smk'
-                    changeset 'rules/trackhub.smk'
-                    changeset 'rules/call_peak.smk'
-                    changeset 'rules/get_genome.smk'
+                        # test bwa alignment
+                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
+                        --use-conda --configfile Jenkins/alignment/bwa.yaml \
+                        --config samples=../../Jenkins/alignment/local_sample.tsv \
+                        -j $c --set-threads bwa_mem=$a samtools_sort=$s \
+                        --nolock
+                        '''
+                    },
+                    "HISAT2" : {
+                        sh '''#!/usr/bin/env bash
+                        set -e
+                        source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+                        conda activate miniconda/envs/snakemake-workflows/
+                        let "c = $CORES / 4"
+                        let "a = $CORES / 5"
+                        let "s = $c - $a"
 
-                    // run when last time you failed
-                    expression {
-                        return getFailedStages(Jenkins.instance.getItemByFullName("Snakemake-Workflows")\
-                        .getItem("$GIT_BRANCH")._getRuns().last()).contains("Test atac-seq")
+                        # test hisat2 alignment
+                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
+                        --use-conda --configfile Jenkins/alignment/hisat2.yaml \
+                        --config samples=../../Jenkins/alignment/local_sample.tsv \
+                        -j $c --set-threads hisat2_align=$a samtools_sort=$s \
+                        --nolock
+                        '''
+                    },
+                    "STAR" : {
+                        sh '''#!/usr/bin/env bash
+                        set -e
+                        source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+                        conda activate miniconda/envs/snakemake-workflows/
+                        let "c = $CORES / 4"
+                        let "a = $CORES / 5"
+                        let "s = $c - $a"
+
+                        # test star alignment
+                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
+                        --use-conda --configfile Jenkins/alignment/star.yaml \
+                        --config samples=../../Jenkins/alignment/local_sample.tsv \
+                        -j $c --set-threads star_align=$a samtools_sort=$s \
+                        --nolock
+                        '''
                     }
-                }
+                )
             }
+        }
+
+
+        stage('Test atac-seq') {
+//             when {
+//                 anyOf {
+//                     // always fully build develop and master
+//                     branch 'master'
+//                     branch 'develop'
+//
+//                     // always run when jenkins, envs or configuration is changed
+//                     changeset glob: 'Jenkins/*'
+//                     changeset glob: 'envs/*'
+//                     changeset 'rules/configuration.smk'
+//
+//                     // run when relevant rules are changed
+//                     changeset glob: 'workflows/atac_seq/*'
+//                     changeset 'rules/alignment.smk'
+//                     changeset 'rules/trimming.smk'
+//                     changeset 'rules/qc.smk'
+//                     changeset 'rules/merge_replicates.smk'
+//                     changeset 'rules/trackhub.smk'
+//                     changeset 'rules/call_peak.smk'
+//                     changeset 'rules/get_genome.smk'
+//
+//                     // run when last time you failed
+//                     expression {
+//                         return getFailedStages(Jenkins.instance.getItemByFullName("Snakemake-Workflows")\
+//                         .getItem("$GIT_BRANCH")._getRuns().last()).contains("Test atac-seq")
+//                     }
+//                 }
+//             }
             steps {
                 sh '''#!/usr/bin/env bash
                 set -e
@@ -275,35 +377,35 @@ pipeline {
 
 
         stage('Test rna-seq') {
-            when {
-                anyOf {
-                    // always fully build develop and master
-                    branch 'master'
-                    branch 'develop'
-
-                    // always run when jenkins, envs or configuration is changed
-                    changeset glob: 'Jenkins/*'
-                    changeset glob: 'envs/*'
-                    changeset 'rules/configuration.smk'
-
-                    // run when relevant rules are changed
-                    changeset glob: 'workflows/rna_seq/*'
-                    changeset 'rules/get_genome.smk'
-                    changeset 'rules/trimming.smk'
-                    changeset 'rules/alignment.smk'
-                    changeset 'rules/quantification.smk'
-                    changeset 'rules/gene_counts.smk'
-                    changeset 'rules/DGE_analysis.smk'
-                    changeset 'rules/qc.smk'
-                    changeset 'rules/trackhub.smk'
-
-                    // run when last time you failed
-                    expression {
-                        return getFailedStages(Jenkins.instance.getItemByFullName("Snakemake-Workflows")\
-                        .getItem("$GIT_BRANCH")._getRuns().last()).contains("Test rna-seq")
-                    }
-                }
-            }
+//             when {
+//                 anyOf {
+//                     // always fully build develop and master
+//                     branch 'master'
+//                     branch 'develop'
+//
+//                     // always run when jenkins, envs or configuration is changed
+//                     changeset glob: 'Jenkins/*'
+//                     changeset glob: 'envs/*'
+//                     changeset 'rules/configuration.smk'
+//
+//                     // run when relevant rules are changed
+//                     changeset glob: 'workflows/rna_seq/*'
+//                     changeset 'rules/get_genome.smk'
+//                     changeset 'rules/trimming.smk'
+//                     changeset 'rules/alignment.smk'
+//                     changeset 'rules/quantification.smk'
+//                     changeset 'rules/gene_counts.smk'
+//                     changeset 'rules/DGE_analysis.smk'
+//                     changeset 'rules/qc.smk'
+//                     changeset 'rules/trackhub.smk'
+//
+//                     // run when last time you failed
+//                     expression {
+//                         return getFailedStages(Jenkins.instance.getItemByFullName("Snakemake-Workflows")\
+//                         .getItem("$GIT_BRANCH")._getRuns().last()).contains("Test rna-seq")
+//                     }
+//                 }
+//             }
             steps {
                 sh '''#!/usr/bin/env bash
                 set -e
@@ -343,13 +445,12 @@ pipeline {
                 # create trackhub (builds on last run)
                 snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq \
                 --use-conda -j $CORES --configfile Jenkins/rna_seq/counts.yaml \
-                --config samples=../../Jenkins/alignment/local_sample.tsv run_alignment=True
+                --config samples=../../Jenkins/alignment/local_sample.tsv create_trackhub=True
                 '''
             }
         }
-
-
     }
+
 
     post {
         always {
