@@ -257,7 +257,7 @@ def get_layout_trace(sample):
 
 
 # try to load the layout cache, otherwise defaults to empty dictionary
-with Lock(layout_cachefile_lock):
+with FileLock(layout_cachefile_lock):
     try:
         layout_cache = pickle.load(open(layout_cachefile, "rb"))
     except FileNotFoundError:
@@ -301,9 +301,9 @@ assert all(layout in ['SINGLE', 'PAIRED'] for sample, layout in config['layout']
 
 # if new samples were added, update the cache
 if len([sample for sample in samples.index if sample not in layout_cache]) is not 0:
-    with Lock(layout_cachefile_lock):
+    with FileLock(layout_cachefile_lock):
         # if the layour cache exists, it might've been updated so make sure to use the most recent version
-        if os.path.exists(layout_cache):
+        if os.path.exists(layout_cachefile):
             layout_cache_recent = pickle.load(open(layout_cachefile, "rb"))
             pickle.dump({**layout_cache_recent, **config['layout']}, open(layout_cachefile, "wb"))
         else:
@@ -376,7 +376,8 @@ def convert_size(size_bytes, order=None):
 
 
 # by default only one download in parallel (workflow fails on multiple on a single node)
-workflow.global_resources.update({'parallel_downloads': 1, 'deeptools_limit': 1, 'R_scripts': 1})
+workflow.global_resources = {**{'parallel_downloads': 1, 'deeptools_limit': 1, 'R_scripts': 1},
+                             **workflow.global_resources}
 
 # when the user specifies memory, use this and give a warning if it surpasses local memory
 # (surpassing does not always have to be an issue -> cluster execution)
