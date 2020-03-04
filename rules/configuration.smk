@@ -12,6 +12,7 @@ import pandas as pd
 import urllib.request
 from bs4 import BeautifulSoup
 from multiprocessing.pool import ThreadPool
+from filelock import FileLock
 
 from snakemake.logging import logger
 from snakemake.utils import validate
@@ -193,6 +194,7 @@ for key, value in config.items():
 # check if a sample is single-end or paired end, and store it
 logger.info("Checking if samples are single-end or paired-end...")
 layout_cachefile = './.snakemake/layouts.p'
+layout_cachefile_lock = './.snakemake/layouts.p.lock'
 
 def get_layout_eutils(sample):
     """
@@ -255,10 +257,11 @@ def get_layout_trace(sample):
 
 
 # try to load the layout cache, otherwise defaults to empty dictionary
-try:
-    layout_cache = pickle.load(open(layout_cachefile, "rb"))
-except FileNotFoundError:
-    layout_cache = {}
+with Lock(layout_cachefile_lock):
+    try:
+        layout_cache = pickle.load(open(layout_cachefile, "rb"))
+    except FileNotFoundError:
+        layout_cache = {}
 
 
 trace_tp = ThreadPool(20)
@@ -298,7 +301,13 @@ assert all(layout in ['SINGLE', 'PAIRED'] for sample, layout in config['layout']
 
 # if new samples were added, update the cache
 if len([sample for sample in samples.index if sample not in layout_cache]) is not 0:
-    pickle.dump(config['layout'], open(layout_cachefile, "wb"))
+    with Lock(layout_cachefile_lock):
+        # if the layour cache exists, it might've been updated so make sure to use the most recent version
+        if os.path.exists(layout_cache):
+            layout_cache_recent = pickle.load(open(layout_cachefile, "rb"))
+            pickle.dump({**layout_cache_recent, **config['layout']}, open(layout_cachefile, "wb"))
+        else:
+            pickle.dump({**config['layout']}, open(layout_cachefile, "wb"))
 
 # now only keep the layout of samples that are in samples.tsv
 config['layout'] = {key: value for key, value in config['layout'].items() if key in samples.index}
