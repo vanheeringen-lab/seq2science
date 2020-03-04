@@ -1,3 +1,6 @@
+import os
+
+
 rule samtools_stats:
     """
     Get general stats from bam files like percentage mapped.
@@ -101,6 +104,13 @@ rule InsertSizeMetrics:
         picard CollectInsertSizeMetrics INPUT={input} OUTPUT={output.tsv} H={output.pdf} > {log} 2>&1
         """
 
+def get_chrM_name(wildcards, input):
+    if os.path.exists(str(input.chr_names)):
+        name = [chrm for chrm in ['chrM', 'MT'] if chrm in open(str(input.chr_names), 'r').read()]
+        if len(name) > 0:
+            return name[0]
+    return ""
+
 
 rule MTNucRatioCalculator:
     """
@@ -116,7 +126,7 @@ rule MTNucRatioCalculator:
     conda:
         "../envs/mtnucratio.yaml"
     params:
-        lambda wildcards, input: [chrm for chrm in ['chrM', 'MT'] if chrm in open(str(input.chr_names), 'r').read()][0]
+        lambda wildcards, input: get_chrM_name(wildcards, input)
     shell:
         """
         mtnucratio {input.bam} {output} {params}
@@ -276,10 +286,7 @@ def get_alignment_qc(sample):
         output.append(f"{{qc_dir}}/InsertSizeMetrics/{{{{assembly}}}}-{sample}.tsv")
 
     # get the ratio mitochondrial dna
-    assembly = samples.loc[sample, 'assembly']
-    checkpoints.get_genome.get(assembly=assembly)
-    if len([chrm for chrm in ['chrM', 'MT'] if chrm in open(f"{config['genome_dir']}/{assembly}/{assembly}.fa.sizes", 'r').read()]) > 0:
-        output.append(f"{{result_dir}}/{config['aligner']}/{{{{assembly}}}}-{sample}.samtools-coordinate.bam.mtnucratiomtnuc.json")
+    output.append(f"{{result_dir}}/{config['aligner']}/{{{{assembly}}}}-{sample}.samtools-coordinate.bam.mtnucratiomtnuc.json")
     return expand(output, **config)
 
 

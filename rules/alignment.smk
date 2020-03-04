@@ -303,8 +303,11 @@ rule samtools_presort:
 
 def get_blacklist_files(wildcards):
     files = {}
-    checkpoints.get_genome.get(assembly=wildcards.assembly)
-    if config.get('remove_blacklist'):
+    # ideally get genome is a checkpoint, however there are quite some Snakemake
+    # bugs related to this. So for now we solve it like this
+    # TODO: switch back to checkpoints
+    if config.get('remove_blacklist') and wildcards.assembly.lower() in \
+            ["ce10", "dm3", "hg38", "hg19", "mm9", "mm10"]:
         blacklist = f"{config['genome_dir']}/{wildcards.assembly}/{wildcards.assembly}.blacklist.bed"
         if os.path.exists(blacklist):
             files['blacklist'] = blacklist
@@ -349,8 +352,8 @@ rule alignmentsieve:
     output:
         expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-sieved.bam", **config)
     params:
-        minqual=f"--minMappingQuality {config['minqual']}",
-        atacshift="--ATACshift" if config['atac_shift'] else '',
+        minqual=f"--minMappingQuality {config['min_mapping_quality']}",
+        atacshift="--ATACshift" if config['tn5_shift'] else '',
         blacklist=lambda wildcards, input: "" if not len(get_blacklist_files(wildcards).keys()) else \
                                            f"--blackListFileName {input.blacklist}"
     conda:
@@ -427,7 +430,7 @@ def get_bam_mark_duplicates(wildcards):
     if use_alignmentsieve(config):
         # when alignmentsieving but not shifting we do not have to re-sort samtools-coordinate
         if wildcards.sorter == 'samtools' and wildcards.sorting == 'coordinate' and \
-                not config.get('atac_shift', False):
+                not config.get('tn5_shift', False):
             return rules.alignmentsieve.output
         else:
             return expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}-sievsort.bam", **config)
