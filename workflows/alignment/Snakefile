@@ -23,7 +23,7 @@ quality_control = [get_trimming_qc, get_alignment_qc]
 
 def get_bams():
     bamfiles = {}
-    if config.get('cram_no_sam'):
+    if config.get('cram_no_bam'):
         assert config['bam_sorter'] == 'samtools'
         assert config['bam_sort_order'] == 'coordinate'
         map_ext = 'cram'
