@@ -112,7 +112,6 @@ if 'condition' in samples and config.get('biological_replicates', '') != 'keep':
         assert config.get('biological_replicates', '') == 'idr', \
         f'HMMRATAC peaks can only be combined through idr'
 
-    # TODO: use treps for this?
     for condition in set(samples['condition']):
         for assembly in set(samples[samples['condition'] == condition]['assembly']):
             if 'replicate' in samples and config.get('technical_replicates') == 'merge':
@@ -316,14 +315,13 @@ config['layout'] = {key: value for key, value in config['layout'].items() if key
 logger.info("Done!\n\n")
 
 # if samples are merged add the layout of the technical replicate to the config
-# TODO: add same for biological/(tech and bio) replicate?
 if 'replicate' in samples and config.get('technical_replicates') == 'merge':
     for sample in samples.index:
         replicate = samples.loc[sample, 'replicate']
         config['layout'][replicate] = config['layout'][sample]
 
 # if hmmratac peak caller, check if all samples are paired-end
-if 'hmmratac' in config['peak_caller']:
+if 'hmmratac' in config.get('peak_caller', ''):
     assert all([config['layout'][sample] == 'PAIRED' for sample in samples.index]), \
     "HMMRATAC requires all samples to be paired end"
 
