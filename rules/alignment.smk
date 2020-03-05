@@ -8,37 +8,6 @@ def get_reads(wildcards):
             return expand("{trimmed_dir}/{{sample}}_trimmed.{fqsuffix}.gz", **config)
         return sorted(expand("{trimmed_dir}/{{sample}}_{fqext}_trimmed.{fqsuffix}.gz", **config))
 
-# def get_reads(wildcards):
-#     if config['layout'].get(wildcards.sample, False) == "SINGLE":
-#         return expand("{trimmed_dir}/{{sample}}_trimmed.{fqsuffix}.gz", **config)
-#     return sorted(expand("{trimmed_dir}/{{sample}}_{fqext}_trimmed.{fqsuffix}.gz", **config))
-#
-# if 'replicate' in samples and config.get('technical_replicates') == 'merge':
-#     # count the number of samples per replicate
-#     samples_per_replicates_per_assembly = {}
-#     for assembly in set(samples['assembly']):
-#         samples_per_replicates_per_assembly[assembly] = {}
-#         for replicate in set(samples[samples['assembly'] == assembly]['replicate']):
-#             no_samples = len(samples[(samples['assembly'] == assembly) & (samples['replicate'] == replicate)])
-#             samples_per_replicates_per_assembly[assembly][replicate] = no_samples
-#
-#     def get_reads(wildcards):
-#         if samples_per_replicates_per_assembly[wildcards.assembly][wildcards.sample] > 1:
-#             if config['layout'].get(wildcards.sample, False) == "SINGLE":
-#                 return expand("{trimmed_dir}/merged/{{sample}}_trimmed.{fqsuffix}.gz", **config)
-#             return sorted(expand("{trimmed_dir}/merged/{{sample}}_{fqext}_trimmed.{fqsuffix}.gz", **config))
-#         else:
-#             # return the sample name, not the replicate name
-#             samplename = samples[(samples['assembly'] == wildcards.assembly) & (samples['replicate'] == wildcards.sample)].replicate.index[0]
-#             if config['layout'].get(wildcards.sample, False) == "SINGLE":
-#                 return expand(f"{{trimmed_dir}}/{samplename}_trimmed.{{fqsuffix}}.gz", **config)
-#             return sorted(expand(f"{{trimmed_dir}}/{samplename}_{{fqext}}_trimmed.{{fqsuffix}}.gz", **config))
-#             #
-#             # if config['layout'].get(wildcards.sample, False) == "SINGLE":
-#             #     return expand("{trimmed_dir}/{{sample}}_trimmed.{fqsuffix}.gz", **config)
-#             # return sorted(expand("{trimmed_dir}/{{sample}}_{fqext}_trimmed.{fqsuffix}.gz", **config))
-#
-
 def get_alignment_pipes():
     pipes = {pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0])}
     if config.get('peak_caller', False) and 'genrich' in config['peak_caller']:

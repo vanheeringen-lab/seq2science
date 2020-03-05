@@ -24,10 +24,10 @@ def get_featureCounts_bam(wildcards):
 # TODO: featurecounts was not set up to accept hmmratac's gappedPeaks,
 #  I added this as it was sufficient for rule idr
 def get_featureCounts_peak(wildcards):
+    ftype = 'narrowPeak' if wildcards.peak_caller in ['macs2', 'genrich'] else 'gappedPeak'
     if 'condition' in samples and config['biological_replicates'] != 'keep':
-        return expand(f"{{result_dir}}/{wildcards.peak_caller}/replicate_processed/{wildcards.assembly}-{wildcards.sample}_peaks.narrowPeak", **config)
+        return expand(f"{{result_dir}}/{wildcards.peak_caller}/replicate_processed/{wildcards.assembly}-{wildcards.sample}_peaks.{ftype}", **config)
     else:
-        ftype = 'narrowPeak' if wildcards.peak_caller in ['macs2', 'genrich'] else 'gappedPeak'
         return expand(f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{wildcards.sample}_peaks.{ftype}", **config)
 
 rule featureCounts:
@@ -117,37 +117,24 @@ def get_qc_files(wildcards):
                                            "variable 'quality_control' exists and contains all the "\
                                            "relevant quality control functions."
     qc = []
-    if 'replicate' in samples and config.get('technical_replicates') == 'merge':
-        # trimming qc on individual samples
-        for sample in samples[samples['assembly'] == wildcards.assembly].index:
-            qc.extend(get_trimming_qc(sample))
 
-        # qc on merged technical replicates
-        for replicate in set(samples[samples['assembly'] == wildcards.assembly].replicate):
-            for function in [func for func in quality_control if
-                             func.__name__ not in ['get_peak_calling_qc', 'get_trimming_qc']]:
-                qc.extend(function(replicate))
+    # trimming qc on individual samples
+    for sample in samples[samples['assembly'] == wildcards.assembly].index:
+        qc.extend(get_trimming_qc(sample))
 
-        # qc on combined biological replicates
-        if get_peak_calling_qc in qc:
-            for condition in set(samples[samples['assembly'] == wildcards.assembly].condition):
-                qc.extend(function(condition))
-    else:
-        for sample in samples[samples['assembly'] == wildcards.assembly].index:
-            for function in quality_control:
-                qc.extend(function(sample))
+    # qc on merged technical replicates (if technical_replicates != 'keep')
+    for replicate in treps[treps['assembly'] == wildcards.assembly].index:
+        for function in [func for func in quality_control if
+                         func.__name__ not in ['get_peak_calling_qc', 'get_trimming_qc']]:
+            qc.extend(function(replicate))
+
+    # qc on combined biological replicates (if biological_replicates != 'keep')
+    if get_peak_calling_qc in qc:
+        for condition in breps[breps['assembly'] == wildcards.assembly].index:
+            qc.extend(function(condition))
+
     return qc
 
-
-# def get_subsamples(assembly):
-#     s = list(samples[samples['assembly'] == assembly].index)
-#     # print(s)
-#     if 'condition' in samples and config.get('combine_replicates', '') == 'merge':
-#         s = list(samples[samples['assembly'] == assembly]['condition'])
-#     print(s)
-#
-# get_subsamples("GRCz11")
-# exit(1)
 
 rule multiqc:
     """

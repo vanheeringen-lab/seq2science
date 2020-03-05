@@ -572,11 +572,10 @@ rule trackhub:
                                 shell(f"ln {file_loc} {link_loc}")
 
                 # next add the data files depending on the workflow
-                # TODO: check if all input files actually show up in the trackhub folder
                 # ATAC-seq trackhub
                 if 'atac_seq' in get_workflow():
                     for peak_caller in config['peak_caller']:
-                        for sample in breps.index:
+                        for sample in breps[breps['assembly'] == assembly].index:
                             bigpeak = f"{config['result_dir']}/{peak_caller}/{assembly}-{sample}.bigNarrowPeak"
                             sample_name = f"{sample}{peak_caller}PEAK"
                             sample_name = trackhub.helpers.sanitize(sample_name)
@@ -592,8 +591,7 @@ rule trackhub:
                                 priority += 1
                                 trackdb.add_tracks(track)
 
-                        for sample in treps.index:
-                            # TODO: check if this is also used
+                        for sample in treps[treps['assembly'] == assembly].index:
                             bigwig = f"{config['result_dir']}/{peak_caller}/{assembly}-{sample}.bw"
                             assert os.path.exists(bigwig), bigwig + " not found!"
                             sample_name = f"{sample}{peak_caller}BW"
@@ -616,7 +614,7 @@ rule trackhub:
 
                 # RNA-seq trackhub
                 elif 'rna_seq' in get_workflow():
-                    for sample in treps.index:
+                    for sample in treps[treps['assembly'] == assembly].index:
                         for bw in get_bigwig_strand(sample):
                             bigwig = f"{config['result_dir']}/bigwigs/{assembly}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw"
                             assert os.path.exists(bigwig), bigwig + " not found!"

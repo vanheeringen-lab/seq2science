@@ -1,12 +1,7 @@
 def get_peak_replicates(wildcards):
     ftype = 'narrowPeak' if wildcards.peak_caller in ['macs2', 'genrich'] else 'gappedPeak'
-    if 'replicate' in samples and config['technical_replicates'] == 'merge': #.get('technical_replicates: merge', False):
-        return expand([f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{replicate}_peaks.{ftype}"
-            for replicate in set(samples[samples['assembly'] == wildcards.assembly]['replicate'])], **config)
-    # otherwise all the separate ones
-    return expand([f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{sample}_peaks.{ftype}"
-        for sample in samples[samples['assembly'] == wildcards.assembly].index], **config)
-
+    return expand([f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{replicate}_peaks.{ftype}"
+        for replicate in treps[treps['assembly'] == wildcards.assembly].index], **config)
 
 rule peak_union:
     input:
@@ -25,12 +20,8 @@ rule peak_union:
 
 def get_multicov_replicates(file_ext):
     def wrapped(wildcards):
-        if 'replicate' in samples and config['technical_replicates'] == 'merge':
-            return expand([f"{{dedup_dir}}/{wildcards.assembly}-{replicate}.{wildcards.sorter}-{wildcards.sorting}.{file_ext}"
-                for replicate in set(samples[samples['assembly'] == wildcards.assembly]['replicate'])], **config)
-        # otherwise all the separate ones
-        return expand([f"{{dedup_dir}}/{wildcards.assembly}-{sample}.{wildcards.sorter}-{wildcards.sorting}.{file_ext}"
-            for sample in samples[samples['assembly'] == wildcards.assembly].index], **config)
+        return expand([f"{{dedup_dir}}/{wildcards.assembly}-{replicate}.{wildcards.sorter}-{wildcards.sorting}.{file_ext}"
+            for replicate in treps[treps['assembly'] == wildcards.assembly].index], **config)
     return wrapped
 
 
