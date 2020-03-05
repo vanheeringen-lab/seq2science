@@ -331,16 +331,13 @@ for key, value in config.items():
      logger.info(f"{key: <23}: {value}")
 logger.info("\n\n")
 
-# save a copy of the lastest samples and config file in the result_dir
+# save a copy of the latest samples and config file in the result_dir
 subprocess.check_call(f"mkdir -p {config['result_dir']}", shell=True)
-
-src = os.path.join(os.getcwd(), config['samples'])
-dst = os.path.join(config['result_dir'], config['samples'])
-subprocess.check_call(f"cp -T {src} {dst}", shell=True)
-
-src = os.path.join(os.getcwd(), workflow.configfiles[0])
-dst = os.path.join(config['result_dir'], workflow.configfiles[0])
-subprocess.check_call(f"cp {src} {dst}", shell=True)
+for file in [config['samples'], workflow.configfiles[0]]:
+    src = os.path.join(os.getcwd(), file)
+    dst = os.path.join(config['result_dir'], file)
+    if src is not dst:
+        subprocess.check_call(f"cp -fH {src} {dst}", shell=True)
 
 
 def any_given(*args):
