@@ -344,7 +344,7 @@ subprocess.check_call(f"mkdir -p {config['result_dir']}", shell=True)
 for file in [config['samples'], workflow.configfiles[0]]:
     src = os.path.join(os.getcwd(), file)
     dst = os.path.join(config['result_dir'], file)
-    if src is not dst:
+    if src != dst:
         subprocess.check_call(f"cp -fH {src} {dst}", shell=True)
 
 
