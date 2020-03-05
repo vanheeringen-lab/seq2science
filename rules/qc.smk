@@ -122,13 +122,13 @@ def get_qc_files(wildcards):
     for sample in samples[samples['assembly'] == wildcards.assembly].index:
         qc.extend(get_trimming_qc(sample))
 
-    # qc on merged technical replicates (if technical_replicates != 'keep')
+    # qc on merged technical replicates/samples
     for replicate in treps[treps['assembly'] == wildcards.assembly].index:
         for function in [func for func in quality_control if
                          func.__name__ not in ['get_peak_calling_qc', 'get_trimming_qc']]:
             qc.extend(function(replicate))
 
-    # qc on combined biological replicates (if biological_replicates != 'keep')
+    # qc on combined biological replicates/samples
     if get_peak_calling_qc in qc:
         for condition in breps[breps['assembly'] == wildcards.assembly].index:
             qc.extend(function(condition))

@@ -4,7 +4,7 @@ configfile: "config.yaml"
 
 # do onstart/onexit things
 sample_schemas = ['sample', 'assembly', 'strandedness']
-config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific']
+config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific', 'trackhub']
 include: "../../rules/configuration.smk"
 
 
@@ -13,6 +13,7 @@ include: f"{config['rule_dir']}/alignment.smk"
 include: f"{config['rule_dir']}/get_genome.smk"
 include: f"{config['rule_dir']}/get_fastq.smk"
 include: f"{config['rule_dir']}/merge_replicates.smk"
+include: f"{config['rule_dir']}/trackhub.smk"
 include: f"{config['rule_dir']}/qc.smk"
 include: f"{config['rule_dir']}/trimming.smk"
 
@@ -22,17 +23,31 @@ quality_control = [get_trimming_qc, get_alignment_qc]
 
 def get_bams():
     bamfiles = {}
-    bamfiles['bams'] = set(); bamfiles['bais'] = set()
+    if config.get('cram_no_bam'):
+        assert config['bam_sorter'] == 'samtools'
+        assert config['bam_sort_order'] == 'coordinate'
+        map_ext = 'cram'
+        map_idx = 'crai'
+    else:
+        map_ext = 'bam'
+        map_idx = 'bai'
+    bamfiles['map'] = set(); bamfiles['ind'] = set()
 
     # get all the bams
     if config.get('technical_replicates', '') == 'merge' and 'replicate' in samples:
         for assembly in set(samples['assembly']):
             for replicate in set(samples[samples['assembly'] == assembly]['replicate']):
-                bamfiles['bams'].update([expand(f"{{dedup_dir}}/{assembly}-{replicate}.{{bam_sorter}}-{{bam_sort_order}}.bam", **config)[0]])
-                bamfiles['bais'].update([expand(f"{{dedup_dir}}/{assembly}-{replicate}.{{bam_sorter}}-{{bam_sort_order}}.bam.bai", **config)[0]])
+                bamfiles['map'].update([expand(f"{{dedup_dir}}/{assembly}-{replicate}.{{bam_sorter}}-{{bam_sort_order}}.{map_ext}", **config)[0]])
+                bamfiles['ind'].update([expand(f"{{dedup_dir}}/{assembly}-{replicate}.{{bam_sorter}}-{{bam_sort_order}}.{map_ext}.{map_idx}", **config)[0]])
+                # always output samtools-coordinate
+                bamfiles['map'].update([expand(f"{{dedup_dir}}/{assembly}-{replicate}.samtools-coordinate.{map_ext}", **config)[0]])
+                bamfiles['ind'].update([expand(f"{{dedup_dir}}/{assembly}-{replicate}.samtools-coordinate.{map_ext}.{map_idx}", **config)[0]])
     else:
-        bamfiles['bams'].update([expand(f"{{dedup_dir}}/{samples.loc[sample]['assembly']}-{sample}.{{bam_sorter}}-{{bam_sort_order}}.bam", **config)[0] for sample in samples.index])
-        bamfiles['bais'].update([expand(f"{{dedup_dir}}/{samples.loc[sample]['assembly']}-{sample}.{{bam_sorter}}-{{bam_sort_order}}.bam.bai", **config)[0] for sample in samples.index if config['bam_sort_order'] == 'coordinate'])
+        bamfiles['map'].update([expand(f"{{dedup_dir}}/{samples.loc[sample]['assembly']}-{sample}.{{bam_sorter}}-{{bam_sort_order}}.{map_ext}", **config)[0] for sample in samples.index])
+        bamfiles['ind'].update([expand(f"{{dedup_dir}}/{samples.loc[sample]['assembly']}-{sample}.{{bam_sorter}}-{{bam_sort_order}}.{map_ext}.{map_idx}", **config)[0] for sample in samples.index if config['bam_sort_order'] == 'coordinate'])
+        # always output samtools-coordinate
+        bamfiles['map'].update([expand(f"{{dedup_dir}}/{samples.loc[sample]['assembly']}-{sample}.samtools-coordinate.{map_ext}", **config)[0] for sample in samples.index])
+        bamfiles['ind'].update([expand(f"{{dedup_dir}}/{samples.loc[sample]['assembly']}-{sample}.samtools-coordinate.{map_ext}.{map_idx}", **config)[0] for sample in samples.index if config['bam_sort_order'] == 'coordinate'])
 
     return bamfiles
 
@@ -41,6 +56,7 @@ rule align_all:
     align each sample against its assembly
     """
     input:
-         get_bams()['bams'],
-         get_bams()['bais'],
-         expand("{qc_dir}/multiqc_{assemblies}.html", **{**config, **{'assemblies': set(samples['assembly'])}})
+         get_bams()['map'] if not config['create_trackhub'] else [],
+         get_bams()['ind'] if not config['create_trackhub'] else [],
+         expand("{qc_dir}/multiqc_{assemblies}.html", **{**config, **{'assemblies': set(samples['assembly'])}}),
+         [expand("{result_dir}/trackhub", **config)] if config['create_trackhub'] else []

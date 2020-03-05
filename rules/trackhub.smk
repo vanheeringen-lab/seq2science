@@ -408,6 +408,8 @@ def get_trackhub_files(wildcards):
     for assembly in set(samples['assembly']):
         # first, checks if get_genome still needs to run
         # second, checks if an annotation file was found
+        # TODO: use next 2 lines again when checkpoints are stable
+        #  1) does the trackhub input update? 2) does ruleorder work?
         # f = os.path.splitext(checkpoints.get_genome.get(assembly=assembly).output[0])[0]
         # gtf = any([os.path.isfile(f+".annotation.gtf"), os.path.isfile(f+".gtf")])
         gtf = True if get_workflow() == 'rna_seq' else False
@@ -417,9 +419,13 @@ def get_trackhub_files(wildcards):
                                 allow_redirects=True)
         assert response.ok, "Make sure you are connected to the internet"
 
+        # get the name of the assembly without patch number
+        assembly_no_patch = \
+            [split for split in re.split(r"(.+)(?=\.p\d)", assembly) if split != ''][0]
+
         # see if the title of the page mentions our assembly
-        if not any(assembly == x for x in
-                   re.search(r'<TITLE>(.*?)</TITLE>', response.text).group(1).split(' ')):
+        if not any(assembly_no_patch == x for x in
+                   re.search(r'UCSC Genome Browser on (.*?) Assembly', response.text).group(1).split(' ')):        
             trackfiles['twobits'].append(f"{config['genome_dir']}/{assembly}/{assembly}.2bit")
             trackfiles['gcPercent'].append(f"{config['genome_dir']}/{assembly}/{assembly}.gc5Base.bw")
             trackfiles['cytobands'].append(f"{config['genome_dir']}/{assembly}/cytoBandIdeo.bb")
@@ -430,7 +436,7 @@ def get_trackhub_files(wildcards):
                 trackfiles['annotations'].append(f"{config['genome_dir']}/{assembly}/{assembly}.bb")
 
     # Get the ATAC or RNA seq files
-    if 'atac_seq' in get_workflow():
+    if get_workflow() == 'atac_seq':
         # get all the peak files
         for sample in breps.index:
             trackfiles['bigpeaks'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{breps.loc[sample, 'assembly']}-{sample}.bigNarrowPeak", **config))
@@ -439,7 +445,7 @@ def get_trackhub_files(wildcards):
         for sample in treps.index:
             trackfiles['bigwigs'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{treps.loc[sample, 'assembly']}-{sample}.bw", **config))
 
-    elif 'rna_seq' in get_workflow():
+    elif get_workflow() in ['alignment', 'rna_seq']:
         # get all the bigwigs
         for sample in treps.index:
             for bw in get_bigwig_strand(sample):
@@ -613,7 +619,7 @@ rule trackhub:
                             priority += 1
 
                 # RNA-seq trackhub
-                elif 'rna_seq' in get_workflow():
+                elif get_workflow() in ['alignment', 'rna_seq']:
                     for sample in treps[treps['assembly'] == assembly].index:
                         for bw in get_bigwig_strand(sample):
                             bigwig = f"{config['result_dir']}/bigwigs/{assembly}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw"
