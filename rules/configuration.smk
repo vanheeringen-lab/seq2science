@@ -339,13 +339,13 @@ for key, value in config.items():
      logger.info(f"{key: <23}: {value}")
 logger.info("\n\n")
 
-# save a copy of the latest samples and config file in the result_dir
-subprocess.check_call(f"mkdir -p {config['result_dir']}", shell=True)
-for file in [config['samples'], workflow.configfiles[0]]:
-    src = os.path.join(os.getcwd(), file)
-    dst = os.path.join(config['result_dir'], file)
-    if src != dst:
-        subprocess.check_call(f"cp -fH {src} {dst}", shell=True)
+# # save a copy of the latest samples and config file in the result_dir
+# subprocess.check_call(f"mkdir -p {config['result_dir']}", shell=True)
+# for file in [config['samples'], workflow.configfiles[0]]:
+#     src = os.path.join(os.getcwd(), file)
+#     dst = os.path.join(config['result_dir'], file)
+#     if src != dst:
+#         subprocess.check_call(f"cp -fH {src} {dst}", shell=True)
 
 
 # check if a newer version of the Snakemake-workflows (master branch) is available
