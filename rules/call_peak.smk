@@ -18,9 +18,9 @@ rule genrich_pileup:
         "../envs/genrich.yaml"
     params:
         config['peak_caller'].get('genrich', " ")  # TODO: move this to config.schema.yaml
-    threads: 15
+    threads: 1
     resources:
-        mem_gb=7
+        mem_gb=10
     shell:
         """
         input=$(echo {input} | tr ' ' ',')
@@ -249,9 +249,9 @@ if 'condition' in samples:
                     "../envs/genrich.yaml"
                 params:
                     config['peak_caller'].get('genrich', " ")  # TODO: move this to config.schema.yaml
-                threads: 15
+                threads: 1
                 resources:
-                    mem_gb=7
+                    mem_gb=10
                 shell:
                     """
                     input=$(echo {input} | tr ' ' ',')
