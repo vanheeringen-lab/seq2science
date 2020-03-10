@@ -48,8 +48,6 @@ rule coverage_table:
         expand("{log_dir}/multicov/{{assembly}}-{{peak_caller}}-{{sorter}}-{{sorting}}.benchmark.txt", **config)[0]
     conda:
         "../envs/gimme.yaml"
-    params:
-        files=lambda wildcards, input: "\\t".join([file.split('-')[-2].split('.')[0] for file in input.replicates])
     shell:
         "coverage_table -p {input.peaks} -d {input.replicates} > {output} 2> {log}"
 
