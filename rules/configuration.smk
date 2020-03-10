@@ -257,7 +257,6 @@ def get_layout_trace(sample):
 
 # do this locked to avoid parallel ncbi requests with the same key, and to avoid
 # multiple writes/reads at the sametime to layouts.p
-
 # let's ignore locks that are older than 5 minutes
 if os.path.exists(layout_cachefile_lock) and \
         time.time() - os.stat(layout_cachefile_lock).st_mtime > 5 * 60:

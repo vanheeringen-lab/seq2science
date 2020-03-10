@@ -378,3 +378,37 @@ rule mark_duplicates:
     shell:
         "picard MarkDuplicates {params} INPUT={input} "
         "OUTPUT={output.bam} METRICS_FILE={output.metrics} > {log} 2>&1"
+
+
+rule bam2cram:
+    input:
+         bam=rules.mark_duplicates.output.bam,
+         assembly=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config)
+    output:
+        expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.cram", **config),
+    log:
+        expand("{log_dir}/bam2cram/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/bam2cram/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.benchmark.txt", **config)[0]
+    params:
+        threads=lambda wildcards, input, output, threads: threads - 1
+    threads: 4
+    conda:
+        "../envs/samtools.yaml"
+    shell:
+        "samtools view -@ {threads} -T {input.assembly} -C {input.bam} > {output} 2> {log}"
+
+
+rule samtools_index_cram:
+    input:
+        expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.cram", **config),
+    output:
+        expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.cram.crai", **config),
+    log:
+        expand("{log_dir}/samtools_index_cram/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/samtools_index_cram/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.benchmark.txt", **config)[0]
+    conda:
+        "../envs/samtools.yaml"
+    shell:
+        "samtools index {input} {output} > {log} 2>&1"

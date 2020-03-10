@@ -87,6 +87,9 @@ pipeline {
                         snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/samtools_queryname.yaml  --quiet
                         snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/sambamba_coordinate.yaml --quiet
                         snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/sambamba_queryname.yaml  --quiet
+
+                        printf "\ntest cram support\n\n"
+                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/cram_no_bam.yaml --quiet
                         '''
                     },
                     "2 ATAC-seq" : {
