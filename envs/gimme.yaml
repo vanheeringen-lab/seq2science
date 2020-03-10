@@ -1,0 +1,8 @@
+name: gimme
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - bioconda::gimmemotifs=0.14.3
+  - bioconda::biofluff=3.0.3
