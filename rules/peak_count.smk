@@ -23,7 +23,7 @@ rule peak_union:
         "cat {input} | sort -k1,1 -k2,2n | mergeBed -i stdin > {output}"
 
 
-def get_multicov_replicates(file_ext):
+def get_coverage_table_replicates(file_ext):
     def wrapped(wildcards):
         if 'condition' in samples and config.get('combine_replicates', '') == 'merge':
             # if replicates' fastqs are merged get the merged bam
@@ -35,23 +35,21 @@ def get_multicov_replicates(file_ext):
     return wrapped
 
 
-rule multicov:
+rule coverage_table:
     input:
         peaks=rules.peak_union.output,
-        replicates=get_multicov_replicates('bam'),
-        replicate_bai=get_multicov_replicates('bam.bai')
+        replicates=get_coverage_table_replicates('bam'),
+        replicate_bai=get_coverage_table_replicates('bam.bai')
     output:
-        expand("{result_dir}/count_table/{{peak_caller}}/count_table_{{assembly}}.{{sorter}}-{{sorting}}.bed", **config)
+        expand("{result_dir}/count_table/{{peak_caller}}/count_table_{{assembly}}.{{sorter}}-{{sorting}}.txt", **config)
     log:
         expand("{log_dir}/multicov/{{assembly}}-{{peak_caller}}-{{sorter}}-{{sorting}}.log", **config)
     benchmark:
         expand("{log_dir}/multicov/{{assembly}}-{{peak_caller}}-{{sorter}}-{{sorting}}.benchmark.txt", **config)[0]
     conda:
-        "../envs/bedtools.yaml"
+        "../envs/gimme.yaml"
     params:
         files=lambda wildcards, input: "\\t".join([file.split('-')[-2].split('.')[0] for file in input.replicates])
     shell:
-        """
-        echo -e "QNAME\\tstart\\tend\\t{params.files}" > {output}
-        bedtools multicov -bams {input.replicates} -bed {input.peaks} >> {output}
-        """
+        "coverage_table -p {input.peaks} -d {input.replicates} > {output} 2> {log}"
+
