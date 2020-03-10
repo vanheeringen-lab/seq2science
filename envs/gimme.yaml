@@ -6,4 +6,3 @@ channels:
 dependencies:
   - bioconda::gimmemotifs=0.14.3
   - bioconda::biofluff=3.0.3
-
