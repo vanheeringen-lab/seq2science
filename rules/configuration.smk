@@ -259,7 +259,7 @@ def get_layout_trace(sample):
 # multiple writes/reads at the sametime to layouts.p
 
 # let's ignore locks that are older than 5 minutes
-if os.exists(layout_cachefile_lock) and \
+if os.path.exists(layout_cachefile_lock) and \
         time.time() - os.stat(layout_cachefile_lock).st_mtime > 5 * 60:
     os.remove(layout_cachefile_lock)
 
