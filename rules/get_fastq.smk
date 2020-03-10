@@ -19,8 +19,6 @@ rule id2sra:
         parallel_downloads=1
     wildcard_constraints:
         sample="(GSM|SRR|ERR|DRR)\d+"
-    conda:
-        "../envs/get_fastq.yaml"
     params:
         ascp_path=config.get('ascp_path', "NO_ASCP_PATH_PROVIDED"),
         ascp_key= config.get('ascp_key', "NO_ASCP_key_PROVIDED")
