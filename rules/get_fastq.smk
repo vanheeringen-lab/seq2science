@@ -64,7 +64,6 @@ rule id2sra:
             index=0
             for ID in $IDS;
             do
-                echo $ID
                 PREFIX=$(echo $ID | cut -c1-6);
                 SUFFIX=$(echo -n $ID | tail -c 3);
         
