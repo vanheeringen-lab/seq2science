@@ -1,6 +1,7 @@
 import glob
 import os
 import re
+import time
 
 
 rule id2sra:
@@ -36,35 +37,47 @@ rule id2sra:
                 fi;
                 TYPE_L=$(echo $TYPE_U | tr '[:upper:]' '[:lower:]');
                 echo "ids: $IDS, type (uppercase): $TYPE_U, type (lowercase): $TYPE_L" >> {log}
+                mkdir {output}
+                echo $TYPE_L > {output}/type_l
+                echo $TYPE_U > {output}/type_u
+                echo $IDS > {output}/ids
+                """)
+            time.sleep(2)
+
+        shell(
+            """
+            read TYPE_L < {output}/type_l
+            read TYPE_U < {output}/type_u
+            read IDS < {output}/ids
+            rm {output}/type_l {output}/type_u {output}/ids
+            for ID in $IDS;
+            do
+                PREFIX=$(echo $ID | cut -c1-6);
+                SUFFIX=$(echo -n $ID | tail -c 3);
         
-                for ID in $IDS;
-                do
-                    PREFIX=$(echo $ID | cut -c1-6);
-                    SUFFIX=$(echo -n $ID | tail -c 3);
+                URL_ENA1="era-fasp@fasp.sra.ebi.ac.uk:/vol1/$TYPE_L/$PREFIX/$SUFFIX/$ID";
+                URL_ENA2="era-fasp@fasp.sra.ebi.ac.uk:/vol1/$TYPE_L/$PREFIX/$ID";
+                URL_NCBI="anonftp@ftp.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/$TYPE_U/$PREFIX/$ID/$ID.sra";
+                WGET_URL=$(esearch -db sra -query $ID | efetch --format runinfo | grep $ID | cut -d ',' -f 10 | grep http);
         
-                    URL_ENA1="era-fasp@fasp.sra.ebi.ac.uk:/vol1/$TYPE_L/$PREFIX/$SUFFIX/$ID";
-                    URL_ENA2="era-fasp@fasp.sra.ebi.ac.uk:/vol1/$TYPE_L/$PREFIX/$ID";
-                    URL_NCBI="anonftp@ftp.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/$TYPE_U/$PREFIX/$ID/$ID.sra";
-                    WGET_URL=$(esearch -db sra -query $ID | efetch --format runinfo | grep $ID | cut -d ',' -f 10 | grep http);
+                echo "trying to download $ID from, respectively: \n$URL_ENA1 \n$URL_ENA2 \n$URL_NCBI \n$WGET_URL" >> {log}
+                # first try the ENA (which has at least two different filing systems), if not successful, try NCBI
+                # if none of the ascp servers work, or ascp is not defined in the config, then simply wget
+                {params.ascp_path} -i {params.ascp_key} -P33001 -T -d -k 0 -Q -l 2G -m 250M $URL_ENA1 {output[0]} >> {log} 2>&1 ||
+                {params.ascp_path} -i {params.ascp_key} -P33001 -T -d -k 0 -Q -l 2G -m 250M $URL_ENA2 {output[0]} >> {log} 2>&1 ||
+                {params.ascp_path} -i {params.ascp_key}         -T -d -k 0 -Q -l 2G -m 250M $URL_NCBI {output[0]} >> {log} 2>&1 ||
+                (mkdir -p {output[0]} >> {log} 2>&1 && wget -O {output[0]}/$ID -a {log} -nv $WGET_URL >> {log} 2>&1)
+            done;
         
-                    echo "trying to download $ID from, respectively: \n$URL_ENA1 \n$URL_ENA2 \n$URL_NCBI \n$WGET_URL" >> {log}
-                    # first try the ENA (which has at least two different filing systems), if not successful, try NCBI
-                    # if none of the ascp servers work, or ascp is not defined in the config, then simply wget
-                    {params.ascp_path} -i {params.ascp_key} -P33001 -T -d -k 0 -Q -l 2G -m 250M $URL_ENA1 {output[0]} >> {log} 2>&1 ||
-                    {params.ascp_path} -i {params.ascp_key} -P33001 -T -d -k 0 -Q -l 2G -m 250M $URL_ENA2 {output[0]} >> {log} 2>&1 ||
-                    {params.ascp_path} -i {params.ascp_key}         -T -d -k 0 -Q -l 2G -m 250M $URL_NCBI {output[0]} >> {log} 2>&1 ||
-                    (mkdir -p {output[0]} >> {log} 2>&1 && wget -O {output[0]}/$ID -a {log} -nv $WGET_URL >> {log} 2>&1)
-                done;
-        
-                #if the folder contains multiple files, concatenate them
-                if [[ $(ls -1q {output[0]} | wc -l) > 1 ]]; then
-                  catfile={output[0]}/$TYPE_U'_concatenated'
-                  for file in {output[0]}/*; do
-                    cat $file >> $catfile && rm $file
-                  done
-                fi
-                """
-            )
+            #if the folder contains multiple files, concatenate them
+            if [[ $(ls -1q {output[0]} | wc -l) > 1 ]]; then
+                catfile={output[0]}/$TYPE_U'_concatenated'
+                for file in {output[0]}/*; do
+                cat $file >> $catfile && rm $file
+            done
+            fi
+            """)
+
 
 rule sra2fastq_SE:
     """
