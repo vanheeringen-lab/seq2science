@@ -41,36 +41,36 @@ rule id2sra:
                 declare -a URLS
                 for ID in $IDS;
                 do
-                    sleep 3s;
+                    sleep 2s;
                     WGET_URL=$(esearch -db sra -query $ID | efetch --format runinfo | grep $ID | cut -d ',' -f 10 | grep http);
                     URLS+=($WGET_URL);
                 done;
 
                 mkdir {output}
+                printf '%s\n' "${{IDS[@]}}" > {output}/ids
+                printf '%s\n' "${{URLS[@]}}" > {output}/urls
                 echo $TYPE_L > {output}/type_l
                 echo $TYPE_U > {output}/type_u
-                echo $IDS > {output}/ids
-                echo $URLS > {output}/urls            
                 """)
-            time.sleep(3)
+            time.sleep(2)
 
         shell(
             """
             read TYPE_L < {output}/type_l
             read TYPE_U < {output}/type_u
-            read IDS < {output}/ids
-            read URLS < {output}/urls
+            readarray -t IDS < {output}/ids
+            readarray -t URLS < {output}/urls
             rm {output}/*
-            index=0
-            for ID in $IDS;
-            do
+            for i in ${{!IDS[@]}}; do
+                ID="${{IDS[i]}}"
+
                 PREFIX=$(echo $ID | cut -c1-6);
                 SUFFIX=$(echo -n $ID | tail -c 3);
         
                 URL_ENA1="era-fasp@fasp.sra.ebi.ac.uk:/vol1/$TYPE_L/$PREFIX/$SUFFIX/$ID";
                 URL_ENA2="era-fasp@fasp.sra.ebi.ac.uk:/vol1/$TYPE_L/$PREFIX/$ID";
                 URL_NCBI="anonftp@ftp.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/$TYPE_U/$PREFIX/$ID/$ID.sra";
-                WGET_URL=${{URLS[$index]}}
+                WGET_URL=${{URLS[i]}}
 
                 echo "trying to download $ID from, respectively: \n$URL_ENA1 \n$URL_ENA2 \n$URL_NCBI \n$WGET_URL" >> {log}
                 # first try the ENA (which has at least two different filing systems), if not successful, try NCBI
@@ -79,7 +79,6 @@ rule id2sra:
                 {params.ascp_path} -i {params.ascp_key} -P33001 -T -d -k 0 -Q -l 2G -m 250M $URL_ENA2 {output[0]} >> {log} 2>&1 ||
                 {params.ascp_path} -i {params.ascp_key}         -T -d -k 0 -Q -l 2G -m 250M $URL_NCBI {output[0]} >> {log} 2>&1 ||
                 (mkdir -p {output[0]} >> {log} 2>&1 && wget -O {output[0]}/$ID -a {log} -nv $WGET_URL >> {log} 2>&1)
-                (( index++ ))
             done;
         
             #if the folder contains multiple files, concatenate them
