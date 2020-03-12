@@ -11,11 +11,11 @@ rule peak_union:
     log:
         expand("{log_dir}/peak_union/{{assembly}}-{{peak_caller}}.log", **config)
     benchmark:
-        expand("{log_dir}/peak_union/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/peak_union/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     conda:
         "../envs/bedtools.yaml"
     shell:
-        "cat {input} | sort -k1,1 -k2,2n | mergeBed -i stdin > {output}"
+        "cat {input} | sort -k1,1 -k2,2n | mergeBed -i stdin > {output} 2> {log}"
 
 
 def get_coverage_table_replicates(file_ext):
@@ -35,9 +35,8 @@ rule coverage_table:
     log:
         expand("{log_dir}/multicov/{{assembly}}-{{peak_caller}}-{{sorter}}-{{sorting}}.log", **config)
     benchmark:
-        expand("{log_dir}/multicov/{{assembly}}-{{peak_caller}}-{{sorter}}-{{sorting}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/multicov/{{assembly}}-{{peak_caller}}-{{sorter}}-{{sorting}}.benchmark.txt", **config)[0]
     conda:
         "../envs/gimme.yaml"
     shell:
         "coverage_table -p {input.peaks} -d {input.replicates} > {output} 2> {log}"
-

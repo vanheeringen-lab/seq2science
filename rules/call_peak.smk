@@ -20,7 +20,7 @@ rule genrich_pileup:
         config['peak_caller'].get('genrich', " ")  # TODO: move this to config.schema.yaml
     threads: 1
     resources:
-        mem_gb=10
+        mem_gb=8
     shell:
         """
         input=$(echo {input} | tr ' ' ',')
@@ -251,7 +251,7 @@ if 'condition' in samples:
                     config['peak_caller'].get('genrich', " ")  # TODO: move this to config.schema.yaml
                 threads: 1
                 resources:
-                    mem_gb=10
+                    mem_gb=8
                 shell:
                     """
                     input=$(echo {input} | tr ' ' ',')
@@ -351,7 +351,7 @@ if 'condition' in samples:
                         mkdir -p $(dirname {output.peaks}); ln {input.treatment} {output.peaks}
                     else
                         macs2 cmbreps -i {input.bdgcmp} -o {output.tmpbdg} -m fisher > {log} 2>&1
-                        macs2 bdgpeakcall -i {output.tmpbdg} -o {output.tmppeaks}
+                        macs2 bdgpeakcall -i {output.tmpbdg} -o {output.tmppeaks} >> {log} 2>&1
                         cat {output.tmppeaks} | tail -n +2 > {output.peaks}
                     fi
                     """
