@@ -4,4 +4,4 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - bioconda::mtnucratio=0.5
+  - bioconda::mtnucratio=0.7

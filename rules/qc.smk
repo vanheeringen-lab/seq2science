@@ -109,27 +109,25 @@ def get_chrM_name(wildcards, input):
         name = [chrm for chrm in ['chrM', 'MT'] if chrm in open(str(input.chr_names), 'r').read()]
         if len(name) > 0:
             return name[0]
-    return ""
+    return "no_chrm_found"
 
 
 rule MTNucRatioCalculator:
     """
     Calculate the ratio mitochondrial dna in your sample.
-    Note: version 0.5 is bugged in what output it uses, and currently the {output} is just there
-    for form.
     """
     input:
         bam=expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-unsieved.bam", **config),
         chr_names=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config)
     output:
-        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.bam.mtnucratiomtnuc.json", **config)
+        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-unsieved.bam.mtnucratiomtnuc.json", **config)
     conda:
         "../envs/mtnucratio.yaml"
     params:
         lambda wildcards, input: get_chrM_name(wildcards, input)
     shell:
         """
-        mtnucratio {input.bam} {output} {params}
+        mtnucratio {input.bam} {params}
         """
 
 
@@ -138,7 +136,7 @@ rule multiqc_header_info:
     Generate a multiqc header file with contact info and date of multiqc generation.
     """
     output:
-        expand('{qc_dir}/header_info.yaml', **config)
+        temp(expand('{qc_dir}/header_info.yaml', **config))
     run:
         import os
         import copy
@@ -195,7 +193,7 @@ rule multiqc_config_info:
     Generate a multiqc header file with contact info and date of multiqc generation.
     """
     output:
-        expand('{qc_dir}/config_info.yaml', **config)
+        temp(expand('{qc_dir}/config_info.yaml', **config))
     run:
         with open(output[0], "w") as f:
             f.write(
@@ -210,24 +208,37 @@ rule multiqc_config_info:
                 "GSM2219688_pass_1,42")
 
 
+rule multiqc_sample_names:
+    """
+    
+    """
+    output:
+        temp(expand('{qc_dir}/sample_names.tsv', **config))
+    run:
+        newsamples = samples.reset_index(level=0, inplace=False)
+        newsamples.to_csv(output[0], sep="\t", index=False)
+
 def get_qc_files(wildcards):
     assert 'quality_control' in globals(), "When trying to generate multiqc output, make sure that the "\
                                            "variable 'quality_control' exists and contains all the "\
                                            "relevant quality control functions."
-    qc = []
+    qc = dict()
+    qc['header'] = expand('{qc_dir}/header_info.yaml', **config)[0]
+    qc['sample_names'] = expand('{qc_dir}/sample_names.tsv', **config)[0]
+    qc['files'] = []
     if 'condition' in samples and config.get('combine_replicates', '') == 'merge':
         # trimming qc on individual samples, other qc on merged replicates
         for sample in samples[samples['assembly'] == wildcards.assembly].index:
-            qc.extend(get_trimming_qc(sample))
+            qc['files'].extend(get_trimming_qc(sample))
 
         for condition in set(samples[samples['assembly'] == wildcards.assembly].condition):
             for function in [func for func in quality_control if
                              'get_trimming_qc' is not func.__name__]:
-                qc.extend(function(condition))
+                qc['files'].extend(function(condition))
     else:
         for sample in samples[samples['assembly'] == wildcards.assembly].index:
             for function in quality_control:
-                qc.extend(function(sample))
+                qc['files'].extend(function(sample))
     return qc
 
 
@@ -236,27 +247,26 @@ rule multiqc:
     Aggregate all the quality control metrics for every sample into a single multiqc report.
     """
     input:
-        qc=get_qc_files,
-        header=expand('{qc_dir}/header_info.yaml', **config),
-        # config=expand('{qc_dir}/config_info.yaml', **config)
+        unpack(get_qc_files)
     output:
         expand("{qc_dir}/multiqc_{{assembly}}.html", **config),
         directory(expand("{qc_dir}/multiqc_{{assembly}}_data", **config))
     params:
         dir = "{qc_dir}/".format(**config),
-        fqext1 = '_' + config['fqext1']
+        fqext1 = '_' + config['fqext1'],
     log:
         expand("{log_dir}/multiqc_{{assembly}}.log", **config)
     conda:
         "../envs/qc.yaml"
     shell:
         """
-        multiqc {input} -o {params.dir} -n multiqc_{wildcards.assembly}.html \
-        --config ../../schemas/multiqc_config.yaml                           \
-        --config {input.header}                                              \
-        --cl_config "extra_fn_clean_exts: [                                  \
-            {{'pattern': ^.*{wildcards.assembly}-, 'type': 'regex'}},        \
-            {{'pattern': {params.fqext1},          'type': 'regex'}},        \
+        multiqc {input.files} -o {params.dir} -n multiqc_{wildcards.assembly}.html \
+        --config ../../schemas/multiqc_config.yaml                                 \
+        --config {input.header}                                                    \
+        --sample-names {input.sample_names}                                        \
+        --cl_config "extra_fn_clean_exts: [                                        \
+            {{'pattern': ^.*{wildcards.assembly}-, 'type': 'regex'}},              \
+            {{'pattern': {params.fqext1},          'type': 'regex'}},              \
             ]" > {log} 2>&1
         """
 
@@ -286,7 +296,7 @@ def get_alignment_qc(sample):
         output.append(f"{{qc_dir}}/InsertSizeMetrics/{{{{assembly}}}}-{sample}.tsv")
 
     # get the ratio mitochondrial dna
-    output.append(f"{{result_dir}}/{config['aligner']}/{{{{assembly}}}}-{sample}.samtools-coordinate.bam.mtnucratiomtnuc.json")
+    output.append(f"{{result_dir}}/{config['aligner']}/{{{{assembly}}}}-{sample}.samtools-coordinate-unsieved.bam.mtnucratiomtnuc.json")
     return expand(output, **config)
 
 
