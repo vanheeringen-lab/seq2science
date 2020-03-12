@@ -55,6 +55,7 @@ pipeline {
         }
 
         stage('Code Style') {
+            steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                     sh '''#!/usr/bin/env bash
                     set -e
