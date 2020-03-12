@@ -369,7 +369,7 @@ pipeline {
 
                 # test simple
                 snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq \
-                --use-conda -j $CORES --configfile Jenkins/alignment/bowtie2.yaml \
+                --use-conda -j $CORES --configfile Jenkins/alignment/bwa.yaml \
                 --config samples=../../Jenkins/alignment/remote_sample.tsv fastq_dir=../download_fastq/fastq genome_dir=../download_fastq
 
                 # note: using the fastq and genome downloaded earlier. Tinydata doesn't work with rule featureCounts (would be even faster otherwise)
