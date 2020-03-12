@@ -1,12 +1,7 @@
 def get_peak_replicates(wildcards):
-    if 'condition' in samples and config.get('combine_replicates', False):
-        # if we have conditions use those peaks
-        return expand([f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{condition}_peaks.narrowPeak"
-            for condition in set(samples[samples['assembly'] == wildcards.assembly]['condition'])], **config)
-    # otherwise all the separate ones
-    return expand([f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{replicate}_peaks.narrowPeak"
-        for replicate in samples[samples['assembly'] == wildcards.assembly].index], **config)
-
+    ftype = 'narrowPeak' if wildcards.peak_caller in ['macs2', 'genrich'] else 'gappedPeak'
+    return expand([f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{replicate}_peaks.{ftype}"
+        for replicate in treps[treps['assembly'] == wildcards.assembly].index], **config)
 
 rule peak_union:
     input:
@@ -25,13 +20,8 @@ rule peak_union:
 
 def get_coverage_table_replicates(file_ext):
     def wrapped(wildcards):
-        if 'condition' in samples and config.get('combine_replicates', '') == 'merge':
-            # if replicates' fastqs are merged get the merged bam
-            return expand([f"{{dedup_dir}}/{wildcards.assembly}-{replicate}.{wildcards.sorter}-{wildcards.sorting}.{file_ext}"
-                for replicate in set(samples[samples['assembly'] == wildcards.assembly]['condition'])], **config)
-        # otherwise all the separate ones
         return expand([f"{{dedup_dir}}/{wildcards.assembly}-{replicate}.{wildcards.sorter}-{wildcards.sorting}.{file_ext}"
-            for replicate in samples[samples['assembly'] == wildcards.assembly].index], **config)
+            for replicate in treps[treps['assembly'] == wildcards.assembly].index], **config)
     return wrapped
 
 

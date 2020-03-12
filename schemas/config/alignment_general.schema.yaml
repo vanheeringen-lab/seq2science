@@ -25,10 +25,15 @@ properties:
     type: string
 
   # replicate handling
-  combine_replicates:
-    description: which method to use to combine replicates (concatenation, idr or fisher)
-    default: merge # for technical replicates
-    enum: [fisher, idr, merge]
+  technical_replicates:
+    description: concatenates samples depending on the names given in the 'replicates' column of samples.tsv
+    default: merge
+    enum: [merge, keep]
+
+  biological_replicates:
+    description: which method to use to combine replicates (fisher (n >=2), idr (n==2), or keep)
+    default: keep
+    enum: [fisher, idr, keep]
     type: string
 
   # aligner
