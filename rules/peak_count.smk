@@ -11,11 +11,11 @@ rule peak_union:
     log:
         expand("{log_dir}/peak_union/{{assembly}}-{{peak_caller}}.log", **config)
     benchmark:
-        expand("{log_dir}/peak_union/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/peak_union/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     conda:
         "../envs/bedtools.yaml"
     shell:
-        "cat {input} | sort -k1,1 -k2,2n | mergeBed -i stdin > {output}"
+        "cat {input} | sort -k1,1 -k2,2n | mergeBed -i stdin > {output} 2> {log}"
 
 
 def get_multicov_replicates(file_ext):
@@ -35,7 +35,7 @@ rule multicov:
     log:
         expand("{log_dir}/multicov/{{assembly}}-{{peak_caller}}-{{sorter}}-{{sorting}}.log", **config)
     benchmark:
-        expand("{log_dir}/multicov/{{assembly}}-{{peak_caller}}-{{sorter}}-{{sorting}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/multicov/{{assembly}}-{{peak_caller}}-{{sorter}}-{{sorting}}.benchmark.txt", **config)[0]
     conda:
         "../envs/bedtools.yaml"
     params:
@@ -43,5 +43,5 @@ rule multicov:
     shell:
         """
         echo -e "QNAME\\tstart\\tend\\t{params.files}" > {output}
-        bedtools multicov -bams {input.replicates} -bed {input.peaks} >> {output}
+        bedtools multicov -bams {input.replicates} -bed {input.peaks} >> {output} 2>> {log}
         """

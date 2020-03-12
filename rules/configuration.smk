@@ -3,6 +3,7 @@ import os.path
 import psutil
 import pickle
 import re
+import shutil
 import subprocess
 import time
 
@@ -269,7 +270,7 @@ def get_layout_trace(sample):
     return None
 
 # do this locked to avoid parallel ncbi requests with the same key, and to avoid
-# multiple writes/reads at the sametime to layouts.p
+# multiple writes/reads at the same time to layouts.p
 with FileLock(layout_cachefile_lock):
     # try to load the layout cache, otherwise defaults to empty dictionary
     try:
@@ -339,13 +340,16 @@ for key, value in config.items():
      logger.info(f"{key: <23}: {value}")
 logger.info("\n\n")
 
-# # save a copy of the latest samples and config file in the result_dir
-# subprocess.check_call(f"mkdir -p {config['result_dir']}", shell=True)
-# for file in [config['samples'], workflow.configfiles[0]]:
-#     src = os.path.join(os.getcwd(), file)
-#     dst = os.path.join(config['result_dir'], file)
-#     if src != dst:
-#         subprocess.check_call(f"cp -fH {src} {dst}", shell=True)
+# save a copy of the latest samples and config file in the log_dir
+if os.getcwd() != config['log_dir']:
+    copy_input_lock = f"{config['log_dir']}/copy_input.lock"
+    with FileLock(copy_input_lock):
+        os.makedirs(config['log_dir'], exist_ok=True)
+        for file in [config['samples'], workflow.configfiles[0]]:
+            src = os.path.join(os.getcwd(), file)
+            dst = os.path.join(config['log_dir'], file)
+            shutil.copy(src, dst)
+    os.remove(copy_input_lock)
 
 
 # check if a newer version of the Snakemake-workflows (master branch) is available
