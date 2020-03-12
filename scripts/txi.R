@@ -7,7 +7,7 @@ suppressMessages({
   library(SingleCellExperiment)
 })
 
-## snakemake variables
+# snakemake variables
 linked_txome <- snakemake@input$linked_txome
 samples      <- snakemake@input$cts
 assembly     <- snakemake@wildcards$assembly
@@ -15,10 +15,24 @@ out_matrix   <- snakemake@output$counts
 out_SCE      <- snakemake@output$SCE
 log_file     <- snakemake@log[[1]]
 
-## log all console output
+# log all console output
 log <- file(log_file, open="wt")
 sink(log)
 sink(log, type="message")
+
+# log all variables for debugging purposes
+cat('# variables used for this analysis:\n')
+cat('linked_txome <- "', linked_txome, '"\n', sep = "")
+cat('samples      <- "', samples,      '"\n', sep = "")
+cat('assembly     <- "', assembly,     '"\n', sep = "")
+cat('out_matrix   <- "', out_matrix,   '"\n', sep = "")
+cat('out_SCE      <- "', out_SCE,      '"\n', sep = "")
+cat('log_file     <- "', log_file,     '"\n', sep = "")
+cat('\n')
+
+cat('Sessioninfo:\n')
+sessionInfo()
+cat('\n')
 
 
 ## Load linked_txome.json

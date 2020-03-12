@@ -34,6 +34,10 @@ cat('assembly     <- "', assembly,     '"\n', sep = "")
 cat('output       <- "', output,       '"\n', sep = "")
 cat('\n')
 
+cat('Sessioninfo:\n')
+sessionInfo()
+cat('\n')
+
 
 ## parse the design contrast
 # a contrast is always in the form 'batch+condition_group1_group2', where batch(+) is optional

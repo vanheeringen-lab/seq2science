@@ -46,53 +46,59 @@ if config['quantifier'] == 'star':
 
 
 elif config['quantifier'] == 'salmon':
-    if config['decoy_aware_index']:
-        rule salmon_decoy_aware_index:
+    rule salmon_decoy_aware_index:
+        """
+        Make a decoy aware transcript index for Salmon.
+        """
+        input:
+            transcripts=expand("{genome_dir}/{{assembly}}/{{assembly}}.transcripts.fa", **config),
+            decoy_transcripts=expand("{genome_dir}/{{assembly}}/decoy_transcripts/decoys.txt", **config),
+        output:
+            directory(expand("{genome_dir}/{{assembly}}/index/{quantifier}_decoy_aware", **config))
+        log:
+            expand("{log_dir}/{quantifier}_index/{{assembly}}.log", **config)
+        benchmark:
+            expand("{benchmark_dir}/{quantifier}_index/{{assembly}}.benchmark.txt", **config)[0]
+        params:
+            config['quantifier_index']
+        threads: 40
+        conda:
+            "../envs/salmon.yaml"
+        shell:
             """
-            Make a decoy aware transcript index for Salmon.
+            salmon index -t {input.transcripts} --decoys {input.decoy_transcripts} -i {output} {params} \
+            --threads {threads} &> {log}
             """
-            input:
-                transcripts=expand("{genome_dir}/{{assembly}}/{{assembly}}.transcripts.fa", **config),
-                decoy_transcripts=expand("{genome_dir}/{{assembly}}/decoy_transcripts/decoys.txt", **config),
-            output:
-                directory(expand("{genome_dir}/{{assembly}}/index/{quantifier}_decoy_aware", **config))
-            log:
-                expand("{log_dir}/{quantifier}_index/{{assembly}}.log", **config)
-            benchmark:
-                expand("{benchmark_dir}/{quantifier}_index/{{assembly}}.benchmark.txt", **config)[0]
-            params:
-                config['quantifier_index']
-            threads: 40
-            conda:
-                "../envs/salmon.yaml"
-            shell:
-                """
-                salmon index -t {input.transcripts} --decoys {input.decoy_transcripts} -i {output} {params} \
-                --threads {threads} &> {log}
-                """
-    else:
-        rule salmon_index:
-            """
-            Make a decoy unaware transcript index for Salmon.
-            """
-            input:
-                expand("{genome_dir}/{{assembly}}/{{assembly}}.transcripts.fa", **config)
-            output:
-                directory(expand("{genome_dir}/{{assembly}}/index/{quantifier}", **config))
-            log:
-                expand("{log_dir}/{quantifier}_index/{{assembly}}.log", **config)
-            benchmark:
-                expand("{benchmark_dir}/{quantifier}_index/{{assembly}}.benchmark.txt", **config)[0]
-            params:
-                config['quantifier_index']
-            threads: 40
-            conda:
-                "../envs/salmon.yaml"
-            shell:
-                """
-                salmon index -t {input} -i {output} {params} --threads {threads} &> {log}
-                """
 
+    rule salmon_index:
+        """
+        Make a transcriptomic index for Salmon.
+        """
+        input:
+            expand("{genome_dir}/{{assembly}}/{{assembly}}.transcripts.fa", **config)
+        output:
+            directory(expand("{genome_dir}/{{assembly}}/index/{quantifier}", **config))
+        log:
+            expand("{log_dir}/{quantifier}_index/{{assembly}}.log", **config)
+        benchmark:
+            expand("{benchmark_dir}/{quantifier}_index/{{assembly}}.benchmark.txt", **config)[0]
+        params:
+            config['quantifier_index']
+        threads: 40
+        conda:
+            "../envs/salmon.yaml"
+        shell:
+            """
+            salmon index -t {input} -i {output} {params} --threads {threads} &> {log}
+            """
+
+    def get_index(wildcards):
+        # index="{genome_dir}/" + wildcards.assembly + "/index/{quantifier}_decoy_aware" if config["decoy_aware_index"] else "{genome_dir}/" + wildcards.assembly + "/index/{quantifier}"
+        index=f"{{genome_dir}}/{wildcards.assembly}/index/{{quantifier}}"
+        if config["decoy_aware_index"]:
+            index += "_decoy_aware"
+        # index=f"{{genome_dir}}/{wildcards.assembly}/index/{{quantifier}}_decoy_aware" if config["decoy_aware_index"] else f"{{genome_dir}}/{wildcards.assembly}/index/{{quantifier}}"
+        return expand(index, **config)
 
     rule salmon_quant:
         """
