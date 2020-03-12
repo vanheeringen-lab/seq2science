@@ -401,14 +401,12 @@ rule samtools_sort:
     input:
         rules.alignmentsieve.output
     output:
-        temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-{{sorting}}{{sieve}}.bam", **config))
-    wildcard_constraints:
-        sieve="|-sievsort"
-    log:
-        expand("{log_dir}/samtools_sort/{{assembly}}-{{sample}}-samtools_{{sorting}}{{sieve}}.log", **config)
-    group: 'alignment'
-    benchmark:
-        expand("{benchmark_dir}/samtools_sort/{{assembly}}-{{sample}}-{{sorting}}{{sieve}}.benchmark.txt", **config)[0]
+        temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-{{sorting}}-sievsort.bam", **config))
+#    log:
+#        expand("{log_dir}/samtools_sort/{{assembly}}-{{sample}}-samtools_{{sorting}}{{sieve}}.log", **config)
+#    group: 'alignment'
+#    benchmark:
+#        expand("{benchmark_dir}/samtools_sort/{{assembly}}-{{sample}}-{{sorting}}{{sieve}}.benchmark.txt", **config)[0]
     params:
         order=lambda wildcards: "-n" if wildcards.sorting == 'queryname' else '',
         threads=lambda wildcards, input, output, threads: threads - 1
