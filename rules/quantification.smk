@@ -1,6 +1,12 @@
-# STAR can produce bams and gene counts at the same time. This will be done by the rules in alignment,smk
-if config['quantifier'] == 'star' and (config['run_alignment'] == False or config['aligner'] != 'star'):
+if config['quantifier'] == 'star':
+    # star_align also generates bams, required for the trackhub
+    if config['create_trackhub']:
+        ruleorder: star_align > star_quant
+    else:
+        ruleorder: star_quant > star_align
+
     # rule star_index can be found in alignment.smk
+
     rule star_quant:
         """
         Quantify reads against a genome and transcriptome (index) with STAR and output a counts table per sample.
@@ -11,25 +17,30 @@ if config['quantifier'] == 'star' and (config['run_alignment'] == False or confi
         output:
             dir=directory(expand("{result_dir}/{quantifier}/{{assembly}}-{{sample}}", **config)),
         log:
-            expand("{log_dir}/{quantifier}_quant/{{assembly}}-{{sample}}.log", **config)
+            directory(expand("{log_dir}/{quantifier}_quant/{{assembly}}-{{sample}}", **config))
         benchmark:
             expand("{benchmark_dir}/{quantifier}_quant/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
         params:
             input=lambda wildcards, input: f' {input.reads}' if config['layout'][wildcards.sample] == 'SINGLE' else \
                                            f' {input.reads[0]} {input.reads[1]}',
             params=config['quantify']
-        threads: 1
+        threads: 8
         resources:
             mem_gb=30
         conda:
             "../envs/star.yaml"
         shell:
             """
-            mkdir -p {output.dir}
+            trap "find {log} -type f ! -name Log* -exec rm {{}} \;" EXIT
+            mkdir -p {log}
+            mkdir -p {output.dir}                
             
             STAR --genomeDir {input.index} --readFilesIn {params.input} --quantMode GeneCounts \
-            --outFileNamePrefix {output.dir}/ --runThreadN {threads} {params.params} \
-            --outSAMtype None &> {log}
+            --outFileNamePrefix {log}/ --outTmpDir {output.dir}/STARtmp --runThreadN {threads} {params.params} \
+            --outSAMtype None > {log}/Log.std_stderr.out 2>&1
+            
+            # move all non-log files to output directory (this way the log files are kept on error)
+            find {log} -type f ! -name Log* -exec mv {{}} {output.dir} \;
             """
 
 

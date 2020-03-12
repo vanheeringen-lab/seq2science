@@ -5,7 +5,9 @@ config['genomepy_temp'] = ["annotation.bed.gz", "annotation.gff.gz"]
 if 'rna_seq' in get_workflow() or config['aligner'] == 'star':
     config['genome_types'].append("annotation.gtf")
 
-checkpoint get_genome:
+# TODO: return to checkpoint get_genome when checkpoints are stable
+#  1) does the trackhub input update? 2) does ruleorder work?
+rule get_genome:
     """
     Download a genome through genomepy.
     Additionally downloads the gene annotation if required downstream.
@@ -35,9 +37,10 @@ checkpoint get_genome:
     shell:
         """
         # turn off plugins and reset on exit. delete temp files on exit.
-        active_plugins=$(genomepy config show | grep -Po '(?<=- ).*' | paste -s -d, -)
+        active_plugins=$(genomepy config show | grep -Po '(?<=- ).*' | paste -s -d, -) || echo ""
         trap "genomepy plugin enable {{$active_plugins,}} >> {log} 2>&1; rm -f {params.temp}" EXIT
         genomepy plugin disable {{blacklist,bowtie2,bwa,star,gmap,hisat2,minimap2}} >> {log} 2>&1
+        genomepy plugin enable sizes >> {log} 2>&1
         
         # download the genome and attempt to download the annotation
         if [[ ! {params.provider} = None  ]]; then

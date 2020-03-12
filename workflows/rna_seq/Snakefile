@@ -25,7 +25,7 @@ include: f"{config['rule_dir']}/qc.smk"
 
 
 # load the quality control files
-quality_control = [get_trimming_qc, get_alignment_qc] if config['run_alignment'] else [get_trimming_qc]
+quality_control = [get_trimming_qc, get_alignment_qc] if config['create_trackhub'] else [get_trimming_qc]
 
 # load DE analysis contrasts
 contrasts = get_contrasts()
@@ -43,4 +43,4 @@ rule count_all:
 
         [expand("{dge_dir}/{assemblies}-clustering.svg",              **{**config, **{'assemblies': set(samples['assembly'])}})] if len(samples.index) > 1 and any([len(samples['condition'].drop_duplicates()) > 1 if 'condition' in samples else True]) else [],
 
-        [expand("{result_dir}/trackhub", **config)] if config['run_alignment'] else []
+        [expand("{result_dir}/trackhub", **config)] if config['create_trackhub'] else []

@@ -13,12 +13,6 @@ properties:
     default: deseq2
     type: string
 
-  # scope of analysis: align and quantify or quantify only
-  run_alignment:
-    description: Run aligning to the genome or only output a counts table
-    enum: [True, False]
-    default: False
-
   quantifier:
     description: which quantifier to use
     properties:

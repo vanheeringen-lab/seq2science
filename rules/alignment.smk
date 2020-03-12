@@ -1,5 +1,5 @@
 def get_reads(wildcards):
-    if config.get('combine_replicates', '') == 'merge' and 'condition' in samples:
+    if 'replicate' in samples and config.get('technical_replicates') == 'merge':
         if config['layout'].get(wildcards.sample, False) == "SINGLE":
             return expand("{trimmed_dir}/merged/{{sample}}_trimmed.{fqsuffix}.gz", **config)
         return sorted(expand("{trimmed_dir}/merged/{{sample}}_{fqext}_trimmed.{fqsuffix}.gz", **config))
@@ -241,8 +241,8 @@ elif config['aligner'] == 'star' or config.get('quantifier', '') == 'star':
             --genomeDir {output} --outFileNamePrefix {output}/ \
             --runThreadN {threads} $NBits $NBases {params} >> {log} 2>&1
             """
-
-
+            
+            
     if config.get('run_alignment', True):
         rule star_align:
             """
@@ -255,25 +255,30 @@ elif config['aligner'] == 'star' or config.get('quantifier', '') == 'star':
                 dir =directory(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}", **config)),
                 pipe=get_alignment_pipes()
             log:
-                expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}.log", **config)
+                directory(expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}", **config))
             benchmark:
                 expand("{benchmark_dir}/{aligner}_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
             params:
                 input=lambda wildcards, input: f' {input.reads}' if config['layout'][wildcards.sample] == 'SINGLE' else \
                                                f' {input.reads[0]} {input.reads[1]}',
                 params=config['align']
-            threads: 1
+            threads: 8
             resources:
                 mem_gb=30
             conda:
                 "../envs/star.yaml"
             shell:
                 """
-                mkdir -p {output.dir}
-                
+                trap "find {log} -type f ! -name Log* -exec rm {{}} \;" EXIT
+                mkdir -p {log}
+                mkdir -p {output.dir}                
+
                 STAR --genomeDir {input.index} --readFilesIn {params.input} --quantMode GeneCounts \
-                --outFileNamePrefix {output.dir}/ --runThreadN {threads} {params.params} \
-                --outSAMtype BAM Unsorted --outStd BAM_Unsorted | tee {output.pipe} 1> /dev/null 2>> {log}
+                --outFileNamePrefix {log}/ --outTmpDir {output.dir}/STARtmp --runThreadN {threads} {params.params} \
+                --outSAMtype BAM Unsorted --outStd BAM_Unsorted > {output.pipe} 2> {log}/Log.stderr.out
+
+                # move all non-log files to output directory (this way the log files are kept on error)
+                find {log} -type f ! -name Log* -exec mv {{}} {output.dir} \;
                 """
 
 
@@ -374,3 +379,37 @@ rule mark_duplicates:
     shell:
         "picard MarkDuplicates {params} INPUT={input} "
         "OUTPUT={output.bam} METRICS_FILE={output.metrics} > {log} 2>&1"
+
+
+rule bam2cram:
+    input:
+         bam=rules.mark_duplicates.output.bam,
+         assembly=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config)
+    output:
+        expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.cram", **config),
+    log:
+        expand("{log_dir}/bam2cram/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/bam2cram/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.benchmark.txt", **config)[0]
+    params:
+        threads=lambda wildcards, input, output, threads: threads - 1
+    threads: 4
+    conda:
+        "../envs/samtools.yaml"
+    shell:
+        "samtools view -@ {threads} -T {input.assembly} -C {input.bam} > {output} 2> {log}"
+
+
+rule samtools_index_cram:
+    input:
+        expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.cram", **config),
+    output:
+        expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.cram.crai", **config),
+    log:
+        expand("{log_dir}/samtools_index_cram/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/samtools_index_cram/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.benchmark.txt", **config)[0]
+    conda:
+        "../envs/samtools.yaml"
+    shell:
+        "samtools index {input} {output} > {log} 2>&1"

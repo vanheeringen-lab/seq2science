@@ -12,10 +12,15 @@ import pandas as pd
 import urllib.request
 from bs4 import BeautifulSoup
 from multiprocessing.pool import ThreadPool
+from filelock import FileLock
 
 from snakemake.logging import logger
 from snakemake.utils import validate
+from snakemake.utils import min_version
 
+
+# make sure the snakemake version corresponds to version in environment
+min_version("5.10")
 
 # check config file for correct directory names
 for key, value in config.items():
@@ -41,6 +46,7 @@ assert sorted(config['fqext'])[0] == config['fqext1']
 
 # read and sanitize the samples file
 samples = pd.read_csv(config["samples"], sep='\t')
+
 # sanitize column names
 samples.columns = samples.columns.str.strip()
 assert all([col[0:7] not in ["Unnamed", ''] for col in samples]), \
@@ -49,7 +55,22 @@ assert all([col[0:7] not in ["Unnamed", ''] for col in samples]), \
 assert not any(samples.columns.str.contains('[^A-Za-z0-9_.\-%]+', regex=True)), \
     ("\n" + config["samples"] + " may only contain letters, numbers and " +
     "underscores (_), periods (.), or minuses (-).\n")
+
 # sanitize table content
+if 'replicate' in samples:
+    samples['replicate'] = samples['replicate'].mask(pd.isnull, samples['sample'])
+if 'condition' in samples and 'replicate' in samples :
+    samples['condition'] = samples['condition'].mask(pd.isnull, samples['replicate'])
+elif 'condition' in samples:
+    samples['condition'] = samples['condition'].mask(pd.isnull, samples['sample'])
+
+if 'replicate' in samples:
+    r = samples[['assembly', 'replicate']].drop_duplicates().set_index('replicate')
+    for replicate in r.index:
+        assert len(r[r.index == replicate]) == 1, \
+            (f"Replicate names must be different between assemblies.\n" +
+             f"Replicate name '{replicate}' was found in assemblies {r[r.index == replicate]['assembly'].tolist()}.")
+
 samples = samples.applymap(lambda x: str(x).strip())
 assert not any([any(samples[col].str.contains('[^A-Za-z0-9_.\-%]+', regex=True)) for col in samples]), \
     ("\n" + config["samples"] + " may only contain letters, numbers and " +
@@ -69,11 +90,6 @@ samples.index = samples.index.map(str)
 # ...for atac-seq
 if config.get('peak_caller', False):
     config['peak_caller'] = {k: v for k,v in config['peak_caller'].items()}
-
-    # if hmmratac peak caller, check if all samples are paired-end
-    if 'hmmratac' in config['peak_caller']:
-        assert all([config['layout'][sample] == 'PAIRED' for sample in samples.index]), \
-        "HMMRATAC requires all samples to be paired end"
 
 # ...for alignment and rna-seq
 for conf_dict in ['aligner', 'quantifier', 'diffexp']:
@@ -95,18 +111,20 @@ except:
 
 
 # make sure that our samples.tsv and configuration work together...
-# ...on replicates
-if 'condition' in samples:
-    if config['combine_replicates'] != 'merge':
-        if 'hmmratac' in config['peak_caller']:
-            assert config['combine_replicates'] == 'idr', \
-            f'HMMRATAC peaks can only be combined through idr'
+# ...on biological replicates
+if 'condition' in samples and config.get('biological_replicates', '') != 'keep':
+    if 'hmmratac' in config['peak_caller']:
+        assert config.get('biological_replicates', '') == 'idr', \
+        f'HMMRATAC peaks can only be combined through idr'
 
     for condition in set(samples['condition']):
         for assembly in set(samples[samples['condition'] == condition]['assembly']):
-            nr_samples = len(samples[(samples['condition'] == condition) & (samples['assembly'] == assembly)])
+            if 'replicate' in samples and config.get('technical_replicates') == 'merge':
+                nr_samples = len(set(samples[(samples['condition'] == condition) & (samples['assembly'] == assembly)]['replicate']))
+            else:
+                nr_samples = len(samples[(samples['condition'] == condition) & (samples['assembly'] == assembly)])
 
-            if config.get('combine_replicates', '') == 'idr':
+            if config.get('biological_replicates', '') == 'idr':
                 assert nr_samples == 2,\
                 f'For IDR to work you need two samples per condition, however you gave {nr_samples} samples for'\
                 f' condition {condition} and assembly {assembly}'
@@ -188,7 +206,8 @@ for key, value in config.items():
 
 # check if a sample is single-end or paired end, and store it
 logger.info("Checking if samples are single-end or paired-end...")
-layout_cachefile = './.snakemake/layouts.p'
+layout_cachefile = os.path.expanduser('~/.config/snakemake/layouts.p')
+layout_cachefile_lock = os.path.expanduser('~/.config/snakemake/layouts.p.lock')
 
 def get_layout_eutils(sample):
     """
@@ -249,63 +268,78 @@ def get_layout_trace(sample):
         pass
     return None
 
+# do this locked to avoid parallel ncbi requests with the same key, and to avoid
+# multiple writes/reads at the sametime to layouts.p
+if not os.path.exists(os.path.dirname(layout_cachefile_lock)):
+    os.makedirs(os.path.dirname(layout_cachefile_lock))
 
-# try to load the layout cache, otherwise defaults to empty dictionary
-try:
-    layout_cache = pickle.load(open(layout_cachefile, "rb"))
-except FileNotFoundError:
-    layout_cache = {}
+# let's ignore locks that are older than 5 minutes
+if os.path.exists(layout_cachefile_lock) and \
+        time.time() - os.stat(layout_cachefile_lock).st_mtime > 5 * 60:
+    os.remove(layout_cachefile_lock)
+
+with FileLock(layout_cachefile_lock):
+    # try to load the layout cache, otherwise defaults to empty dictionary
+    try:
+        layout_cache = pickle.load(open(layout_cachefile, "rb"))
+    except FileNotFoundError:
+        layout_cache = {}
 
 
-trace_tp = ThreadPool(20)
-eutils_tp = ThreadPool(config.get('ncbi_requests', 3) // 2)
+    trace_tp = ThreadPool(20)
+    eutils_tp = ThreadPool(config.get('ncbi_requests', 3) // 2)
 
-trace_layout = {}
-config['layout'] = {}
+    trace_layout = {}
+    config['layout'] = {}
 
-# now do a request for each sample that was not in the cache
-for sample in [sample for sample in samples.index if sample not in layout_cache]:
-    config['layout'][sample] = eutils_tp.apply_async(get_layout_eutils, (sample,))
-    if os.path.exists(expand(f'{{fastq_dir}}/{sample}.{{fqsuffix}}.gz', **config)[0]):
-        config['layout'][sample] ='SINGLE'
-    elif all(os.path.exists(path) for path in expand(f'{{fastq_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz', **config)):
-        config['layout'][sample] ='PAIRED'
-    elif sample.startswith(('GSM', 'SRR', 'ERR', 'DRR')):
-        # config['layout'][sample] = eutils_tp.apply_async(get_layout_eutils, (sample,))
-        trace_layout[sample] = trace_tp.apply_async(get_layout_trace, (sample,))
+    # now do a request for each sample that was not in the cache
+    for sample in [sample for sample in samples.index if sample not in layout_cache]:
+        config['layout'][sample] = eutils_tp.apply_async(get_layout_eutils, (sample,))
+        if os.path.exists(expand(f'{{fastq_dir}}/{sample}.{{fqsuffix}}.gz', **config)[0]):
+            config['layout'][sample] ='SINGLE'
+        elif all(os.path.exists(path) for path in expand(f'{{fastq_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz', **config)):
+            config['layout'][sample] ='PAIRED'
+        elif sample.startswith(('GSM', 'SRR', 'ERR', 'DRR')):
+            # config['layout'][sample] = eutils_tp.apply_async(get_layout_eutils, (sample,))
+            trace_layout[sample] = trace_tp.apply_async(get_layout_trace, (sample,))
 
-        # sleep 1.25 times the minimum required sleep time so eutils don't complain
-        time.sleep(1.25 / (config.get('ncbi_requests', 3) // 2))
-    else:
-        raise ValueError(f"\nsample {sample} was not found..\n"
-                         f"We checked for SE file:\n"
-                         f"\t{config['fastq_dir']}/{sample}.{config['fqsuffix']}.gz \n"
-                         f"and for PE files:\n"
-                         f"\t{config['fastq_dir']}/{sample}_{config['fqext1']}.{config['fqsuffix']}.gz \n"
-                         f"\t{config['fastq_dir']}/{sample}_{config['fqext2']}.{config['fqsuffix']}.gz \n"
-                         f"and since the sample did not start with either GSM, SRR, ERR, and DRR we couldn't find it online..\n")
+            # sleep 1.25 times the minimum required sleep time so eutils don't complain
+            time.sleep(1.25 / (config.get('ncbi_requests', 3) // 2))
+        else:
+            raise ValueError(f"\nsample {sample} was not found..\n"
+                             f"We checked for SE file:\n"
+                             f"\t{config['fastq_dir']}/{sample}.{config['fqsuffix']}.gz \n"
+                             f"and for PE files:\n"
+                             f"\t{config['fastq_dir']}/{sample}_{config['fqext1']}.{config['fqsuffix']}.gz \n"
+                             f"\t{config['fastq_dir']}/{sample}_{config['fqext2']}.{config['fqsuffix']}.gz \n"
+                             f"and since the sample did not start with either GSM, SRR, ERR, and DRR we couldn't find it online..\n")
 
-# now parse the output and store the cache, the local files' layout, and the ones that were fetched online
-config['layout'] = {**layout_cache,
-                    **{k: (v if isinstance(v, str) else v.get()) for k, v in config['layout'].items()},
-                    **{k: v.get() for k, v in trace_layout.items() if v.get() is not None}}
+    # now parse the output and store the cache, the local files' layout, and the ones that were fetched online
+    config['layout'] = {**layout_cache,
+                        **{k: (v if isinstance(v, str) else v.get()) for k, v in config['layout'].items()},
+                        **{k: v.get() for k, v in trace_layout.items() if v.get() is not None}}
 
-assert all(layout in ['SINGLE', 'PAIRED'] for sample, layout in config['layout'].items())
+    assert all(layout in ['SINGLE', 'PAIRED'] for sample, layout in config['layout'].items())
 
-# if new samples were added, update the cache
-if len([sample for sample in samples.index if sample not in layout_cache]) is not 0:
-    pickle.dump(config['layout'], open(layout_cachefile, "wb"))
+    # if new samples were added, update the cache
+    if len([sample for sample in samples.index if sample not in layout_cache]) is not 0:
+        pickle.dump({**config['layout']}, open(layout_cachefile, "wb"))
 
 # now only keep the layout of samples that are in samples.tsv
 config['layout'] = {key: value for key, value in config['layout'].items() if key in samples.index}
 
 logger.info("Done!\n\n")
 
-# if samples are merged add the layout of the condition to the config
-if 'condition' in samples and config.get('combine_replicates', "") == 'merge':
+# if samples are merged add the layout of the technical replicate to the config
+if 'replicate' in samples and config.get('technical_replicates') == 'merge':
     for sample in samples.index:
-        condition = samples.loc[sample, 'condition']
-        config['layout'][condition] = config['layout'][sample]
+        replicate = samples.loc[sample, 'replicate']
+        config['layout'][replicate] = config['layout'][sample]
+
+# if hmmratac peak caller, check if all samples are paired-end
+if 'hmmratac' in config.get('peak_caller', ''):
+    assert all([config['layout'][sample] == 'PAIRED' for sample in samples.index]), \
+    "HMMRATAC requires all samples to be paired end"
 
 # after all is done, log (print) the configuration
 logger.info("CONFIGURATION VARIABLES:")
@@ -313,6 +347,27 @@ for key, value in config.items():
      logger.info(f"{key: <23}: {value}")
 logger.info("\n\n")
 
+# # save a copy of the latest samples and config file in the result_dir
+# subprocess.check_call(f"mkdir -p {config['result_dir']}", shell=True)
+# for file in [config['samples'], workflow.configfiles[0]]:
+#     src = os.path.join(os.getcwd(), file)
+#     dst = os.path.join(config['result_dir'], file)
+#     if src != dst:
+#         subprocess.check_call(f"cp -fH {src} {dst}", shell=True)
+
+
+# check if a newer version of the Snakemake-workflows (master branch) is available
+# if so, provide update instructions depending on the current branch
+git_status = subprocess.check_output("""git fetch --dry-run -v 2>&1 | grep origin/master | cut -d "[" -f2 | cut -d "]" -f1""", shell=True).decode('ascii').strip()
+if git_status != "up to date":
+    current_branch = subprocess.check_output("""git branch | grep \* | awk '{print $2}'""", shell=True).decode('ascii').strip()
+    cmd = " " if current_branch == "master" else " checkout master; git "
+    logger.info(
+        "A newer version of Snakemake-workflows is available!\n\n" +
+        "To update, run:\n" +
+        "\tgit" + cmd + "pull origin master\n\n"
+    )
+                      
 
 def any_given(*args):
     """
@@ -327,14 +382,26 @@ def any_given(*args):
 
     return '|'.join(set(elements))
 
-# set global constraints on wildcards ({{sample}} or {{assembly}})
+# set global wildcard constraints (see workflow._wildcard_constraints)
+wildcard_constraints:
+    sample=any_given('sample'),
+
 if 'assembly' in samples:
     wildcard_constraints:
-        sample=any_given('sample', 'condition'),
-        assembly=any_given('assembly')
-else:
+        assembly=any_given('assembly'),
+
+if 'replicate' in samples:
     wildcard_constraints:
-        sample=any_given('sample', 'condition')
+        sample=any_given('sample', 'replicate'),
+        replicate=any_given('replicate'),
+if 'condition' in samples:
+    wildcard_constraints:
+        sample=any_given('sample', 'condition'),
+        condition=any_given('condition'),
+if 'replicate' in samples and 'condition' in samples:
+    wildcard_constraints:
+        sample=any_given('sample', 'replicate', 'condition'),
+
 
 
 def get_workflow():
@@ -352,7 +419,8 @@ def convert_size(size_bytes, order=None):
 
 
 # by default only one download in parallel (workflow fails on multiple on a single node)
-workflow.global_resources.update({'parallel_downloads': 1, 'deeptools_limit': 1, 'R_scripts': 1})
+workflow.global_resources = {**{'parallel_downloads': 3, 'deeptools_limit': 1, 'R_scripts': 1},
+                             **workflow.global_resources}
 
 # when the user specifies memory, use this and give a warning if it surpasses local memory
 # (surpassing does not always have to be an issue -> cluster execution)

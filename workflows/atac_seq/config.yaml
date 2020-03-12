@@ -16,7 +16,7 @@ peak_caller:
 #  hmmratac:
 #      ""
 
-combine_replicates: merge
+combine_replicates: fisher
 
 # which aligner to use
 aligner: bwa

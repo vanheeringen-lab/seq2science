@@ -14,11 +14,21 @@ rule samtools_stats:
         "samtools stats {input} 1> {output} 2> {log}"
 
 
+# TODO: featurecounts was not set up to accept hmmratac's gappedPeaks,
+#  I added this as it was sufficient for rule idr
 def get_featureCounts_bam(wildcards):
-    if wildcards.peak_caller == 'macs2':
+    if wildcards.peak_caller in ['macs2','hmmratac']:
         return expand("{dedup_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config)
     return expand("{dedup_dir}/{{assembly}}-{{sample}}.sambamba-queryname.bam", **config)
 
+# TODO: featurecounts was not set up to accept hmmratac's gappedPeaks,
+#  I added this as it was sufficient for rule idr
+def get_featureCounts_peak(wildcards):
+    ftype = 'narrowPeak' if wildcards.peak_caller in ['macs2', 'genrich'] else 'gappedPeak'
+    if 'condition' in samples and config['biological_replicates'] != 'keep':
+        return expand(f"{{result_dir}}/{wildcards.peak_caller}/replicate_processed/{wildcards.assembly}-{wildcards.sample}_peaks.{ftype}", **config)
+    else:
+        return expand(f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{wildcards.sample}_peaks.{ftype}", **config)
 
 rule featureCounts:
     """
@@ -28,7 +38,7 @@ rule featureCounts:
     """
     input:
         bam=get_featureCounts_bam,
-        peak=expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}_peaks.narrowPeak", **config)
+        peak=get_featureCounts_peak,
     output:
         tmp_saf=temp(expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}.saf", **config)),
         real_out=expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}_featureCounts.txt", **config),
@@ -53,7 +63,7 @@ rule featureCounts:
 
 def get_fastqc_input(wildcards):
     if '_trimmed' in wildcards.fname:
-        if 'condition' in samples and config.get('combine_replicates', '') == 'merge' and all(sample not in wildcards.fname for sample in samples.index):
+        if 'replicate' in samples and config.get('technical_replicates', '') == 'merge' and all(sample not in wildcards.fname for sample in samples.index):
             fqc_input = "{trimmed_dir}/merged/{{fname}}.{fqsuffix}.gz"
         else:
             fqc_input = "{trimmed_dir}/{{fname}}.{fqsuffix}.gz"
@@ -107,19 +117,22 @@ def get_qc_files(wildcards):
                                            "variable 'quality_control' exists and contains all the "\
                                            "relevant quality control functions."
     qc = []
-    if 'condition' in samples and config.get('combine_replicates', '') == 'merge':
-        # trimming qc on individual samples, other qc on merged replicates
-        for sample in samples[samples['assembly'] == wildcards.assembly].index:
-            qc.extend(get_trimming_qc(sample))
 
-        for condition in set(samples.condition):
-            for function in [func for func in quality_control if
-                             'get_trimming_qc' is not func.__name__]:
-                qc.extend(function(condition))
-    else:
-        for sample in samples[samples['assembly'] == wildcards.assembly].index:
-            for function in quality_control:
-                qc.extend(function(sample))
+    # trimming qc on individual samples
+    for sample in samples[samples['assembly'] == wildcards.assembly].index:
+        qc.extend(get_trimming_qc(sample))
+
+    # qc on merged technical replicates/samples
+    for replicate in treps[treps['assembly'] == wildcards.assembly].index:
+        for function in [func for func in quality_control if
+                         func.__name__ not in ['get_peak_calling_qc', 'get_trimming_qc']]:
+            qc.extend(function(replicate))
+
+    # qc on combined biological replicates/samples
+    if get_peak_calling_qc in qc:
+        for condition in breps[breps['assembly'] == wildcards.assembly].index:
+            qc.extend(function(condition))
+
     return qc
 
 

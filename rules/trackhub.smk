@@ -1,3 +1,5 @@
+import os.path
+import json
 import requests
 from Bio import SeqIO
 from multiprocessing import Pool
@@ -76,12 +78,20 @@ rule bedgraph_bigwig:
         """
 
 
+def find_narrowpeak(wildcards):
+    if 'condition' in samples and config['biological_replicates'] != 'keep':
+        return expand(f"{{result_dir}}/{wildcards.peak_caller}/replicate_processed/{wildcards.assembly}-{wildcards.sample}_peaks.narrowPeak", **config)
+    else:
+        ftype = 'narrowPeak' if wildcards.peak_caller in ['macs2', 'genrich'] else 'gappedPeak'
+        return expand(f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{wildcards.sample}_peaks.{ftype}", **config)
+
+
 rule narrowpeak_bignarrowpeak:
     """
     Convert a narrowpeak file into a bignarrowpeak file.
     """
     input:
-        narrowpeak= expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}_peaks.narrowPeak", **config),
+        narrowpeak=find_narrowpeak,
         genome_size=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config)
     output:
         out=     expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}.bigNarrowPeak", **config),
@@ -103,8 +113,8 @@ rule narrowpeak_bignarrowpeak:
 
 def get_strandedness(wildcards):
     sample = f"{wildcards.sample}"
-    if config.get('combine_replicates', '') == 'merge' and 'condition' in samples:
-        s2 = samples[['condition', 'strandedness']].drop_duplicates().set_index('condition')
+    if 'replicate' in samples and config.get('technical_replicates') == 'merge':
+        s2 = samples[['replicate', 'strandedness']].drop_duplicates().set_index('replicate')
         strandedness = s2["strandedness"].loc[sample]
     else:
         strandedness = samples["strandedness"].loc[sample]
@@ -373,8 +383,8 @@ def get_bigwig_strand(sample):
     return a list of extensions for (un)stranded bigwigs
     """
     if 'strandedness' in samples and config['filter_bam_by_strand']:
-        if config.get('combine_replicates', '') == 'merge' and 'condition' in samples:
-            s2 = samples[['condition', 'strandedness']].drop_duplicates().set_index('condition')
+        if 'replicate' in samples and config.get('technical_replicates') == 'merge':
+            s2 = samples[['replicate', 'strandedness']].drop_duplicates().set_index('replicate')
             strandedness = s2["strandedness"].loc[sample]
             if strandedness in ['forward', 'yes', 'reverse']:
                 return ['.fwd', '.rev']
@@ -383,6 +393,39 @@ def get_bigwig_strand(sample):
             if strandedness in ['forward', 'yes', 'reverse']:
                 return ['.fwd', '.rev']
     return ['']
+
+
+def get_ucsc_name(assembly):
+    """
+    Returns as first value (bool) whether or not the assembly was found to be in the
+    ucsc genome browser, and as second value the name of the assembly according to ucsc
+    "convention".
+    """
+    with urllib.request.urlopen("https://api.genome.ucsc.edu/list/ucscGenomes") as url:
+        data = json.loads(url.read().decode())['ucscGenomes']
+
+    # patches are not relevant for which assembly it belongs to
+    # (at least not human and mouse)
+    assembly_np = \
+        [split for split in re.split(r"(.+)(?=\.p\d)", assembly) if split != ''][0].lower()
+
+    # first check if our assembly already has the ucsc convention
+    # this is ugly, because we need to be case insensitive
+    ucsc_assemblies = [key.lower() for key in data.keys()]
+    if assembly_np in ucsc_assemblies:
+        idx = ucsc_assemblies.index(assembly_np)
+        return True, list(data.keys())[idx]
+
+    # else check if it is in any of the other names
+    for ucsc_assembly, values in data.items():
+        desc = values['description']
+        assemblies = desc[desc.find("(")+1:desc.find(")")].split("/")
+        assemblies = [val.lower() for val in assemblies]
+        if assembly_np in assemblies:
+            return True, ucsc_assembly
+
+    # if not found, return the original name
+    return False, assembly
 
 
 def get_trackhub_files(wildcards):
@@ -399,8 +442,11 @@ def get_trackhub_files(wildcards):
     for assembly in set(samples['assembly']):
         # first, checks if get_genome still needs to run
         # second, checks if an annotation file was found
-        f = os.path.splitext(checkpoints.get_genome.get(assembly=assembly).output[0])[0]
-        gtf = any([os.path.isfile(f+".annotation.gtf"), os.path.isfile(f+".gtf")])
+        # TODO: use next 2 lines again when checkpoints are stable
+        #  1) does the trackhub input update? 2) does ruleorder work?
+        # f = os.path.splitext(checkpoints.get_genome.get(assembly=assembly).output[0])[0]
+        # gtf = any([os.path.isfile(f+".annotation.gtf"), os.path.isfile(f+".gtf")])
+        gtf = True if get_workflow() == 'rna_seq' else False
 
         # check for response of ucsc
         response = requests.get(f"https://genome.ucsc.edu/cgi-bin/hgTracks?db={assembly}",
@@ -408,8 +454,7 @@ def get_trackhub_files(wildcards):
         assert response.ok, "Make sure you are connected to the internet"
 
         # see if the title of the page mentions our assembly
-        if not any(assembly == x for x in
-                   re.search(r'<TITLE>(.*?)</TITLE>', response.text).group(1).split(' ')):
+        if not get_ucsc_name(assembly)[0]:
             trackfiles['twobits'].append(f"{config['genome_dir']}/{assembly}/{assembly}.2bit")
             trackfiles['gcPercent'].append(f"{config['genome_dir']}/{assembly}/{assembly}.gc5Base.bw")
             trackfiles['cytobands'].append(f"{config['genome_dir']}/{assembly}/cytoBandIdeo.bb")
@@ -420,38 +465,22 @@ def get_trackhub_files(wildcards):
                 trackfiles['annotations'].append(f"{config['genome_dir']}/{assembly}/{assembly}.bb")
 
     # Get the ATAC or RNA seq files
-    if 'atac_seq' in get_workflow():
-        # get all the peak files for all replicates or for the replicates combined
-        if 'condition' in samples:
-            for condition in set(samples['condition']):
-                for assembly in set(samples[samples['condition'] == condition]['assembly']):
-                    trackfiles['bigpeaks'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{assembly}-{condition}.bigNarrowPeak", **config))
-        else:
-            for sample in samples.index:
-                trackfiles['bigpeaks'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{samples.loc[sample, 'assembly']}-{sample}.bigNarrowPeak", **config))
+    if get_workflow() == 'atac_seq':
+        # get all the peak files
+        for sample in breps.index:
+            trackfiles['bigpeaks'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{breps.loc[sample, 'assembly']}-{sample}.bigNarrowPeak", **config))
 
         # get all the bigwigs
-        if config.get('combine_replicates', '') == 'merge' and 'condition' in samples:
-            for condition in set(samples['condition']):
-                for assembly in set(samples[samples['condition'] == condition]['assembly']):
-                    trackfiles['bigwigs'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{assembly}-{condition}.bw", **config))
-        else:
-            for sample in samples.index:
-                trackfiles['bigwigs'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{samples.loc[sample, 'assembly']}-{sample}.bw", **config))
+        for sample in treps.index:
+            trackfiles['bigwigs'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{treps.loc[sample, 'assembly']}-{sample}.bw", **config))
 
-    elif 'rna_seq' in get_workflow():
+    elif get_workflow() in ['alignment', 'rna_seq']:
         # get all the bigwigs
-        if config.get('combine_replicates', '') == 'merge' and 'condition' in samples:
-            for condition in set(samples['condition']):
-                for assembly in set(samples[samples['condition'] == condition]['assembly']):
-                    for bw in get_bigwig_strand(condition):
-                        bw = expand(f"{{result_dir}}/bigwigs/{assembly}-{condition}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw", **config)
-                        trackfiles['bigwigs'].extend(bw)
-        else:
-            for sample in samples.index:
-                for bw in get_bigwig_strand(sample):
-                    bw = expand(f"{{result_dir}}/bigwigs/{samples.loc[sample]['assembly']}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw", **config)
-                    trackfiles['bigwigs'].extend(bw)
+        for sample in treps.index:
+            for bw in get_bigwig_strand(sample):
+                bw = expand(f"{{result_dir}}/bigwigs/{treps.loc[sample]['assembly']}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw", **config)
+                trackfiles['bigwigs'].extend(bw)
+
     return trackfiles
 
 
@@ -497,11 +526,12 @@ rule trackhub:
             hub.add_genomes_file(genomes_file)
 
             for assembly in set(samples['assembly']):
+                assembly_uscs = get_ucsc_name(assembly)[1]
                 # add each assembly to the genomes file
                 if any(assembly in twobit for twobit in input.twobits):
                     basename = f"{config['genome_dir']}/{assembly}/{assembly}"
                     genome = trackhub.Assembly(
-                        genome=assembly,
+                        genome=assembly_uscs,
                         twobit_file=basename + '.2bit',
                         organism=assembly,
                         defaultPos=get_defaultPos(basename + '.fa.sizes'),
@@ -509,7 +539,7 @@ rule trackhub:
                         description=assembly
                     )
                 else:
-                    genome = trackhub.Genome(assembly)
+                    genome = trackhub.Genome(assembly_uscs)
 
                 genomes_file.add_genome(genome)
 
@@ -578,15 +608,10 @@ rule trackhub:
                                 shell(f"ln {file_loc} {link_loc}")
 
                 # next add the data files depending on the workflow
-                # use condition instead of samples if samples are being merged
-                iterator = samples.index
-                if config.get('combine_replicates', False) == 'merge' and 'condition' in samples:
-                    iterator = set(samples['condition'])
-
                 # ATAC-seq trackhub
                 if 'atac_seq' in get_workflow():
-                    for sample in iterator:
-                        for peak_caller in config['peak_caller']:
+                    for peak_caller in config['peak_caller']:
+                        for sample in breps[breps['assembly'] == assembly].index:
                             bigpeak = f"{config['result_dir']}/{peak_caller}/{assembly}-{sample}.bigNarrowPeak"
                             sample_name = f"{sample}{peak_caller}PEAK"
                             sample_name = trackhub.helpers.sanitize(sample_name)
@@ -602,7 +627,9 @@ rule trackhub:
                                 priority += 1
                                 trackdb.add_tracks(track)
 
+                        for sample in treps[treps['assembly'] == assembly].index:
                             bigwig = f"{config['result_dir']}/{peak_caller}/{assembly}-{sample}.bw"
+                            assert os.path.exists(bigwig), bigwig + " not found!"
                             sample_name = f"{sample}{peak_caller}BW"
                             sample_name = trackhub.helpers.sanitize(sample_name)
 
@@ -622,10 +649,11 @@ rule trackhub:
                             priority += 1
 
                 # RNA-seq trackhub
-                elif 'rna_seq' in get_workflow():
-                    for sample in iterator:
+                elif get_workflow() in ['alignment', 'rna_seq']:
+                    for sample in treps[treps['assembly'] == assembly].index:
                         for bw in get_bigwig_strand(sample):
                             bigwig = f"{config['result_dir']}/bigwigs/{assembly}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw"
+                            assert os.path.exists(bigwig), bigwig + " not found!"
                             sample_name = f"{sample}{bw}"
                             sample_name = trackhub.helpers.sanitize(sample_name)
 
