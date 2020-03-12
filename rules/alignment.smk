@@ -247,7 +247,7 @@ elif config['aligner'] == 'star' or config.get('quantifier', '') == 'star':
             index=expand("{genome_dir}/{{assembly}}/index/{aligner}", **config)
         output:
             dir =directory(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}", **config)),
-            pipe=get_alignment_pipes()
+            pipe=pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0])
         log:
             directory(expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}", **config))
         benchmark:
