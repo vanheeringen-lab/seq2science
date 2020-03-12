@@ -67,26 +67,29 @@ pipeline {
                         # Do some dry runs to test the DAG
                         # test download workflow
                         printf "\ndownload default\n\n"
-                        snakemake -s workflows/download_fastq/Snakefile --directory workflows/download_fastq -n -j 48 --config ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
+                        snakemake -s workflows/download_fastq/Snakefile --directory workflows/download_fastq -n -j 48 --quiet
 
                         # test alignment workflow
                         # default config
                         printf "\nalignment default\n\n"
-                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --config ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
+                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --quiet
 
                         # test aligners
                         printf "\ntesting aligners\n\n"
-                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/bowtie2.yaml --config samples=../../Jenkins/alignment/local_sample.tsv ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
-                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/bwa.yaml     --config samples=../../Jenkins/alignment/local_sample.tsv ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
-                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/hisat2.yaml  --config samples=../../Jenkins/alignment/local_sample.tsv ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
-                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/star.yaml    --config samples=../../Jenkins/alignment/local_sample.tsv ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
+                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/bowtie2.yaml --config samples=../../Jenkins/alignment/local_sample.tsv --quiet
+                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/bwa.yaml     --config samples=../../Jenkins/alignment/local_sample.tsv --quiet
+                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/hisat2.yaml  --config samples=../../Jenkins/alignment/local_sample.tsv --quiet
+                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/star.yaml    --config samples=../../Jenkins/alignment/local_sample.tsv --quiet
 
                         # test sorting
                         printf "\ntesting sorting\n\n"
-                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/samtools_coordinate.yaml --config ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
-                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/samtools_queryname.yaml  --config ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
-                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/sambamba_coordinate.yaml --config ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
-                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/sambamba_queryname.yaml  --config ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
+                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/samtools_coordinate.yaml --quiet
+                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/samtools_queryname.yaml  --quiet
+                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/sambamba_coordinate.yaml --quiet
+                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/sambamba_queryname.yaml  --quiet
+
+                        printf "\ntest cram support\n\n"
+                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/cram_no_bam.yaml --quiet
                         '''
                     },
                     "2 ATAC-seq" : {
@@ -98,19 +101,19 @@ pipeline {
                         # test atac-seq workflow
                         # default config
                         printf "\ndefault atac-seq\n\n"
-                        snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
+                        snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config --quiet
 
                         # test different peak callers
                         printf "\natac peakcaller\n\n"
-                        snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --configfile Jenkins/atac_seq/genrich.yaml       --config ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
-                        snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --configfile Jenkins/atac_seq/macs2.yaml         --config ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
-                        snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --configfile Jenkins/atac_seq/genrich_macs2.yaml --config ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
+                        snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --configfile Jenkins/atac_seq/genrich.yaml       --quiet
+                        snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --configfile Jenkins/atac_seq/macs2.yaml         --quiet
+                        snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --configfile Jenkins/atac_seq/genrich_macs2.yaml --quiet
 
                         # test different replicate settings
                         printf "\natac combine replicates\n\n"
-                        snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=fisher samples=../../Jenkins/atac_seq/samples.tsv ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
-                        snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=idr    samples=../../Jenkins/atac_seq/samples.tsv ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
-                        snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=merge  samples=../../Jenkins/atac_seq/samples.tsv ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
+                        snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=fisher samples=../../Jenkins/atac_seq/samples.tsv --quiet
+                        snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=idr    samples=../../Jenkins/atac_seq/samples.tsv --quiet
+                        snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=merge  samples=../../Jenkins/atac_seq/samples.tsv --quiet
                         '''
                     },
                     "3 RNA-seq" : {
@@ -122,17 +125,17 @@ pipeline {
                         # test rna-seq workflow
                         # default config
                         printf "\ndefault rna-seq\n\n"
-                        snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --config ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
+                        snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --quiet
 
                         # test differential expression analysis
                         printf "\ndifferential expression\n\n"
-                        snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/deseq2.yaml --config samples=../../Jenkins/rna_seq/samples.tsv quantifier=star   ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
-                        snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/deseq2.yaml --config samples=../../Jenkins/rna_seq/samples.tsv quantifier=salmon ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
+                        snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/deseq2.yaml --config samples=../../Jenkins/rna_seq/samples.tsv quantifier=star   --quiet
+                        snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/deseq2.yaml --config samples=../../Jenkins/rna_seq/samples.tsv quantifier=salmon --quiet
 
                         # test trackhub generation
                         printf "\ntrackhub\n\n"
-                        snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/counts.yaml --config samples=../../Jenkins/alignment/local_sample.tsv quantifier=star   create_trackhub=True ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
-                        snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/counts.yaml --config samples=../../Jenkins/alignment/local_sample.tsv quantifier=salmon create_trackhub=True ncbi_key=8d516bfc05a769280a23d8a2c0e08f94a708 --quiet
+                        snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/counts.yaml --config samples=../../Jenkins/alignment/local_sample.tsv quantifier=star   create_trackhub=True --quiet
+                        snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/counts.yaml --config samples=../../Jenkins/alignment/local_sample.tsv quantifier=salmon create_trackhub=True --quiet
                         '''
                     }
                 )
@@ -173,7 +176,6 @@ pipeline {
                 printf "\ndownload SE and PE fastqs\n\n"
                 snakemake -s workflows/download_fastq/Snakefile --directory workflows/download_fastq \
                 --use-conda -j $CORES --config samples=../../Jenkins/download_fastq/samples.tsv \
-                --resources parallel_downloads=1
 
                 # test genome & annotation downloading
                 printf "\ndownload genome & annotation\n\n"

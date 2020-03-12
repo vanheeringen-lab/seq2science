@@ -12,6 +12,7 @@ import pandas as pd
 import urllib.request
 from bs4 import BeautifulSoup
 from multiprocessing.pool import ThreadPool
+from filelock import FileLock
 
 from snakemake.logging import logger
 from snakemake.utils import validate
@@ -197,7 +198,8 @@ for key, value in config.items():
 
 # check if a sample is single-end or paired end, and store it
 logger.info("Checking if samples are single-end or paired-end...")
-layout_cachefile = './.snakemake/layouts.p'
+layout_cachefile = os.path.expanduser('~/.config/snakemake/layouts.p')
+layout_cachefile_lock = os.path.expanduser('~/.config/snakemake/layouts.p.lock')
 
 def get_layout_eutils(sample):
     """
@@ -258,52 +260,62 @@ def get_layout_trace(sample):
         pass
     return None
 
+# do this locked to avoid parallel ncbi requests with the same key, and to avoid
+# multiple writes/reads at the sametime to layouts.p
+if not os.path.exists(os.path.dirname(layout_cachefile_lock)):
+    os.makedirs(os.path.dirname(layout_cachefile_lock))
 
-# try to load the layout cache, otherwise defaults to empty dictionary
-try:
-    layout_cache = pickle.load(open(layout_cachefile, "rb"))
-except FileNotFoundError:
-    layout_cache = {}
+# let's ignore locks that are older than 5 minutes
+if os.path.exists(layout_cachefile_lock) and \
+        time.time() - os.stat(layout_cachefile_lock).st_mtime > 5 * 60:
+    os.remove(layout_cachefile_lock)
+
+with FileLock(layout_cachefile_lock):
+    # try to load the layout cache, otherwise defaults to empty dictionary
+    try:
+        layout_cache = pickle.load(open(layout_cachefile, "rb"))
+    except FileNotFoundError:
+        layout_cache = {}
 
 
-trace_tp = ThreadPool(20)
-eutils_tp = ThreadPool(config.get('ncbi_requests', 3) // 2)
+    trace_tp = ThreadPool(20)
+    eutils_tp = ThreadPool(config.get('ncbi_requests', 3) // 2)
 
-trace_layout = {}
-config['layout'] = {}
+    trace_layout = {}
+    config['layout'] = {}
 
-# now do a request for each sample that was not in the cache
-for sample in [sample for sample in samples.index if sample not in layout_cache]:
-    config['layout'][sample] = eutils_tp.apply_async(get_layout_eutils, (sample,))
-    if os.path.exists(expand(f'{{fastq_dir}}/{sample}.{{fqsuffix}}.gz', **config)[0]):
-        config['layout'][sample] ='SINGLE'
-    elif all(os.path.exists(path) for path in expand(f'{{fastq_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz', **config)):
-        config['layout'][sample] ='PAIRED'
-    elif sample.startswith(('GSM', 'SRR', 'ERR', 'DRR')):
-        # config['layout'][sample] = eutils_tp.apply_async(get_layout_eutils, (sample,))
-        trace_layout[sample] = trace_tp.apply_async(get_layout_trace, (sample,))
+    # now do a request for each sample that was not in the cache
+    for sample in [sample for sample in samples.index if sample not in layout_cache]:
+        config['layout'][sample] = eutils_tp.apply_async(get_layout_eutils, (sample,))
+        if os.path.exists(expand(f'{{fastq_dir}}/{sample}.{{fqsuffix}}.gz', **config)[0]):
+            config['layout'][sample] ='SINGLE'
+        elif all(os.path.exists(path) for path in expand(f'{{fastq_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz', **config)):
+            config['layout'][sample] ='PAIRED'
+        elif sample.startswith(('GSM', 'SRR', 'ERR', 'DRR')):
+            # config['layout'][sample] = eutils_tp.apply_async(get_layout_eutils, (sample,))
+            trace_layout[sample] = trace_tp.apply_async(get_layout_trace, (sample,))
 
-        # sleep 1.25 times the minimum required sleep time so eutils don't complain
-        time.sleep(1.25 / (config.get('ncbi_requests', 3) // 2))
-    else:
-        raise ValueError(f"\nsample {sample} was not found..\n"
-                         f"We checked for SE file:\n"
-                         f"\t{config['fastq_dir']}/{sample}.{config['fqsuffix']}.gz \n"
-                         f"and for PE files:\n"
-                         f"\t{config['fastq_dir']}/{sample}_{config['fqext1']}.{config['fqsuffix']}.gz \n"
-                         f"\t{config['fastq_dir']}/{sample}_{config['fqext2']}.{config['fqsuffix']}.gz \n"
-                         f"and since the sample did not start with either GSM, SRR, ERR, and DRR we couldn't find it online..\n")
+            # sleep 1.25 times the minimum required sleep time so eutils don't complain
+            time.sleep(1.25 / (config.get('ncbi_requests', 3) // 2))
+        else:
+            raise ValueError(f"\nsample {sample} was not found..\n"
+                             f"We checked for SE file:\n"
+                             f"\t{config['fastq_dir']}/{sample}.{config['fqsuffix']}.gz \n"
+                             f"and for PE files:\n"
+                             f"\t{config['fastq_dir']}/{sample}_{config['fqext1']}.{config['fqsuffix']}.gz \n"
+                             f"\t{config['fastq_dir']}/{sample}_{config['fqext2']}.{config['fqsuffix']}.gz \n"
+                             f"and since the sample did not start with either GSM, SRR, ERR, and DRR we couldn't find it online..\n")
 
-# now parse the output and store the cache, the local files' layout, and the ones that were fetched online
-config['layout'] = {**layout_cache,
-                    **{k: (v if isinstance(v, str) else v.get()) for k, v in config['layout'].items()},
-                    **{k: v.get() for k, v in trace_layout.items() if v.get() is not None}}
+    # now parse the output and store the cache, the local files' layout, and the ones that were fetched online
+    config['layout'] = {**layout_cache,
+                        **{k: (v if isinstance(v, str) else v.get()) for k, v in config['layout'].items()},
+                        **{k: v.get() for k, v in trace_layout.items() if v.get() is not None}}
 
-assert all(layout in ['SINGLE', 'PAIRED'] for sample, layout in config['layout'].items())
+    assert all(layout in ['SINGLE', 'PAIRED'] for sample, layout in config['layout'].items())
 
-# if new samples were added, update the cache
-if len([sample for sample in samples.index if sample not in layout_cache]) is not 0:
-    pickle.dump(config['layout'], open(layout_cachefile, "wb"))
+    # if new samples were added, update the cache
+    if len([sample for sample in samples.index if sample not in layout_cache]) is not 0:
+        pickle.dump({**config['layout']}, open(layout_cachefile, "wb"))
 
 # now only keep the layout of samples that are in samples.tsv
 config['layout'] = {key: value for key, value in config['layout'].items() if key in samples.index}
@@ -374,7 +386,8 @@ def convert_size(size_bytes, order=None):
 
 
 # by default only one download in parallel (workflow fails on multiple on a single node)
-workflow.global_resources.update({'parallel_downloads': 1, 'deeptools_limit': 1, 'R_scripts': 1})
+workflow.global_resources = {**{'parallel_downloads': 3, 'deeptools_limit': 1, 'R_scripts': 1},
+                             **workflow.global_resources}
 
 # when the user specifies memory, use this and give a warning if it surpasses local memory
 # (surpassing does not always have to be an issue -> cluster execution)

@@ -30,7 +30,7 @@ rule call_peaks_all:
     """
     input:
          expand("{result_dir}/trackhub", **config),
-         expand(["{result_dir}/count_table/{peak_caller}/count_table_{assemblies}.samtools-coordinate.bed",
+         expand(["{result_dir}/count_table/{peak_caller}/count_table_{assemblies}.samtools-coordinate.txt",
                  "{qc_dir}/multiqc_{assemblies}.html"],
                 **{**config,
                    **{'assemblies': set(samples['assembly']), 'peak_caller': config['peak_caller'].keys()}})
