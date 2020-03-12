@@ -92,14 +92,6 @@ elif config['quantifier'] == 'salmon':
             salmon index -t {input} -i {output} {params} --threads {threads} &> {log}
             """
 
-    def get_index(wildcards):
-        # index="{genome_dir}/" + wildcards.assembly + "/index/{quantifier}_decoy_aware" if config["decoy_aware_index"] else "{genome_dir}/" + wildcards.assembly + "/index/{quantifier}"
-        index=f"{{genome_dir}}/{wildcards.assembly}/index/{{quantifier}}"
-        if config["decoy_aware_index"]:
-            index += "_decoy_aware"
-        # index=f"{{genome_dir}}/{wildcards.assembly}/index/{{quantifier}}_decoy_aware" if config["decoy_aware_index"] else f"{{genome_dir}}/{wildcards.assembly}/index/{{quantifier}}"
-        return expand(index, **config)
-
     rule salmon_quant:
         """
         Align reads against a transcriptome (index) with Salmon (mapping-based mode) and output a quantification file per sample.

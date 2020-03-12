@@ -11,6 +11,12 @@ def get_counts(wildcards):
     return expand(quant_dirs, **config)
 
 if config['quantifier'] == 'salmon':
+    def get_index(wildcards):
+        index=f"{{genome_dir}}/{wildcards.assembly}/index/{{quantifier}}"
+        if config["decoy_aware_index"]:
+            index += "_decoy_aware"
+        return expand(index, **config)
+
     rule linked_txome:
         """
         Generate a linked transcriptome for tximeta
