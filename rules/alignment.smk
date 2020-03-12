@@ -314,10 +314,7 @@ def get_blacklist_files(wildcards):
 
     if config.get('remove_mito'):
         sizes = f"{config['genome_dir']}/{wildcards.assembly}/{wildcards.assembly}.fa.sizes"
-        with open(sizes) as f:
-            matches = re.findall("chrM|chrm|MT", f.read())
-            if matches:
-                files['sizes'] = sizes
+        files['sizes'] = sizes
 
     return files
 
@@ -354,8 +351,8 @@ rule alignmentsieve:
     params:
         minqual=f"--minMappingQuality {config['min_mapping_quality']}",
         atacshift="--ATACshift" if config['tn5_shift'] else '',
-        blacklist=lambda wildcards, input: "" if not len(get_blacklist_files(wildcards).keys()) else \
-                                           f"--blackListFileName {input.blacklist}"
+        blacklist=lambda wildcards, input: "" if os.stat(input.blacklist[0]).st_size == 0 else \
+                                          f"--blackListFileName {input.blacklist}"
     conda:
         "../envs/alignmentsieve.yaml"
     shell:

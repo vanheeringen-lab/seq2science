@@ -146,46 +146,11 @@ rule multiqc_header_info:
         mail = config.get('email', 'none@provided.com')
         date = date.today().strftime("%B %d, %Y")
 
-        description = ['        <dl class=dl-horizontal>']
-        for key, value in config.items():
-            if not any([i in key for i in ['dir', 'ascp', 'ncbi']]):
-                # description.append(f'{key}:\t\t{value}<br /> ')
-                description.append(f'            <dt>{key}</dt><dd>{value}</dd>')
-        description.append('        </dl>')
-
-        # make a table of our samples
-        samples_table = copy.copy(samples)
-        samples_table.index.name = None
-        samples_table = samples_table.to_html().split('\n')
-        samples_table = ['        ' + sample for sample in samples_table]
-        description.extend(samples_table)
-
-        description = '\n'.join(description)
-        description = description.replace('\'', '').replace(':', '\:')
-
         with open(output[0], "w") as f:
             f.write(f"report_header_info:\n"
                     f"    - Contact E-mail: '{mail}'\n"
                     f"    - Workflow: '{cwd}'\n"
-                    f"    - Date: '{date}'\n"
-                    f"\n\n"
-                    f"custom_data:\n"
-                    f"    id: 'Whatup fellas'\n"
-                    f"    section_name: 'Let me tell you a story'\n"
-                    f"    plot_type: 'html'\n"
-                    f"    data: |\n"
-                    f"        The pipeline was run with these configuration options and samples\:\n"
-                    f"{description}\n"
-                    # f"custom_data:\n"
-                    # f"    my_data_type:\n"
-                    # f"        id: 'mqc_config_file_section'\n"
-                    # f"        section_name: 'Configuration options<br /> '\n"
-                    # f"        description: {description}\n"
-                    # f"        plot_type: 'bargraph'\n"
-                    # f"        data:\n"
-                    # f"            sample_a:\n"
-                    # f"                empty: 100\n"
-                    )
+                    f"    - Date: '{date}'\n")
 
 
 rule multiqc_config_info:

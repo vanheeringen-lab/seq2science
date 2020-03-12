@@ -103,7 +103,7 @@ rule macs2_callpeak:
 
         # call peaks
         macs2 callpeak --bdg -t {{input.bam}} --outdir {config['result_dir']}/macs2/ -n {{wildcards.assembly}}-{{wildcards.sample}} \
-        {{params.macs_params}} -g $GENSIZE >> {{log}} 2>&1
+        {{params.macs_params}} -g $GENSIZE -f BAM >> {{log}} 2>&1
         """
 
 rule keep_mates:
