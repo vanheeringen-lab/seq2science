@@ -377,7 +377,7 @@ rule sambamba_sort:
     output:
         temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.sambamba-{{sorting}}{{sieve}}.bam", **config))
     wildcard_constraints:
-        sieve=".*"
+        sieve="^$|-sievsort"
     log:
         expand("{log_dir}/sambamba_sort/{{assembly}}-{{sample}}-sambamba_{{sorting}}{{sieve}}.log", **config)
     group: 'alignment'
@@ -451,7 +451,6 @@ rule mark_duplicates:
         metrics=expand("{qc_dir}/dedup/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.metrics.txt", **config)
     log:
         expand("{log_dir}/mark_duplicates/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config)
-#    group: 'clean_bam'
     benchmark:
         expand("{benchmark_dir}/mark_duplicates/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.benchmark.txt", **config)[0]
     params:
