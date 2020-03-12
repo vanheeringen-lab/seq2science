@@ -1,4 +1,5 @@
 import os.path
+import json
 import requests
 from Bio import SeqIO
 from multiprocessing import Pool
@@ -386,6 +387,39 @@ def get_bigwig_strand(sample):
     return ['']
 
 
+def get_ucsc_name(assembly):
+    """
+    Returns as first value (bool) whether or not the assembly was found to be in the
+    ucsc genome browser, and as second value the name of the assembly according to ucsc
+    "convention".
+    """
+    with urllib.request.urlopen("https://api.genome.ucsc.edu/list/ucscGenomes") as url:
+        data = json.loads(url.read().decode())['ucscGenomes']
+
+    # patches are not relevant for which assembly it belongs to
+    # (at least not human and mouse)
+    assembly_np = \
+        [split for split in re.split(r"(.+)(?=\.p\d)", assembly) if split != ''][0].lower()
+
+    # first check if our assembly already has the ucsc convention
+    # this is ugly, because we need to be case insensitive
+    ucsc_assemblies = [key.lower() for key in data.keys()]
+    if assembly_np in ucsc_assemblies:
+        idx = ucsc_assemblies.index(assembly_np)
+        return True, list(data.keys())[idx]
+
+    # else check if it is in any of the other names
+    for ucsc_assembly, values in data.items():
+        desc = values['description']
+        assemblies = desc[desc.find("(")+1:desc.find(")")].split("/")
+        assemblies = [val.lower() for val in assemblies]
+        if assembly_np in assemblies:
+            return True, ucsc_assembly
+
+    # if not found, return the original name
+    return False, assembly
+
+
 def get_trackhub_files(wildcards):
     """
     Assemble all files used in a trackhub/assembly hub.
@@ -411,13 +445,8 @@ def get_trackhub_files(wildcards):
                                 allow_redirects=True)
         assert response.ok, "Make sure you are connected to the internet"
 
-        # get the name of the assembly without patch number
-        assembly_no_patch = \
-            [split for split in re.split(r"(.+)(?=\.p\d)", assembly) if split != ''][0]
-
         # see if the title of the page mentions our assembly
-        if not any(assembly_no_patch == x for x in
-                   re.search(r'UCSC Genome Browser on (.*?) Assembly', response.text).group(1).split(' ')):        
+        if not get_ucsc_name(assembly)[0]:
             trackfiles['twobits'].append(f"{config['genome_dir']}/{assembly}/{assembly}.2bit")
             trackfiles['gcPercent'].append(f"{config['genome_dir']}/{assembly}/{assembly}.gc5Base.bw")
             trackfiles['cytobands'].append(f"{config['genome_dir']}/{assembly}/cytoBandIdeo.bb")
@@ -505,11 +534,12 @@ rule trackhub:
             hub.add_genomes_file(genomes_file)
 
             for assembly in set(samples['assembly']):
+                assembly_uscs = get_ucsc_name(assembly)[1]
                 # add each assembly to the genomes file
                 if any(assembly in twobit for twobit in input.twobits):
                     basename = f"{config['genome_dir']}/{assembly}/{assembly}"
                     genome = trackhub.Assembly(
-                        genome=assembly,
+                        genome=assembly_uscs,
                         twobit_file=basename + '.2bit',
                         organism=assembly,
                         defaultPos=get_defaultPos(basename + '.fa.sizes'),
@@ -517,7 +547,7 @@ rule trackhub:
                         description=assembly
                     )
                 else:
-                    genome = trackhub.Genome(assembly)
+                    genome = trackhub.Genome(assembly_uscs)
 
                 genomes_file.add_genome(genome)
 
