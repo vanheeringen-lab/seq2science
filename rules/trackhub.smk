@@ -74,7 +74,7 @@ rule bedgraph_bigwig:
         """
         awk -v OFS='\\t' '{{print $1, $2, $3, $4}}' {input.bedgraph} | sed '/experimental/d' |
         bedSort /dev/stdin {output.tmp} > {log} 2>&1;
-        bedGraphToBigWig {output.tmp} {input.genome_size} {output.out} > {log} 2>&1
+        bedGraphToBigWig {output.tmp} {input.genome_size} {output.out} >> {log} 2>&1
         """
 
 
