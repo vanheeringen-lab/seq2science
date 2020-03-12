@@ -35,9 +35,10 @@ if config['quantifier'] == 'star':
             mkdir -p {log}
             mkdir -p {output.dir}                
             
-            STAR --genomeDir {input.index} --readFilesIn {params.input} --quantMode GeneCounts \
-            --outFileNamePrefix {log}/ --outTmpDir {output.dir}/STARtmp --runThreadN {threads} {params.params} \
-            --outSAMtype None > {log}/Log.std_stderr.out 2>&1
+            STAR --genomeDir {input.index} --readFilesIn {params.input} --readFilesCommand gunzip -c \
+            --quantMode GeneCounts --outSAMtype None \
+            --outFileNamePrefix {log}/ --outTmpDir {output.dir}/STARtmp \
+            --runThreadN {threads} {params.params} > {log}/Log.std_stderr.out 2>&1
             
             # move all non-log files to output directory (this way the log files are kept on error)
             find {log} -type f ! -name Log* -exec mv {{}} {output.dir} \;

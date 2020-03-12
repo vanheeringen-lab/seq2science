@@ -72,10 +72,10 @@ properties:
           index:
             default: '--limitGenomeGenerateRAM 37000000000 --genomeSAsparseD 1'
           align:
-            default: '--readFilesCommand gunzip -c'
+            default: ''
         default:
           index: '--limitGenomeGenerateRAM 37000000000 --genomeSAsparseD 1'
-          align: '--readFilesCommand gunzip -c'
+          align: ''
     default:
       bwa:
         index: '-a bwtsw'

@@ -238,43 +238,43 @@ elif config['aligner'] == 'star' or config.get('quantifier', '') == 'star':
             """
 
 
-    if config.get('run_alignment', True):
-        rule star_align:
+    rule star_align:
+        """
+        Align reads against a genome (index) with STAR, and pipe the output to the required sorter(s).
+        """
+        input:
+            reads=get_reads,
+            index=expand("{genome_dir}/{{assembly}}/index/{aligner}", **config)
+        output:
+            dir =directory(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}", **config)),
+            pipe=pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0])
+        log:
+            directory(expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}", **config))
+        benchmark:
+            expand("{benchmark_dir}/{aligner}_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
+        params:
+            input=lambda wildcards, input: f' {input.reads}' if config['layout'][wildcards.sample] == 'SINGLE' else \
+                                           f' {input.reads[0]} {input.reads[1]}',
+            params=config['align']
+        threads: 8
+        resources:
+            mem_gb=30
+        conda:
+            "../envs/star.yaml"
+        shell:
             """
-            Align reads against a genome (index) with STAR, and pipe the output to the required sorter(s).
+            trap "find {log} -type f ! -name Log* -exec rm {{}} \;" EXIT
+            mkdir -p {log}
+            mkdir -p {output.dir}                
+
+            STAR --genomeDir {input.index} --readFilesIn {params.input} --readFilesCommand gunzip -c \
+            --quantMode GeneCounts --outSAMtype BAM Unsorted --outStd BAM_Unsorted \
+            --outFileNamePrefix {log}/ --outTmpDir {output.dir}/STARtmp \
+            --runThreadN {threads} {params.params} > {output.pipe} 2> {log}/Log.stderr.out
+
+            # move all non-log files to output directory (this way the log files are kept on error)
+            find {log} -type f ! -name Log* -exec mv {{}} {output.dir} \;
             """
-            input:
-                reads=get_reads,
-                index=expand("{genome_dir}/{{assembly}}/index/{aligner}", **config)
-            output:
-                dir =directory(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}", **config)),
-                pipe=pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0])
-            log:
-                directory(expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}", **config))
-            benchmark:
-                expand("{benchmark_dir}/{aligner}_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
-            params:
-                input=lambda wildcards, input: f' {input.reads}' if config['layout'][wildcards.sample] == 'SINGLE' else \
-                                               f' {input.reads[0]} {input.reads[1]}',
-                params=config['align']
-            threads: 8
-            resources:
-                mem_gb=30
-            conda:
-                "../envs/star.yaml"
-            shell:
-                """
-                trap "find {log} -type f ! -name Log* -exec rm {{}} \;" EXIT
-                mkdir -p {log}
-                mkdir -p {output.dir}                
-
-                STAR --genomeDir {input.index} --readFilesIn {params.input} --quantMode GeneCounts \
-                --outFileNamePrefix {log}/ --outTmpDir {output.dir}/STARtmp --runThreadN {threads} {params.params} \
-                --outSAMtype BAM Unsorted --outStd BAM_Unsorted > {output.pipe} 2> {log}/Log.stderr.out
-
-                # move all non-log files to output directory (this way the log files are kept on error)
-                find {log} -type f ! -name Log* -exec mv {{}} {output.dir} \;
-                """
 
 
 rule samtools_presort:

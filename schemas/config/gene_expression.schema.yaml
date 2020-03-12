@@ -19,9 +19,9 @@ properties:
       star:
         properties:
           quantify:
-            default: '--readFilesCommand gunzip -c'
+            default: ''
         default:
-          quantify: '--readFilesCommand gunzip -c'
+          quantify: ''
       salmon:
         properties:
           quantifier_index:
@@ -36,7 +36,7 @@ properties:
           decoy_aware_index: False
     default:
       star:
-        quantify: '--readFilesCommand gunzip -c'
+        quantify: ''
 
   tximeta:
     description: tximeta is used to convert salmon output (estimated transcript abundances) to a gene counts matrix. Currently, these values can be ignored.
