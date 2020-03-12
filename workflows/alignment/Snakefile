@@ -34,14 +34,14 @@ def get_bams():
     bamfiles['map'] = set(); bamfiles['ind'] = set()
 
     # get all the bams
-    if config.get('combine_replicates', '') == 'merge' and 'condition' in samples:
-        for condition in set(samples['condition']):
-            for assembly in set(samples[samples['condition'] == condition]['assembly']):
-                bamfiles['map'].update([expand(f"{{dedup_dir}}/{assembly}-{condition}.{{bam_sorter}}-{{bam_sort_order}}.{map_ext}", **config)[0]])
-                bamfiles['ind'].update([expand(f"{{dedup_dir}}/{assembly}-{condition}.{{bam_sorter}}-{{bam_sort_order}}.{map_ext}.{map_idx}", **config)[0]])
+    if config.get('technical_replicates', '') == 'merge' and 'replicate' in samples:
+        for assembly in set(samples['assembly']):
+            for replicate in set(samples[samples['assembly'] == assembly]['replicate']):
+                bamfiles['map'].update([expand(f"{{dedup_dir}}/{assembly}-{replicate}.{{bam_sorter}}-{{bam_sort_order}}.{map_ext}", **config)[0]])
+                bamfiles['ind'].update([expand(f"{{dedup_dir}}/{assembly}-{replicate}.{{bam_sorter}}-{{bam_sort_order}}.{map_ext}.{map_idx}", **config)[0]])
                 # always output samtools-coordinate
-                bamfiles['map'].update([expand(f"{{dedup_dir}}/{assembly}-{condition}.samtools-coordinate.{map_ext}", **config)[0]])
-                bamfiles['ind'].update([expand(f"{{dedup_dir}}/{assembly}-{condition}.samtools-coordinate.{map_ext}.{map_idx}", **config)[0]])
+                bamfiles['map'].update([expand(f"{{dedup_dir}}/{assembly}-{replicate}.samtools-coordinate.{map_ext}", **config)[0]])
+                bamfiles['ind'].update([expand(f"{{dedup_dir}}/{assembly}-{replicate}.samtools-coordinate.{map_ext}.{map_idx}", **config)[0]])
     else:
         bamfiles['map'].update([expand(f"{{dedup_dir}}/{samples.loc[sample]['assembly']}-{sample}.{{bam_sorter}}-{{bam_sort_order}}.{map_ext}", **config)[0] for sample in samples.index])
         bamfiles['ind'].update([expand(f"{{dedup_dir}}/{samples.loc[sample]['assembly']}-{sample}.{{bam_sorter}}-{{bam_sort_order}}.{map_ext}.{map_idx}", **config)[0] for sample in samples.index if config['bam_sort_order'] == 'coordinate'])
