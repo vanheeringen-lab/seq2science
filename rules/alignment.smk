@@ -383,7 +383,7 @@ rule sambamba_sort:
     benchmark:
         expand("{benchmark_dir}/sambamba_sort/{{assembly}}-{{sample}}-{{sorting}}{{sieve}}.benchmark.txt", **config)[0]
     params:
-        lambda wildcards: "-n" if wildcards.sorting == 'queryname' else '',
+        lambda wildcards: "-n" if 'queryname' in wildcards.sorting else '',
     threads: 2
     conda:
         "../envs/sambamba.yaml"
