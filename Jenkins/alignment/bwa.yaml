@@ -8,4 +8,10 @@ genome_dir: ../../Jenkins  # where to look for or download the genomes
 fastq_dir: ../../Jenkins/tinyfastq
 
 # which aligner to use
-aligner: bwa
+aligner:
+  bwa:
+    index:  # parameters for indexing
+      '-a bwtsw'
+    align:  # parameters for alignment
+      ''
+
