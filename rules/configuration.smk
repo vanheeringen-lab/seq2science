@@ -207,8 +207,8 @@ for key, value in config.items():
 
 # check if a sample is single-end or paired end, and store it
 logger.info("Checking if samples are single-end or paired-end...")
-layout_cachefile = './.snakemake/layouts.p'
-layout_cachefile_lock = './.snakemake/layouts.p.lock'
+layout_cachefile = os.path.expanduser('~/.config/snakemake/layouts.p')
+layout_cachefile_lock = os.path.expanduser('~/.config/snakemake/layouts.p.lock')
 
 def get_layout_eutils(sample):
     """
@@ -271,6 +271,14 @@ def get_layout_trace(sample):
 
 # do this locked to avoid parallel ncbi requests with the same key, and to avoid
 # multiple writes/reads at the same time to layouts.p
+if not os.path.exists(os.path.dirname(layout_cachefile_lock)):
+    os.makedirs(os.path.dirname(layout_cachefile_lock))
+
+# let's ignore locks that are older than 5 minutes
+if os.path.exists(layout_cachefile_lock) and \
+        time.time() - os.stat(layout_cachefile_lock).st_mtime > 5 * 60:
+    os.remove(layout_cachefile_lock)
+
 with FileLock(layout_cachefile_lock):
     # try to load the layout cache, otherwise defaults to empty dictionary
     try:
@@ -413,7 +421,7 @@ def convert_size(size_bytes, order=None):
 
 
 # by default only one download in parallel (workflow fails on multiple on a single node)
-workflow.global_resources = {**{'parallel_downloads': 1, 'deeptools_limit': 1, 'R_scripts': 1},
+workflow.global_resources = {**{'parallel_downloads': 3, 'deeptools_limit': 1, 'R_scripts': 1},
                              **workflow.global_resources}
 
 # when the user specifies memory, use this and give a warning if it surpasses local memory

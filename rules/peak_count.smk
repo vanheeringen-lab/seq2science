@@ -18,30 +18,25 @@ rule peak_union:
         "cat {input} | sort -k1,1 -k2,2n | mergeBed -i stdin > {output} 2> {log}"
 
 
-def get_multicov_replicates(file_ext):
+def get_coverage_table_replicates(file_ext):
     def wrapped(wildcards):
         return expand([f"{{dedup_dir}}/{wildcards.assembly}-{replicate}.{wildcards.sorter}-{wildcards.sorting}.{file_ext}"
             for replicate in treps[treps['assembly'] == wildcards.assembly].index], **config)
     return wrapped
 
 
-rule multicov:
+rule coverage_table:
     input:
         peaks=rules.peak_union.output,
-        replicates=get_multicov_replicates('bam'),
-        replicate_bai=get_multicov_replicates('bam.bai')
+        replicates=get_coverage_table_replicates('bam'),
+        replicate_bai=get_coverage_table_replicates('bam.bai')
     output:
-        expand("{result_dir}/count_table/{{peak_caller}}/count_table_{{assembly}}.{{sorter}}-{{sorting}}.bed", **config)
+        expand("{result_dir}/count_table/{{peak_caller}}/count_table_{{assembly}}.{{sorter}}-{{sorting}}.txt", **config)
     log:
         expand("{log_dir}/multicov/{{assembly}}-{{peak_caller}}-{{sorter}}-{{sorting}}.log", **config)
     benchmark:
         expand("{benchmark_dir}/multicov/{{assembly}}-{{peak_caller}}-{{sorter}}-{{sorting}}.benchmark.txt", **config)[0]
     conda:
-        "../envs/bedtools.yaml"
-    params:
-        files=lambda wildcards, input: "\\t".join([file.split('-')[-2].split('.')[0] for file in input.replicates])
+        "../envs/gimme.yaml"
     shell:
-        """
-        echo -e "QNAME\\tstart\\tend\\t{params.files}" > {output}
-        bedtools multicov -bams {input.replicates} -bed {input.peaks} >> {output} 2>> {log}
-        """
+        "coverage_table -p {input.peaks} -d {input.replicates} > {output} 2> {log}"
