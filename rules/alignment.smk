@@ -290,14 +290,15 @@ rule samtools_presort:
     benchmark:
         expand("{benchmark_dir}/samtools_presort/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
     params:
-        threads=lambda wildcards, input, output, threads: threads - 1
+        threads=lambda wildcards, input, output, threads: threads - 1,
+        sort_order="-n" if (not use_alignmentsieve(config)) and config.get("bam_sort_order") == "queryname" else ""
     threads: 2
     resources:
         mem_mb=2500
     shell:
         """
         trap \"rm -f {output}*\" INT;
-        samtools sort -@ {params.threads} {input} -o {output}  2> {log}
+        samtools sort {params.sort_order} -@ {params.threads} {input} -o {output}  2> {log}
         """
 
 
@@ -433,7 +434,7 @@ def get_bam_mark_duplicates(wildcards):
             return expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}-sievsort.bam", **config)
 
     # if we don't want to do anything get the untreated bam
-    if wildcards.sorter == 'samtools' and wildcards.sorting == 'coordinate':
+    if wildcards.sorter == 'samtools':
         return rules.samtools_presort.output
     return expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config)
 
