@@ -364,7 +364,7 @@ rule alignmentsieve:
 def get_sambamba_sort_bam(wildcards):
     if wildcards.sieve == '-sievsort':
         return rules.alignmentsieve.output
-    return expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-unsieved.bam", **config)
+    return rules.samtools_presort.output
 
 
 rule sambamba_sort:
@@ -373,11 +373,10 @@ rule sambamba_sort:
     """
     input:
         get_sambamba_sort_bam
-        # expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.sambamba-{{sorting}}.pipe", **config)
     output:
         temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.sambamba-{{sorting}}{{sieve}}.bam", **config))
     wildcard_constraints:
-        sieve="^$|-sievsort"
+        sieve="|-sievsort"
     log:
         expand("{log_dir}/sambamba_sort/{{assembly}}-{{sample}}-sambamba_{{sorting}}{{sieve}}.log", **config)
     group: 'alignment'
@@ -404,7 +403,7 @@ rule samtools_sort:
     output:
         temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-{{sorting}}{{sieve}}.bam", **config))
     wildcard_constraints:
-        sieve="^$|-sievsort"
+        sieve="|-sievsort"
     log:
         expand("{log_dir}/samtools_sort/{{assembly}}-{{sample}}-samtools_{{sorting}}{{sieve}}.log", **config)
     group: 'alignment'
