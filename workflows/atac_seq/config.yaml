@@ -7,8 +7,8 @@ email: yourmail@here.com
 
 
 # pipeline file locations
-#result_dir: /mnt/ocimum/vol/atac-seq  # where to store results
-#genome_dir: /mnt/ocimum/vol/genomes   # where to look for or download the genomes
+result_dir: /mnt/ocimum/vol/test_stuff  # where to store results
+genome_dir: /home/sande/.local/share/genomes   # where to look for or download the genomes
 
 
 # peak callers (supported peak callers are macs2, and genrich, and hmmratac is not fully supported yet)
@@ -23,17 +23,17 @@ peak_caller:
 combine_replicates: fisher
 remove_blacklist: True
 remove_mito: True
-atac_shift: True
-minqual: 12
+tn5_shift: True
+minqual: 0
 
 # which aligner to use with the option to specify own parameters
-aligner:
-  bwa:
-    index:  # parameters for indexing
-      '-a bwtsw'
-    align:  # parameters for alignment
-      ''
+# aligner:
+#   bwa:
+#     index:  # parameters for indexing
+#       '-a bwtsw'
+#     align:  # parameters for alignment
+#       ''
 
 # or use 'our' default parameters
-# aligner:
-#   bwa
+aligner:
+  bwa
