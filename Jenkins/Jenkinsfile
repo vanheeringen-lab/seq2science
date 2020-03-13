@@ -31,7 +31,7 @@ pipeline {
 
     environment {
         PATH = "$WORKSPACE/miniconda/bin:$PATH"
-        CORES = "33"
+        CORES = "28"
     }
 
     stages {
@@ -265,8 +265,8 @@ pipeline {
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                         conda activate miniconda/envs/snakemake-workflows/
                         let "c = $CORES / 4"
-                        let "a = $CORES / 5"
-                        let "s = $c - $a"
+                        let "a = $c - 2"
+                        let "s = 2"
 
                         # test bowtie2 alignment
                         snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
@@ -282,8 +282,8 @@ pipeline {
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                         conda activate miniconda/envs/snakemake-workflows/
                         let "c = $CORES / 4"
-                        let "a = $CORES / 5"
-                        let "s = $c - $a"
+                        let "a = $c - 2"
+                        let "s = 2"
 
                         # test bwa alignment
                         snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
@@ -299,8 +299,8 @@ pipeline {
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                         conda activate miniconda/envs/snakemake-workflows/
                         let "c = $CORES / 4"
-                        let "a = $CORES / 5"
-                        let "s = $c - $a"
+                        let "a = $c - 2"
+                        let "s = 2"
 
                         # test hisat2 alignment
                         snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
@@ -316,8 +316,8 @@ pipeline {
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                         conda activate miniconda/envs/snakemake-workflows/
                         let "c = $CORES / 4"
-                        let "a = $CORES / 5"
-                        let "s = $c - $a"
+                        let "a = $c - 2"
+                        let "s = 2"
 
                         # test star alignment
                         snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
