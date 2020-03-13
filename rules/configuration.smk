@@ -393,9 +393,12 @@ def any_given(*args):
 # set global wildcard constraints (see workflow._wildcard_constraints)
 wildcard_constraints:
     sample=any_given('sample'),
-    assembly=any_given('assembly'),
     sorting='coordinate|queryname',
     sorter='samtools|sambamba'
+
+if 'assembly' in samples:
+    wildcard_constraints:
+        assembly=any_given('assembly'),
 
 if 'replicate' in samples:
     wildcard_constraints:
