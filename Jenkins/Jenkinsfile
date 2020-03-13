@@ -265,7 +265,7 @@ pipeline {
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                         conda activate miniconda/envs/snakemake-workflows/
                         let "c = $CORES / 4"
-                        let "a = $c - 2"
+                        let "a = $c - 3"
                         let "s = 2"
 
                         # test bowtie2 alignment
@@ -282,7 +282,7 @@ pipeline {
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                         conda activate miniconda/envs/snakemake-workflows/
                         let "c = $CORES / 4"
-                        let "a = $c - 2"
+                        let "a = $c - 3"
                         let "s = 2"
 
                         # test bwa alignment
@@ -299,7 +299,7 @@ pipeline {
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                         conda activate miniconda/envs/snakemake-workflows/
                         let "c = $CORES / 4"
-                        let "a = $c - 2"
+                        let "a = $c - 3"
                         let "s = 2"
 
                         # test hisat2 alignment
@@ -316,7 +316,7 @@ pipeline {
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                         conda activate miniconda/envs/snakemake-workflows/
                         let "c = $CORES / 4"
-                        let "a = $c - 2"
+                        let "a = $c - 3"
                         let "s = 2"
 
                         # test star alignment
