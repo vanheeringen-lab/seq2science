@@ -67,7 +67,7 @@ elif config['quantifier'] == 'salmon':
         shell:
             """
             salmon index -t {input.transcripts} --decoys {input.decoy_transcripts} -i {output} {params} \
-            --threads {threads} &> {log}
+            --threads {threads} > {log} 2>&1
             """
 
     rule salmon_index:
@@ -89,7 +89,7 @@ elif config['quantifier'] == 'salmon':
             "../envs/salmon.yaml"
         shell:
             """
-            salmon index -t {input} -i {output} {params} --threads {threads} &> {log}
+            salmon index -t {input} -i {output} {params} --threads {threads} > {log} 2>&1
             """
 
     rule salmon_quant:
@@ -117,5 +117,5 @@ elif config['quantifier'] == 'salmon':
         shell:
             """
             salmon quant -i {input.index} -l A {params.input} {params.params} -o {output.dir} \
-            --threads $(( 4 * {threads} / 5)) 2> {log}
+            --threads {threads} > {log} 2>&1
             """
