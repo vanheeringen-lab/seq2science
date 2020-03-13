@@ -609,7 +609,7 @@ rule trackhub:
 
                 # next add the data files depending on the workflow
                 # ATAC-seq trackhub
-                if get_workflow() in ['atac-seq', 'chip-seq']:
+                if get_workflow() in ['atac_seq', 'chip_seq']:
                     for peak_caller in config['peak_caller']:
                         for sample in breps[breps['assembly'] == assembly].index:
                             bigpeak = f"{config['result_dir']}/{peak_caller}/{assembly}-{sample}.bigNarrowPeak"
