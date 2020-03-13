@@ -88,6 +88,12 @@ pipeline {
                         snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/sambamba_coordinate.yaml --quiet
                         snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/sambamba_queryname.yaml  --quiet
 
+                        # test alignmentsieve
+                        printf "\ntest alignmentsieve\n\n"
+                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/alignmentsieve.yaml --quiet
+                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/no_alignmentsieve.yaml --quiet
+
+                        # test cram support
                         printf "\ntest cram support\n\n"
                         snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/cram_no_bam.yaml --quiet
                         '''
@@ -265,14 +271,14 @@ pipeline {
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                         conda activate miniconda/envs/snakemake-workflows/
                         let "c = $CORES / 4"
-                        let "a = $CORES / 5"
-                        let "s = $c - $a"
+                        let "a = $c - 2"
+                        let "s = 2"
 
                         # test bowtie2 alignment
                         snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
                         --use-conda --configfile Jenkins/alignment/bowtie2.yaml \
                         --config samples=../../Jenkins/alignment/local_sample.tsv \
-                        -j $c --set-threads bowtie2_align=$a samtools_sort=$s \
+                        -j $c --set-threads bowtie2_align=$a samtools_presort=$s \
                         --nolock
                         '''
                     },
@@ -282,14 +288,14 @@ pipeline {
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                         conda activate miniconda/envs/snakemake-workflows/
                         let "c = $CORES / 4"
-                        let "a = $CORES / 5"
-                        let "s = $c - $a"
+                        let "a = $c - 2"
+                        let "s = 2"
 
                         # test bwa alignment
                         snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
                         --use-conda --configfile Jenkins/alignment/bwa.yaml \
                         --config samples=../../Jenkins/alignment/local_sample.tsv \
-                        -j $c --set-threads bwa_mem=$a samtools_sort=$s \
+                        -j $c --set-threads bwa_mem=$a samtools_presort=$s \
                         --nolock
                         '''
                     },
@@ -299,14 +305,14 @@ pipeline {
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                         conda activate miniconda/envs/snakemake-workflows/
                         let "c = $CORES / 4"
-                        let "a = $CORES / 5"
-                        let "s = $c - $a"
+                        let "a = $c - 2"
+                        let "s = 2"
 
                         # test hisat2 alignment
                         snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
                         --use-conda --configfile Jenkins/alignment/hisat2.yaml \
                         --config samples=../../Jenkins/alignment/local_sample.tsv \
-                        -j $c --set-threads hisat2_align=$a samtools_sort=$s \
+                        -j $c --set-threads hisat2_align=$a samtools_presort=$s \
                         --nolock
                         '''
                     },
@@ -316,14 +322,14 @@ pipeline {
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                         conda activate miniconda/envs/snakemake-workflows/
                         let "c = $CORES / 4"
-                        let "a = $CORES / 5"
-                        let "s = $c - $a"
+                        let "a = $c - 2"
+                        let "s = 2"
 
                         # test star alignment
                         snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
                         --use-conda --configfile Jenkins/alignment/star.yaml \
                         --config samples=../../Jenkins/alignment/local_sample.tsv \
-                        -j $c --set-threads star_align=$a samtools_sort=$s \
+                        -j $c --set-threads star_align=$a samtools_presort=$s \
                         --nolock
                         '''
                     }

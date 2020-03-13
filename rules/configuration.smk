@@ -92,6 +92,17 @@ samples.index = samples.index.map(str)
 if config.get('peak_caller', False):
     config['peak_caller'] = {k: v for k,v in config['peak_caller'].items()}
 
+    # if genrich is peak caller, make sure to not double shift reads
+    if 'genrich' in config['peak_caller']:
+        # always turn of genrich shift, since we handle that with deeptools
+        if '-j' in config['peak_caller']['genrich'] and not '-D' in config['peak_caller']['genrich']:
+            config['peak_caller']['genrich'] += ' -D'
+
+    # if hmmratac peak caller, check if all samples are paired-end
+    if 'hmmratac' in config['peak_caller']:
+        assert all([config['layout'][sample] == 'PAIRED' for sample in samples.index]), \
+        "HMMRATAC requires all samples to be paired end"
+
 # ...for alignment and rna-seq
 for conf_dict in ['aligner', 'quantifier', 'diffexp']:
     if config.get(conf_dict, False):
@@ -337,11 +348,6 @@ if 'replicate' in samples and config.get('technical_replicates') == 'merge':
         replicate = samples.loc[sample, 'replicate']
         config['layout'][replicate] = config['layout'][sample]
 
-# if hmmratac peak caller, check if all samples are paired-end
-if 'hmmratac' in config.get('peak_caller', ''):
-    assert all([config['layout'][sample] == 'PAIRED' for sample in samples.index]), \
-    "HMMRATAC requires all samples to be paired end"
-
 # after all is done, log (print) the configuration
 logger.info("CONFIGURATION VARIABLES:")
 for key, value in config.items():
@@ -387,6 +393,8 @@ def any_given(*args):
 # set global wildcard constraints (see workflow._wildcard_constraints)
 wildcard_constraints:
     sample=any_given('sample'),
+    sorting='coordinate|queryname',
+    sorter='samtools|sambamba'
 
 if 'assembly' in samples:
     wildcard_constraints:
@@ -395,15 +403,16 @@ if 'assembly' in samples:
 if 'replicate' in samples:
     wildcard_constraints:
         sample=any_given('sample', 'replicate'),
-        replicate=any_given('replicate'),
+        replicate=any_given('replicate')             
+
 if 'condition' in samples:
     wildcard_constraints:
         sample=any_given('sample', 'condition'),
-        condition=any_given('condition'),
+        condition=any_given('condition')
+
 if 'replicate' in samples and 'condition' in samples:
     wildcard_constraints:
-        sample=any_given('sample', 'replicate', 'condition'),
-
+        sample=any_given('sample', 'replicate', 'condition')
 
 
 def get_workflow():
@@ -440,3 +449,12 @@ else:
 
     workflow.global_resources = {**workflow.global_resources,
                                  **{'mem_gb': np.clip(workflow.global_resources.get('mem_gb', 9999), 0, convert_size(mem.total, 3)[0])}}
+
+def use_alignmentsieve(configdict):
+    """
+    helper function to check whether or not we use alignmentsieve
+    """
+    return configdict.get('min_mapping_quality', 0) > 0 or \
+           configdict.get('tn5_shift', False) or \
+           configdict.get('remove_blacklist', False) or \
+           configdict.get('remove_mito', False)

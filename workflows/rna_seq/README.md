@@ -7,7 +7,7 @@ Alignment can be performed with multiple aligners. For RNA-seq, you can use STAR
 Differential gene expression (DE) analysis can optionally be performed with DESeq2.
 
 <p align="center">
-    <img src="https://raw.githubusercontent.com/vanheeringen-lab/snakemake-workflows/master/dag/rna-seq.svg?sanitize=true">
+    <img src="https://raw.githubusercontent.com/vanheeringen-lab/snakemake-workflows/master/imgs/rna-seq.svg?sanitize=true">
 </p>
 
 ### Configuration
