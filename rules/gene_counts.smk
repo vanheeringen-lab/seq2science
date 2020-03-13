@@ -1,10 +1,4 @@
 def get_counts(wildcards):
-    # iterator = samples[samples['assembly'] == wildcards.assembly].index
-    # if 'replicate' in samples and config.get('technical_replicates') == 'merge':
-    #     iterator = set(samples[samples['assembly'] == wildcards.assembly].replicate)
-    # output = []
-    # for sample in iterator:
-    #     output.append(f"{{result_dir}}/{{quantifier}}/{wildcards.assembly}-{sample}")
     quant_dirs = []
     for replicate in treps.index:
         quant_dirs.append(f"{{result_dir}}/{{quantifier}}/{wildcards.assembly}-{replicate}")

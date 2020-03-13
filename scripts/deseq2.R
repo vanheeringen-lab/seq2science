@@ -56,7 +56,6 @@ rm(contr)
 
 
 ## obtain coldata, the metadata input for DESeq2
-# coldata <- read.delim(samples_file, row.names=1, na.strings = "")
 samples <- read.delim(samples_file, na.strings = "")
 if ("replicate" %in% colnames(samples) & isTRUE(replicates)) {
   samples$replicate[is.na(samples$replicate)] <- as.character(samples$sample[is.na(samples$replicate)])
