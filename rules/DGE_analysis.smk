@@ -44,11 +44,8 @@ Simultaneous R scripts can incidentally crash because it is missing.
 
 active issue: https://github.com/conda-forge/r-base-feedstock/issues/67
 active PR: https://github.com/conda/conda/pull/8776
-
-workarounds:
--the workflow can be rerun until all scripts have finished
--the max number of parallel R-scripts can be set to 1
 """
+# TODO once fixed the resource R_scripts can be removed
 rule deseq2:
     """
     Differential gene expression analysis with DESeq2.
@@ -65,7 +62,8 @@ rule deseq2:
         expand("{benchmark_dir}/deseq2/{{assembly}}-{{contrast}}.diffexp.benchmark.txt", **config)[0]
     threads: 4
     params:
-        os.path.abspath(config["samples"])
+        samples=os.path.abspath(config["samples"]),
+        replicates=True if config['technical_replicates'] == 'merge' else False
     resources:
         R_scripts=1 # conda's R can have issues when starting multiple times
     script:
@@ -88,7 +86,8 @@ rule blind_clustering:
         expand("{benchmark_dir}/deseq2/{{assembly}}-clustering.benchmark.txt", **config)[0]
     threads: 4
     params:
-        os.path.abspath(config["samples"])
+        samples=os.path.abspath(config["samples"]),
+        replicates=True if config['technical_replicates'] == 'merge' else False
     resources:
         R_scripts=1 # conda's R can have issues when starting multiple times
     script:

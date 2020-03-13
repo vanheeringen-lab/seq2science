@@ -9,7 +9,8 @@ suppressMessages({
 threads        <- snakemake@threads[[1]]
 log_file       <- snakemake@log[[1]]
 counts_file    <- snakemake@input[[1]]
-samples_file   <- snakemake@params[[1]]
+samples_file   <- snakemake@params$samples
+replicates     <- snakemake@params$replicates
 assembly       <- snakemake@wildcards$assembly
 out_plot       <- snakemake@output[[1]]
 
@@ -18,9 +19,31 @@ log <- file(log_file, open="wt")
 sink(log)
 sink(log, type="message")
 
+# log all variables for debugging purposes
+cat('# variables used for this analysis:\n')
+cat('threads      <-',   threads, '\n')
+cat('log_file     <- "', log_file,     '"\n', sep = "")
+cat('counts_file  <- "', counts_file,  '"\n', sep = "")
+cat('samples_file <- "', samples_file, '"\n', sep = "")
+cat('replicates   <- ',  replicates, '\n')
+cat('assembly     <- "', assembly,     '"\n', sep = "")
+cat('out_plot     <- "', out_plot,     '"\n', sep = "")
+cat('\n')
+
+cat('Sessioninfo:\n')
+sessionInfo()
+cat('\n')
+
 
 ## obtain coldata, the metadata input for DESeq2
-samples <- read.delim(samples_file, row.names=1, na.strings = "")
+samples <- read.delim(samples_file, na.strings = "")
+if ("replicate" %in% colnames(samples) & isTRUE(replicates)) {
+  samples$replicate[is.na(samples$replicate)] <- as.character(samples$sample[is.na(samples$replicate)])
+  row.names(samples) <- samples$replicate
+} else {
+  row.names(samples) <- samples$sample
+}
+
 # filter for assembly, remove NAs and add random variables (not needed for blind clustering)
 coldata  <- samples[samples$assembly == assembly, 'assembly', drop = F]
 coldata[,1] <- factor(as.character(c(1:nrow(coldata))))
