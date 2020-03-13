@@ -1,7 +1,0 @@
-name: alignmentsieve
-channels:
-  - bioconda
-  - conda-forge
-  - defaults
-dependencies:
-  - bioconda::deeptools=3.3.1

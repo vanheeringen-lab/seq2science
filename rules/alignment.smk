@@ -361,7 +361,7 @@ rule alignmentsieve:
         blacklist=lambda wildcards, input: "" if os.stat(input.blacklist[0]).st_size == 0 else \
                                           f"--blackListFileName {input.blacklist}"
     conda:
-        "../envs/alignmentsieve.yaml"
+        "../envs/deeptools.yaml"
     shell:
         "alignmentSieve -b {input.bam} -o {output} {params.minqual} {params.atacshift} {params.blacklist} -p 10 > {log} 2>&1"
 
