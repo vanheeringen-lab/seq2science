@@ -455,7 +455,7 @@ else:
 
 def use_alignmentsieve(configdict):
     """
-
+    helper function to check whether or not we use alignmentsieve
     """
     return configdict.get('min_mapping_quality', 0) > 0 or \
            configdict.get('tn5_shift', False) or \

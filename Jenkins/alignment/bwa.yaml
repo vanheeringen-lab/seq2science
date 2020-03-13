@@ -9,4 +9,3 @@ fastq_dir: ../../Jenkins/tinyfastq
 
 # which aligner to use
 aligner: bwa
-

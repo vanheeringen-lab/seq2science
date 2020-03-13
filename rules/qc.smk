@@ -131,6 +131,8 @@ rule MTNucRatioCalculator:
         chr_names=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config)
     output:
         expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-unsieved.bam.mtnucratiomtnuc.json", **config)
+    log:
+        f"{config['log_dir']}/MTNucRatioCalculator/{{assembly}}-{{sample}}.log"
     conda:
         "../envs/mtnucratio.yaml"
     params:
@@ -163,35 +165,17 @@ rule multiqc_header_info:
                     f"    - Date: '{date}'\n")
 
 
-rule multiqc_config_info:
+rule multiqc_rename_buttons:
     """
-    Generate a multiqc header file with contact info and date of multiqc generation.
-    """
-    output:
-        temp(expand('{qc_dir}/config_info.yaml', **config))
-    run:
-        with open(output[0], "w") as f:
-            f.write(
-                "# section_name: 'Custom data file'"
-                "# description: 'This output is described in the file header. Any MultiQC installation will understand it without prior configuration.'"
-                "# format: 'csv'"
-                "# plot_type: 'table'"
-                "# pconfig:"
-                "#    id: 'custom_bargraph_w_header'"
-                "#    ylab: 'Number of things'"
-                "Sample Name,some feature"
-                "GSM2219688_pass_1,42")
-
-
-rule multiqc_sample_names:
-    """
-    
+    Generate rename buttons.
     """
     output:
         temp(expand('{qc_dir}/sample_names.tsv', **config))
     run:
         newsamples = samples.reset_index(level=0, inplace=False)
+        newsamples.drop("assembly")
         newsamples.to_csv(output[0], sep="\t", index=False)
+
 
 def get_qc_files(wildcards):
     assert 'quality_control' in globals(), "When trying to generate multiqc output, make sure that the "\

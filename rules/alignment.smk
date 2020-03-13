@@ -291,9 +291,9 @@ rule samtools_presort:
     benchmark:
         expand("{benchmark_dir}/samtools_presort/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
     params:
-        threads=lambda wildcards, input, output, threads: threads - 1,
-        sort_order="-n" if (not use_alignmentsieve(config)) and config.get("bam_sort_order") == "queryname" else ""
-    threads: 2
+        threads=lambda wildcards, input, output, threads: max([1, threads - 1]),
+        sort_order="-n" if not use_alignmentsieve(config) and config.get("bam_sort_order") == "queryname" else ""
+    threads: 3
     resources:
         mem_mb=2500
     shell:
@@ -310,9 +310,8 @@ def get_blacklist_files(wildcards):
     # TODO: switch back to checkpoints
     if config.get('remove_blacklist') and wildcards.assembly.lower() in \
             ["ce10", "dm3", "hg38", "hg19", "mm9", "mm10"]:
-        blacklist = f"{config['genome_dir']}/{wildcards.assembly}/{wildcards.assembly}.blacklist.bed"
-        if os.path.exists(blacklist):
-            files['blacklist'] = blacklist
+        blacklist = f"{config['genome_dir']}/{wildcards.assembly}/{wildcards.assembly}.fa"
+        files['blacklist'] = blacklist
 
     if config.get('remove_mito'):
         sizes = f"{config['genome_dir']}/{wildcards.assembly}/{wildcards.assembly}.fa.sizes"
@@ -328,8 +327,10 @@ rule setup_blacklist:
         temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.customblacklist.bed", **config))
     run:
         newblacklist = ""
-        if any('.blacklist.bed' in inputfile for inputfile in input):
-            with open(input.blacklist, 'r') as file:
+        if config.get('remove_blacklist') and wildcards.assembly.lower() in \
+                ["ce10", "dm3", "hg38", "hg19", "mm9", "mm10"]:
+            blacklist = f"{config['genome_dir']}/{wildcards.assembly}/{wildcards.assembly}.blacklist.bed"
+            with open(blacklist, 'r') as file:
                 newblacklist += file.read()
 
         if any('.fa.sizes' in inputfile for inputfile in input):
@@ -358,7 +359,7 @@ rule alignmentsieve:
     conda:
         "../envs/alignmentsieve.yaml"
     shell:
-        "alignmentSieve -b {input.bam} -o {output} {params.minqual} {params.atacshift} {params.blacklist} -p 10"
+        "alignmentSieve -b {input.bam} -o {output} {params.minqual} {params.atacshift} {params.blacklist} -p 10 > {log} 2>&1"
 
 
 def get_sambamba_sort_bam(wildcards):
@@ -369,7 +370,7 @@ def get_sambamba_sort_bam(wildcards):
 
 rule sambamba_sort:
     """
-    Sort the result of alignment with the sambamba sorter.
+    Sort the result of alignment or sieving with the sambamba sorter.
     """
     input:
         get_sambamba_sort_bam
@@ -396,7 +397,7 @@ rule sambamba_sort:
 
 rule samtools_sort:
     """
-    Sort the result of alignment with the samtools sorter.
+    Sort the result of sieving with the samtools sorter.
     """
     input:
         rules.alignmentsieve.output
@@ -409,7 +410,7 @@ rule samtools_sort:
         expand("{benchmark_dir}/samtools_sort/{{assembly}}-{{sample}}-{{sorting}}.benchmark.txt", **config)[0]
     params:
         order=lambda wildcards: "-n" if wildcards.sorting == 'queryname' else '',
-        threads=lambda wildcards, input, output, threads: threads - 1
+        threads=lambda wildcards, input, output, threads: max([1, threads - 1])
     threads: 2
     resources:
         mem_mb=2500
@@ -480,6 +481,9 @@ rule samtools_index:
 
         
 rule bam2cram:
+    """
+    Convert bam to the more compressed cram format
+    """
     input:
          bam=rules.mark_duplicates.output.bam,
          assembly=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config)

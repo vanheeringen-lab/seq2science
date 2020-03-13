@@ -100,20 +100,20 @@ properties:
     default: 'none@provided.com'
     type: string
 
-  #
+  # only keep reads with a minimum mapping quality of..
   min_mapping_quality:
     default: 0
     type: integer
 
-  #
+  # whether or not to correct for tn5 bias
   tn5_shift:
     default: False
     type: boolean
 
-  #
+  # whether or not to remove blacklisted regions
   remove_blacklist:
     default: False
 
-  #
+  # whether or not to remove mitochondrial reads
   remove_mito:
     default: False

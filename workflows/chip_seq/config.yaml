@@ -11,13 +11,14 @@ result_dir: /mnt/ocimum/vol/dick  # where to store results
 genome_dir: /mnt/ocimum/vol/genomes  # where to look for or download the genomes
 
 
-# peak callers (supported peak callers are macs2, and genrich)
+# peak caller
 peak_caller:
   macs2:
       --keep-dup 1 --buffer-size 10000
 
 combine_replicates: fisher
 remove_blacklist: True
+minqual: 10
 
 # which aligner to use with the option to specify own parameters
 aligner:
