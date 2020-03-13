@@ -173,7 +173,7 @@ rule multiqc_rename_buttons:
         temp(expand('{qc_dir}/sample_names.tsv', **config))
     run:
         newsamples = samples.reset_index(level=0, inplace=False)
-        newsamples.drop("assembly")
+        newsamples.drop(["assembly"], axis=1)
         newsamples.to_csv(output[0], sep="\t", index=False)
 
 
