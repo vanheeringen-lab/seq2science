@@ -351,6 +351,10 @@ rule alignmentsieve:
         blacklist=rules.setup_blacklist.output
     output:
         expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-sieved.bam", **config)
+    log:
+        expand("{log_dir}/alignmentsieve/{{assembly}}-{{sample}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/alignmentsieve/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
     params:
         minqual=f"--minMappingQuality {config['min_mapping_quality']}",
         atacshift="--ATACshift" if config['tn5_shift'] else '',
@@ -380,7 +384,6 @@ rule sambamba_sort:
         sieve="|-sievsort"
     log:
         expand("{log_dir}/sambamba_sort/{{assembly}}-{{sample}}-sambamba_{{sorting}}{{sieve}}.log", **config)
-    group: 'alignment'
     benchmark:
         expand("{benchmark_dir}/sambamba_sort/{{assembly}}-{{sample}}-{{sorting}}{{sieve}}.benchmark.txt", **config)[0]
     params:

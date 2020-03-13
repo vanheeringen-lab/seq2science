@@ -24,7 +24,7 @@ combine_replicates: fisher
 remove_blacklist: True
 remove_mito: True
 tn5_shift: True
-minqual: 10
+minqual: 30
 
 # which aligner to use with the option to specify own parameters
 # aligner:

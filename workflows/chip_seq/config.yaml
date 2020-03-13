@@ -18,7 +18,7 @@ peak_caller:
 
 combine_replicates: fisher
 remove_blacklist: True
-minqual: 10
+minqual: 30
 
 # which aligner to use with the option to specify own parameters
 aligner:
