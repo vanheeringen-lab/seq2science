@@ -356,12 +356,12 @@ logger.info("\n\n")
 
 # save a copy of the latest samples and config file in the log_dir
 # skip this step on Jenkins, as it runs in parallel
-#if os.getcwd() != config['log_dir'] and not os.getcwd().startswith('/var/lib/jenkins'):
-#    os.makedirs(config['log_dir'], exist_ok=True)
-#    for file in [config['samples'], workflow.configfiles[0]]:
-#        src = os.path.join(os.getcwd(), file)
-#        dst = os.path.join(config['log_dir'], file)
-#        shutil.copy(src, dst)
+if os.getcwd() != config['log_dir'] and not os.getcwd().startswith('/var/lib/jenkins'):
+    os.makedirs(config['log_dir'], exist_ok=True)
+    for file in [config['samples'], workflow.configfiles[0]]:
+        src = os.path.join(os.getcwd(), file)
+        dst = os.path.join(config['log_dir'], file)
+        shutil.copy(src, dst)
 
 
 # check if a newer version of the Snakemake-workflows (master branch) is available
