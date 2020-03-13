@@ -352,9 +352,9 @@ logger.info("\n\n")
 # skip this step on Jenkins, as it runs in parallel
 if os.getcwd() != config['log_dir'] and not os.getcwd().startswith('/var/lib/jenkins'):
     os.makedirs(config['log_dir'], exist_ok=True)
-    for file in [config['samples'], workflow.configfiles[0]]:
+    for file in [config['samples']] + workflow.configfiles:
         src = os.path.join(os.getcwd(), file)
-        dst = os.path.join(config['log_dir'], file)
+        dst = os.path.join(config['log_dir'], os.path.basename(file))
         shutil.copy(src, dst)
 
 
