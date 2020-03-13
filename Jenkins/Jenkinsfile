@@ -88,6 +88,12 @@ pipeline {
                         snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/sambamba_coordinate.yaml --quiet
                         snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/sambamba_queryname.yaml  --quiet
 
+                        # test alignmentsieve
+                        printf "\ntest alignmentsieve\n\n"
+                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/alignmentsieve.yaml --quiet
+                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/no_alignmentsieve.yaml --quiet
+
+                        # test cram support
                         printf "\ntest cram support\n\n"
                         snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/cram_no_bam.yaml --quiet
                         '''
