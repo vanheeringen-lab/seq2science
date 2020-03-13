@@ -31,7 +31,7 @@ pipeline {
 
     environment {
         PATH = "$WORKSPACE/miniconda/bin:$PATH"
-        CORES = "32"
+        CORES = "33"
     }
 
     stages {
