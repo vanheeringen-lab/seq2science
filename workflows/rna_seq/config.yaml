@@ -13,8 +13,6 @@ create_trackhub: False
 # which method to use in order to generate the counts (salmon or star)
 quantifier: star
 
-### package Tximeta must be updated (to 1.4.4 or higher) on conda before salmon works again ###
-
 ## which method to use in order to generate the counts (salmon or star)
 #quantifier:
 #  salmon:
