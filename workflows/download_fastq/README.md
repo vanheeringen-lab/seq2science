@@ -2,7 +2,7 @@
 Download fastq files from the ENA or NCBI servers as SRA and (parallel) dump them as fastq. The pipeline can handle both paired-end and single-end data:
 
 <p align="center">
-    <img src="https://raw.githubusercontent.com/vanheeringen-lab/snakemake-workflows/master/dag/download_fastq.svg?sanitize=true">
+    <img src="https://raw.githubusercontent.com/vanheeringen-lab/snakemake-workflows/master/imgs/download_fastq.svg?sanitize=true">
 </p>
 
 ### Configuration

@@ -3,10 +3,9 @@ configfile: "config.yaml"
 
 
 # do onstart/onexit things
-sample_schemas = ['sample', 'assembly', 'replicate', 'condition', 'strandedness']
+sample_schemas = ['sample', 'assembly', 'strandedness', 'condition']
 config_schemas = ['general', 'download', 'alignment_general', 'peakcalling', 'trackhub']
 include: "../../rules/configuration.smk"
-
 
 # load all the relevant rules
 include: f"{config['rule_dir']}/alignment.smk"
@@ -30,7 +29,7 @@ rule call_peaks_all:
     """
     input:
          expand("{result_dir}/trackhub", **config),
-         expand(["{result_dir}/count_table/{peak_caller}/count_table_{assemblies}.samtools-coordinate.txt",
+         expand(["{result_dir}/count_table/{peak_caller}/count_table_{assemblies}.samtools-coordinate.bed",
                  "{qc_dir}/multiqc_{assemblies}.html"],
                 **{**config,
                    **{'assemblies': set(samples['assembly']), 'peak_caller': config['peak_caller'].keys()}})
