@@ -3,7 +3,7 @@ configfile: "config.yaml"
 
 
 # do onstart/onexit things
-sample_schemas = ['sample', 'assembly', 'strandedness']
+sample_schemas = ['sample', 'assembly', 'replicate', 'strandedness']
 config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific', 'trackhub']
 include: "../../rules/configuration.smk"
 

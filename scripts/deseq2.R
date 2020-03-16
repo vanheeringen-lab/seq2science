@@ -7,7 +7,8 @@ suppressMessages({
 threads         <- snakemake@threads[[1]]
 log_file        <- snakemake@log[[1]]
 counts_file     <- snakemake@input[[1]]
-samples_file    <- snakemake@params[[1]]
+samples_file    <- snakemake@params$samples
+replicates      <- snakemake@params$replicates
 contrast        <- snakemake@wildcards$contrast
 mtp             <- snakemake@config$DE_params$multiple_testing_procedure
 fdr             <- snakemake@config$DE_params$alpha_value
@@ -26,12 +27,17 @@ cat('threads      <-',   threads, '\n')
 cat('log_file     <- "', log_file,     '"\n', sep = "")
 cat('counts_file  <- "', counts_file,  '"\n', sep = "")
 cat('samples_file <- "', samples_file, '"\n', sep = "")
+cat('replicates   <- ',  replicates, '\n')
 cat('contrast     <- "', contrast,     '"\n', sep = "")
 cat('mtp          <- "', mtp,          '"\n', sep = "")
 cat('fdr          <-',   fdr, '\n')
 cat('se           <- "', se,           '"\n', sep = "")
 cat('assembly     <- "', assembly,     '"\n', sep = "")
 cat('output       <- "', output,       '"\n', sep = "")
+cat('\n')
+
+cat('Sessioninfo:\n')
+sessionInfo()
 cat('\n')
 
 
@@ -50,7 +56,14 @@ rm(contr)
 
 
 ## obtain coldata, the metadata input for DESeq2
-coldata <- read.delim(samples_file, row.names=1, na.strings = "")
+samples <- read.delim(samples_file, na.strings = "")
+if ("replicate" %in% colnames(samples) & isTRUE(replicates)) {
+  samples$replicate[is.na(samples$replicate)] <- as.character(samples$sample[is.na(samples$replicate)])
+  row.names(samples) <- samples$replicate
+} else {
+  row.names(samples) <- samples$sample
+}
+coldata <- samples
 
 # rename batch and condition (required as DESeq's design cannot accept variables)
 coldata[,"condition"] <- coldata[condition]

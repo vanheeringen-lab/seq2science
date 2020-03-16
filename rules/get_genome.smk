@@ -61,6 +61,7 @@ rule get_genome:
         """
 
 
+# TODO: this rule can be removed from genomepy >0.7.1
 rule get_annotation:
     """
     Matches the chromosome/scaffold names in annotation.gtf to those in the genome.fa.
@@ -157,7 +158,7 @@ rule get_transcripts:
 
 rule decoy_transcripts:
     """
-    Generate decoy_transcripts.txt
+    Generate decoy_transcripts.txt for Salmon indexing  
     
     script source: https://github.com/COMBINE-lab/SalmonTools
     """

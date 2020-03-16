@@ -420,23 +420,21 @@ pipeline {
                 source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                 conda activate miniconda/envs/snakemake-workflows/
 
-                # TXIMETA BUG: needs to be updated on bioconda (to 1.4.4 or higher) before salmon works again!
-
                 # test salmon
                 # create regular counts
-                # snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq \
-                # --use-conda -j $CORES --configfile Jenkins/rna_seq/counts.yaml \
-                # --config samples=../../Jenkins/alignment/local_sample.tsv quantifier=salmon decoy_aware_index=False
+                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq \
+                --use-conda -j $CORES --configfile Jenkins/rna_seq/counts.yaml \
+                --config samples=../../Jenkins/alignment/local_sample.tsv quantifier=salmon decoy_aware_index=False
 
-                # rm -rf Jenkins/tinydata/index/salmon workflows/rna_seq/salmon
-                # rm -rf workflows/rna_seq/gene_counts workflows/rna_seq/deseq2 workflows/rna_seq/qc/multi*
+                rm -rf Jenkins/tinydata/index/salmon workflows/rna_seq/salmon
+                rm -rf workflows/rna_seq/gene_counts workflows/rna_seq/deseq2 workflows/rna_seq/qc/multi*
 
                 # create counts with a decoys-aware index (builds on last run)
-                # snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq \
-                # --use-conda -j $CORES --configfile Jenkins/rna_seq/counts.yaml \
-                # --config samples=../../Jenkins/alignment/local_sample.tsv quantifier=salmon decoy_aware_index=True
+                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq \
+                --use-conda -j $CORES --configfile Jenkins/rna_seq/counts.yaml \
+                --config samples=../../Jenkins/alignment/local_sample.tsv quantifier=salmon decoy_aware_index=True
 
-                # rm -rf workflows/rna_seq/gene_counts workflows/rna_seq/deseq2 workflows/rna_seq/qc/multi*
+                rm -rf workflows/rna_seq/gene_counts workflows/rna_seq/deseq2 workflows/rna_seq/qc/multi*
 
 
                 # test STAR
