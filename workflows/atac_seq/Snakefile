@@ -3,8 +3,8 @@ configfile: "config.yaml"
 
 
 # do onstart/onexit things
-sample_schemas = ['sample', 'assembly', 'strandedness', 'condition']
-config_schemas = ['general', 'download', 'alignment_general', 'peakcalling']
+sample_schemas = ['sample', 'assembly', 'replicate', 'condition', 'strandedness']
+config_schemas = ['general', 'download', 'alignment_general', 'peakcalling', 'trackhub']
 include: "../../rules/configuration.smk"
 
 
@@ -23,13 +23,14 @@ include: f"{config['rule_dir']}/trimming.smk"
 # set the quality_control functions
 quality_control = [get_trimming_qc, get_alignment_qc, get_peak_calling_qc]
 
+
 rule call_peaks_all:
     """
     call peaks for each sample (or condition if applies)
     """
     input:
          expand("{result_dir}/trackhub", **config),
-         expand(["{result_dir}/count_table/{peak_caller}/count_table_{assemblies}.samtools-coordinate.bed",
+         expand(["{result_dir}/count_table/{peak_caller}/count_table_{assemblies}.samtools-coordinate.txt",
                  "{qc_dir}/multiqc_{assemblies}.html"],
                 **{**config,
                    **{'assemblies': set(samples['assembly']), 'peak_caller': config['peak_caller'].keys()}})

@@ -1,13 +1,11 @@
 # tab-separated file of the samples
 samples: samples.tsv
 
-dedup_dir: ./star_dedups
 
+# pipeline file locations
+result_dir: star
+genome_dir: ../../Jenkins  # where to look for or download the genomes
+fastq_dir: ../../Jenkins/tinyfastq
 
 # which aligner to use
-aligner:
-  star:
-    index:  # parameters for indexing
-      ''
-    align:  # parameters for alignment
-      --readFilesCommand gunzip -c
+aligner: star

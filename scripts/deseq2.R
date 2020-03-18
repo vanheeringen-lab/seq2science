@@ -7,63 +7,73 @@ suppressMessages({
 threads         <- snakemake@threads[[1]]
 log_file        <- snakemake@log[[1]]
 counts_file     <- snakemake@input[[1]]
-samples_file    <- snakemake@params[[1]]
+samples_file    <- snakemake@params$samples
+replicates      <- snakemake@params$replicates
 contrast        <- snakemake@wildcards$contrast
-params          <- snakemake@config$DE_params
 mtp             <- snakemake@config$DE_params$multiple_testing_procedure
 fdr             <- snakemake@config$DE_params$alpha_value
 se              <- snakemake@config$DE_params$shrinkage_estimator
 assembly        <- snakemake@wildcards$assembly
-output_table    <- snakemake@output$table
-output_ma_plot  <- snakemake@output$ma_plot
-output_pca_plot <- snakemake@output$pca_plot
-
-# #test variables
-# threads        <- 4
-# log_file       <- '/mnt/passer/bank/experiments/2019-09/dirk_nextseq/results/log/deseq2/GRCh38.p12-diseaseTest_control_disease.diffexp.log'
-# counts_file    <- '/mnt/passer/bank/experiments/2019-09/dirk_nextseq/results/gene_counts/GRCh38.p12-counts.tsv'
-# samples_file   <- '/home/siebrenf/git/snakemake-workflows/workflows/rna_seq/samples.tsv'
-# contrast       <- 'stageTest_1_2'
-# mtp            <- 'ihw'
-# fdr            <- 0.05
-# se             <- 'apeglm'
-# assembly       <- 'GRCh38.p12'
-# output_table   <- '/mnt/passer/bank/experiments/2019-09/dirk_nextseq/results/deseq2/GRCh38.p12-diseaseTest_control_disease.diffexp.tsv'
-# output_ma_plot <- '/mnt/passer/bank/experiments/2019-09/dirk_nextseq/results/deseq2/GRCh38.p12-diseaseTest_control_disease.ma_plot.svg'
+output          <- snakemake@output[[1]]
 
 # log all console output
 log <- file(log_file, open="wt")
 sink(log)
 sink(log, type="message")
 
+# log all variables for debugging purposes
+cat('# variables used for this analysis:\n')
+cat('threads      <-',   threads, '\n')
+cat('log_file     <- "', log_file,     '"\n', sep = "")
+cat('counts_file  <- "', counts_file,  '"\n', sep = "")
+cat('samples_file <- "', samples_file, '"\n', sep = "")
+cat('replicates   <- ',  replicates, '\n')
+cat('contrast     <- "', contrast,     '"\n', sep = "")
+cat('mtp          <- "', mtp,          '"\n', sep = "")
+cat('fdr          <-',   fdr, '\n')
+cat('se           <- "', se,           '"\n', sep = "")
+cat('assembly     <- "', assembly,     '"\n', sep = "")
+cat('output       <- "', output,       '"\n', sep = "")
+cat('\n')
+
+cat('Sessioninfo:\n')
+sessionInfo()
+cat('\n')
+
 
 ## parse the design contrast
 # a contrast is always in the form 'batch+condition_group1_group2', where batch(+) is optional
-# extracting batch, condition and groups
-contr <- gsub('~' ,'' , contrast)
 batch <- NA
-if (grepl('\\+', contr)) {
-  batch <- strsplit(contr, '\\+')[[1]][1]
-  contr <- strsplit(contr, '\\+')[[1]][2]
+contr <- contrast
+if (grepl('\\+', contrast)) {
+  batch <- strsplit(contrast, '\\+')[[1]][1]
+  contr <- strsplit(contrast, '\\+')[[1]][2]
 }
 contr <- strsplit(contr, '_')[[1]]
 condition <- contr[1]
 groups <- contr[-1]
+rm(contr)
 
 
 ## obtain coldata, the metadata input for DESeq2
-samples <- read.delim(samples_file, row.names=1, na.strings = "")
-# rename batch and condition (needed as DESeq's design cannot accept variables)
-samples[,"condition"] <- samples[condition]
-samples[,"batch"] <- ifelse(!is.na(batch), samples[batch], NA)
-# filter for assembly and remove NAs
-samples <- samples[samples$assembly == assembly & !is.na(samples[condition]), c("condition", "batch"), drop = F]
+samples <- read.delim(samples_file, na.strings = "")
+if ("replicate" %in% colnames(samples) & isTRUE(replicates)) {
+  samples$replicate[is.na(samples$replicate)] <- as.character(samples$sample[is.na(samples$replicate)])
+  row.names(samples) <- samples$replicate
+} else {
+  row.names(samples) <- samples$sample
+}
+coldata <- samples
 
-# keep only the samples belonging to our groups
-coldata <- samples[(samples["condition"] == groups[1] | samples["condition"] == groups[2]), , drop = F]
-# refactor in case we dropped (several) factor levels
+# rename batch and condition (required as DESeq's design cannot accept variables)
+coldata[,"condition"] <- coldata[condition]
+coldata[,"batch"]     <- ifelse(!is.na(batch), coldata[batch], NA)
+
+# filter for assembly and condition & order data for DESeq
+coldata <- coldata[coldata$assembly == assembly & coldata$condition %in% c(groups[1], groups[2]), c("condition", "batch")]
 coldata$condition <- factor(coldata$condition)
-coldata$batch <- factor(coldata$batch)
+coldata$condition <- relevel(coldata$condition, ref = groups[2])
+coldata$batch     <- factor(coldata$batch)
 
 
 ## filter counts to speed up DESeq
@@ -79,16 +89,24 @@ if (threads > 1) {
   parallel <- TRUE
 }
 
-cat('Constructing DESeq object. If an error is found below this line, it is between you and DESeq2 to to solve it!\n')
+cat('Constructing DESeq object... \nTip: errors directly below this line are most likely DESeq2 related.\n\n')
 dds <- DESeqDataSetFromMatrix(countData = reduced_counts,
                               colData = coldata,
                               design = if (!is.na(batch)){~ batch + condition} else {~ condition})
-cat('Finished constructing DESeq object.\n\n')
+cat('\nFinished constructing DESeq object.\n\n')
 dds <- DESeq(dds, parallel=parallel)
 cat('\n')
 
+
 ## Extract differentially expressed genes
-DE_contrast <- resultsNames(dds)[2]
+cat('batches & contrasts:\n', resultsNames(dds), '\n')
+DE_contrast_names <- resultsNames(dds)
+for (DE_contrast in DE_contrast_names){
+  if (startsWith(DE_contrast, 'condition')){
+    break
+  }
+}
+cat('selected contrast:', DE_contrast, '\n\n')
 
 # correct for multiple testing
 if(mtp=='IHW'){
@@ -98,38 +116,48 @@ if(mtp=='IHW'){
 }
 
 # log transform counts
-resLFC <- lfcShrink(dds, coef=DE_contrast, res = res, type=se)
+resLFC <- lfcShrink(dds, coef = DE_contrast, res = res, type=se)
 cat('\n')
 
+
 ## Save the results
-# create a table with all genes, and analysis results if available
+# create a table with all genes
 expressed_genes <- as.data.frame(resLFC[order(resLFC$padj),])
 
 missing_genes <- rownames(counts)[!(rownames(counts) %in% rownames(expressed_genes))]
-
 unexpressed_genes <- as.data.frame(matrix(data = NA, ncol = ncol(expressed_genes), nrow = length(missing_genes)))
 rownames(unexpressed_genes) <- missing_genes
 colnames(unexpressed_genes) <- colnames(expressed_genes)
 unexpressed_genes[,'baseMean'] <- 0
 
 all_genes <- rbind(expressed_genes, unexpressed_genes)
-write.table(all_genes, file=output_table, quote = F, sep = '\t', col.names=NA)
+write.table(all_genes, file=output, quote = F, sep = '\t', col.names=NA)
 cat('DE genes table saved\n\n')
 
-# plot of log fold change vs mean gene counts
+
+## determine DE genes and plot if found
 plot_res <- resLFC[resLFC$padj <= fdr & !is.na(resLFC$padj), ]
 plot_DEGs <- length(plot_res[,1])
+if(plot_DEGs == 0){
+  cat("No differentially expressed genes found! Skipping plot generation...\n")
+  quit(save = "no" , status = 0)
+} else {
+  cat(plot_DEGs, "differentially expressed genes found! Plotting MA and PCA...\n")
+}
 
+# generate MA plot (log fold change vs mean gene counts)
+output_ma_plot <- sub(".diffexp.tsv", ".ma_plot.svg", output)
 svg(output_ma_plot)
 plotMA(plot_res, ylim=c(-2,2),
-       main = paste0(DE_contrast, '\n', plot_DEGs, ' DE genes (a = ', fdr, ')'))
+       main = paste0(contrast, '\n', plot_DEGs, ' DE genes (a = ', fdr, ')'))
 invisible(dev.off())
-cat('MA plot saved\n\n')
+cat('-MA plot saved\n')
 
-# transform the data and plot the PCA (for outlier detection)
+# transform the data and generate a PCA plot (for outlier detection)
 log_counts <- vst(dds, blind = TRUE)
 
+output_pca_plot <- sub(".diffexp.tsv", ".pca_plot.svg", output)
 svg(output_pca_plot)
 plotPCA(log_counts, intgroup="condition")
 invisible(dev.off())
-cat('PCA plot saved\n')
+cat('-PCA plot saved\n')
