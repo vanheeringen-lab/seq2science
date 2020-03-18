@@ -1,24 +1,33 @@
+def get_genrich_replicates(wildcards):
+    assembly_ish, sample_condition = "-".join(wildcards.fname.split('-')[:-1]), wildcards.fname.split('-')[-1]
+    assembly = assembly_ish.split("/")[-1]
+
+    if sample_condition in samples.index or (sample_condition in treps.index and config.get("technical_replicates", "") == "keep"):
+        print(sample_condition, "here")
+        return expand(f"{{dedup_dir}}/{wildcards.fname}.sambamba-queryname.bam", **config)
+    else:
+        return expand([f"{{dedup_dir}}/{assembly}-{replicate}.sambamba-queryname.bam"
+        for replicate in samples[(samples['assembly'] == assembly) & (samples['condition'] == sample_condition)].index], **config)
+
+
 rule genrich_pileup:
     """
-    Generate the pileup. For >1 sample, combined with Fisher's method, we use genrich_pileup_fisher 
-    
-    We do this separately from peak-calling since these two processes have a very different
+    Generate the pileup. We do this separately from peak-calling since these two processes have a very different
     computational footprint.
     """
     input:
-        expand("{dedup_dir}/{{assembly}}-{{sample}}.sambamba-queryname.bam", **config)
+        get_genrich_replicates
     output:
-        bedgraphish=expand("{result_dir}/genrich/{{assembly}}-{{sample}}.bdgish", **config),
-        log=expand("{result_dir}/genrich/{{assembly}}-{{sample}}.log", **config)
+        bedgraphish=expand("{result_dir}/genrich/{{fname}}.bdgish", **config),
+        log=expand("{result_dir}/genrich/{{fname}}.log", **config)
     log:
-        expand("{log_dir}/genrich_pileup/{{assembly}}-{{sample}}_pileup.log", **config)
+        expand("{log_dir}/genrich_pileup/{{fname}}_pileup.log", **config)
     benchmark:
-        expand("{benchmark_dir}/genrich_pileup/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/genrich_pileup/{{fname}}.benchmark.txt", **config)[0]
     conda:
         "../envs/genrich.yaml"
     params:
         config['peak_caller'].get('genrich', " ")  # TODO: move this to config.schema.yaml
-    threads: 1
     resources:
         mem_gb=8
     shell:
@@ -33,18 +42,17 @@ rule call_peak_genrich:
     Call peaks with genrich based on the pileup.
     """
     input:
-        log=expand("{result_dir}/genrich/{{assembly}}-{{sample}}.log", **config)
+        log=expand("{result_dir}/genrich/{{fname}}.log", **config)
     output:
-        narrowpeak=expand("{result_dir}/genrich/{{assembly}}-{{sample}}_peaks.narrowPeak", **config)
+        narrowpeak=expand("{result_dir}/genrich/{{fname}}_peaks.narrowPeak", **config)
     log:
-        expand("{log_dir}/call_peak_genrich/{{assembly}}-{{sample}}_peak.log", **config)
+        expand("{log_dir}/call_peak_genrich/{{fname}}_peak.log", **config)
     benchmark:
-        expand("{benchmark_dir}/call_peak_genrich/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/call_peak_genrich/{{fname}}.benchmark.txt", **config)[0]
     conda:
         "../envs/genrich.yaml"
     params:
         config['peak_caller'].get('genrich', "")
-    threads: 1
     shell:
         "Genrich -P -f {input.log} -o {output.narrowpeak} {params} -v > {log} 2>&1"
 
@@ -222,75 +230,6 @@ if 'condition' in samples:
 
 
     elif config.get('biological_replicates', "") == 'fisher':
-        if 'genrich' in config['peak_caller']:
-
-            def get_genrich_replicates(wildcards):
-                """list of replicates to combine using Fisher's method"""
-                return expand([f"{{dedup_dir}}/{wildcards.assembly}-{replicate}.sambamba-queryname.bam"
-                              for replicate in treps[(treps['assembly'] == wildcards.assembly) & (treps['condition'] == wildcards.sample)].index], **config)
-
-            rule genrich_pileup_fisher:
-                """
-                Generate the pileup for >1 sample. 
-    
-                We do this separately from peak-calling since these two processes have a very different
-                computational footprint.
-                """
-                input:
-                    get_genrich_replicates
-                output:
-                    bedgraphish=expand("{result_dir}/genrich/replicate_processed/{{assembly}}-{{sample}}.bdgish", **config),
-                    log=expand("{result_dir}/genrich/replicate_processed/{{assembly}}-{{sample}}.log", **config)
-                log:
-                    expand("{log_dir}/genrich_pileup/{{assembly}}-{{sample}}_pileup.log", **config)
-                benchmark:
-                    expand("{benchmark_dir}/genrich_pileup/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
-                conda:
-                    "../envs/genrich.yaml"
-                params:
-                    config['peak_caller'].get('genrich', " ")  # TODO: move this to config.schema.yaml
-                threads: 1
-                resources:
-                    mem_gb=8
-                shell:
-                    """
-                    input=$(echo {input} | tr ' ' ',')
-                    Genrich -X -t $input -f {output.log} -k {output.bedgraphish} {params} -v > {log} 2>&1
-                    """
-
-
-            def get_genrich_log(wildcards):
-                """
-                Only run rule genrich_pileup_fisher if the condition has >1 sample.
-
-                Otherwise, use rule genrich_pileup (which runs to create bigwigs either way)
-                """
-                replicate = treps[(treps["assembly"] == wildcards.assembly) & (treps["condition"] == wildcards.sample)].index
-                if len(replicate) == 1:
-                    return expand(f"{{result_dir}}/genrich/{wildcards.assembly}-{replicate[0]}.log", **config)
-                return expand("{result_dir}/genrich/replicate_processed/{{assembly}}-{{sample}}.log", **config)
-
-            rule call_peak_genrich_fisher:
-                """
-                Call peaks with genrich based on the pileup.
-                """
-                input:
-                    log=get_genrich_log
-                output:
-                    narrowpeak=expand("{result_dir}/genrich/replicate_processed/{{assembly}}-{{sample}}_peaks.narrowPeak", **config)
-                log:
-                    expand("{log_dir}/call_peak_genrich/{{assembly}}-{{sample}}_peak.log", **config)
-                benchmark:
-                    expand("{benchmark_dir}/call_peak_genrich/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
-                conda:
-                    "../envs/genrich.yaml"
-                params:
-                    config['peak_caller'].get('genrich', "")
-                threads: 1
-                shell:
-                    "Genrich -P -f {input.log} -o {output.narrowpeak} {params} -v > {log} 2>&1"
-
-
         if 'macs2' in config['peak_caller']:
 
             rule macs_bdgcmp:
