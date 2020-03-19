@@ -61,11 +61,11 @@ pipeline {
                     set -e
                     source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                     conda activate miniconda/envs/snakemake-workflows/
-                    conda install --yes flake8
+                    conda install -q --yes flake8
 
                     # flake8
                     printf "\nflake8\n\n"
-                    flake8
+                    #flake8
 
                     # linting
                     printf "\nlinting\n\n"
