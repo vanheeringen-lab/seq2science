@@ -2,12 +2,11 @@ def get_genrich_replicates(wildcards):
     assembly_ish, sample_condition = "-".join(wildcards.fname.split('-')[:-1]), wildcards.fname.split('-')[-1]
     assembly = assembly_ish.split("/")[-1]
 
-    if sample_condition in samples.index or (sample_condition in treps.index and config.get("technical_replicates", "") == "keep"):
-        print(sample_condition, "here")
+    if sample_condition in treps:
         return expand(f"{{dedup_dir}}/{wildcards.fname}.sambamba-queryname.bam", **config)
     else:
         return expand([f"{{dedup_dir}}/{assembly}-{replicate}.sambamba-queryname.bam"
-        for replicate in samples[(samples['assembly'] == assembly) & (samples['condition'] == sample_condition)].index], **config)
+        for replicate in treps_from_brep[sample_condition]], **config)
 
 
 rule genrich_pileup:

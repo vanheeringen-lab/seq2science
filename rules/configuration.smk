@@ -88,6 +88,19 @@ assert len(samples["sample"]) == len(set(samples["sample"])), \
     (f"\nDuplicate samples found in {config['samples']}:\n" +
      f"{samples[samples.duplicated(['sample'], keep=False)].to_string()}\n")
 
+for idx in samples.index:
+    if "condition" in samples:
+        assert idx not in samples["condition"], f"sample names, conditions, and replicates can not overlap. Sample " \
+                                                f"{idx} can not also occur as a condition"
+    if "replicate" in samples:
+        assert idx not in samples["replicate"], f"sample names, conditions, and replicates can not overlap. Sample " \
+                                                f"{idx} can not also occur as a replicate"
+
+if "condition" in samples and "replicate" in samples:
+    for cond in samples["condition"]:
+        assert cond not in samples["replicate"], f"sample names, conditions, and replicates can not overlap. " \
+                                                 f"Condition {cond} can not also occur as a replicate"
+
 # validate samples file
 for schema in sample_schemas:
     validate(samples, schema=f"../schemas/samples/{schema}.schema.yaml")
