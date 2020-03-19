@@ -5,3 +5,5 @@ exclude = .git,
           dag,
           schemas
 filename = *.smk
+# E501: line length. Snakemake has longer lines due to rule indenting
+ignore = E501

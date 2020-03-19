@@ -63,11 +63,13 @@ pipeline {
                     conda activate miniconda/envs/snakemake-workflows/
                     conda install --yes flake8
 
-                    # flake8 the rules
+                    # flake8
+                    printf "\nflake8\n\n"
                     flake8
 
-                    # now check SnakeMake linter!
-                    snakemake --lint
+                    # linting
+                    printf "\nlinting\n\n"
+                    snakemake -s workflows/download_fastq/Snakefile --directory workflows/download_fastq --lint
                     '''
                 }
             }
