@@ -12,6 +12,20 @@ if 'condition' in treps:
     breps = treps.reset_index(drop=True).drop_duplicates().set_index('condition')
 
 
+# make a dict that returns the treps that belong to a brep
+treps_from_brep = dict()
+if "condition" in treps:
+    for brep, row in breps.iterrows():
+        assembly = row["assembly"]
+        treps_from_brep[brep] = list(treps[(treps["assembly"] == assembly) & (treps["condition"] == brep)].index)
+else:
+    for brep, row in breps.iterrows():
+        treps_from_brep[brep] = [brep]
+
+brep_from_trep = dict()
+for brep, _treps in treps_from_brep.items():
+    brep_from_trep.update({trep: brep for trep in _treps})
+
 if 'replicate' in samples and config.get('technical_replicates') == 'merge':
     def get_merge_replicates(wildcards):
         return expand([f"{{trimmed_dir}}/{sample}{wildcards.fqext}_trimmed.{{fqsuffix}}.gz"
