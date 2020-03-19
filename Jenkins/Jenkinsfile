@@ -54,6 +54,25 @@ pipeline {
             }
         }
 
+        stage('Code Style') {
+            steps {
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh '''#!/usr/bin/env bash
+                    set -e
+                    source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+                    conda activate miniconda/envs/snakemake-workflows/
+                    conda install --yes flake8
+
+                    # flake8 the rules
+                    flake8
+
+                    # now check SnakeMake linter!
+                    snakemake --lint
+                    '''
+                }
+            }
+       }
+                
 
         stage('Test DAG') {
             steps {
