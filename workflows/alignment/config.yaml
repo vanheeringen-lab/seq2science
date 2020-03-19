@@ -19,5 +19,17 @@ bam_sorter:
   samtools:
     coordinate
 
-# which aligner to use
+# filtering after alignment
+remove_blacklist: True
+minqual: 30
+
+# use 'our' default parameters
 aligner: bwa
+
+# or specify which aligner to use with the option to specify own parameters
+# aligner:
+#   bwa:
+#     index:  # parameters for indexing
+#       '-a bwtsw'
+#     align:  # parameters for alignment
+#       ''

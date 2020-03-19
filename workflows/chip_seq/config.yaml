@@ -16,18 +16,21 @@ peak_caller:
   macs2:
       --keep-dup 1 --buffer-size 10000
 
-combine_replicates: fisher
+# how to handle replicates
+biological_replicates: fisher  # change to keep to not combine them
+technical_replicates: merge    # change to keep to not combine them
+
+# filtering after alignment
 remove_blacklist: True
 minqual: 30
 
-# which aligner to use with the option to specify own parameters
-aligner:
-  bwa:
-    index:  # parameters for indexing
-      '-a bwtsw'
-    align:  # parameters for alignment
-      ''
+# use 'our' default parameters
+aligner: bwa
 
-# or use 'our' default parameters
+# or specify which aligner to use with the option to specify own parameters
 # aligner:
-#   bwa
+#   bwa:
+#     index:  # parameters for indexing
+#       '-a bwtsw'
+#     align:  # parameters for alignment
+#       ''
