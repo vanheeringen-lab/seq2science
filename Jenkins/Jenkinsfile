@@ -65,11 +65,12 @@ pipeline {
 
                     # flake8
                     printf "\nflake8\n\n"
-                    #flake8
+                    flake8
 
                     # linting
                     printf "\nlinting\n\n"
-                    snakemake -s workflows/download_fastq/Snakefile --directory workflows/download_fastq --lint
+                    snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq --lint
+                    snakemake -s workflows/rna_seq/Snakefile  --directory workflows/rna_seq --lint
                     '''
                 }
             }
