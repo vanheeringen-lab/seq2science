@@ -279,7 +279,7 @@ pipeline {
                         --use-conda --configfile Jenkins/alignment/bowtie2.yaml \
                         --config samples=../../Jenkins/alignment/local_sample.tsv \
                         -j $c --set-threads bowtie2_align=$a samtools_presort=$s \
-                        --nolock
+                        --nolock --notemp
                         '''
                     },
                     "BWA" : {
@@ -296,7 +296,7 @@ pipeline {
                         --use-conda --configfile Jenkins/alignment/bwa.yaml \
                         --config samples=../../Jenkins/alignment/local_sample.tsv \
                         -j $c --set-threads bwa_mem=$a samtools_presort=$s \
-                        --nolock
+                        --nolock --notemp
                         '''
                     },
                     "HISAT2" : {
@@ -313,7 +313,7 @@ pipeline {
                         --use-conda --configfile Jenkins/alignment/hisat2.yaml \
                         --config samples=../../Jenkins/alignment/local_sample.tsv \
                         -j $c --set-threads hisat2_align=$a samtools_presort=$s \
-                        --nolock
+                        --nolock --notemp
                         '''
                     },
                     "STAR" : {
@@ -330,7 +330,7 @@ pipeline {
                         --use-conda --configfile Jenkins/alignment/star.yaml \
                         --config samples=../../Jenkins/alignment/local_sample.tsv \
                         -j $c --set-threads star_align=$a samtools_presort=$s \
-                        --nolock
+                        --nolock --notemp
                         '''
                     }
                 )
