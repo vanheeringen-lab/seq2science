@@ -2,7 +2,7 @@ def get_genrich_replicates(wildcards):
     assembly_ish, sample_condition = "-".join(wildcards.fname.split('-')[:-1]), wildcards.fname.split('-')[-1]
     assembly = assembly_ish.split("/")[-1]
 
-    if sample_condition in treps:
+    if sample_condition in treps.index:
         return expand(f"{{dedup_dir}}/{wildcards.fname}.sambamba-queryname.bam", **config)
     else:
         return expand([f"{{dedup_dir}}/{assembly}-{replicate}.sambamba-queryname.bam"
