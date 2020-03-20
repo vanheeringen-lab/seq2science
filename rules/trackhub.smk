@@ -465,7 +465,7 @@ def get_trackhub_files(wildcards):
                 trackfiles['annotations'].append(f"{config['genome_dir']}/{assembly}/{assembly}.bb")
 
     # Get the ATAC or RNA seq files
-    if get_workflow() == 'atac_seq':
+    if get_workflow() in ['atac_seq', 'chip_seq']:
         # get all the peak files
         for sample in breps.index:
             trackfiles['bigpeaks'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{breps.loc[sample, 'assembly']}-{sample}.bigNarrowPeak", **config))
@@ -613,7 +613,7 @@ rule trackhub:
                     for peak_caller in config['peak_caller']:
                         for brep in breps[breps['assembly'] == assembly].index:
                             bigpeak = f"{config['result_dir']}/{peak_caller}/{assembly}-{brep}.bigNarrowPeak"
-                            sample_name = f"{brep}{peak_caller}PEAK"
+                            sample_name = rep_to_descriptive(brep)
                             sample_name = trackhub.helpers.sanitize(sample_name)
 
                             track = trackhub.Track(
@@ -629,7 +629,7 @@ rule trackhub:
                             for trep in treps_from_brep[brep]:
                                 bigwig = f"{config['result_dir']}/{peak_caller}/{assembly}-{trep}.bw"
                                 assert os.path.exists(bigwig), bigwig + " not found!"
-                                sample_name = f"{trep}{peak_caller}BW"
+                                sample_name = rep_to_descriptive(trep)
                                 sample_name = trackhub.helpers.sanitize(sample_name)
 
                                 track = trackhub.Track(
@@ -653,7 +653,7 @@ rule trackhub:
                         for bw in get_bigwig_strand(sample):
                             bigwig = f"{config['result_dir']}/bigwigs/{assembly}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw"
                             assert os.path.exists(bigwig), bigwig + " not found!"
-                            sample_name = f"{sample}{bw}"
+                            sample_name = rep_to_descriptive(sample)
                             sample_name = trackhub.helpers.sanitize(sample_name)
 
                             track = trackhub.Track(

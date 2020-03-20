@@ -4,6 +4,8 @@ if 'replicate' in samples and config.get('technical_replicates')  != 'keep':
     cols = ['replicate', 'assembly']
 if 'condition' in samples and config.get('biological_replicates') != 'keep':
     cols.append('condition')
+if "descriptive_name" in samples:
+    cols.append('descriptive_name')
 treps = samples.reset_index()[cols].drop_duplicates().set_index(cols[0])
 
 # dataframe with all replicates collapsed
@@ -21,6 +23,24 @@ if "condition" in treps:
 else:
     for brep, row in breps.iterrows():
         treps_from_brep[brep] = [brep]
+
+
+# descriptive name parsing
+if "descriptive_name" in samples:
+    if config.get('biological_replicates') == 'keep':
+        pass
+
+def rep_to_descriptive(rep):
+    """
+    Return the descriptive name for a replicate.
+    """
+    if "descriptive_name" not in samples:
+        return rep
+
+    if rep in samples.index:
+        return samples.loc[rep, "descriptive_name"]
+
+    return rep
 
 
 if 'replicate' in samples and config.get('technical_replicates') == 'merge':
