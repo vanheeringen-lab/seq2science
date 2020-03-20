@@ -604,7 +604,7 @@ rule trackhub:
                 if get_workflow() in ['atac_seq', 'chip_seq']:
                     for peak_caller in config['peak_caller']:
                         for brep in breps[breps['assembly'] == assembly].index:
-                            bigpeak = f"{config['result_dir']}/{peak_caller}/{assembly}-{brep}.bigNarrowPeak"
+                            bigpeak = f"{config['result_dir']}/{peak_caller}/{assembly}-{brep}.bignarrowPeak"
                             sample_name = f"{brep}{peak_caller}PEAK"
                             sample_name = trackhub.helpers.sanitize(sample_name)
 
