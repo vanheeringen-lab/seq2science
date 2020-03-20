@@ -1,34 +1,64 @@
 # tab-separated file of the samples
 samples: samples.tsv
 
+# pipeline file locations
+result_dir: ./results  # where to store results
+genome_dir: ./genomes  # where to look for or download the genomes
+# fastq_dir: (default is inside result_dir) # where to look for or download the fastqs
+
+
 
 # contact info for multiqc report and trackhub
 email: yourmail@here.com
 
-
-# pipeline file locations
-result_dir: ./  # where to store results
-genome_dir: ./  # where to look for or download the genomes
-
-
 # produce bams, bigwigs and QC statistics?
 create_trackhub: False
 
-# which method to use in order to generate the counts (salmon or star)
+# how to handle replicates
+technical_replicates: merge    # change to keep to not combine them
+
+
+
+##### if create_trackhub == False #####
+
+# use 'our' default parameters
 quantifier: star
 
-## which method to use in order to generate the counts (salmon or star)
+# or specify which quantifier to use with the option to specify own parameters
 #quantifier:
 #  salmon:
-#    quantifier_index_flags: '-k 31'
-#    quantifier_flags: '--seqBias --gcBias --validateMappings --recoverOrphans'
-#    decoy_aware_index: True # salmon only. Generating a decoy requires ~65 GB RAM for GRCh38 (default is False)
+#    quantifier_index: '-k 31'
+#    quantify: '--seqBias --gcBias --validateMappings --recoverOrphans'
+#    decoy_aware_index: False  # salmon only. Requires ~65 GB RAM for GRCh38
 
-## differential expression analysis
+
+
+##### if create_trackhub == True #####
+
+# use 'our' default parameters
+aligner: star
+
+# or specify which aligner to use with the option to specify own parameters
+# aligner:
+#   star:
+#     index:  # parameters for indexing
+#       ''
+#     align:  # parameters for alignment
+#       ''
+
+# filtering after alignment
+remove_blacklist: True
+minqual: 30
+
+
+
+##### differential gene expression analysis (optional) #####
+
+# specify contrasts to perform analysis
 #diffexp:
 #  deseq2:
 #    DE_params:
-#      multiple_testing_procedure: IHW # options: BH/IHW. Default is BH
+#      multiple_testing_procedure: BH  # options: BH/IHW
 #      alpha_value: 0.05
 #      shrinkage_estimator: apeglm
 #    contrasts:
