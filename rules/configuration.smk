@@ -90,16 +90,16 @@ assert len(samples["sample"]) == len(set(samples["sample"])), \
 
 for idx in samples.index:
     if "condition" in samples:
-        assert idx not in samples["condition"], f"sample names, conditions, and replicates can not overlap. Sample " \
-                                                f"{idx} can not also occur as a condition"
+        assert idx not in samples["condition"].values, f"sample names, conditions, and replicates can not overlap. " \
+                                                       f"Sample {idx} can not also occur as a condition"
     if "replicate" in samples:
-        assert idx not in samples["replicate"], f"sample names, conditions, and replicates can not overlap. Sample " \
-                                                f"{idx} can not also occur as a replicate"
+        assert idx not in samples["replicate"].values, f"sample names, conditions, and replicates can not overlap. " \
+                                                       f"Sample {idx} can not also occur as a replicate"
 
 if "condition" in samples and "replicate" in samples:
     for cond in samples["condition"]:
-        assert cond not in samples["replicate"], f"sample names, conditions, and replicates can not overlap. " \
-                                                 f"Condition {cond} can not also occur as a replicate"
+        assert cond not in samples["replicate"].values, f"sample names, conditions, and replicates can not overlap. " \
+                                                        f"Condition {cond} can not also occur as a replicate"
 
 # validate samples file
 for schema in sample_schemas:

@@ -1,6 +1,6 @@
 # tab-separated file
 samples: samples.tsv
 
-
 # pipeline file locations
-result_dir: ./  # where to store results
+result_dir: ./results  # where to store results
+# fastq_dir: (default is inside result_dir) # where to download the fastqs

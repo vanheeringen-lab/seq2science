@@ -154,6 +154,7 @@ pipeline {
                         # default config
                         printf "\ndefault rna-seq\n\n"
                         snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --quiet
+                        snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --config quantifier=salmon decoy_aware_index=True --quiet
 
                         # test differential expression analysis
                         printf "\ndifferential expression\n\n"
@@ -301,7 +302,7 @@ pipeline {
                         --use-conda --configfile Jenkins/alignment/bowtie2.yaml \
                         --config samples=../../Jenkins/alignment/local_sample.tsv \
                         -j $c --set-threads bowtie2_align=$a samtools_presort=$s \
-                        --nolock
+                        --nolock --notemp
                         '''
                     },
                     "BWA" : {
@@ -318,7 +319,7 @@ pipeline {
                         --use-conda --configfile Jenkins/alignment/bwa.yaml \
                         --config samples=../../Jenkins/alignment/local_sample.tsv \
                         -j $c --set-threads bwa_mem=$a samtools_presort=$s \
-                        --nolock
+                        --nolock --notemp
                         '''
                     },
                     "HISAT2" : {
@@ -335,7 +336,7 @@ pipeline {
                         --use-conda --configfile Jenkins/alignment/hisat2.yaml \
                         --config samples=../../Jenkins/alignment/local_sample.tsv \
                         -j $c --set-threads hisat2_align=$a samtools_presort=$s \
-                        --nolock
+                        --nolock --notemp
                         '''
                     },
                     "STAR" : {
@@ -352,7 +353,7 @@ pipeline {
                         --use-conda --configfile Jenkins/alignment/star.yaml \
                         --config samples=../../Jenkins/alignment/local_sample.tsv \
                         -j $c --set-threads star_align=$a samtools_presort=$s \
-                        --nolock
+                        --nolock --notemp
                         '''
                     }
                 )
@@ -443,34 +444,41 @@ pipeline {
                 conda activate miniconda/envs/snakemake-workflows/
 
                 # test salmon
+                printf "\nSalmon basic\n\n"
                 # create regular counts
                 snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq \
                 --use-conda -j $CORES --configfile Jenkins/rna_seq/counts.yaml \
                 --config samples=../../Jenkins/alignment/local_sample.tsv quantifier=salmon decoy_aware_index=False
 
-                rm -rf Jenkins/tinydata/index/salmon workflows/rna_seq/salmon
-                rm -rf workflows/rna_seq/gene_counts workflows/rna_seq/deseq2 workflows/rna_seq/qc/multi*
+                rm -rf Jenkins/tinydata/index/salmon
+                rm -rf workflows/rna_seq/results/salmon workflows/rna_seq/results/gene_counts
+                rm -rf workflows/rna_seq/results/deseq2 workflows/rna_seq/results/qc/multi*
 
                 # create counts with a decoys-aware index (builds on last run)
+                printf "\nSalmon decoy aware\n\n"
                 snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq \
                 --use-conda -j $CORES --configfile Jenkins/rna_seq/counts.yaml \
                 --config samples=../../Jenkins/alignment/local_sample.tsv quantifier=salmon decoy_aware_index=True
 
-                rm -rf workflows/rna_seq/gene_counts workflows/rna_seq/deseq2 workflows/rna_seq/qc/multi*
+                rm -rf workflows/rna_seq/results/gene_counts workflows/rna_seq/results/deseq2
+                rm -rf workflows/rna_seq/results/qc/multi*
 
 
                 # test STAR
+                printf "\nSTAR counts\n\n"
                 # create counts matrix (builds on last run)
                 snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq \
                 --use-conda -j $CORES --configfile Jenkins/rna_seq/counts.yaml \
                 --config samples=../../Jenkins/rna_seq/samples.tsv
 
                 # perform DGE (builds on last run)
+                printf "\nSTAR DGE analysis\n\n"
                 snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq \
                 --use-conda -j $CORES --configfile Jenkins/rna_seq/deseq2.yaml \
                 --config samples=../../Jenkins/rna_seq/samples.tsv
 
                 # create trackhub (builds on last run)
+                printf "\nSTAR trackhub\n\n"
                 snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq \
                 --use-conda -j $CORES --configfile Jenkins/rna_seq/counts.yaml \
                 --config samples=../../Jenkins/alignment/local_sample.tsv create_trackhub=True
