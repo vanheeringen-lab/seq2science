@@ -29,10 +29,7 @@ def get_featureCounts_bam(wildcards):
 def get_featureCounts_peak(wildcards):
     peak_sample = brep_from_trep[wildcards.sample]
     ftype = 'narrowPeak' if wildcards.peak_caller in ['macs2', 'genrich'] else 'gappedPeak'
-    if 'condition' in samples and config['biological_replicates'] != 'keep':
-        return expand(f"{{result_dir}}/{wildcards.peak_caller}/replicate_processed/{wildcards.assembly}-{peak_sample}_peaks.{ftype}", **config)
-    else:
-        return expand(f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{peak_sample}_peaks.{ftype}", **config)
+    return expand(f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{peak_sample}_peaks.{ftype}", **config)
 
 rule featureCounts:
     """
