@@ -213,7 +213,7 @@ if 'condition' in samples:
             input:
                 get_idr_replicates
             output:
-                expand("{result_dir}/{{peak_caller}}/replicate_processed/{{assembly}}-{{condition}}_peaks.narrowPeak", **config),
+                expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{condition}}_peaks.narrowPeak", **config),
             log:
                 expand("{log_dir}/idr/{{assembly}}-{{condition}}-{{peak_caller}}.log", **config)
             benchmark:
@@ -273,7 +273,7 @@ if 'condition' in samples:
                 output:
                     tmpbdg=temp(expand("{result_dir}/macs2/{{assembly,.+(?<!_pvalues)}}-{{condition}}.bdg", **config)),
                     tmppeaks=temp(expand("{result_dir}/macs2/{{assembly}}-{{condition}}_peaks.temp.narrowPeak", **config)),
-                    peaks=expand("{result_dir}/macs2/replicate_processed/{{assembly}}-{{condition}}_peaks.narrowPeak", **config)
+                    peaks=expand("{result_dir}/macs2/{{assembly}}-{{condition}}_peaks.narrowPeak", **config)
                 log:
                     expand("{log_dir}/macs_cmbreps/{{assembly}}-{{condition}}.log", **config)
                 benchmark:

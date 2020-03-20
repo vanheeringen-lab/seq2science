@@ -78,28 +78,20 @@ rule bedgraph_bigwig:
         """
 
 
-def find_narrowpeak(wildcards):
-    if 'condition' in samples and config['biological_replicates'] != 'keep':
-        return expand(f"{{result_dir}}/{wildcards.peak_caller}/replicate_processed/{wildcards.assembly}-{wildcards.sample}_peaks.narrowPeak", **config)
-    else:
-        ftype = 'narrowPeak' if wildcards.peak_caller in ['macs2', 'genrich'] else 'gappedPeak'
-        return expand(f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{wildcards.sample}_peaks.{ftype}", **config)
-
-
 rule narrowpeak_bignarrowpeak:
     """
     Convert a narrowpeak file into a bignarrowpeak file.
     """
     input:
-        narrowpeak=find_narrowpeak,
+        narrowpeak=expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}_peaks.{{peak}}", **config),
         genome_size=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config)
     output:
-        out=     expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}.bigNarrowPeak", **config),
-        tmp=temp(expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}.tmp.narrowPeak", **config))
+        out=     expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}.big{{peak}}", **config),
+        tmp=temp(expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}.tmp.{{peak}}", **config))
     log:
-        expand("{log_dir}/narrowpeak_bignarrowpeak/{{peak_caller}}/{{assembly}}-{{sample}}.log", **config)
+        expand("{log_dir}/narrowpeak_bignarrowpeak/{{peak_caller}}/{{assembly}}-{{sample}}-{{peak}}.log", **config)
     benchmark:
-        expand("{benchmark_dir}/bedgraphish_to_bedgraph/{{assembly}}-{{sample}}-{{peak_caller}}.log", **config)[0]
+        expand("{benchmark_dir}/bedgraphish_to_bedgraph/{{assembly}}-{{sample}}-{{peak_caller}}-{{peak}}.log", **config)[0]
     conda:
         "../envs/ucsc.yaml"
     shell:
@@ -468,7 +460,7 @@ def get_trackhub_files(wildcards):
     if get_workflow() == 'atac_seq':
         # get all the peak files
         for sample in breps.index:
-            trackfiles['bigpeaks'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{breps.loc[sample, 'assembly']}-{sample}.bigNarrowPeak", **config))
+            trackfiles['bigpeaks'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{breps.loc[sample, 'assembly']}-{sample}.bignarrowPeak", **config))
 
         # get all the bigwigs
         for sample in treps.index:

@@ -198,8 +198,8 @@ def get_qc_files(wildcards):
 
     # qc on combined biological replicates/samples
     if get_peak_calling_qc in quality_control:
-        for condition in treps[treps['assembly'] == wildcards.assembly].index:
-            qc['files'].extend(get_peak_calling_qc(condition))
+        for trep in treps[treps['assembly'] == wildcards.assembly].index:
+            qc['files'].extend(get_peak_calling_qc(trep))
 
     return qc
 
