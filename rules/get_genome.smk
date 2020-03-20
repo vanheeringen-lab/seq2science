@@ -40,7 +40,7 @@ rule get_genome:
         active_plugins=$(genomepy config show | grep -Po '(?<=- ).*' | paste -s -d, -) || echo ""
         trap "genomepy plugin enable {{$active_plugins,}} >> {log} 2>&1; rm -f {params.temp}" EXIT
         genomepy plugin disable {{blacklist,bowtie2,bwa,star,gmap,hisat2,minimap2}} >> {log} 2>&1
-        genomepy plugin enable sizes >> {log} 2>&1
+        genomepy plugin enable {{blacklist,sizes}} >> {log} 2>&1
         
         # download the genome and attempt to download the annotation
         if [[ ! {params.provider} = None  ]]; then
@@ -61,6 +61,7 @@ rule get_genome:
         """
 
 
+# TODO: this rule can be removed from genomepy >0.7.1
 rule get_annotation:
     """
     Matches the chromosome/scaffold names in annotation.gtf to those in the genome.fa.
@@ -157,7 +158,7 @@ rule get_transcripts:
 
 rule decoy_transcripts:
     """
-    Generate decoy_transcripts.txt
+    Generate decoy_transcripts.txt for Salmon indexing  
     
     script source: https://github.com/COMBINE-lab/SalmonTools
     """

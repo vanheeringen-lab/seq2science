@@ -11,14 +11,10 @@ genome_dir: ./genomes  # where to look for or download the genomes
 # contact info for multiqc report and trackhub
 email: yourmail@here.com
 
-# peak callers (supported peak callers are macs2, and genrich, and hmmratac is not fully supported yet)
+# peak caller
 peak_caller:
   macs2:
-      --shift -100 --extsize 200 --nomodel --keep-dup 1 --buffer-size 10000
-#  genrich:
-#      -y -j -r
-#  hmmratac:
-#      ""
+      --keep-dup 1 --buffer-size 10000
 
 # how to handle replicates
 biological_replicates: fisher  # change to keep to not combine them
@@ -26,8 +22,6 @@ technical_replicates: merge    # change to keep to not combine them
 
 # filtering after alignment
 remove_blacklist: True
-remove_mito: True
-tn5_shift: True
 min_mapping_quality: 30  # (only keep uniquely mapped reads from BWA alignments)
 
 # use 'our' default parameters

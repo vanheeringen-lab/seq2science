@@ -54,6 +54,28 @@ pipeline {
             }
         }
 
+        stage('Code Style') {
+            steps {
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh '''#!/usr/bin/env bash
+                    set -e
+                    source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+                    conda activate miniconda/envs/snakemake-workflows/
+                    conda install -q --yes flake8
+
+                    # flake8
+                    printf "\nflake8\n\n"
+                    flake8
+
+                    # linting
+                    printf "\nlinting\n\n"
+                    snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq --lint
+                    snakemake -s workflows/rna_seq/Snakefile  --directory workflows/rna_seq --lint
+                    '''
+                }
+            }
+       }
+                
 
         stage('Test DAG') {
             steps {
@@ -88,6 +110,12 @@ pipeline {
                         snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/sambamba_coordinate.yaml --quiet
                         snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/sambamba_queryname.yaml  --quiet
 
+                        # test alignmentsieve
+                        printf "\ntest alignmentsieve\n\n"
+                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/alignmentsieve.yaml --quiet
+                        snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/no_alignmentsieve.yaml --quiet
+
+                        # test cram support
                         printf "\ntest cram support\n\n"
                         snakemake -s workflows/alignment/Snakefile --directory workflows/alignment -n -j 48 --configfile Jenkins/alignment/cram_no_bam.yaml --quiet
                         '''
@@ -126,6 +154,7 @@ pipeline {
                         # default config
                         printf "\ndefault rna-seq\n\n"
                         snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --quiet
+                        snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --config quantifier=salmon decoy_aware_index=True --quiet
 
                         # test differential expression analysis
                         printf "\ndifferential expression\n\n"
@@ -224,7 +253,7 @@ pipeline {
                 conda activate miniconda/envs/snakemake-workflows/
 
                 snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
-                --use-conda --configfile Jenkins/alignment/bowtie2.yaml \
+                --use-conda -j $CORES --configfile Jenkins/alignment/bowtie2.yaml \
                 --config samples=../../Jenkins/alignment/local_sample.tsv \
                 --create-envs-only
                 '''
@@ -265,15 +294,15 @@ pipeline {
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                         conda activate miniconda/envs/snakemake-workflows/
                         let "c = $CORES / 4"
-                        let "a = $CORES / 5"
-                        let "s = $c - $a"
+                        let "a = $c - 2"
+                        let "s = 2"
 
                         # test bowtie2 alignment
                         snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
                         --use-conda --configfile Jenkins/alignment/bowtie2.yaml \
                         --config samples=../../Jenkins/alignment/local_sample.tsv \
-                        -j $c --set-threads bowtie2_align=$a samtools_sort=$s \
-                        --nolock
+                        -j $c --set-threads bowtie2_align=$a samtools_presort=$s \
+                        --nolock --notemp
                         '''
                     },
                     "BWA" : {
@@ -282,15 +311,15 @@ pipeline {
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                         conda activate miniconda/envs/snakemake-workflows/
                         let "c = $CORES / 4"
-                        let "a = $CORES / 5"
-                        let "s = $c - $a"
+                        let "a = $c - 2"
+                        let "s = 2"
 
                         # test bwa alignment
                         snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
                         --use-conda --configfile Jenkins/alignment/bwa.yaml \
                         --config samples=../../Jenkins/alignment/local_sample.tsv \
-                        -j $c --set-threads bwa_mem=$a samtools_sort=$s \
-                        --nolock
+                        -j $c --set-threads bwa_mem=$a samtools_presort=$s \
+                        --nolock --notemp
                         '''
                     },
                     "HISAT2" : {
@@ -299,15 +328,15 @@ pipeline {
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                         conda activate miniconda/envs/snakemake-workflows/
                         let "c = $CORES / 4"
-                        let "a = $CORES / 5"
-                        let "s = $c - $a"
+                        let "a = $c - 2"
+                        let "s = 2"
 
                         # test hisat2 alignment
                         snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
                         --use-conda --configfile Jenkins/alignment/hisat2.yaml \
                         --config samples=../../Jenkins/alignment/local_sample.tsv \
-                        -j $c --set-threads hisat2_align=$a samtools_sort=$s \
-                        --nolock
+                        -j $c --set-threads hisat2_align=$a samtools_presort=$s \
+                        --nolock --notemp
                         '''
                     },
                     "STAR" : {
@@ -316,15 +345,15 @@ pipeline {
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                         conda activate miniconda/envs/snakemake-workflows/
                         let "c = $CORES / 4"
-                        let "a = $CORES / 5"
-                        let "s = $c - $a"
+                        let "a = $c - 2"
+                        let "s = 2"
 
                         # test star alignment
                         snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
                         --use-conda --configfile Jenkins/alignment/star.yaml \
                         --config samples=../../Jenkins/alignment/local_sample.tsv \
-                        -j $c --set-threads star_align=$a samtools_sort=$s \
-                        --nolock
+                        -j $c --set-threads star_align=$a samtools_presort=$s \
+                        --nolock --notemp
                         '''
                     }
                 )
@@ -414,37 +443,42 @@ pipeline {
                 source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                 conda activate miniconda/envs/snakemake-workflows/
 
-                # TXIMETA BUG: needs to be updated on bioconda (to 1.4.4 or higher) before salmon works again!
-
                 # test salmon
+                printf "\nSalmon basic\n\n"
                 # create regular counts
-                # snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq \
-                # --use-conda -j $CORES --configfile Jenkins/rna_seq/counts.yaml \
-                # --config samples=../../Jenkins/alignment/local_sample.tsv quantifier=salmon decoy_aware_index=False
+                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq \
+                --use-conda -j $CORES --configfile Jenkins/rna_seq/counts.yaml \
+                --config samples=../../Jenkins/alignment/local_sample.tsv quantifier=salmon decoy_aware_index=False
 
-                # rm -rf Jenkins/tinydata/index/salmon workflows/rna_seq/salmon
-                # rm -rf workflows/rna_seq/gene_counts workflows/rna_seq/deseq2 workflows/rna_seq/qc/multi*
+                rm -rf Jenkins/tinydata/index/salmon
+                rm -rf workflows/rna_seq/results/salmon workflows/rna_seq/results/gene_counts
+                rm -rf workflows/rna_seq/results/deseq2 workflows/rna_seq/results/qc/multi*
 
                 # create counts with a decoys-aware index (builds on last run)
-                # snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq \
-                # --use-conda -j $CORES --configfile Jenkins/rna_seq/counts.yaml \
-                # --config samples=../../Jenkins/alignment/local_sample.tsv quantifier=salmon decoy_aware_index=True
+                printf "\nSalmon decoy aware\n\n"
+                snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq \
+                --use-conda -j $CORES --configfile Jenkins/rna_seq/counts.yaml \
+                --config samples=../../Jenkins/alignment/local_sample.tsv quantifier=salmon decoy_aware_index=True
 
-                # rm -rf workflows/rna_seq/gene_counts workflows/rna_seq/deseq2 workflows/rna_seq/qc/multi*
+                rm -rf workflows/rna_seq/results/gene_counts workflows/rna_seq/results/deseq2
+                rm -rf workflows/rna_seq/results/qc/multi*
 
 
                 # test STAR
+                printf "\nSTAR counts\n\n"
                 # create counts matrix (builds on last run)
                 snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq \
                 --use-conda -j $CORES --configfile Jenkins/rna_seq/counts.yaml \
                 --config samples=../../Jenkins/rna_seq/samples.tsv
 
                 # perform DGE (builds on last run)
+                printf "\nSTAR DGE analysis\n\n"
                 snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq \
                 --use-conda -j $CORES --configfile Jenkins/rna_seq/deseq2.yaml \
                 --config samples=../../Jenkins/rna_seq/samples.tsv
 
                 # create trackhub (builds on last run)
+                printf "\nSTAR trackhub\n\n"
                 snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq \
                 --use-conda -j $CORES --configfile Jenkins/rna_seq/counts.yaml \
                 --config samples=../../Jenkins/alignment/local_sample.tsv create_trackhub=True

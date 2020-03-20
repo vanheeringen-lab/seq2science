@@ -1,19 +1,38 @@
 # tab-separated file of the samples
 samples: samples.tsv
 
-
 # pipeline file locations
-result_dir: ./  # where to store results
-genome_dir: ./  # where to look for or download the genomes
+result_dir: ./results  # where to store results
+genome_dir: ./genomes  # where to look for or download the genomes
+# fastq_dir: (default is inside result_dir) # where to look for or download the fastqs
 
+
+
+# contact info for multiqc report and trackhub
+email: yourmail@here.com
 
 # produce bigwigs and a trackhub?
 create_trackhub: False
+
+# how to handle replicates
+technical_replicates: merge    # change to keep to not combine them
 
 # how to sort bam
 bam_sorter:
   samtools:
     coordinate
 
-# which aligner to use
+# filtering after alignment
+remove_blacklist: True
+min_mapping_quality: 30  # (only keep uniquely mapped reads from BWA alignments)
+
+# use 'our' default parameters
 aligner: bwa
+
+# or specify which aligner to use with the option to specify own parameters
+# aligner:
+#   bwa:
+#     index:  # parameters for indexing
+#       '-a bwtsw'
+#     align:  # parameters for alignment
+#       ''

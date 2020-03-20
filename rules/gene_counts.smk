@@ -1,20 +1,16 @@
 def get_counts(wildcards):
-    iterator = samples[samples['assembly'] == wildcards.assembly].index
-    if 'replicate' in samples and config.get('technical_replicates') == 'merge':
-        iterator = set(samples[samples['assembly'] == wildcards.assembly].replicate)
-    output = []
-    for sample in iterator:
-        output.append(f"{{result_dir}}/{{quantifier}}/{wildcards.assembly}-{sample}")
-    return expand(output, **config)
+    quant_dirs = []
+    for replicate in treps.index:
+        quant_dirs.append(f"{{result_dir}}/{{quantifier}}/{wildcards.assembly}-{replicate}")
+    return expand(quant_dirs, **config)
 
 if config['quantifier'] == 'salmon':
     def get_index(wildcards):
-        index="{genome_dir}/" + wildcards.assembly + "/index/{quantifier}_decoy_aware" if config["decoy_aware_index"] else "{genome_dir}/" + wildcards.assembly + "/index/{quantifier}"
+        index=f"{{genome_dir}}/{wildcards.assembly}/index/{{quantifier}}"
+        if config["decoy_aware_index"]:
+            index += "_decoy_aware"
         return expand(index, **config)
 
-    """
-    currently does not work. Requires an updated version of tximeta on conda cloud ~1.4.4
-    """
     rule linked_txome:
         """
         Generate a linked transcriptome for tximeta
@@ -83,33 +79,42 @@ elif config['quantifier'] == 'star':
         run:
             import pandas as pd
             import os.path
+            import sys
 
             with open(log[0], "w") as log_file:
-                def get_column(strandedness):
-                    if pd.isnull(strandedness) or strandedness == 'no':
-                        return 1 #non stranded protocol
-                    elif strandedness in ['forward', 'yes']:
-                        return 2 #3rd column
-                    elif strandedness == 'reverse':
-                        return 3 #4th column, usually for Illumina truseq
-                    else:
-                        raise ValueError(("'strandedness' column should be empty or have the " 
-                                          "value 'none', 'yes', 'forward' (yes=forward) or 'reverse', instead has the " 
-                                          "value {}").format(repr(strandedness)))
+                sys.stderr = sys.stdout = log_file
+
+                # check if samples.tsv has at least one sample with strandedness
+                samples_have_strandedness = 'strandedness' in samples and \
+                                            any(samples['strandedness'].str.contains('yes|forward|reverse'))
+                if samples_have_strandedness:
+                    def get_column(strandedness):
+                        if pd.isnull(strandedness) or strandedness in ['no', 'NaN']:
+                            return 1 #non stranded protocol
+                        elif strandedness in ['forward', 'yes']:
+                            return 2 #3rd column
+                        elif strandedness == 'reverse':
+                            return 3 #4th column, usually for Illumina truseq
+                        else:
+                            raise ValueError(("'strandedness' column should be empty or have the " 
+                                              "value 'none', 'yes', 'forward' (same as yes) or 'reverse', instead has the " 
+                                              "value {}").format(repr(strandedness)))
+
+                    # strandedness per sample/replicate
+                    s2 = samples['strandedness']
+                    if 'replicate' in samples and config.get('technical_replicates') == 'merge':
+                        s2 = samples.reset_index()[['replicate', 'strandedness']].drop_duplicates().set_index('replicate')
 
                 counts = pd.DataFrame()
                 for sample in input.cts:
                     sample_name = os.path.basename(sample).replace(wildcards.assembly + '-', '', 1)
-
-                    # retrieve strandedness
-                    if 'replicate' in samples and config.get('technical_replicates') == 'merge':
-                        s2 = samples[['replicate', 'strandedness']].drop_duplicates().set_index('replicate')
-                        strandedness = s2["strandedness"].loc[sample_name] if 'strandedness' in samples else 'no'
-                    else:
-                        strandedness = samples["strandedness"].loc[sample_name] if 'strandedness' in samples else 'no'
+                    strand_dependent_column = 1
+                    if samples_have_strandedness:
+                        strandedness = s2["strandedness"].loc[sample_name]
+                        strand_dependent_column = get_column(strandedness)
 
                     col = pd.read_csv(sample + '/ReadsPerGene.out.tab', sep='\t', index_col=0,
-                                      usecols=[0, get_column(strandedness)], header=None, skiprows=4)
+                                      usecols=[0, strand_dependent_column], header=None, skiprows=4)
                     col.columns = [sample_name]
                     counts = pd.concat([counts, col], axis = 1)
 

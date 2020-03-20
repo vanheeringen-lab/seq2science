@@ -74,7 +74,7 @@ rule bedgraph_bigwig:
         """
         awk -v OFS='\\t' '{{print $1, $2, $3, $4}}' {input.bedgraph} | sed '/experimental/d' |
         bedSort /dev/stdin {output.tmp} > {log} 2>&1;
-        bedGraphToBigWig {output.tmp} {input.genome_size} {output.out} > {log} 2>&1
+        bedGraphToBigWig {output.tmp} {input.genome_size} {output.out} >> {log} 2>&1
         """
 
 
@@ -609,44 +609,43 @@ rule trackhub:
 
                 # next add the data files depending on the workflow
                 # ATAC-seq trackhub
-                if 'atac_seq' in get_workflow():
+                if get_workflow() in ['atac_seq', 'chip_seq']:
                     for peak_caller in config['peak_caller']:
-                        for sample in breps[breps['assembly'] == assembly].index:
-                            bigpeak = f"{config['result_dir']}/{peak_caller}/{assembly}-{sample}.bigNarrowPeak"
-                            sample_name = f"{sample}{peak_caller}PEAK"
-                            sample_name = trackhub.helpers.sanitize(sample_name)
-
-                            if bigpeak:
-                                track = trackhub.Track(
-                                    name=sample_name,           # track names can't have any spaces or special chars.
-                                    source=bigpeak,             # filename to build this track from
-                                    visibility='dense',         # shows the full signal
-                                    tracktype='bigNarrowPeak',  # required when making a track
-                                    priority=priority
-                                )
-                                priority += 1
-                                trackdb.add_tracks(track)
-
-                        for sample in treps[treps['assembly'] == assembly].index:
-                            bigwig = f"{config['result_dir']}/{peak_caller}/{assembly}-{sample}.bw"
-                            assert os.path.exists(bigwig), bigwig + " not found!"
-                            sample_name = f"{sample}{peak_caller}BW"
+                        for brep in breps[breps['assembly'] == assembly].index:
+                            bigpeak = f"{config['result_dir']}/{peak_caller}/{assembly}-{brep}.bigNarrowPeak"
+                            sample_name = f"{brep}{peak_caller}PEAK"
                             sample_name = trackhub.helpers.sanitize(sample_name)
 
                             track = trackhub.Track(
-                                name=sample_name,    # track names can't have any spaces or special chars.
-                                source=bigwig,       # filename to build this track from
-                                visibility='full',   # shows the full signal
-                                color='0,0,0',       # black
-                                autoScale='on',      # allow the track to autoscale
-                                tracktype='bigWig',  # required when making a track
-                                priority=priority,
-                                maxHeightPixels='100:32:8'
+                                name=sample_name,           # track names can't have any spaces or special chars.
+                                source=bigpeak,             # filename to build this track from
+                                visibility='dense',         # shows the full signal
+                                tracktype='bigNarrowPeak',  # required when making a track
+                                priority=priority
                             )
-
-                            # each track is added to the trackdb
-                            trackdb.add_tracks(track)
                             priority += 1
+                            trackdb.add_tracks(track)
+
+                            for trep in treps_from_brep[brep]:
+                                bigwig = f"{config['result_dir']}/{peak_caller}/{assembly}-{trep}.bw"
+                                assert os.path.exists(bigwig), bigwig + " not found!"
+                                sample_name = f"{trep}{peak_caller}BW"
+                                sample_name = trackhub.helpers.sanitize(sample_name)
+
+                                track = trackhub.Track(
+                                    name=sample_name,    # track names can't have any spaces or special chars.
+                                    source=bigwig,       # filename to build this track from
+                                    visibility='full',   # shows the full signal
+                                    color='0,0,0',       # black
+                                    autoScale='on',      # allow the track to autoscale
+                                    tracktype='bigWig',  # required when making a track
+                                    priority=priority,
+                                    maxHeightPixels='100:32:8'
+                                )
+
+                                # each track is added to the trackdb
+                                trackdb.add_tracks(track)
+                                priority += 1
 
                 # RNA-seq trackhub
                 elif get_workflow() in ['alignment', 'rna_seq']:

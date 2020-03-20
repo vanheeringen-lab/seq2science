@@ -5,5 +5,4 @@ description: an entry in the sample sheet
 properties:
   condition:
     type: string
-    description: which experimental condition the sample belongs to, allowing for combining replicates through e.g. idr
-
+    description: which experimental condition the sample belongs to, allowing for group analysis through idr or fisher.

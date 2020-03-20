@@ -3,6 +3,7 @@ import os.path
 import psutil
 import pickle
 import re
+import shutil
 import subprocess
 import time
 
@@ -25,10 +26,11 @@ min_version("5.10")
 # check config file for correct directory names
 for key, value in config.items():
     if '_dir' in key:
-        # allow tilde as the first character only
-        assert not re.match('[^A-Za-z0-9_.\-/~]+', value[0]) and not re.match('[^A-Za-z0-9_.\-/]+', value[1:]) and not " " in value, \
-            ("\n" + "In the config.yaml you set '" + key + "' to '" + value + "'. Please use file paths that only contain letters, " +
-            "numbers and any of the following symbols: underscores (_), periods (.), and minuses (-) (the first symbol may be a tilde (~)).\n")
+        assert value not in [None, '', ' '], f"\n{key} cannot be empty. For current directory, set '{key}: .'\n"
+        # allow tilde as the first character, \w = all letters and numbers
+        assert re.match('^[~\w_./-]*$', value[0]) and re.match('^[\w_./-]*$', value[1:]), \
+            (f"\nIn the config.yaml you set '{key}' to '{value}'. Please use file paths that only contain letters, " +
+            "numbers and any of the following symbols: underscores (_), periods (.), and minuses (-). The first character may also be a tilde (~).\n")
         config[key] = os.path.expanduser(value)
 
 # make sure that difficult data-types (yaml objects) are in correct data format
@@ -42,42 +44,62 @@ for schema in config_schemas:
 
 # check if paired-end filename suffixes are lexicographically ordered
 config['fqext'] = [config['fqext1'], config['fqext2']]
-assert sorted(config['fqext'])[0] == config['fqext1']
+assert sorted(config['fqext'])[0] == config['fqext1'], \
+    ("\nThe paired-end filename suffixes must be lexicographically ordered!\n" +
+     f"Example suffixes: fqext1: R1, fqext2: R2\n" +
+     f"Your suffixes:    fqext1: {config['fqext1']}, fqext2: {config['fqext2']}\n")
 
 # read and sanitize the samples file
-samples = pd.read_csv(config["samples"], sep='\t')
+samples = pd.read_csv(config["samples"], sep='\t', dtype='str')
 
 # sanitize column names
 samples.columns = samples.columns.str.strip()
 assert all([col[0:7] not in ["Unnamed", ''] for col in samples]), \
-    ("\nEncountered unnamed column in " + config["samples"] +
-     ".\nColumn names: " + str(', '.join(samples.columns)) + '.\n')
+    (f"\nEncountered unnamed column in {config['samples']}.\n" +
+     f"Column names: {str(', '.join(samples.columns))}.\n")
 assert not any(samples.columns.str.contains('[^A-Za-z0-9_.\-%]+', regex=True)), \
-    ("\n" + config["samples"] + " may only contain letters, numbers and " +
-    "underscores (_), periods (.), or minuses (-).\n")
+    (f"\n{config['samples']} may only contain letters, numbers and " +
+    "percentage signs (%), underscores (_), periods (.), or minuses (-).\n")
 
 # sanitize table content
 if 'replicate' in samples:
     samples['replicate'] = samples['replicate'].mask(pd.isnull, samples['sample'])
-if 'condition' in samples and 'replicate' in samples :
-    samples['condition'] = samples['condition'].mask(pd.isnull, samples['replicate'])
-elif 'condition' in samples:
-    samples['condition'] = samples['condition'].mask(pd.isnull, samples['sample'])
+    # if there is nothing to merge, drop the column. keep it simple
+    if samples['replicate'].tolist() == samples['sample'].tolist() or config.get('technical_replicates') == 'keep':
+        samples = samples.drop(columns=['replicate'])
+if 'condition' in samples:
+    samples['condition'] = samples['condition'].mask(pd.isnull, samples['replicate']) if 'replicate' in samples else \
+        samples['condition'].mask(pd.isnull, samples['sample'])
+    # if there is nothing to merge, drop the column. keep it simple
+    if samples['condition'].tolist() == samples['sample'].tolist() or config.get('biological_replicates') == 'keep':
+        samples = samples.drop(columns=['condition'])
 
 if 'replicate' in samples:
     r = samples[['assembly', 'replicate']].drop_duplicates().set_index('replicate')
     for replicate in r.index:
         assert len(r[r.index == replicate]) == 1, \
-            (f"Replicate names must be different between assemblies.\n" +
+            ("\nReplicate names must be different between assemblies.\n" +
              f"Replicate name '{replicate}' was found in assemblies {r[r.index == replicate]['assembly'].tolist()}.")
 
-samples = samples.applymap(lambda x: str(x).strip())
 assert not any([any(samples[col].str.contains('[^A-Za-z0-9_.\-%]+', regex=True)) for col in samples]), \
-    ("\n" + config["samples"] + " may only contain letters, numbers and " +
-    "underscores (_), periods (.), or minuses (-).\n")
+    (f"\n{config['samples']} may only contain letters, numbers and " +
+    "percentage signs (%), underscores (_), periods (.), or minuses (-).\n")
 assert len(samples["sample"]) == len(set(samples["sample"])), \
-    ("\nDuplicate samples found in " + config["samples"] + ":\n" +
-     samples[samples.duplicated(['sample'], keep=False)].to_string() + '\n')
+    (f"\nDuplicate samples found in {config['samples']}:\n" +
+     f"{samples[samples.duplicated(['sample'], keep=False)].to_string()}\n")
+
+for idx in samples.index:
+    if "condition" in samples:
+        assert idx not in samples["condition"].values, f"sample names, conditions, and replicates can not overlap. " \
+                                                       f"Sample {idx} can not also occur as a condition"
+    if "replicate" in samples:
+        assert idx not in samples["replicate"].values, f"sample names, conditions, and replicates can not overlap. " \
+                                                       f"Sample {idx} can not also occur as a replicate"
+
+if "condition" in samples and "replicate" in samples:
+    for cond in samples["condition"]:
+        assert cond not in samples["replicate"].values, f"sample names, conditions, and replicates can not overlap. " \
+                                                        f"Condition {cond} can not also occur as a replicate"
 
 # validate samples file
 for schema in sample_schemas:
@@ -90,6 +112,17 @@ samples.index = samples.index.map(str)
 # ...for atac-seq
 if config.get('peak_caller', False):
     config['peak_caller'] = {k: v for k,v in config['peak_caller'].items()}
+
+    # if genrich is peak caller, make sure to not double shift reads
+    if 'genrich' in config['peak_caller']:
+        # always turn of genrich shift, since we handle that with deeptools
+        if '-j' in config['peak_caller']['genrich'] and not '-D' in config['peak_caller']['genrich']:
+            config['peak_caller']['genrich'] += ' -D'
+
+    # if hmmratac peak caller, check if all samples are paired-end
+    if 'hmmratac' in config['peak_caller']:
+        assert all([config['layout'][sample] == 'PAIRED' for sample in samples.index]), \
+        "HMMRATAC requires all samples to be paired end"
 
 # ...for alignment and rna-seq
 for conf_dict in ['aligner', 'quantifier', 'diffexp']:
@@ -157,20 +190,19 @@ if config.get('contrasts', False):
 
         # Check if the column names can be recognized in the contrast
         assert parsed_contrast[0] in samples.columns and parsed_contrast[0] not in ["sample", "assembly"], \
-            ('\nIn contrast design "' + original_contrast + '", "' + parsed_contrast[0] +
-             '" does not match any valid column name in ' + config["samples"] + '.\n')
+            (f'\nIn contrast design "{original_contrast}", "{parsed_contrast[0]} ' +
+             f'does not match any valid column name in {config["samples"]}.\n')
         if batch is not None:
             assert batch in samples.columns and batch not in ["sample", "assembly"], \
-                ('\nIn contrast design "' + original_contrast + '", the batch effect "' +
-                 batch + '" does not match any valid column name in ' + config["samples"] + '.\n')
+                (f'\nIn contrast design "{original_contrast}", the batch effect "{batch}" ' +
+                 f'does not match any valid column name in {config["samples"]}.\n')
 
         # Check if the groups described by the contrast can be identified and found in samples.tsv
         l = len(parsed_contrast)
-        assert l < 4, ("\nA differential expression contrast couldn't be parsed correctly. "
-                       + str(l-1) + " groups were found in \n" + original_contrast + ' (groups: ' +
-                       ', '.join(parsed_contrast[1:]) + ').' +
-                       '\nPlease do not use whitespaces or underscores in your contrast, ' +
-                       '\nor in the columns in ' + config['samples'] + ' referenced by your contrast.\n')
+        assert l < 4, ("\nA differential expression contrast couldn't be parsed correctly.\n" +
+                       f"{str(l-1)} groups were found in '{original_contrast}' " +
+                       f"(groups: {', '.join(parsed_contrast[1:])}).\n\n" +
+                       f'Tip: do not use underscores in the columns of {config["samples"]} referenced by your contrast.\n')
         if l == 1:
             # check if contrast column has exactly 2 factor levels (per assembly)
             tmp = samples[['assembly', parsed_contrast[0]]].dropna()
@@ -269,7 +301,7 @@ def get_layout_trace(sample):
     return None
 
 # do this locked to avoid parallel ncbi requests with the same key, and to avoid
-# multiple writes/reads at the sametime to layouts.p
+# multiple writes/reads at the same time to layouts.p
 if not os.path.exists(os.path.dirname(layout_cachefile_lock)):
     os.makedirs(os.path.dirname(layout_cachefile_lock))
 
@@ -336,24 +368,20 @@ if 'replicate' in samples and config.get('technical_replicates') == 'merge':
         replicate = samples.loc[sample, 'replicate']
         config['layout'][replicate] = config['layout'][sample]
 
-# if hmmratac peak caller, check if all samples are paired-end
-if 'hmmratac' in config.get('peak_caller', ''):
-    assert all([config['layout'][sample] == 'PAIRED' for sample in samples.index]), \
-    "HMMRATAC requires all samples to be paired end"
-
 # after all is done, log (print) the configuration
 logger.info("CONFIGURATION VARIABLES:")
 for key, value in config.items():
      logger.info(f"{key: <23}: {value}")
 logger.info("\n\n")
 
-# # save a copy of the latest samples and config file in the result_dir
-# subprocess.check_call(f"mkdir -p {config['result_dir']}", shell=True)
-# for file in [config['samples'], workflow.configfiles[0]]:
-#     src = os.path.join(os.getcwd(), file)
-#     dst = os.path.join(config['result_dir'], file)
-#     if src != dst:
-#         subprocess.check_call(f"cp -fH {src} {dst}", shell=True)
+# save a copy of the latest samples and config file in the log_dir
+# skip this step on Jenkins, as it runs in parallel
+if os.getcwd() != config['log_dir'] and not os.getcwd().startswith('/var/lib/jenkins'):
+    os.makedirs(config['log_dir'], exist_ok=True)
+    for file in [config['samples']] + workflow.configfiles:
+        src = os.path.join(os.getcwd(), file)
+        dst = os.path.join(config['log_dir'], os.path.basename(file))
+        shutil.copy(src, dst)
 
 
 # check if a newer version of the Snakemake-workflows (master branch) is available
@@ -385,6 +413,8 @@ def any_given(*args):
 # set global wildcard constraints (see workflow._wildcard_constraints)
 wildcard_constraints:
     sample=any_given('sample'),
+    sorting='coordinate|queryname',
+    sorter='samtools|sambamba'
 
 if 'assembly' in samples:
     wildcard_constraints:
@@ -393,15 +423,16 @@ if 'assembly' in samples:
 if 'replicate' in samples:
     wildcard_constraints:
         sample=any_given('sample', 'replicate'),
-        replicate=any_given('replicate'),
+        replicate=any_given('replicate')             
+
 if 'condition' in samples:
     wildcard_constraints:
         sample=any_given('sample', 'condition'),
-        condition=any_given('condition'),
+        condition=any_given('condition')
+
 if 'replicate' in samples and 'condition' in samples:
     wildcard_constraints:
-        sample=any_given('sample', 'replicate', 'condition'),
-
+        sample=any_given('sample', 'replicate', 'condition')
 
 
 def get_workflow():
@@ -438,3 +469,12 @@ else:
 
     workflow.global_resources = {**workflow.global_resources,
                                  **{'mem_gb': np.clip(workflow.global_resources.get('mem_gb', 9999), 0, convert_size(mem.total, 3)[0])}}
+
+def use_alignmentsieve(configdict):
+    """
+    helper function to check whether or not we use alignmentsieve
+    """
+    return configdict.get('min_mapping_quality', 0) > 0 or \
+           configdict.get('tn5_shift', False) or \
+           configdict.get('remove_blacklist', False) or \
+           configdict.get('remove_mito', False)
