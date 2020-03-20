@@ -54,6 +54,28 @@ pipeline {
             }
         }
 
+        stage('Code Style') {
+            steps {
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh '''#!/usr/bin/env bash
+                    set -e
+                    source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+                    conda activate miniconda/envs/snakemake-workflows/
+                    conda install -q --yes flake8
+
+                    # flake8
+                    printf "\nflake8\n\n"
+                    flake8
+
+                    # linting
+                    printf "\nlinting\n\n"
+                    snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq --lint
+                    snakemake -s workflows/rna_seq/Snakefile  --directory workflows/rna_seq --lint
+                    '''
+                }
+            }
+       }
+                
 
         stage('Test DAG') {
             steps {
@@ -132,6 +154,7 @@ pipeline {
                         # default config
                         printf "\ndefault rna-seq\n\n"
                         snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --quiet
+                        snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --config quantifier=salmon decoy_aware_index=True --quiet
 
                         # test differential expression analysis
                         printf "\ndifferential expression\n\n"
@@ -421,34 +444,41 @@ pipeline {
                 conda activate miniconda/envs/snakemake-workflows/
 
                 # test salmon
+                printf "\nSalmon basic\n\n"
                 # create regular counts
                 snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq \
                 --use-conda -j $CORES --configfile Jenkins/rna_seq/counts.yaml \
                 --config samples=../../Jenkins/alignment/local_sample.tsv quantifier=salmon decoy_aware_index=False
 
-                rm -rf Jenkins/tinydata/index/salmon workflows/rna_seq/salmon
-                rm -rf workflows/rna_seq/gene_counts workflows/rna_seq/deseq2 workflows/rna_seq/qc/multi*
+                rm -rf Jenkins/tinydata/index/salmon
+                rm -rf workflows/rna_seq/results/salmon workflows/rna_seq/results/gene_counts
+                rm -rf workflows/rna_seq/results/deseq2 workflows/rna_seq/results/qc/multi*
 
                 # create counts with a decoys-aware index (builds on last run)
+                printf "\nSalmon decoy aware\n\n"
                 snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq \
                 --use-conda -j $CORES --configfile Jenkins/rna_seq/counts.yaml \
                 --config samples=../../Jenkins/alignment/local_sample.tsv quantifier=salmon decoy_aware_index=True
 
-                rm -rf workflows/rna_seq/gene_counts workflows/rna_seq/deseq2 workflows/rna_seq/qc/multi*
+                rm -rf workflows/rna_seq/results/gene_counts workflows/rna_seq/results/deseq2
+                rm -rf workflows/rna_seq/results/qc/multi*
 
 
                 # test STAR
+                printf "\nSTAR counts\n\n"
                 # create counts matrix (builds on last run)
                 snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq \
                 --use-conda -j $CORES --configfile Jenkins/rna_seq/counts.yaml \
                 --config samples=../../Jenkins/rna_seq/samples.tsv
 
                 # perform DGE (builds on last run)
+                printf "\nSTAR DGE analysis\n\n"
                 snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq \
                 --use-conda -j $CORES --configfile Jenkins/rna_seq/deseq2.yaml \
                 --config samples=../../Jenkins/rna_seq/samples.tsv
 
                 # create trackhub (builds on last run)
+                printf "\nSTAR trackhub\n\n"
                 snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq \
                 --use-conda -j $CORES --configfile Jenkins/rna_seq/counts.yaml \
                 --config samples=../../Jenkins/alignment/local_sample.tsv create_trackhub=True
