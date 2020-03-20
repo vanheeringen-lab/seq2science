@@ -48,7 +48,6 @@ aligner: star
 
 # filtering after alignment
 remove_blacklist: True
-minqual: 30
 
 
 

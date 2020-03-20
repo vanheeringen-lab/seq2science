@@ -28,7 +28,7 @@ technical_replicates: merge    # change to keep to not combine them
 remove_blacklist: True
 remove_mito: True
 tn5_shift: True
-minqual: 30
+min_mapping_quality: 30
 
 # use 'our' default parameters
 aligner: bwa

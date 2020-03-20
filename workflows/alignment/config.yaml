@@ -24,7 +24,7 @@ bam_sorter:
 
 # filtering after alignment
 remove_blacklist: True
-minqual: 30
+min_mapping_quality: 30
 
 # use 'our' default parameters
 aligner: bwa
