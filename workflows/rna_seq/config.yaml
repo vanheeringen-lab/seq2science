@@ -48,6 +48,7 @@ aligner: star
 
 # filtering after alignment
 remove_blacklist: True
+min_mapping_quality: 255  # (only keep uniquely mapped reads from STAR alignments)
 
 
 
