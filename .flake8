@@ -5,4 +5,4 @@ exclude = .git,
           dag,
           schemas
 filename = *.smk
-max-line-length = 100
+max-line-length = 121
