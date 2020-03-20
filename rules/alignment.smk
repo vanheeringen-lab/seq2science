@@ -296,6 +296,8 @@ rule samtools_presort:
     threads: 3
     resources:
         mem_mb=2500
+    conda:
+        "../envs/samtools.yaml"
     shell:
         """
         trap \"rm -f {output}*\" INT;
@@ -325,6 +327,8 @@ rule setup_blacklist:
         unpack(get_blacklist_files)
     output:
         temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.customblacklist.bed", **config))
+    log:
+        expand("{log_dir}/setup_blacklist/{{assembly}}.log", **config)
     run:
         newblacklist = ""
         if config.get('remove_blacklist') and wildcards.assembly.lower() in \
@@ -393,8 +397,8 @@ rule sambamba_sort:
         "../envs/sambamba.yaml"
     shell:
         """
-        sambamba view --nthreads {threads} -f bam  {input[0]} -o /dev/stdout  2> {log} |
-        sambamba sort --nthreads {threads} {params}   /dev/stdin -o {output[0]}  2> {log}
+        sambamba view --nthreads {threads} -f bam  {input} -o /dev/stdout  2> {log} |
+        sambamba sort --nthreads {threads} {params} /dev/stdin -o {output}  2> {log}
         """
 
 

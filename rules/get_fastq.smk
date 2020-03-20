@@ -117,7 +117,7 @@ rule sra2fastq_SE:
 
         # rename file and move to output dir
         f=$(ls -1q $tmpdir | grep .*.{config['fqsuffix']}.gz)
-        mv -v $tmpdir'/'$f {{output[0]}} >> {{log}} 2>&1
+        mv -v $tmpdir'/'$f {{output}} >> {{log}} 2>&1
         """
 
 
