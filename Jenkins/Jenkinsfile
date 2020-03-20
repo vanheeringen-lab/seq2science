@@ -54,6 +54,28 @@ pipeline {
             }
         }
 
+        stage('Code Style') {
+            steps {
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh '''#!/usr/bin/env bash
+                    set -e
+                    source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+                    conda activate miniconda/envs/snakemake-workflows/
+                    conda install -q --yes flake8
+
+                    # flake8
+                    printf "\nflake8\n\n"
+                    flake8
+
+                    # linting
+                    printf "\nlinting\n\n"
+                    snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq --lint
+                    snakemake -s workflows/rna_seq/Snakefile  --directory workflows/rna_seq --lint
+                    '''
+                }
+            }
+       }
+                
 
         stage('Test DAG') {
             steps {

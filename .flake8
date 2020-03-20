@@ -1,0 +1,8 @@
+[flake8]
+exclude = .git,
+          Jenkins,
+          envs,
+          dag,
+          schemas
+filename = *.smk
+max-line-length = 121
