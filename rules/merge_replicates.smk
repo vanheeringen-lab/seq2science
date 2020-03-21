@@ -22,6 +22,9 @@ else:
     for brep, row in breps.iterrows():
         treps_from_brep[brep] = [brep]
 
+brep_from_trep = dict()
+for brep, _treps in treps_from_brep.items():
+    brep_from_trep.update({trep: brep for trep in _treps})
 
 if 'replicate' in samples and config.get('technical_replicates') == 'merge':
     def get_merge_replicates(wildcards):
