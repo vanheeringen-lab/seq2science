@@ -24,6 +24,9 @@ else:
     for brep, row in breps.iterrows():
         treps_from_brep[brep] = [brep]
 
+brep_from_trep = dict()
+for brep, _treps in treps_from_brep.items():
+    brep_from_trep.update({trep: brep for trep in _treps})
 
 # descriptive name parsing
 if "descriptive_name" in samples:

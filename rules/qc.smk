@@ -27,11 +27,9 @@ def get_featureCounts_bam(wildcards):
 # TODO: featurecounts was not set up to accept hmmratac's gappedPeaks,
 #  I added this as it was sufficient for rule idr
 def get_featureCounts_peak(wildcards):
+    peak_sample = brep_from_trep[wildcards.sample]
     ftype = 'narrowPeak' if wildcards.peak_caller in ['macs2', 'genrich'] else 'gappedPeak'
-    if 'condition' in samples and config['biological_replicates'] != 'keep':
-        return expand(f"{{result_dir}}/{wildcards.peak_caller}/replicate_processed/{wildcards.assembly}-{wildcards.sample}_peaks.{ftype}", **config)
-    else:
-        return expand(f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{wildcards.sample}_peaks.{ftype}", **config)
+    return expand(f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{peak_sample}_peaks.{ftype}", **config)
 
 rule featureCounts:
     """
@@ -187,19 +185,21 @@ def get_qc_files(wildcards):
     qc['files'] = []
 
     # trimming qc on individual samples
-    for sample in samples[samples['assembly'] == wildcards.assembly].index:
-        qc['files'].extend(get_trimming_qc(sample))
+    if get_trimming_qc in quality_control:
+        for sample in samples[samples['assembly'] == wildcards.assembly].index:
+            qc['files'].extend(get_trimming_qc(sample))
 
     # qc on merged technical replicates/samples
-    for replicate in treps[treps['assembly'] == wildcards.assembly].index:
-        for function in [func for func in quality_control if
-                         func.__name__ not in ['get_peak_calling_qc', 'get_trimming_qc']]:
-            qc['files'].extend(function(replicate))
+    if get_alignment_qc in quality_control:
+        for replicate in treps[treps['assembly'] == wildcards.assembly].index:
+            for function in [func for func in quality_control if
+                             func.__name__ not in ['get_peak_calling_qc', 'get_trimming_qc']]:
+                qc['files'].extend(function(replicate))
 
     # qc on combined biological replicates/samples
-    if get_peak_calling_qc in qc:
-        for condition in breps[breps['assembly'] == wildcards.assembly].index:
-            qc['files'].extend(function(condition))
+    if get_peak_calling_qc in quality_control:
+        for trep in treps[treps['assembly'] == wildcards.assembly].index:
+            qc['files'].extend(get_peak_calling_qc(trep))
 
     return qc
 
