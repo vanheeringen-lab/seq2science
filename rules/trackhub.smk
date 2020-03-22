@@ -460,11 +460,15 @@ def get_trackhub_files(wildcards):
     if get_workflow() in ['atac_seq', 'chip_seq']:
         # get all the peak files
         for sample in breps.index:
-            trackfiles['bigpeaks'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{breps.loc[sample, 'assembly']}-{sample}.bignarrowPeak", **config))
+            assembly = breps.loc[sample, 'assembly']
+            assembly = assembly.iloc[0] if not isinstance(assembly, str) else assembly
+            trackfiles['bigpeaks'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{assembly}-{sample}.bignarrowPeak", **config))
 
         # get all the bigwigs
         for sample in treps.index:
-            trackfiles['bigwigs'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{treps.loc[sample, 'assembly']}-{sample}.bw", **config))
+            assembly = treps.loc[sample, 'assembly']
+            assembly = assembly.iloc[0] if not isinstance(assembly, str) else assembly
+            trackfiles['bigwigs'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{assembly}-{sample}.bw", **config))
 
     elif get_workflow() in ['alignment', 'rna_seq']:
         # get all the bigwigs
