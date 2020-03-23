@@ -30,10 +30,6 @@ brep_from_trep = dict()
 for (brep, _assembly), _treps in treps_from_brep.items():
     brep_from_trep.update({trep: brep for trep in _treps})
 
-# descriptive name parsing
-if "descriptive_name" in samples:
-    if config.get('biological_replicates') == 'keep':
-        pass
 
 def rep_to_descriptive(rep):
     """

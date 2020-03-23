@@ -51,6 +51,7 @@ remove_blacklist: True
 min_mapping_quality: 255  # (only keep uniquely mapped reads from STAR alignments)
 
 
+
 ##### differential gene expression analysis (optional) #####
 
 # specify contrasts to perform analysis
