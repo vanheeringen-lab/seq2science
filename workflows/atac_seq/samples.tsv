@@ -1,5 +1,7 @@
-sample	assembly	condition	replicate	descriptive_name
-GSM2837488	Bl71nemr	adult	lane1	adult_1
-GSM2837489	Bl71nemr	adult	lane2	adult_1
-GSM2837490	Bl71nemr	embry0	lane1	adult_2
-GSM2837491	Bl71nemr	embryo	lane2	adult_2
+sample	assembly	condition	descriptive_name
+GSM2837488	Bl71nemr	adult	adult_1
+GSM2837489	Bl71nemr	adult	adult_2
+GSM2837490	Bl71nemr	adult	adult_3
+GSM2837491	Bl71nemr	embryo	embryo_1
+GSM2837492	Bl71nemr	embryo	embryo_2
+GSM2837493	Bl71nemr	heart	heart_1
