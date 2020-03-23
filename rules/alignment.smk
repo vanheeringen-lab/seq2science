@@ -474,7 +474,7 @@ rule samtools_index:
     input:
         "{filepath}.bam"
     output:
-        temp("{filepath}.bam.bai") if config["cram_no_bam"] else "{filepath}.bam.bai"
+        temp("{filepath}.bam.bai") if config.get("cram_no_bam", False) else "{filepath}.bam.bai"
     params:
         config['samtools_index']
     conda:
