@@ -4,6 +4,8 @@ if 'replicate' in samples and config.get('technical_replicates')  != 'keep':
     cols = ['replicate', 'assembly']
 if 'condition' in samples and config.get('biological_replicates') != 'keep':
     cols.append('condition')
+if "descriptive_name" in samples:
+    cols.append('descriptive_name')
 treps = samples.reset_index()[cols].drop_duplicates().set_index(cols[0])
 
 # dataframe with all replicates collapsed
@@ -17,14 +19,30 @@ treps_from_brep = dict()
 if "condition" in treps:
     for brep, row in breps.iterrows():
         assembly = row["assembly"]
-        treps_from_brep[brep] = list(treps[(treps["assembly"] == assembly) & (treps["condition"] == brep)].index)
+        treps_from_brep[(brep, assembly)] = list(treps[(treps["assembly"] == assembly) & (treps["condition"] == brep)].index)
 else:
     for brep, row in breps.iterrows():
-        treps_from_brep[brep] = [brep]
+        assembly = row["assembly"]
+        treps_from_brep[(brep, assembly)] = [brep]
 
+# and vice versa
 brep_from_trep = dict()
-for brep, _treps in treps_from_brep.items():
+for (brep, _assembly), _treps in treps_from_brep.items():
     brep_from_trep.update({trep: brep for trep in _treps})
+
+
+def rep_to_descriptive(rep):
+    """
+    Return the descriptive name for a replicate.
+    """
+    if "descriptive_name" not in samples:
+        return rep
+
+    if rep in samples.index:
+        return samples.loc[rep, "descriptive_name"]
+
+    return rep
+
 
 if 'replicate' in samples and config.get('technical_replicates') == 'merge':
     def get_merge_replicates(wildcards):
