@@ -19,13 +19,15 @@ treps_from_brep = dict()
 if "condition" in treps:
     for brep, row in breps.iterrows():
         assembly = row["assembly"]
-        treps_from_brep[brep] = list(treps[(treps["assembly"] == assembly) & (treps["condition"] == brep)].index)
+        treps_from_brep[(brep, assembly)] = list(treps[(treps["assembly"] == assembly) & (treps["condition"] == brep)].index)
 else:
     for brep, row in breps.iterrows():
-        treps_from_brep[brep] = [brep]
+        assembly = row["assembly"]
+        treps_from_brep[(brep, assembly)] = [brep]
 
+# and vice versa
 brep_from_trep = dict()
-for brep, _treps in treps_from_brep.items():
+for (brep, _assembly), _treps in treps_from_brep.items():
     brep_from_trep.update({trep: brep for trep in _treps})
 
 # descriptive name parsing

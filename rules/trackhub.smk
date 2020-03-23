@@ -459,16 +459,13 @@ def get_trackhub_files(wildcards):
     # Get the ATAC or RNA seq files
     if get_workflow() in ['atac_seq', 'chip_seq']:
         # get all the peak files
-        for sample in breps.index:
-            assembly = breps.loc[sample, 'assembly']
-            assembly = assembly.iloc[0] if not isinstance(assembly, str) else assembly
-            trackfiles['bigpeaks'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{assembly}-{sample}.bignarrowPeak", **config))
+        for sample, brep in breps.iterrows():
+            brep = brep.to_dict()
+            trackfiles['bigpeaks'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{brep['assembly']}-{sample}.bignarrowPeak", **config))
 
         # get all the bigwigs
-        for sample in treps.index:
-            assembly = treps.loc[sample, 'assembly']
-            assembly = assembly.iloc[0] if not isinstance(assembly, str) else assembly
-            trackfiles['bigwigs'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{assembly}-{sample}.bw", **config))
+        for sample, trep in treps.iterrows():
+            trackfiles['bigwigs'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{trep['assembly']}-{sample}.bw", **config))
 
     elif get_workflow() in ['alignment', 'rna_seq']:
         # get all the bigwigs
@@ -609,7 +606,9 @@ rule trackhub:
                     for peak_caller in config['peak_caller']:
                         for brep in breps[breps['assembly'] == assembly].index:
                             bigpeak = f"{config['result_dir']}/{peak_caller}/{assembly}-{brep}.bignarrowPeak"
-                            sample_name = rep_to_descriptive(brep)
+                            sample_name = rep_to_descriptive(brep) + "_pk"
+                            if len(config["peak_caller"]) > 1:
+                                sample_name += f"_{peak_caller}"
                             sample_name = trackhub.helpers.sanitize(sample_name)
 
                             track = trackhub.Track(
@@ -622,10 +621,11 @@ rule trackhub:
                             priority += 1
                             trackdb.add_tracks(track)
 
-                            for trep in treps_from_brep[brep]:
+                            for trep in treps_from_brep[(brep, assembly)]:
+                                print(2, trep)
                                 bigwig = f"{config['result_dir']}/{peak_caller}/{assembly}-{trep}.bw"
                                 assert os.path.exists(bigwig), bigwig + " not found!"
-                                sample_name = rep_to_descriptive(trep)
+                                sample_name = rep_to_descriptive(trep) + "_bw"
                                 sample_name = trackhub.helpers.sanitize(sample_name)
 
                                 track = trackhub.Track(
@@ -649,7 +649,7 @@ rule trackhub:
                         for bw in get_bigwig_strand(sample):
                             bigwig = f"{config['result_dir']}/bigwigs/{assembly}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw"
                             assert os.path.exists(bigwig), bigwig + " not found!"
-                            sample_name = rep_to_descriptive(sample)
+                            sample_name = rep_to_descriptive(sample) + "_bw"
                             sample_name = trackhub.helpers.sanitize(sample_name)
 
                             track = trackhub.Track(

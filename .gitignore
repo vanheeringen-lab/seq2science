@@ -12,7 +12,7 @@ tinydata/
 *benchmark/
 *dedup/
 *deseq2/
-*fastq/
+*/fastq/
 *fastq_trimmed/
 *gene_counts/
 *log/

@@ -6,7 +6,7 @@ def get_genrich_replicates(wildcards):
         return expand(f"{{dedup_dir}}/{wildcards.fname}.sambamba-queryname.bam", **config)
     else:
         return expand([f"{{dedup_dir}}/{assembly}-{replicate}.sambamba-queryname.bam"
-        for replicate in treps_from_brep[sample_condition]], **config)
+        for replicate in treps_from_brep[(sample_condition, assembly)]], **config)
 
 
 rule genrich_pileup:
