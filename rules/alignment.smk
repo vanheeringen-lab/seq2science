@@ -354,7 +354,7 @@ rule alignmentsieve:
         bai=expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-unsieved.bam.bai", **config),
         blacklist=rules.setup_blacklist.output
     output:
-        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-sieved.bam", **config)
+        temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-sieved.bam", **config))
     log:
         expand("{log_dir}/alignmentsieve/{{assembly}}-{{sample}}.log", **config)
     benchmark:
@@ -476,7 +476,7 @@ rule samtools_index:
     input:
         "{filepath}.bam"
     output:
-        temp("{filepath}.bam.bai")
+        temp("{filepath}.bam.bai") if config["cram_no_bam"] else "{filepath}.bam.bai"
     params:
         config['samtools_index']
     conda:
