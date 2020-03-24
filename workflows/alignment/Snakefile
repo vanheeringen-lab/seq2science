@@ -58,7 +58,7 @@ rule align_all:
     input:
          get_bams()['map'] if not config['create_trackhub'] else [],
          get_bams()['ind'] if not config['create_trackhub'] else [],
-         expand(["{result_dir}/trackhub"] if config['create_trackhub'] else [] +
-                ["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else [],
+         expand((["{result_dir}/trackhub"] if config['create_trackhub'] else []) +
+                (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []),
                 **{**config,
                    **{'assemblies': set(samples['assembly'])}})
