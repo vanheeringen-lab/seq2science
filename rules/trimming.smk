@@ -20,8 +20,8 @@ rule trim_galore_SE:
         config=config['trim_galore'],
         fqsuffix=config['fqsuffix']
     shell:
-        """
-        cpulimit --include-children -l {threads}00 --\
+        ("cpulimit --include-children -l {threads}00 --" if config.get("cpulimit", True) else "") +
+        """\
         trim_galore -j {threads} {params.config} -o $(dirname {output.se}) {input} > {log} 2>&1
 
         # now rename to proper output
@@ -57,8 +57,8 @@ rule trim_galore_PE:
         config=config['trim_galore'],
         fqsuffix=config['fqsuffix']
     shell:
-        """
-        cpulimit --include-children -l {threads}00 --\
+        ("cpulimit --include-children -l {threads}00 --" if config.get("cpulimit", True) else "") +
+        """\
         trim_galore --paired -j {threads} {params.config} -o $(dirname {output.r1}) {input.r1} {input.r2} > {log} 2>&1
 
         # now rename to proper output
