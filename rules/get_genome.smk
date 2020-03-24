@@ -155,6 +155,7 @@ rule get_transcripts:
     shell:
         "gffread -w {output} -g {input.fa} {input.gtf} >> {log} 2>&1"
 
+
 rule decoy_transcripts:
     """
     Generate decoy_transcripts.txt for Salmon indexing  
