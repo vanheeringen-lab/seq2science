@@ -610,7 +610,7 @@ rule trackhub:
                 # ATAC-seq trackhub
                 if get_workflow() in ['atac_seq', 'chip_seq']:
                     for peak_caller in config['peak_caller']:
-                        for brep in breps[breps['assembly'] == assembly].index:
+                        for brep in set(breps[breps['assembly'] == assembly].index):
                             ftype = get_ftype(peak_caller)
                             bigpeak = f"{config['result_dir']}/{peak_caller}/{assembly}-{brep}.big{ftype}"
                             sample_name = rep_to_descriptive(brep) + "_pk"
@@ -630,7 +630,6 @@ rule trackhub:
                             trackdb.add_tracks(track)
 
                             for trep in treps_from_brep[(brep, assembly)]:
-                                print(2, trep)
                                 bigwig = f"{config['result_dir']}/{peak_caller}/{assembly}-{trep}.bw"
                                 assert os.path.exists(bigwig), bigwig + " not found!"
                                 sample_name = rep_to_descriptive(trep) + "_bw"
