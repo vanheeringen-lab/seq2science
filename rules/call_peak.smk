@@ -100,7 +100,10 @@ rule macs2_callpeak:
         name=lambda wildcards, input: f"{wildcards.sample}" if config['layout'][wildcards.sample] == 'SINGLE' else \
                                       f"{wildcards.sample}_{config['fqext1']}",
         genome=f"{config['genome_dir']}/{{assembly}}/{{assembly}}.fa",
-        macs_params=config['peak_caller'].get('macs2', "")  # TODO: move to config.schema.yaml
+        macs_params=config['peak_caller'].get('macs2', ""),
+        format=lambda wildcards: "BAMPE" if
+                                 (config['layout'][wildcards.sample] == "PAIRED" and "--shift" not in config['peak_caller'].get('macs2', "")) else
+                                 "BAM"
     conda:
         "../envs/macs2.yaml"
     shell:
@@ -112,8 +115,9 @@ rule macs2_callpeak:
 
         # call peaks
         macs2 callpeak --bdg -t {{input.bam}} --outdir {config['result_dir']}/macs2/ -n {{wildcards.assembly}}-{{wildcards.sample}} \
-        {{params.macs_params}} -g $GENSIZE -f BAM >> {{log}} 2>&1
+        {{params.macs_params}} -g $GENSIZE -f {params.format} >> {{log}} 2>&1
         """
+
 
 rule keep_mates:
     input:
