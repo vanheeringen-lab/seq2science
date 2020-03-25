@@ -101,8 +101,8 @@ rule macs2_callpeak:
                                       f"{wildcards.sample}_{config['fqext1']}",
         genome=f"{config['genome_dir']}/{{assembly}}/{{assembly}}.fa",
         macs_params=config['peak_caller'].get('macs2', ""),
-        format=lambda wildcards: "BAMPE" if
-                                 (config['layout'][wildcards.sample] == "PAIRED" and "--shift" not in config['peak_caller'].get('macs2', "")) else
+        format=lambda wildcards: "BAMPE" if \
+                                 (config['layout'][wildcards.sample] == "PAIRED" and "--shift" not in config['peak_caller'].get('macs2', "")) else \
                                  "BAM"
     conda:
         "../envs/macs2.yaml"
