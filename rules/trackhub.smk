@@ -78,7 +78,7 @@ rule bedgraph_bigwig:
         """
 
 
-rule narrowpeak_bignarrowpeak:
+rule peak_bigpeak:
     """
     Convert a narrowpeak file into a bignarrowpeak file.
     """
@@ -94,12 +94,15 @@ rule narrowpeak_bignarrowpeak:
         expand("{benchmark_dir}/bedgraphish_to_bedgraph/{{assembly}}-{{sample}}-{{peak_caller}}-{{peak}}.log", **config)[0]
     conda:
         "../envs/ucsc.yaml"
+    params:
+        schema=lambda wildcards: "../../schemas/bignarrowPeak.as" if get_ftype(wildcards.peak_caller) == "narrowPeak" else "../../schemas/bigbroadPeak.as",
+        type=lambda wildcards: "bed4+6" if get_ftype(wildcards.peak_caller) == "narrowPeak" else "bed3+6"
     shell:
         """
         # keep first 10 columns, idr adds extra columns we do not need for our bigpeak
         cut -d$'\t' -f 1-10 {input.narrowpeak} |
         bedSort /dev/stdin {output.tmp} > {log} 2>&1;
-        bedToBigBed -type=bed4+6 -as=../../schemas/bigNarrowPeak.as {output.tmp} {input.genome_size} {output.out} > {log} 2>&1
+        bedToBigBed -type={params.type} -as={params.schema} {output.tmp} {input.genome_size} {output.out} > {log} 2>&1
         """
 
 
@@ -461,7 +464,9 @@ def get_trackhub_files(wildcards):
         # get all the peak files
         for sample, brep in breps.iterrows():
             brep = brep.to_dict()
-            trackfiles['bigpeaks'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{brep['assembly']}-{sample}.bignarrowPeak", **config))
+            for peak_caller in config["peak_caller"].keys():
+                ftype = get_ftype(peak_caller)
+                trackfiles['bigpeaks'].extend(expand(f"{{result_dir}}/{peak_caller}/{brep['assembly']}-{sample}.big{ftype}", **config))
 
         # get all the bigwigs
         for sample, trep in treps.iterrows():

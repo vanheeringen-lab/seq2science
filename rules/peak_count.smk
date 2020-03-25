@@ -1,5 +1,5 @@
 def get_peak_replicates(wildcards):
-    ftype = 'narrowPeak' if wildcards.peak_caller in ['macs2', 'genrich'] else 'gappedPeak'
+    ftype = get_ftype(wildcards.peak_caller)
     return expand([f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{replicate}_peaks.{ftype}"
         for replicate in treps[treps['assembly'] == wildcards.assembly].index], **config)
 
