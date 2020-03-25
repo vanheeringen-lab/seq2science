@@ -126,9 +126,9 @@ if config.get('peak_caller', False):
 
     config['macs2_types'] = ['control_lambda.bdg', 'peaks.xls', 'treat_pileup.bdg']
     if 'macs2' in config['peak_caller'] and '--broad' in config['peak_caller']['macs2']:
-        config['macs2_types'].extend(['peaks.broadPeak', 'model.r', 'peaks.gappedPeak'])
+        config['macs2_types'].extend(['peaks.broadPeak', 'peaks.gappedPeak'])
     else:
-        config['macs2_types'].extend(['summits.bed', '_model.r', 'peaks.narrowPeak'])
+        config['macs2_types'].extend(['summits.bed', 'peaks.narrowPeak'])
 
 
 # ...for alignment and rna-seq
