@@ -17,8 +17,8 @@ rule genrich_pileup:
     input:
         get_genrich_replicates
     output:
-        bedgraphish=expand("{result_dir}/genrich/{{fname}}.bdgish", **config),
-        log=expand("{result_dir}/genrich/{{fname}}.log", **config)
+        bedgraphish=temp(expand("{result_dir}/genrich/{{fname}}.bdgish", **config)),
+        log=temp(expand("{result_dir}/genrich/{{fname}}.log", **config))
     log:
         expand("{log_dir}/genrich_pileup/{{fname}}_pileup.log", **config)
     benchmark:
@@ -148,6 +148,8 @@ rule hmmratac_genome_info:
     """
     Generate the 'genome info' that hmmratac requires for peak calling.
     https://github.com/LiuLabUB/HMMRATAC/issues/17
+    
+    TODO isnt this just .fa.sizes?
     """
     input:
         bam=expand("{dedup_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config)
@@ -239,7 +241,7 @@ if 'condition' in samples:
                     treatment=expand("{result_dir}/macs2/{{assembly}}-{{sample}}_treat_pileup.bdg", **config),
                     control=  expand("{result_dir}/macs2/{{assembly}}-{{sample}}_control_lambda.bdg", **config)
                 output:
-                    expand("{result_dir}/macs2/{{assembly}}-{{sample}}_pvalues.bdg", **config),
+                    temp(expand("{result_dir}/macs2/{{assembly}}-{{sample}}_pvalues.bdg", **config))
                 log:
                     expand("{log_dir}/macs_bdgcmp/{{assembly}}-{{sample}}.log", **config)
                 benchmark:
