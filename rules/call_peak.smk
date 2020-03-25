@@ -294,15 +294,16 @@ if 'condition' in samples:
                 conda:
                     "../envs/macs2.yaml"
                 params:
-                    nr_reps=lambda wildcards, input: len(input.bdgcmp)
+                    nr_reps=lambda wildcards, input: len(input.bdgcmp),
+                    macs_params=config['peak_caller'].get('macs2', "")
                 shell:
                     """
                     if [ "{params.nr_reps}" == "1" ]; then
                         touch {output.tmpbdg} {output.tmppeaks}
                         mkdir -p $(dirname {output.peaks}); ln {input.treatment} {output.peaks}
                     else
-                        macs2 cmbreps -i {input.bdgcmp} -o {output.tmpbdg} -m fisher > {log} 2>&1
-                        macs2 bdgpeakcall -i {output.tmpbdg} -o {output.tmppeaks} >> {log} 2>&1
+                        macs2 cmbreps {params.macs_params} -i {input.bdgcmp} -o {output.tmpbdg} -m fisher > {log} 2>&1
+                        macs2 bdgpeakcall {params.macs_params} -i {output.tmpbdg} -o {output.tmppeaks} >> {log} 2>&1
                         cat {output.tmppeaks} | tail -n +2 > {output.peaks}
                     fi
                     """

@@ -94,16 +94,14 @@ rule peak_bigpeak:
         expand("{benchmark_dir}/bedgraphish_to_bedgraph/{{assembly}}-{{sample}}-{{peak_caller}}-{{peak}}.log", **config)[0]
     conda:
         "../envs/ucsc.yaml"
-    params:
-        schema=lambda wildcards: "../../schemas/bignarrowPeak.as" if get_ftype(wildcards.peak_caller) == "narrowPeak" else "../../schemas/bigbroadPeak.as",
-        type=lambda wildcards: "bed4+6" if get_ftype(wildcards.peak_caller) == "narrowPeak" else "bed3+6",
-        columns=lambda wildcards: "10" if get_ftype(wildcards.peak_caller) == "narrowPeak" else "9"
     shell:
         """
+        # for broadpeaks we add -1 as last column to hack it into narrowpeak format
+        awk 'BEGIN {{OFS="\\t"}}; $(NF+1) = -1' {input.narrowpeak} |
         # keep first 10 columns, idr adds extra columns we do not need for our bigpeak
-        cut -d$'\t' -f 1-{params.columns} {input.narrowpeak} |
+        cut -d$'\t' -f 1-10 |
         bedSort /dev/stdin {output.tmp} > {log} 2>&1;
-        bedToBigBed -type={params.type} -as={params.schema} {output.tmp} {input.genome_size} {output.out} > {log} 2>&1
+        bedToBigBed -type=bed4+6 -as=bed4+6 {output.tmp} {input.genome_size} {output.out} > {log} 2>&1
         """
 
 
@@ -618,12 +616,11 @@ rule trackhub:
                                 sample_name += f"_{peak_caller}"
                             sample_name = trackhub.helpers.sanitize(sample_name)
 
-                            tracktype = "big" + get_ftype(peak_caller)[0].upper() + get_ftype(peak_caller)[1:]
                             track = trackhub.Track(
                                 name=sample_name,           # track names can't have any spaces or special chars.
                                 source=bigpeak,             # filename to build this track from
                                 visibility='dense',         # shows the full signal
-                                tracktype=tracktype,  # required when making a track
+                                tracktype='bigNarrowPeak',  # required when making a track
                                 priority=priority
                             )
                             priority += 1
