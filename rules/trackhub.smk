@@ -96,11 +96,12 @@ rule peak_bigpeak:
         "../envs/ucsc.yaml"
     params:
         schema=lambda wildcards: "../../schemas/bignarrowPeak.as" if get_ftype(wildcards.peak_caller) == "narrowPeak" else "../../schemas/bigbroadPeak.as",
-        type=lambda wildcards: "bed4+6" if get_ftype(wildcards.peak_caller) == "narrowPeak" else "bed3+6"
+        type=lambda wildcards: "bed4+6" if get_ftype(wildcards.peak_caller) == "narrowPeak" else "bed3+6",
+        columns=lambda wildcards: "10" if get_ftype(wildcards.peak_caller) == "narrowPeak" else "9"
     shell:
         """
         # keep first 10 columns, idr adds extra columns we do not need for our bigpeak
-        cut -d$'\t' -f 1-10 {input.narrowpeak} |
+        cut -d$'\t' -f 1-{params.columns} {input.narrowpeak} |
         bedSort /dev/stdin {output.tmp} > {log} 2>&1;
         bedToBigBed -type={params.type} -as={params.schema} {output.tmp} {input.genome_size} {output.out} > {log} 2>&1
         """
@@ -610,17 +611,19 @@ rule trackhub:
                 if get_workflow() in ['atac_seq', 'chip_seq']:
                     for peak_caller in config['peak_caller']:
                         for brep in breps[breps['assembly'] == assembly].index:
-                            bigpeak = f"{config['result_dir']}/{peak_caller}/{assembly}-{brep}.bignarrowPeak"
+                            ftype = get_ftype(peak_caller)
+                            bigpeak = f"{config['result_dir']}/{peak_caller}/{assembly}-{brep}.big{ftype}"
                             sample_name = rep_to_descriptive(brep) + "_pk"
                             if len(config["peak_caller"]) > 1:
                                 sample_name += f"_{peak_caller}"
                             sample_name = trackhub.helpers.sanitize(sample_name)
 
+                            tracktype = "big" + get_ftype(peak_caller)[0].upper() + get_ftype(peak_caller)[1:]
                             track = trackhub.Track(
                                 name=sample_name,           # track names can't have any spaces or special chars.
                                 source=bigpeak,             # filename to build this track from
                                 visibility='dense',         # shows the full signal
-                                tracktype='bigNarrowPeak',  # required when making a track
+                                tracktype=tracktype,  # required when making a track
                                 priority=priority
                             )
                             priority += 1
