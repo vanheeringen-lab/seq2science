@@ -8,7 +8,7 @@ rule samtools_stats:
     input:
         expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-unsieved.bam", **config)
     output:
-        expand("{qc_dir}/dedup/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.samtools_stats.txt", **config)
+        expand("{qc_dir}/samtools_stats/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.samtools_stats.txt", **config)
     log:
         expand("{log_dir}/samtools_stats/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config)
     conda:
@@ -258,8 +258,8 @@ def get_alignment_qc(sample):
         if config['layout'][sample] == "PAIRED":
             output.append(f"{{qc_dir}}/InsertSizeMetrics/{{{{assembly}}}}-{sample}.tsv")
 
-        # get the ratio mitochondrial dna
-        output.append(f"{{result_dir}}/{config['aligner']}/{{{{assembly}}}}-{sample}.samtools-coordinate-unsieved.bam.mtnucratiomtnuc.json")
+    # get the ratio mitochondrial dna
+    output.append(f"{{result_dir}}/{config['aligner']}/{{{{assembly}}}}-{sample}.samtools-coordinate-unsieved.bam.mtnucratiomtnuc.json")
 
     return expand(output, **config)
 
