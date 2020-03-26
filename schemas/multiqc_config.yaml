@@ -17,31 +17,58 @@ module_order:
             - '*_trimmed_fastqc.zip'
     - picard
     - samtools
+    - MACS2
     - featureCounts:
-        name: 'macs2'
+        name: 'macs2_frips'
         path_filters:
             - '*macs2*'
     - featureCounts:
-        name: 'genrich'
+        name: 'genrich_frips'
         path_filters:
             - '*genrich*'
     - mtnucratio
 
+table_columns_placement:
+    MACS2:
+        treatment_redundant_rate: 1020
 
 table_columns_visible:
     FastQC (raw):
         percent_duplicates: False
         percent_gc: False
-    FastQC (trimmed):
+        avg_sequence_length: False
+        percent_fails: False
         total_sequences: False
+    Cutadapt:
+        percent_trimmed: True
+    FastQC (trimmed):
+        percent_duplicates: True
+        percent_gc: True
+        avg_sequence_length: True
+        percent_fails: False
+        total_sequences: False
+    Picard:
+        summed_median: True
+        summed_mean: False
+        PERCENT_DUPLICATION: True
     Samtools Stats:
+        error_rate: True
         non-primary_alignments: False
-        raw_total_sequences: False
-        reads_mapped: False
-    featureCounts:
+        raw_total_sequences: True
+        reads_mapped: True
+    MACS2:
+        treatment_redundant_rate: True
+        d: False
+    macs2_frips:
+        percent_assigned: True
+        Assigned: False
+    genrich_frips:
         percent_assigned: True
         Assigned: False
     mtnucratio:
+        mt_cov_avg: False
+        nuc_cov_avg: True
         mt_nuc_ratio: False
         nucreads: True
         mtreads: True
+

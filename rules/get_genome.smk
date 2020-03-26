@@ -180,9 +180,6 @@ rule decoy_transcripts:
         "../envs/decoy.yaml"
     priority: 1
     shell:
-         """
-         outdir=$(dirname {output})
-         
-         cpulimit --include-children -l {threads}00 --\
-         sh {input.script} -j {threads} -g {input.genome} -a {input.gtf} -t {input.transcripts} -o $outdir > {log} 2>&1
-         """
+         "outdir=$(dirname {output}) " +
+         ("cpulimit --include-children -l {threads}00 -- " if config.get("cpulimit", True) else " ") +
+         "sh {input.script} -j {threads} -g {input.genome} -a {input.gtf} -t {input.transcripts} -o $outdir > {log} 2>&1"
