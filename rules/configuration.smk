@@ -332,7 +332,13 @@ with FileLock(layout_cachefile_lock):
     config['layout'] = {}
 
     # now do a request for each sample that was not in the cache
-    for sample in [sample for sample in samples.index if sample not in layout_cache]:
+    all_samples = [sample for sample in samples.index if sample not in layout_cache]
+    if "control" in samples:
+        for control in set(samples["control"]):
+            if control not in layout_cache:
+                all_samples.append(control)
+
+    for sample in all_samples:
         config['layout'][sample] = eutils_tp.apply_async(get_layout_eutils, (sample,))
         if os.path.exists(expand(f'{{fastq_dir}}/{sample}.{{fqsuffix}}.gz', **config)[0]):
             config['layout'][sample] ='SINGLE'
@@ -364,9 +370,10 @@ with FileLock(layout_cachefile_lock):
     if len([sample for sample in samples.index if sample not in layout_cache]) is not 0:
         pickle.dump({**config['layout']}, open(layout_cachefile, "wb"))
 
-# now only keep the layout of samples that are in samples.tsv
-config['layout'] = {key: value for key, value in config['layout'].items() if key in samples.index}
 
+# now only keep the layout of samples that are in samples.tsv
+config['layout'] = {**{key: value for key, value in config['layout'].items() if key in samples.index},
+                    **{key: value for key, value in config['layout'].items() if "control" in samples and key in samples["control"].values}}
 logger.info("Done!\n\n")
 
 # if samples are merged add the layout of the technical replicate to the config
@@ -418,8 +425,8 @@ def any_given(*args):
     return '|'.join(set(elements))
 
 # set global wildcard constraints (see workflow._wildcard_constraints)
+sample_constraints = ["sample"]
 wildcard_constraints:
-    sample=any_given('sample'),
     sorting='coordinate|queryname',
     sorter='samtools|sambamba'
 
@@ -428,18 +435,23 @@ if 'assembly' in samples:
         assembly=any_given('assembly'),
 
 if 'replicate' in samples:
+    sample_constraints = ["sample", "replicate"]
     wildcard_constraints:
-        sample=any_given('sample', 'replicate'),
-        replicate=any_given('replicate')             
+        replicate=any_given('replicate')
 
 if 'condition' in samples:
+    sample_constraints = ["sample", "condition"]
     wildcard_constraints:
-        sample=any_given('sample', 'condition'),
         condition=any_given('condition')
 
 if 'replicate' in samples and 'condition' in samples:
-    wildcard_constraints:
-        sample=any_given('sample', 'replicate', 'condition')
+    sample_constraints = ["sample", "replicate", "condition"]
+
+if "control" in samples:
+    sample_constraints.append("control")
+
+wildcard_constraints:
+    sample=any_given(*sample_constraints)
 
 
 def get_workflow():

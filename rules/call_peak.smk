@@ -82,12 +82,23 @@ def get_macs2_bam(wildcards):
     return rules.keep_mates.output
 
 
+def get_control_macs(wildcards):
+    if not "control" in samples:
+        return dict()
+
+    control = treps.loc[wildcards.sample, "control"]
+    if not config['macs2_keep_mates'] is True or config['layout'].get(wildcards.sample, False) == "SINGLE":
+        return {"control": expand(f"{{dedup_dir}}/{{{{assembly}}}}-{control}.samtools-coordinate.bam", **config)}
+    return {"control": expand(f"{{dedup_dir}}/{control}-mates-{{{{assembly}}}}.samtools-coordinate.bam", **config)}
+
+
 rule macs2_callpeak:
     """
     Call peaks using macs2.
     Macs2 requires a genome size, which we estimate from the amount of unique kmers of the average read length.
     """
     input:
+        unpack(get_control_macs),
         bam=get_macs2_bam,
         fastqc=get_fastqc
     output:
@@ -103,7 +114,8 @@ rule macs2_callpeak:
         macs_params=config['peak_caller'].get('macs2', ""),
         format=lambda wildcards: "BAMPE" if \
                                  (config['layout'][wildcards.sample] == "PAIRED" and "--shift" not in config['peak_caller'].get('macs2', "")) else \
-                                 "BAM"
+                                 "BAM",
+        control=lambda wildcards, input: f"-c {input.control}" if "control" in input else ""
     conda:
         "../envs/macs2.yaml"
     shell:
@@ -114,7 +126,7 @@ rule macs2_callpeak:
         echo "kmer size: $kmer_size, and effective genome size: $GENSIZE" >> {{log}}
 
         # call peaks
-        macs2 callpeak --bdg -t {{input.bam}} --outdir {config['result_dir']}/macs2/ -n {{wildcards.assembly}}-{{wildcards.sample}} \
+        macs2 callpeak --bdg -t {{input.bam}} {{params.control}} --outdir {config['result_dir']}/macs2/ -n {{wildcards.assembly}}-{{wildcards.sample}} \
         {{params.macs_params}} -g $GENSIZE -f {{params.format}} >> {{log}} 2>&1
         """
 
