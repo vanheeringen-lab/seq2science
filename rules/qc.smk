@@ -260,7 +260,8 @@ def get_alignment_qc(sample):
 
         # get the ratio mitochondrial dna
         output.append(f"{{result_dir}}/{config['aligner']}/{{{{assembly}}}}-{sample}.samtools-coordinate-unsieved.bam.mtnucratiomtnuc.json")
-        return expand(output, **config)
+
+    return expand(output, **config)
 
 
 def get_peak_calling_qc(sample):
