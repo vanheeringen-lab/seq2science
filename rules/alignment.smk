@@ -63,8 +63,6 @@ if config['aligner'] == 'bowtie2':
 
 
 elif config['aligner'] == 'bwa':
-    config['bwaindex_types'] = ['amb', 'ann', 'bwt', 'pac', 'sa']
-
     rule bwa_index:
         """
         Make a genome index for bwa.
@@ -72,7 +70,7 @@ elif config['aligner'] == 'bwa':
         input:
             expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config)
         output:
-            expand("{genome_dir}/{{assembly}}/index/bwa/{{assembly}}.{bwaindex_types}", **config)
+            directory(expand("{genome_dir}/{{assembly}}/index/bwa/", **config)),
         log:
             expand("{log_dir}/bwa_index/{{assembly}}.log", **config)
         benchmark:
@@ -95,7 +93,7 @@ elif config['aligner'] == 'bwa':
         """
         input:
             reads=get_reads,
-            index=expand("{genome_dir}/{{assembly}}/index/bwa/{{assembly}}.{bwaindex_types}", **config)
+            index=expand("{genome_dir}/{{assembly}}/index/bwa/", **config)
         output:
             pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0])
         log:
@@ -354,7 +352,7 @@ rule alignmentsieve:
         bai=expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-unsieved.bam.bai", **config),
         blacklist=rules.setup_blacklist.output
     output:
-        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-sieved.bam", **config)
+        temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-sieved.bam", **config))
     log:
         expand("{log_dir}/alignmentsieve/{{assembly}}-{{sample}}.log", **config)
     benchmark:
@@ -476,7 +474,7 @@ rule samtools_index:
     input:
         "{filepath}.bam"
     output:
-        temp("{filepath}.bam.bai")
+        temp("{filepath}.bam.bai") if config.get("cram_no_bam", False) else "{filepath}.bam.bai"
     params:
         config['samtools_index']
     conda:

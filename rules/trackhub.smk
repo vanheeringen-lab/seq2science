@@ -12,7 +12,7 @@ rule bedgraphish_to_bedgraph:
     input:
         expand("{result_dir}/genrich/{{assembly}}-{{sample}}.bdgish", **config)
     output:
-        bedgraph=expand("{result_dir}/genrich/{{assembly}}-{{sample}}.bedgraph", **config)
+        bedgraph=temp(expand("{result_dir}/genrich/{{assembly}}-{{sample}}.bedgraph", **config))
     log:
         expand("{log_dir}/bedgraphish_to_bedgraph/{{assembly}}-{{sample}}.log", **config)
     benchmark:
@@ -86,7 +86,7 @@ rule narrowpeak_bignarrowpeak:
         narrowpeak=expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}_peaks.{{peak}}", **config),
         genome_size=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config)
     output:
-        out=     expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}.big{{peak}}", **config),
+        out=temp(expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}.big{{peak}}", **config)),
         tmp=temp(expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}.tmp.{{peak}}", **config))
     log:
         expand("{log_dir}/narrowpeak_bignarrowpeak/{{peak_caller}}/{{assembly}}-{{sample}}-{{peak}}.log", **config)
@@ -121,8 +121,8 @@ rule bam_stranded_bigwig:
         bam=expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config),
         bai=expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam.bai", **config)
     output:
-        forward=expand("{result_dir}/bigwigs/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.fwd.bw", **config),
-        reverse=expand("{result_dir}/bigwigs/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.rev.bw", **config),
+        forward=temp(expand("{result_dir}/bigwigs/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.fwd.bw", **config)),
+        reverse=temp(expand("{result_dir}/bigwigs/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.rev.bw", **config))
     params:
         flags=config['deeptools'],
         strandedness=get_strandedness
@@ -158,7 +158,7 @@ rule bam_bigwig:
         bam=expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config),
         bai=expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam.bai", **config)
     output:
-        expand("{result_dir}/bigwigs/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bw", **config)
+        temp(expand("{result_dir}/bigwigs/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bw", **config))
     params:
         config['deeptools']
     wildcard_constraints:

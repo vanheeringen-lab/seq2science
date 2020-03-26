@@ -60,7 +60,7 @@ if 'replicate' in samples and config.get('technical_replicates') == 'merge':
         input:
             get_merge_replicates
         output:
-            sorted(expand("{trimmed_dir}/merged/{{replicate}}{{fqext}}_trimmed.{fqsuffix}.gz", **config))
+            temp(sorted(expand("{trimmed_dir}/merged/{{replicate}}{{fqext}}_trimmed.{fqsuffix}.gz", **config)))
         wildcard_constraints:
             replicate=any_given('replicate'),
             fqext=f"_{config['fqext1']}|_{config['fqext2']}|" # nothing (SE), or fqext with an underscore (PE)
