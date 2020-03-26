@@ -133,6 +133,7 @@ rule peak_bigpeak:
         """
         # keep first 10 columns, idr adds extra columns we do not need for our bigpeak
         cut -d$'\t' -f 1-{params.columns} {input.narrowpeak} |
+        awk -v OFS="\t" '{{$5=$5>1000?1000:$5}} {{print}}' | 
         bedSort /dev/stdin {output.tmp} > {log} 2>&1;
         bedToBigBed -type={params.type} -as={params.schema} {output.tmp} {input.genome_size} {output.out} > {log} 2>&1
         """
