@@ -251,7 +251,7 @@ def get_alignment_qc(sample):
 
     # add samtools stats
     output.append(f"{{qc_dir}}/dedup/{{{{assembly}}}}-{sample}.samtools-coordinate.metrics.txt")
-    output.append(f"{{qc_dir}}/dedup/{{{{assembly}}}}-{sample}.samtools-coordinate.samtools_stats.txt")
+    output.append(f"{{qc_dir}}/samtools_stats/{{{{assembly}}}}-{sample}.samtools-coordinate.samtools_stats.txt")
 
     if "atac_seq" in get_workflow():
         # add insert size metrics
