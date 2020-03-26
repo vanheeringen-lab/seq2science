@@ -16,10 +16,22 @@ def get_genrich_replicates(wildcards):
     assembly = assembly_ish.split("/")[-1]
 
     if sample_condition in treps.index:
-        return expand(f"{{dedup_dir}}/{wildcards.fname}.sambamba-queryname.bam", **config)
+        if "control" in samples:
+            control = treps.loc[wildcards.sample, "control"]
+            control = expand(f"{{dedup_dir}}/{assembly}-{control}.sambamba-queryname.bam")
+        else:
+            control = []
+        return {"control": control,
+                "reps": expand(f"{{dedup_dir}}/{wildcards.fname}.sambamba-queryname.bam", **config)}
     else:
-        return expand([f"{{dedup_dir}}/{assembly}-{replicate}.sambamba-queryname.bam"
-        for replicate in treps_from_brep[(sample_condition, assembly)]], **config)
+        if "control" in samples:
+            control = breps.loc[wildcards.sample, "control"]
+            control = expand(f"{{dedup_dir}}/{assembly}-{control}.sambamba-queryname.bam")
+        else:
+            control = []
+        return {"control": control,
+                "reps": expand([f"{{dedup_dir}}/{assembly}-{replicate}.sambamba-queryname.bam"
+                                for replicate in treps_from_brep[(sample_condition, assembly)]], **config)}
 
 
 rule genrich_pileup:
@@ -28,7 +40,7 @@ rule genrich_pileup:
     computational footprint.
     """
     input:
-        get_genrich_replicates
+        unpack(get_genrich_replicates)
     output:
         bedgraphish=temp(expand("{result_dir}/genrich/{{fname}}.bdgish", **config)),
         log=temp(expand("{result_dir}/genrich/{{fname}}.log", **config))
@@ -39,13 +51,14 @@ rule genrich_pileup:
     conda:
         "../envs/genrich.yaml"
     params:
-        config['peak_caller'].get('genrich', " ")  # TODO: move this to config.schema.yaml
+        params=config['peak_caller'].get('genrich', " "),
+        control=lambda wildcards, input: f"-c {input.control}" if "control" in input else ""
     resources:
         mem_gb=8
     shell:
         """
-        input=$(echo {input} | tr ' ' ',')
-        Genrich -X -t $input -f {output.log} -k {output.bedgraphish} {params} -v > {log} 2>&1
+        input=$(echo {input.reps} | tr ' ' ',')
+        Genrich -X -t $input -f {output.log} {params.control} -k {output.bedgraphish} {params.params} -v > {log} 2>&1
         """
 
 
