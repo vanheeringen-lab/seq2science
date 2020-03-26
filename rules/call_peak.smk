@@ -299,7 +299,6 @@ if 'condition' in samples:
                     "../envs/macs2.yaml"
                 params:
                     nr_reps=lambda wildcards, input: len(input.bdgcmp),
-                    macs_params=config['peak_caller'].get('macs2', ""),
                     function="bdgpeakcall" if "--broad" not in config['peak_caller'].get('macs2', "") else "bdgbroadcall"
                 shell:
                     """
@@ -307,8 +306,8 @@ if 'condition' in samples:
                         touch {output.tmpbdg} {output.tmppeaks}
                         mkdir -p $(dirname {output.peaks}); ln {input.treatment} {output.peaks}
                     else
-                        macs2 cmbreps {params.macs_params} -i {input.bdgcmp} -o {output.tmpbdg} -m fisher > {log} 2>&1
-                        macs2 {params.function} {params.macs_params} -i {output.tmpbdg} -o {output.tmppeaks} >> {log} 2>&1
+                        macs2 cmbreps -i {input.bdgcmp} -o {output.tmpbdg} -m fisher > {log} 2>&1
+                        macs2 {params.function} -i {output.tmpbdg} -o {output.tmppeaks} >> {log} 2>&1
                         cat {output.tmppeaks} | tail -n +2 > {output.peaks}
                     fi
                     """

@@ -78,9 +78,40 @@ rule bedgraph_bigwig:
         """
 
 
+def get_bigpeak_columns(wildcards):
+    if get_ftype(wildcards.peak_caller) == "narrowPeak":
+        return 10
+    if get_ftype(wildcards.peak_caller) == "broadPeak":
+        if len(treps_from_brep[(wildcards.sample, wildcards.assembly)]) == 1:
+            return 9
+        return 12
+    raise NotImplementedError()
+
+
+def get_bigpeak_type(wildcards):
+    if get_ftype(wildcards.peak_caller) == "narrowPeak":
+        return "bed6+4"
+    if get_ftype(wildcards.peak_caller) == "broadPeak":
+        if len(treps_from_brep[(wildcards.sample, wildcards.assembly)]) == 1:
+            return "bed6+3"
+        return "bed12"
+    raise NotImplementedError()
+
+
+def get_bigpeak_schema(wildcards):
+    if get_ftype(wildcards.peak_caller) == "narrowPeak":
+        return "../../schemas/bignarrowPeak.as"
+    if get_ftype(wildcards.peak_caller) == "broadPeak":
+        if len(treps_from_brep[(wildcards.sample, wildcards.assembly)]) == 1:
+            return "../../schemas/bigbroadPeak.as"
+        return "../../schemas/bigBed.as"
+    raise NotImplementedError()
+
+
 rule peak_bigpeak:
     """
     Convert a narrowpeak file into a bignarrowpeak file.
+    https://genome-source.gi.ucsc.edu/gitlist/kent.git/tree/master/src/hg/lib/
     """
     input:
         narrowpeak=expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}_peaks.{{peak}}", **config),
@@ -94,14 +125,16 @@ rule peak_bigpeak:
         expand("{benchmark_dir}/bedgraphish_to_bedgraph/{{assembly}}-{{sample}}-{{peak_caller}}-{{peak}}.log", **config)[0]
     conda:
         "../envs/ucsc.yaml"
+    params:
+        schema=lambda wildcards: get_bigpeak_schema(wildcards),
+        type=lambda wildcards: get_bigpeak_type(wildcards),
+        columns=lambda wildcards: get_bigpeak_columns(wildcards)
     shell:
         """
-        # for broadpeaks we add -1 as last column to hack it into narrowpeak format
-        awk 'BEGIN {{OFS="\\t"}}; $(NF+1) = -1' {input.narrowpeak} |
         # keep first 10 columns, idr adds extra columns we do not need for our bigpeak
-        cut -d$'\t' -f 1-10 |
+        cut -d$'\t' -f 1-{params.columns} {input.narrowpeak} |
         bedSort /dev/stdin {output.tmp} > {log} 2>&1;
-        bedToBigBed -type=bed4+6 -as=bed4+6 {output.tmp} {input.genome_size} {output.out} > {log} 2>&1
+        bedToBigBed -type={params.type} -as={params.schema} {output.tmp} {input.genome_size} {output.out} > {log} 2>&1
         """
 
 
@@ -616,11 +649,16 @@ rule trackhub:
                                 sample_name += f"_{peak_caller}"
                             sample_name = trackhub.helpers.sanitize(sample_name)
 
+                            if ftype == "narrowPeak":
+                                tracktype = "bigNarrowPeak"
+                            else:
+                                tracktype = "bigBed"
+
                             track = trackhub.Track(
                                 name=sample_name,           # track names can't have any spaces or special chars.
                                 source=bigpeak,             # filename to build this track from
                                 visibility='dense',         # shows the full signal
-                                tracktype='bigNarrowPeak',  # required when making a track
+                                tracktype=tracktype,        # required when making a track
                                 priority=priority
                             )
                             priority += 1
