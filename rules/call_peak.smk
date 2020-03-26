@@ -15,20 +15,19 @@ def get_genrich_replicates(wildcards):
     assembly_ish, sample_condition = "-".join(wildcards.fname.split('-')[:-1]), wildcards.fname.split('-')[-1]
     assembly = assembly_ish.split("/")[-1]
 
+    control = []
     if sample_condition in treps.index:
         if "control" in samples:
             control = treps.loc[wildcards.sample, "control"]
-            control = expand(f"{{dedup_dir}}/{assembly}-{control}.sambamba-queryname.bam")
-        else:
-            control = []
+            if not isinstance(control, str) and math.isnan(control):
+                control = expand(f"{{dedup_dir}}/{assembly}-{control}.sambamba-queryname.bam")
         return {"control": control,
                 "reps": expand(f"{{dedup_dir}}/{wildcards.fname}.sambamba-queryname.bam", **config)}
     else:
         if "control" in samples:
             control = breps.loc[wildcards.sample, "control"]
-            control = expand(f"{{dedup_dir}}/{assembly}-{control}.sambamba-queryname.bam")
-        else:
-            control = []
+            if not isinstance(control, str) and math.isnan(control):
+                control = expand(f"{{dedup_dir}}/{assembly}-{control}.sambamba-queryname.bam")
         return {"control": control,
                 "reps": expand([f"{{dedup_dir}}/{assembly}-{replicate}.sambamba-queryname.bam"
                                 for replicate in treps_from_brep[(sample_condition, assembly)]], **config)}
@@ -100,6 +99,9 @@ def get_control_macs(wildcards):
         return dict()
 
     control = treps.loc[wildcards.sample, "control"]
+    if not isinstance(control, str) and math.isnan(control):
+        return dict()
+
     if not config['macs2_keep_mates'] is True or config['layout'].get(wildcards.sample, False) == "SINGLE":
         return {"control": expand(f"{{dedup_dir}}/{{{{assembly}}}}-{control}.samtools-coordinate.bam", **config)}
     return {"control": expand(f"{{dedup_dir}}/{control}-mates-{{{{assembly}}}}.samtools-coordinate.bam", **config)}
