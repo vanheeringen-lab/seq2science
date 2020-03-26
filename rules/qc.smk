@@ -253,13 +253,14 @@ def get_alignment_qc(sample):
     output.append(f"{{qc_dir}}/dedup/{{{{assembly}}}}-{sample}.samtools-coordinate.metrics.txt")
     output.append(f"{{qc_dir}}/dedup/{{{{assembly}}}}-{sample}.samtools-coordinate.samtools_stats.txt")
 
-    # add insert size metrics
-    if config['layout'][sample] == "PAIRED":
-        output.append(f"{{qc_dir}}/InsertSizeMetrics/{{{{assembly}}}}-{sample}.tsv")
+    if "atac_seq" in get_workflow():
+        # add insert size metrics
+        if config['layout'][sample] == "PAIRED":
+            output.append(f"{{qc_dir}}/InsertSizeMetrics/{{{{assembly}}}}-{sample}.tsv")
 
-    # get the ratio mitochondrial dna
-    output.append(f"{{result_dir}}/{config['aligner']}/{{{{assembly}}}}-{sample}.samtools-coordinate-unsieved.bam.mtnucratiomtnuc.json")
-    return expand(output, **config)
+        # get the ratio mitochondrial dna
+        output.append(f"{{result_dir}}/{config['aligner']}/{{{{assembly}}}}-{sample}.samtools-coordinate-unsieved.bam.mtnucratiomtnuc.json")
+        return expand(output, **config)
 
 
 def get_peak_calling_qc(sample):
