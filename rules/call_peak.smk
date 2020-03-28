@@ -1,14 +1,18 @@
-
 def get_ftype(peak_caller):
+    """
+    Get the filetype (narrowpeak, broadpeak, gappedpeak) for a peak caller.
+    """
     if "macs2" == peak_caller:
         if "--broad" in config["peak_caller"]["macs2"]:
             ftype = "broadPeak"
         else:
             ftype = "narrowPeak"
-    if "genrich" == peak_caller:
+    elif "genrich" == peak_caller:
         ftype = "narrowPeak"
-    if "hmmratac" == peak_caller:
+    elif "hmmratac" == peak_caller:
         ftype = "gappedPeak"
+    else:
+        raise NotImplementedError()
     return ftype
 
 
