@@ -1,3 +1,4 @@
+
 def get_ftype(peak_caller):
     if "macs2" == peak_caller:
         if "--broad" in config["peak_caller"]["macs2"]:
@@ -17,16 +18,16 @@ def get_genrich_replicates(wildcards):
 
     if sample_condition in treps.index:
         if "control" in samples:
-            control = treps.loc[wildcards.sample, "control"]
-            control = expand(f"{{dedup_dir}}/{assembly}-{control}.sambamba-queryname.bam")
+            control = treps.loc[sample_condition, "control"]
+            control = expand(f"{{dedup_dir}}/{assembly}-{control}.sambamba-queryname.bam", **config)
         else:
             control = []
         return {"control": control,
                 "reps": expand(f"{{dedup_dir}}/{wildcards.fname}.sambamba-queryname.bam", **config)}
     else:
         if "control" in samples:
-            control = breps.loc[wildcards.sample, "control"]
-            control = expand(f"{{dedup_dir}}/{assembly}-{control}.sambamba-queryname.bam")
+            control = breps.loc[sample_condition, "control"]
+            control = expand(f"{{dedup_dir}}/{assembly}-{control}.sambamba-queryname.bam", **config)
         else:
             control = []
         return {"control": control,
