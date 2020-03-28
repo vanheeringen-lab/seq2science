@@ -335,7 +335,7 @@ with FileLock(layout_cachefile_lock):
     all_samples = [sample for sample in samples.index if sample not in layout_cache]
     if "control" in samples:
         for control in set(samples["control"]):
-            if control not in layout_cache and not np.isnan(control):
+            if control not in layout_cache and isinstance(control, str):  # ignore nans
                 all_samples.append(control)
 
     for sample in all_samples:

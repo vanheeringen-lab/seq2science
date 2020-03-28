@@ -19,16 +19,16 @@ def get_genrich_replicates(wildcards):
     control = []
     if sample_condition in treps.index:
         if "control" in samples:
-            control = treps.loc[sample_condition, "control"]
-            if not isinstance(control, str) and math.isnan(control):
-                control = expand(f"{{dedup_dir}}/{assembly}-{control}.sambamba-queryname.bam")
+            control_name = treps.loc[sample_condition, "control"]
+            if isinstance(control_name, str):  # ignore nan
+                control = expand(f"{{dedup_dir}}/{assembly}-{control_name}.sambamba-queryname.bam", **config)
         return {"control": control,
                 "reps": expand(f"{{dedup_dir}}/{wildcards.fname}.sambamba-queryname.bam", **config)}
     else:
         if "control" in samples:
-            control = breps.loc[sample_conditino, "control"]
-            if not isinstance(control, str) and math.isnan(control):
-                control = expand(f"{{dedup_dir}}/{assembly}-{control}.sambamba-queryname.bam")
+            control_name = breps.loc[sample_condition, "control"]
+            if isinstance(control_name, str):  # ignore nan
+                control = expand(f"{{dedup_dir}}/{assembly}-{control_name}.sambamba-queryname.bam", **config)
         return {"control": control,
                 "reps": expand([f"{{dedup_dir}}/{assembly}-{replicate}.sambamba-queryname.bam"
                                 for replicate in treps_from_brep[(sample_condition, assembly)]], **config)} 
