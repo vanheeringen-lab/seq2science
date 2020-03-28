@@ -362,7 +362,7 @@ rule alignmentsieve:
     params:
         minqual=f"--minMappingQuality {config['min_mapping_quality']}",
         atacshift="--ATACshift" if config['tn5_shift'] else '',
-        blacklist=lambda wildcards, input: "" if os.stat(input.blacklist[0]).st_size == 0 else \
+        blacklist=lambda wildcards, input: "" if os.path.exists(input.blacklist[0]) and os.stat(input.blacklist[0]).st_size == 0 else \
                                           f"--blackListFileName {input.blacklist}"
     conda:
         "../envs/deeptools.yaml"
