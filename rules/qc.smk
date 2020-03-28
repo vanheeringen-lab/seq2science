@@ -28,7 +28,7 @@ def get_featureCounts_bam(wildcards):
 #  I added this as it was sufficient for rule idr
 def get_featureCounts_peak(wildcards):
     peak_sample = brep_from_trep[wildcards.sample]
-    ftype = 'narrowPeak' if wildcards.peak_caller in ['macs2', 'genrich'] else 'gappedPeak'
+    ftype = get_ftype(wildcards.peak_caller)
     return expand(f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{peak_sample}_peaks.{ftype}", **config)
 
 rule featureCounts:

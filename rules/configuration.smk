@@ -124,6 +124,13 @@ if config.get('peak_caller', False):
         assert all([config['layout'][sample] == 'PAIRED' for sample in samples.index]), \
         "HMMRATAC requires all samples to be paired end"
 
+    config['macs2_types'] = ['control_lambda.bdg', 'peaks.xls', 'treat_pileup.bdg']
+    if 'macs2' in config['peak_caller'] and '--broad' in config['peak_caller']['macs2']:
+        config['macs2_types'].extend(['peaks.broadPeak', 'peaks.gappedPeak'])
+    else:
+        config['macs2_types'].extend(['summits.bed', 'peaks.narrowPeak'])
+
+
 # ...for alignment and rna-seq
 for conf_dict in ['aligner', 'quantifier', 'diffexp']:
     if config.get(conf_dict, False):

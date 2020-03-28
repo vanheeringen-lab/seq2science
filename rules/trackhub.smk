@@ -78,9 +78,40 @@ rule bedgraph_bigwig:
         """
 
 
-rule narrowpeak_bignarrowpeak:
+def get_bigpeak_columns(wildcards):
+    if get_ftype(wildcards.peak_caller) == "narrowPeak":
+        return 10
+    if get_ftype(wildcards.peak_caller) == "broadPeak":
+        if len(treps_from_brep[(wildcards.sample, wildcards.assembly)]) == 1:
+            return 9
+        return 12
+    raise NotImplementedError()
+
+
+def get_bigpeak_type(wildcards):
+    if get_ftype(wildcards.peak_caller) == "narrowPeak":
+        return "bed6+4"
+    if get_ftype(wildcards.peak_caller) == "broadPeak":
+        if len(treps_from_brep[(wildcards.sample, wildcards.assembly)]) == 1:
+            return "bed6+3"
+        return "bed12"
+    raise NotImplementedError()
+
+
+def get_bigpeak_schema(wildcards):
+    if get_ftype(wildcards.peak_caller) == "narrowPeak":
+        return "../../schemas/bignarrowPeak.as"
+    if get_ftype(wildcards.peak_caller) == "broadPeak":
+        if len(treps_from_brep[(wildcards.sample, wildcards.assembly)]) == 1:
+            return "../../schemas/bigbroadPeak.as"
+        return "../../schemas/bigBed.as"
+    raise NotImplementedError()
+
+
+rule peak_bigpeak:
     """
     Convert a narrowpeak file into a bignarrowpeak file.
+    https://genome-source.gi.ucsc.edu/gitlist/kent.git/tree/master/src/hg/lib/
     """
     input:
         narrowpeak=expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}_peaks.{{peak}}", **config),
@@ -94,12 +125,17 @@ rule narrowpeak_bignarrowpeak:
         expand("{benchmark_dir}/bedgraphish_to_bedgraph/{{assembly}}-{{sample}}-{{peak_caller}}-{{peak}}.log", **config)[0]
     conda:
         "../envs/ucsc.yaml"
+    params:
+        schema=lambda wildcards: get_bigpeak_schema(wildcards),
+        type=lambda wildcards: get_bigpeak_type(wildcards),
+        columns=lambda wildcards: get_bigpeak_columns(wildcards)
     shell:
         """
         # keep first 10 columns, idr adds extra columns we do not need for our bigpeak
-        cut -d$'\t' -f 1-10 {input.narrowpeak} |
+        cut -d$'\t' -f 1-{params.columns} {input.narrowpeak} |
+        awk -v OFS="\t" '{{$5=$5>1000?1000:$5}} {{print}}' | 
         bedSort /dev/stdin {output.tmp} > {log} 2>&1;
-        bedToBigBed -type=bed4+6 -as=../../schemas/bigNarrowPeak.as {output.tmp} {input.genome_size} {output.out} > {log} 2>&1
+        bedToBigBed -type={params.type} -as={params.schema} {output.tmp} {input.genome_size} {output.out} > {log} 2>&1
         """
 
 
@@ -461,7 +497,9 @@ def get_trackhub_files(wildcards):
         # get all the peak files
         for sample, brep in breps.iterrows():
             brep = brep.to_dict()
-            trackfiles['bigpeaks'].extend(expand(f"{{result_dir}}/{{peak_caller}}/{brep['assembly']}-{sample}.bignarrowPeak", **config))
+            for peak_caller in config["peak_caller"].keys():
+                ftype = get_ftype(peak_caller)
+                trackfiles['bigpeaks'].extend(expand(f"{{result_dir}}/{peak_caller}/{brep['assembly']}-{sample}.big{ftype}", **config))
 
         # get all the bigwigs
         for sample, trep in treps.iterrows():
@@ -604,25 +642,30 @@ rule trackhub:
                 # ATAC-seq trackhub
                 if get_workflow() in ['atac_seq', 'chip_seq']:
                     for peak_caller in config['peak_caller']:
-                        for brep in breps[breps['assembly'] == assembly].index:
-                            bigpeak = f"{config['result_dir']}/{peak_caller}/{assembly}-{brep}.bignarrowPeak"
+                        for brep in set(breps[breps['assembly'] == assembly].index):
+                            ftype = get_ftype(peak_caller)
+                            bigpeak = f"{config['result_dir']}/{peak_caller}/{assembly}-{brep}.big{ftype}"
                             sample_name = rep_to_descriptive(brep) + "_pk"
                             if len(config["peak_caller"]) > 1:
                                 sample_name += f"_{peak_caller}"
                             sample_name = trackhub.helpers.sanitize(sample_name)
 
+                            if ftype == "narrowPeak":
+                                tracktype = "bigNarrowPeak"
+                            else:
+                                tracktype = "bigBed"
+
                             track = trackhub.Track(
                                 name=sample_name,           # track names can't have any spaces or special chars.
                                 source=bigpeak,             # filename to build this track from
                                 visibility='dense',         # shows the full signal
-                                tracktype='bigNarrowPeak',  # required when making a track
+                                tracktype=tracktype,        # required when making a track
                                 priority=priority
                             )
                             priority += 1
                             trackdb.add_tracks(track)
 
                             for trep in treps_from_brep[(brep, assembly)]:
-                                print(2, trep)
                                 bigwig = f"{config['result_dir']}/{peak_caller}/{assembly}-{trep}.bw"
                                 assert os.path.exists(bigwig), bigwig + " not found!"
                                 sample_name = rep_to_descriptive(trep) + "_bw"
