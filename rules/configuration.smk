@@ -81,7 +81,7 @@ if 'replicate' in samples:
             ("\nReplicate names must be different between assemblies.\n" +
              f"Replicate name '{replicate}' was found in assemblies {r[r.index == replicate]['assembly'].tolist()}.")
 
-assert not any([any(samples[col].str.contains('[^A-Za-z0-9_.\-%]+', regex=True)) for col in samples]), \
+assert not any([any(samples[col].str.contains('[^A-Za-z0-9_.\-%]+', regex=True, na=False)) for col in samples if col != "control"]), \
     (f"\n{config['samples']} may only contain letters, numbers and " +
     "percentage signs (%), underscores (_), periods (.), or minuses (-).\n")
 assert len(samples["sample"]) == len(set(samples["sample"])), \
@@ -335,7 +335,7 @@ with FileLock(layout_cachefile_lock):
     all_samples = [sample for sample in samples.index if sample not in layout_cache]
     if "control" in samples:
         for control in set(samples["control"]):
-            if control not in layout_cache:
+            if control not in layout_cache and not np.isnan(control):
                 all_samples.append(control)
 
     for sample in all_samples:
@@ -422,6 +422,7 @@ def any_given(*args):
         elif column_name is 'sample':
             elements.extend(samples.index)
 
+    elements = [element for element in elements if isinstance(element, str)]
     return '|'.join(set(elements))
 
 # set global wildcard constraints (see workflow._wildcard_constraints)
