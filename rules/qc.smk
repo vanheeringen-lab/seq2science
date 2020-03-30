@@ -145,7 +145,7 @@ rule MTNucRatioCalculator:
 def fingerprint_input(wildcards):
     output = {"bams": set(), "bais": set()}
 
-    for trep in set(treps[treps['assembly'] == assembly].index):
+    for trep in set(treps[treps['assembly'] == wildcards.assembly].index):
         output["bams"].update(expand(f"{{dedup_dir}}/{wildcards.assembly}-{trep}.samtools-coordinate.bam", **config))
         output["bais"].update(expand(f"{{dedup_dir}}/{wildcards.assembly}-{trep}.samtools-coordinate.bam.bai", **config))
         if "control" in treps and isinstance(treps.loc[trep, "control"], str):
@@ -160,7 +160,7 @@ def get_descriptive_names(wildcards, input):
     if "descriptive_name" not in treps:
         return ""
 
-    labels = "--labels "
+    labels = ""
     for file in input:
         trep = re.findall(f"{wildcards.assembly}-(.+)\.samtools", file.split("/")[-1])[0]
         if "control" in treps and trep not in treps.index:
@@ -171,23 +171,72 @@ def get_descriptive_names(wildcards, input):
     return labels
 
 
-rule plotfingerprint:
+rule plotFingerprint:
     input:
         unpack(fingerprint_input)
     output:
-        expand("{qc_dir}/fingerprint/{{assembly}}.tsv", **config)
+        expand("{qc_dir}/plotFingerprint/{{assembly}}.tsv", **config)
     log:
-        expand("{log_dir}/plotfingerprint/{{assembly}}.log", **config)
+        expand("{log_dir}/plotFingerprint/{{assembly}}.log", **config)
     benchmark:
-        expand("{benchmark_dir}/plotfingerprint/{{{{assembly}}}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/plotFingerprint/{{{{assembly}}}}.benchmark.txt", **config)[0]
     conda:
         "../envs/deeptools.yaml"
     threads: 4
     params:
-        lambda wildcards, input: get_descriptive_names(wildcards, input.bams)
+        lambda wildcards, input: "--labels " + get_descriptive_names(wildcards, input.bams) if
+                                 get_descriptive_names(wildcards, input.bams) != "" else ""
     shell:
         """
         plotFingerprint -b {input.bams} {params} --outRawCounts {output} -p {threads} > {log} 2>&1 
+        """
+
+
+def computematrix_input(wildcards):
+    output = []
+
+    for trep in set(treps[treps['assembly'] == assembly].index):
+        output.append(expand(f"{{dedup_dir}}/{wildcards.assembly}-{trep}.samtools-coordinate.bam", **config)[0])
+
+    return output
+
+
+rule computeMatrix:
+    input:
+        bw=computematrix_input,
+        annotation=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config)
+    output:
+        expand("{qc_dir}/computeMatrix/{{peak-caller}}-{{assembly}}.mat.gz", **config)
+    log:
+        expand("{log_dir}/computeMatrix/{{assembly}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/computeMatrix/{{assembly}}.benchmark.txt", **config)[0]
+    conda:
+        "../envs/deeptools.yaml"
+    threads: 16
+    params:
+        lambda wildcards, input: "--samplesLabel " + get_descriptive_names(wildcards, input.bams) if
+                                 get_descriptive_names(wildcards, input.bams) != "" else ""
+    shell:
+        """
+        computeMatrix scale-regions -S {input.bw} -R {input.annotation} -p {threads} -b 2000 -a 500 -o {output}
+        """
+
+
+rule plotProfile:
+    input:
+        rules.computeMatrix.output
+    output:
+        expand("{qc_dir}/plotProfile/{{assembly}}-{{peak-caller}}.tsv", **config)
+    log:
+        expand("{log_dir}/plotProfile/{{assembly}}-{{peak-caller}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/plotProfile/{{assembly}}.benchmark.txt", **config)[0]
+    conda:
+        "../envs/deeptools.yaml"
+    shell:
+        """
+        plotProfile -m {input} --outFileNameData {output}
         """
 
 
@@ -312,7 +361,7 @@ def get_alignment_qc(sample):
     output.append(f"{{result_dir}}/{config['aligner']}/{{{{assembly}}}}-{sample}.samtools-coordinate-unsieved.bam.mtnucratiomtnuc.json")
 
     if get_workflow() in ["alignment", "chip_seq", "atac_seq"]:
-        output.append("{qc_dir}/fingerprint/{{assembly}}.tsv")
+        output.append("{qc_dir}/plotFingerprint/{{assembly}}.tsv")
 
     return expand(output, **config)
 
@@ -323,7 +372,18 @@ def get_peak_calling_qc(sample):
     # add frips score (featurecounts)
     output.extend(expand(f"{{qc_dir}}/{{peak_caller}}/{{{{assembly}}}}-{sample}_featureCounts.txt.summary", **config))
 
+    # macs specific QC
     if "macs2" in config["peak_caller"]:
         output.extend(expand(f"{{result_dir}}/macs2/{{{{assembly}}}}-{sample}_peaks.xls", **config))
+
+    # deeptools profile
+    if workflow.persistence.dag.dryrun:
+        output.extend(expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config))
+    else:
+        assembly = samples.loc[sample, "assembly"]
+        checkpoints.get_genome.get(assembly=assembly)
+        annotation = expand(f"{{genome_dir}}/{assembly}/{assembly}.annotation.gtf", **config)
+        if os.path.exists(annotation):
+            output.append("{qc_dir}/fingerprint/{{assembly}}-{{peak_caller}}.tsv")
 
     return output
