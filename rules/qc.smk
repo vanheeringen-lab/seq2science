@@ -162,7 +162,7 @@ def get_descriptive_names(wildcards, input):
 
     labels = ""
     for file in input:
-        trep = re.findall(f"{wildcards.assembly}-(.+)\.samtools", file.split("/")[-1])[0]
+        trep = re.findall(f"{wildcards.assembly}-([^\.]+)\.+?", file.split("/")[-1])[0]
         if "control" in treps and trep not in treps.index:
             labels += "control "
         else:
@@ -196,12 +196,7 @@ def computematrix_input(wildcards):
     output = []
 
     for trep in set(treps[treps['assembly'] == assembly].index):
-        if wildcards.peak_caller == "macs2":
-            output.append(expand(f"{{result_dir}}/macs2/{wildcards.assembly}-{trep}.samtools-coordinate.bam", **config)[0])
-        elif wildcards.peak_caller == "genrich":
-            output.append(expand(f"{{result_dir}}/genrich/{wildcards.assembly}-{trep}.sambamba-queryname.bam", **config)[0])
-        else:
-            raise NotImplementedError()
+        output.append(expand(f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{trep}.bw", **config)[0])
 
     return output
 
@@ -209,19 +204,19 @@ def computematrix_input(wildcards):
 rule computeMatrix:
     input:
         bw=computematrix_input,
-        annotation=expand("{genome_dir}/{{assembly}}/{{assembly}}-{{peak_caller}}.annotation.gtf", **config)
+        annotation=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config)
     output:
-        expand("{qc_dir}/computeMatrix/{{assembly}}-{{peak-caller}}.mat.gz", **config)
+        expand("{qc_dir}/computeMatrix/{{assembly}}-{{peak_caller}}.mat.gz", **config)
     log:
-        expand("{log_dir}/computeMatrix/{{assembly}}-{{peak-caller}}.log", **config)
+        expand("{log_dir}/computeMatrix/{{assembly}}-{{peak_caller}}.log", **config)
     benchmark:
-        expand("{benchmark_dir}/computeMatrix/{{assembly}}-{{peak-caller}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/computeMatrix/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     conda:
         "../envs/deeptools.yaml"
-    threads: 16
+    threads: 40
     params:
-        lambda wildcards, input: "--samplesLabel " + get_descriptive_names(wildcards, input.bams) if
-                                 get_descriptive_names(wildcards, input.bams) != "" else ""
+        lambda wildcards, input: "--samplesLabel " + get_descriptive_names(wildcards, input.bw) if
+                                 get_descriptive_names(wildcards, input.bw) != "" else ""
     shell:
         """
         computeMatrix scale-regions -S {input.bw} -R {input.annotation} -p {threads} -b 2000 -a 500 -o {output}
@@ -232,7 +227,8 @@ rule plotProfile:
     input:
         rules.computeMatrix.output
     output:
-        expand("{qc_dir}/plotProfile/{{assembly}}-{{peak_caller}}.tsv", **config)
+        file=expand("{qc_dir}/plotProfile/{{assembly}}-{{peak_caller}}.tsv", **config),
+        img=expand("{qc_dir}/plotProfile/{{assembly}}-{{peak_caller}}.png", **config)
     log:
         expand("{log_dir}/plotProfile/{{assembly}}-{{peak_caller}}.log", **config)
     benchmark:
@@ -241,7 +237,7 @@ rule plotProfile:
         "../envs/deeptools.yaml"
     shell:
         """
-        plotProfile -m {input} --outFileNameData {output}
+        plotProfile -m {input} --outFileName {output.img} --outFileNameData {output.file}
         """
 
 
@@ -385,10 +381,8 @@ def get_peak_calling_qc(sample):
     assembly = samples.loc[sample, "assembly"]
     checkpoints.get_genome.get(assembly=assembly)
     annotation = expand(f"{{genome_dir}}/{assembly}/{assembly}.annotation.gtf", **config)[0]
-    print("HERE")
     if os.path.exists(annotation) or workflow.persistence.dag.dryrun:
         output.extend(expand("{qc_dir}/plotProfile/{{assembly}}-{peak_caller}.tsv", **config))
 
-    print(output)
     return output
 
