@@ -1,6 +1,2 @@
 sample	assembly	descriptive_name
 GSM4404624	GRCh38.p13	HEL_cell
-
-sample	assembly	condition	control	descriptive_name
-GSM3457096	mm10	A	GSM3457102	first
-GSM3457097	mm10	A	GSM3457102	second
