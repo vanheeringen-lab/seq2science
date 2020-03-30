@@ -20,11 +20,22 @@ def get_genrich_replicates(wildcards):
     assembly_ish, sample_condition = "-".join(wildcards.fname.split('-')[:-1]), wildcards.fname.split('-')[-1]
     assembly = assembly_ish.split("/")[-1]
 
+    control = []
     if sample_condition in treps.index:
-        return expand(f"{{dedup_dir}}/{wildcards.fname}.sambamba-queryname.bam", **config)
+        if "control" in samples:
+            control_name = treps.loc[sample_condition, "control"]
+            if isinstance(control_name, str):  # ignore nan
+                control = expand(f"{{dedup_dir}}/{assembly}-{control_name}.sambamba-queryname.bam", **config)
+        return {"control": control,
+                "reps": expand(f"{{dedup_dir}}/{wildcards.fname}.sambamba-queryname.bam", **config)}
     else:
-        return expand([f"{{dedup_dir}}/{assembly}-{replicate}.sambamba-queryname.bam"
-        for replicate in treps_from_brep[(sample_condition, assembly)]], **config)
+        if "control" in samples:
+            control_name = breps.loc[sample_condition, "control"]
+            if isinstance(control_name, str):  # ignore nan
+                control = expand(f"{{dedup_dir}}/{assembly}-{control_name}.sambamba-queryname.bam", **config)
+        return {"control": control,
+                "reps": expand([f"{{dedup_dir}}/{assembly}-{replicate}.sambamba-queryname.bam"
+                                for replicate in treps_from_brep[(sample_condition, assembly)]], **config)} 
 
 
 rule genrich_pileup:
@@ -33,7 +44,7 @@ rule genrich_pileup:
     computational footprint.
     """
     input:
-        get_genrich_replicates
+        unpack(get_genrich_replicates)
     output:
         bedgraphish=temp(expand("{result_dir}/genrich/{{fname}}.bdgish", **config)),
         log=temp(expand("{result_dir}/genrich/{{fname}}.log", **config))
@@ -44,13 +55,14 @@ rule genrich_pileup:
     conda:
         "../envs/genrich.yaml"
     params:
-        config['peak_caller'].get('genrich', " ")  # TODO: move this to config.schema.yaml
+        params=config['peak_caller'].get('genrich', " "),
+        control=lambda wildcards, input: f"-c {input.control}" if "control" in input else ""
     resources:
         mem_gb=8
     shell:
         """
-        input=$(echo {input} | tr ' ' ',')
-        Genrich -X -t $input -f {output.log} -k {output.bedgraphish} {params} -v > {log} 2>&1
+        input=$(echo {input.reps} | tr ' ' ',')
+        Genrich -X -t $input -f {output.log} {params.control} -k {output.bedgraphish} {params.params} -v > {log} 2>&1
         """
 
 
@@ -87,12 +99,26 @@ def get_macs2_bam(wildcards):
     return rules.keep_mates.output
 
 
+def get_control_macs(wildcards):
+    if not "control" in samples:
+        return dict()
+
+    control = treps.loc[wildcards.sample, "control"]
+    if not isinstance(control, str) and math.isnan(control):
+        return dict()
+
+    if not config['macs2_keep_mates'] is True or config['layout'].get(wildcards.sample, False) == "SINGLE":
+        return {"control": expand(f"{{dedup_dir}}/{{{{assembly}}}}-{control}.samtools-coordinate.bam", **config)}
+    return {"control": expand(f"{{dedup_dir}}/{control}-mates-{{{{assembly}}}}.samtools-coordinate.bam", **config)}
+
+
 rule macs2_callpeak:
     """
     Call peaks using macs2.
     Macs2 requires a genome size, which we estimate from the amount of unique kmers of the average read length.
     """
     input:
+        unpack(get_control_macs),
         bam=get_macs2_bam,
         fastqc=get_fastqc
     output:
@@ -108,7 +134,8 @@ rule macs2_callpeak:
         macs_params=config['peak_caller'].get('macs2', ""),
         format=lambda wildcards: "BAMPE" if \
                                  (config['layout'][wildcards.sample] == "PAIRED" and "--shift" not in config['peak_caller'].get('macs2', "")) else \
-                                 "BAM"
+                                 "BAM",
+        control=lambda wildcards, input: f"-c {input.control}" if "control" in input else ""
     conda:
         "../envs/macs2.yaml"
     shell:
@@ -119,7 +146,7 @@ rule macs2_callpeak:
         echo "kmer size: $kmer_size, and effective genome size: $GENSIZE" >> {{log}}
 
         # call peaks
-        macs2 callpeak --bdg -t {{input.bam}} --outdir {config['result_dir']}/macs2/ -n {{wildcards.assembly}}-{{wildcards.sample}} \
+        macs2 callpeak --bdg -t {{input.bam}} {{params.control}} --outdir {config['result_dir']}/macs2/ -n {{wildcards.assembly}}-{{wildcards.sample}} \
         {{params.macs_params}} -g $GENSIZE -f {{params.format}} >> {{log}} 2>&1
         """
 

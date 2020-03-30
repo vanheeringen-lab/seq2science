@@ -669,6 +669,8 @@ rule trackhub:
                                 bigwig = f"{config['result_dir']}/{peak_caller}/{assembly}-{trep}.bw"
                                 assert os.path.exists(bigwig), bigwig + " not found!"
                                 sample_name = rep_to_descriptive(trep) + "_bw"
+                                if len(config["peak_caller"]) > 1:
+                                    sample_name += f"_{peak_caller}"
                                 sample_name = trackhub.helpers.sanitize(sample_name)
 
                                 track = trackhub.Track(
