@@ -196,7 +196,12 @@ def computematrix_input(wildcards):
     output = []
 
     for trep in set(treps[treps['assembly'] == assembly].index):
-        output.append(expand(f"{{dedup_dir}}/{wildcards.assembly}-{trep}.samtools-coordinate.bam", **config)[0])
+        if wildcards.peak_caller == "macs2":
+            output.append(expand(f"{{result_dir}}/macs2/{wildcards.assembly}-{trep}.samtools-coordinate.bam", **config)[0])
+        elif wildcards.peak_caller == "genrich":
+            output.append(expand(f"{{result_dir}}/genrich/{wildcards.assembly}-{trep}.sambamba-queryname.bam", **config)[0])
+        else:
+            raise NotImplementedError()
 
     return output
 
@@ -204,13 +209,13 @@ def computematrix_input(wildcards):
 rule computeMatrix:
     input:
         bw=computematrix_input,
-        annotation=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config)
+        annotation=expand("{genome_dir}/{{assembly}}/{{assembly}}-{{peak_caller}}.annotation.gtf", **config)
     output:
-        expand("{qc_dir}/computeMatrix/{{peak-caller}}-{{assembly}}.mat.gz", **config)
+        expand("{qc_dir}/computeMatrix/{{assembly}}-{{peak-caller}}.mat.gz", **config)
     log:
-        expand("{log_dir}/computeMatrix/{{assembly}}.log", **config)
+        expand("{log_dir}/computeMatrix/{{assembly}}-{{peak-caller}}.log", **config)
     benchmark:
-        expand("{benchmark_dir}/computeMatrix/{{assembly}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/computeMatrix/{{assembly}}-{{peak-caller}}.benchmark.txt", **config)[0]
     conda:
         "../envs/deeptools.yaml"
     threads: 16
@@ -224,8 +229,8 @@ rule computeMatrix:
 
 
 rule plotProfile:
-#    input:
-#        rules.computeMatrix.output
+    input:
+        rules.computeMatrix.output
     output:
         expand("{qc_dir}/plotProfile/{{assembly}}-{{peak_caller}}.tsv", **config)
     log:
