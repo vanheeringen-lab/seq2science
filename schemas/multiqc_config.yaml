@@ -17,6 +17,7 @@ module_order:
             - '*_trimmed_fastqc.zip'
     - picard
     - samtools
+    - deeptools
     - MACS2
     - featureCounts:
         name: 'macs2_frips'

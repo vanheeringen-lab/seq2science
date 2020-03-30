@@ -1,4 +1,5 @@
 import os
+import re
 
 
 rule samtools_stats:
@@ -142,25 +143,51 @@ rule MTNucRatioCalculator:
 
 
 def fingerprint_input(wildcards):
-    output = []
+    output = {"bams": set(), "bais": set()}
 
-    for brep in set(breps[breps['assembly'] == assembly].index):
-        output.append(expand(f"{{dedup_dir}}/{wildcards.assembly}-{brep}.samtools-coordinate.bam", **config))
+    for trep in set(treps[treps['assembly'] == assembly].index):
+        output["bams"].update(expand(f"{{dedup_dir}}/{wildcards.assembly}-{trep}.samtools-coordinate.bam", **config))
+        output["bais"].update(expand(f"{{dedup_dir}}/{wildcards.assembly}-{trep}.samtools-coordinate.bam.bai", **config))
+        if "control" in treps and isinstance(treps.loc[trep, "control"], str):
+            control = treps.loc[trep, "control"]
+            output["bams"].update(expand(f"{{dedup_dir}}/{wildcards.assembly}-{control}.samtools-coordinate.bam", **config))
+            output["bais"].update(expand(f"{{dedup_dir}}/{wildcards.assembly}-{control}.samtools-coordinate.bam.bai", **config))
 
     return output
 
 
+def get_descriptive_names(wildcards, input):
+    if "descriptive_name" not in treps:
+        return ""
+
+    labels = "--labels "
+    for file in input:
+        trep = re.findall(f"{wildcards.assembly}-(.+)\.samtools", file.split("/")[-1])[0]
+        if "control" in treps and trep not in treps.index:
+            labels += "control "
+        else:
+            labels += treps.loc[trep, "descriptive_name"] + " "
+
+    return labels
+
+
 rule plotfingerprint:
     input:
-        fingerprint_input
+        unpack(fingerprint_input)
     output:
         expand("{qc_dir}/fingerprint/{{assembly}}.tsv", **config)
+    log:
+        expand("{log_dir}/plotfingerprint/{{assembly}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/plotfingerprint/{{{{assembly}}}}.benchmark.txt", **config)[0]
     conda:
-        "../envs/mtnucratio.yaml"
-    threads: 40
+        "../envs/deeptools.yaml"
+    threads: 4
+    params:
+        lambda wildcards, input: get_descriptive_names(wildcards, input.bams)
     shell:
         """
-        plotFingerprint -b  --outRawCounts {output} -p {threads}
+        plotFingerprint -b {input.bams} {params} --outRawCounts {output} -p {threads} > {log} 2>&1 
         """
 
 
