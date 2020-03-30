@@ -141,6 +141,29 @@ rule MTNucRatioCalculator:
         """
 
 
+def fingerprint_input(wildcards):
+    output = []
+
+    for brep in set(breps[breps['assembly'] == assembly].index):
+        output.append(expand(f"{{dedup_dir}}/{wildcards.assembly}-{brep}.samtools-coordinate.bam", **config))
+
+    return output
+
+
+rule plotfingerprint:
+    input:
+        fingerprint_input
+    output:
+        expand("{qc_dir}/fingerprint/{{assembly}}.tsv", **config)
+    conda:
+        "../envs/mtnucratio.yaml"
+    threads: 40
+    shell:
+        """
+        plotFingerprint -b  --outRawCounts {output} -p {threads}
+        """
+
+
 rule multiqc_header_info:
     """
     Generate a multiqc header file with contact info and date of multiqc generation.
@@ -260,6 +283,9 @@ def get_alignment_qc(sample):
 
     # get the ratio mitochondrial dna
     output.append(f"{{result_dir}}/{config['aligner']}/{{{{assembly}}}}-{sample}.samtools-coordinate-unsieved.bam.mtnucratiomtnuc.json")
+
+    if get_workflow() in ["alignment", "chip_seq", "atac_seq"]:
+        output.append("{qc_dir}/fingerprint/{{assembly}}.tsv")
 
     return expand(output, **config)
 
