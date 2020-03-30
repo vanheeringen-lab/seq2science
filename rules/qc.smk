@@ -224,14 +224,14 @@ rule computeMatrix:
 
 
 rule plotProfile:
-    input:
-        rules.computeMatrix.output
+#    input:
+#        rules.computeMatrix.output
     output:
-        expand("{qc_dir}/plotProfile/{{assembly}}-{{peak-caller}}.tsv", **config)
+        expand("{qc_dir}/plotProfile/{{assembly}}-{{peak_caller}}.tsv", **config)
     log:
-        expand("{log_dir}/plotProfile/{{assembly}}-{{peak-caller}}.log", **config)
+        expand("{log_dir}/plotProfile/{{assembly}}-{{peak_caller}}.log", **config)
     benchmark:
-        expand("{benchmark_dir}/plotProfile/{{assembly}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/plotProfile/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     conda:
         "../envs/deeptools.yaml"
     shell:
@@ -377,13 +377,13 @@ def get_peak_calling_qc(sample):
         output.extend(expand(f"{{result_dir}}/macs2/{{{{assembly}}}}-{sample}_peaks.xls", **config))
 
     # deeptools profile
-    if workflow.persistence.dag.dryrun:
-        output.extend(expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config))
-    else:
-        assembly = samples.loc[sample, "assembly"]
-        checkpoints.get_genome.get(assembly=assembly)
-        annotation = expand(f"{{genome_dir}}/{assembly}/{assembly}.annotation.gtf", **config)
-        if os.path.exists(annotation):
-            output.append("{qc_dir}/fingerprint/{{assembly}}-{{peak_caller}}.tsv")
+    assembly = samples.loc[sample, "assembly"]
+    checkpoints.get_genome.get(assembly=assembly)
+    annotation = expand(f"{{genome_dir}}/{assembly}/{assembly}.annotation.gtf", **config)[0]
+    print("HERE")
+    if os.path.exists(annotation) or workflow.persistence.dag.dryrun:
+        output.extend(expand("{qc_dir}/plotProfile/{{assembly}}-{peak_caller}.tsv", **config))
 
+    print(output)
     return output
+
