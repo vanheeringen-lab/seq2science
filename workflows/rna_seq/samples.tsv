@@ -1,3 +1,3 @@
-sample	assembly	timepoint	descriptive_name
-GSM1483769	GRCz11	34	1360_mpf
-GSM1483770	GRCz11	35	1400_mpf
+sample	assembly	stages	descriptive_name
+GSM1483769	GRCz11	1	1360_mpf
+GSM1483770	GRCz11	2	1400_mpf

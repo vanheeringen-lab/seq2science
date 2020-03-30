@@ -6,9 +6,9 @@ rule samtools_stats:
     Get general stats from bam files like percentage mapped.
     """
     input:
-        expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config)
+        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-unsieved.bam", **config)
     output:
-        expand("{qc_dir}/dedup/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.samtools_stats.txt", **config)
+        expand("{qc_dir}/samtools_stats/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.samtools_stats.txt", **config)
     log:
         expand("{log_dir}/samtools_stats/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config)
     conda:
@@ -28,7 +28,7 @@ def get_featureCounts_bam(wildcards):
 #  I added this as it was sufficient for rule idr
 def get_featureCounts_peak(wildcards):
     peak_sample = brep_from_trep[wildcards.sample]
-    ftype = 'narrowPeak' if wildcards.peak_caller in ['macs2', 'genrich'] else 'gappedPeak'
+    ftype = get_ftype(wildcards.peak_caller)
     return expand(f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{peak_sample}_peaks.{ftype}", **config)
 
 rule featureCounts:
@@ -251,16 +251,26 @@ def get_alignment_qc(sample):
 
     # add samtools stats
     output.append(f"{{qc_dir}}/dedup/{{{{assembly}}}}-{sample}.samtools-coordinate.metrics.txt")
-    output.append(f"{{qc_dir}}/dedup/{{{{assembly}}}}-{sample}.samtools-coordinate.samtools_stats.txt")
+    output.append(f"{{qc_dir}}/samtools_stats/{{{{assembly}}}}-{sample}.samtools-coordinate.samtools_stats.txt")
 
-    # add insert size metrics
-    if config['layout'][sample] == "PAIRED":
-        output.append(f"{{qc_dir}}/InsertSizeMetrics/{{{{assembly}}}}-{sample}.tsv")
+    if "atac_seq" in get_workflow():
+        # add insert size metrics
+        if config['layout'][sample] == "PAIRED":
+            output.append(f"{{qc_dir}}/InsertSizeMetrics/{{{{assembly}}}}-{sample}.tsv")
 
     # get the ratio mitochondrial dna
     output.append(f"{{result_dir}}/{config['aligner']}/{{{{assembly}}}}-{sample}.samtools-coordinate-unsieved.bam.mtnucratiomtnuc.json")
+
     return expand(output, **config)
 
 
 def get_peak_calling_qc(sample):
-    return expand(f"{{qc_dir}}/{{peak_caller}}/{{{{assembly}}}}-{sample}_featureCounts.txt.summary", **config)
+    output = []
+
+    # add frips score (featurecounts)
+    output.extend(expand(f"{{qc_dir}}/{{peak_caller}}/{{{{assembly}}}}-{sample}_featureCounts.txt.summary", **config))
+
+    if "macs2" in config["peak_caller"]:
+        output.extend(expand(f"{{result_dir}}/macs2/{{{{assembly}}}}-{sample}_peaks.xls", **config))
+
+    return output
