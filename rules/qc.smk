@@ -142,7 +142,7 @@ rule MTNucRatioCalculator:
         """
 
 
-def fingerprint_input(wildcards):
+def fingerprint_multiBamSummary_input(wildcards):
     output = {"bams": set(), "bais": set()}
 
     for trep in set(treps[treps['assembly'] == wildcards.assembly].index):
@@ -173,7 +173,7 @@ def get_descriptive_names(wildcards, input):
 
 rule plotFingerprint:
     input:
-        unpack(fingerprint_input)
+        unpack(fingerprint_multiBamSummary_input)
     output:
         expand("{qc_dir}/plotFingerprint/{{assembly}}.tsv", **config)
     log:
@@ -212,14 +212,14 @@ rule computeMatrix:
         expand("{benchmark_dir}/computeMatrix/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     conda:
         "../envs/deeptools.yaml"
-    threads: 40
+    threads: 16
     params:
-        lambda wildcards, input: "--samplesLabel " + get_descriptive_names(wildcards, input.bw) if
+        labels=lambda wildcards, input: "--samplesLabel " + get_descriptive_names(wildcards, input.bw) if
                                  get_descriptive_names(wildcards, input.bw) != "" else "",
         annotation=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config)  # TODO: move genomepy to checkpoint and this as input
     shell:
         """
-        computeMatrix scale-regions -S {input.bw} -R {params.annotation} -p {threads} -b 2000 -a 500 -o {output}
+        computeMatrix scale-regions -S {input.bw} {params.labels} -R {params.annotation} -p {threads} -b 2000 -a 500 -o {output} > {log} 2>&1
         """
 
 
@@ -237,7 +237,62 @@ rule plotProfile:
         "../envs/deeptools.yaml"
     shell:
         """
-        plotProfile -m {input} --outFileName {output.img} --outFileNameData {output.file}
+        plotProfile -m {input} --outFileName {output.img} --outFileNameData {output.file} > {log} 2>&1
+        """
+
+
+rule multiBamSummary:
+    input:
+        unpack(fingerprint_multiBamSummary_input)
+    output:
+        expand("{qc_dir}/multiBamSummary/{{assembly}}.npz", **config)
+    log:
+        expand("{log_dir}/multiBamSummary/{{assembly}}-{{peak_caller}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/multiBamSummary/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
+    threads: 16
+    params:
+        lambda wildcards, input: "--labels " + get_descriptive_names(wildcards, input.bams) if
+                                 get_descriptive_names(wildcards, input.bams) != "" else "",
+    conda:
+        "../envs/deeptools.yaml"
+    shell:
+        """
+        multiBamSummary bins --bamfiles {input.bams} -out {output} {params} -p {threads} > {log} 2>&1
+        """
+
+
+rule plotCorrelation:
+    input:
+        rules.multiBamSummary.output
+    output:
+        expand("{qc_dir}/plotCorrelation/{{assembly}}.tsv", **config)
+    log:
+        expand("{log_dir}/plotCorrelation/{{assembly}}-{{peak_caller}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/plotCorrelation/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
+    conda:
+        "../envs/deeptools.yaml"
+    shell:
+        """
+        plotCorrelation --corData {input} --outFileCorMatrix {output} -c spearman -p heatmap > {log} 2>&1
+        """
+
+
+rule plotPCA:
+    input:
+        rules.multiBamSummary.output
+    output:
+        expand("{qc_dir}/plotPCA/{{assembly}}.tsv", **config)
+    log:
+        expand("{log_dir}/plotPCA/{{assembly}}-{{peak_caller}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/plotPCA/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
+    conda:
+        "../envs/deeptools.yaml"
+    shell:
+        """
+        plotPCA --corData {input} --outFileNameData {output} > {log} 2>&1
         """
 
 
@@ -363,6 +418,8 @@ def get_alignment_qc(sample):
 
     if get_workflow() in ["alignment", "chip_seq", "atac_seq"]:
         output.append("{qc_dir}/plotFingerprint/{{assembly}}.tsv")
+        output.append("{qc_dir}/plotCorrelation/{{assembly}}.tsv")
+        output.append("{qc_dir}/plotPCA/{{assembly}}.tsv")
 
     return expand(output, **config)
 
