@@ -7,7 +7,7 @@ if 'rna_seq' in get_workflow() or config['aligner'] == 'star':
 
 # TODO: return to checkpoint get_genome when checkpoints are stable
 #  1) does the trackhub input update? 2) does ruleorder work?
-checkpoint get_genome:
+rule get_genome:
     """
     Download a genome through genomepy.
     Additionally downloads the gene annotation if required downstream.

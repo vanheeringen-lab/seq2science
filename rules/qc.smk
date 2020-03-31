@@ -203,8 +203,7 @@ def computematrix_input(wildcards):
 
 rule computeMatrix:
     input:
-        bw=computematrix_input,
-        annotation=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config)
+        bw=computematrix_input
     output:
         expand("{qc_dir}/computeMatrix/{{assembly}}-{{peak_caller}}.mat.gz", **config)
     log:
@@ -216,10 +215,11 @@ rule computeMatrix:
     threads: 40
     params:
         lambda wildcards, input: "--samplesLabel " + get_descriptive_names(wildcards, input.bw) if
-                                 get_descriptive_names(wildcards, input.bw) != "" else ""
+                                 get_descriptive_names(wildcards, input.bw) != "" else "",
+        annotation=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config)  # TODO: move genomepy to checkpoint and this as input
     shell:
         """
-        computeMatrix scale-regions -S {input.bw} -R {input.annotation} -p {threads} -b 2000 -a 500 -o {output}
+        computeMatrix scale-regions -S {input.bw} -R {params.annotation} -p {threads} -b 2000 -a 500 -o {output}
         """
 
 
@@ -379,9 +379,8 @@ def get_peak_calling_qc(sample):
 
     # deeptools profile
     assembly = samples.loc[sample, "assembly"]
-    checkpoints.get_genome.get(assembly=assembly)
-    annotation = expand(f"{{genome_dir}}/{assembly}/{assembly}.annotation.gtf", **config)[0]
-    if os.path.exists(annotation) or workflow.persistence.dag.dryrun:
+    # TODO: replace with genomepy checkpoint in the future
+    if assembly.lower() in ["ce10", "dm3", "hg38", "hg19", "mm9", "mm10", "grch38.p13", "grch38"]:
         output.extend(expand("{qc_dir}/plotProfile/{{assembly}}-{peak_caller}.tsv", **config))
 
     return output
