@@ -247,9 +247,9 @@ rule multiBamSummary:
     output:
         expand("{qc_dir}/multiBamSummary/{{assembly}}.npz", **config)
     log:
-        expand("{log_dir}/multiBamSummary/{{assembly}}-{{peak_caller}}.log", **config)
+        expand("{log_dir}/multiBamSummary/{{assembly}}.log", **config)
     benchmark:
-        expand("{benchmark_dir}/multiBamSummary/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/multiBamSummary/{{assembly}}.benchmark.txt", **config)[0]
     threads: 16
     params:
         lambda wildcards, input: "--labels " + get_descriptive_names(wildcards, input.bams) if
@@ -268,9 +268,9 @@ rule plotCorrelation:
     output:
         expand("{qc_dir}/plotCorrelation/{{assembly}}.tsv", **config)
     log:
-        expand("{log_dir}/plotCorrelation/{{assembly}}-{{peak_caller}}.log", **config)
+        expand("{log_dir}/plotCorrelation/{{assembly}}.log", **config)
     benchmark:
-        expand("{benchmark_dir}/plotCorrelation/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/plotCorrelation/{{assembly}}.benchmark.txt", **config)[0]
     conda:
         "../envs/deeptools.yaml"
     shell:
@@ -285,9 +285,9 @@ rule plotPCA:
     output:
         expand("{qc_dir}/plotPCA/{{assembly}}.tsv", **config)
     log:
-        expand("{log_dir}/plotPCA/{{assembly}}-{{peak_caller}}.log", **config)
+        expand("{log_dir}/plotPCA/{{assembly}}.log", **config)
     benchmark:
-        expand("{benchmark_dir}/plotPCA/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/plotPCA/{{assembly}}.benchmark.txt", **config)[0]
     conda:
         "../envs/deeptools.yaml"
     shell:
