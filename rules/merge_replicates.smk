@@ -55,7 +55,7 @@ if 'replicate' in samples and config.get('technical_replicates') == 'merge':
         
         Must happen after trimming due to trim-galore's automatic adapter trimming method 
         
-        If a replicate has only 1 sample in it, symlink it instead.
+        If a replicate has only 1 sample in it, rename and move instead.
         """
         input:
             get_merge_replicates
@@ -72,8 +72,8 @@ if 'replicate' in samples and config.get('technical_replicates') == 'merge':
             """
             arr=({input})
             if [ ${{#arr[@]}} -eq 1 ]; then
-                echo '\nlinking file:\n{input}' > {log}
-                ln -s {input} {output}  2> {log}
+                echo '\nmoving file:\n{input}' > {log}
+                mv {input} {output}  2> {log}
             else 
                 echo '\nconcatenating files:\n{input}' > {log}
                 cat {input} > {output} 2> {log}
