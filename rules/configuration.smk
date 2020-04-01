@@ -127,10 +127,28 @@ if config.get('peak_caller', False):
         "HMMRATAC requires all samples to be paired end"
 
     config['macs2_types'] = ['control_lambda.bdg', 'peaks.xls', 'treat_pileup.bdg']
-    if 'macs2' in config['peak_caller'] and '--broad' in config['peak_caller']['macs2']:
-        config['macs2_types'].extend(['peaks.broadPeak', 'peaks.gappedPeak'])
-    else:
-        config['macs2_types'].extend(['summits.bed', 'peaks.narrowPeak'])
+    if 'macs2' in config['peak_caller']:
+        params = config['peak_caller']["macs2"].split(" ")
+        invalid_params = ["-n", "--name", "-f", "--format", "-g", "--gsize", "-p", "--pvalue"]
+        assert not any(val in params for val in invalid_params), "bla bla"
+
+        config["macs_cmbreps"] = ""
+        cmbreps_params = ["-q", "--qvalue", "--min-length", "--max-gap"]
+        for param in cmbreps_params:
+            if param in params:
+                idx = params.index(param) + 1
+                if param == "-q" or param == "--qvalue":
+                    val = -math.log(float(params[idx]), 10)
+                    config["macs_cmbreps"] += f" {param} {val} "
+                else:
+                    config["macs_cmbreps"] += f" {param} {params[idx]} "
+
+        print(config["macs_cmbreps"])
+
+        if '--broad' in config['peak_caller']['macs2']:
+            config['macs2_types'].extend(['peaks.broadPeak', 'peaks.gappedPeak'])
+        else:
+            config['macs2_types'].extend(['summits.bed', 'peaks.narrowPeak'])
 
 
 # ...for alignment and rna-seq
