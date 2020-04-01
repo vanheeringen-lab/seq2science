@@ -418,8 +418,9 @@ def get_alignment_qc(sample):
 
     if get_workflow() in ["alignment", "chip_seq", "atac_seq"]:
         output.append("{qc_dir}/plotFingerprint/{{assembly}}.tsv")
-        output.append("{qc_dir}/plotCorrelation/{{assembly}}.tsv")
-        output.append("{qc_dir}/plotPCA/{{assembly}}.tsv")
+        if len(breps["assembly"] == samples.loc[sample, "assembly"]) > 1:
+            output.append("{qc_dir}/plotCorrelation/{{assembly}}.tsv")
+            output.append("{qc_dir}/plotPCA/{{assembly}}.tsv")
 
     return expand(output, **config)
 
