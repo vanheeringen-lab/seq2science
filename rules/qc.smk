@@ -182,7 +182,7 @@ rule plotFingerprint:
         expand("{benchmark_dir}/plotFingerprint/{{{{assembly}}}}.benchmark.txt", **config)[0]
     conda:
         "../envs/deeptools.yaml"
-    threads: 4
+    threads: 16
     params:
         lambda wildcards, input: "--labels " + get_descriptive_names(wildcards, input.bams) if
                                  get_descriptive_names(wildcards, input.bams) != "" else ""
