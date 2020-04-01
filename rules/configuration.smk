@@ -73,6 +73,8 @@ if 'condition' in samples:
     # if there is nothing to merge, drop the column. keep it simple
     if samples['condition'].tolist() == samples['sample'].tolist() or config.get('biological_replicates') == 'keep':
         samples = samples.drop(columns=['condition'])
+if 'descriptive_name' in samples:
+    samples['descriptive_name'] = samples['descriptive_name'].mask(pd.isnull, samples['sample'])
 
 if 'replicate' in samples:
     r = samples[['assembly', 'replicate']].drop_duplicates().set_index('replicate')
