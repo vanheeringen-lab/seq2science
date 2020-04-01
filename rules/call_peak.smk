@@ -272,7 +272,7 @@ if 'condition' in samples:
                     "../envs/macs2.yaml"
                 shell:
                     """
-                    macs2 bdgcmp -t {input.treatment} -c {input.control} -m ppois -o {output} > {log} 2>&1
+                    macs2 bdgcmp -t {input.treatment} -c {input.control} -m qpois -o {output} > {log} 2>&1
                     """
 
 
@@ -306,7 +306,8 @@ if 'condition' in samples:
                     "../envs/macs2.yaml"
                 params:
                     nr_reps=lambda wildcards, input: len(input.bdgcmp),
-                    function="bdgpeakcall" if "--broad" not in config['peak_caller'].get('macs2', "") else "bdgbroadcall"
+                    function="bdgpeakcall" if "--broad" not in config['peak_caller'].get('macs2', "") else "bdgbroadcall",
+                    config=config["macs_cmbreps"]
                 shell:
                     """
                     if [ "{params.nr_reps}" == "1" ]; then
@@ -314,7 +315,7 @@ if 'condition' in samples:
                         mkdir -p $(dirname {output.peaks}); ln {input.treatment} {output.peaks}
                     else
                         macs2 cmbreps -i {input.bdgcmp} -o {output.tmpbdg} -m fisher > {log} 2>&1
-                        macs2 {params.function} -i {output.tmpbdg} -o {output.tmppeaks} >> {log} 2>&1
+                        macs2 {params.function} {params.config} -i {output.tmpbdg} -o {output.tmppeaks} >> {log} 2>&1
                         cat {output.tmppeaks} | tail -n +2 > {output.peaks}
                     fi
                     """
