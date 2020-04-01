@@ -137,9 +137,9 @@ if config.get('peak_caller', False):
         for param in cmbreps_params:
             if param in params:
                 idx = params.index(param) + 1
-                if param == "-c" or param == "--qvalue":
+                if param == "-q" or param == "--qvalue":
                     val = -math.log(float(params[idx]), 10)
-                    config["macs_cmbreps"] += f" {param} {val} "
+                    config["macs_cmbreps"] += f" -c {val} "
                 else:
                     config["macs_cmbreps"] += f" {param} {params[idx]} "
 
