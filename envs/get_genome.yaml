@@ -4,7 +4,5 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-#   - bioconda::genomepy=0.7.1
+  - bioconda::genomepy=0.7.2
   - bioconda::gffread=0.11.6
-pip:
-    - git+https://github.com/vanheeringen-lab/genomepy@develop
