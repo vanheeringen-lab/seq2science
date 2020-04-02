@@ -364,7 +364,7 @@ rule alignmentsieve:
                                           f"--blackListFileName {input.blacklist}"
     conda:
         "../envs/deeptools.yaml"
-    threads: 5
+    threads: 4
     resources:
         deeptools_limit=lambda wildcards, threads: threads
     shell:
