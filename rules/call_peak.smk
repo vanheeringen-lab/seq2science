@@ -263,7 +263,7 @@ if 'condition' in samples:
                     treatment=expand("{result_dir}/macs2/{{assembly}}-{{sample}}_treat_pileup.bdg", **config),
                     control=  expand("{result_dir}/macs2/{{assembly}}-{{sample}}_control_lambda.bdg", **config)
                 output:
-                    temp(expand("{result_dir}/macs2/{{assembly}}-{{sample}}_pvalues.bdg", **config))
+                    temp(expand("{result_dir}/macs2/{{assembly}}-{{sample}}_qvalues.bdg", **config))
                 log:
                     expand("{log_dir}/macs_bdgcmp/{{assembly}}-{{sample}}.log", **config)
                 benchmark:
@@ -277,13 +277,13 @@ if 'condition' in samples:
 
 
             def get_macs_replicates(wildcards):
-                return expand([f"{{result_dir}}/macs2/{wildcards.assembly}-{replicate}_pvalues.bdg"
+                return expand([f"{{result_dir}}/macs2/{wildcards.assembly}-{replicate}_qvalues.bdg"
                        for replicate in treps[(treps['assembly'] == wildcards.assembly) & (treps['condition'] == wildcards.condition)].index], **config)
 
             def get_macs_replicate(wildcards):
                 """the original peakfile, to link if there is only 1 sample for a condition"""
                 replicate = treps[(treps['assembly'] == wildcards.assembly) & (treps['condition'] == wildcards.condition)].index
-                return expand(f"{{result_dir}}/macs2/{wildcards.assembly}-{replicate[0]}_peaks.{wildcards.ftype}", **config)
+                return expand(f"{{result_dir}}/macs2/{wildcards.assembly}-{replicate[0]}_\peaks.{wildcards.ftype}", **config)
 
             rule macs_cmbreps:
                 """
@@ -295,7 +295,7 @@ if 'condition' in samples:
                     bdgcmp=get_macs_replicates,
                     treatment=get_macs_replicate
                 output:
-                    tmpbdg=temp(expand("{result_dir}/macs2/{{assembly,.+(?<!_pvalues)}}-{{condition}}-{{ftype}}.bdg", **config)),
+                    tmpbdg=temp(expand("{result_dir}/macs2/{{assembly,.+(?<!_qvalues)}}-{{condition}}-{{ftype}}.bdg", **config)),
                     tmppeaks=temp(expand("{result_dir}/macs2/{{assembly}}-{{condition}}_peaks.temp.{{ftype}}", **config)),
                     peaks=expand("{result_dir}/macs2/{{assembly}}-{{condition}}_peaks.{{ftype}}", **config)
                 log:
