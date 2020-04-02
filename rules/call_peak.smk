@@ -220,6 +220,7 @@ rule hmmratac:
 
 if 'condition' in samples:
     if config['biological_replicates'] == 'idr':
+        ruleorder: macs2_callpeak > call_peak_genrich > idr
 
         def get_idr_replicates(wildcards):
             reps = []
@@ -252,6 +253,7 @@ if 'condition' in samples:
 
     elif config.get('biological_replicates', "") == 'fisher':
         if 'macs2' in config['peak_caller']:
+            ruleorder: macs2_callpeak > call_peak_genrich > macs_cmbreps
 
             rule macs_bdgcmp:
                 """
