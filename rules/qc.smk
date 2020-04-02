@@ -182,7 +182,7 @@ rule plotFingerprint:
         expand("{benchmark_dir}/plotFingerprint/{{{{assembly}}}}.benchmark.txt", **config)[0]
     conda:
         "../envs/deeptools.yaml"
-    threads: 4
+    threads: 16
     params:
         lambda wildcards, input: "--labels " + get_descriptive_names(wildcards, input.bams) if
                                  get_descriptive_names(wildcards, input.bams) != "" else ""
@@ -212,7 +212,7 @@ rule computeMatrix:
         expand("{benchmark_dir}/computeMatrix/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     conda:
         "../envs/deeptools.yaml"
-    threads: 10
+    threads: 16
     resources:
         deeptools_limit=lambda wildcards, threads: threads
     params:
@@ -254,7 +254,7 @@ rule multiBamSummary:
         expand("{log_dir}/multiBamSummary/{{assembly}}.log", **config)
     benchmark:
         expand("{benchmark_dir}/multiBamSummary/{{assembly}}.benchmark.txt", **config)[0]
-    threads: 10
+    threads: 16
     params:
         lambda wildcards, input: "--labels " + get_descriptive_names(wildcards, input.bams) if
                                  get_descriptive_names(wildcards, input.bams) != "" else "",

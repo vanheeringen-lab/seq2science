@@ -364,11 +364,11 @@ rule alignmentsieve:
                                           f"--blackListFileName {input.blacklist}"
     conda:
         "../envs/deeptools.yaml"
-    threads: 2
+    threads: 5
     resources:
         deeptools_limit=lambda wildcards, threads: threads
     shell:
-        "alignmentSieve -b {input.bam} -o {output} {params.minqual} {params.atacshift} {params.blacklist} -p 10 > {log} 2>&1"
+        "alignmentSieve -b {input.bam} -o {output} {params.minqual} {params.atacshift} {params.blacklist} -p {threads} > {log} 2>&1"
 
 
 def get_sambamba_sort_bam(wildcards):
