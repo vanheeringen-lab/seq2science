@@ -50,7 +50,7 @@ assert sorted(config['fqext'])[0] == config['fqext1'], \
      f"Your suffixes:    fqext1: {config['fqext1']}, fqext2: {config['fqext2']}\n")
 
 # read and sanitize the samples file
-samples = pd.read_csv(config["samples"], sep='\t', dtype='str')
+samples = pd.read_csv(config["samples"], sep='\t', dtype='str', comment='#')
 
 # sanitize column names
 samples.columns = samples.columns.str.strip()
