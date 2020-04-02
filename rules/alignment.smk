@@ -331,9 +331,10 @@ rule setup_blacklist:
         newblacklist = ""
         if config.get('remove_blacklist') and wildcards.assembly.lower() in \
                 ["ce10", "dm3", "hg38", "hg19", "mm9", "mm10"]:
-            blacklist = f"{config['genome_dir']}/{wildcards.assembly}/{wildcards.assembly}.blacklist.bed"
-            with open(blacklist, 'r') as file:
-                newblacklist += file.read()
+            blacklist = f"{config['genome_dir']}/{wildcards.assembly}/{wildcards.assembly}.blacklist.bed.gz"
+            with zipfile.ZipFile(...) as z:
+                with z.open() as file:
+                    newblacklist += file.read()
 
         if any('.fa.sizes' in inputfile for inputfile in input):
             with open(input.sizes, 'r') as file:
