@@ -50,7 +50,7 @@ assert sorted(config['fqext'])[0] == config['fqext1'], \
      f"Your suffixes:    fqext1: {config['fqext1']}, fqext2: {config['fqext2']}\n")
 
 # read and sanitize the samples file
-samples = pd.read_csv(config["samples"], sep='\t', dtype='str')
+samples = pd.read_csv(config["samples"], sep='\t', dtype='str', comment='#')
 
 # sanitize column names
 samples.columns = samples.columns.str.strip()
@@ -474,6 +474,7 @@ def convert_size(size_bytes, order=None):
 # by default only one download in parallel (workflow fails on multiple on a single node)
 workflow.global_resources = {**{'parallel_downloads': 3, 'deeptools_limit': 16, 'R_scripts': 1},
                              **workflow.global_resources}
+workflow.use_conda = True
 
 # when the user specifies memory, use this and give a warning if it surpasses local memory
 # (surpassing does not always have to be an issue -> cluster execution)
