@@ -364,6 +364,9 @@ rule alignmentsieve:
                                           f"--blackListFileName {input.blacklist}"
     conda:
         "../envs/deeptools.yaml"
+    threads: 2
+    resources:
+        deeptools_limit=lambda wildcards, threads: threads
     shell:
         "alignmentSieve -b {input.bam} -o {output} {params.minqual} {params.atacshift} {params.blacklist} -p 10 > {log} 2>&1"
 

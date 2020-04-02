@@ -212,7 +212,9 @@ rule computeMatrix:
         expand("{benchmark_dir}/computeMatrix/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     conda:
         "../envs/deeptools.yaml"
-    threads: 16
+    threads: 10
+    resources:
+        deeptools_limit=lambda wildcards, threads: threads
     params:
         labels=lambda wildcards, input: "--samplesLabel " + get_descriptive_names(wildcards, input.bw) if
                                  get_descriptive_names(wildcards, input.bw) != "" else "",
@@ -235,6 +237,8 @@ rule plotProfile:
         expand("{benchmark_dir}/plotProfile/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     conda:
         "../envs/deeptools.yaml"
+    resources:
+        deeptools_limit=lambda wildcards, threads: threads
     shell:
         """
         plotProfile -m {input} --outFileName {output.img} --outFileNameData {output.file} > {log} 2>&1
@@ -250,12 +254,14 @@ rule multiBamSummary:
         expand("{log_dir}/multiBamSummary/{{assembly}}.log", **config)
     benchmark:
         expand("{benchmark_dir}/multiBamSummary/{{assembly}}.benchmark.txt", **config)[0]
-    threads: 16
+    threads: 10
     params:
         lambda wildcards, input: "--labels " + get_descriptive_names(wildcards, input.bams) if
                                  get_descriptive_names(wildcards, input.bams) != "" else "",
     conda:
         "../envs/deeptools.yaml"
+    resources:
+        deeptools_limit=lambda wildcards, threads: threads
     shell:
         """
         multiBamSummary bins --bamfiles {input.bams} -out {output} {params} -p {threads} > {log} 2>&1
@@ -273,6 +279,8 @@ rule plotCorrelation:
         expand("{benchmark_dir}/plotCorrelation/{{assembly}}.benchmark.txt", **config)[0]
     conda:
         "../envs/deeptools.yaml"
+    resources:
+        deeptools_limit=lambda wildcards, threads: threads
     shell:
         """
         plotCorrelation --corData {input} --outFileCorMatrix {output} -c spearman -p heatmap > {log} 2>&1
@@ -290,6 +298,8 @@ rule plotPCA:
         expand("{benchmark_dir}/plotPCA/{{assembly}}.benchmark.txt", **config)[0]
     conda:
         "../envs/deeptools.yaml"
+    resources:
+        deeptools_limit=lambda wildcards, threads: threads
     shell:
         """
         plotPCA --corData {input} --outFileNameData {output} > {log} 2>&1
