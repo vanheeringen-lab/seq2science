@@ -6,6 +6,8 @@ if 'condition' in samples and config.get('biological_replicates') != 'keep':
     cols.append('condition')
 if "descriptive_name" in samples:
     cols.append('descriptive_name')
+if "control" in samples:
+    cols.append("control")
 treps = samples.reset_index()[cols].drop_duplicates().set_index(cols[0])
 
 # dataframe with all replicates collapsed
