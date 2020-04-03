@@ -170,9 +170,9 @@ rule bam_stranded_bigwig:
         expand("{benchmark_dir}/bam_bigwig/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.benchmark.txt", **config)[0]
     conda:
         "../envs/deeptools.yaml"
-    threads: 20
+    threads: 16
     resources:
-        deeptools_limit=1
+        deeptools_limit=lambda wildcards, threads: threads
     shell:
         """       
         direction1=forward
@@ -205,9 +205,9 @@ rule bam_bigwig:
         expand("{benchmark_dir}/bam_bigwig/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.benchmark.txt", **config)[0]
     conda:
         "../envs/deeptools.yaml"
-    threads: 20
+    threads: 16
     resources:
-        deeptools_limit=1
+        deeptools_limit=lambda wildcards, threads: threads
     shell:
         """
         bamCoverage --bam {input.bam} --outFileName {output} --numberOfProcessors {threads} {params} --verbose >> {log} 2>&1

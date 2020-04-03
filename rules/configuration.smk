@@ -472,7 +472,7 @@ def convert_size(size_bytes, order=None):
 
 
 # by default only one download in parallel (workflow fails on multiple on a single node)
-workflow.global_resources = {**{'parallel_downloads': 3, 'deeptools_limit': 1, 'R_scripts': 1},
+workflow.global_resources = {**{'parallel_downloads': 3, 'deeptools_limit': 16, 'R_scripts': 1},
                              **workflow.global_resources}
 workflow.use_conda = True
 
