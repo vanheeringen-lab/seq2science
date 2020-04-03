@@ -1,5 +1,6 @@
 import os
 import re
+import zipfile
 
 
 def get_reads(wildcards):
@@ -63,8 +64,6 @@ if config['aligner'] == 'bowtie2':
 
 
 elif config['aligner'] == 'bwa':
-    config['bwaindex_types'] = ['amb', 'ann', 'bwt', 'pac', 'sa']
-
     rule bwa_index:
         """
         Make a genome index for bwa.
@@ -72,7 +71,7 @@ elif config['aligner'] == 'bwa':
         input:
             expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config)
         output:
-            expand("{genome_dir}/{{assembly}}/index/bwa/{{assembly}}.{bwaindex_types}", **config)
+            directory(expand("{genome_dir}/{{assembly}}/index/bwa/", **config)),
         log:
             expand("{log_dir}/bwa_index/{{assembly}}.log", **config)
         benchmark:
@@ -95,7 +94,7 @@ elif config['aligner'] == 'bwa':
         """
         input:
             reads=get_reads,
-            index=expand("{genome_dir}/{{assembly}}/index/bwa/{{assembly}}.{bwaindex_types}", **config)
+            index=expand("{genome_dir}/{{assembly}}/index/bwa/", **config)
         output:
             pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0])
         log:
@@ -333,9 +332,10 @@ rule setup_blacklist:
         newblacklist = ""
         if config.get('remove_blacklist') and wildcards.assembly.lower() in \
                 ["ce10", "dm3", "hg38", "hg19", "mm9", "mm10"]:
-            blacklist = f"{config['genome_dir']}/{wildcards.assembly}/{wildcards.assembly}.blacklist.bed"
-            with open(blacklist, 'r') as file:
-                newblacklist += file.read()
+            blacklist = f"{config['genome_dir']}/{wildcards.assembly}/{wildcards.assembly}.blacklist.bed.gz"
+            with zipfile.ZipFile(...) as z:
+                with z.open() as file:
+                    newblacklist += file.read()
 
         if any('.fa.sizes' in inputfile for inputfile in input):
             with open(input.sizes, 'r') as file:
@@ -354,7 +354,7 @@ rule alignmentsieve:
         bai=expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-unsieved.bam.bai", **config),
         blacklist=rules.setup_blacklist.output
     output:
-        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-sieved.bam", **config)
+        temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-sieved.bam", **config))
     log:
         expand("{log_dir}/alignmentsieve/{{assembly}}-{{sample}}.log", **config)
     benchmark:
@@ -362,12 +362,15 @@ rule alignmentsieve:
     params:
         minqual=f"--minMappingQuality {config['min_mapping_quality']}",
         atacshift="--ATACshift" if config['tn5_shift'] else '',
-        blacklist=lambda wildcards, input: "" if os.stat(input.blacklist[0]).st_size == 0 else \
+        blacklist=lambda wildcards, input: "" if os.path.exists(input.blacklist[0]) and os.stat(input.blacklist[0]).st_size == 0 else \
                                           f"--blackListFileName {input.blacklist}"
     conda:
         "../envs/deeptools.yaml"
+    threads: 4
+    resources:
+        deeptools_limit=lambda wildcards, threads: threads
     shell:
-        "alignmentSieve -b {input.bam} -o {output} {params.minqual} {params.atacshift} {params.blacklist} -p 10 > {log} 2>&1"
+        "alignmentSieve -b {input.bam} -o {output} {params.minqual} {params.atacshift} {params.blacklist} -p {threads} > {log} 2>&1"
 
 
 def get_sambamba_sort_bam(wildcards):
@@ -476,7 +479,7 @@ rule samtools_index:
     input:
         "{filepath}.bam"
     output:
-        temp("{filepath}.bam.bai")
+        temp("{filepath}.bam.bai") if config.get("cram_no_bam", False) else "{filepath}.bam.bai"
     params:
         config['samtools_index']
     conda:

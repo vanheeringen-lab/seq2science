@@ -117,3 +117,8 @@ properties:
   # whether or not to remove mitochondrial reads
   remove_mito:
     default: False
+
+  # whether or not to generate a multiqc report
+  create_qc_report:
+    default: True
+    type: boolean

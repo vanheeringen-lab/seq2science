@@ -44,3 +44,8 @@ properties:
     description: file descriptor for fastq files (often fastq or fq)
     default: fastq
     type: string
+
+  cpulimit:
+    description: whether or not to make use of cpulimit to enfoce max thread usage for some rules
+    default: true
+    type: boolean

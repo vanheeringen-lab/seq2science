@@ -1,12 +1,41 @@
+def get_ftype(peak_caller):
+    """
+    Get the filetype (narrowpeak, broadpeak, gappedpeak) for a peak caller.
+    """
+    if "macs2" == peak_caller:
+        if "--broad" in config["peak_caller"]["macs2"]:
+            ftype = "broadPeak"
+        else:
+            ftype = "narrowPeak"
+    elif "genrich" == peak_caller:
+        ftype = "narrowPeak"
+    elif "hmmratac" == peak_caller:
+        ftype = "gappedPeak"
+    else:
+        raise NotImplementedError()
+    return ftype
+
+
 def get_genrich_replicates(wildcards):
     assembly_ish, sample_condition = "-".join(wildcards.fname.split('-')[:-1]), wildcards.fname.split('-')[-1]
     assembly = assembly_ish.split("/")[-1]
 
+    control = []
     if sample_condition in treps.index:
-        return expand(f"{{dedup_dir}}/{wildcards.fname}.sambamba-queryname.bam", **config)
+        if "control" in samples:
+            control_name = treps.loc[sample_condition, "control"]
+            if isinstance(control_name, str):  # ignore nan
+                control = expand(f"{{dedup_dir}}/{assembly}-{control_name}.sambamba-queryname.bam", **config)
+        return {"control": control,
+                "reps": expand(f"{{dedup_dir}}/{wildcards.fname}.sambamba-queryname.bam", **config)}
     else:
-        return expand([f"{{dedup_dir}}/{assembly}-{replicate}.sambamba-queryname.bam"
-        for replicate in treps_from_brep[sample_condition]], **config)
+        if "control" in samples:
+            control_name = breps.loc[sample_condition, "control"]
+            if isinstance(control_name, str):  # ignore nan
+                control = expand(f"{{dedup_dir}}/{assembly}-{control_name}.sambamba-queryname.bam", **config)
+        return {"control": control,
+                "reps": expand([f"{{dedup_dir}}/{assembly}-{replicate}.sambamba-queryname.bam"
+                                for replicate in treps_from_brep[(sample_condition, assembly)]], **config)} 
 
 
 rule genrich_pileup:
@@ -15,10 +44,10 @@ rule genrich_pileup:
     computational footprint.
     """
     input:
-        get_genrich_replicates
+        unpack(get_genrich_replicates)
     output:
-        bedgraphish=expand("{result_dir}/genrich/{{fname}}.bdgish", **config),
-        log=expand("{result_dir}/genrich/{{fname}}.log", **config)
+        bedgraphish=temp(expand("{result_dir}/genrich/{{fname}}.bdgish", **config)),
+        log=temp(expand("{result_dir}/genrich/{{fname}}.log", **config))
     log:
         expand("{log_dir}/genrich_pileup/{{fname}}_pileup.log", **config)
     benchmark:
@@ -26,13 +55,14 @@ rule genrich_pileup:
     conda:
         "../envs/genrich.yaml"
     params:
-        config['peak_caller'].get('genrich', " ")  # TODO: move this to config.schema.yaml
+        params=config['peak_caller'].get('genrich', " "),
+        control=lambda wildcards, input: f"-c {input.control}" if "control" in input else ""
     resources:
         mem_gb=8
     shell:
         """
-        input=$(echo {input} | tr ' ' ',')
-        Genrich -X -t $input -f {output.log} -k {output.bedgraphish} {params} -v > {log} 2>&1
+        input=$(echo {input.reps} | tr ' ' ',')
+        Genrich -X -t $input -f {output.log} {params.control} -k {output.bedgraphish} {params.params} -v > {log} 2>&1
         """
 
 
@@ -56,8 +86,6 @@ rule call_peak_genrich:
         "Genrich -P -f {input.log} -o {output.narrowpeak} {params} -v > {log} 2>&1"
 
 
-config['macs2_types'] = ['control_lambda.bdg', 'summits.bed', 'peaks.narrowPeak',
-                         'peaks.xls', 'treat_pileup.bdg']
 def get_fastqc(wildcards):
     if config['layout'].get(wildcards.sample, False) == "SINGLE" or \
        config['layout'].get(wildcards.assembly, False) == "SINGLE":
@@ -71,12 +99,26 @@ def get_macs2_bam(wildcards):
     return rules.keep_mates.output
 
 
+def get_control_macs(wildcards):
+    if not "control" in samples:
+        return dict()
+
+    control = treps.loc[wildcards.sample, "control"]
+    if not isinstance(control, str) and math.isnan(control):
+        return dict()
+
+    if not config['macs2_keep_mates'] is True or config['layout'].get(wildcards.sample, False) == "SINGLE":
+        return {"control": expand(f"{{dedup_dir}}/{{{{assembly}}}}-{control}.samtools-coordinate.bam", **config)}
+    return {"control": expand(f"{{dedup_dir}}/{control}-mates-{{{{assembly}}}}.samtools-coordinate.bam", **config)}
+
+
 rule macs2_callpeak:
     """
     Call peaks using macs2.
     Macs2 requires a genome size, which we estimate from the amount of unique kmers of the average read length.
     """
     input:
+        unpack(get_control_macs),
         bam=get_macs2_bam,
         fastqc=get_fastqc
     output:
@@ -89,7 +131,11 @@ rule macs2_callpeak:
         name=lambda wildcards, input: f"{wildcards.sample}" if config['layout'][wildcards.sample] == 'SINGLE' else \
                                       f"{wildcards.sample}_{config['fqext1']}",
         genome=f"{config['genome_dir']}/{{assembly}}/{{assembly}}.fa",
-        macs_params=config['peak_caller'].get('macs2', "")  # TODO: move to config.schema.yaml
+        macs_params=config['peak_caller'].get('macs2', ""),
+        format=lambda wildcards: "BAMPE" if \
+                                 (config['layout'][wildcards.sample] == "PAIRED" and "--shift" not in config['peak_caller'].get('macs2', "")) else \
+                                 "BAM",
+        control=lambda wildcards, input: f"-c {input.control}" if "control" in input else ""
     conda:
         "../envs/macs2.yaml"
     shell:
@@ -100,9 +146,10 @@ rule macs2_callpeak:
         echo "kmer size: $kmer_size, and effective genome size: $GENSIZE" >> {{log}}
 
         # call peaks
-        macs2 callpeak --bdg -t {{input.bam}} --outdir {config['result_dir']}/macs2/ -n {{wildcards.assembly}}-{{wildcards.sample}} \
-        {{params.macs_params}} -g $GENSIZE -f BAM >> {{log}} 2>&1
+        macs2 callpeak --bdg -t {{input.bam}} {{params.control}} --outdir {config['result_dir']}/macs2/ -n {{wildcards.assembly}}-{{wildcards.sample}} \
+        {{params.macs_params}} -g $GENSIZE -f {{params.format}} >> {{log}} 2>&1
         """
+
 
 rule keep_mates:
     input:
@@ -148,6 +195,8 @@ rule hmmratac_genome_info:
     """
     Generate the 'genome info' that hmmratac requires for peak calling.
     https://github.com/LiuLabUB/HMMRATAC/issues/17
+    
+    TODO isnt this just .fa.sizes?
     """
     input:
         bam=expand("{dedup_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config)
@@ -198,12 +247,13 @@ rule hmmratac:
 
 if 'condition' in samples:
     if config['biological_replicates'] == 'idr':
+        ruleorder: idr > macs2_callpeak > call_peak_genrich
 
         def get_idr_replicates(wildcards):
-            """if macs2 or genrich, return narrowPeak, for hmmratac return gappedPeak"""
-            ftype = 'narrowPeak' if wildcards.peak_caller in ['macs2', 'genrich'] else 'gappedPeak'
-            return expand([f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{replicate}_peaks.{ftype}"
-                           for replicate in treps[(treps['assembly'] == wildcards.assembly) & (treps['condition'] == wildcards.condition)].index], **config)
+            reps = []
+            for replicate in treps[(treps['assembly'] == wildcards.assembly) & (treps['condition'] == wildcards.condition)].index:
+                reps.append(f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{replicate}_peaks.{wildcards.ftype}")
+            return reps
 
         rule idr:
             """
@@ -213,11 +263,11 @@ if 'condition' in samples:
             input:
                 get_idr_replicates
             output:
-                expand("{result_dir}/{{peak_caller}}/replicate_processed/{{assembly}}-{{condition}}_peaks.narrowPeak", **config),
+                expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{condition}}_peaks.{{ftype}}", **config),
             log:
-                expand("{log_dir}/idr/{{assembly}}-{{condition}}-{{peak_caller}}.log", **config)
+                expand("{log_dir}/idr/{{assembly}}-{{condition}}-{{peak_caller}}-{{ftype}}.log", **config)
             benchmark:
-                expand("{benchmark_dir}/idr/{{assembly}}-{{condition}}-{{peak_caller}}.benchmark.txt", **config)[0]
+                expand("{benchmark_dir}/idr/{{assembly}}-{{condition}}-{{peak_caller}}-{{ftype}}.benchmark.txt", **config)[0]
             params:
                 lambda wildcards: "--rank 13" if wildcards.peak_caller == 'hmmratac' else ""
             conda:
@@ -230,6 +280,7 @@ if 'condition' in samples:
 
     elif config.get('biological_replicates', "") == 'fisher':
         if 'macs2' in config['peak_caller']:
+            ruleorder: macs_cmbreps > macs2_callpeak > call_peak_genrich
 
             rule macs_bdgcmp:
                 """
@@ -239,7 +290,7 @@ if 'condition' in samples:
                     treatment=expand("{result_dir}/macs2/{{assembly}}-{{sample}}_treat_pileup.bdg", **config),
                     control=  expand("{result_dir}/macs2/{{assembly}}-{{sample}}_control_lambda.bdg", **config)
                 output:
-                    expand("{result_dir}/macs2/{{assembly}}-{{sample}}_pvalues.bdg", **config),
+                    temp(expand("{result_dir}/macs2/{{assembly}}-{{sample}}_pvalues.bdg", **config))
                 log:
                     expand("{log_dir}/macs_bdgcmp/{{assembly}}-{{sample}}.log", **config)
                 benchmark:
@@ -259,7 +310,7 @@ if 'condition' in samples:
             def get_macs_replicate(wildcards):
                 """the original peakfile, to link if there is only 1 sample for a condition"""
                 replicate = treps[(treps['assembly'] == wildcards.assembly) & (treps['condition'] == wildcards.condition)].index
-                return expand(f"{{result_dir}}/macs2/{wildcards.assembly}-{replicate[0]}_peaks.narrowPeak", **config)
+                return expand(f"{{result_dir}}/macs2/{wildcards.assembly}-{replicate[0]}_peaks.{wildcards.ftype}", **config)
 
             rule macs_cmbreps:
                 """
@@ -269,19 +320,20 @@ if 'condition' in samples:
                 """
                 input:
                     bdgcmp=get_macs_replicates,
-                    treatment=get_macs_replicate,
+                    treatment=get_macs_replicate
                 output:
-                    tmpbdg=temp(expand("{result_dir}/macs2/{{assembly,.+(?<!_pvalues)}}-{{condition}}.bdg", **config)),
-                    tmppeaks=temp(expand("{result_dir}/macs2/{{assembly}}-{{condition}}_peaks.temp.narrowPeak", **config)),
-                    peaks=expand("{result_dir}/macs2/replicate_processed/{{assembly}}-{{condition}}_peaks.narrowPeak", **config)
+                    tmpbdg=temp(expand("{result_dir}/macs2/{{assembly,.+(?<!_pvalues)}}-{{condition}}-{{ftype}}.bdg", **config)),
+                    tmppeaks=temp(expand("{result_dir}/macs2/{{assembly}}-{{condition}}_peaks.temp.{{ftype}}", **config)),
+                    peaks=expand("{result_dir}/macs2/{{assembly}}-{{condition}}_peaks.{{ftype}}", **config)
                 log:
-                    expand("{log_dir}/macs_cmbreps/{{assembly}}-{{condition}}.log", **config)
+                    expand("{log_dir}/macs_cmbreps/{{assembly}}-{{condition}}-{{ftype}}.log", **config)
                 benchmark:
-                    expand("{benchmark_dir}/macs_cmbreps/{{assembly}}-{{condition}}.benchmark.txt", **config)[0]
+                    expand("{benchmark_dir}/macs_cmbreps/{{assembly}}-{{condition}}-{{ftype}}.benchmark.txt", **config)[0]
                 conda:
                     "../envs/macs2.yaml"
                 params:
-                    nr_reps=lambda wildcards, input: len(input.bdgcmp)
+                    nr_reps=lambda wildcards, input: len(input.bdgcmp),
+                    function="bdgpeakcall" if "--broad" not in config['peak_caller'].get('macs2', "") else "bdgbroadcall"
                 shell:
                     """
                     if [ "{params.nr_reps}" == "1" ]; then
@@ -289,7 +341,7 @@ if 'condition' in samples:
                         mkdir -p $(dirname {output.peaks}); ln {input.treatment} {output.peaks}
                     else
                         macs2 cmbreps -i {input.bdgcmp} -o {output.tmpbdg} -m fisher > {log} 2>&1
-                        macs2 bdgpeakcall -i {output.tmpbdg} -o {output.tmppeaks} >> {log} 2>&1
+                        macs2 {params.function} -i {output.tmpbdg} -o {output.tmppeaks} >> {log} 2>&1
                         cat {output.tmppeaks} | tail -n +2 > {output.peaks}
                     fi
                     """
