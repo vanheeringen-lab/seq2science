@@ -1,5 +1,6 @@
 import os
 import re
+import zipfile
 
 
 def get_reads(wildcards):
