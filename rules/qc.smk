@@ -164,7 +164,7 @@ def get_descriptive_names(wildcards, input):
     for file in input:
         trep = re.findall(f"{wildcards.assembly}-([^\.]+)\.+?", file.split("/")[-1])[0]
         if "control" in treps and trep not in treps.index:
-            labels += f"control_trep "
+            labels += f"control_{trep} "
         else:
             labels += treps.loc[trep, "descriptive_name"] + " "
 
