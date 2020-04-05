@@ -260,11 +260,8 @@ rule multiBamSummary:
                                  get_descriptive_names(wildcards, input.bams) != "" else "",
     conda:
         "../envs/deeptools.yaml"
-<<<<<<< HEAD
-=======
     resources:
         deeptools_limit=lambda wildcards, threads: threads
->>>>>>> e9c92bf7be88b6314e50863277e05c6ca494c2d1
     shell:
         """
         multiBamSummary bins --bamfiles {input.bams} -out {output} {params} -p {threads} > {log} 2>&1
