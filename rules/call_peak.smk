@@ -310,7 +310,7 @@ if 'condition' in samples:
             def get_macs_replicate(wildcards):
                 """the original peakfile, to link if there is only 1 sample for a condition"""
                 replicate = treps[(treps['assembly'] == wildcards.assembly) & (treps['condition'] == wildcards.condition)].index
-                return expand(f"{{result_dir}}/macs2/{wildcards.assembly}-{replicate[0]}_\peaks.{wildcards.ftype}", **config)
+                return expand(f"{{result_dir}}/macs2/{wildcards.assembly}-{replicate[0]}_peaks.{wildcards.ftype}", **config)
 
             rule macs_cmbreps:
                 """
