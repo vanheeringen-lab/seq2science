@@ -182,7 +182,7 @@ rule plotFingerprint:
         expand("{benchmark_dir}/plotFingerprint/{{{{assembly}}}}.benchmark.txt", **config)[0]
     conda:
         "../envs/deeptools.yaml"
-    threads: 4
+    threads: 16
     params:
         lambda wildcards, input: "--labels " + get_descriptive_names(wildcards, input.bams) if
                                  get_descriptive_names(wildcards, input.bams) != "" else ""
@@ -213,6 +213,8 @@ rule computeMatrix:
     conda:
         "../envs/deeptools.yaml"
     threads: 16
+    resources:
+        deeptools_limit=lambda wildcards, threads: threads
     params:
         labels=lambda wildcards, input: "--samplesLabel " + get_descriptive_names(wildcards, input.bw) if
                                  get_descriptive_names(wildcards, input.bw) != "" else "",
@@ -235,6 +237,8 @@ rule plotProfile:
         expand("{benchmark_dir}/plotProfile/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     conda:
         "../envs/deeptools.yaml"
+    resources:
+        deeptools_limit=lambda wildcards, threads: threads
     shell:
         """
         plotProfile -m {input} --outFileName {output.img} --outFileNameData {output.file} > {log} 2>&1
@@ -256,6 +260,11 @@ rule multiBamSummary:
                                  get_descriptive_names(wildcards, input.bams) != "" else "",
     conda:
         "../envs/deeptools.yaml"
+<<<<<<< HEAD
+=======
+    resources:
+        deeptools_limit=lambda wildcards, threads: threads
+>>>>>>> e9c92bf7be88b6314e50863277e05c6ca494c2d1
     shell:
         """
         multiBamSummary bins --bamfiles {input.bams} -out {output} {params} -p {threads} > {log} 2>&1
@@ -273,6 +282,8 @@ rule plotCorrelation:
         expand("{benchmark_dir}/plotCorrelation/{{assembly}}.benchmark.txt", **config)[0]
     conda:
         "../envs/deeptools.yaml"
+    resources:
+        deeptools_limit=lambda wildcards, threads: threads
     shell:
         """
         plotCorrelation --corData {input} --outFileCorMatrix {output} -c spearman -p heatmap > {log} 2>&1
@@ -290,6 +301,8 @@ rule plotPCA:
         expand("{benchmark_dir}/plotPCA/{{assembly}}.benchmark.txt", **config)[0]
     conda:
         "../envs/deeptools.yaml"
+    resources:
+        deeptools_limit=lambda wildcards, threads: threads
     shell:
         """
         plotPCA --corData {input} --outFileNameData {output} > {log} 2>&1
@@ -418,6 +431,8 @@ def get_alignment_qc(sample):
 
     if get_workflow() in ["alignment", "chip_seq", "atac_seq"]:
         output.append("{qc_dir}/plotFingerprint/{{assembly}}.tsv")
+    
+    if len(breps["assembly"] == samples.loc[sample, "assembly"]) > 1:
         output.append("{qc_dir}/plotCorrelation/{{assembly}}.tsv")
         output.append("{qc_dir}/plotPCA/{{assembly}}.tsv")
 
