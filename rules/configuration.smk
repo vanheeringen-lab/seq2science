@@ -146,8 +146,6 @@ if config.get('peak_caller', False):
                 else:
                     config["macs_cmbreps"] += f" {param} {params[idx]} "
 
-        print(config["macs_cmbreps"])
-
         if '--broad' in config['peak_caller']['macs2']:
             config['macs2_types'].extend(['peaks.broadPeak', 'peaks.gappedPeak'])
         else:
