@@ -290,7 +290,7 @@ if 'condition' in samples:
                     treatment=expand("{result_dir}/macs2/{{assembly}}-{{sample}}_treat_pileup.bdg", **config),
                     control=  expand("{result_dir}/macs2/{{assembly}}-{{sample}}_control_lambda.bdg", **config)
                 output:
-                    temp(expand("{result_dir}/macs2/{{assembly}}-{{sample}}_pvalues.bdg", **config))
+                    temp(expand("{result_dir}/macs2/{{assembly}}-{{sample}}_qvalues.bdg", **config))
                 log:
                     expand("{log_dir}/macs_bdgcmp/{{assembly}}-{{sample}}.log", **config)
                 benchmark:
@@ -299,12 +299,12 @@ if 'condition' in samples:
                     "../envs/macs2.yaml"
                 shell:
                     """
-                    macs2 bdgcmp -t {input.treatment} -c {input.control} -m ppois -o {output} > {log} 2>&1
+                    macs2 bdgcmp -t {input.treatment} -c {input.control} -m qpois -o {output} > {log} 2>&1
                     """
 
 
             def get_macs_replicates(wildcards):
-                return expand([f"{{result_dir}}/macs2/{wildcards.assembly}-{replicate}_pvalues.bdg"
+                return expand([f"{{result_dir}}/macs2/{wildcards.assembly}-{replicate}_qvalues.bdg"
                        for replicate in treps[(treps['assembly'] == wildcards.assembly) & (treps['condition'] == wildcards.condition)].index], **config)
 
             def get_macs_replicate(wildcards):
@@ -322,7 +322,7 @@ if 'condition' in samples:
                     bdgcmp=get_macs_replicates,
                     treatment=get_macs_replicate
                 output:
-                    tmpbdg=temp(expand("{result_dir}/macs2/{{assembly,.+(?<!_pvalues)}}-{{condition}}-{{ftype}}.bdg", **config)),
+                    tmpbdg=temp(expand("{result_dir}/macs2/{{assembly,.+(?<!_qvalues)}}-{{condition}}-{{ftype}}.bdg", **config)),
                     tmppeaks=temp(expand("{result_dir}/macs2/{{assembly}}-{{condition}}_peaks.temp.{{ftype}}", **config)),
                     peaks=expand("{result_dir}/macs2/{{assembly}}-{{condition}}_peaks.{{ftype}}", **config)
                 log:
@@ -333,7 +333,8 @@ if 'condition' in samples:
                     "../envs/macs2.yaml"
                 params:
                     nr_reps=lambda wildcards, input: len(input.bdgcmp),
-                    function="bdgpeakcall" if "--broad" not in config['peak_caller'].get('macs2', "") else "bdgbroadcall"
+                    function="bdgpeakcall" if "--broad" not in config['peak_caller'].get('macs2', "") else "bdgbroadcall",
+                    config=config["macs_cmbreps"]
                 shell:
                     """
                     if [ "{params.nr_reps}" == "1" ]; then
@@ -341,7 +342,7 @@ if 'condition' in samples:
                         mkdir -p $(dirname {output.peaks}); ln {input.treatment} {output.peaks}
                     else
                         macs2 cmbreps -i {input.bdgcmp} -o {output.tmpbdg} -m fisher > {log} 2>&1
-                        macs2 {params.function} -i {output.tmpbdg} -o {output.tmppeaks} >> {log} 2>&1
+                        macs2 {params.function} {params.config} -i {output.tmpbdg} -o {output.tmppeaks} >> {log} 2>&1
                         cat {output.tmppeaks} | tail -n +2 > {output.peaks}
                     fi
                     """
