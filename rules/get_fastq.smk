@@ -165,7 +165,6 @@ def get_wrong_fqext(wildcards):
     # exclude samples with the correct fqext
     r1 = wildcards.sample + "_" + config["fqext1"] + "." + config["fqsuffix"] + ".gz"
     r2 = wildcards.sample + "_" + config["fqext2"] + "." + config["fqsuffix"] + ".gz"
-    print(wildcards)
     fastqs = [f for f in fastqs if not re.match(r1+"|"+r2, f)]
     if len(fastqs) == 0:
         fastqs.append("impossible input to prevent Snakemake from running the rule without input")
