@@ -1,6 +1,6 @@
 import os
 import re
-import zipfile
+import gzip
 
 
 def get_reads(wildcards):
@@ -333,9 +333,8 @@ rule setup_blacklist:
         if config.get('remove_blacklist') and wildcards.assembly.lower() in \
                 ["ce10", "dm3", "hg38", "hg19", "mm9", "mm10"]:
             blacklist = f"{config['genome_dir']}/{wildcards.assembly}/{wildcards.assembly}.blacklist.bed.gz"
-            with zipfile.ZipFile(...) as z:
-                with z.open() as file:
-                    newblacklist += file.read()
+            with gzip.GzipFile(blacklist) as file:
+                newblacklist += file.read().decode('utf8')
 
         if any('.fa.sizes' in inputfile for inputfile in input):
             with open(input.sizes, 'r') as file:
