@@ -255,7 +255,7 @@ pipeline {
                 snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
                 --use-conda -j $CORES --configfile Jenkins/alignment/bowtie2.yaml \
                 --config samples=../../Jenkins/alignment/local_sample.tsv \
-                --create-envs-only
+                --conda-create-envs-only
                 '''
             }
         }
