@@ -164,7 +164,7 @@ def get_descriptive_names(wildcards, input):
     for file in input:
         trep = re.findall(f"{wildcards.assembly}-([^\.]+)\.+?", file.split("/")[-1])[0]
         if "control" in treps and trep not in treps.index:
-            labels += "control "
+            labels += f"control_{trep} "
         else:
             labels += treps.loc[trep, "descriptive_name"] + " "
 
@@ -333,9 +333,9 @@ rule multiqc_rename_buttons:
     Generate rename buttons.
     """
     output:
-        temp(expand('{qc_dir}/sample_names.tsv', **config))
+        temp(expand('{qc_dir}/sample_names_{{assembly}}.tsv', **config))
     run:
-        newsamples = samples.reset_index(level=0, inplace=False)
+        newsamples = samples[samples["assembly"] == wildcards.assembly].reset_index(level=0, inplace=False)
         newsamples = newsamples.drop(["assembly"], axis=1)
         newsamples.to_csv(output[0], sep="\t", index=False)
 
@@ -346,25 +346,25 @@ def get_qc_files(wildcards):
                                            "relevant quality control functions."
     qc = dict()
     qc['header'] = expand('{qc_dir}/header_info.yaml', **config)[0]
-    qc['sample_names'] = expand('{qc_dir}/sample_names.tsv', **config)[0]
-    qc['files'] = []
+    qc['sample_names'] = expand('{qc_dir}/sample_names_{{assembly}}.tsv', **config)[0]
+    qc['files'] = set()
 
     # trimming qc on individual samples
     if get_trimming_qc in quality_control:
         for sample in samples[samples['assembly'] == wildcards.assembly].index:
-            qc['files'].extend(get_trimming_qc(sample))
+            qc['files'].update(get_trimming_qc(sample))
 
     # qc on merged technical replicates/samples
     if get_alignment_qc in quality_control:
         for replicate in treps[treps['assembly'] == wildcards.assembly].index:
             for function in [func for func in quality_control if
                              func.__name__ not in ['get_peak_calling_qc', 'get_trimming_qc']]:
-                qc['files'].extend(function(replicate))
+                qc['files'].update(function(replicate))
 
     # qc on combined biological replicates/samples
     if get_peak_calling_qc in quality_control:
         for trep in treps[treps['assembly'] == wildcards.assembly].index:
-            qc['files'].extend(get_peak_calling_qc(trep))
+            qc['files'].update(get_peak_calling_qc(trep))
 
     return qc
 
@@ -428,8 +428,7 @@ def get_alignment_qc(sample):
 
     if get_workflow() in ["alignment", "chip_seq", "atac_seq"]:
         output.append("{qc_dir}/plotFingerprint/{{assembly}}.tsv")
-    
-    if len(breps["assembly"] == samples.loc[sample, "assembly"]) > 1:
+    if len(breps["assembly"] == treps.loc[sample, "assembly"]) > 1:
         output.append("{qc_dir}/plotCorrelation/{{assembly}}.tsv")
         output.append("{qc_dir}/plotPCA/{{assembly}}.tsv")
 
@@ -447,7 +446,7 @@ def get_peak_calling_qc(sample):
         output.extend(expand(f"{{result_dir}}/macs2/{{{{assembly}}}}-{sample}_peaks.xls", **config))
 
     # deeptools profile
-    assembly = samples.loc[sample, "assembly"]
+    assembly = treps.loc[sample, "assembly"]
     # TODO: replace with genomepy checkpoint in the future
     if assembly.lower() in ["ce10", "dm3", "hg38", "hg19", "mm9", "mm10", "grch38.p13", "grch38"]:
         output.extend(expand("{qc_dir}/plotProfile/{{assembly}}-{peak_caller}.tsv", **config))
