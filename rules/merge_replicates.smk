@@ -75,7 +75,7 @@ if 'replicate' in samples and config.get('technical_replicates') == 'merge':
             arr=({input})
             if [ ${{#arr[@]}} -eq 1 ]; then
                 echo '\nmoving file:\n{input}' > {log}
-                mv {input} {output}  2> {log}
+                cp {input} {output}  2> {log}
             else 
                 echo '\nconcatenating files:\n{input}' > {log}
                 cat {input} > {output} 2> {log}
