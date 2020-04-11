@@ -336,7 +336,11 @@ if not os.path.exists(os.path.dirname(layout_cachefile_lock)):
 # let's ignore locks that are older than 5 minutes
 if os.path.exists(layout_cachefile_lock) and \
         time.time() - os.stat(layout_cachefile_lock).st_mtime > 5 * 60:
-    os.remove(layout_cachefile_lock)
+    # sometimes two jobs start in parallel and try to delete at the same time
+    try:
+        os.remove(layout_cachefile_lock)
+    except FileNotFoundError:
+         pass
 
 with FileLock(layout_cachefile_lock):
     # try to load the layout cache, otherwise defaults to empty dictionary
