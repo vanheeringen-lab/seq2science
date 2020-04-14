@@ -362,14 +362,18 @@ rule alignmentsieve:
         minqual=f"--minMappingQuality {config['min_mapping_quality']}",
         atacshift="--ATACshift" if config['tn5_shift'] else '',
         blacklist=lambda wildcards, input: "" if os.path.exists(input.blacklist[0]) and os.stat(input.blacklist[0]).st_size == 0 else \
-                                          f"--blackListFileName {input.blacklist}"
+                                          f"--blackListFileName {input.blacklist}",
+        tmpdir=f"/{config['result_dir']}/{config['aligner']}/tmp"
     conda:
         "../envs/deeptools.yaml"
     threads: 4
     resources:
         deeptools_limit=lambda wildcards, threads: threads
     shell:
-        "alignmentSieve -b {input.bam} -o {output} {params.minqual} {params.atacshift} {params.blacklist} -p {threads} > {log} 2>&1"
+        """
+        mkdir -p {params.tmpdir}; export TMPDIR={params.tmpdir}; export TMP={params.tmpdir}; export TEMP={params.tmpdir};
+        alignmentSieve -b {input.bam} -o {output} {params.minqual} {params.atacshift} {params.blacklist} -p {threads} --verbose > {log} 2>&1
+        """
 
 
 def get_sambamba_sort_bam(wildcards):
