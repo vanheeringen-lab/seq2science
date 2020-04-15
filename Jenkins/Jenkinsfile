@@ -40,9 +40,10 @@ pipeline {
                 sh '''#!/usr/bin/env bash
                 wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -nv -O miniconda.sh > /dev/null
                 bash miniconda.sh -b -p $WORKSPACE/miniconda > /dev/null
-                conda config --set always_yes yes --set changeps1 no > /dev/null
-                conda update -q conda  > /dev/null
-
+                conda config --set always_yes yes --set changeps1 no
+                conda update -q conda
+                conda update -n base -c defaults conda
+                
                 # add channels
                 conda config --add channels defaults    > /dev/null
                 conda config --add channels conda-forge > /dev/null
