@@ -1,16 +1,24 @@
 #!/usr/bin/perl
+#
+# atacshift: Correct for tn5 bias by shifting reads on the positive strand +4 and reads 
+#            on the negative strand -5. Reads that fall (partly) outside of the genome 
+#            after shifting are removed.
+#  
+# author: Maarten van der Sande
+
 use strict;
 use warnings;
 
+
+my %sizes;
 my $num_args = $#ARGV + 1;
 if ($num_args != 2) {
     print "Usage: atacshift.pl input.sam genome.fa.sizes\n";
     exit;
 }
 
+# put the genome.fa.sizes in a hash
 open my $in_sizes, "<:encoding(utf8)", $ARGV[1];
-
-my %sizes;
 while (my $line = <$in_sizes>) {
   chomp $line;
 
@@ -18,8 +26,13 @@ while (my $line = <$in_sizes>) {
   $sizes{$split_line[0]} = $split_line[1];
 }
 
-open my $in_sam, "<:encoding(utf8)", $ARGV[0];
+# declare variables
+my @read;
+my @cigar;
+my $read_len;
 
+# for each read...
+open my $in_sam, "<:encoding(utf8)", $ARGV[0];
 while (my $line = <$in_sam>) {
   chomp $line;
 
@@ -30,44 +43,39 @@ while (my $line = <$in_sam>) {
   }
 
   # split line into array
-  my @read = split '\t', $line;
+  @read = split '\t', $line;
 
   # only keep (necessary) first 11 columns
   @read = @read[0..10];
   
   if (not ($read[1] & 0x04)) {  # read must be mapped to shift
-    # my ($read_len, $_mapping) = split(/[A-Z]/, $read[5], 2);
-    #length($read[10]);
-    
     # empty QUAL and SEQ
     $read[9] = "*";
     $read[10] = "*";
 
-    my @cigar = ( $read[5] =~ /\d+M/g );
-    my $read_len;
+    @cigar = ( $read[5] =~ /\d+M/g );
     if ($read[1] & 0x10) {  # reverse strand
       if (($read[1] & 0x01) && not ($read[1] & 0x08)) {  # read paired and mate not unmapped
           $read[7] = $read[7] + 4;  # mate shifts 4
           $read[8] = $read[8] + 9;  # template length decreases 4 + 5
       }
-      # $read_len = (split /[A-Z]/, $read[5])[-1];
       $read_len = substr $cigar[-1], 0, -1;
-      $read_len -= 5;
+      $read_len += -5;
     }
     else {  # forward strand
       if (($read[1] & 0x01) && not ($read[1] & 0x08)) {  # read paired and mate not unmapped
           $read[8] = $read[8] - 9;  # template length decreases 4 + 5
       }
       $read[3] = $read[3] + 4;  # shift the position +4
-      #($read_len, $_mapping) = split(/[A-Z]/, $read[5], 2);
       $read_len = substr $cigar[0], 0, -1;
-      $read_len -= 4;
+      $read_len += -4;
     }
     $read[5] = "${read_len}M";
-  }
-  if (($read[3] < 0) || ($read[3] >= $sizes{$read[2]})) {
-    print STDERR "MAMA MIA $read[3]";
-    next;
+
+    # if the read falls outside of the chromosome after shifting; ignore it
+    if (($read[3] < 0) || ($read[3] >= $sizes{$read[2]})) {
+      next;
+    }
   }
   print join "\t", @read, "\n";
 }
