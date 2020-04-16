@@ -53,7 +53,7 @@ if 'replicate' in samples and config.get('technical_replicates') == 'merge':
                          for sample in samples[samples['replicate'] == wildcards.replicate].index], **config)
 
         # make sure we make the fastqc report before moving our file
-        if len(output["reps"]) == 1:
+        if len(output["reps"]) == 1 and config["create_qc_report"]:
             output["qc"] = expand([f"{{qc_dir}}/fastqc/{sample}_{wildcards.fxext}_trimmed_fastqc.zip"
                            for sample in samples[samples['replicate'] == wildcards.replicate].index], **config)
         
