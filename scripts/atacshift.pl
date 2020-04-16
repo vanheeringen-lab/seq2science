@@ -31,7 +31,7 @@ while (my $line = <$in_sizes>) {
 # declare variables
 my @read;
 my @cigar;
-my $read_len;
+my $rlen;
 
 # for each read...
 open my $in_sam, "<:encoding(utf8)", $ARGV[0];
@@ -51,33 +51,48 @@ while (my $line = <$in_sam>) {
   @read = @read[0..10];
   
   if (not ($read[1] & 0x04)) {  # read must be mapped to shift
-    # empty QUAL and SEQ
-    $read[9] = "*";
-    $read[10] = "*";
 
-    @cigar = ( $read[5] =~ /\d+/g );
-    my ($var1, $var2) = $read[5] =~ /(.*[A-RT-Z])(\d+S)?/; 
-    $read_len = sum(split /[A-Z]/, $var1);
+    # cut of trailing unmapped nucs
+    @cigar = split /(?<=[A-Z])/, $read[5];
+    if ($cigar[0] =~ /\dS/) {
+      shift @cigar;
+    }
+    if ($cigar[-1] =~ /\dS/) {
+      pop @cigar;
+    }
+    $rlen = sum(split /[A-Z]/, join '', @cigar);
+
     if ($read[1] & 0x10) {  # reverse strand
       if (($read[1] & 0x01) && not ($read[1] & 0x08)) {  # read paired and mate not unmapped
           $read[7] = $read[7] + 4;  # mate shifts 4
           $read[8] = $read[8] + 9;  # template length decreases 4 + 5
       }
-      $read_len += -5;
+      $rlen -= 5;
     }
     else {  # forward strand
       if (($read[1] & 0x01) && not ($read[1] & 0x08)) {  # read paired and mate not unmapped
           $read[8] = $read[8] - 9;  # template length decreases 4 + 5
       }
       $read[3] = $read[3] + 4;  # shift the position +4
-      $read_len += -4;
+      $rlen -= 4;
     }
-    $read[5] = "${read_len}M";
 
-    # if the read falls outside of the chromosome after shifting; ignore it
-    if (($read[3] < 0) || ($read[3] >= $sizes{$read[2]})) {
-      next;
-    }
+    # check if within bounds
+    #if ($read[3] < 1) {
+    #  $rlen -= 1 + $read[3];
+    #  $read[3] = 1;
+    #}
+    #if ($read[3] + $read[8] > $sizes{$read[2]}) {
+    #  $rlen -= $sizes{$read[2]} - $read[3];
+    #  $read[3] = $sizes{$read[2]};
+    #}
+
+    # Set the CIGAR
+    $read[5] = "${rlen}M";
+
+    # empty QUAL and SEQ
+    $read[9] = "*";
+    $read[10] = "*";
   }
   print join "\t", @read, "\n";
 }

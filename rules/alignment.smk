@@ -376,8 +376,7 @@ rule sieve_bam:
     params:
         minqual=f"-q {config['min_mapping_quality']}",
         atacshift=lambda wildcards, input: f"| ../../scripts/atacshift.pl /dev/stdin {input.sizes}" if config['tn5_shift'] else "",
-        blacklist=lambda wildcards, input: "" if os.path.exists(input.blacklist[0]) and os.stat(input.blacklist[0]).st_size == 0 else \
-                                          f"-L {input.blacklist}"
+        blacklist=lambda wildcards, input: f"-L {input.blacklist}"
     conda:
         "../envs/samtools.yaml"
     threads: 2
