@@ -106,7 +106,7 @@ elif config['aligner'] == 'bwa':
             index_dir=expand("{genome_dir}/{{assembly}}/index/bwa/{{assembly}}", **config),
             params=config['align']
         resources:
-            mem_gb=23
+            mem_gb=12
         threads: 9
         conda:
             "../envs/bwa.yaml"
