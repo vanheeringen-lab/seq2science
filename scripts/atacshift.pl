@@ -63,29 +63,30 @@ while (my $line = <$in_sam>) {
     $rlen = sum(split /[A-Z]/, join '', @cigar);
 
     if ($read[1] & 0x10) {  # reverse strand
-      if (($read[1] & 0x01) && not ($read[1] & 0x08)) {  # read paired and mate not unmapped
+      if (($read[1] & 0x01) && not ($read[1] & 0x08) && not ($read[8] == 0)) {  # read paired and mate not unmapped
           $read[7] = $read[7] + 4;  # mate shifts 4
           $read[8] = $read[8] + 9;  # template length decreases 4 + 5
       }
       $rlen -= 5;
+
+      # make sure the starting position doesn't map off the chr
+      if ($read[3] < 1) {
+        $rlen -= 1 + $read[3];
+        $read[3] = 1;
+      }
     }
     else {  # forward strand
-      if (($read[1] & 0x01) && not ($read[1] & 0x08)) {  # read paired and mate not unmapped
+      if (($read[1] & 0x01) && not ($read[1] & 0x08) && not ($read[8] == 0)) {  # read paired and mate not unmapped
           $read[8] = $read[8] - 9;  # template length decreases 4 + 5
       }
       $read[3] = $read[3] + 4;  # shift the position +4
       $rlen -= 4;
-    }
 
-    # check if within bounds
-    #if ($read[3] < 1) {
-    #  $rlen -= 1 + $read[3];
-    #  $read[3] = 1;
-    #}
-    #if ($read[3] + $read[8] > $sizes{$read[2]}) {
-    #  $rlen -= $sizes{$read[2]} - $read[3];
-    #  $read[3] = $sizes{$read[2]};
-    #}
+      # make sure the cigar doesn't map off the chr
+      if ($read[3] + $rlen > $sizes{$read[2]}) { 
+        $rlen = $sizes{$read[2]} - $read[3]; 
+      } 
+    }
 
     # Set the CIGAR
     $read[5] = "${rlen}M";
