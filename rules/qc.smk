@@ -162,7 +162,9 @@ def get_descriptive_names(wildcards, input):
 
     labels = ""
     for file in input:
-        trep = re.findall(f"{wildcards.assembly}-([^\.]+)\.+?", file.split("/")[-1])[0]
+        # extract trep name from filepath (between assembly- and .sorter)
+        trep = file[file.rfind(f"{wildcards.assembly}-"):].replace(f"{wildcards.assembly}-", "")
+        trep = trep[:trep.find(".sam")]
         if "control" in treps and trep not in treps.index:
             labels += f"control_{trep} "
         else:
@@ -448,7 +450,7 @@ def get_peak_calling_qc(sample):
     # deeptools profile
     assembly = treps.loc[sample, "assembly"]
     # TODO: replace with genomepy checkpoint in the future
-    if assembly.lower() in ["ce10", "dm3", "hg38", "hg19", "mm9", "mm10", "grch38.p13", "grch38", "danrer11"]:
+    if str(assembly).lower() in ["ce10", "dm3", "hg38", "hg19", "mm9", "mm10", "grch38.p13", "grch38", "danrer11"]:
         output.extend(expand("{qc_dir}/plotProfile/{{assembly}}-{peak_caller}.tsv", **config))
 
     return output
