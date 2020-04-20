@@ -107,7 +107,7 @@ elif config['aligner'] == 'bwa':
             params=config['align']
         resources:
             mem_gb=12
-        threads: 9
+        threads: 10
         conda:
             "../envs/bwa.yaml"
         shell:
@@ -292,7 +292,7 @@ rule samtools_presort:
     params:
         threads=lambda wildcards, input, output, threads: max([1, threads - 1]),
         sort_order="-n" if not sieve_bam(config) and config.get("bam_sort_order") == "queryname" else ""
-    threads: 3
+    threads: 2
     resources:
         mem_mb=2500
     conda:
