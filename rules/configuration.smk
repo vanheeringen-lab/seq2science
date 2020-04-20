@@ -109,6 +109,8 @@ for schema in sample_schemas:
 samples = samples.set_index('sample')
 samples.index = samples.index.map(str)
 
+print(samples)
+
 
 # apply workflow specific changes...
 # ...for atac-seq
@@ -516,9 +518,9 @@ else:
     workflow.global_resources = {**workflow.global_resources,
                                  **{'mem_gb': np.clip(workflow.global_resources.get('mem_gb', 9999), 0, convert_size(mem.total, 3)[0])}}
 
-def use_alignmentsieve(configdict):
+def sieve_bam(configdict):
     """
-    helper function to check whether or not we use alignmentsieve
+    helper function to check whether or not we use rule sieve_bam
     """
     return configdict.get('min_mapping_quality', 0) > 0 or \
            configdict.get('tn5_shift', False) or \

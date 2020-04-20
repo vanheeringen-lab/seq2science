@@ -291,7 +291,7 @@ rule samtools_presort:
         expand("{benchmark_dir}/samtools_presort/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
     params:
         threads=lambda wildcards, input, output, threads: max([1, threads - 1]),
-        sort_order="-n" if not use_alignmentsieve(config) and config.get("bam_sort_order") == "queryname" else ""
+        sort_order="-n" if not sieve_bam(config) and config.get("bam_sort_order") == "queryname" else ""
     threads: 3
     resources:
         mem_mb=2500
@@ -384,7 +384,7 @@ rule sieve_bam:
         "samtools view -h {params.minqual} {params.blacklist} {input.bam} {params.atacshift} | samtools view -b > {output} 2> {log}"
 
 def get_sambamba_sort_bam(wildcards):
-    if use_alignmentsieve(config):
+    if sieve_bam(config):
         return rules.sieve_bam.output
     return rules.samtools_presort.output
 
@@ -443,11 +443,11 @@ rule samtools_sort:
 
 
 def get_bam_mark_duplicates(wildcards):
-    if use_alignmentsieve(config):
+    if sieve_bam(config):
         # when alignmentsieving but not shifting we do not have to re-sort samtools-coordinate
         if wildcards.sorter == 'samtools' and wildcards.sorting == 'coordinate' and \
                 not config.get('tn5_shift', False):
-            return rules.alignmentsieve.output
+            return rules.sieve_bam.output
         else:
             return expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}-sievsort.bam", **config)
 
