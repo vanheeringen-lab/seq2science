@@ -109,8 +109,6 @@ for schema in sample_schemas:
 samples = samples.set_index('sample')
 samples.index = samples.index.map(str)
 
-print(samples)
-
 
 # apply workflow specific changes...
 # ...for atac-seq
