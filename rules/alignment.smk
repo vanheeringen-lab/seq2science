@@ -358,7 +358,8 @@ rule complement_blacklist:
         "../envs/bedtools.yaml"
     shell:
         """
-        complementBed -i {input.blacklist} -g {input.sizes} > {output} 2> {log}
+        sortBed -faidx {input.sizes} -i {input.blacklist} |
+        complementBed -i /dev/stdin -g {input.sizes} > {output} 2> {log}
         """
 
 
@@ -376,12 +377,13 @@ rule sieve_bam:
     params:
         minqual=f"-q {config['min_mapping_quality']}",
         atacshift=lambda wildcards, input: f"| ../../scripts/atacshift.pl /dev/stdin {input.sizes}" if config['tn5_shift'] else "",
-        blacklist=lambda wildcards, input: f"-L {input.blacklist}"
+        blacklist=lambda wildcards, input: f"-L {input.blacklist}",
+        prim_align=f"-F 256" if config["only_primary_align"] else ""
     conda:
         "../envs/samtools.yaml"
     threads: 2
     shell:
-        "samtools view -h {params.minqual} {params.blacklist} {input.bam} {params.atacshift} | samtools view -b > {output} 2> {log}"
+        "samtools view -h {params.prim_align} {params.minqual} {params.blacklist} {input.bam} {params.atacshift} | samtools view -b > {output} 2> {log}"
 
 def get_sambamba_sort_bam(wildcards):
     if sieve_bam(config):

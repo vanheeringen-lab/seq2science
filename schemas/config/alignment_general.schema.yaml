@@ -118,6 +118,10 @@ properties:
   remove_mito:
     default: False
 
+  # whether or not to keep only primary aligned reads
+  only_primary_align:
+    default: False
+
   # whether or not to generate a multiqc report
   create_qc_report:
     default: True
