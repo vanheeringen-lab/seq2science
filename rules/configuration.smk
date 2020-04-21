@@ -74,7 +74,12 @@ if 'condition' in samples:
     if samples['condition'].tolist() == samples['sample'].tolist() or config.get('biological_replicates') == 'keep':
         samples = samples.drop(columns=['condition'])
 if 'descriptive_name' in samples:
-    samples['descriptive_name'] = samples['descriptive_name'].mask(pd.isnull, samples['sample'])
+    samples['descriptive_name'] = samples['descriptive_name'].mask(pd.isnull, samples['replicate']) if \
+        'replicate' in samples else samples['descriptive_name'].mask(pd.isnull, samples['sample'])
+    # if there is nothing to merge, drop the column. keep it simple
+    if ('replicate' in samples and samples['descriptive_name'].to_list() == samples['replicate'].to_list()) or \
+        samples['descriptive_name'].to_list() == samples['sample'].to_list():
+        samples = samples.drop(columns=['descriptive_name'])
 
 if 'replicate' in samples:
     r = samples[['assembly', 'replicate']].drop_duplicates().set_index('replicate')
