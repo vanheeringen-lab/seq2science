@@ -503,14 +503,14 @@ if workflow.global_resources.get('mem_mb'):
     if workflow.global_resources['mem_mb'] > convert_size(mem.total, 2)[0]:
         logger.info(f"WARNING: The specified ram ({workflow.global_resources['mem_mb']} mb) surpasses the local machine\'s RAM ({convert_size(mem.total, 2)[0]} mb)")
 
-    workflow.global_resources = {**workflow.global_resources,
-                                 **{'mem_mb': np.clip(workflow.global_resources['mem_mb'], 0, convert_size(mem.total, 2)[0])}}
+    workflow.global_resources = {**{'mem_mb': np.clip(workflow.global_resources['mem_mb'], 0, convert_size(mem.total, 2)[0])},
+                                 **workflow.global_resources}
 else:
     if workflow.global_resources.get('mem_gb', 0) > convert_size(mem.total, 3)[0]:
         logger.info(f"WARNING: The specified ram ({workflow.global_resources['mem_gb']} gb) surpasses the local machine\'s RAM ({convert_size(mem.total, 3)[0]} gb)")
 
-    workflow.global_resources = {**workflow.global_resources,
-                                 **{'mem_gb': np.clip(workflow.global_resources.get('mem_gb', 9999), 0, convert_size(mem.total, 3)[0])}}
+    workflow.global_resources = {**{'mem_gb': np.clip(workflow.global_resources.get('mem_gb', 9999), 0, convert_size(mem.total, 3)[0])},
+                                 **workflow.global_resources}
 
 def use_alignmentsieve(configdict):
     """
