@@ -136,6 +136,8 @@ rule macs2_callpeak:
                                  (config['layout'][wildcards.sample] == "PAIRED" and "--shift" not in config['peak_caller'].get('macs2', "")) else \
                                  "BAM",
         control=lambda wildcards, input: f"-c {input.control}" if "control" in input else ""
+    resources:
+        mem_gb=4
     conda:
         "../envs/macs2.yaml"
     shell:
@@ -295,6 +297,8 @@ if 'condition' in samples:
                     expand("{log_dir}/macs_bdgcmp/{{assembly}}-{{sample}}.log", **config)
                 benchmark:
                     expand("{benchmark_dir}/macs_bdgcmp/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
+                resources:
+                    mem_gb=4
                 conda:
                     "../envs/macs2.yaml"
                 shell:
@@ -335,6 +339,8 @@ if 'condition' in samples:
                     nr_reps=lambda wildcards, input: len(input.bdgcmp),
                     function="bdgpeakcall" if "--broad" not in config['peak_caller'].get('macs2', "") else "bdgbroadcall",
                     config=config["macs_cmbreps"]
+                resources:
+                    mem_gb=4
                 shell:
                     """
                     if [ "{params.nr_reps}" == "1" ]; then
