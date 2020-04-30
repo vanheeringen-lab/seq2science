@@ -291,7 +291,8 @@ rule samtools_presort:
         expand("{benchmark_dir}/samtools_presort/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
     params:
         threads=lambda wildcards, input, output, threads: max([1, threads - 1]),
-        sort_order="-n" if not use_alignmentsieve(config) and config.get("bam_sort_order") == "queryname" else ""
+        sort_order="-n" if not use_alignmentsieve(config) and config.get("bam_sort_order") == "queryname" else "",
+        out_dir=f"{config['result_dir']}/{config['aligner']}"
     threads: 3
     resources:
         mem_mb=2500
@@ -299,8 +300,8 @@ rule samtools_presort:
         "../envs/samtools.yaml"
     shell:
         """
-        trap \"rm -f {output}*\" INT;
-        samtools sort {params.sort_order} -@ {params.threads} {input} -o {output}  2> {log}
+        trap "rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
+        samtools sort {params.sort_order} -@ {params.threads} {input} -o {output} -T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
         """
 
 
@@ -419,7 +420,8 @@ rule samtools_sort:
         expand("{benchmark_dir}/samtools_sort/{{assembly}}-{{sample}}-{{sorting}}.benchmark.txt", **config)[0]
     params:
         order=lambda wildcards: "-n" if wildcards.sorting == 'queryname' else '',
-        threads=lambda wildcards, input, output, threads: max([1, threads - 1])
+        threads=lambda wildcards, input, output, threads: max([1, threads - 1]),
+        out_dir=f"{config['result_dir']}/{config['aligner']}"
     threads: 2
     resources:
         mem_mb=2500
@@ -427,8 +429,8 @@ rule samtools_sort:
         "../envs/samtools.yaml"
     shell:
         """
-        trap \"rm -f {output}*\" INT;
-        samtools sort -@ {params.threads} {params.order} {input} -o {output}  2> {log}
+        trap "rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
+        samtools sort {params.sort_order} -@ {params.threads} {input} -o {output} -T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
         """
 
 
@@ -463,7 +465,7 @@ rule mark_duplicates:
     params:
         config['markduplicates']
     resources:
-        mem_gb=5
+        mem_gb=10
     conda:
         "../envs/picard.yaml"
     shell:
