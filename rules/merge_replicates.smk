@@ -48,8 +48,16 @@ def rep_to_descriptive(rep):
 
 if 'replicate' in samples and config.get('technical_replicates') == 'merge':
     def get_merge_replicates(wildcards):
-        return expand([f"{{trimmed_dir}}/{sample}{wildcards.fqext}_trimmed.{{fqsuffix}}.gz"
-               for sample in samples[samples['replicate'] == wildcards.replicate].index], **config)
+        output = dict()
+        output["reps"] = expand([f"{{trimmed_dir}}/{sample}{wildcards.fqext}_trimmed.{{fqsuffix}}.gz"
+                         for sample in samples[samples['replicate'] == wildcards.replicate].index], **config)
+
+        # make sure we make the fastqc report before moving our file
+        if len(output["reps"]) == 1 and config["create_qc_report"]:
+            output["qc"] = expand([f"{{qc_dir}}/fastqc/{sample}{wildcards.fqext}_trimmed_fastqc.zip"
+                           for sample in samples[samples['replicate'] == wildcards.replicate].index], **config)
+        
+        return output
 
     rule merge_replicates:
         """
@@ -60,7 +68,7 @@ if 'replicate' in samples and config.get('technical_replicates') == 'merge':
         If a replicate has only 1 sample in it, rename and move instead.
         """
         input:
-            get_merge_replicates
+            unpack(get_merge_replicates)
         output:
             temp(sorted(expand("{trimmed_dir}/merged/{{replicate}}{{fqext}}_trimmed.{fqsuffix}.gz", **config)))
         wildcard_constraints:
@@ -72,12 +80,12 @@ if 'replicate' in samples and config.get('technical_replicates') == 'merge':
             expand("{benchmark_dir}/merge_replicates/{{replicate}}{{fqext}}.benchmark.txt", **config)[0]
         shell:
             """
-            arr=({input})
+            arr=({input.reps})
             if [ ${{#arr[@]}} -eq 1 ]; then
-                echo '\nmoving file:\n{input}' > {log}
-                mv {input} {output}  2> {log}
+                echo '\nmoving file:\n{input.reps}' > {log}
+                mv {input.reps} {output}  2> {log}
             else 
-                echo '\nconcatenating files:\n{input}' > {log}
-                cat {input} > {output} 2> {log}
+                echo '\nconcatenating files:\n{input.reps}' > {log}
+                cat {input.reps} > {output} 2> {log}
             fi
             """

@@ -24,7 +24,8 @@ bam_sorter:
 
 # filtering after alignment
 remove_blacklist: True
-min_mapping_quality: 30  # (only keep uniquely mapped reads from BWA alignments)
+only_primary_align: True
+min_mapping_quality: 30
 
 # use 'our' default parameters
 aligner: bwa
