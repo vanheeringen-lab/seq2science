@@ -257,6 +257,21 @@ pipeline {
                 --use-conda -j $CORES --configfile Jenkins/alignment/bowtie2.yaml \
                 --config samples=../../Jenkins/alignment/local_sample.tsv \
                 --conda-create-envs-only
+
+                snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
+                --use-conda -j $CORES --configfile Jenkins/alignment/bwa.yaml \
+                --config samples=../../Jenkins/alignment/local_sample.tsv \
+                --conda-create-envs-only
+
+                snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
+                --use-conda -j $CORES --configfile Jenkins/alignment/hisat2.yaml \
+                --config samples=../../Jenkins/alignment/local_sample.tsv \
+                --conda-create-envs-only
+
+                snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
+                --use-conda -j $CORES --configfile Jenkins/alignment/star.yaml \
+                --config samples=../../Jenkins/alignment/local_sample.tsv \
+                --conda-create-envs-only
                 '''
             }
         }

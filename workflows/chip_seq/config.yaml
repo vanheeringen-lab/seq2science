@@ -22,7 +22,8 @@ technical_replicates: merge    # change to keep to not combine them
 
 # filtering after alignment
 remove_blacklist: True
-min_mapping_quality: 30  # (only keep uniquely mapped reads from BWA alignments)
+min_mapping_quality: 30
+only_primary_align: True
 
 # use 'our' default parameters
 aligner: bwa
