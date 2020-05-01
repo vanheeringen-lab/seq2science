@@ -74,7 +74,12 @@ if 'condition' in samples:
     if samples['condition'].tolist() == samples['sample'].tolist() or config.get('biological_replicates') == 'keep':
         samples = samples.drop(columns=['condition'])
 if 'descriptive_name' in samples:
-    samples['descriptive_name'] = samples['descriptive_name'].mask(pd.isnull, samples['sample'])
+    samples['descriptive_name'] = samples['descriptive_name'].mask(pd.isnull, samples['replicate']) if \
+        'replicate' in samples else samples['descriptive_name'].mask(pd.isnull, samples['sample'])
+    # if there is nothing to merge, drop the column. keep it simple
+    if ('replicate' in samples and samples['descriptive_name'].to_list() == samples['replicate'].to_list()) or \
+        samples['descriptive_name'].to_list() == samples['sample'].to_list():
+        samples = samples.drop(columns=['descriptive_name'])
 
 if 'replicate' in samples:
     r = samples[['assembly', 'replicate']].drop_duplicates().set_index('replicate')
@@ -336,7 +341,11 @@ if not os.path.exists(os.path.dirname(layout_cachefile_lock)):
 # let's ignore locks that are older than 5 minutes
 if os.path.exists(layout_cachefile_lock) and \
         time.time() - os.stat(layout_cachefile_lock).st_mtime > 5 * 60:
-    os.remove(layout_cachefile_lock)
+    # sometimes two jobs start in parallel and try to delete at the same time
+    try:
+        os.remove(layout_cachefile_lock)
+    except FileNotFoundError:
+         pass
 
 with FileLock(layout_cachefile_lock):
     # try to load the layout cache, otherwise defaults to empty dictionary
@@ -512,9 +521,9 @@ else:
     workflow.global_resources = {**{'mem_gb': np.clip(workflow.global_resources.get('mem_gb', 9999), 0, convert_size(mem.total, 3)[0])},
                                  **workflow.global_resources}
 
-def use_alignmentsieve(configdict):
+def sieve_bam(configdict):
     """
-    helper function to check whether or not we use alignmentsieve
+    helper function to check whether or not we use rule sieve_bam
     """
     return configdict.get('min_mapping_quality', 0) > 0 or \
            configdict.get('tn5_shift', False) or \
