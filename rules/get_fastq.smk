@@ -80,14 +80,6 @@ rule id2sra:
                 {params.ascp_path} -i {params.ascp_key}         -T -d -k 0 -Q -l 2G -m 250M $URL_NCBI {output[0]} >> {log} 2>&1 ||
                 (mkdir -p {output[0]} >> {log} 2>&1 && wget -O {output[0]}/$ID -a {log} -nv $WGET_URL >> {log} 2>&1)
             done;
-        
-            #if the folder contains multiple files, concatenate them
-            if [[ $(ls -1q {output[0]} | wc -l) > 1 ]]; then
-                catfile={output[0]}/$TYPE_U'_concatenated'
-                for file in {output[0]}/*; do
-                cat $file >> $catfile && rm $file
-            done
-            fi
             """)
 
 
@@ -116,8 +108,10 @@ rule sra2fastq_SE:
         parallel-fastq-dump -s {{input}}/* -O $tmpdir {config['splot']} --threads {{threads}} --gzip >> {{log}} 2>&1
 
         # rename file and move to output dir
-        f=$(ls -1q $tmpdir | grep .*.{config['fqsuffix']}.gz)
-        mv -v $tmpdir'/'$f {{output}} >> {{log}} 2>&1
+        for f in $(ls -1q $tmpdir | grep -oP "^[^_]+" | uniq); do
+            dst={config['fastq_dir']}/{{wildcards.sample}}.{config['fqsuffix']}.gz
+            cat "${{{{tmpdir}}}}/${{{{f}}}}_pass.fastq.gz" >> $dst
+        done
         """
 
 
@@ -148,13 +142,11 @@ rule sra2fastq_PE:
         parallel-fastq-dump -s {{input}}/* -O $tmpdir {config['split']} --threads {{threads}} --gzip >> {{log}} 2>&1
 
         # rename files and move to output dir
-        for f in $(ls -1q $tmpdir | grep .*.{config['fqsuffix']}.gz); do
-            src=$tmpdir'/'$f
-            dst={config['fastq_dir']}/{{wildcards.sample}}_{config['fqext1']}.{config['fqsuffix']}.gz
-            if [ -f $dst ]; then
-                dst={config['fastq_dir']}/{{wildcards.sample}}_{config['fqext2']}.{config['fqsuffix']}.gz
-            fi
-            mv -v $src $dst >> {{log}} 2>&1
+        for f in $(ls -1q $tmpdir | grep -oP "^[^_]+" | uniq); do
+            dst_1={config['fastq_dir']}/{{wildcards.sample}}_{config['fqext1']}.{config['fqsuffix']}.gz
+            dst_2={config['fastq_dir']}/{{wildcards.sample}}_{config['fqext2']}.{config['fqsuffix']}.gz
+            cat "${{{{tmpdir}}}}/${{{{f}}}}_pass_1.fastq.gz" >> $dst_1
+            cat "${{{{tmpdir}}}}/${{{{f}}}}_pass_2.fastq.gz" >> $dst_2
         done
         """
 
