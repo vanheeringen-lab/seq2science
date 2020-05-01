@@ -419,7 +419,7 @@ rule samtools_sort:
     benchmark:
         expand("{benchmark_dir}/samtools_sort/{{assembly}}-{{sample}}-{{sorting}}.benchmark.txt", **config)[0]
     params:
-        order=lambda wildcards: "-n" if wildcards.sorting == 'queryname' else '',
+        sort_order=lambda wildcards: "-n" if wildcards.sorting == 'queryname' else '',
         threads=lambda wildcards, input, output, threads: max([1, threads - 1]),
         out_dir=f"{config['result_dir']}/{config['aligner']}"
     threads: 2
