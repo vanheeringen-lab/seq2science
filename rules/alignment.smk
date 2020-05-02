@@ -291,7 +291,7 @@ rule samtools_presort:
         expand("{benchmark_dir}/samtools_presort/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
     params:
         threads=lambda wildcards, input, output, threads: max([1, threads - 1]),
-        sort_order="-n" if not sieve_bam(config) and config.get("bam_sort_order") == "queryname" else ""
+        sort_order="-n" if not sieve_bam(config) and config.get("bam_sort_order") == "queryname" else "",
         out_dir=f"{config['result_dir']}/{config['aligner']}"
     threads: 2
     resources:
