@@ -450,7 +450,7 @@ def get_peak_calling_qc(sample):
     # deeptools profile
     assembly = treps.loc[sample, "assembly"]
     # TODO: replace with genomepy checkpoint in the future
-    if str(assembly).lower() in ["ce10", "dm3", "hg38", "hg19", "mm9", "mm10", "grch38.p13", "grch38", "danrer11"]:
+    if str(assembly).lower() in ["ce10", "dm3", "hg38", "hg19", "mm9", "mm10", "danrer11"]:
         output.extend(expand("{qc_dir}/plotProfile/{{assembly}}-{peak_caller}.tsv", **config))
 
     return output
