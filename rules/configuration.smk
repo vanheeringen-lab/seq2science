@@ -529,3 +529,11 @@ def sieve_bam(configdict):
            configdict.get('tn5_shift', False) or \
            configdict.get('remove_blacklist', False) or \
            configdict.get('remove_mito', False)
+
+
+onsuccess:
+    if config["email"] != "none@provided.com":
+        os.system(f"""echo "Succesful pipeline run! :)" | mail -s "The seq2science pipeline finished succesfully." """)
+onerror:
+    if config["email"] != "none@provided.com":
+        os.system(f"""echo "Unsuccessful pipeline run! :(" | mail -s "The seq2science pipeline finished prematurely.." """)
