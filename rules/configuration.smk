@@ -6,6 +6,7 @@ import re
 import shutil
 import subprocess
 import time
+import locale
 
 import norns
 import numpy as np
@@ -530,6 +531,8 @@ def sieve_bam(configdict):
            configdict.get('remove_blacklist', False) or \
            configdict.get('remove_mito', False)
 
+# set the locale
+locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
 
 onsuccess:
     if config["email"] != "none@provided.com":
