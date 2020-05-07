@@ -532,8 +532,8 @@ def sieve_bam(configdict):
 
 
 onsuccess:
-    if config["email"] != "none@provided.com":
+    if config["email"] != "none@provided.com" and config["email"] != "yourmail@here.com":
         os.system(f"""echo "Succesful pipeline run! :)" | mail -s "The seq2science pipeline finished succesfully." {config["email"]} 2> /dev/null""")
 onerror:
-    if config["email"] != "none@provided.com":
+    if config["email"] != "none@provided.com" and config["email"] != "yourmail@here.com":
         os.system(f"""echo "Unsuccessful pipeline run! :(" | mail -s "The seq2science pipeline finished prematurely..." {config["email"]} 2> /dev/null """)
