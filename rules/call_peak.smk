@@ -254,7 +254,7 @@ if 'condition' in samples:
         def get_idr_replicates(wildcards):
             reps = []
             for replicate in treps[(treps['assembly'] == wildcards.assembly) & (treps['condition'] == wildcards.condition)].index:
-                reps.append(f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{replicate}_peaks.{wildcards.ftype}")
+                reps.append(f"{config['result_dir']}/{wildcards.peak_caller}/{wildcards.assembly}-{replicate}_peaks.{wildcards.ftype}")
             return reps
 
         rule idr:
@@ -271,12 +271,17 @@ if 'condition' in samples:
             benchmark:
                 expand("{benchmark_dir}/idr/{{assembly}}-{{condition}}-{{peak_caller}}-{{ftype}}.benchmark.txt", **config)[0]
             params:
-                lambda wildcards: "--rank 13" if wildcards.peak_caller == 'hmmratac' else ""
+                rank=lambda wildcards: "--rank 13" if wildcards.peak_caller == 'hmmratac' else "",
+                nr_reps=lambda wildcards, input: len(input)
             conda:
                 "../envs/idr.yaml"
             shell:
                 """
-                idr --samples {input} {params} --output-file {output} > {log} 2>&1
+                if [ "{params.nr_reps}" == "1" ]; then
+                    cp {input} {output}
+                else
+                    idr --samples {input} {params.rank} --output-file {output} > {log} 2>&1
+                fi
                 """
 
 
@@ -345,7 +350,7 @@ if 'condition' in samples:
                     """
                     if [ "{params.nr_reps}" == "1" ]; then
                         touch {output.tmpbdg} {output.tmppeaks}
-                        mkdir -p $(dirname {output.peaks}); ln {input.treatment} {output.peaks}
+                        mkdir -p $(dirname {output.peaks}); cp {input.treatment} {output.peaks}
                     else
                         macs2 cmbreps -i {input.bdgcmp} -o {output.tmpbdg} -m fisher > {log} 2>&1
                         macs2 {params.function} {params.config} -i {output.tmpbdg} -o {output.tmppeaks} >> {log} 2>&1

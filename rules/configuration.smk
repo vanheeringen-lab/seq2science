@@ -191,7 +191,7 @@ if 'condition' in samples and config.get('biological_replicates', '') != 'keep':
                 nr_samples = len(samples[(samples['condition'] == condition) & (samples['assembly'] == assembly)])
 
             if config.get('biological_replicates', '') == 'idr':
-                assert nr_samples == 2,\
+                assert nr_samples <= 2,\
                 f'For IDR to work you need two samples per condition, however you gave {nr_samples} samples for'\
                 f' condition {condition} and assembly {assembly}'
 
