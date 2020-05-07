@@ -197,7 +197,7 @@ rule plotFingerprint:
 def computematrix_input(wildcards):
     output = []
 
-    for trep in set(treps[treps['assembly'] == assembly].index):
+    for trep in set(treps[treps['assembly'] == wildcards.assembly].index):
         output.append(expand(f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{trep}.bw", **config)[0])
 
     return output
