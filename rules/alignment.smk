@@ -477,7 +477,7 @@ rule mark_duplicates:
     params:
         config['markduplicates']
     resources:
-        mem_gb=10
+        mem_gb=5
     conda:
         "../envs/picard.yaml"
     shell:
