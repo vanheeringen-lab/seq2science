@@ -78,14 +78,11 @@ if 'replicate' in samples and config.get('technical_replicates') == 'merge':
             expand("{log_dir}/merge_replicates/{{replicate}}{{fqext}}.log", **config)
         benchmark:
             expand("{benchmark_dir}/merge_replicates/{{replicate}}{{fqext}}.benchmark.txt", **config)[0]
-        shell:
-            """
-            arr=({input.reps})
-            if [ ${{#arr[@]}} -eq 1 ]; then
-                echo '\nmoving file:\n{input.reps}' > {log}
-                mv {input.reps} {output}  2> {log}
-            else 
-                echo '\nconcatenating files:\n{input.reps}' > {log}
-                cat {input.reps} > {output} 2> {log}
-            fi
-            """
+        run:
+            if len(input.reps) == 1:
+                shell(f"mv {input.reps} {output} 2> {log}")
+            else:
+                for rep in input.reps:
+                    rep_name = re.findall('\/([^\/_]+)_', rep)[-1]
+                    print(rep, rep_name)
+                    shell(f"""zcat {rep} | awk '{{{{gsub(/@/, "@{rep_name}:" )}}}}1' | gzip >> {output}""")
