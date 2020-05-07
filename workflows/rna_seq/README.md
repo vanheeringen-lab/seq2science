@@ -16,4 +16,4 @@ To specify which samples to align against which assembly the snakefile looks at 
 In order to perform DE analysis, add columns containing the variables you with to analyse (e.g. time, treatment, batch).
 Furthermore, one or more a design contrasts must be specified in the [config.yaml](https://github.com/vanheeringen-lab/snakemake-workflows/blob/master/workflows/rna_seq/config.yaml) file.
 
-Take a look at our [rna-seq wiki](https://github.com/vanheeringen-lab/snakemake-workflows/wiki/5.-RNA-seq) configuration and best practices.
+Take a look at our [rna-seq wiki](https://github.com/vanheeringen-lab/snakemake-workflows/wiki/2.4-RNA-seq) configuration and best practices.

@@ -7,7 +7,7 @@ rule trim_galore_SE:
     input:
         expand("{fastq_dir}/{{sample}}.{fqsuffix}.gz", **config)
     output:
-        se=expand("{trimmed_dir}/{{sample}}_trimmed.{fqsuffix}.gz", **config),
+        se=temp(expand("{trimmed_dir}/{{sample}}_trimmed.{fqsuffix}.gz", **config)),
         qc=expand("{qc_dir}/trimming/{{sample}}.{fqsuffix}.gz_trimming_report.txt", **config)
     conda:
         "../envs/trimgalore.yaml"
@@ -20,8 +20,8 @@ rule trim_galore_SE:
         config=config['trim_galore'],
         fqsuffix=config['fqsuffix']
     shell:
-        """
-        cpulimit --include-children -l {threads}00 --\
+        ("cpulimit --include-children -l {threads}00 --" if config.get("cpulimit", True) else "") +
+        """\
         trim_galore -j {threads} {params.config} -o $(dirname {output.se}) {input} > {log} 2>&1
 
         # now rename to proper output
@@ -43,8 +43,8 @@ rule trim_galore_PE:
         r1=expand("{fastq_dir}/{{sample}}_{fqext1}.{fqsuffix}.gz", **config),
         r2=expand("{fastq_dir}/{{sample}}_{fqext2}.{fqsuffix}.gz", **config)
     output:
-        r1=expand("{trimmed_dir}/{{sample}}_{fqext1}_trimmed.{fqsuffix}.gz", **config),
-        r2=expand("{trimmed_dir}/{{sample}}_{fqext2}_trimmed.{fqsuffix}.gz", **config),
+        r1=temp(expand("{trimmed_dir}/{{sample}}_{fqext1}_trimmed.{fqsuffix}.gz", **config)),
+        r2=temp(expand("{trimmed_dir}/{{sample}}_{fqext2}_trimmed.{fqsuffix}.gz", **config)),
         qc=expand("{qc_dir}/trimming/{{sample}}_{fqext}.{fqsuffix}.gz_trimming_report.txt", **config)
     conda:
         "../envs/trimgalore.yaml"
@@ -57,8 +57,8 @@ rule trim_galore_PE:
         config=config['trim_galore'],
         fqsuffix=config['fqsuffix']
     shell:
-        """
-        cpulimit --include-children -l {threads}00 --\
+        ("cpulimit --include-children -l {threads}00 --" if config.get("cpulimit", True) else "") +
+        """\
         trim_galore --paired -j {threads} {params.config} -o $(dirname {output.r1}) {input.r1} {input.r2} > {log} 2>&1
 
         # now rename to proper output

@@ -37,7 +37,7 @@ rule count_all:
     input:
         expand("{counts_dir}/{assemblies}-counts.tsv",                **{**config, **{'assemblies': set(samples['assembly'])}}),
 
-        expand("{qc_dir}/multiqc_{assemblies}.html",                  **{**config, **{'assemblies': set(samples['assembly'])}}),
+        expand("{qc_dir}/multiqc_{assemblies}.html",                  **{**config, **{'assemblies': set(samples['assembly'])}}) if config["create_qc_report"] else [],
 
         [expand(f"{{dge_dir}}/{{assemblies}}-{contrast}.diffexp.tsv", **{**config, **{'assemblies': set(samples['assembly'])}}) for contrast in contrasts] if config.get('contrasts', False) else [],
 

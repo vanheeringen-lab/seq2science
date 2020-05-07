@@ -1,4 +1,5 @@
 import os
+import re
 
 
 rule samtools_stats:
@@ -6,9 +7,9 @@ rule samtools_stats:
     Get general stats from bam files like percentage mapped.
     """
     input:
-        expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config)
+        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-unsieved.bam", **config)
     output:
-        expand("{qc_dir}/dedup/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.samtools_stats.txt", **config)
+        expand("{qc_dir}/samtools_stats/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.samtools_stats.txt", **config)
     log:
         expand("{log_dir}/samtools_stats/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config)
     conda:
@@ -27,11 +28,9 @@ def get_featureCounts_bam(wildcards):
 # TODO: featurecounts was not set up to accept hmmratac's gappedPeaks,
 #  I added this as it was sufficient for rule idr
 def get_featureCounts_peak(wildcards):
-    ftype = 'narrowPeak' if wildcards.peak_caller in ['macs2', 'genrich'] else 'gappedPeak'
-    if 'condition' in samples and config['biological_replicates'] != 'keep':
-        return expand(f"{{result_dir}}/{wildcards.peak_caller}/replicate_processed/{wildcards.assembly}-{wildcards.sample}_peaks.{ftype}", **config)
-    else:
-        return expand(f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{wildcards.sample}_peaks.{ftype}", **config)
+    peak_sample = brep_from_trep[wildcards.sample]
+    ftype = get_ftype(wildcards.peak_caller)
+    return expand(f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{peak_sample}_peaks.{ftype}", **config)
 
 rule featureCounts:
     """
@@ -143,6 +142,172 @@ rule MTNucRatioCalculator:
         """
 
 
+def fingerprint_multiBamSummary_input(wildcards):
+    output = {"bams": set(), "bais": set()}
+
+    for trep in set(treps[treps['assembly'] == wildcards.assembly].index):
+        output["bams"].update(expand(f"{{dedup_dir}}/{wildcards.assembly}-{trep}.samtools-coordinate.bam", **config))
+        output["bais"].update(expand(f"{{dedup_dir}}/{wildcards.assembly}-{trep}.samtools-coordinate.bam.bai", **config))
+        if "control" in treps and isinstance(treps.loc[trep, "control"], str):
+            control = treps.loc[trep, "control"]
+            output["bams"].update(expand(f"{{dedup_dir}}/{wildcards.assembly}-{control}.samtools-coordinate.bam", **config))
+            output["bais"].update(expand(f"{{dedup_dir}}/{wildcards.assembly}-{control}.samtools-coordinate.bam.bai", **config))
+
+    return output
+
+
+def get_descriptive_names(wildcards, input):
+    if "descriptive_name" not in treps:
+        return ""
+
+    labels = ""
+    for file in input:
+        # extract trep name from filepath (between assembly- and .sorter)
+        trep = file[file.rfind(f"{wildcards.assembly}-"):].replace(f"{wildcards.assembly}-", "")
+        trep = trep[:trep.find(".sam")]
+        if "control" in treps and trep not in treps.index:
+            labels += f"control_{trep} "
+        else:
+            labels += treps.loc[trep, "descriptive_name"] + " "
+
+    return labels
+
+
+rule plotFingerprint:
+    input:
+        unpack(fingerprint_multiBamSummary_input)
+    output:
+        expand("{qc_dir}/plotFingerprint/{{assembly}}.tsv", **config)
+    log:
+        expand("{log_dir}/plotFingerprint/{{assembly}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/plotFingerprint/{{{{assembly}}}}.benchmark.txt", **config)[0]
+    conda:
+        "../envs/deeptools.yaml"
+    threads: 16
+    params:
+        lambda wildcards, input: "--labels " + get_descriptive_names(wildcards, input.bams) if
+                                 get_descriptive_names(wildcards, input.bams) != "" else ""
+    shell:
+        """
+        plotFingerprint -b {input.bams} {params} --outRawCounts {output} -p {threads} > {log} 2>&1 
+        """
+
+
+def computematrix_input(wildcards):
+    output = []
+
+    for trep in set(treps[treps['assembly'] == assembly].index):
+        output.append(expand(f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{trep}.bw", **config)[0])
+
+    return output
+
+
+rule computeMatrix:
+    input:
+        bw=computematrix_input
+    output:
+        expand("{qc_dir}/computeMatrix/{{assembly}}-{{peak_caller}}.mat.gz", **config)
+    log:
+        expand("{log_dir}/computeMatrix/{{assembly}}-{{peak_caller}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/computeMatrix/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
+    conda:
+        "../envs/deeptools.yaml"
+    threads: 16
+    resources:
+        deeptools_limit=lambda wildcards, threads: threads
+    params:
+        labels=lambda wildcards, input: "--samplesLabel " + get_descriptive_names(wildcards, input.bw) if
+                                 get_descriptive_names(wildcards, input.bw) != "" else "",
+        annotation=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config)  # TODO: move genomepy to checkpoint and this as input
+    shell:
+        """
+        computeMatrix scale-regions -S {input.bw} {params.labels} -R {params.annotation} -p {threads} -b 2000 -a 500 -o {output} > {log} 2>&1
+        """
+
+
+rule plotProfile:
+    input:
+        rules.computeMatrix.output
+    output:
+        file=expand("{qc_dir}/plotProfile/{{assembly}}-{{peak_caller}}.tsv", **config),
+        img=expand("{qc_dir}/plotProfile/{{assembly}}-{{peak_caller}}.png", **config)
+    log:
+        expand("{log_dir}/plotProfile/{{assembly}}-{{peak_caller}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/plotProfile/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
+    conda:
+        "../envs/deeptools.yaml"
+    resources:
+        deeptools_limit=lambda wildcards, threads: threads
+    shell:
+        """
+        plotProfile -m {input} --outFileName {output.img} --outFileNameData {output.file} > {log} 2>&1
+        """
+
+
+rule multiBamSummary:
+    input:
+        unpack(fingerprint_multiBamSummary_input)
+    output:
+        expand("{qc_dir}/multiBamSummary/{{assembly}}.npz", **config)
+    log:
+        expand("{log_dir}/multiBamSummary/{{assembly}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/multiBamSummary/{{assembly}}.benchmark.txt", **config)[0]
+    threads: 16
+    params:
+        lambda wildcards, input: "--labels " + get_descriptive_names(wildcards, input.bams) if
+                                 get_descriptive_names(wildcards, input.bams) != "" else "",
+    conda:
+        "../envs/deeptools.yaml"
+    resources:
+        deeptools_limit=lambda wildcards, threads: threads
+    shell:
+        """
+        multiBamSummary bins --bamfiles {input.bams} -out {output} {params} -p {threads} > {log} 2>&1
+        """
+
+
+rule plotCorrelation:
+    input:
+        rules.multiBamSummary.output
+    output:
+        expand("{qc_dir}/plotCorrelation/{{assembly}}.tsv", **config)
+    log:
+        expand("{log_dir}/plotCorrelation/{{assembly}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/plotCorrelation/{{assembly}}.benchmark.txt", **config)[0]
+    conda:
+        "../envs/deeptools.yaml"
+    resources:
+        deeptools_limit=lambda wildcards, threads: threads
+    shell:
+        """
+        plotCorrelation --corData {input} --outFileCorMatrix {output} -c spearman -p heatmap > {log} 2>&1
+        """
+
+
+rule plotPCA:
+    input:
+        rules.multiBamSummary.output
+    output:
+        expand("{qc_dir}/plotPCA/{{assembly}}.tsv", **config)
+    log:
+        expand("{log_dir}/plotPCA/{{assembly}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/plotPCA/{{assembly}}.benchmark.txt", **config)[0]
+    conda:
+        "../envs/deeptools.yaml"
+    resources:
+        deeptools_limit=lambda wildcards, threads: threads
+    shell:
+        """
+        plotPCA --corData {input} --outFileNameData {output} > {log} 2>&1
+        """
+
+
 rule multiqc_header_info:
     """
     Generate a multiqc header file with contact info and date of multiqc generation.
@@ -170,9 +335,9 @@ rule multiqc_rename_buttons:
     Generate rename buttons.
     """
     output:
-        temp(expand('{qc_dir}/sample_names.tsv', **config))
+        temp(expand('{qc_dir}/sample_names_{{assembly}}.tsv', **config))
     run:
-        newsamples = samples.reset_index(level=0, inplace=False)
+        newsamples = samples[samples["assembly"] == wildcards.assembly].reset_index(level=0, inplace=False)
         newsamples = newsamples.drop(["assembly"], axis=1)
         newsamples.to_csv(output[0], sep="\t", index=False)
 
@@ -183,23 +348,25 @@ def get_qc_files(wildcards):
                                            "relevant quality control functions."
     qc = dict()
     qc['header'] = expand('{qc_dir}/header_info.yaml', **config)[0]
-    qc['sample_names'] = expand('{qc_dir}/sample_names.tsv', **config)[0]
-    qc['files'] = []
+    qc['sample_names'] = expand('{qc_dir}/sample_names_{{assembly}}.tsv', **config)[0]
+    qc['files'] = set()
 
     # trimming qc on individual samples
-    for sample in samples[samples['assembly'] == wildcards.assembly].index:
-        qc['files'].extend(get_trimming_qc(sample))
+    if get_trimming_qc in quality_control:
+        for sample in samples[samples['assembly'] == wildcards.assembly].index:
+            qc['files'].update(get_trimming_qc(sample))
 
     # qc on merged technical replicates/samples
-    for replicate in treps[treps['assembly'] == wildcards.assembly].index:
-        for function in [func for func in quality_control if
-                         func.__name__ not in ['get_peak_calling_qc', 'get_trimming_qc']]:
-            qc['files'].extend(function(replicate))
+    if get_alignment_qc in quality_control:
+        for replicate in treps[treps['assembly'] == wildcards.assembly].index:
+            for function in [func for func in quality_control if
+                             func.__name__ not in ['get_peak_calling_qc', 'get_trimming_qc']]:
+                qc['files'].update(function(replicate))
 
     # qc on combined biological replicates/samples
-    if get_peak_calling_qc in qc:
-        for condition in breps[breps['assembly'] == wildcards.assembly].index:
-            qc['files'].extend(function(condition))
+    if get_peak_calling_qc in quality_control:
+        for trep in treps[treps['assembly'] == wildcards.assembly].index:
+            qc['files'].update(get_peak_calling_qc(trep))
 
     return qc
 
@@ -251,16 +418,40 @@ def get_alignment_qc(sample):
 
     # add samtools stats
     output.append(f"{{qc_dir}}/dedup/{{{{assembly}}}}-{sample}.samtools-coordinate.metrics.txt")
-    output.append(f"{{qc_dir}}/dedup/{{{{assembly}}}}-{sample}.samtools-coordinate.samtools_stats.txt")
+    output.append(f"{{qc_dir}}/samtools_stats/{{{{assembly}}}}-{sample}.samtools-coordinate.samtools_stats.txt")
 
-    # add insert size metrics
-    if config['layout'][sample] == "PAIRED":
-        output.append(f"{{qc_dir}}/InsertSizeMetrics/{{{{assembly}}}}-{sample}.tsv")
+    if "atac_seq" in get_workflow():
+        # add insert size metrics
+        if config['layout'][sample] == "PAIRED":
+            output.append(f"{{qc_dir}}/InsertSizeMetrics/{{{{assembly}}}}-{sample}.tsv")
 
     # get the ratio mitochondrial dna
     output.append(f"{{result_dir}}/{config['aligner']}/{{{{assembly}}}}-{sample}.samtools-coordinate-unsieved.bam.mtnucratiomtnuc.json")
+
+    if get_workflow() in ["alignment", "chip_seq", "atac_seq"]:
+        output.append("{qc_dir}/plotFingerprint/{{assembly}}.tsv")
+    if len(breps["assembly"] == treps.loc[sample, "assembly"]) > 1:
+        output.append("{qc_dir}/plotCorrelation/{{assembly}}.tsv")
+        output.append("{qc_dir}/plotPCA/{{assembly}}.tsv")
+
     return expand(output, **config)
 
 
 def get_peak_calling_qc(sample):
-    return expand(f"{{qc_dir}}/{{peak_caller}}/{{{{assembly}}}}-{sample}_featureCounts.txt.summary", **config)
+    output = []
+
+    # add frips score (featurecounts)
+    output.extend(expand(f"{{qc_dir}}/{{peak_caller}}/{{{{assembly}}}}-{sample}_featureCounts.txt.summary", **config))
+
+    # macs specific QC
+    if "macs2" in config["peak_caller"]:
+        output.extend(expand(f"{{result_dir}}/macs2/{{{{assembly}}}}-{sample}_peaks.xls", **config))
+
+    # deeptools profile
+    assembly = treps.loc[sample, "assembly"]
+    # TODO: replace with genomepy checkpoint in the future
+    if str(assembly).lower() in ["ce10", "dm3", "hg38", "hg19", "mm9", "mm10", "danrer11"]:
+        output.extend(expand("{qc_dir}/plotProfile/{{assembly}}-{peak_caller}.tsv", **config))
+
+    return output
+

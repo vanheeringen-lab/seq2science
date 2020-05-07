@@ -19,3 +19,4 @@ The comprehensive snakemake workflows repository of the *vanheeringen lab*. Plea
 * [alignment](https://github.com/vanheeringen-lab/snakemake-workflows/tree/master/workflows/alignment) for alignment of samples against any assembly with virtually any aligner.
 * [atac seq](https://github.com/vanheeringen-lab/snakemake-workflows/tree/master/workflows/atac_seq) for a complete atac-seq pipeline including peak calling and automated trackhub generation.
 * [rna seq](https://github.com/vanheeringen-lab/snakemake-workflows/tree/master/workflows/rna_seq) for basic gene counting and (optional) advanced differential expression analysis.
+* [chip seq](https://github.com/vanheeringen-lab/snakemake-workflows/tree/master/workflows/chip_seq) for a complete CHiP-seq pipeline including peak calling and automated trackhub generation.

@@ -50,7 +50,7 @@ assert sorted(config['fqext'])[0] == config['fqext1'], \
      f"Your suffixes:    fqext1: {config['fqext1']}, fqext2: {config['fqext2']}\n")
 
 # read and sanitize the samples file
-samples = pd.read_csv(config["samples"], sep='\t', dtype='str')
+samples = pd.read_csv(config["samples"], sep='\t', dtype='str', comment='#')
 
 # sanitize column names
 samples.columns = samples.columns.str.strip()
@@ -73,6 +73,13 @@ if 'condition' in samples:
     # if there is nothing to merge, drop the column. keep it simple
     if samples['condition'].tolist() == samples['sample'].tolist() or config.get('biological_replicates') == 'keep':
         samples = samples.drop(columns=['condition'])
+if 'descriptive_name' in samples:
+    samples['descriptive_name'] = samples['descriptive_name'].mask(pd.isnull, samples['replicate']) if \
+        'replicate' in samples else samples['descriptive_name'].mask(pd.isnull, samples['sample'])
+    # if there is nothing to merge, drop the column. keep it simple
+    if ('replicate' in samples and samples['descriptive_name'].to_list() == samples['replicate'].to_list()) or \
+        samples['descriptive_name'].to_list() == samples['sample'].to_list():
+        samples = samples.drop(columns=['descriptive_name'])
 
 if 'replicate' in samples:
     r = samples[['assembly', 'replicate']].drop_duplicates().set_index('replicate')
@@ -81,12 +88,25 @@ if 'replicate' in samples:
             ("\nReplicate names must be different between assemblies.\n" +
              f"Replicate name '{replicate}' was found in assemblies {r[r.index == replicate]['assembly'].tolist()}.")
 
-assert not any([any(samples[col].str.contains('[^A-Za-z0-9_.\-%]+', regex=True)) for col in samples]), \
+assert not any([any(samples[col].str.contains('[^A-Za-z0-9_.\-%]+', regex=True, na=False)) for col in samples if col != "control"]), \
     (f"\n{config['samples']} may only contain letters, numbers and " +
     "percentage signs (%), underscores (_), periods (.), or minuses (-).\n")
 assert len(samples["sample"]) == len(set(samples["sample"])), \
     (f"\nDuplicate samples found in {config['samples']}:\n" +
      f"{samples[samples.duplicated(['sample'], keep=False)].to_string()}\n")
+
+for idx in samples.index:
+    if "condition" in samples:
+        assert idx not in samples["condition"].values, f"sample names, conditions, and replicates can not overlap. " \
+                                                       f"Sample {idx} can not also occur as a condition"
+    if "replicate" in samples:
+        assert idx not in samples["replicate"].values, f"sample names, conditions, and replicates can not overlap. " \
+                                                       f"Sample {idx} can not also occur as a replicate"
+
+if "condition" in samples and "replicate" in samples:
+    for cond in samples["condition"]:
+        assert cond not in samples["replicate"].values, f"sample names, conditions, and replicates can not overlap. " \
+                                                        f"Condition {cond} can not also occur as a replicate"
 
 # validate samples file
 for schema in sample_schemas:
@@ -110,6 +130,32 @@ if config.get('peak_caller', False):
     if 'hmmratac' in config['peak_caller']:
         assert all([config['layout'][sample] == 'PAIRED' for sample in samples.index]), \
         "HMMRATAC requires all samples to be paired end"
+
+    config['macs2_types'] = ['control_lambda.bdg', 'peaks.xls', 'treat_pileup.bdg']
+    if 'macs2' in config['peak_caller']:
+        params = config['peak_caller']["macs2"].split(" ")
+        invalid_params = ["-t", "--treatment", "-c", "--control", "-n", "--name", "--outdir", "-f",
+                          "--format", "-g", "--gsize", "-p", "--pvalue"]
+        assert not any(val in params for val in invalid_params), f"You filled in a parameter for macs2 which the " \
+                                                                 f"pipeline does not support. Unsupported params are:" \
+                                                                 f"{invalid_params}."
+
+        config["macs_cmbreps"] = ""
+        cmbreps_params = ["-q", "--qvalue", "--min-length", "--max-gap", "--broad-cutoff"]
+        for param in cmbreps_params:
+            if param in params:
+                idx = params.index(param) + 1
+                if param == "-q" or param == "--qvalue":
+                    val = -math.log(float(params[idx]), 10)
+                    config["macs_cmbreps"] += f" -c {val} "
+                else:
+                    config["macs_cmbreps"] += f" {param} {params[idx]} "
+
+        if '--broad' in config['peak_caller']['macs2']:
+            config['macs2_types'].extend(['peaks.broadPeak', 'peaks.gappedPeak'])
+        else:
+            config['macs2_types'].extend(['summits.bed', 'peaks.narrowPeak'])
+
 
 # ...for alignment and rna-seq
 for conf_dict in ['aligner', 'quantifier', 'diffexp']:
@@ -295,7 +341,11 @@ if not os.path.exists(os.path.dirname(layout_cachefile_lock)):
 # let's ignore locks that are older than 5 minutes
 if os.path.exists(layout_cachefile_lock) and \
         time.time() - os.stat(layout_cachefile_lock).st_mtime > 5 * 60:
-    os.remove(layout_cachefile_lock)
+    # sometimes two jobs start in parallel and try to delete at the same time
+    try:
+        os.remove(layout_cachefile_lock)
+    except FileNotFoundError:
+         pass
 
 with FileLock(layout_cachefile_lock):
     # try to load the layout cache, otherwise defaults to empty dictionary
@@ -312,7 +362,13 @@ with FileLock(layout_cachefile_lock):
     config['layout'] = {}
 
     # now do a request for each sample that was not in the cache
-    for sample in [sample for sample in samples.index if sample not in layout_cache]:
+    all_samples = [sample for sample in samples.index if sample not in layout_cache]
+    if "control" in samples:
+        for control in set(samples["control"]):
+            if control not in layout_cache and isinstance(control, str):  # ignore nans
+                all_samples.append(control)
+
+    for sample in all_samples:
         config['layout'][sample] = eutils_tp.apply_async(get_layout_eutils, (sample,))
         if os.path.exists(expand(f'{{fastq_dir}}/{sample}.{{fqsuffix}}.gz', **config)[0]):
             config['layout'][sample] ='SINGLE'
@@ -344,12 +400,10 @@ with FileLock(layout_cachefile_lock):
     if len([sample for sample in samples.index if sample not in layout_cache]) is not 0:
         pickle.dump({**config['layout']}, open(layout_cachefile, "wb"))
 
-# now only keep the layout of samples that are in samples.tsv
-config['layout'] = {key: value for key, value in config['layout'].items() if key in samples.index}
 
 # now only keep the layout of samples that are in samples.tsv
-config['layout'] = {key: value for key, value in config['layout'].items() if key in samples.index}
-
+config['layout'] = {**{key: value for key, value in config['layout'].items() if key in samples.index},
+                    **{key: value for key, value in config['layout'].items() if "control" in samples and key in samples["control"].values}}
 logger.info("Done!\n\n")
 
 # if samples are merged add the layout of the technical replicate to the config
@@ -398,11 +452,12 @@ def any_given(*args):
         elif column_name is 'sample':
             elements.extend(samples.index)
 
+    elements = [element for element in elements if isinstance(element, str)]
     return '|'.join(set(elements))
 
 # set global wildcard constraints (see workflow._wildcard_constraints)
+sample_constraints = ["sample"]
 wildcard_constraints:
-    sample=any_given('sample'),
     sorting='coordinate|queryname',
     sorter='samtools|sambamba'
 
@@ -411,18 +466,23 @@ if 'assembly' in samples:
         assembly=any_given('assembly'),
 
 if 'replicate' in samples:
+    sample_constraints = ["sample", "replicate"]
     wildcard_constraints:
-        sample=any_given('sample', 'replicate'),
-        replicate=any_given('replicate')             
+        replicate=any_given('replicate')
 
 if 'condition' in samples:
+    sample_constraints = ["sample", "condition"]
     wildcard_constraints:
-        sample=any_given('sample', 'condition'),
         condition=any_given('condition')
 
 if 'replicate' in samples and 'condition' in samples:
-    wildcard_constraints:
-        sample=any_given('sample', 'replicate', 'condition')
+    sample_constraints = ["sample", "replicate", "condition"]
+
+if "control" in samples:
+    sample_constraints.append("control")
+
+wildcard_constraints:
+    sample=any_given(*sample_constraints)
 
 
 def get_workflow():
@@ -440,8 +500,9 @@ def convert_size(size_bytes, order=None):
 
 
 # by default only one download in parallel (workflow fails on multiple on a single node)
-workflow.global_resources = {**{'parallel_downloads': 3, 'deeptools_limit': 1, 'R_scripts': 1},
+workflow.global_resources = {**{'parallel_downloads': 3, 'deeptools_limit': 16, 'R_scripts': 1},
                              **workflow.global_resources}
+workflow.use_conda = True
 
 # when the user specifies memory, use this and give a warning if it surpasses local memory
 # (surpassing does not always have to be an issue -> cluster execution)
@@ -451,20 +512,28 @@ if workflow.global_resources.get('mem_mb'):
     if workflow.global_resources['mem_mb'] > convert_size(mem.total, 2)[0]:
         logger.info(f"WARNING: The specified ram ({workflow.global_resources['mem_mb']} mb) surpasses the local machine\'s RAM ({convert_size(mem.total, 2)[0]} mb)")
 
-    workflow.global_resources = {**workflow.global_resources,
-                                 **{'mem_mb': np.clip(workflow.global_resources['mem_mb'], 0, convert_size(mem.total, 2)[0])}}
+    workflow.global_resources = {**{'mem_mb': np.clip(workflow.global_resources['mem_mb'], 0, convert_size(mem.total, 2)[0])},
+                                 **workflow.global_resources}
 else:
     if workflow.global_resources.get('mem_gb', 0) > convert_size(mem.total, 3)[0]:
         logger.info(f"WARNING: The specified ram ({workflow.global_resources['mem_gb']} gb) surpasses the local machine\'s RAM ({convert_size(mem.total, 3)[0]} gb)")
 
-    workflow.global_resources = {**workflow.global_resources,
-                                 **{'mem_gb': np.clip(workflow.global_resources.get('mem_gb', 9999), 0, convert_size(mem.total, 3)[0])}}
+    workflow.global_resources = {**{'mem_gb': np.clip(workflow.global_resources.get('mem_gb', 9999), 0, convert_size(mem.total, 3)[0])},
+                                 **workflow.global_resources}
 
-def use_alignmentsieve(configdict):
+def sieve_bam(configdict):
     """
-    helper function to check whether or not we use alignmentsieve
+    helper function to check whether or not we use rule sieve_bam
     """
     return configdict.get('min_mapping_quality', 0) > 0 or \
            configdict.get('tn5_shift', False) or \
            configdict.get('remove_blacklist', False) or \
            configdict.get('remove_mito', False)
+
+
+onsuccess:
+    if config["email"] != "none@provided.com" and config["email"] != "yourmail@here.com":
+        os.system(f"""echo "Succesful pipeline run! :)" | mail -s "The seq2science pipeline finished succesfully." {config["email"]} 2> /dev/null""")
+onerror:
+    if config["email"] != "none@provided.com" and config["email"] != "yourmail@here.com":
+        os.system(f"""echo "Unsuccessful pipeline run! :(" | mail -s "The seq2science pipeline finished prematurely..." {config["email"]} 2> /dev/null """)
