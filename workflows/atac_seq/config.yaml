@@ -7,7 +7,6 @@ genome_dir: ./genomes  # where to look for or download the genomes
 # fastq_dir: (default is inside result_dir) # where to look for or download the fastqs
 
 
-
 # contact info for multiqc report and trackhub
 email: yourmail@here.com
 

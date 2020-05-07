@@ -1,7 +1,3 @@
-def all_cells_for_plate(wildcards):
-    import glob
-    return glob.glob(expand(f"{{fastq_dir}}/{wildcards.sample}/*{{fqsuffix}}.gz", **config)[0])
-
 rule annotation_scATAC:
     '''Generates a file mapping all plates and wells to primer numbers. Needed for downstream cell type linking in the SNAPobject'''
     input:
@@ -15,51 +11,28 @@ rule annotation_scATAC:
     script:
         '../scripts/annotate_scATAC.py'
 
-rule cell_ID2_fastq_ID:
-    '''
-    takes the final part of the file name, between the - and _ characters and uses this as a cell identifier.
-    '''
-    input:
-        all_cells_for_plate
-    output:
-        R1=temp(expand("{fastq_dir}/pre-{{sample}}_{fqext1}.{fqsuffix}.gz", **config)),
-        R2=temp(expand("{fastq_dir}/pre-{{sample}}_{fqext2}.{fqsuffix}.gz", **config))
-    run:
-        cells = set(cell[:-(3+len(config['fqsuffix'])+1+len(config['fqext1']))] for cell in input)
-        assert len(cells) * 2 == len(input)
-        for cell in list(cells):
-            cell_f = f"{cell}{config['fqext1']}.{config['fqsuffix']}.gz"
-            cell_r = f"{cell}{config['fqext2']}.{config['fqsuffix']}.gz"
-            # once for forward
-            shell(f"""cell_id='@'$(echo {cell_f} | awk -F"_" '{{{{ print $2 }}}}'| awk -F"-" '{{{{ print $NF }}}}')':'; """
-                  f"""zcat {cell_f}|awk -v var=$cell_id '{{{{gsub(/@/, var )}}}}1' | gzip >> {output.R1}""")
-            # once for forward
-            shell(f"""cell_id='@'$(echo {cell_r} | awk -F"_" '{{{{ print $2 }}}}'| awk -F"-" '{{{{ print $NF }}}}')':'; """
-                  f"""zcat {cell_r}|awk -v var=$cell_id '{{{{gsub(/@/, var )}}}}1' | gzip >> {output.R2}""")
 
-        r1=expand("{fastq_dir}/pre-{{sample}}_{fqext1}.{fqsuffix}.gz", **config),
-        r2=expand("{fastq_dir}/pre-{{sample}}_{fqext2}.{fqsuffix}.gz", **config)
-
-rule rmv_identical_readname_artefacts_fastq_ID:
-    '''
-    Checks the readname of all fastqfiles, and removes reads with identical read names (artifact, should not be present in theory).
-    '''
-    input:
-        R1=expand("{fastq_dir}/pre-{{sample}}_{fqext1}.{fqsuffix}.gz", **config),
-        R2=expand("{fastq_dir}/pre-{{sample}}_{fqext2}.{fqsuffix}.gz", **config)
-    output:
-        R1=temp(expand("{fastq_dir}/{{sample}}_{fqext1}.{fqsuffix}.gz", **config)),
-        R2=temp(expand("{fastq_dir}/{{sample}}_{fqext2}.{fqsuffix}.gz", **config))
-    conda:
-        "../envs/rmv_dup_readnames_fastq.yml"
-    log:
-        R1=expand("{log_dir}/remove_identical_fastq_Names/{{sample}}_{fqext1}.log", **config),
-        R2=expand("{log_dir}/remove_identical_fastq_Names/{{sample}}_{fqext2}.log", **config)
-    shell:
-        '''
-        seqkit rmdup {input.R1} -n -o {output.R1} > {log.R1}
-        seqkit rmdup {input.R2} -n -o {output.R2} > {log.R2}
-        '''
+# #TODO: @Jos, is this still necessary after seqadmin demultiplexing fixes?
+# rule rmv_identical_readname_artefacts_fastq_ID:
+#     '''
+#     Checks the readname of all fastqfiles, and removes reads with identical read names (artifact, should not be present in theory).
+#     '''
+#     input:
+#         R1=expand("{fastq_dir}/pre-{{sample}}_{fqext1}.{fqsuffix}.gz", **config),
+#         R2=expand("{fastq_dir}/pre-{{sample}}_{fqext2}.{fqsuffix}.gz", **config)
+#     output:
+#         R1=temp(expand("{fastq_dir}/{{sample}}_{fqext1}.{fqsuffix}.gz", **config)),
+#         R2=temp(expand("{fastq_dir}/{{sample}}_{fqext2}.{fqsuffix}.gz", **config))
+#     conda:
+#         "../envs/rmv_dup_readnames_fastq.yml"
+#     log:
+#         R1=expand("{log_dir}/remove_identical_fastq_Names/{{sample}}_{fqext1}.log", **config),
+#         R2=expand("{log_dir}/remove_identical_fastq_Names/{{sample}}_{fqext2}.log", **config)
+#     shell:
+#         '''
+#         seqkit rmdup {input.R1} -n -o {output.R1} > {log.R1}
+#         seqkit rmdup {input.R2} -n -o {output.R2} > {log.R2}
+#         '''
 
 rule create_SNAP_object:
     '''
