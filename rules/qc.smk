@@ -197,7 +197,7 @@ rule plotFingerprint:
 def computematrix_input(wildcards):
     output = []
 
-    for trep in set(treps[treps['assembly'] == assembly].index):
+    for trep in set(treps[treps['assembly'] == wildcards.assembly].index):
         output.append(expand(f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{trep}.bw", **config)[0])
 
     return output
@@ -450,7 +450,8 @@ def get_peak_calling_qc(sample):
     # deeptools profile
     assembly = treps.loc[sample, "assembly"]
     # TODO: replace with genomepy checkpoint in the future
-    if str(assembly).lower() in ["ce10", "dm3", "hg38", "hg19", "mm9", "mm10", "grch38.p13", "grch38", "danrer11"]:
+    if str(assembly).lower() in ["ce10", "ce11", "dm3", "dm6", "hg19", "hg38", "mm9", "mm10", "danrer11",
+                                 "asm318616v1", "xentro9", "orylat2", "asm20922v1", "grcg6a", "astyanax_mexicanus-2.0", "KH"]:
         output.extend(expand("{qc_dir}/plotProfile/{{assembly}}-{peak_caller}.tsv", **config))
 
     return output

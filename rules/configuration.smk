@@ -191,7 +191,7 @@ if 'condition' in samples and config.get('biological_replicates', '') != 'keep':
                 nr_samples = len(samples[(samples['condition'] == condition) & (samples['assembly'] == assembly)])
 
             if config.get('biological_replicates', '') == 'idr':
-                assert nr_samples == 2,\
+                assert nr_samples <= 2,\
                 f'For IDR to work you need two samples per condition, however you gave {nr_samples} samples for'\
                 f' condition {condition} and assembly {assembly}'
 
@@ -512,14 +512,14 @@ if workflow.global_resources.get('mem_mb'):
     if workflow.global_resources['mem_mb'] > convert_size(mem.total, 2)[0]:
         logger.info(f"WARNING: The specified ram ({workflow.global_resources['mem_mb']} mb) surpasses the local machine\'s RAM ({convert_size(mem.total, 2)[0]} mb)")
 
-    workflow.global_resources = {**workflow.global_resources,
-                                 **{'mem_mb': np.clip(workflow.global_resources['mem_mb'], 0, convert_size(mem.total, 2)[0])}}
+    workflow.global_resources = {**{'mem_mb': np.clip(workflow.global_resources['mem_mb'], 0, convert_size(mem.total, 2)[0])},
+                                 **workflow.global_resources}
 else:
     if workflow.global_resources.get('mem_gb', 0) > convert_size(mem.total, 3)[0]:
         logger.info(f"WARNING: The specified ram ({workflow.global_resources['mem_gb']} gb) surpasses the local machine\'s RAM ({convert_size(mem.total, 3)[0]} gb)")
 
-    workflow.global_resources = {**workflow.global_resources,
-                                 **{'mem_gb': np.clip(workflow.global_resources.get('mem_gb', 9999), 0, convert_size(mem.total, 3)[0])}}
+    workflow.global_resources = {**{'mem_gb': np.clip(workflow.global_resources.get('mem_gb', 9999), 0, convert_size(mem.total, 3)[0])},
+                                 **workflow.global_resources}
 
 def sieve_bam(configdict):
     """
@@ -529,3 +529,11 @@ def sieve_bam(configdict):
            configdict.get('tn5_shift', False) or \
            configdict.get('remove_blacklist', False) or \
            configdict.get('remove_mito', False)
+
+
+onsuccess:
+    if config["email"] != "none@provided.com" and config["email"] != "yourmail@here.com":
+        os.system(f"""echo "Succesful pipeline run! :)" | mail -s "The seq2science pipeline finished succesfully." {config["email"]} 2> /dev/null""")
+onerror:
+    if config["email"] != "none@provided.com" and config["email"] != "yourmail@here.com":
+        os.system(f"""echo "Unsuccessful pipeline run! :(" | mail -s "The seq2science pipeline finished prematurely..." {config["email"]} 2> /dev/null """)
