@@ -1,7 +1,7 @@
 # Snakemake workflows
 [![Build Status](http://ocimum.science.ru.nl/jenkins/buildStatus/icon?job=Snakemake-Workflows%2Fmaster)](http://ocimum.science.ru.nl/jenkins/job/Snakemake-Workflows/job/master/lastBuild/display/redirect/)
-[![star this repo](https://githubbadges.com/star.svg?user=vanheeringen-lab&repo=snakemake-workflows&style=flat)](https://github.com/vanheeringen-lab/snakemake-workflows)
-[![fork this repo](https://githubbadges.com/fork.svg?user=vanheeringen-lab&repo=snakemake-workflows&style=flat)](https://github.com/vanheeringen-lab/snakemake-workflows/fork)
+[![star this repo](https://img.shields.io/github/stars/vanheeringen-lab/snakemake-workflows?style=flat&color=brightgreen)](https://github.com/vanheeringen-lab/snakemake-workflows/stargazers)
+[![fork this repo](https://img.shields.io/github/forks/vanheeringen-lab/snakemake-workflows?style=flat&color=brightgreen)](https://github.com/vanheeringen-lab/snakemake-workflows/fork)
 
 The comprehensive snakemake workflows repository of the *vanheeringen lab*. Please take a look at our **[wiki](https://github.com/vanheeringen-lab/snakemake-workflows/wiki)** for help with installation, how to run it, and best practices.
 
