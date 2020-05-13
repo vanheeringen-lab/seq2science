@@ -1,10 +1,13 @@
 # for help with filling out the samples.tsv:
 # https://github.com/vanheeringen-lab/snakemake-workflows/wiki/1.1-Filling-out-the-samples.tsv
 # also make sure that you use tab as a delimiter
-sample	assembly	condition	descriptive_name
-GSM2837488	Bl71nemr	adult	adult_1
-GSM2837489	Bl71nemr	adult	adult_2
-GSM2837490	Bl71nemr	adult	adult_3
-GSM2837491	Bl71nemr	embryo	embryo_1
-GSM2837492	Bl71nemr	embryo	embryo_2
-GSM2837493	Bl71nemr	heart	heart_1
+sample	descriptive_name
+GSM2047323	NA19098-r1-A01
+GSM2047324	NA19098-r1-A02
+GSM2047325	NA19098-r1-A03
+GSM2047326	NA19098-r1-A04
+GSM2047327	NA19098-r1-A05
+GSM2047328	NA19098-r1-A06
+GSM2047329	NA19098-r1-A07
+GSM2047330	NA19098-r1-A08
+GSM2047331	NA19098-r1-A09

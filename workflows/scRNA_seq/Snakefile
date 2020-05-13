@@ -19,9 +19,6 @@ include: f"{config['rule_dir']}/trimming.smk"
 quality_control = [get_trimming_qc]
 
 
-print(                [f"{{fastq_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz" if config['layout'][sample] == "PAIRED" else
-                 f"{{fastq_dir}}/{sample}.{{fqsuffix}}.gz" for sample in samples.index],
-)
 rule scRNA_seq_all:
     """
     TODO: Skeleton scRNA_seq all function
