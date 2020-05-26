@@ -9,8 +9,7 @@
 
    home
    gettingstarted
-   fillingoutsamples
-   fillingoutconfig
+   fillingout
    workflows
    results
    faq

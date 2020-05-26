@@ -13,14 +13,13 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath("../peaksql"))
+# sys.path.insert(0, os.path.abspath("../peaksql"))
 
 
 # -- Project information -----------------------------------------------------
 
-project = "PeakSQL"
-copyright = "2020, Maarten van der Sande"
-author = "Maarten van der Sande"
+project = "seq2science"
+author = "Maarten van der Sande & Siebren Frolich"
 
 
 # -- General configuration ---------------------------------------------------
