@@ -16,75 +16,118 @@ def main():
     # set helpful paths
     base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     workflows_dir = os.path.join(base_dir, "workflows")
-    cwd = os.getcwd()
 
-    # setup the parser
-    parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers(dest="command")
-    init = subparsers.add_parser(
-        "init",
-        description="Initialise the workflow with an example config and samples file.",
-        help="Initialise the workflow with an example config and samples file.",
-    )
-    run = subparsers.add_parser(
-        "run", description="Run the complete workflow.", help="Run a complete workflow."
-    )
-    docs = subparsers.add_parser(
-        "docs", description="Take me to the docs (description).", help="Take me to the docs (help)."
-    )
-
-    for subparser in [init, run]:
-        subparser.add_argument("-c", "--config", default="config.yaml")
-        subparser.add_argument("workflow", choices=os.listdir(workflows_dir))
-
-    # allow users to provide virtually any snakemake arguments
-    run.add_argument("--kwargs", nargs="+", action=_StoreDictKeyPair, metavar="KEY=VAL")
+    parser = seq2science_parser(workflows_dir)
     args = parser.parse_args()
 
-    # turn all paths into absolute paths
-    config_path = args.config
-    if not os.path.isabs(args.config):
-        config_path = os.path.join(os.getcwd(), args.config)
+    # turn config path into absolute path
+    if args.command in ["init", "run"]:
+        config_path = args.config
+        if not os.path.isabs(args.config):
+            config_path = os.path.join(os.getcwd(), args.config)
 
+    # now run the command
     if args.command == "init":
-        _init(args, cwd, workflows_dir)
+        _init(args, workflows_dir, config_path)
     elif args.command == "run":
         _run(args, workflows_dir, config_path)
     elif args.command == "docs":
         _docs()
 
 
-def _init(args, cwd, workflows_dir):
+def seq2science_parser(workflows_dir):
     """
-    The init function...
+    Make the seq2science parser.
+    """
+    # setup the parser
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-v", "--version", action="version", version=f"seq2science: v{__version__}"
+    )
+    subparsers = parser.add_subparsers(dest="command")
+    subparsers.required = True
+    init = subparsers.add_parser(
+        "init",
+        description="Each workflow requires a configuration and samples file to run. "
+        'Running "seq2science init {workflow}" initialises a default '
+        "configuration and samples file for the specific workflow.",
+        help="Initialise a workflow with an example config and samples file.",
+    )
+    run = subparsers.add_parser(
+        "run",
+        description="Run a complete workflow. This requires that a config and samples file "
+        "are present. These files can be ",
+        help="Run a complete workflow.",
+    )
+    docs = subparsers.add_parser(
+        "docs",
+        description="The docs command tries to open your browser and open the docs' webpage, "
+        "if that didn't work it prints the url.",
+        help="Take me to the docs!",
+    )
+
+    for subparser in [init, run]:
+        subparser.add_argument(
+            "-c",
+            "--config",
+            default="config.yaml",
+            metavar="FILE",
+            help="The path to the config file.",
+        )
+        subparser.add_argument("workflow", choices=os.listdir(workflows_dir))
+
+    # allow users to provide virtually any snakemake arguments
+    run.add_argument(
+        "--cores",
+        required=True,
+        metavar="N",
+        type=int,
+        help="Use at most N cores in parallel.",
+    )
+    # TODO: how to call kwargs?
+    run.add_argument(
+        "--kwargs",
+        nargs="+",
+        action=_StoreDictKeyPair,
+        metavar="KEY=VAL",
+        help="Extra arguments to pass along to snakemake. An example could be seq2science run "
+        "{workflow} --cores 10 --kwargs dryrun=True. Take a look at the snakemake API for a "
+        "list of all possible options: https://snakemake.readthedocs.io/en/latest/api_reference/snakemake.html",
+    )
+
+    return parser
+
+
+def _init(args, workflows_dir, config_path):
+    """
+    Initialise a config.yaml and samples.tsv from the relevant workflow.
     """
     for file in ["samples.tsv", "config.yaml"]:
         src = os.path.join(workflows_dir, args.workflow, file)
-        dest = os.path.join(cwd, file)
+        dest = os.path.join(os.path.dirname(config_path), file)
+
         copy_file = True
         if os.path.exists(dest):
             choices = {"yes": True, "y": True, "no": False, "n": False}
 
-            sys.stdout.write("do you want to overtwtie?")
+            sys.stdout.write(
+                f"File: {dest} already exists. Do you want to overwrite it? (yes/no) "
+            )
             while True:
                 choice = input().lower()
                 if choice in choices:
                     copy_file = choices[choice]
                     break
                 else:
-                    sys.stdout.write("Please respond with yes (y) or no (n).")
+                    print("Please respond with yes (y) or no (n).")
 
         if copy_file:
-            shutil.copyfile(
-                os.path.join(workflows_dir, args.workflow, file),
-                os.path.join(cwd, file),
-            )
-    sys.exit(0)
+            shutil.copyfile(src, dest)
 
 
 def _run(args, workflows_dir, config_path):
     """
-    The run function...
+    Run a complete workflow.
     """
     if not os.path.exists(config_path):
         sys.stdout.write(
@@ -102,6 +145,9 @@ def _run(args, workflows_dir, config_path):
 
 
 def _docs():
+    """
+    Open a webbrowser to the docs, if that fails simply print the url.
+    """
     url = "https://github.com/vanheeringen-lab/snakemake-workflows/wiki"
     if not webbrowser.open(url):
         print(url)
@@ -109,7 +155,8 @@ def _docs():
 
 class _StoreDictKeyPair(argparse.Action):
     """
-    Solution taken from:
+    Class that allows us to take key=value pairs from command-line to feed to
+    snakemake. Solution taken from:
     https://stackoverflow.com/questions/29986185/python-argparse-dict-arg
     """
 
