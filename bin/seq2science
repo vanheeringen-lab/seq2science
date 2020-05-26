@@ -5,6 +5,7 @@ import os
 import shutil
 import json
 import webbrowser
+import re
 
 from snakemake import snakemake
 
@@ -30,7 +31,7 @@ def main():
     if args.command == "init":
         _init(args, workflows_dir, config_path)
     elif args.command == "run":
-        _run(args, workflows_dir, config_path)
+        _run(args, base_dir, workflows_dir, config_path)
     elif args.command == "docs":
         _docs()
 
@@ -66,32 +67,56 @@ def seq2science_parser(workflows_dir):
         help="Take me to the docs!",
     )
 
+    # both init and run can use all workflows
     for subparser in [init, run]:
-        subparser.add_argument(
-            "-c",
-            "--config",
-            default="config.yaml",
-            metavar="FILE",
-            help="The path to the config file.",
-        )
         subparser.add_argument("workflow", choices=os.listdir(workflows_dir))
 
-    # allow users to provide virtually any snakemake arguments
+    # setup init arguments
+    init.add_argument(
+        "--dir",
+        default=".",
+        metavar="PATH",
+        help="The path to the directory where to initialise the config and samples files.",
+    )
+
+    # setup run arguments
+    def minimum_cores(value):
+        ivalue = int(value)
+        if ivalue < 2:
+            raise argparse.ArgumentTypeError(f"Please provide 2 or more cores.")
+        return ivalue
+
+    run.add_argument(
+        "-c",
+        "--config",
+        default="config.yaml",
+        metavar="FILE",
+        help="The path to the config file.",
+    )
     run.add_argument(
         "--cores",
         required=True,
         metavar="N",
-        type=int,
+        type=minimum_cores,
         help="Use at most N cores in parallel.",
     )
-    # TODO: how to call kwargs?
     run.add_argument(
-        "--kwargs",
+        "-n", "--dryrun",
+        help="Do not execute anything, and display what would be done.",
+        action='store_true'
+    )
+    run.add_argument(
+        "--unlock",
+        help="Remove a lock on the working directory.",
+        action='store_true'
+    )
+    run.add_argument(
+        "--snakemakeOptions",
         nargs="+",
         action=_StoreDictKeyPair,
         metavar="KEY=VAL",
         help="Extra arguments to pass along to snakemake. An example could be seq2science run "
-        "{workflow} --cores 10 --kwargs dryrun=True. Take a look at the snakemake API for a "
+        "{workflow} --cores 10 --snakemakeOptions resources={mem_gb:100} local_cores=3. Take a look at the snakemake API for a "
         "list of all possible options: https://snakemake.readthedocs.io/en/latest/api_reference/snakemake.html",
     )
 
@@ -125,7 +150,7 @@ def _init(args, workflows_dir, config_path):
             shutil.copyfile(src, dest)
 
 
-def _run(args, workflows_dir, config_path):
+def _run(args, base_dir, workflows_dir, config_path):
     """
     Run a complete workflow.
     """
@@ -140,6 +165,12 @@ def _run(args, workflows_dir, config_path):
     exit_code = snakemake(
         snakefile=os.path.join(workflows_dir, args.workflow, "Snakefile"),
         configfiles=[config_path],
+        config={"rule_dir": os.path.join(base_dir, "rules")},
+        cores=args.cores,
+        use_conda=True,
+        conda_prefix=base_dir,
+        dryrun=args.dryrun,
+        **args.snakemakeOptions
     )
     sys.exit(exit_code)
 
@@ -170,7 +201,16 @@ class _StoreDictKeyPair(argparse.Action):
         my_dict = {}
         for kv in values:
             k, v = kv.split("=")
-            my_dict[k] = v
+            if v[0] == "{" and v[-1] == "}":
+                pairs = list(filter(None, re.split('{|:| |}', v)))
+                assert len(pairs) % 2 == 0
+                v = {pairs[i]: pairs[i+1] for i in range(0, len(pairs), 2)}
+                v = {k: int(v) if v.isdigit() else v for k, v in v.items()}
+            try:
+                my_dict[k] = int(v)
+            except:
+                my_dict[k] = v
+
         setattr(namespace, self.dest, my_dict)
 
 
