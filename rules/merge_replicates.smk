@@ -49,14 +49,17 @@ def rep_to_descriptive(rep):
 if 'replicate' in samples and config.get('technical_replicates') == 'merge':
     def get_merge_replicates(wildcards):
         output = dict()
-        output["reps"] = expand([f"{{trimmed_dir}}/{sample}{wildcards.fqext}_trimmed.{{fqsuffix}}.gz"
+        # since in the scATAC workflow an aditional rule called: "add_cell_id_2_fastq" adds the cell ID to the fastq and renames them 
+        # to include the "_cell_ID_added" to the fastq file name, if the workflow that is ran is the scATAC one the input file names
+        # of the merge replicate rule is changed to inlude the "_cell_ID_added" flagg. 
+        scATAC = "_cell_ID_added" if get_workflow() == "scATAC" else ""
+        output["reps"] = expand([f"{{trimmed_dir}}/{sample}{wildcards.fqext}_trimmed{scATAC}.{{fqsuffix}}.gz"
                          for sample in samples[samples['replicate'] == wildcards.replicate].index], **config)
-
         # make sure we make the fastqc report before moving our file
-        if len(output["reps"]) == 1 and config["create_qc_report"]:
-            output["qc"] = expand([f"{{qc_dir}}/fastqc/{sample}{wildcards.fqext}_trimmed_fastqc.zip"
+        if get_workflow() != "scATAC_seq" and len(output["reps"]) == 1 and config["create_qc_report"]:
+            print('if get_workflow() != "scATAC_seq" doesnt work')
+            output["qc"] = expand([f"{{qc_dir}}/fastqc/{sample}{wildcards.fqext}_trimmed{scATAC}_fastqc.zip"
                            for sample in samples[samples['replicate'] == wildcards.replicate].index], **config)
-        
         return output
 
     rule merge_replicates:

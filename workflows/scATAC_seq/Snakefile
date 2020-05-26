@@ -18,7 +18,6 @@ include: f"{config['rule_dir']}/qc.smk"
 include: f"{config['rule_dir']}/scATAC.smk"
 include: f"{config['rule_dir']}/trimming.smk"
 
-
 # set the quality_control functions
 quality_control = [get_trimming_qc, get_alignment_qc]
 
