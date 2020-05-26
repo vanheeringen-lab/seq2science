@@ -1,0 +1,131 @@
+#!/usr/bin/env python
+import sys
+import argparse
+import os
+import shutil
+import json
+import webbrowser
+
+from snakemake import snakemake
+
+
+__version__ = "0.0.0"
+
+
+def main():
+    # set helpful paths
+    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    workflows_dir = os.path.join(base_dir, "workflows")
+    cwd = os.getcwd()
+
+    # setup the parser
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(dest="command")
+    init = subparsers.add_parser(
+        "init",
+        description="Initialise the workflow with an example config and samples file.",
+        help="Initialise the workflow with an example config and samples file.",
+    )
+    run = subparsers.add_parser(
+        "run", description="Run the complete workflow.", help="Run a complete workflow."
+    )
+    docs = subparsers.add_parser(
+        "docs", description="Take me to the docs (description).", help="Take me to the docs (help)."
+    )
+
+    for subparser in [init, run]:
+        subparser.add_argument("-c", "--config", default="config.yaml")
+        subparser.add_argument("workflow", choices=os.listdir(workflows_dir))
+
+    # allow users to provide virtually any snakemake arguments
+    run.add_argument("--kwargs", nargs="+", action=_StoreDictKeyPair, metavar="KEY=VAL")
+    args = parser.parse_args()
+
+    # turn all paths into absolute paths
+    config_path = args.config
+    if not os.path.isabs(args.config):
+        config_path = os.path.join(os.getcwd(), args.config)
+
+    if args.command == "init":
+        _init(args, cwd, workflows_dir)
+    elif args.command == "run":
+        _run(args, workflows_dir, config_path)
+    elif args.command == "docs":
+        _docs()
+
+
+def _init(args, cwd, workflows_dir):
+    """
+    The init function...
+    """
+    for file in ["samples.tsv", "config.yaml"]:
+        src = os.path.join(workflows_dir, args.workflow, file)
+        dest = os.path.join(cwd, file)
+        copy_file = True
+        if os.path.exists(dest):
+            choices = {"yes": True, "y": True, "no": False, "n": False}
+
+            sys.stdout.write("do you want to overtwtie?")
+            while True:
+                choice = input().lower()
+                if choice in choices:
+                    copy_file = choices[choice]
+                    break
+                else:
+                    sys.stdout.write("Please respond with yes (y) or no (n).")
+
+        if copy_file:
+            shutil.copyfile(
+                os.path.join(workflows_dir, args.workflow, file),
+                os.path.join(cwd, file),
+            )
+    sys.exit(0)
+
+
+def _run(args, workflows_dir, config_path):
+    """
+    The run function...
+    """
+    if not os.path.exists(config_path):
+        sys.stdout.write(
+            f"The config file: {config_path} does not exist.\nProvide a path to the config file with "
+            f"--config or if you do not have a config file run:\n"
+            f"seq2science init {args.workflow}\n"
+        )
+        sys.exit(1)
+
+    exit_code = snakemake(
+        snakefile=os.path.join(workflows_dir, args.workflow, "Snakefile"),
+        configfiles=[config_path],
+    )
+    sys.exit(exit_code)
+
+
+def _docs():
+    url = "https://github.com/vanheeringen-lab/snakemake-workflows/wiki"
+    if not webbrowser.open(url):
+        print(url)
+
+
+class _StoreDictKeyPair(argparse.Action):
+    """
+    Solution taken from:
+    https://stackoverflow.com/questions/29986185/python-argparse-dict-arg
+    """
+
+    def __init__(self, option_strings, dest, nargs=None, **kwargs):
+        self._nargs = nargs
+        super(_StoreDictKeyPair, self).__init__(
+            option_strings, dest, nargs=nargs, **kwargs
+        )
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        my_dict = {}
+        for kv in values:
+            k, v = kv.split("=")
+            my_dict[k] = v
+        setattr(namespace, self.dest, my_dict)
+
+
+if __name__ == "__main__":
+    main()
