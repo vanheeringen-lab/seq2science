@@ -351,8 +351,12 @@ def get_qc_files(wildcards):
 
     # trimming qc on individual samples
     if get_trimming_qc in quality_control:
-        for sample in samples[samples['assembly'] == wildcards.assembly].index:
-            qc['files'].update(get_trimming_qc(sample))
+        if get_workflow() == "scATAC_seq":
+            for trep in treps[treps['assembly'] == wildcards.assembly].index:
+                qc['files'].update(get_trimming_qc(trep))
+        else:
+            for sample in samples[samples['assembly'] == wildcards.assembly].index:
+                qc['files'].update(get_trimming_qc(sample))
 
     # qc on merged technical replicates/samples
     if get_alignment_qc in quality_control:
@@ -399,10 +403,8 @@ rule multiqc:
 
 
 def get_trimming_qc(sample):
-    if get_workflow == "scATAC_seq":
-        return expand([f"{{qc_dir}}/fastqc/{samples.loc[sample, 'replicate']}_{{fqext}}_trimmed_fastqc.zip",
-                       f"{{qc_dir}}/trimming/{samples.loc[sample, 'replicate']}_{{fqext}}.{{fqsuffix}}.gz_trimming_report.txt"],
-                       **config)
+    if get_workflow() == "scATAC_seq":
+        return expand(f"{{qc_dir}}/fastqc/{sample}_{{fqext}}_trimmed_fastqc.zip", **config)
     else:
         if config['layout'][sample] == 'SINGLE':
             return expand([f"{{qc_dir}}/fastqc/{sample}_fastqc.zip",

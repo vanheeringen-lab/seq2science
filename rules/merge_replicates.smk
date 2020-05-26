@@ -52,7 +52,7 @@ if 'replicate' in samples and config.get('technical_replicates') == 'merge':
         # since in the scATAC workflow an aditional rule called: "add_cell_id_2_fastq" adds the cell ID to the fastq and renames them 
         # to include the "_cell_ID_added" to the fastq file name, if the workflow that is ran is the scATAC one the input file names
         # of the merge replicate rule is changed to inlude the "_cell_ID_added" flagg. 
-        scATAC = "_cell_ID_added" if get_workflow() == "scATAC" else ""
+        scATAC = "_cell_ID_added" if get_workflow() == "scATAC_seq" else ""
         output["reps"] = expand([f"{{trimmed_dir}}/{sample}{wildcards.fqext}_trimmed{scATAC}.{{fqsuffix}}.gz"
                          for sample in samples[samples['replicate'] == wildcards.replicate].index], **config)
         # make sure we make the fastqc report before moving our file
