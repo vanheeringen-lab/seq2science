@@ -1,4 +1,4 @@
-# workflows
+# Workflows
 ## Downloading fastqs
 Downloading public data in bulk from the NCBI & ENA databases has never been easier! See our [download fastq](https://github.com/vanheeringen-lab/snakemake-workflows/tree/master/workflows/download_fastq) workflow.
 

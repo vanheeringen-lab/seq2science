@@ -35,7 +35,7 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="filling out the samples.tsv and config.yaml" href="fillingout.html" />
+    <link rel="next" title="Filling out the samples.tsv and config.yaml" href="fillingout.html" />
     <link rel="prev" title="Welcome" href="home.html" /> 
 </head>
 
@@ -83,15 +83,15 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="home.html">Welcome</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Getting started</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#what-is-snakemake">What is Snakemake?</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#running-a-workflow">Running a workflow</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#where-does-the-workflow-store-results-and-looks-for-starting-points">Where does the workflow store results and looks for ‘starting points’?</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#useful-settings">Useful settings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#what-is-snakemake">What is Snakemake?</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="fillingout.html">filling out the samples.tsv and config.yaml</a></li>
-<li class="toctree-l1"><a class="reference internal" href="workflows.html">workflows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fillingout.html">Filling out the samples.tsv and config.yaml</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workflows.html">Workflows</a></li>
 <li class="toctree-l1"><a class="reference internal" href="results.html">Using the results</a></li>
 <li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions (FAQ)</a></li>
 </ul>
@@ -160,38 +160,10 @@
             
   <div class="section" id="getting-started">
 <h1>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="what-is-snakemake">
-<h2>What is Snakemake?<a class="headerlink" href="#what-is-snakemake" title="Permalink to this headline">¶</a></h2>
-<p>Snakemake is a pipeline tool that allows users to specify <em>rules</em>. Each rule is defined with what it requires as input, what it will output, and what command it needs to run to generate the output from the input. This design allows for the linking of many rules, where the input of one rule is the output of another. When invoking Snakemake it will then decide itself which rules need to be run for the output you specified.</p>
-<p>Here is an example Snakefile with just two (very simple) rules:</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>rule one:
-    output:
-        &quot;file1.txt&quot;
-    shell:
-        # for this example we just make an empty file
-        &quot;touch {output}&quot;
-
-rule two:
-    input:
-        &quot;file1.txt&quot;
-    output:
-        &quot;file2.txt&quot;
-    shell:
-        # for this example we just make an empty file
-        &quot;touch {output}&quot;
-</pre></div>
-</div>
-<p>We can tell snakemake to generate for instance file1.txt like this:</p>
-<p><code class="docutils literal notranslate"><span class="pre">snakemake</span> <span class="pre">file1.txt</span></code></p>
-<p>And snakemake will see that rule one can generate this output, sees that it requires no input, and executes the shell command. If we tell snakemake to generate file2.txt:</p>
-<p><code class="docutils literal notranslate"><span class="pre">snakemake</span> <span class="pre">file2.txt</span></code></p>
-<p>It will see that rule two needs to be run, takes a look at the required input for this rule, and checks whether file1.txt already exists. If it does, it will immediatly execute rule two, if file1.txt does not already exist it will execute rule one first.</p>
-<p>Our workflows work in a way that you specify which samples you have, and which workflow you want to run, and the workflow will decide which output corresponds to the combination of those samples and workflow. Snakemake will then take a look at all the rules that are defined, and will only use the ones that are required to generate the output specific to the workflow.</p>
-<p>For a more complete explanation of how snakemake works see the <a class="reference external" href="https://snakemake.readthedocs.io/">snakemake docs</a>.</p>
-</div>
 <div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
-<p>Installation of snakemake-workflows and all its dependencies is incredibly easy, and you won’t need administrator rights anywhere along the way! All you have to do is follow these three simple steps:</p>
+<p>TODO: conda instructions
+Installation of seq2science has been made easy! All you have to do is follow these three simple steps:</p>
 <ul class="simple">
 <li><p>Download and install <a class="reference external" href="https://www.anaconda.com/">anaconda</a></p>
 <ul>
@@ -214,7 +186,8 @@ rule two:
 </div>
 <div class="section" id="running-a-workflow">
 <h2>Running a workflow<a class="headerlink" href="#running-a-workflow" title="Permalink to this headline">¶</a></h2>
-<p>To run a workflow all you need to do is follow these simple steps:</p>
+<p>TODO: update for seq2science
+To run a workflow all you need to do is follow these simple steps:</p>
 <ul class="simple">
 <li><p>Change to a workflow directory (e.g. download_fastq)</p>
 <ul>
@@ -257,7 +230,8 @@ rule two:
 </div>
 <div class="section" id="useful-settings">
 <h2>Useful settings<a class="headerlink" href="#useful-settings" title="Permalink to this headline">¶</a></h2>
-<p>Snakemake has a lot of settings (see <a class="reference external" href="https://snakemake.readthedocs.io/en/stable/executable.html#all-options">here</a> for all settings), but here are a couple useful settings we recommend for starting users:</p>
+<p>TODO: update docs
+Snakemake has a lot of settings (see <a class="reference external" href="https://snakemake.readthedocs.io/en/stable/executable.html#all-options">here</a> for all settings), but here are a couple useful settings we recommend for starting users:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">--use-conda</span></code>: Every rule in this repository comes with a <em>conda environment</em>. This means that for every rule a set of dependencies is specified to execute that rule successfully. When the option use-conda is used snakemake will download and install this environment for each environment. It is virtually impossible to run these workflows without this option!</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--cores</span> <span class="pre">N</span></code>: The (maximum) amount of cores the workflow is allowed to use. Large parts of workflows can be executed in parallel (e.g. alignment of sample_1 and sample_2), and some applications even allow for <em>multithreading</em>. With this option you can make full use of your computer/server.</p></li>
@@ -266,6 +240,43 @@ rule two:
 <p>A typical call to the workflow then look like this:</p>
 <p><code class="docutils literal notranslate"><span class="pre">snakemake</span> <span class="pre">--cores</span> <span class="pre">48</span> <span class="pre">--use-conda</span> <span class="pre">--keep-going</span></code></p>
 <p>Take a look at <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/wiki/1.3-Making-a-snakemake-profile">making a snakemake profile</a> for making a profile in which you can specify default behaviour.</p>
+</div>
+<div class="section" id="what-is-snakemake">
+<h2>What is Snakemake?<a class="headerlink" href="#what-is-snakemake" title="Permalink to this headline">¶</a></h2>
+<p>Since all these workflows are based on <a class="reference external" href="https://snakemake.readthedocs.io/en/stable/">Snakemake</a>
+These workflows are all based on <a class="reference external" href="https://snakemake.readthedocs.io/en/stable/">Snakemake</a>, allowing for <strong>reproducible</strong> and <strong>scalable</strong> workflows.</p>
+<ul class="simple">
+<li><p>Automated installation of dependencies in self-contained environments through <a class="reference external" href="https://www.anaconda.com/">anaconda</a></p></li>
+<li><p>Re-running the pipeline, either with a new configuration or new samples, is effortless</p></li>
+<li><p>Can be run either on personal computers or superclusters, e.g. surfsara, with minimal finetuning</p></li>
+<li><p>Is an extension on the Python language, which means easy to read (and maintain)</p></li>
+</ul>
+<p>Snakemake is a pipeline tool that allows users to specify <em>rules</em>. Each rule is defined with what it requires as input, what it will output, and what command it needs to run to generate the output from the input. This design allows for the linking of many rules, where the input of one rule is the output of another. When invoking Snakemake it will then decide itself which rules need to be run for the output you specified.</p>
+<p>Here is an example Snakefile with just two (very simple) rules:</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>rule one:
+    output:
+        &quot;file1.txt&quot;
+    shell:
+        # for this example we just make an empty file
+        &quot;touch {output}&quot;
+
+rule two:
+    input:
+        &quot;file1.txt&quot;
+    output:
+        &quot;file2.txt&quot;
+    shell:
+        # for this example we just make an empty file
+        &quot;touch {output}&quot;
+</pre></div>
+</div>
+<p>We can tell snakemake to generate for instance file1.txt like this:</p>
+<p><code class="docutils literal notranslate"><span class="pre">snakemake</span> <span class="pre">file1.txt</span></code></p>
+<p>And snakemake will see that rule one can generate this output, sees that it requires no input, and executes the shell command. If we tell snakemake to generate file2.txt:</p>
+<p><code class="docutils literal notranslate"><span class="pre">snakemake</span> <span class="pre">file2.txt</span></code></p>
+<p>It will see that rule two needs to be run, takes a look at the required input for this rule, and checks whether file1.txt already exists. If it does, it will immediatly execute rule two, if file1.txt does not already exist it will execute rule one first.</p>
+<p>Our workflows work in a way that you specify which samples you have, and which workflow you want to run, and the workflow will decide which output corresponds to the combination of those samples and workflow. Snakemake will then take a look at all the rules that are defined, and will only use the ones that are required to generate the output specific to the workflow.</p>
+<p>For a more complete explanation of how snakemake works see the <a class="reference external" href="https://snakemake.readthedocs.io/">snakemake docs</a>.</p>
 </div>
 </div>
 
@@ -277,7 +288,7 @@ rule two:
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="fillingout.html" class="btn btn-neutral float-right" title="filling out the samples.tsv and config.yaml" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="fillingout.html" class="btn btn-neutral float-right" title="Filling out the samples.tsv and config.yaml" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="home.html" class="btn btn-neutral float-left" title="Welcome" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

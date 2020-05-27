@@ -1,4 +1,4 @@
-# filling out the samples.tsv and config.yaml
+# Filling out the samples.tsv and config.yaml
 
 ## Filling out the samples.tsv
 Before running a workflow you will have to specify which samples you want to run the workflow on. Each workflow starts with a `samples.tsv` as an example, and you should adapt it to your specific needs. As an example `samples.tsv` could look like this, but not all columns are always necessary or required:
