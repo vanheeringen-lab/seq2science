@@ -25,6 +25,7 @@ jobs:
 
       - name: Build 🔧
         run: |
+          python docs/schemas.py
           sphinx-build docs/ build
           touch build/.nojekyll
 
