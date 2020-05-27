@@ -35,6 +35,9 @@ GSM890    danRer11
 ```
 Using this file in the alignment workflow will output *heart.bam*, *stage8.bam* and *GSM890.bam*. The MultiQC will inform you of the trimming steps performed on all samples, and subsequent information of the 'replicate' files (of which only *heart* is merged).
 
+##### Technical replicates for scATAC-seq
+Cells processed together (e.g. sequenced from the same 384w plate) should get the same technical sample name. If your single cell experiment is from a single technical replicate (e.g. a microfluidics experiment), give all the individual cells the same technical sample name.
+
 ##### Notes ####
 If you are working with multiple assemblies in one workflow, replicate names have to be unique between assemblies (you will receive a warning if names overlap).
 
