@@ -13,3 +13,4 @@
    workflows
    results
    faq
+   schemas

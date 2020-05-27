@@ -87,13 +87,13 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Workflows</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#downloading-fastqs">Downloading fastqs</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#pipeline-steps">Pipeline steps</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#download-sra">Download SRA</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#fastq-dump">fastq-dump</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#download-sra-file">Download SRA file</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dump-the-sra-file-to-a-fastq-file">“Dump” the SRA file to a fastq file</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#best-practices">Best practices</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#filetype-extensions-and-paired-end-suffix">Filetype extensions and paired-end suffix</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#downloading-with-ascp">Downloading with ascp</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#filetype-extensions-and-paired-end-suffix">Filetype extensions and paired-end suffix</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#downloading-many-samples">Downloading many samples</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#fastq-dump-options">Fastq-dump options</a></li>
 </ul>
@@ -186,6 +186,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="results.html">Using the results</a></li>
 <li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions (FAQ)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="schemas.html">All options</a></li>
 </ul>
 
             
@@ -254,47 +255,43 @@
 <h1>Workflows<a class="headerlink" href="#workflows" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="downloading-fastqs">
 <h2>Downloading fastqs<a class="headerlink" href="#downloading-fastqs" title="Permalink to this headline">¶</a></h2>
-<p>Downloading public data in bulk from the NCBI &amp; ENA databases has never been easier! See our <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/tree/master/workflows/download_fastq">download fastq</a> workflow.</p>
+<p>Downloading public data in bulk from the NCBI, ENA, and DDBJ databases has never been easier or faster!</p>
 <div class="section" id="pipeline-steps">
 <h3>Pipeline steps<a class="headerlink" href="#pipeline-steps" title="Permalink to this headline">¶</a></h3>
-<div class="section" id="download-sra">
-<h4>Download SRA<a class="headerlink" href="#download-sra" title="Permalink to this headline">¶</a></h4>
-<p>Most databases do not store fastq’s, but they all store the raw data. For this reason for each sample submitted the raw data is downloaded. To convert this data to a fastq it has to be <em>dumped</em>.</p>
+<p>TODO: image of steps</p>
+<div class="section" id="download-sra-file">
+<h4>Download SRA file<a class="headerlink" href="#download-sra-file" title="Permalink to this headline">¶</a></h4>
+<p>Most databases do not store the actual fastqs, but they do all store the raw data (as a sra file). For this reason for each sample submitted the sra is downloaded. To convert this data to a fastq it has to be <em>dumped</em>.</p>
 </div>
-<div class="section" id="fastq-dump">
-<h4>fastq-dump<a class="headerlink" href="#fastq-dump" title="Permalink to this headline">¶</a></h4>
-<p>The second step is translating (dumping) the raw data to a fastq file.</p>
+<div class="section" id="dump-the-sra-file-to-a-fastq-file">
+<h4>“Dump” the SRA file to a fastq file<a class="headerlink" href="#dump-the-sra-file-to-a-fastq-file" title="Permalink to this headline">¶</a></h4>
+<p>The second step is translating (dumping) the sra file to a fastq file.</p>
 </div>
 </div>
 <div class="section" id="best-practices">
 <h3>Best practices<a class="headerlink" href="#best-practices" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="downloading-with-ascp">
+<h4>Downloading with ascp<a class="headerlink" href="#downloading-with-ascp" title="Permalink to this headline">¶</a></h4>
+<p>ascp is a downloading protocol that allows for (sometimes much) faster speeds. If you have ascp installed you can make the workflow download through this protocol. You can specify the path to the binary in the config.yaml by key <code class="docutils literal notranslate"><span class="pre">ascp_path</span></code> and the ascp key in the config by key <code class="docutils literal notranslate"><span class="pre">ascp_key</span></code>:</p>
+<p>See this <a class="reference external" href="https://gist.github.com/mfansler/71f09c8b6c9a95ec4e759a8ffc488be3">gist</a> for an easy installation of ascp.</p>
+</div>
 <div class="section" id="filetype-extensions-and-paired-end-suffix">
 <h4>Filetype extensions and paired-end suffix<a class="headerlink" href="#filetype-extensions-and-paired-end-suffix" title="Permalink to this headline">¶</a></h4>
-<p>The pipeline will save fastq files in the <em>fastq_dir</em> directory, which is located in the <em>result_dir</em> directory by default. Fastqs already present in this directory will not be downloaded (again).</p>
-<p>People and tools have different preferences for storing their data. One of these differences is how to name the fastq.gz files. Some people/tools prefer <code class="docutils literal notranslate"><span class="pre">fastq.gz</span></code>, while others prefer <code class="docutils literal notranslate"><span class="pre">fq.gz</span></code>. By default the pipeline names files with the fastq.gz extension. However if you prefer to change this you can set the variable <em>fqsuffix</em> accordingly.</p>
-<p>The same goes for paired-end suffix conventions. Some people prefer for instance <code class="docutils literal notranslate"><span class="pre">sample_pass_1</span></code>, whilst others prefer <code class="docutils literal notranslate"><span class="pre">sample_R1</span></code> (the default). You can use your preferred suffix by setting variables <em>fqext1</em> and <em>fqext2</em>.
-Additionally, the pipeline will search the <em>fastq_dir</em> directory for paired-ended files with unrecognized fqexts and attempt to parse them for you. As long as the suffixes are lexicographically ordered (R1 &gt; R2, pass1 &gt; pass2), you can ignore the <em>fqext</em> parameters.</p>
-<p>In the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>:</p>
+<p>The pipeline will save fastq files in the <em>fastq_dir</em> directory, which is located in the <em>result_dir</em> directory by default.</p>
+<p>People and tools have different preferences for storing their data. One of these differences is how to name the fastq.gz files. Some people/tools prefer <code class="docutils literal notranslate"><span class="pre">fastq.gz</span></code>, while others prefer <code class="docutils literal notranslate"><span class="pre">fq.gz</span></code>. By default the pipeline names files with the fastq.gz extension. However if you prefer to change this you can set the variable <em>fqsuffix</em> accordingly.
+The same goes for paired-end suffix conventions, most people prefer <code class="docutils literal notranslate"><span class="pre">sample_R1</span></code> which is our default. However you can use your preferred suffix by setting variables <em>fqext1</em> and <em>fqext2</em>.</p>
+<p>In the`config.yaml:</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">fastq_dir: ./my_first_fastq_dir</span>
 
-fqsuffix: fq
+fqsuffix: fastq
 fqext1: R1
 fqext2: R2
 </pre></div>
 </div>
-<p>or on the command line:</p>
-<p><code class="docutils literal notranslate"><span class="pre">snakemake</span> <span class="pre">--config</span> <span class="pre">fastq_dir=./my_first_fastq_dir</span> <span class="pre">fsuffix=fq</span> <span class="pre">fqext1=R1</span> <span class="pre">fqext2=R2</span></code></p>
-</div>
-<div class="section" id="downloading-with-ascp">
-<h4>Downloading with ascp<a class="headerlink" href="#downloading-with-ascp" title="Permalink to this headline">¶</a></h4>
-<p>ascp is a downloading protocol that allows for (sometimes much) faster speeds. If you have ascp installed you can make the workflow download through this protocol. You can specify the path to the binary in the config.yaml by key ascp_path and the ascp key in the config by key ascp_key. Or you could simply append the config on the command line, e.g.;</p>
-<p><code class="docutils literal notranslate"><span class="pre">snakemake</span> <span class="pre">--config</span> <span class="pre">ascp_key=$HOME/.aspera/connect/etc/asperaweb_id_dsa.openssh</span> <span class="pre">ascp_path=$HOME/.aspera/connect/bin/ascp</span></code></p>
-<p>See this <a class="reference external" href="https://gist.github.com/mfansler/71f09c8b6c9a95ec4e759a8ffc488be3">gist</a> for easy installation of ascp.</p>
 </div>
 <div class="section" id="downloading-many-samples">
 <h4>Downloading many samples<a class="headerlink" href="#downloading-many-samples" title="Permalink to this headline">¶</a></h4>
-<p>Before the pipeline starts downloading it will first determine whether the samples are paired-end or single-end. This is done by doing two requests per sample with the ncbi tools. Unregistered accounts can only make 3 requests per second. This means that initialization takes +/- 0.66s per sample. If you are an extremely impatient person like me, you can up these numbers a with a <a class="reference external" href="https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/">ncbi api key</a> (their default one allows 10 request p/s). You can set the variables <em>ncbi_key</em> and <em>ncbi_requests</em> accordingly in the config.yaml, or on the command line, e.g.;</p>
-<p><code class="docutils literal notranslate"><span class="pre">snakemake</span> <span class="pre">--config</span> <span class="pre">ncbi_key=123456789</span> <span class="pre">ncbi_requests=10</span></code></p>
+<p>Before the pipeline starts downloading it will first determine whether the samples are paired-end or single-end. This is done by doing two requests per sample with the ncbi tools. Unregistered accounts can only make 3 requests per second. This means that initialization takes +/- 0.66s per sample. If you are an extremely impatient person, like us, you can up these numbers a with a <a class="reference external" href="https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/">ncbi api key</a> (their default one allows 10 request p/s). You can set the variables <em>ncbi_key</em> and <em>ncbi_requests</em> (the nr of requests per second) accordingly in the config.yaml.</p>
 <p>The results of these lookups get cached, so when re-running parts of the workflow with the same samples no lookup online is required.</p>
 </div>
 <div class="section" id="fastq-dump-options">
@@ -343,6 +340,7 @@ fqext2: R2
 </div>
 <div class="section" id="id3">
 <h3>Best practices<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<p>Additionally, the pipeline will search the <em>fastq_dir</em> directory for paired-ended files with unrecognized fqexts and attempt to parse them for you. As long as the suffixes are lexicographically ordered (R1 &gt; R2, pass1 &gt; pass2), you can ignore the <em>fqext</em> parameters.</p>
 <div class="section" id="automated-downloading-of-fastq">
 <h4>(Automated) downloading of fastq<a class="headerlink" href="#automated-downloading-of-fastq" title="Permalink to this headline">¶</a></h4>
 <p>Alignment can be done with local fastq files, downloaded files, or a mix of those. Make sure to take a look at our downloading fastq <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/wiki/2.-Downloading-samples">best practices</a> when making use of the downloading functionality.</p>

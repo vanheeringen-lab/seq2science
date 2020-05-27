@@ -1,0 +1,455 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>All options &mdash; seq2science  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Frequently Asked Questions (FAQ)" href="faq.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> seq2science
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="home.html">Welcome</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gettingstarted.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fillingout.html">Filling out the samples.tsv and config.yaml</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workflows.html">Workflows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="results.html">Using the results</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions (FAQ)</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">All options</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#general">general</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#alignment-sth">alignment sth</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#alignment">alignment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#peak-calling-chip-atac">peak calling (ChIP &amp; ATAC)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#gene-expression-rna-seq">gene expression (RNA-seq)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#trackhub">trackhub</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">seq2science</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>All options</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/schemas.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="all-options">
+<h1>All options<a class="headerlink" href="#all-options" title="Permalink to this headline">¶</a></h1>
+<p>This is an automatically generated …</p>
+<div class="section" id="general">
+<h2>general<a class="headerlink" href="#general" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">samples:</span>
+<span class="c">    description: tab-separated file specifying the samples to run through the workflow</span>
+<span class="c">        default: samples.tsv</span>
+<span class="c">           type: string</span>
+</pre></div>
+</div>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">rule_dir:</span>
+<span class="c">    description: directory where to find the workflow rules</span>
+<span class="c">        default: ../../rules</span>
+<span class="c">           type: string</span>
+</pre></div>
+</div>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">result_dir:</span>
+<span class="c">    description: where to store the pipeline&#39;s results (by default)</span>
+<span class="c">        default: ./</span>
+<span class="c">           type: string</span>
+</pre></div>
+</div>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">genome_dir:</span>
+<span class="c">    description: where to store the pipeline&#39;s genome assemblies</span>
+<span class="c">        default: ./</span>
+<span class="c">           type: string</span>
+</pre></div>
+</div>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">log_dir:</span>
+<span class="c">    description: directory where to store the logs (defaults inside the result dir)</span>
+<span class="c">        default: log</span>
+<span class="c">           type: string</span>
+</pre></div>
+</div>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">benchmark_dir:</span>
+<span class="c">    description: directory where to store the logs (defaults inside the result dir)</span>
+<span class="c">        default: benchmark</span>
+<span class="c">           type: string</span>
+</pre></div>
+</div>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">fqext1:</span>
+<span class="c">    description: filename suffix when handling paired-end data, describing the forward read</span>
+<span class="c">        default: R1</span>
+<span class="c">           type: string</span>
+</pre></div>
+</div>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">fqext2:</span>
+<span class="c">    description: filename suffix when handling paired-end data, describing the reverse read</span>
+<span class="c">        default: R2</span>
+<span class="c">           type: string</span>
+</pre></div>
+</div>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">fqsuffix:</span>
+<span class="c">    description: file descriptor for fastq files (often fastq or fq)</span>
+<span class="c">        default: fastq</span>
+<span class="c">           type: string</span>
+</pre></div>
+</div>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">cpulimit:</span>
+<span class="c">    description: whether or not to make use of cpulimit to enfoce max thread usage for some rules</span>
+<span class="c">        default: True</span>
+<span class="c">           type: boolean</span>
+</pre></div>
+</div>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">email:</span>
+<span class="c">    description: email to reach you after pipeline finished, required for trackhub and multiqc report</span>
+<span class="c">        default: none@provided.com</span>
+<span class="c">           type: string</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="alignment-sth">
+<h2>alignment sth<a class="headerlink" href="#alignment-sth" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">bam_sorter:</span>
+<span class="c">    description: which sorting software to use</span>
+<span class="c">           type: object</span>
+<span class="c">     properties: {&#39;description&#39;: &#39;sort order of aligned reads&#39;, &#39;default&#39;: &#39;coordinate&#39;, &#39;enum&#39;: [&#39;queryname&#39;, &#39;coordinate&#39;], &#39;type&#39;: &#39;string&#39;}</span>
+<span class="c">        default: {&#39;samtools&#39;: &#39;coordinate&#39;}</span>
+</pre></div>
+</div>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">cram_no_bam:</span>
+<span class="c">    description: whether to store cram instead of bam</span>
+<span class="c">           type: boolean</span>
+<span class="c">        default: False</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="alignment">
+<h2>alignment<a class="headerlink" href="#alignment" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">trimmed_dir:</span>
+<span class="c">    description: directory where to store the workflow trimmed fastqs (defaults inside the result dir)</span>
+<span class="c">        default: fastq_trimmed</span>
+<span class="c">           type: string</span>
+</pre></div>
+</div>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">qc_dir:</span>
+<span class="c">    description: directory where to store the workflow quality controls (defaults inside the result dir)</span>
+<span class="c">        default: qc</span>
+<span class="c">           type: string</span>
+</pre></div>
+</div>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">dedup_dir:</span>
+<span class="c">    description: directory where to store the workflow deduplicated alignment (defaults inside the result dir)</span>
+<span class="c">        default: dedup</span>
+<span class="c">           type: string</span>
+</pre></div>
+</div>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">trim_galore:</span>
+<span class="c">    description: trim_galore settings (note that the adapter is autodetected, so you do not have to set it here)</span>
+<span class="c">        default: --quality 10 --length 20 --consider_already_trimmed 10</span>
+<span class="c">           type: string</span>
+</pre></div>
+</div>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">technical_replicates:</span>
+<span class="c">    description: concatenates samples depending on the names given in the &#39;replicates&#39; column of samples.tsv</span>
+<span class="c">        default: merge</span>
+<span class="c">           enum: [&#39;merge&#39;, &#39;keep&#39;]</span>
+</pre></div>
+</div>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">biological_replicates:</span>
+<span class="c">    description: which method to use to combine replicates (fisher (n &gt;=2), idr (n==2), or keep)</span>
+<span class="c">        default: keep</span>
+<span class="c">           enum: [&#39;fisher&#39;, &#39;idr&#39;, &#39;keep&#39;]</span>
+<span class="c">           type: string</span>
+</pre></div>
+</div>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">aligner:</span>
+<span class="c">    description: which aligner to use</span>
+<span class="c">     properties: {&#39;bowtie2&#39;: {&#39;properties&#39;: {&#39;index&#39;: {&#39;default&#39;: &#39;&#39;}, &#39;align&#39;: {&#39;default&#39;: &#39;&#39;}}, &#39;default&#39;: {&#39;index&#39;: &#39;&#39;, &#39;align&#39;: &#39;&#39;}}, &#39;bwa&#39;: {&#39;properties&#39;: {&#39;index&#39;: {&#39;default&#39;: &#39;-a bwtsw&#39;}, &#39;align&#39;: {&#39;default&#39;: &#39;-M&#39;}}, &#39;default&#39;: {&#39;index&#39;: &#39;-a bwtsw&#39;, &#39;align&#39;: &#39;-M&#39;}}, &#39;hisat2&#39;: {&#39;properties&#39;: {&#39;index&#39;: {&#39;default&#39;: &#39;&#39;}, &#39;align&#39;: {&#39;default&#39;: &#39;&#39;}}, &#39;default&#39;: {&#39;index&#39;: &#39;&#39;, &#39;align&#39;: &#39;&#39;}}, &#39;star&#39;: {&#39;properties&#39;: {&#39;index&#39;: {&#39;default&#39;: &#39;--limitGenomeGenerateRAM 37000000000 --genomeSAsparseD 1&#39;}, &#39;align&#39;: {&#39;default&#39;: &#39;&#39;}}, &#39;default&#39;: {&#39;index&#39;: &#39;--limitGenomeGenerateRAM 37000000000 --genomeSAsparseD 1&#39;, &#39;align&#39;: &#39;&#39;}}}</span>
+<span class="c">        default: {&#39;bwa&#39;: {&#39;index&#39;: &#39;-a bwtsw&#39;, &#39;align&#39;: &#39;&#39;}}</span>
+</pre></div>
+</div>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">samtools_index:</span>
+<span class="c">    description: samtools index settings</span>
+<span class="c">        default:</span>
+<span class="c">           type: string</span>
+</pre></div>
+</div>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">markduplicates:</span>
+<span class="c">    description: the parameters of picard markduplicates</span>
+<span class="c">        default: REMOVE_DUPLICATES=false -Xms4G -Xmx6G MAX_FILE_HANDLES_FOR_READ_ENDS_MAP=999</span>
+<span class="c">           type: string</span>
+</pre></div>
+</div>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">min_mapping_quality:</span>
+<span class="c">        default: 0</span>
+<span class="c">           type: integer</span>
+</pre></div>
+</div>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">tn5_shift:</span>
+<span class="c">        default: False</span>
+<span class="c">           type: boolean</span>
+</pre></div>
+</div>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">remove_blacklist:</span>
+<span class="c">        default: False</span>
+</pre></div>
+</div>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">remove_mito:</span>
+<span class="c">        default: False</span>
+</pre></div>
+</div>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">only_primary_align:</span>
+<span class="c">        default: False</span>
+</pre></div>
+</div>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">create_qc_report:</span>
+<span class="c">        default: True</span>
+<span class="c">           type: boolean</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="peak-calling-chip-atac">
+<h2>peak calling (ChIP &amp; ATAC)<a class="headerlink" href="#peak-calling-chip-atac" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">peak_caller:</span>
+<span class="c">           type: object</span>
+<span class="c">     properties: {&#39;genrich&#39;: {&#39;type&#39;: &#39;string&#39;}, &#39;hmmratac&#39;: {&#39;type&#39;: &#39;string&#39;}, &#39;macs2&#39;: {&#39;type&#39;: &#39;string&#39;}}</span>
+<span class="c">  minProperties: 1</span>
+<span class="c">additionalProperties: False</span>
+<span class="c">        default: {&#39;macs2&#39;: &#39;--shift -100 --extsize 200 --nomodel --keep-dup 1 --buffer-size 10000&#39;}</span>
+</pre></div>
+</div>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">macs2_keep_mates:</span>
+<span class="c">    description: which method to use to combine replicates (idr or fisher)</span>
+<span class="c">        default: False</span>
+<span class="c">           type: boolean</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="gene-expression-rna-seq">
+<h2>gene expression (RNA-seq)<a class="headerlink" href="#gene-expression-rna-seq" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">counts_dir:</span>
+<span class="c">    description: directory where to store the gene counts for DGE analysis (defaults inside the result dir)</span>
+<span class="c">        default: gene_counts</span>
+<span class="c">           type: string</span>
+</pre></div>
+</div>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">dge_dir:</span>
+<span class="c">    description: directory where to store the workflow differential gene analysis output (defaults inside the result dir)</span>
+<span class="c">        default: deseq2</span>
+<span class="c">           type: string</span>
+</pre></div>
+</div>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">quantifier:</span>
+<span class="c">    description: which quantifier to use</span>
+<span class="c">     properties: {&#39;star&#39;: {&#39;properties&#39;: {&#39;quantify&#39;: {&#39;default&#39;: &#39;&#39;}}, &#39;default&#39;: {&#39;quantify&#39;: &#39;&#39;}}, &#39;salmon&#39;: {&#39;properties&#39;: {&#39;quantifier_index&#39;: {&#39;default&#39;: &#39;-k 31&#39;}, &#39;quantify&#39;: {&#39;default&#39;: &#39;--seqBias --gcBias --validateMappings --recoverOrphans&#39;}, &#39;decoy_aware_index&#39;: {&#39;default&#39;: False}}, &#39;default&#39;: {&#39;quantifier_index&#39;: &#39;-k 31&#39;, &#39;quantify&#39;: &#39;--seqBias --gcBias --validateMappings --recoverOrphans&#39;, &#39;decoy_aware_index&#39;: False}}}</span>
+<span class="c">        default: {&#39;star&#39;: {&#39;quantify&#39;: &#39;&#39;}}</span>
+</pre></div>
+</div>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">tximeta:</span>
+<span class="c">    description: tximeta is used to convert salmon output (estimated transcript abundances) to a gene counts matrix. Currently, these values can be ignored.</span>
+<span class="c">     properties: {&#39;source&#39;: {&#39;default&#39;: &#39;Ensembl&#39;}, &#39;organism&#39;: {&#39;default&#39;: &#39;tximeta_file&#39;}, &#39;release&#39;: {&#39;default&#39;: 42}}</span>
+<span class="c">        default: {&#39;soure&#39;: &#39;Ensembl&#39;, &#39;organism&#39;: &#39;tximeta_file&#39;, &#39;release&#39;: 42}</span>
+</pre></div>
+</div>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">diffexp:</span>
+<span class="c">    description: which differential expression analysis to use (DESeq2 or None, default is None). Will not run without a contrast.</span>
+<span class="c">           type: object</span>
+<span class="c">     properties: {&#39;deseq2&#39;: {&#39;properties&#39;: {&#39;DE_params&#39;: {&#39;default&#39;: {&#39;multiple_testing_procedure&#39;: &#39;BH&#39;, &#39;alpha_value&#39;: 0.05, &#39;shrinkage_estimator&#39;: &#39;apeglm&#39;}}, &#39;contrasts&#39;: {&#39;default&#39;: &#39;&#39;}}, &#39;default&#39;: {&#39;contrasts&#39;: &#39;&#39;}}}</span>
+<span class="c">        default: {&#39;None&#39;: {&#39;contrasts&#39;: &#39;&#39;}}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="trackhub">
+<h2>trackhub<a class="headerlink" href="#trackhub" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">create_trackhub:</span>
+<span class="c">    description: skip generation of bams (except for workflow alignment), bigwigs and a trackhub</span>
+<span class="c">        default: True</span>
+<span class="c">           enum: [True, False]</span>
+</pre></div>
+</div>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">deeptools:</span>
+<span class="c">    description: option flags for bam to bigwig conversions with deeptools bamCoverage</span>
+<span class="c">        default: --samFlagExclude 1024</span>
+</pre></div>
+</div>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">filter_bam_by_strand:</span>
+<span class="c">    description: split bigwigs by strand?</span>
+<span class="c">        default: True</span>
+<span class="c">           enum: [True, False]</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="faq.html" class="btn btn-neutral float-left" title="Frequently Asked Questions (FAQ)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
