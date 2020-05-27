@@ -558,7 +558,7 @@ rule trackhub:
 
             for assembly in set(samples['assembly']):
                 assembly_uscs = get_ucsc_name(assembly)[1]
-                # add each assembly to the genomes file
+                # add each assembly to the genomes file, make assembly hub if not supported else trackhub
                 if hasattr(input, 'twobits') and any(assembly in twobit for twobit in input.twobits):
                     basename = f"{config['genome_dir']}/{assembly}/{assembly}"
                     genome = trackhub.Assembly(
