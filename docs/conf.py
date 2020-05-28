@@ -19,8 +19,8 @@ import sys
 # -- Project information -----------------------------------------------------
 
 project = "seq2science"
-author = "Maarten van der Sande & Siebren Frolich"
-
+author = "Maarten van der Sande & Siebren Frölich"
+copyright = "Maarten van der Sande, Siebren Frölich, Jos Smits, & Simon van Heeringen."
 
 # -- General configuration ---------------------------------------------------
 
@@ -39,7 +39,6 @@ def autodoc_skip_member(app, what, name, obj, skip, options):
 
 def setup(app):
     app.connect("autodoc-skip-member", autodoc_skip_member)
-
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -62,4 +61,14 @@ html_theme = "sphinx_rtd_theme"
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ["_static"]
+# html_static_path = ["_static"]
+
+html_context = {
+    "display_github": True,
+    "github_host": "github.com",
+    "github_user": "vanheeringen-lab",
+    "github_repo": "seq2science",
+    "github_version": "master",
+    "conf_py_path": "/docs/",
+    "source_suffix": ".rst",
+}
