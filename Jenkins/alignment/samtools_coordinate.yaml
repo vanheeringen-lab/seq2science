@@ -4,7 +4,13 @@ samples: ../../Jenkins/alignment/local_sample.tsv
 # pipeline file locations
 result_dir: ../../Jenkins_results  # where to store results
 genome_dir: ../../Jenkins  # where to look for or download the genomes
-fastq_dir: ../../Jenkins/tinyfastq  # where to look for or download the fastqs
+fastq_dir: ../../Jenkins/dag_fastqs  # where to look for or download the fastqs
+
+# produce bigwigs and a trackhub?
+create_trackhub: False
+
+# produce MultiQC output?
+create_qc_report: False
 
 # how to sort bam
 bam_sorter:
