@@ -6,3 +6,6 @@ The first thing the pipeline does is making separate conda environments for the 
 ## I changed the config/samples file but seq2science does not rerun
 TODO: we should support rerunning!
 Seq2science (actually Snakemake) has a "lazy" policy regarding the generation of files. 
+
+## Failed to call external services.
+TODO explain that downloading can fail on server side. Retry later
