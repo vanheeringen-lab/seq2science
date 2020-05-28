@@ -1,2 +1,2 @@
 cd into workflow
-$ snakemake --profile passer --rulegraph | dot -Tsvg > graph.svg
+$ snakemake --profile passer --dag | dot -Tsvg > graph.svg
