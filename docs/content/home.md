@@ -1,4 +1,4 @@
-![alt text](/build/_static/seq2science.png "seq2science")
+![alt text](snakemake-workflows/_static/seq2science.png "seq2science")
 
 # Welcome
 Even though most next-generation sequencing analyses require specific and custom tools, they generally share the same design. Seq2science is the attempt of the *van heeringen lab* to generate a collection of generic pipelines/workflows which can be used by complete beginners to bioinformatics and experienced bioinformaticians alike.
@@ -13,4 +13,4 @@ Some of seq2science's features:
 * And many more...
 
 ## First time users
-Please take a look at our [getting started](https://github.com/vanheeringen-lab/snakemake-workflows/wiki/1.-Getting-started) section.
+Please take a look at our [getting started](/snakemake-workflows/build/content/gettingstarted.md) section.

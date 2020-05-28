@@ -4,22 +4,20 @@
 [![fork this repo](https://img.shields.io/github/forks/vanheeringen-lab/snakemake-workflows?style=flat&color=brightgreen)](https://github.com/vanheeringen-lab/snakemake-workflows/fork)
 [![docs](https://github.com/vanheeringen-lab/snakemake-workflows/workflows/docs/badge.svg)](https://vanheeringen-lab.github.io/snakemake-workflows/index.html)
 
-The comprehensive snakemake workflows repository of the *van heeringen lab*. Please take a look at our [docs](https://github.com/vanheeringen-lab/snakemake-workflows/wiki) for help with installation, how to run it, and best practices.
+Seq2science is the attempt of the *van heeringen lab* to generate a collection of generic pipelines/workflows which can be used by complete beginners to bioinformatics and experienced bioinformaticians alike. Please take a look at our [docs](https://vanheeringen-lab.github.io/snakemake-workflows/) for help with installation, how to run it, and best practices.
 
-![alt text](imgs/seq2science.png "seq2science")
+![alt text](https://vanheeringen-lab.github.io/snakemake-workflows/_static/seq2science.png "seq2science")
 
-### Features
-- Automated installation of dependencies in self-contained environments through anaconda
-- Can be run either on personal computers or superclusters, e.g. surfsara, with minimal finetuning
-- Automated downloading of fastq from the NCBI and ENA databases
-- All our workflows work automatically with paired-end and single-end data
-- Automated quality report generation
-- And many more...
+Our supported workflows:
+* [Downloading of fastq](https://vanheeringen-lab.github.io/snakemake-workflows/content/workflows/download_fastq.html)
+* [Alignment](https://vanheeringen-lab.github.io/snakemake-workflows/content/workflows/download_fastq.html)
+* [ATAC-seq](https://vanheeringen-lab.github.io/snakemake-workflows/content/workflows/download_fastq.html)
+* [RNA-seq](https://vanheeringen-lab.github.io/snakemake-workflows/content/workflows/download_fastq.html)
+* [ChIP-seq](https://vanheeringen-lab.github.io/snakemake-workflows/content/workflows/download_fastq.html)
+* [scATAC-seq](https://vanheeringen-lab.github.io/snakemake-workflows/content/workflows/download_fastq.html)
 
+## New users
+Information for new users, such as how to install and configure can be found in our [getting started](https://vanheeringen-lab.github.io/snakemake-workflows/content/gettingstarted.html) page.
 
-### Supported workflows
-* [download fastq](https://github.com/vanheeringen-lab/snakemake-workflows/tree/master/workflows/download_fastq) for fast and easy downloading of SRAs and parsing of fastq files from the European Nucleotide Archive and the NCBI servers.
-* [alignment](https://github.com/vanheeringen-lab/snakemake-workflows/tree/master/workflows/alignment) for alignment of samples against any assembly with virtually any aligner.
-* [atac seq](https://github.com/vanheeringen-lab/snakemake-workflows/tree/master/workflows/atac_seq) for a complete atac-seq pipeline including peak calling and automated trackhub generation.
-* [rna seq](https://github.com/vanheeringen-lab/snakemake-workflows/tree/master/workflows/rna_seq) for basic gene counting and (optional) advanced differential expression analysis.
-* [chip seq](https://github.com/vanheeringen-lab/snakemake-workflows/tree/master/workflows/chip_seq) for a complete CHiP-seq pipeline including peak calling and automated trackhub generation.
+## Feedback
+Anything not working as expected? Please reach out to us via our [issues](https://github.com/vanheeringen-lab/snakemake-workflows/issues) page and we'll try to help you as soon as possible!

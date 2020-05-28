@@ -22,7 +22,7 @@ Make sure to take a look at our [alignment wiki](https://github.com/vanheeringen
 To find cellular heterogeneity before peak calling, SNAP-ATAC binns the genome. Using this for demensionality reduction of the data and finding cell clusters before peak calling. By default the pipeline includes bins of 5kB, but this is changable in the config.yaml file.
 
 ### best practices
-TODO: Make sure to take a look at: [example preprocessing](scATAC_postprocessing.html)
+TODO: Make sure to take a look at: [example preprocessing](../scATAC_postprocessing.html)
 
 ### How to get the pipeline started?
 

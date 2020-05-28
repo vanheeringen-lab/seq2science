@@ -8,22 +8,26 @@ final_md = (
 """
 # All configurable options
 
-TODO
-This is an automatically generated ...
-These are all configurable options, loosely spread around topics ....
+This is an automatically generated summary of all configurable options for seq2science. These options are loosely \
+grouped around workflows/topics, however they are generally also shared across workflows. So it is possible that  \
+tunable configuration settings are not mentioned in their topic. At the start of each seq2science run the complete \
+configuration is printed to stdout. You can use this printed configuration as the complete list of tunable \
+configuration settings. 
+
+We believe that all our default settings are reasonable, and manual finetuning is generally not required.
 """
 )
 
 path = "schemas/config/"
 order = {"general": "general",
-         "alignment sth": "alignment_specific",
-         "alignment": "alignment_general",
+         "alignment general": "alignment_general",
+         "alignment workflow specific": "alignment_specific",
          "peak calling (ChIP & ATAC)": "peakcalling",
          "gene expression (RNA-seq)": "gene_expression",
          "trackhub": "trackhub"}
 
 # we add 4 indentation as a start
-indentation = -4
+indentation = 0
 
 def unpack_config(markdown, key, val, indentation):
     indentation += 4
@@ -41,7 +45,7 @@ for name, file in order.items():
         schema = yaml.safe_load(stream)
     final_md += f"## {name}\n"
     for config, settings in schema["properties"].items():
-        final_md += ""
+        final_md += f"#####{config}\n```\n"
         final_md += f"{config}:\n"
         for key, val in settings.items():
             final_md = unpack_config(final_md, key, val, indentation)
