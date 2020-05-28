@@ -31,15 +31,6 @@ extensions = ["sphinx.ext.autodoc", "m2r"]
 source_suffix = [".rst", ".md"]
 
 
-def autodoc_skip_member(app, what, name, obj, skip, options):
-    exclusions = ["FROM", "SELECT_CHROM_ASS", "SELECT_LABEL"]
-    exclude = name in exclusions
-    return skip or exclude
-
-
-def setup(app):
-    app.connect("autodoc-skip-member", autodoc_skip_member)
-
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
 
@@ -61,7 +52,7 @@ html_theme = "sphinx_rtd_theme"
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-# html_static_path = ["_static"]
+html_static_path = ["resources"]
 
 html_context = {
     "display_github": True,

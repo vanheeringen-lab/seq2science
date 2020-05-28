@@ -1,3 +1,5 @@
+![alt text](/build/_static/seq2science.png "seq2science")
+
 # Welcome
 Even though most next-generation sequencing analyses require specific and custom tools, they generally share the same design. Seq2science is the attempt of the *van heeringen lab* to generate a collection of generic pipelines/workflows which can be used by complete beginners to bioinformatics and experienced bioinformaticians alike.
 
