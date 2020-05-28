@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Welcome &mdash; seq2science  documentation</title>
+  <title>seq2science &mdash; seq2science  documentation</title>
   
 
   
@@ -35,7 +35,7 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Welcome" href="content/home.html" /> 
+    <link rel="next" title="Getting started" href="content/gettingstarted.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -80,7 +80,6 @@
             
             
               <ul>
-<li class="toctree-l1"><a class="reference internal" href="content/home.html">Welcome</a></li>
 <li class="toctree-l1"><a class="reference internal" href="content/gettingstarted.html">Getting started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="content/fillingout.html">Filling out the samples.tsv and config.yaml</a></li>
 <li class="toctree-l1"><a class="reference internal" href="content/workflows.html">Workflows</a></li>
@@ -133,7 +132,7 @@
     
       <li><a href="#">Docs</a> &raquo;</li>
         
-      <li>Welcome</li>
+      <li>seq2science</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -154,23 +153,30 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <a class="reference external image-reference" href="/build/_static/seq2science.png"><img alt="alt text" src="build/_static/seq2science.png" /></a>
-<div class="section" id="welcome">
-<h1>Welcome<a class="headerlink" href="#welcome" title="Permalink to this headline">¶</a></h1>
-<p>Even though most next-generation sequencing analyses require specific and custom tools, they generally share the same design. Seq2science is the attempt of the <em>van heeringen lab</em> to generate a collection of generic pipelines/workflows which can be used by complete beginners to bioinformatics and experienced bioinformaticians alike.</p>
-<p>Some of seq2science’s features:</p>
+  <div class="section" id="seq2science">
+<h1>seq2science<a class="headerlink" href="#seq2science" title="Permalink to this headline">¶</a></h1>
+<a class="reference external image-reference" href="http://ocimum.science.ru.nl/jenkins/job/Snakemake-Workflows/job/master/lastBuild/display/redirect/"><img alt="Build Status" src="http://ocimum.science.ru.nl/jenkins/buildStatus/icon?job=Snakemake-Workflows%2Fmaster" /></a>
+<a class="reference external image-reference" href="https://github.com/vanheeringen-lab/snakemake-workflows/stargazers"><img alt="star this repo" src="https://img.shields.io/github/stars/vanheeringen-lab/snakemake-workflows?style=flat&amp;color=brightgreen" /></a>
+<a class="reference external image-reference" href="https://github.com/vanheeringen-lab/snakemake-workflows/fork"><img alt="fork this repo" src="https://img.shields.io/github/forks/vanheeringen-lab/snakemake-workflows?style=flat&amp;color=brightgreen" /></a>
+<a class="reference external image-reference" href="https://vanheeringen-lab.github.io/snakemake-workflows/index.html"><img alt="docs" src="https://github.com/vanheeringen-lab/snakemake-workflows/workflows/docs/badge.svg" /></a>
+<p>Seq2science is the attempt of the <em>van heeringen lab</em> to generate a collection of generic pipelines/workflows which can be used by complete beginners to bioinformatics and experienced bioinformaticians alike. Please take a look at our <a class="reference external" href="https://vanheeringen-lab.github.io/snakemake-workflows/">docs</a> for help with installation, how to run it, and best practices.</p>
+<a class="reference external image-reference" href="https://vanheeringen-lab.github.io/snakemake-workflows/_static/seq2science.png"><img alt="alt text" src="https://vanheeringen-lab.github.io/snakemake-workflows/_static/seq2science.png" /></a>
+<p>Our supported workflows:</p>
 <ul class="simple">
-<li><p><strong>Downloading of fastq</strong> from the NCBI, ENA, and DDBJ databases.</p></li>
-<li><p><strong>Downloading of genomes</strong> through genomepy.</p></li>
-<li><p>All our workflows work automatically with <strong>paired-end</strong> and <strong>single-end</strong> data.</p></li>
-<li><p>Extensive MultiQC <strong>quality report</strong>.</p></li>
-<li><p><strong>Trackhub</strong> generation for visualization in the UCSC genome browser.</p></li>
-<li><p>Wide selection of different tools.</p></li>
-<li><p>And many more…</p></li>
+<li><p><a class="reference external" href="https://vanheeringen-lab.github.io/snakemake-workflows/content/workflows/download_fastq.html">Downloading of fastq</a></p></li>
+<li><p><a class="reference external" href="https://vanheeringen-lab.github.io/snakemake-workflows/content/workflows/download_fastq.html">Alignment</a></p></li>
+<li><p><a class="reference external" href="https://vanheeringen-lab.github.io/snakemake-workflows/content/workflows/download_fastq.html">ATAC-seq</a></p></li>
+<li><p><a class="reference external" href="https://vanheeringen-lab.github.io/snakemake-workflows/content/workflows/download_fastq.html">RNA-seq</a></p></li>
+<li><p><a class="reference external" href="https://vanheeringen-lab.github.io/snakemake-workflows/content/workflows/download_fastq.html">ChIP-seq</a></p></li>
+<li><p><a class="reference external" href="https://vanheeringen-lab.github.io/snakemake-workflows/content/workflows/download_fastq.html">scATAC-seq</a></p></li>
 </ul>
-<div class="section" id="first-time-users">
-<h2>First time users<a class="headerlink" href="#first-time-users" title="Permalink to this headline">¶</a></h2>
-<p>Please take a look at our <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/wiki/1.-Getting-started">getting started</a> section.</p>
+<div class="section" id="new-users">
+<h2>New users<a class="headerlink" href="#new-users" title="Permalink to this headline">¶</a></h2>
+<p>Information for new users, such as how to install and configure can be found in our <a class="reference external" href="https://vanheeringen-lab.github.io/snakemake-workflows/content/gettingstarted.html">getting started</a> page.</p>
+</div>
+<div class="section" id="feedback">
+<h2>Feedback<a class="headerlink" href="#feedback" title="Permalink to this headline">¶</a></h2>
+<p>Anything not working as expected? Please reach out to us via our <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/issues">issues</a> page and we’ll try to help you as soon as possible!</p>
 <div class="toctree-wrapper compound">
 </div>
 </div>
@@ -184,7 +190,7 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="content/home.html" class="btn btn-neutral float-right" title="Welcome" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="content/gettingstarted.html" class="btn btn-neutral float-right" title="Getting started" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
     </div>

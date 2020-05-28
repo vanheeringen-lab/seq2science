@@ -1,10 +1,11 @@
 Workflows
 #########
 
-TODO
-Look how many workflows we support!
+These
+
 
 .. toctree::
+   :caption: Supported workflows
    :maxdepth: 1
 
    Downloading fastqs <workflows/download_fastq.md>

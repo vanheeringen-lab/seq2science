@@ -81,15 +81,67 @@
             
             
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="home.html">Welcome</a></li>
 <li class="toctree-l1"><a class="reference internal" href="gettingstarted.html">Getting started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="fillingout.html">Filling out the samples.tsv and config.yaml</a></li>
 <li class="toctree-l1"><a class="reference internal" href="workflows.html">Workflows</a></li>
 <li class="toctree-l1"><a class="reference internal" href="results.html">Using the results</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">All configurable options</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#general">general</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#peak-calling-chip-atac">peak calling (ChIP &amp; ATAC)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#gene-expression-rna-seq">gene expression (RNA-seq)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#general">general</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#samples">samples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rule-dir">rule_dir</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#result-dir">result_dir</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#genome-dir">genome_dir</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#log-dir">log_dir</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#benchmark-dir">benchmark_dir</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#fqext1">fqext1</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#fqext2">fqext2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#fqsuffix">fqsuffix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cpulimit">cpulimit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#email">email</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#alignment-general">alignment general</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#trimmed-dir">trimmed_dir</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#qc-dir">qc_dir</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dedup-dir">dedup_dir</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trim-galore">trim_galore</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#technical-replicates">technical_replicates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#biological-replicates">biological_replicates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#aligner">aligner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#samtools-index">samtools_index</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#markduplicates">markduplicates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#min-mapping-quality">min_mapping_quality</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tn5-shift">tn5_shift</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#remove-blacklist">remove_blacklist</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#remove-mito">remove_mito</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#only-primary-align">only_primary_align</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#create-qc-report">create_qc_report</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#alignment-workflow-specific">alignment workflow specific</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#bam-sorter">bam_sorter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cram-no-bam">cram_no_bam</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#peak-calling-chip-atac">peak calling (ChIP &amp; ATAC)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#peak-caller">peak_caller</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#macs2-keep-mates">macs2_keep_mates</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#gene-expression-rna-seq">gene expression (RNA-seq)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#counts-dir">counts_dir</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dge-dir">dge_dir</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#quantifier">quantifier</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tximeta">tximeta</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#diffexp">diffexp</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#trackhub">trackhub</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#create-trackhub">create_trackhub</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#deeptools">deeptools</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#filter-bam-by-strand">filter_bam_by_strand</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="extracontent.html">Extra resources</a></li>
@@ -162,333 +214,454 @@
             
   <div class="section" id="all-configurable-options">
 <h1>All configurable options<a class="headerlink" href="#all-configurable-options" title="Permalink to this headline">¶</a></h1>
-<p>TODO
-This is an automatically generated …
-These are all configurable options, loosely spread around topics ….</p>
+<p>This is an automatically generated summary of all configurable options for seq2science. These options are loosely grouped around workflows/topics, however they are generally also shared across workflows. So it is possible that  tunable configuration settings are not mentioned in their topic. At the start of each seq2science run the complete configuration is printed to stdout. You can use this printed configuration as the complete list of tunable configuration settings.</p>
+<p>We believe that all our default settings are reasonable, and manual finetuning is generally not required.</p>
 <div class="section" id="general">
 <h2>general<a class="headerlink" href="#general" title="Permalink to this headline">¶</a></h2>
-<p>samples:
-description: tab-separated file specifying the samples to run through the workflow
-default: samples.tsv
-type: string</p>
+<div class="section" id="samples">
+<h3>samples<a class="headerlink" href="#samples" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">samples:</span>
+<span class="c">    description: tab-separated file specifying the samples to run through the workflow</span>
+<span class="c">    default: samples.tsv</span>
+<span class="c">    type: string</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="rule-dir">
+<h3>rule_dir<a class="headerlink" href="#rule-dir" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">rule_dir:</span>
-<span class="c">description: directory where to find the workflow rules</span>
-<span class="c">default: ../../rules</span>
-<span class="c">type: string</span>
+<span class="c">    description: directory where to find the workflow rules</span>
+<span class="c">    default: ../../rules</span>
+<span class="c">    type: string</span>
 </pre></div>
 </div>
-<p>result_dir:
-description: where to store the pipeline’s results (by default)
-default: ./
-type: string</p>
+</div>
+<div class="section" id="result-dir">
+<h3>result_dir<a class="headerlink" href="#result-dir" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">result_dir:</span>
+<span class="c">    description: where to store the pipeline&#39;s results (by default)</span>
+<span class="c">    default: ./</span>
+<span class="c">    type: string</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="genome-dir">
+<h3>genome_dir<a class="headerlink" href="#genome-dir" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">genome_dir:</span>
-<span class="c">description: where to store the pipeline&#39;s genome assemblies</span>
-<span class="c">default: ./</span>
-<span class="c">type: string</span>
+<span class="c">    description: where to store the pipeline&#39;s genome assemblies</span>
+<span class="c">    default: ./</span>
+<span class="c">    type: string</span>
 </pre></div>
 </div>
-<p>log_dir:
-description: directory where to store the logs (defaults inside the result dir)
-default: log
-type: string</p>
+</div>
+<div class="section" id="log-dir">
+<h3>log_dir<a class="headerlink" href="#log-dir" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">log_dir:</span>
+<span class="c">    description: directory where to store the logs (defaults inside the result dir)</span>
+<span class="c">    default: log</span>
+<span class="c">    type: string</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="benchmark-dir">
+<h3>benchmark_dir<a class="headerlink" href="#benchmark-dir" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">benchmark_dir:</span>
-<span class="c">description: directory where to store the logs (defaults inside the result dir)</span>
-<span class="c">default: benchmark</span>
-<span class="c">type: string</span>
+<span class="c">    description: directory where to store the logs (defaults inside the result dir)</span>
+<span class="c">    default: benchmark</span>
+<span class="c">    type: string</span>
 </pre></div>
 </div>
-<p>fqext1:
-description: filename suffix when handling paired-end data, describing the forward read
-default: R1
-type: string</p>
+</div>
+<div class="section" id="fqext1">
+<h3>fqext1<a class="headerlink" href="#fqext1" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">fqext1:</span>
+<span class="c">    description: filename suffix when handling paired-end data, describing the forward read</span>
+<span class="c">    default: R1</span>
+<span class="c">    type: string</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="fqext2">
+<h3>fqext2<a class="headerlink" href="#fqext2" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">fqext2:</span>
-<span class="c">description: filename suffix when handling paired-end data, describing the reverse read</span>
-<span class="c">default: R2</span>
-<span class="c">type: string</span>
+<span class="c">    description: filename suffix when handling paired-end data, describing the reverse read</span>
+<span class="c">    default: R2</span>
+<span class="c">    type: string</span>
 </pre></div>
 </div>
-<p>fqsuffix:
-description: file descriptor for fastq files (often fastq or fq)
-default: fastq
-type: string</p>
+</div>
+<div class="section" id="fqsuffix">
+<h3>fqsuffix<a class="headerlink" href="#fqsuffix" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">fqsuffix:</span>
+<span class="c">    description: file descriptor for fastq files (often fastq or fq)</span>
+<span class="c">    default: fastq</span>
+<span class="c">    type: string</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="cpulimit">
+<h3>cpulimit<a class="headerlink" href="#cpulimit" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">cpulimit:</span>
-<span class="c">description: whether or not to make use of cpulimit to enfoce max thread usage for some rules</span>
-<span class="c">default: True</span>
-<span class="c">type: boolean</span>
+<span class="c">    description: whether or not to make use of cpulimit to enfoce max thread usage for some rules</span>
+<span class="c">    default: True</span>
+<span class="c">    type: boolean</span>
 </pre></div>
 </div>
-<p>email:
-description: email to reach you after pipeline finished, required for trackhub and multiqc report
-default: <a class="reference external" href="mailto:none&#37;&#52;&#48;provided&#46;com">none<span>&#64;</span>provided<span>&#46;</span>com</a>
-type: string</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>## alignment sth
-bam_sorter:
-description: which sorting software to use
-type: object
-properties:
-    description: sort order of aligned reads
-    default: coordinate
-    enum: [&#39;queryname&#39;, &#39;coordinate&#39;]
-    type: string
-default:
-    samtools: coordinate
+</div>
+<div class="section" id="email">
+<h3>email<a class="headerlink" href="#email" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">email:</span>
+<span class="c">    description: email to reach you after pipeline finished, required for trackhub and multiqc report</span>
+<span class="c">    default: none@provided.com</span>
+<span class="c">    type: string</span>
 </pre></div>
 </div>
-<p>cram_no_bam:
-description: whether to store cram instead of bam
-type: boolean
-default: False</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>## alignment
-trimmed_dir:
-description: directory where to store the workflow trimmed fastqs (defaults inside the result dir)
-default: fastq_trimmed
-type: string
+</div>
+</div>
+<div class="section" id="alignment-general">
+<h2>alignment general<a class="headerlink" href="#alignment-general" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="trimmed-dir">
+<h3>trimmed_dir<a class="headerlink" href="#trimmed-dir" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">trimmed_dir:</span>
+<span class="c">    description: directory where to store the workflow trimmed fastqs (defaults inside the result dir)</span>
+<span class="c">    default: fastq_trimmed</span>
+<span class="c">    type: string</span>
 </pre></div>
 </div>
-<p>qc_dir:
-description: directory where to store the workflow quality controls (defaults inside the result dir)
-default: qc
-type: string</p>
+</div>
+<div class="section" id="qc-dir">
+<h3>qc_dir<a class="headerlink" href="#qc-dir" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">qc_dir:</span>
+<span class="c">    description: directory where to store the workflow quality controls (defaults inside the result dir)</span>
+<span class="c">    default: qc</span>
+<span class="c">    type: string</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="dedup-dir">
+<h3>dedup_dir<a class="headerlink" href="#dedup-dir" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">dedup_dir:</span>
-<span class="c">description: directory where to store the workflow deduplicated alignment (defaults inside the result dir)</span>
-<span class="c">default: dedup</span>
-<span class="c">type: string</span>
+<span class="c">    description: directory where to store the workflow deduplicated alignment (defaults inside the result dir)</span>
+<span class="c">    default: dedup</span>
+<span class="c">    type: string</span>
 </pre></div>
 </div>
-<p>trim_galore:
-description: trim_galore settings (note that the adapter is autodetected, so you do not have to set it here)
-default: –quality 10 –length 20 –consider_already_trimmed 10
-type: string</p>
+</div>
+<div class="section" id="trim-galore">
+<h3>trim_galore<a class="headerlink" href="#trim-galore" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">trim_galore:</span>
+<span class="c">    description: trim_galore settings (note that the adapter is autodetected, so you do not have to set it here)</span>
+<span class="c">    default: --quality 10 --length 20 --consider_already_trimmed 10</span>
+<span class="c">    type: string</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="technical-replicates">
+<h3>technical_replicates<a class="headerlink" href="#technical-replicates" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">technical_replicates:</span>
-<span class="c">description: concatenates samples depending on the names given in the &#39;replicates&#39; column of samples.tsv</span>
-<span class="c">default: merge</span>
-<span class="c">enum: [&#39;merge&#39;, &#39;keep&#39;]</span>
+<span class="c">    description: concatenates samples depending on the names given in the &#39;replicates&#39; column of samples.tsv</span>
+<span class="c">    default: merge</span>
+<span class="c">    enum: [&#39;merge&#39;, &#39;keep&#39;]</span>
 </pre></div>
 </div>
-<p>biological_replicates:
-description: which method to use to combine replicates (fisher (n &gt;=2), idr (n==2), or keep)
-default: keep
-enum: [‘fisher’, ‘idr’, ‘keep’]
-type: string</p>
+</div>
+<div class="section" id="biological-replicates">
+<h3>biological_replicates<a class="headerlink" href="#biological-replicates" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">biological_replicates:</span>
+<span class="c">    description: which method to use to combine replicates (fisher (n &gt;=2), idr (n==2), or keep)</span>
+<span class="c">    default: keep</span>
+<span class="c">    enum: [&#39;fisher&#39;, &#39;idr&#39;, &#39;keep&#39;]</span>
+<span class="c">    type: string</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="aligner">
+<h3>aligner<a class="headerlink" href="#aligner" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">aligner:</span>
-<span class="c">description: which aligner to use</span>
-<span class="c">properties:</span>
-<span class="c">    bowtie2:</span>
-<span class="c">        properties:</span>
-<span class="c">            index:</span>
-<span class="c">                default:</span>
-<span class="c">            align:</span>
-<span class="c">                default:</span>
-<span class="c">        default:</span>
-<span class="c">            index:</span>
-<span class="c">            align:</span>
-<span class="c">    bwa:</span>
-<span class="c">        properties:</span>
-<span class="c">            index:</span>
-<span class="c">                default: -a bwtsw</span>
-<span class="c">            align:</span>
-<span class="c">                default: -M</span>
-<span class="c">        default:</span>
+<span class="c">    description: which aligner to use</span>
+<span class="c">    properties:</span>
+<span class="c">        bowtie2:</span>
+<span class="c">            properties:</span>
+<span class="c">                index:</span>
+<span class="c">                    default:</span>
+<span class="c">                align:</span>
+<span class="c">                    default:</span>
+<span class="c">            default:</span>
+<span class="c">                index:</span>
+<span class="c">                align:</span>
+<span class="c">        bwa:</span>
+<span class="c">            properties:</span>
+<span class="c">                index:</span>
+<span class="c">                    default: -a bwtsw</span>
+<span class="c">                align:</span>
+<span class="c">                    default: -M</span>
+<span class="c">            default:</span>
+<span class="c">                index: -a bwtsw</span>
+<span class="c">                align: -M</span>
+<span class="c">        hisat2:</span>
+<span class="c">            properties:</span>
+<span class="c">                index:</span>
+<span class="c">                    default:</span>
+<span class="c">                align:</span>
+<span class="c">                    default:</span>
+<span class="c">            default:</span>
+<span class="c">                index:</span>
+<span class="c">                align:</span>
+<span class="c">        star:</span>
+<span class="c">            properties:</span>
+<span class="c">                index:</span>
+<span class="c">                    default: --limitGenomeGenerateRAM 37000000000 --genomeSAsparseD 1</span>
+<span class="c">                align:</span>
+<span class="c">                    default:</span>
+<span class="c">            default:</span>
+<span class="c">                index: --limitGenomeGenerateRAM 37000000000 --genomeSAsparseD 1</span>
+<span class="c">                align:</span>
+<span class="c">    default:</span>
+<span class="c">        bwa:</span>
 <span class="c">            index: -a bwtsw</span>
-<span class="c">            align: -M</span>
-<span class="c">    hisat2:</span>
-<span class="c">        properties:</span>
-<span class="c">            index:</span>
-<span class="c">                default:</span>
 <span class="c">            align:</span>
-<span class="c">                default:</span>
-<span class="c">        default:</span>
-<span class="c">            index:</span>
-<span class="c">            align:</span>
-<span class="c">    star:</span>
-<span class="c">        properties:</span>
-<span class="c">            index:</span>
-<span class="c">                default: --limitGenomeGenerateRAM 37000000000 --genomeSAsparseD 1</span>
-<span class="c">            align:</span>
-<span class="c">                default:</span>
-<span class="c">        default:</span>
-<span class="c">            index: --limitGenomeGenerateRAM 37000000000 --genomeSAsparseD 1</span>
-<span class="c">            align:</span>
-<span class="c">default:</span>
-<span class="c">    bwa:</span>
-<span class="c">        index: -a bwtsw</span>
-<span class="c">        align:</span>
 </pre></div>
 </div>
-<p>samtools_index:
-description: samtools index settings
-default:
-type: string</p>
+</div>
+<div class="section" id="samtools-index">
+<h3>samtools_index<a class="headerlink" href="#samtools-index" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">samtools_index:</span>
+<span class="c">    description: samtools index settings</span>
+<span class="c">    default:</span>
+<span class="c">    type: string</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="markduplicates">
+<h3>markduplicates<a class="headerlink" href="#markduplicates" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">markduplicates:</span>
-<span class="c">description: the parameters of picard markduplicates</span>
-<span class="c">default: REMOVE_DUPLICATES=false -Xms4G -Xmx6G MAX_FILE_HANDLES_FOR_READ_ENDS_MAP=999</span>
-<span class="c">type: string</span>
+<span class="c">    description: the parameters of picard markduplicates</span>
+<span class="c">    default: REMOVE_DUPLICATES=false -Xms4G -Xmx6G MAX_FILE_HANDLES_FOR_READ_ENDS_MAP=999</span>
+<span class="c">    type: string</span>
 </pre></div>
 </div>
-<p>min_mapping_quality:
-default: 0
-type: integer</p>
+</div>
+<div class="section" id="min-mapping-quality">
+<h3>min_mapping_quality<a class="headerlink" href="#min-mapping-quality" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">min_mapping_quality:</span>
+<span class="c">    default: 0</span>
+<span class="c">    type: integer</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="tn5-shift">
+<h3>tn5_shift<a class="headerlink" href="#tn5-shift" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">tn5_shift:</span>
-<span class="c">default: False</span>
-<span class="c">type: boolean</span>
+<span class="c">    default: False</span>
+<span class="c">    type: boolean</span>
 </pre></div>
 </div>
-<p>remove_blacklist:
-default: False</p>
+</div>
+<div class="section" id="remove-blacklist">
+<h3>remove_blacklist<a class="headerlink" href="#remove-blacklist" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">remove_blacklist:</span>
+<span class="c">    default: False</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="remove-mito">
+<h3>remove_mito<a class="headerlink" href="#remove-mito" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">remove_mito:</span>
-<span class="c">default: False</span>
+<span class="c">    default: False</span>
 </pre></div>
 </div>
-<p>only_primary_align:
-default: False</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">create_qc_report:</span>
-<span class="c">default: True</span>
-<span class="c">type: boolean</span>
+</div>
+<div class="section" id="only-primary-align">
+<h3>only_primary_align<a class="headerlink" href="#only-primary-align" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">only_primary_align:</span>
+<span class="c">    default: False</span>
 </pre></div>
+</div>
+</div>
+<div class="section" id="create-qc-report">
+<h3>create_qc_report<a class="headerlink" href="#create-qc-report" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">create_qc_report:</span>
+<span class="c">    default: True</span>
+<span class="c">    type: boolean</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="alignment-workflow-specific">
+<h2>alignment workflow specific<a class="headerlink" href="#alignment-workflow-specific" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="bam-sorter">
+<h3>bam_sorter<a class="headerlink" href="#bam-sorter" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">bam_sorter:</span>
+<span class="c">    description: which sorting software to use</span>
+<span class="c">    type: object</span>
+<span class="c">    properties:</span>
+<span class="c">        description: sort order of aligned reads</span>
+<span class="c">        default: coordinate</span>
+<span class="c">        enum: [&#39;queryname&#39;, &#39;coordinate&#39;]</span>
+<span class="c">        type: string</span>
+<span class="c">    default:</span>
+<span class="c">        samtools: coordinate</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="cram-no-bam">
+<h3>cram_no_bam<a class="headerlink" href="#cram-no-bam" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">cram_no_bam:</span>
+<span class="c">    description: whether to store cram instead of bam</span>
+<span class="c">    type: boolean</span>
+<span class="c">    default: False</span>
+</pre></div>
+</div>
 </div>
 </div>
 <div class="section" id="peak-calling-chip-atac">
 <h2>peak calling (ChIP &amp; ATAC)<a class="headerlink" href="#peak-calling-chip-atac" title="Permalink to this headline">¶</a></h2>
-<p>peak_caller:
-type: object
-properties:</p>
-<blockquote>
-<div><dl class="simple">
-<dt>genrich:</dt><dd><p>type: string</p>
-</dd>
-<dt>hmmratac:</dt><dd><p>type: string</p>
-</dd>
-<dt>macs2:</dt><dd><p>type: string</p>
-</dd>
-</dl>
-</div></blockquote>
-<p>minProperties: 1
-additionalProperties: False
-default:</p>
-<blockquote>
-<div><p>macs2: –shift -100 –extsize 200 –nomodel –keep-dup 1 –buffer-size 10000</p>
-</div></blockquote>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">macs2_keep_mates:</span>
-<span class="c">description: which method to use to combine replicates (idr or fisher)</span>
-<span class="c">default: False</span>
-<span class="c">type: boolean</span>
+<div class="section" id="peak-caller">
+<h3>peak_caller<a class="headerlink" href="#peak-caller" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">peak_caller:</span>
+<span class="c">    type: object</span>
+<span class="c">    properties:</span>
+<span class="c">        genrich:</span>
+<span class="c">            type: string</span>
+<span class="c">        hmmratac:</span>
+<span class="c">            type: string</span>
+<span class="c">        macs2:</span>
+<span class="c">            type: string</span>
+<span class="c">    minProperties: 1</span>
+<span class="c">    additionalProperties: False</span>
+<span class="c">    default:</span>
+<span class="c">        macs2: --shift -100 --extsize 200 --nomodel --keep-dup 1 --buffer-size 10000</span>
 </pre></div>
+</div>
+</div>
+<div class="section" id="macs2-keep-mates">
+<h3>macs2_keep_mates<a class="headerlink" href="#macs2-keep-mates" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">macs2_keep_mates:</span>
+<span class="c">    description: which method to use to combine replicates (idr or fisher)</span>
+<span class="c">    default: False</span>
+<span class="c">    type: boolean</span>
+</pre></div>
+</div>
 </div>
 </div>
 <div class="section" id="gene-expression-rna-seq">
 <h2>gene expression (RNA-seq)<a class="headerlink" href="#gene-expression-rna-seq" title="Permalink to this headline">¶</a></h2>
-<p>counts_dir:
-description: directory where to store the gene counts for DGE analysis (defaults inside the result dir)
-default: gene_counts
-type: string</p>
+<div class="section" id="counts-dir">
+<h3>counts_dir<a class="headerlink" href="#counts-dir" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">counts_dir:</span>
+<span class="c">    description: directory where to store the gene counts for DGE analysis (defaults inside the result dir)</span>
+<span class="c">    default: gene_counts</span>
+<span class="c">    type: string</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="dge-dir">
+<h3>dge_dir<a class="headerlink" href="#dge-dir" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">dge_dir:</span>
-<span class="c">description: directory where to store the workflow differential gene analysis output (defaults inside the result dir)</span>
-<span class="c">default: deseq2</span>
-<span class="c">type: string</span>
+<span class="c">    description: directory where to store the workflow differential gene analysis output (defaults inside the result dir)</span>
+<span class="c">    default: deseq2</span>
+<span class="c">    type: string</span>
 </pre></div>
 </div>
-<p>quantifier:
-description: which quantifier to use
-properties:</p>
-<blockquote>
-<div><dl class="simple">
-<dt>star:</dt><dd><dl class="simple">
-<dt>properties:</dt><dd><dl class="simple">
-<dt>quantify:</dt><dd><p>default:</p>
-</dd>
-</dl>
-</dd>
-<dt>default:</dt><dd><p>quantify:</p>
-</dd>
-</dl>
-</dd>
-<dt>salmon:</dt><dd><dl class="simple">
-<dt>properties:</dt><dd><dl class="simple">
-<dt>quantifier_index:</dt><dd><p>default: -k 31</p>
-</dd>
-<dt>quantify:</dt><dd><p>default: –seqBias –gcBias –validateMappings –recoverOrphans</p>
-</dd>
-<dt>decoy_aware_index:</dt><dd><p>default: False</p>
-</dd>
-</dl>
-</dd>
-<dt>default:</dt><dd><p>quantifier_index: -k 31
-quantify: –seqBias –gcBias –validateMappings –recoverOrphans
-decoy_aware_index: False</p>
-</dd>
-</dl>
-</dd>
-</dl>
-</div></blockquote>
-<dl class="simple">
-<dt>default:</dt><dd><dl class="simple">
-<dt>star:</dt><dd><p>quantify:</p>
-</dd>
-</dl>
-</dd>
-</dl>
+</div>
+<div class="section" id="quantifier">
+<h3>quantifier<a class="headerlink" href="#quantifier" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">quantifier:</span>
+<span class="c">    description: which quantifier to use</span>
+<span class="c">    properties:</span>
+<span class="c">        star:</span>
+<span class="c">            properties:</span>
+<span class="c">                quantify:</span>
+<span class="c">                    default:</span>
+<span class="c">            default:</span>
+<span class="c">                quantify:</span>
+<span class="c">        salmon:</span>
+<span class="c">            properties:</span>
+<span class="c">                quantifier_index:</span>
+<span class="c">                    default: -k 31</span>
+<span class="c">                quantify:</span>
+<span class="c">                    default: --seqBias --gcBias --validateMappings --recoverOrphans</span>
+<span class="c">                decoy_aware_index:</span>
+<span class="c">                    default: False</span>
+<span class="c">            default:</span>
+<span class="c">                quantifier_index: -k 31</span>
+<span class="c">                quantify: --seqBias --gcBias --validateMappings --recoverOrphans</span>
+<span class="c">                decoy_aware_index: False</span>
+<span class="c">    default:</span>
+<span class="c">        star:</span>
+<span class="c">            quantify:</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="tximeta">
+<h3>tximeta<a class="headerlink" href="#tximeta" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">tximeta:</span>
-<span class="c">description: tximeta is used to convert salmon output (estimated transcript abundances) to a gene counts matrix. Currently, these values can be ignored.</span>
-<span class="c">properties:</span>
-<span class="c">    source:</span>
-<span class="c">        default: Ensembl</span>
-<span class="c">    organism:</span>
-<span class="c">        default: tximeta_file</span>
-<span class="c">    release:</span>
-<span class="c">        default: 42</span>
-<span class="c">default:</span>
-<span class="c">    soure: Ensembl</span>
-<span class="c">    organism: tximeta_file</span>
-<span class="c">    release: 42</span>
+<span class="c">    description: tximeta is used to convert salmon output (estimated transcript abundances) to a gene counts matrix. Currently, these values can be ignored.</span>
+<span class="c">    properties:</span>
+<span class="c">        source:</span>
+<span class="c">            default: Ensembl</span>
+<span class="c">        organism:</span>
+<span class="c">            default: tximeta_file</span>
+<span class="c">        release:</span>
+<span class="c">            default: 42</span>
+<span class="c">    default:</span>
+<span class="c">        soure: Ensembl</span>
+<span class="c">        organism: tximeta_file</span>
+<span class="c">        release: 42</span>
 </pre></div>
 </div>
-<p>diffexp:
-description: which differential expression analysis to use (DESeq2 or None, default is None). Will not run without a contrast.
-type: object
-properties:</p>
-<blockquote>
-<div><dl class="simple">
-<dt>deseq2:</dt><dd><dl class="simple">
-<dt>properties:</dt><dd><dl class="simple">
-<dt>DE_params:</dt><dd><dl class="simple">
-<dt>default:</dt><dd><p>multiple_testing_procedure: BH
-alpha_value: 0.05
-shrinkage_estimator: apeglm</p>
-</dd>
-</dl>
-</dd>
-<dt>contrasts:</dt><dd><p>default:</p>
-</dd>
-</dl>
-</dd>
-<dt>default:</dt><dd><p>contrasts:</p>
-</dd>
-</dl>
-</dd>
-</dl>
-</div></blockquote>
-<dl class="simple">
-<dt>default:</dt><dd><dl class="simple">
-<dt>None:</dt><dd><p>contrasts:</p>
-</dd>
-</dl>
-</dd>
-</dl>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>## trackhub
-create_trackhub:
-description: skip generation of bams (except for workflow alignment), bigwigs and a trackhub
-default: True
-enum: [True, False]
+</div>
+<div class="section" id="diffexp">
+<h3>diffexp<a class="headerlink" href="#diffexp" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">diffexp:</span>
+<span class="c">    description: which differential expression analysis to use (DESeq2 or None, default is None). Will not run without a contrast.</span>
+<span class="c">    type: object</span>
+<span class="c">    properties:</span>
+<span class="c">        deseq2:</span>
+<span class="c">            properties:</span>
+<span class="c">                DE_params:</span>
+<span class="c">                    default:</span>
+<span class="c">                        multiple_testing_procedure: BH</span>
+<span class="c">                        alpha_value: 0.05</span>
+<span class="c">                        shrinkage_estimator: apeglm</span>
+<span class="c">                contrasts:</span>
+<span class="c">                    default:</span>
+<span class="c">            default:</span>
+<span class="c">                contrasts:</span>
+<span class="c">    default:</span>
+<span class="c">        None:</span>
+<span class="c">            contrasts:</span>
 </pre></div>
 </div>
-<p>deeptools:
-description: option flags for bam to bigwig conversions with deeptools bamCoverage
-default: –samFlagExclude 1024</p>
+</div>
+</div>
+<div class="section" id="trackhub">
+<h2>trackhub<a class="headerlink" href="#trackhub" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="create-trackhub">
+<h3>create_trackhub<a class="headerlink" href="#create-trackhub" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">create_trackhub:</span>
+<span class="c">    description: skip generation of bams (except for workflow alignment), bigwigs and a trackhub</span>
+<span class="c">    default: True</span>
+<span class="c">    enum: [True, False]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="deeptools">
+<h3>deeptools<a class="headerlink" href="#deeptools" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">deeptools:</span>
+<span class="c">    description: option flags for bam to bigwig conversions with deeptools bamCoverage</span>
+<span class="c">    default: --samFlagExclude 1024</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="filter-bam-by-strand">
+<h3>filter_bam_by_strand<a class="headerlink" href="#filter-bam-by-strand" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">filter_bam_by_strand:</span>
-<span class="c">description: split bigwigs by strand?</span>
-<span class="c">default: True</span>
-<span class="c">enum: [True, False]</span>
+<span class="c">    description: split bigwigs by strand?</span>
+<span class="c">    default: True</span>
+<span class="c">    enum: [True, False]</span>
 </pre></div>
+</div>
 </div>
 </div>
 </div>
