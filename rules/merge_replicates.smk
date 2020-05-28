@@ -48,14 +48,14 @@ def rep_to_descriptive(rep):
 
 if 'replicate' in samples and config.get('technical_replicates') == 'merge':
     def get_merge_replicates(wildcards):
-        output = dict()
-        output["reps"] = expand([f"{{trimmed_dir}}/{sample}{wildcards.fqext}_trimmed.{{fqsuffix}}.gz"
-                         for sample in samples[samples['replicate'] == wildcards.replicate].index], **config)
+        input_files = dict()
+        input_files["reps"] = expand([f"{{trimmed_dir}}/{sample}{wildcards.fqext}_trimmed.{{fqsuffix}}.gz"
+                              for sample in samples[samples['replicate'] == wildcards.replicate].index], **config)
         # make sure we make the fastqc report before moving our file
         if get_workflow() != "scATAC_seq" and len(output["reps"]) == 1 and config["create_qc_report"]:
-            output["qc"] = expand([f"{{qc_dir}}/fastqc/{sample}{wildcards.fqext}_trimmed_fastqc.zip"
-                           for sample in samples[samples['replicate'] == wildcards.replicate].index], **config)
-        return output
+            input_files["qc"] = expand([f"{{qc_dir}}/fastqc/{sample}{wildcards.fqext}_trimmed_fastqc.zip"
+                                for sample in samples[samples['replicate'] == wildcards.replicate].index], **config)
+        return input_files
 
     rule merge_replicates:
         """
@@ -84,4 +84,4 @@ if 'replicate' in samples and config.get('technical_replicates') == 'merge':
                 for rep in input.reps:
                     rep_name = re.findall('\/([^\/_]+)_', rep)[-1]
                     # please never ask me to explain the curly braces, it's a mess to escape those
-                    shell(f"""zcat {input.r1} | awk '{{{{if (NR%4==1) {{{{gsub(/^@/, "@{rep_name}:"); print}}}} else {{{{print}}}}}}}}' | gzip >> {output.r1}""")
+                    shell(f"""zcat {rep} | awk '{{{{if (NR%4==1) {{{{gsub(/^@/, "@{rep_name}:"); print}}}} else {{{{print}}}}}}}}' | gzip >> {output}""")

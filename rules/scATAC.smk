@@ -1,17 +1,3 @@
-# rule add_cell_id_2_fastq:
-#     """
-#     Add the cell ID into the header of the fastq reads before merging the individual fastq files.
-#     """
-#     input:
-#         r1=expand("{trimmed_dir}/{{sample}}_{fqext1}_trimmed.{fqsuffix}.gz", **config),
-#         r2=expand("{trimmed_dir}/{{sample}}_{fqext2}_trimmed.{fqsuffix}.gz", **config)
-#     output:
-#         r1 = temp(expand("{trimmed_dir}/{{sample}}_{fqext1}_trimmed_cell_ID_added.{fqsuffix}.gz", **config)),
-#         r2 = temp(expand("{trimmed_dir}/{{sample}}_{fqext2}_trimmed_cell_ID_added.{fqsuffix}.gz", **config))
-#     run:
-#         shell(f"""zcat {input.r1}|awk -v var="@"{wildcards} '{{{{gsub(/@/, var )}}}}1' | gzip >> {output.r1}""")
-#         shell(f"""zcat {input.r2}|awk -v var="@"{wildcards} '{{{{gsub(/@/, var )}}}}1' | gzip >> {output.r2}""")
-
 rule create_SNAP_object:
     """
     Create a snapobject for each BAM file. 
