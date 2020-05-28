@@ -1,16 +1,17 @@
 ..
   First we include the README, so we do not have to have two copies of introductions
 
-.. mdinclude:: home.md
+.. mdinclude:: content/home.md
 
 .. toctree::
    :maxdepth: 2
    :hidden:
 
-   home
-   gettingstarted
-   fillingout
-   workflows
-   results
-   faq
-   schemas
+   content/home
+   content/gettingstarted
+   content/fillingout
+   content/workflows
+   content/results
+   content/faq
+   content/schemas
+   content/extracontent
