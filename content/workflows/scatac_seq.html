@@ -1,0 +1,274 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>scATAC-seq &mdash; seq2science  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Using the results" href="../results.html" />
+    <link rel="prev" title="ChIP-seq" href="chip_seq.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> seq2science
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../home.html">Welcome</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../gettingstarted.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../fillingout.html">Filling out the samples.tsv and config.yaml</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../workflows.html">Workflows</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="download_fastq.html">Downloading fastqs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="alignment.html">Alignment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="atac_seq.html">ATAC-seq</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rna_seq.html">RNA-seq</a></li>
+<li class="toctree-l2"><a class="reference internal" href="chip_seq.html">ChIP-seq</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">scATAC-seq</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pipeline-steps">Pipeline steps</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#wip-automated-downloading-of-fastq">WIP: (Automated) downloading of fastq</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#merge-cell-fastq-files-based-on-processing">merge cell fastq files based on processing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#alignment">Alignment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#generate-and-bin-a-snap-object-for-downstream-analysis">Generate and bin a SNAP_Object for downstream analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id2">best practices</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#how-to-get-the-pipeline-started">How to get the pipeline started?</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#filling-out-the-samples-tsv">2.6.1 Filling out the samples.tsv</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#filling-out-the-config-yaml">2.6.2 Filling out the config.yaml</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../results.html">Using the results</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../schemas.html">All configurable options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../extracontent.html">Extra resources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">Frequently Asked Questions (FAQ)</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">seq2science</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../workflows.html">Workflows</a> &raquo;</li>
+        
+      <li>scATAC-seq</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/vanheeringen-lab/seq2science/blob/master/docs/content/workflows/scatac_seq.md" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="scatac-seq">
+<h1>scATAC-seq<a class="headerlink" href="#scatac-seq" title="Permalink to this headline">¶</a></h1>
+<p>Running a scATAC-seq pipeline has never been easier! See our <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/tree/master/workflows/scATAC_seq">scATAC-seq</a> workflow.</p>
+<p>Does your scATAC protocol generate single cell fastq files? And do they need to be mapped and analysed? Then this pipeline is for your! This pipeline takes single cell fastq files, performs extensive (plate based) QC steps, and generates a binned  SNAP-object that can be used for further downstream analysis following the tutorials on: <a class="reference external" href="https://github.com/r3fang/SnapATAC">https://github.com/r3fang/SnapATAC</a></p>
+<p>If instead you have a large FASTQ file containing a cell specific ID in the header, it might possible to run this pipeline with some alterations. If you have instead a Cellranger object, it is relatively easy to directly generate a SNAPobject, look at the documentation on the SnapATAC github intead.</p>
+<div class="section" id="pipeline-steps">
+<h2>Pipeline steps<a class="headerlink" href="#pipeline-steps" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="wip-automated-downloading-of-fastq">
+<h3>WIP: (Automated) downloading of fastq<a class="headerlink" href="#wip-automated-downloading-of-fastq" title="Permalink to this headline">¶</a></h3>
+<p>scATAC-seq can be done with local fastq files, downloaded files, or a mix of those. Make sure to take a look at our downloading fastq <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/wiki/2.-Downloading-samples">best practices</a> when making use of the downloading functionality.</p>
+</div>
+<div class="section" id="merge-cell-fastq-files-based-on-processing">
+<h3>merge cell fastq files based on processing<a class="headerlink" href="#merge-cell-fastq-files-based-on-processing" title="Permalink to this headline">¶</a></h3>
+<p>Single cell fastq files get a barcode id corresponding to the sample name. This is added to the fastq header, after which each single cell fastq is merged to a large FASTQ file with all the technical replica’s (for example all cells from a plate). This results in a multi-QC report containing QC per technical replica’s. This makes lower plate quality easy to spot.
+Additional single cell QC will be available in downstream analysis of the SNAP-object.
+See <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/wiki/4.-Replicate-handling">Replicate handling</a> for more information.
+See <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/blob/docs/docs/fillingout.md">Filling out the samples.tsv and config.yaml</a> for more information.</p>
+</div>
+<div class="section" id="alignment">
+<h3>Alignment<a class="headerlink" href="#alignment" title="Permalink to this headline">¶</a></h3>
+<p>Make sure to take a look at our <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/wiki/3.-Alignment">alignment wiki</a>.</p>
+</div>
+<div class="section" id="generate-and-bin-a-snap-object-for-downstream-analysis">
+<h3>Generate and bin a SNAP_Object for downstream analysis<a class="headerlink" href="#generate-and-bin-a-snap-object-for-downstream-analysis" title="Permalink to this headline">¶</a></h3>
+<p>To find cellular heterogeneity before peak calling, SNAP-ATAC binns the genome. Using this for demensionality reduction of the data and finding cell clusters before peak calling. By default the pipeline includes bins of 5kB, but this is changable in the config.yaml file.</p>
+</div>
+</div>
+<div class="section" id="id2">
+<h2>best practices<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<p>TODO: Make sure to take a look at: <a class="reference external" href="scATAC_postprocessing.html">example preprocessing</a></p>
+</div>
+<div class="section" id="how-to-get-the-pipeline-started">
+<h2>How to get the pipeline started?<a class="headerlink" href="#how-to-get-the-pipeline-started" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="filling-out-the-samples-tsv">
+<h3>2.6.1 Filling out the samples.tsv<a class="headerlink" href="#filling-out-the-samples-tsv" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="filling-out-the-config-yaml">
+<h3>2.6.2 Filling out the config.yaml<a class="headerlink" href="#filling-out-the-config-yaml" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../results.html" class="btn btn-neutral float-right" title="Using the results" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="chip_seq.html" class="btn btn-neutral float-left" title="ChIP-seq" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright Maarten van der Sande, Siebren Frölich, Jos Smits, &amp; Simon van Heeringen.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

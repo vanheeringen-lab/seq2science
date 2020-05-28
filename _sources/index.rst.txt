@@ -10,8 +10,8 @@
    content/home
    content/gettingstarted
    content/fillingout
-   content/workflows
+   content/workflows.rst
    content/results
-   content/faq
    content/schemas
    content/extracontent
+   content/faq

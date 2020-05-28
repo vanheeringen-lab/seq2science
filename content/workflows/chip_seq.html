@@ -1,0 +1,297 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>ChIP-seq &mdash; seq2science  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="scATAC-seq" href="scatac_seq.html" />
+    <link rel="prev" title="RNA-seq" href="rna_seq.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> seq2science
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../home.html">Welcome</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../gettingstarted.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../fillingout.html">Filling out the samples.tsv and config.yaml</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../workflows.html">Workflows</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="download_fastq.html">Downloading fastqs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="alignment.html">Alignment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="atac_seq.html">ATAC-seq</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rna_seq.html">RNA-seq</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">ChIP-seq</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pipeline-steps">Pipeline steps</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#peak-calling">Peak calling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#replicates">Replicates</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quality-report">Quality report</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#count-table">count table</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#trackhub">Trackhub</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#best-practices">Best practices</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#automated-downloading-of-fastq">(Automated) downloading of fastq</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#alignment">Alignment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#irreproducible-discovery-rate">Irreproducible Discovery Rate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#broad-peaks">Broad peaks</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="scatac_seq.html">scATAC-seq</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../results.html">Using the results</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../schemas.html">All configurable options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../extracontent.html">Extra resources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">Frequently Asked Questions (FAQ)</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">seq2science</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../workflows.html">Workflows</a> &raquo;</li>
+        
+      <li>ChIP-seq</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/vanheeringen-lab/seq2science/blob/master/docs/content/workflows/chip_seq.md" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="chip-seq">
+<h1>ChIP-seq<a class="headerlink" href="#chip-seq" title="Permalink to this headline">¶</a></h1>
+<p>Running a CHiP-seq pipeline has never been easier! See our <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/tree/master/workflows/chip_seq">CHiP-seq</a> workflow.</p>
+<div class="section" id="pipeline-steps">
+<h2>Pipeline steps<a class="headerlink" href="#pipeline-steps" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="peak-calling">
+<h3>Peak calling<a class="headerlink" href="#peak-calling" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="macs2">
+<h4>MACS2<a class="headerlink" href="#macs2" title="Permalink to this headline">¶</a></h4>
+<p><a class="reference external" href="https://github.com/taoliu/MACS">MACS2</a> is the successor of MACS, created by <a class="reference external" href="https://github.com/taoliu">taoliu</a> (also one of the co-authors of hmmratac). MACS2 generates a ‘<em>pileup</em>’ of all the reads. You can imagine this pileup as laying all reads on top of each other on the genome, and counting how high your pile gets for each basepair. MACS2 then models ‘<em>background</em>’ values, based on the total length of all your reads and the genome length, to a <a class="reference external" href="https://en.wikipedia.org/wiki/Poisson_distribution">Poisson distribution</a> and decides whether your experimental pileup is significant compared to the poisson distribution. MACS2 is one of the (if not the) most used peak caller.</p>
+<p>For the calculation of peaks MACS2 requires that a genome size is being passed as one of its arguments. For the more common assemblies (e.g. mm10 and human) these numbers can be found online. However we found googling these numbers quite the hassle, so the pipeline automatically estimates this number (we calculate the genome size as <strong>the number of unique kmers of the average read length</strong>).</p>
+</div>
+<div class="section" id="genrich">
+<h4>Genrich<a class="headerlink" href="#genrich" title="Permalink to this headline">¶</a></h4>
+<p><a class="reference external" href="https://github.com/jsh58/Genrich">Genrich</a> is the spiritual successor of MACS2, created by <a class="reference external" href="https://github.com/jsh58">John M. Gaspar</a>. Just like MACS2 is generates a ‘<em>pileup’</em>. However the author of genrich realized that the distribution of pileup never follows a poisson distribution. Genrich then uses a <a class="reference external" href="https://en.wikipedia.org/wiki/Log-normal_distribution">log-normal distribution</a> to model the background. Genrich has many nice features, but is a relatively new and untested, and is not published yet.</p>
+</div>
+</div>
+<div class="section" id="replicates">
+<h3>Replicates<a class="headerlink" href="#replicates" title="Permalink to this headline">¶</a></h3>
+<p>All peak callers are capable of combining biological replicates. See <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/wiki/1.1-Filling-out-the-samples.tsv#atac--and-chip-seq">Replicate handling</a> for more information.</p>
+</div>
+<div class="section" id="quality-report">
+<h3>Quality report<a class="headerlink" href="#quality-report" title="Permalink to this headline">¶</a></h3>
+<p>Since the pipeline does a lot of steps automatically, it is very useful to have a quality report of samples. Along the way different quality control steps are taken, and are outputted in a single <a class="reference external" href="https://multiqc.info/">multiqc report</a> in the <code class="docutils literal notranslate"><span class="pre">qc</span></code> folder. Make sure to always check the report, and take a look at <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/wiki/3.0-Interpreting-the-MultiQC-report">interpreting the multiqc report</a>!</p>
+</div>
+<div class="section" id="count-table">
+<h3>count table<a class="headerlink" href="#count-table" title="Permalink to this headline">¶</a></h3>
+<p>A useful result the pipeline outputs is the ‘count table’, located at {peak_caller}/count<em>table</em>{assembly}.bed. For every peak the peak caller found in your data, it outputs the number of reads for each sample that was under that peak.</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>                sample1     sample2
+FLLO01000001.1:5649-5849    75.00000    0.00000
+FLLO01000001.1:7399-7599    47.00000    1.00000
+</pre></div>
+</div>
+<p><strong>Note</strong> that this uses the number of raw reads under each peak, and does not use any kind of correction for the difference in total number of reads between samples!</p>
+</div>
+<div class="section" id="trackhub">
+<h3>Trackhub<a class="headerlink" href="#trackhub" title="Permalink to this headline">¶</a></h3>
+<p>A trackhub is be generated for this workflow. See the <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/wiki/3.1-Trackhub">Trackhub page</a> for more information!</p>
+</div>
+</div>
+<div class="section" id="best-practices">
+<h2>Best practices<a class="headerlink" href="#best-practices" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="automated-downloading-of-fastq">
+<h3>(Automated) downloading of fastq<a class="headerlink" href="#automated-downloading-of-fastq" title="Permalink to this headline">¶</a></h3>
+<p>ATAC-seq can be done with local fastq files, downloaded files, or a mix of those. Make sure to take a look at our downloading fastq <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/wiki/2.-Downloading-samples">best practices</a> when making use of the downloading functionality.</p>
+</div>
+<div class="section" id="alignment">
+<h3>Alignment<a class="headerlink" href="#alignment" title="Permalink to this headline">¶</a></h3>
+<p>Make sure to take a look at our <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/wiki/3.-Alignment">alignment wiki</a>.</p>
+</div>
+<div class="section" id="irreproducible-discovery-rate">
+<h3>Irreproducible Discovery Rate<a class="headerlink" href="#irreproducible-discovery-rate" title="Permalink to this headline">¶</a></h3>
+<p>For idr to work properly, it needs a (large) portion of peaks that are actually not true peaks. Therefore we recommend to call peaks ‘loosely’. One way of doing this is setting the <a class="reference external" href="https://github.com/taoliu/MACS#-p--pvalue">peak threshold p-value</a> high for macs2 in the configuration.</p>
+</div>
+<div class="section" id="broad-peaks">
+<h3>Broad peaks<a class="headerlink" href="#broad-peaks" title="Permalink to this headline">¶</a></h3>
+<p>Some histone marks (such as H3K9me3 and H3K27me3) produce broader (wider) peaks. If you want macs2 to call broad peaks you need to add the <code class="docutils literal notranslate"><span class="pre">--broad</span></code> flag in the macs2 call in the config. Furthermore additional tweaking of the broadness of your peaks is possible by also adding the options: <code class="docutils literal notranslate"><span class="pre">--broad-cutoff</span></code> and especially <code class="docutils literal notranslate"><span class="pre">--max-gap</span></code> in the macs call in the config.
+For example using H3K27me3 data you can use  <code class="docutils literal notranslate"><span class="pre">--broad-cutoff</span> <span class="pre">0.1</span></code>, and  <code class="docutils literal notranslate"><span class="pre">--max-gap</span> <span class="pre">10000</span></code> (10kb), this will merge peaks closer than 10kb together as shown bellow:</p>
+<p>WIP: Genome browser image comparing peak tracks</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="scatac_seq.html" class="btn btn-neutral float-right" title="scATAC-seq" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="rna_seq.html" class="btn btn-neutral float-left" title="RNA-seq" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright Maarten van der Sande, Siebren Frölich, Jos Smits, &amp; Simon van Heeringen.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

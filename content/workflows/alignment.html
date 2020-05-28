@@ -1,0 +1,331 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Alignment &mdash; seq2science  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="ATAC-seq" href="atac_seq.html" />
+    <link rel="prev" title="Downloading fastqs" href="download_fastq.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> seq2science
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../home.html">Welcome</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../gettingstarted.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../fillingout.html">Filling out the samples.tsv and config.yaml</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../workflows.html">Workflows</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="download_fastq.html">Downloading fastqs</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Alignment</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pipeline-steps">Pipeline steps</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#automated-trimming">Automated trimming</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#alignment-sorting">Alignment &amp; Sorting</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#mark-duplicates">Mark duplicates</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#samtools-index">Samtools index</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quality-report">Quality report</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#trackhub">Trackhub</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#best-practices">Best practices</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#automated-downloading-of-fastq">(Automated) downloading of fastq</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#working-with-local-files">Working with local files</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#choosing-an-appropriate-aligner">Choosing an appropriate aligner</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bam-mapping-quality-filtering">BAM mapping quality filtering</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cram-support">Cram support</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="atac_seq.html">ATAC-seq</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rna_seq.html">RNA-seq</a></li>
+<li class="toctree-l2"><a class="reference internal" href="chip_seq.html">ChIP-seq</a></li>
+<li class="toctree-l2"><a class="reference internal" href="scatac_seq.html">scATAC-seq</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../results.html">Using the results</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../schemas.html">All configurable options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../extracontent.html">Extra resources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">Frequently Asked Questions (FAQ)</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">seq2science</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../workflows.html">Workflows</a> &raquo;</li>
+        
+      <li>Alignment</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/vanheeringen-lab/seq2science/blob/master/docs/content/workflows/alignment.md" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="alignment">
+<h1>Alignment<a class="headerlink" href="#alignment" title="Permalink to this headline">¶</a></h1>
+<p>Aligning samples has never been easier! See our <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/tree/master/workflows/alignment">alignment</a> workflow.</p>
+<div class="section" id="pipeline-steps">
+<h2>Pipeline steps<a class="headerlink" href="#pipeline-steps" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="automated-trimming">
+<h3>Automated trimming<a class="headerlink" href="#automated-trimming" title="Permalink to this headline">¶</a></h3>
+<p>The pipeline starts by trimming the reads with <a class="reference external" href="https://github.com/FelixKrueger/TrimGalore/blob/master/Docs/Trim_Galore_User_Guide.md">trim galore!</a>. Trim galore automatically first trims the low quality 3’ ends of reads, and removes short reads. After the quality trimming trim galore automatically detects which adapter was used, and trims it. The parameters of trim galore! for the pipeline can be set in the configuration by variable <em>trim_galore</em>.</p>
+</div>
+<div class="section" id="alignment-sorting">
+<h3>Alignment &amp; Sorting<a class="headerlink" href="#alignment-sorting" title="Permalink to this headline">¶</a></h3>
+<p>After trimming the reads are aligned against an assembly. Currently we support <em>bowtie2</em>, <em>bwa</em>, <em>hisat2</em> and <em>STAR</em> as aligners. Choosing which aligner is as easy as setting the <em>aligner</em> variable in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>, for example: <code class="docutils literal notranslate"><span class="pre">aligner:</span> <span class="pre">bwa</span></code>. Sensible defaults have been set for every aligner, but can be overwritten for either (or both) the indexing and alignment by specifying them in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>:</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">aligner:</span>
+<span class="c">  star:</span>
+<span class="c">    index: &#39;--limitGenomeGenerateRAM 55000000000`  # give STAR 55 GB RAM during indexing (default is 31 GB)</span>
+<span class="c">    align: &#39;--readFilesCommand gunzip -c&#39;          # unzips fastqs before aligning</span>
+</pre></div>
+</div>
+<p>The pipeline will check if the assembly you specified is present in the <em>genome_dir</em>, and otherwise will download it for you through <a class="reference external" href="https://github.com/vanheeringen-lab/genomepy">genomepy</a>. All these aligners require an index to be formed first for each assembly, but don’t worry, the pipeline does this for you.</p>
+<p>The outputted alignment.bam is immediately sorted by either samtools or sambamba (<em>bam_sorter</em>) either in <em>queryname</em> or <em>coordinate</em> (default) order. Take a look at our <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/wiki/3.-Alignment#choosing-an-appropriate-aligner">Choosing an aligner</a> section for tips which aligner to use.</p>
+</div>
+<div class="section" id="mark-duplicates">
+<h3>Mark duplicates<a class="headerlink" href="#mark-duplicates" title="Permalink to this headline">¶</a></h3>
+<p>After aligning &amp; sorting the bam duplicate reads are being ‘marked’ by picard Markduplicates. You can change the call by setting <em>markduplicates</em> in config.yaml.</p>
+</div>
+<div class="section" id="samtools-index">
+<h3>Samtools index<a class="headerlink" href="#samtools-index" title="Permalink to this headline">¶</a></h3>
+<p>Many downstream tools require an index of the deduplicated bam. The pipeline automatically generates these for you.</p>
+</div>
+<div class="section" id="quality-report">
+<h3>Quality report<a class="headerlink" href="#quality-report" title="Permalink to this headline">¶</a></h3>
+<p>Since the pipeline does a lot of steps automatically, it is very useful to have a quality report of samples. Along the way different quality control steps are taken, and are outputted in a single <a class="reference external" href="https://multiqc.info/">multiqc report</a>. Make sure to always check the report, and see our <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/wiki/9.-Interpreting-the-quality-report">explanation</a> on how to interpret the different scores!</p>
+</div>
+<div class="section" id="trackhub">
+<h3>Trackhub<a class="headerlink" href="#trackhub" title="Permalink to this headline">¶</a></h3>
+<p>A trackhub can be generated for this workflow. See the <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/wiki/Trackhub">Trackhub page</a> for more information!</p>
+</div>
+</div>
+<div class="section" id="best-practices">
+<h2>Best practices<a class="headerlink" href="#best-practices" title="Permalink to this headline">¶</a></h2>
+<p>Additionally, the pipeline will search the <em>fastq_dir</em> directory for paired-ended files with unrecognized fqexts and attempt to parse them for you. As long as the suffixes are lexicographically ordered (R1 &gt; R2, pass1 &gt; pass2), you can ignore the <em>fqext</em> parameters.</p>
+<div class="section" id="automated-downloading-of-fastq">
+<h3>(Automated) downloading of fastq<a class="headerlink" href="#automated-downloading-of-fastq" title="Permalink to this headline">¶</a></h3>
+<p>Alignment can be done with local fastq files, downloaded files, or a mix of those. Make sure to take a look at our downloading fastq <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/wiki/2.-Downloading-samples">best practices</a> when making use of the downloading functionality.</p>
+</div>
+<div class="section" id="working-with-local-files">
+<h3>Working with local files<a class="headerlink" href="#working-with-local-files" title="Permalink to this headline">¶</a></h3>
+<p>See our <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/wiki/1.-Getting-started#where-does-the-workflow-store-results-and-looks-for-starting-points">Getting started</a> about working with local files.</p>
+</div>
+<div class="section" id="choosing-an-appropriate-aligner">
+<h3>Choosing an appropriate aligner<a class="headerlink" href="#choosing-an-appropriate-aligner" title="Permalink to this headline">¶</a></h3>
+<p>The RNA-seq workflow supports STAR and Salmon. By default, STAR is selected.</p>
+<ul class="simple">
+<li><p>STAR required large amounts of memory to index the genome, but is <a class="reference external" href="https://link.springer.com/article/10.1186/1471-2105-14-91">the more accurate</a> of the two.</p></li>
+<li><p>Salmon allows for fast and light-weight transcript quantification. The accuracy can be improved by using a decoy-aware index. This can be achieved by setting <em>decoy_aware_index</em> to True in the config.yaml. However, the generation of the decoy transcripts requires an even larger amounts of memory compared to STAR.</p></li>
+</ul>
+<p>ATAC-seq workflows often use BWA or Bowtie2. By default, BWA is selected.</p>
+</div>
+<div class="section" id="bam-mapping-quality-filtering">
+<h3>BAM mapping quality filtering<a class="headerlink" href="#bam-mapping-quality-filtering" title="Permalink to this headline">¶</a></h3>
+<p>All aligners pass a mapping quality (MAPQ) score to the reads. This score reflects the certainty that a read belongs to a certain genomic position. This score can then be used by <a class="reference external" href="https://deeptools.readthedocs.io/en/develop/">deeptools</a> to only keep reads of which the aligner is certain where it aligns, and to limit multimappers. You can set the minimum mapq score by using the configuration variable <code class="docutils literal notranslate"><span class="pre">min_mapping_quality</span></code>. Unfortunately, most aligners use a different scoring system. This problem has been nicely summarized <a class="reference external" href="https://sequencing.qcfail.com/articles/mapq-values-are-really-useful-but-their-implementation-is-a-mess/">here</a>.</p>
+<p>For the default aligners (BWA and STAR), a minimal quality score has been set to select uniquely mapped reads only. For other aligners, we suggest the following scores to filter for uniquely mapped reads:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Aligner</p></th>
+<th class="head"><p>min. MAPQ scores for uniquely mapped reads</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Bowtie2</p></td>
+<td><p>41</p></td>
+</tr>
+<tr class="row-odd"><td><p>BWA</p></td>
+<td><p>30</p></td>
+</tr>
+<tr class="row-even"><td><p>Hisat2</p></td>
+<td><p>44</p></td>
+</tr>
+<tr class="row-odd"><td><p>STAR</p></td>
+<td><p>255</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="cram-support">
+<h3>Cram support<a class="headerlink" href="#cram-support" title="Permalink to this headline">¶</a></h3>
+<p>For the edge-case where you want to work with cram files instead of bams, there is an option <code class="docutils literal notranslate"><span class="pre">cram_no_bam</span></code> which will convert your bam files to cram (saves around 60% storage).</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="atac_seq.html" class="btn btn-neutral float-right" title="ATAC-seq" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="download_fastq.html" class="btn btn-neutral float-left" title="Downloading fastqs" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright Maarten van der Sande, Siebren Frölich, Jos Smits, &amp; Simon van Heeringen.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
