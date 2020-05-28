@@ -12,7 +12,7 @@ set -e  # Exit immediately if a command exits with a non-zero status.
 WF=download_fastq
 
 printf "\ndownload default\n\n"
-#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml
 
 # alignment workflow
 WF=alignment
@@ -22,7 +22,7 @@ touch Jenkins/dag_fastqs/S1_1_R1.fastq.gz
 touch Jenkins/dag_fastqs/S1_1_R2.fastq.gz
 
 printf "\nalignment default\n"
-#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml
 
 mkdir -p Jenkins/assembly1
 touch Jenkins/assembly1/assembly1.fa
@@ -35,10 +35,10 @@ touch Jenkins_results/qc/trimming/S1_1_R1.fastq.gz_trimming_report.txt
 touch Jenkins_results/qc/trimming/S1_1_R2.fastq.gz_trimming_report.txt
 
 printf "\ndownload genome\n"
-#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/alignment/download_genome.tsv
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/alignment/download_genome.tsv
 
 printf "\nqc report\n"
-#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config create_qc_report=True
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config create_qc_report=True
 
 mkdir -p Jenkins_results/qc/fastqc
 touch Jenkins_results/qc/fastqc/S1_1_R1_fastqc.zip
@@ -54,26 +54,26 @@ mkdir -p Jenkins_results/qc/samtools_stats
 touch Jenkins_results/qc/samtools_stats/assembly1-S1_1.samtools-coordinate.samtools_stats.txt
 
 printf "\ntrackhub\n"
-#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config create_trackhub=True
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config create_trackhub=True
 
 printf "\naligners\n"
-#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/bowtie2.yaml
-## snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/bwa.yaml  # default
-#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/hisat2.yaml
-#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/star.yaml  # will download annotation too
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/bowtie2.yaml
+# snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/bwa.yaml  # default
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/hisat2.yaml
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/star.yaml  # will download annotation too
 
 printf "\nsorting\n"
-## snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/samtools_coordinate.yaml  # default
-#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/samtools_queryname.yaml
-#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/sambamba_coordinate.yaml
-#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/sambamba_queryname.yaml
+# snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/samtools_coordinate.yaml  # default
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/samtools_queryname.yaml
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/sambamba_coordinate.yaml
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/sambamba_queryname.yaml
 
 printf "\nalignmentsieve\n"
-#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/alignmentsieve.yaml
-#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/no_alignmentsieve.yaml
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/alignmentsieve.yaml
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/no_alignmentsieve.yaml
 
 printf "\ncram support\n"
-#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/cram_no_bam.yaml
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/cram_no_bam.yaml
 
 mkdir -p Jenkins/assembly2
 touch Jenkins/assembly2/assembly2.fa
@@ -90,14 +90,14 @@ touch Jenkins_results/qc/trimming/S1_2_R1.fastq.gz_trimming_report.txt
 touch Jenkins_results/qc/trimming/S1_2_R2.fastq.gz_trimming_report.txt
 
 printf "\nmultiple assemblies\n"
-#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/alignment/assemblies.tsv
-#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/alignment/assemblies.tsv --config create_qc_report=True
-#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/alignment/assemblies.tsv --config create_trackhub=True
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/alignment/assemblies.tsv
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/alignment/assemblies.tsv --config create_qc_report=True
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/alignment/assemblies.tsv --config create_trackhub=True
 
 printf "\nmultiple replicates\n"
-#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config technical_replicates=merge  # nothing to merge
-#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/alignment/replicates.tsv technical_replicates=keep
-#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/alignment/replicates.tsv technical_replicates=merge
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config technical_replicates=merge  # nothing to merge
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/alignment/replicates.tsv technical_replicates=keep
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/alignment/replicates.tsv technical_replicates=merge
 
 # TODO: intermediate files
 #s=2  # sample
@@ -114,104 +114,104 @@ printf "\nmultiple replicates\n"
 #touch Jenkins_results/bwa/assembly${a}-R${s}_${r}.samtools-coordinate-unsieved.bam.mtnucratiomtnuc.json
 #touch Jenkins_results/qc/samtools_stats/assembly${a}-R${s}_${r}.samtools-coordinate.samtools_stats.txt
 
-#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/alignment/replicates.tsv technical_replicates=merge --config create_qc_report=True
-#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/alignment/replicates.tsv technical_replicates=merge --config create_trackhub=True
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/alignment/replicates.tsv technical_replicates=merge --config create_qc_report=True
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/alignment/replicates.tsv technical_replicates=merge --config create_trackhub=True
 
 touch Jenkins/dag_fastqs/S2_1.fastq.gz
 touch Jenkins/dag_fastqs/S2_2.fastq.gz
 
 printf "\nmultiple replicates and assemblies\n"
-#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/alignment/complex_samples.tsv
-#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/alignment/complex_samples.tsv create_qc_report=True
-#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/alignment/complex_samples.tsv create_trackhub=True
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/alignment/complex_samples.tsv
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/alignment/complex_samples.tsv create_qc_report=True
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/alignment/complex_samples.tsv create_trackhub=True
 
 # TODO: should work untill here
 
-
-
-# ATAC-seq workflow
-WF=atac_seq
-
-printf "\ndefault atac-seq\n\n"
-#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml
-
-printf "\nqc report\n"
-#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config create_qc_report=True
-
-printf "\ntrackhub\n"
-#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config create_trackhub=True
-
-touch Jenkins_results/dedup/assembly1-S1_1.sambamba-queryname.bam
-touch Jenkins_results/dedup/assembly1-S1_1.sambamba-queryname.bam.bai
-
-printf "\npeak callers\n"
-# snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/macs2.yaml  # default
-#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/genrich.yaml
-
-mkdir -p Jenkins_results/qc/dedup
-touch Jenkins_results/qc/dedup/assembly1-S1_1.samtools-coordinate.metrics.txt
-
-printf "\nmultiple peak callers - qc report\n"
-#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/genrich_macs2.yaml --config create_qc_report=True
-
-printf "\nmultiple peak callers - trackhub\n"
-#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/genrich_macs2.yaml --config create_trackhub=True
-
-# TODO: intermediate files
-## generate data
-#mkdir -p Jenkins_results/qc/fastqc
-#touch Jenkins_results/qc/fastqc/S1_1_R1_fastqc.zip
-#touch Jenkins_results/qc/fastqc/S1_1_R2_fastqc.zip
-#touch Jenkins_results/qc/fastqc/S1_1_R1_trimmed_fastqc.zip  # required for minimal run
-#touch Jenkins_results/qc/fastqc/S1_1_R2_trimmed_fastqc.zip  # required for minimal run
-#mkdir -p Jenkins_results/qc/trimming
-#touch Jenkins_results/qc/trimming/S1_1_R1.fastq.gz_trimming_report.txt
-#touch Jenkins_results/qc/trimming/S1_1_R2.fastq.gz_trimming_report.txt
-#mkdir -p Jenkins_results/bwa
-#touch Jenkins_results/bwa/assembly1-S1_1.samtools-coordinate-unsieved.bam.mtnucratiomtnuc.json
-#mkdir -p Jenkins_results/qc/samtools_stats
-#touch Jenkins_results/qc/samtools_stats/assembly1-S1_1.samtools-coordinate.samtools_stats.txt
-#mkdir -p Jenkins_results/dedup
-#touch Jenkins_results/dedup/assembly1-S1_1.samtools-coordinate.bam  # required for minimal run
-#touch Jenkins_results/dedup/assembly1-S1_1.samtools-coordinate.bam.bai  # required for minimal run
+#
+#
+## ATAC-seq workflow
+#WF=atac_seq
+#
+#printf "\ndefault atac-seq\n\n"
+##snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml
+#
+#printf "\nqc report\n"
+##snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config create_qc_report=True
+#
+#printf "\ntrackhub\n"
+##snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config create_trackhub=True
+#
+#touch Jenkins_results/dedup/assembly1-S1_1.sambamba-queryname.bam
+#touch Jenkins_results/dedup/assembly1-S1_1.sambamba-queryname.bam.bai
+#
+#printf "\npeak callers\n"
+## snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/macs2.yaml  # default
+##snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/genrich.yaml
+#
 #mkdir -p Jenkins_results/qc/dedup
 #touch Jenkins_results/qc/dedup/assembly1-S1_1.samtools-coordinate.metrics.txt
-
-j=1
-for i in {3..8}; do
-  if (( $i > 4 )); then
-    j=2
-  fi
-  touch Jenkins/dag_fastqs/S${i}_1.fastq.gz
-  touch Jenkins_results/qc/fastqc/S${i}_1_fastqc.zip
-  touch Jenkins_results/qc/fastqc/S${i}_1_trimmed_fastqc.zip
-  touch Jenkins_results/qc/trimming/S${i}_1.fastq.gz_trimming_report.txt
-  touch Jenkins_results/bwa/assembly${j}-S${i}_1.samtools-coordinate-unsieved.bam.mtnucratiomtnuc.json
-  touch Jenkins_results/dedup/assembly${j}-S${i}_1.samtools-coordinate.bam
-  touch Jenkins_results/dedup/assembly${j}-S${i}_1.samtools-coordinate.bam.bai
-  touch Jenkins_results/qc/samtools_stats/assembly${j}-S${i}_1.samtools-coordinate.samtools_stats.txt
-  touch Jenkins_results/qc/dedup/assembly${j}-S${i}_1.samtools-coordinate.metrics.txt
-done
-
-printf "\nmultiple replicates and assemblies\n"
-snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/atac_seq/complex_samples.tsv technical_replicates=keep
-#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/atac_seq/complex_samples.tsv
-
-# TODO: intermediate files
-
-printf "\nmultiple replicates, conditions and assemblies\n"
-## snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/atac_seq/complex_samples.tsv combine_replicates=keep  # default
-#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/atac_seq/complex_samples.tsv combine_replicates=idr
-#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/atac_seq/complex_samples.tsv combine_replicates=fisher
-
-# TODO: intermediate files
-
-printf "\nmultiple replicates, conditions and assemblies - qc report\n"
-#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/atac_seq/complex_samples.tsv combine_replicates=idr create_qc_report=True
-#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/atac_seq/complex_samples.tsv combine_replicates=fisher create_qc_report=True
-
-printf "\nmultiple replicates, conditions and assemblies - trackhub\n"
-#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/atac_seq/complex_samples.tsv combine_replicates=idr create_trackhub=True
-#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/atac_seq/complex_samples.tsv combine_replicates=fisher create_trackhub=True
-
-# --dag | dot -Tsvg > graph.svg
+#
+#printf "\nmultiple peak callers - qc report\n"
+##snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/genrich_macs2.yaml --config create_qc_report=True
+#
+#printf "\nmultiple peak callers - trackhub\n"
+##snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/genrich_macs2.yaml --config create_trackhub=True
+#
+## TODO: intermediate files
+### generate data
+##mkdir -p Jenkins_results/qc/fastqc
+##touch Jenkins_results/qc/fastqc/S1_1_R1_fastqc.zip
+##touch Jenkins_results/qc/fastqc/S1_1_R2_fastqc.zip
+##touch Jenkins_results/qc/fastqc/S1_1_R1_trimmed_fastqc.zip  # required for minimal run
+##touch Jenkins_results/qc/fastqc/S1_1_R2_trimmed_fastqc.zip  # required for minimal run
+##mkdir -p Jenkins_results/qc/trimming
+##touch Jenkins_results/qc/trimming/S1_1_R1.fastq.gz_trimming_report.txt
+##touch Jenkins_results/qc/trimming/S1_1_R2.fastq.gz_trimming_report.txt
+##mkdir -p Jenkins_results/bwa
+##touch Jenkins_results/bwa/assembly1-S1_1.samtools-coordinate-unsieved.bam.mtnucratiomtnuc.json
+##mkdir -p Jenkins_results/qc/samtools_stats
+##touch Jenkins_results/qc/samtools_stats/assembly1-S1_1.samtools-coordinate.samtools_stats.txt
+##mkdir -p Jenkins_results/dedup
+##touch Jenkins_results/dedup/assembly1-S1_1.samtools-coordinate.bam  # required for minimal run
+##touch Jenkins_results/dedup/assembly1-S1_1.samtools-coordinate.bam.bai  # required for minimal run
+##mkdir -p Jenkins_results/qc/dedup
+##touch Jenkins_results/qc/dedup/assembly1-S1_1.samtools-coordinate.metrics.txt
+#
+#j=1
+#for i in {3..8}; do
+#  if (( $i > 4 )); then
+#    j=2
+#  fi
+#  touch Jenkins/dag_fastqs/S${i}_1.fastq.gz
+#  touch Jenkins_results/qc/fastqc/S${i}_1_fastqc.zip
+#  touch Jenkins_results/qc/fastqc/S${i}_1_trimmed_fastqc.zip
+#  touch Jenkins_results/qc/trimming/S${i}_1.fastq.gz_trimming_report.txt
+#  touch Jenkins_results/bwa/assembly${j}-S${i}_1.samtools-coordinate-unsieved.bam.mtnucratiomtnuc.json
+#  touch Jenkins_results/dedup/assembly${j}-S${i}_1.samtools-coordinate.bam
+#  touch Jenkins_results/dedup/assembly${j}-S${i}_1.samtools-coordinate.bam.bai
+#  touch Jenkins_results/qc/samtools_stats/assembly${j}-S${i}_1.samtools-coordinate.samtools_stats.txt
+#  touch Jenkins_results/qc/dedup/assembly${j}-S${i}_1.samtools-coordinate.metrics.txt
+#done
+#
+#printf "\nmultiple replicates and assemblies\n"
+#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/atac_seq/complex_samples.tsv technical_replicates=keep
+##snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/atac_seq/complex_samples.tsv
+#
+## TODO: intermediate files
+#
+#printf "\nmultiple replicates, conditions and assemblies\n"
+### snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/atac_seq/complex_samples.tsv combine_replicates=keep  # default
+##snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/atac_seq/complex_samples.tsv combine_replicates=idr
+##snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/atac_seq/complex_samples.tsv combine_replicates=fisher
+#
+## TODO: intermediate files
+#
+#printf "\nmultiple replicates, conditions and assemblies - qc report\n"
+##snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/atac_seq/complex_samples.tsv combine_replicates=idr create_qc_report=True
+##snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/atac_seq/complex_samples.tsv combine_replicates=fisher create_qc_report=True
+#
+#printf "\nmultiple replicates, conditions and assemblies - trackhub\n"
+##snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/atac_seq/complex_samples.tsv combine_replicates=idr create_trackhub=True
+##snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/atac_seq/complex_samples.tsv combine_replicates=fisher create_trackhub=True
+#
+## --dag | dot -Tsvg > graph.svg
