@@ -1,0 +1,6 @@
+# 2 replicates from 2 assemblies, incomplete column for good measure
+sample	assembly	replicate	descriptive_name
+T1_1	tinydata	T1	sample1
+T1_2	tinydata	T1
+T2_1	tinydata2	T2	sample3
+T2_2	tinydata2	T2	sample4

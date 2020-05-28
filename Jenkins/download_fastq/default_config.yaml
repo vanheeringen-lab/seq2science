@@ -1,0 +1,5 @@
+# tab-separated file
+samples: ../../Jenkins/download_fastq/samples.tsv
+
+# pipeline file locations
+result_dir: ../../Jenkins_results  # where to store results
