@@ -6,6 +6,8 @@
 
 The comprehensive snakemake workflows repository of the *van heeringen lab*. Please take a look at our [docs](https://github.com/vanheeringen-lab/snakemake-workflows/wiki) for help with installation, how to run it, and best practices.
 
+![alt text](imgs/seq2science.png "seq2science")
+
 ### Features
 - Automated installation of dependencies in self-contained environments through anaconda
 - Can be run either on personal computers or superclusters, e.g. surfsara, with minimal finetuning
