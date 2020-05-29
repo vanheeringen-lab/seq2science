@@ -24,7 +24,7 @@ rule create_SNAP_object:
     shell:
         """
         snaptools snap-pre --input-file={input.bams} --output-snap={output} --genome-name={params.assembly} \
-        --genome-size={input.genome_size} {params.params} {chrm} {mapq} > {log} 2>&1
+        --genome-size={input.genome_size} {params.params} {params.chrm} {params.mapq} > {log} 2>&1
         """
 
 rule create_bins_SNAP_object:
