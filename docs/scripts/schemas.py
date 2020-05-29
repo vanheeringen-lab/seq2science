@@ -11,7 +11,7 @@ final_md = (
 This is an automatically generated summary of all configurable options for seq2science. These options are loosely \
 grouped around workflows/topics, however they are generally also shared across workflows. So it is possible that  \
 tunable configuration settings are not mentioned in their topic. At the start of each seq2science run the complete \
-configuration is printed to stdout. You can use this printed configuration as the complete list of tunable \
+configuration is printed to stdout. You can use that printed configuration as the complete list of tunable \
 configuration settings. 
 
 We believe that all our default settings are reasonable, and manual finetuning is generally not required.
