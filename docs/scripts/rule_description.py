@@ -40,17 +40,12 @@ def get_clean_docstrings(dirty):
 
     return clean
 
-i = 0
 all_rules = {}
 for rules_file in os.listdir(path):
     with open(path + rules_file, 'r') as file:
         dirty = get_dirty_docstrings(file.read())
     clean = get_clean_docstrings(dirty)
     all_rules.update(clean)
-
-    # i += 1
-    # if i == 2:
-    #     break
 
 for rule in sorted(all_rules.keys()):
     docstring = all_rules[rule]

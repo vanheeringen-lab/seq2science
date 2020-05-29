@@ -35,11 +35,13 @@ def main():
         _init(args, workflows_dir, config_path)
     elif args.command == "run":
         _run(args, base_dir, workflows_dir, config_path)
+    elif args.command == "clean":
+        _clean()
     elif args.command == "docs":
         _docs()
 
 
-def seq2science_parser(workflows_dir):
+def seq2science_parser(workflows_dir="./workflows/"):
     """
     Make the seq2science parser.
     """
@@ -60,8 +62,13 @@ def seq2science_parser(workflows_dir):
     run = subparsers.add_parser(
         "run",
         description="Run a complete workflow. This requires that a config and samples file "
-        "are present. These files can be ",
+        "are present. These files can be TODO finish",
         help="Run a complete workflow.",
+    )
+    clean = subparsers.add_parser(
+        "clean",
+        description="TODO: implement me!",
+        help="Remove all cached conda environments.",
     )
     docs = subparsers.add_parser(
         "docs",
@@ -176,6 +183,13 @@ def _run(args, base_dir, workflows_dir, config_path):
         **args.snakemakeOptions
     )
     sys.exit(exit_code)
+
+
+def _clean():
+    """
+
+    """
+    raise NotImplementedError()
 
 
 def _docs():

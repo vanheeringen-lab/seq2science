@@ -27,7 +27,7 @@ copyright = "Maarten van der Sande, Siebren Frölich, Jos Smits, & Simon van Hee
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ["sphinx.ext.autodoc", "m2r"]
+extensions = ["sphinx.ext.autodoc", "m2r", "sphinxarg.ext"]
 source_suffix = [".rst", ".md"]
 
 
