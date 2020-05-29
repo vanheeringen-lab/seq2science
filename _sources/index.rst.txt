@@ -11,6 +11,6 @@
    content/fillingout
    content/workflows.rst
    content/results
-   content/schemas
+   content/extensive_docs
    content/extracontent
    content/faq

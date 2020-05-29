@@ -36,7 +36,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Extra resources" href="extracontent.html" />
-    <link rel="prev" title="Using the results" href="results.html" /> 
+    <link rel="prev" title="Per rule explanation" href="all_rules.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -85,61 +85,65 @@
 <li class="toctree-l1"><a class="reference internal" href="fillingout.html">Filling out the samples.tsv and config.yaml</a></li>
 <li class="toctree-l1"><a class="reference internal" href="workflows.html">Workflows</a></li>
 <li class="toctree-l1"><a class="reference internal" href="results.html">Using the results</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">All configurable options</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#general">general</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#samples">samples</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#rule-dir">rule_dir</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#result-dir">result_dir</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#genome-dir">genome_dir</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#log-dir">log_dir</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#benchmark-dir">benchmark_dir</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#fqext1">fqext1</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#fqext2">fqext2</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#fqsuffix">fqsuffix</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#cpulimit">cpulimit</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#email">email</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="extensive_docs.html">Extensive docs</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html">Per rule explanation</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">All configurable options</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#general">general</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#samples">samples</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#rule-dir">rule_dir</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#result-dir">result_dir</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#genome-dir">genome_dir</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#log-dir">log_dir</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#benchmark-dir">benchmark_dir</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fqext1">fqext1</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fqext2">fqext2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fqsuffix">fqsuffix</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cpulimit">cpulimit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#email">email</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#alignment-general">alignment general</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#trimmed-dir">trimmed_dir</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#qc-dir">qc_dir</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#dedup-dir">dedup_dir</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#trim-galore">trim_galore</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#technical-replicates">technical_replicates</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#biological-replicates">biological_replicates</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#aligner">aligner</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#samtools-index">samtools_index</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#markduplicates">markduplicates</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#min-mapping-quality">min_mapping_quality</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#tn5-shift">tn5_shift</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#remove-blacklist">remove_blacklist</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#remove-mito">remove_mito</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#only-primary-align">only_primary_align</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#create-qc-report">create_qc_report</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#alignment-general">alignment general</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#trimmed-dir">trimmed_dir</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#qc-dir">qc_dir</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dedup-dir">dedup_dir</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#trim-galore">trim_galore</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#technical-replicates">technical_replicates</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#biological-replicates">biological_replicates</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#aligner">aligner</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#samtools-index">samtools_index</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#markduplicates">markduplicates</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#min-mapping-quality">min_mapping_quality</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tn5-shift">tn5_shift</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#remove-blacklist">remove_blacklist</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#remove-mito">remove_mito</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#only-primary-align">only_primary_align</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#create-qc-report">create_qc_report</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#alignment-workflow-specific">alignment workflow specific</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#bam-sorter">bam_sorter</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#cram-no-bam">cram_no_bam</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#alignment-workflow-specific">alignment workflow specific</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#bam-sorter">bam_sorter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cram-no-bam">cram_no_bam</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#peak-calling-chip-atac">peak calling (ChIP &amp; ATAC)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#peak-caller">peak_caller</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#macs2-keep-mates">macs2_keep_mates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#peak-calling-chip-atac">peak calling (ChIP &amp; ATAC)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#peak-caller">peak_caller</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#macs2-keep-mates">macs2_keep_mates</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#gene-expression-rna-seq">gene expression (RNA-seq)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#counts-dir">counts_dir</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#dge-dir">dge_dir</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#quantifier">quantifier</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#tximeta">tximeta</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#diffexp">diffexp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gene-expression-rna-seq">gene expression (RNA-seq)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#counts-dir">counts_dir</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dge-dir">dge_dir</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quantifier">quantifier</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tximeta">tximeta</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#diffexp">diffexp</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#trackhub">trackhub</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#create-trackhub">create_trackhub</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#deeptools">deeptools</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#filter-bam-by-strand">filter_bam_by_strand</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trackhub">trackhub</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#create-trackhub">create_trackhub</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#deeptools">deeptools</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#filter-bam-by-strand">filter_bam_by_strand</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -191,6 +195,8 @@
     
       <li><a href="../index.html">Docs</a> &raquo;</li>
         
+          <li><a href="extensive_docs.html">Extensive docs</a> &raquo;</li>
+        
       <li>All configurable options</li>
     
     
@@ -214,7 +220,7 @@
             
   <div class="section" id="all-configurable-options">
 <h1>All configurable options<a class="headerlink" href="#all-configurable-options" title="Permalink to this headline">¶</a></h1>
-<p>This is an automatically generated summary of all configurable options for seq2science. These options are loosely grouped around workflows/topics, however they are generally also shared across workflows. So it is possible that  tunable configuration settings are not mentioned in their topic. At the start of each seq2science run the complete configuration is printed to stdout. You can use this printed configuration as the complete list of tunable configuration settings.</p>
+<p>This is an automatically generated summary of all configurable options for seq2science. These options are loosely grouped around workflows/topics, however they are generally also shared across workflows. So it is possible that  tunable configuration settings are not mentioned in their topic. At the start of each seq2science run the complete configuration is printed to stdout. You can use that printed configuration as the complete list of tunable configuration settings.</p>
 <p>We believe that all our default settings are reasonable, and manual finetuning is generally not required.</p>
 <div class="section" id="general">
 <h2>general<a class="headerlink" href="#general" title="Permalink to this headline">¶</a></h2>
@@ -677,7 +683,7 @@
         <a href="extracontent.html" class="btn btn-neutral float-right" title="Extra resources" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="results.html" class="btn btn-neutral float-left" title="Using the results" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="all_rules.html" class="btn btn-neutral float-left" title="Per rule explanation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

@@ -1,0 +1,766 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Per rule explanation &mdash; seq2science  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="All configurable options" href="schemas.html" />
+    <link rel="prev" title="Extensive docs" href="extensive_docs.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> seq2science
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="gettingstarted.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fillingout.html">Filling out the samples.tsv and config.yaml</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workflows.html">Workflows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="results.html">Using the results</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="extensive_docs.html">Extensive docs</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Per rule explanation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#insertsizemetrics">InsertSizeMetrics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mtnucratiocalculator">MTNucRatioCalculator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#bam2cram">bam2cram</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#bam-bigwig">bam_bigwig</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#bam-stranded-bigwig">bam_stranded_bigwig</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#bedgraph-bigwig">bedgraph_bigwig</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#bedgraphish-to-bedgraph">bedgraphish_to_bedgraph</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#blind-clustering">blind_clustering</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#bowtie2-align">bowtie2_align</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#bowtie2-index">bowtie2_index</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#bwa-index">bwa_index</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#bwa-mem">bwa_mem</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#call-peak-genrich">call_peak_genrich</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#computematrix">computeMatrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#counts-matrix">counts_matrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cytoband">cytoband</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#decoy-transcripts">decoy_transcripts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#deseq2">deseq2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#fastqc">fastqc</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#featurecounts">featureCounts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gcpercent">gcPercent</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#genrich-pileup">genrich_pileup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#get-annotation">get_annotation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#get-genome">get_genome</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#get-transcripts">get_transcripts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#hisat2-align">hisat2_align</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#hisat2-index">hisat2_index</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#hmmratac">hmmratac</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id2sra">id2sra</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#idr">idr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#keep-mates">keep_mates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#linked-txome">linked_txome</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#macs2-callpeak">macs2_callpeak</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#macs-bdgcmp">macs_bdgcmp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#macs-cmbreps">macs_cmbreps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mark-duplicates">mark_duplicates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#merge-replicates">merge_replicates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multibamsummary">multiBamSummary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multiqc">multiqc</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multiqc-header-info">multiqc_header_info</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multiqc-rename-buttons">multiqc_rename_buttons</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#peak-bigpeak">peak_bigpeak</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#plotcorrelation">plotCorrelation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#plotfingerprint">plotFingerprint</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#plotpca">plotPCA</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#plotprofile">plotProfile</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#renamefastq-pe">renamefastq_PE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#salmon-decoy-aware-index">salmon_decoy_aware_index</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#salmon-index">salmon_index</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#salmon-quant">salmon_quant</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#samtools-index">samtools_index</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#samtools-presort">samtools_presort</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#samtools-sort">samtools_sort</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#samtools-stats">samtools_stats</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#setup-blacklist">setup_blacklist</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sieve-bam">sieve_bam</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#softmask-track-1">softmask_track_1</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#softmask-track-2">softmask_track_2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sra2fastq-pe">sra2fastq_PE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sra2fastq-se">sra2fastq_SE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#star-align">star_align</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#star-index">star_index</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#star-quant">star_quant</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trackhub">trackhub</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trackhub-index">trackhub_index</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trim-galore-pe">trim_galore_PE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trim-galore-se">trim_galore_SE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#twobit">twobit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#txi-count-matrix">txi_count_matrix</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="schemas.html">All configurable options</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="extracontent.html">Extra resources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions (FAQ)</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">seq2science</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="extensive_docs.html">Extensive docs</a> &raquo;</li>
+        
+      <li>Per rule explanation</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/vanheeringen-lab/seq2science/blob/master/docs/content/all_rules.md" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="per-rule-explanation">
+<h1>Per rule explanation<a class="headerlink" href="#per-rule-explanation" title="Permalink to this headline">¶</a></h1>
+<p>This is an automatically generated list of all supported rules, and their docstrings. At the start of each workflow
+run a list is printed of which rules will be run. And while the workflow is running it prints which rules are being started and finished. This page is here to give an explanation to the user about what each rule does, and for developers to find what is, and isn’t yet supported.</p>
+<div class="section" id="insertsizemetrics">
+<h2>InsertSizeMetrics<a class="headerlink" href="#insertsizemetrics" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Get the insert size metrics from a (paired-end) bam.
+</pre></div>
+</div>
+</div>
+<div class="section" id="mtnucratiocalculator">
+<h2>MTNucRatioCalculator<a class="headerlink" href="#mtnucratiocalculator" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Calculate the ratio mitochondrial dna in your sample.
+</pre></div>
+</div>
+</div>
+<div class="section" id="bam2cram">
+<h2>bam2cram<a class="headerlink" href="#bam2cram" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Convert bam to the more compressed cram format
+</pre></div>
+</div>
+</div>
+<div class="section" id="bam-bigwig">
+<h2>bam_bigwig<a class="headerlink" href="#bam-bigwig" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Convert a bam file into a bigwig file
+</pre></div>
+</div>
+</div>
+<div class="section" id="bam-stranded-bigwig">
+<h2>bam_stranded_bigwig<a class="headerlink" href="#bam-stranded-bigwig" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Convert a bam file into two bigwig files, one for each strand
+</pre></div>
+</div>
+</div>
+<div class="section" id="bedgraph-bigwig">
+<h2>bedgraph_bigwig<a class="headerlink" href="#bedgraph-bigwig" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Convert a bedgraph file into a bigwig.
+</pre></div>
+</div>
+</div>
+<div class="section" id="bedgraphish-to-bedgraph">
+<h2>bedgraphish_to_bedgraph<a class="headerlink" href="#bedgraphish-to-bedgraph" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Convert the bedgraph-ish file generated by genrich into true bedgraph file.
+</pre></div>
+</div>
+</div>
+<div class="section" id="blind-clustering">
+<h2>blind_clustering<a class="headerlink" href="#blind-clustering" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Create a sample distance matrix plot per assembly
+</pre></div>
+</div>
+</div>
+<div class="section" id="bowtie2-align">
+<h2>bowtie2_align<a class="headerlink" href="#bowtie2-align" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Align reads against a genome (index) with bowtie2, and pipe the output to the required sorter(s).
+</pre></div>
+</div>
+</div>
+<div class="section" id="bowtie2-index">
+<h2>bowtie2_index<a class="headerlink" href="#bowtie2-index" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Make a genome index for bowtie2.
+</pre></div>
+</div>
+</div>
+<div class="section" id="bwa-index">
+<h2>bwa_index<a class="headerlink" href="#bwa-index" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Make a genome index for bwa.
+</pre></div>
+</div>
+</div>
+<div class="section" id="bwa-mem">
+<h2>bwa_mem<a class="headerlink" href="#bwa-mem" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Align reads against a genome (index) with bwa, and pipe the output to the required sorter(s).
+</pre></div>
+</div>
+</div>
+<div class="section" id="call-peak-genrich">
+<h2>call_peak_genrich<a class="headerlink" href="#call-peak-genrich" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Call peaks with genrich based on the pileup.
+</pre></div>
+</div>
+</div>
+<div class="section" id="computematrix">
+<h2>computeMatrix<a class="headerlink" href="#computematrix" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>computeMatrix scale-regions -S {input.bw} {params.labels} -R {params.annotation} -p {threads} -b 2000 -a 500 -o {output} &gt; {log} 2&gt;&amp;1
+</pre></div>
+</div>
+</div>
+<div class="section" id="counts-matrix">
+<h2>counts_matrix<a class="headerlink" href="#counts-matrix" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>#              htseq-count -f bam -r pos -m union {input.cts} {input.gtf} &amp;&gt; {log}
+#              grep -v -- &#39;SAM\|GFF\|Warning&#39; {log} &gt; {output}
+#
+</pre></div>
+</div>
+</div>
+<div class="section" id="cytoband">
+<h2>cytoband<a class="headerlink" href="#cytoband" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Generate a cytoband track for each assembly
+
+source: http://genomewiki.ucsc.edu/index.php/Assembly_Hubs#Cytoband_Track
+</pre></div>
+</div>
+</div>
+<div class="section" id="decoy-transcripts">
+<h2>decoy_transcripts<a class="headerlink" href="#decoy-transcripts" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Generate decoy_transcripts.txt for Salmon indexing
+
+script source: https://github.com/COMBINE-lab/SalmonTools
+</pre></div>
+</div>
+</div>
+<div class="section" id="deseq2">
+<h2>deseq2<a class="headerlink" href="#deseq2" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Differential gene expression analysis with DESeq2.
+</pre></div>
+</div>
+</div>
+<div class="section" id="fastqc">
+<h2>fastqc<a class="headerlink" href="#fastqc" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Generate quality control report for fastq files.
+</pre></div>
+</div>
+</div>
+<div class="section" id="featurecounts">
+<h2>featureCounts<a class="headerlink" href="#featurecounts" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Use featureCounts to generate the fraction reads in peaks score (frips/assigned reads).
+https://www.biostars.org/p/337872/
+https://www.biostars.org/p/228636/
+</pre></div>
+</div>
+</div>
+<div class="section" id="gcpercent">
+<h2>gcPercent<a class="headerlink" href="#gcpercent" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Generate a gc content track
+
+source: http://hgdownload.cse.ucsc.edu/goldenPath/hg19/gc5Base/
+</pre></div>
+</div>
+</div>
+<div class="section" id="genrich-pileup">
+<h2>genrich_pileup<a class="headerlink" href="#genrich-pileup" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Generate the pileup. We do this separately from peak-calling since these two processes have a very different
+computational footprint.
+</pre></div>
+</div>
+</div>
+<div class="section" id="get-annotation">
+<h2>get_annotation<a class="headerlink" href="#get-annotation" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Matches the chromosome/scaffold names in annotation.gtf to those in the genome.fa.
+</pre></div>
+</div>
+</div>
+<div class="section" id="get-genome">
+<h2>get_genome<a class="headerlink" href="#get-genome" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Download a genome through genomepy.
+Additionally downloads the gene annotation if required downstream.
+
+If assemblies with the same name can be downloaded from multiple providers,
+a provider may be specified in the config (example: provider: NCBI). Otherwise,
+each provider will be tried in turn, stopping at the first success.
+
+Automatically turns on/off plugins.
+</pre></div>
+</div>
+</div>
+<div class="section" id="get-transcripts">
+<h2>get_transcripts<a class="headerlink" href="#get-transcripts" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Generate transcripts.fasta using gffread.
+
+Requires genome.fa and annotation.gtf (with matching chromosome/scaffold names)
+</pre></div>
+</div>
+</div>
+<div class="section" id="hisat2-align">
+<h2>hisat2_align<a class="headerlink" href="#hisat2-align" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Align reads against a genome (index) with hisat2, and pipe the output to the required sorter(s).
+</pre></div>
+</div>
+</div>
+<div class="section" id="hisat2-index">
+<h2>hisat2_index<a class="headerlink" href="#hisat2-index" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Make a genome index for hisat2.
+</pre></div>
+</div>
+</div>
+<div class="section" id="hmmratac">
+<h2>hmmratac<a class="headerlink" href="#hmmratac" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Call &#39;peaks&#39; with HMMRATAC.
+</pre></div>
+</div>
+</div>
+<div class="section" id="id2sra">
+<h2>id2sra<a class="headerlink" href="#id2sra" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Download the SRA of a sample by its unique identifier.
+
+Tries first downloading with the faster ascp protocol, if that fails it falls back on the slower http protocol.
+</pre></div>
+</div>
+</div>
+<div class="section" id="idr">
+<h2>idr<a class="headerlink" href="#idr" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Combine replicates based on the irreproducible discovery rate (IDR). Can only handle two replicates, not
+more, not less. For more than two replicates use fisher&#39;s method.
+</pre></div>
+</div>
+</div>
+<div class="section" id="keep-mates">
+<h2>keep_mates<a class="headerlink" href="#keep-mates" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Generate the &#39;genome info&#39; that hmmratac requires for peak calling.
+https://github.com/LiuLabUB/HMMRATAC/issues/17
+
+TODO isnt this just .fa.sizes?
+</pre></div>
+</div>
+</div>
+<div class="section" id="linked-txome">
+<h2>linked_txome<a class="headerlink" href="#linked-txome" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Generate a linked transcriptome for tximeta
+
+Also creates a symlink to the gtf in an Ensembl format (required by tximeta)
+
+Required to converting salmon output (estimated transcript abundances) to gene counts
+</pre></div>
+</div>
+</div>
+<div class="section" id="macs2-callpeak">
+<h2>macs2_callpeak<a class="headerlink" href="#macs2-callpeak" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Call peaks using macs2.
+Macs2 requires a genome size, which we estimate from the amount of unique kmers of the average read length.
+</pre></div>
+</div>
+</div>
+<div class="section" id="macs-bdgcmp">
+<h2>macs_bdgcmp<a class="headerlink" href="#macs-bdgcmp" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Prepare p-value files for rule macs_cmbreps
+</pre></div>
+</div>
+</div>
+<div class="section" id="macs-cmbreps">
+<h2>macs_cmbreps<a class="headerlink" href="#macs-cmbreps" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Combine replicates through Fisher&#39;s method
+
+(Link original peakfile in replicate_processed if there is only 1 sample for a condition)
+</pre></div>
+</div>
+</div>
+<div class="section" id="mark-duplicates">
+<h2>mark_duplicates<a class="headerlink" href="#mark-duplicates" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Mark (but keep) all duplicate reads in a bam file with picard MarkDuplicates
+</pre></div>
+</div>
+</div>
+<div class="section" id="merge-replicates">
+<h2>merge_replicates<a class="headerlink" href="#merge-replicates" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Merge replicates (fastqs) simply by concatenating the files.
+
+Must happen after trimming due to trim-galore&#39;s automatic adapter trimming method
+
+If a replicate has only 1 sample in it, rename and move instead.
+</pre></div>
+</div>
+</div>
+<div class="section" id="multibamsummary">
+<h2>multiBamSummary<a class="headerlink" href="#multibamsummary" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>multiBamSummary bins --bamfiles {input.bams} -out {output} {params} -p {threads} &gt; {log} 2&gt;&amp;1
+</pre></div>
+</div>
+</div>
+<div class="section" id="multiqc">
+<h2>multiqc<a class="headerlink" href="#multiqc" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Aggregate all the quality control metrics for every sample into a single multiqc report.
+</pre></div>
+</div>
+</div>
+<div class="section" id="multiqc-header-info">
+<h2>multiqc_header_info<a class="headerlink" href="#multiqc-header-info" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Generate a multiqc header file with contact info and date of multiqc generation.
+</pre></div>
+</div>
+</div>
+<div class="section" id="multiqc-rename-buttons">
+<h2>multiqc_rename_buttons<a class="headerlink" href="#multiqc-rename-buttons" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Generate rename buttons.
+</pre></div>
+</div>
+</div>
+<div class="section" id="peak-bigpeak">
+<h2>peak_bigpeak<a class="headerlink" href="#peak-bigpeak" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Convert a narrowpeak file into a bignarrowpeak file.
+https://genome-source.gi.ucsc.edu/gitlist/kent.git/tree/master/src/hg/lib/
+</pre></div>
+</div>
+</div>
+<div class="section" id="plotcorrelation">
+<h2>plotCorrelation<a class="headerlink" href="#plotcorrelation" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>plotCorrelation --corData {input} --outFileCorMatrix {output} -c spearman -p heatmap &gt; {log} 2&gt;&amp;1
+</pre></div>
+</div>
+</div>
+<div class="section" id="plotfingerprint">
+<h2>plotFingerprint<a class="headerlink" href="#plotfingerprint" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>plotFingerprint -b {input.bams} {params} --outRawCounts {output} -p {threads} &gt; {log} 2&gt;&amp;1
+</pre></div>
+</div>
+</div>
+<div class="section" id="plotpca">
+<h2>plotPCA<a class="headerlink" href="#plotpca" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>plotPCA --corData {input} --outFileNameData {output} &gt; {log} 2&gt;&amp;1
+</pre></div>
+</div>
+</div>
+<div class="section" id="plotprofile">
+<h2>plotProfile<a class="headerlink" href="#plotprofile" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>plotProfile -m {input} --outFileName {output.img} --outFileNameData {output.file} &gt; {log} 2&gt;&amp;1
+</pre></div>
+</div>
+</div>
+<div class="section" id="renamefastq-pe">
+<h2>renamefastq_PE<a class="headerlink" href="#renamefastq-pe" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Create symlinks to fastqs with incorrect fqexts (default R1/R2).
+Forward and reverse samples will be switched if forward/reverse names are not lexicographically ordered.
+</pre></div>
+</div>
+</div>
+<div class="section" id="salmon-decoy-aware-index">
+<h2>salmon_decoy_aware_index<a class="headerlink" href="#salmon-decoy-aware-index" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Make a decoy aware transcript index for Salmon.
+</pre></div>
+</div>
+</div>
+<div class="section" id="salmon-index">
+<h2>salmon_index<a class="headerlink" href="#salmon-index" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Make a transcriptomic index for Salmon.
+</pre></div>
+</div>
+</div>
+<div class="section" id="salmon-quant">
+<h2>salmon_quant<a class="headerlink" href="#salmon-quant" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Align reads against a transcriptome (index) with Salmon (mapping-based mode) and output a quantification file per sample.
+</pre></div>
+</div>
+</div>
+<div class="section" id="samtools-index">
+<h2>samtools_index<a class="headerlink" href="#samtools-index" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Create an index of a bam file which can be used for e.g. visualization.
+</pre></div>
+</div>
+</div>
+<div class="section" id="samtools-presort">
+<h2>samtools_presort<a class="headerlink" href="#samtools-presort" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Sort the result of alignment with the samtools sorter.
+</pre></div>
+</div>
+</div>
+<div class="section" id="samtools-sort">
+<h2>samtools_sort<a class="headerlink" href="#samtools-sort" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Sort the result of sieving with the samtools sorter.
+</pre></div>
+</div>
+</div>
+<div class="section" id="samtools-stats">
+<h2>samtools_stats<a class="headerlink" href="#samtools-stats" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Get general stats from bam files like percentage mapped.
+</pre></div>
+</div>
+</div>
+<div class="section" id="setup-blacklist">
+<h2>setup_blacklist<a class="headerlink" href="#setup-blacklist" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>sortBed -faidx {input.sizes} -i {input.blacklist} |
+complementBed -i /dev/stdin -g {input.sizes} &gt; {output} 2&gt; {log}
+</pre></div>
+</div>
+</div>
+<div class="section" id="sieve-bam">
+<h2>sieve_bam<a class="headerlink" href="#sieve-bam" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Sort the result of alignment or sieving with the sambamba sorter.
+</pre></div>
+</div>
+</div>
+<div class="section" id="softmask-track-1">
+<h2>softmask_track_1<a class="headerlink" href="#softmask-track-1" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Generate a track of all softmasked regions
+
+source: https://github.com/Gaius-Augustus/MakeHub/blob/master/make_hub.py
+</pre></div>
+</div>
+</div>
+<div class="section" id="softmask-track-2">
+<h2>softmask_track_2<a class="headerlink" href="#softmask-track-2" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Generate a track of all softmasked regions
+
+source: https://github.com/Gaius-Augustus/MakeHub/blob/master/make_hub.py
+</pre></div>
+</div>
+</div>
+<div class="section" id="sra2fastq-pe">
+<h2>sra2fastq_PE<a class="headerlink" href="#sra2fastq-pe" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Downloaded (raw) SRAs are converted to paired-end fastq files.
+Forward and reverse samples will be switched if forward/reverse names are not lexicographically ordered.
+</pre></div>
+</div>
+</div>
+<div class="section" id="sra2fastq-se">
+<h2>sra2fastq_SE<a class="headerlink" href="#sra2fastq-se" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Downloaded (raw) SRAs are converted to single-end fastq files.
+</pre></div>
+</div>
+</div>
+<div class="section" id="star-align">
+<h2>star_align<a class="headerlink" href="#star-align" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Align reads against a genome (index) with STAR, and pipe the output to the required sorter(s).
+</pre></div>
+</div>
+</div>
+<div class="section" id="star-index">
+<h2>star_index<a class="headerlink" href="#star-index" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Make a genome index for STAR.
+
+Troubleshooting:
+1) sufficient disk space?
+2) increase the RAM available (--limitGenomeGenerateRAM)
+3) reduce the number of threads (snakemake -j 5)
+4) reduce accuracy (--genomeSAsparseD 2)
+
+For example, in your config.yaml, set aligner/quantifier:
+aligner:
+star:
+index: --limitGenomeGenerateRAM 60000000000 --genomeSAsparseD 1
+</pre></div>
+</div>
+</div>
+<div class="section" id="star-quant">
+<h2>star_quant<a class="headerlink" href="#star-quant" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Quantify reads against a genome and transcriptome (index) with STAR and output a counts table per sample.
+</pre></div>
+</div>
+</div>
+<div class="section" id="trackhub">
+<h2>trackhub<a class="headerlink" href="#trackhub" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Generate a trackhub which has to be hosted on an internet accessible location,
+but can then be viewed through the UCSC genome browser.
+</pre></div>
+</div>
+</div>
+<div class="section" id="trackhub-index">
+<h2>trackhub_index<a class="headerlink" href="#trackhub-index" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Generate a searchable annotation &amp; index for each assembly
+
+source: https://genome.ucsc.edu/goldenPath/help/hubQuickStartSearch.html
+</pre></div>
+</div>
+</div>
+<div class="section" id="trim-galore-pe">
+<h2>trim_galore_PE<a class="headerlink" href="#trim-galore-pe" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Automated adapter detection, adapter trimming, and quality trimming through trim galore (paired-end).
+</pre></div>
+</div>
+</div>
+<div class="section" id="trim-galore-se">
+<h2>trim_galore_SE<a class="headerlink" href="#trim-galore-se" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Automated adapter detection, adapter trimming, and quality trimming through trim galore (single-end).
+</pre></div>
+</div>
+</div>
+<div class="section" id="twobit">
+<h2>twobit<a class="headerlink" href="#twobit" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Generate a 2bit file for each assembly
+</pre></div>
+</div>
+</div>
+<div class="section" id="txi-count-matrix">
+<h2>txi_count_matrix<a class="headerlink" href="#txi-count-matrix" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Convert estimated transcript abundances to gene count estimations and merge gene counts per assembly
+
+Also outputs a single cell experiment object similar to ARMOR (https://github.com/csoneson/ARMOR)
+
+Only works with Ensembl assemblies
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="schemas.html" class="btn btn-neutral float-right" title="All configurable options" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="extensive_docs.html" class="btn btn-neutral float-left" title="Extensive docs" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright Maarten van der Sande, Siebren Frölich, Jos Smits, &amp; Simon van Heeringen.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
