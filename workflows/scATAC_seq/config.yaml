@@ -5,9 +5,6 @@ samples: samples.tsv
 result_dir: ./results  # where to store results
 genome_dir: ./genomes  # where to look for or download the genomes
 # fastq_dir: (default is inside result_dir) # where to look for or download the fastqs
-annotation_file: ../../../Ares_scATAC/Annotation.toml
-plate_primer_file: ../../../Ares_scATAC/scATAC_plate_primer_well.tsv
-
 
 # contact info for multiqc report and trackhub
 email: yourmail@here.com
@@ -32,6 +29,10 @@ aligner: bwa
 #       '-a bwtsw'
 #     align:  # parameters for alignment
 #       ''
+
+
+# produce bams, bigwigs and QC statistics?
+create_trackhub: False
 
 # snaptools options
 # min-mapq & keep-chrm set by config options above
