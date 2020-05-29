@@ -1,0 +1,32 @@
+[project]
+name = "seq2science"
+version = "0.0.0"
+description = "seq2science: preprocessing of ngs data."
+author = [
+    "Maarten van der Sande <M.vanderSande@science.ru.nl>"]
+license = "MIT"
+url = "https://vanheeringen-lab.github.io/snakemake-workflows"
+scripts = ["scripts/seq2science"]
+package_data = "{'seq2science':['*']}"
+include_package_data = true
+
+classifiers = [
+    "Development Status :: 1 - Planning",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS :: MacOS X",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Bio-Informatics"]
+
+install_requires = ["snakemake", "toml"]
+python_requires = ">3.6"
+
+[build-system]
+requires = ["setuptools", "wheel", "toml"]
+build-backend = "setuptools.build_meta"
+
+# flake8 does not support pyproject.toml (yet?!)
+# [flake8] ...
