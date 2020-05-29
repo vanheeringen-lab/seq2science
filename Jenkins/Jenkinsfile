@@ -95,22 +95,7 @@ pipeline {
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                         conda activate miniconda/envs/snakemake-workflows/
 
-                        # test atac-seq workflow
-                        # default config
-                        printf "\ndefault atac-seq\n\n"
-                        snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config --quiet
-
-                        # test different peak callers
-                        printf "\natac peakcaller\n\n"
-                        snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --configfile Jenkins/atac_seq/genrich.yaml       --quiet
-                        snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --configfile Jenkins/atac_seq/macs2.yaml         --quiet
-                        snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --configfile Jenkins/atac_seq/genrich_macs2.yaml --quiet
-
-                        # test different replicate settings
-                        printf "\natac combine replicates\n\n"
-                        snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=fisher samples=../../Jenkins/atac_seq/samples.tsv --quiet
-                        snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=idr    samples=../../Jenkins/atac_seq/samples.tsv --quiet
-                        snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq -n -j 48 --config combine_replicates=merge  samples=../../Jenkins/atac_seq/samples.tsv --quiet
+                        ./scripts/dag_tests.sh atac-seq
                         '''
                     },
                     "3 RNA-seq" : {
