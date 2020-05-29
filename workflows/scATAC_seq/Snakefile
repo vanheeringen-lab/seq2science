@@ -26,7 +26,9 @@ rule snapATAC_all:
     """
     """
     input:
-        expand((["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []) +
+	expand((["{result_dir}/trackhub"] if config['create_trackhub'] else [])
+        expand((  expand((["{result_dir}/trackhub"] if config['create_trackhub'] else [])
+	["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []) +
                 [f"{{result_dir}}/snap/{trep}-{treps.loc[trep, 'assembly']}.binned.snap" for trep in treps.index],
                  **{**config,
                     **{'assemblies': set(samples['assembly'])}})
