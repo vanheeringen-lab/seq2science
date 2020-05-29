@@ -10,7 +10,11 @@ import json
 import webbrowser
 import re
 
-from snakemake import snakemake
+try:
+    from snakemake import snakemake
+    snake_import = True
+except ImportError:
+    snake_import = True
 
 
 __version__ = "0.0.0"
@@ -232,4 +236,7 @@ class _StoreDictKeyPair(argparse.Action):
 
 
 if __name__ == "__main__":
-    main()
+    if snake_import:
+        main()
+    else:
+        raise ImportError("Could not import snakemake, which is required to run the workflow.")
