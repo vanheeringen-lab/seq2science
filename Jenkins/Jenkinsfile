@@ -86,7 +86,7 @@ pipeline {
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                         conda activate miniconda/envs/snakemake-workflows/
 
-                        ./scripts/dag_tests.sh
+                        ./scripts/dag_tests.sh download_n_alignment
                         '''
                     },
                     "2 ATAC-seq" : {

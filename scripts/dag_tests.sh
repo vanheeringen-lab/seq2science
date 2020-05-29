@@ -2,12 +2,11 @@
 
 # to run these tests locally:
 # 1)   chmod u+x ./scripts/dag_tests.sh
-# 2)   sh ./scripts/dag_tests.sh
+# 2)   ./scripts/dag_tests.sh TEST
 
-# check if an argument is passed
 if [ -z "$1" ]
   then
-    echo "No argument supplied"
+    echo "No test specified"
     exit
 fi
 
