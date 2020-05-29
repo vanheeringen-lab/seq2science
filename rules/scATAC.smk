@@ -11,16 +11,20 @@ rule create_SNAP_object:
         expand("{result_dir}/snap/{{sample}}-{{assembly}}.snap", **config)
     log:
         expand("{log_dir}/create_SNAP_object/{{sample}}-{{assembly}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/create_SNAP_object/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
     threads: 4
     conda:
         "../envs/snaptools.yaml"
     params:
         params=config["snaptools_opt"],
+        chrm=f"--keep-chrm={'TRUE' if not config['remove_mito'] else 'FALSE'}",
+        mapq=f"--min-mapq={config['min_mapping_quality']}",
         assembly=samples["assembly"][0]
     shell:
         """
         snaptools snap-pre --input-file={input.bams} --output-snap={output} --genome-name={params.assembly} \
-        --genome-size={input.genome_size} {params.params} > {log} 2>&1
+        --genome-size={input.genome_size} {params.params} {chrm} {mapq} > {log} 2>&1
         """
 
 rule create_bins_SNAP_object:
@@ -34,6 +38,8 @@ rule create_bins_SNAP_object:
         expand("{result_dir}/snap/{{sample}}-{{assembly}}.binned.snap", **config)
     log:
         expand("{log_dir}/create_bins_SNAP_object/{{sample}}-{{assembly}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/create_SNAP_object/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
     conda:
         "../envs/snaptools.yaml"
     params:
@@ -41,6 +47,6 @@ rule create_bins_SNAP_object:
     shell:
         """ 
         snaptools snap-add-bmat --snap-file={input} {params} > {log} 2>&1
-        echo "bmat added, moving file" > {log} 2>&1
-        mv {input} {output}	> {log} 2>&1
+        echo "bmat added, moving file" >> {log} 2>&1
+        mv {input} {output}	>> {log} 2>&1
         """

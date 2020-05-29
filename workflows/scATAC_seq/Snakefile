@@ -30,8 +30,3 @@ rule snapATAC_all:
                 [f"{{result_dir}}/snap/{trep}-{treps.loc[trep, 'assembly']}.binned.snap" for trep in treps.index],
                  **{**config,
                     **{'assemblies': set(samples['assembly'])}})
-        # config['result_dir'] + '/plates_overview.csv' ,
-        # [expand(f"{{result_dir}}/snap/{plate}-{samples.loc[plate, 'assembly']}.binned.snap", **config)[0] for plate in samples.index],
-        # expand(["{qc_dir}/multiqc_{assemblies}.html"],
-        #          **{**config,
-        #             **{'assemblies': set(samples['assembly'])}})

@@ -62,6 +62,7 @@ rule featureCounts:
         mv $(dirname {output.real_out})/$(basename {output.summary}) {output.summary}
         """
 
+
 def get_fastqc_input(wildcards):
     if '_trimmed' in wildcards.fname:
         if 'replicate' in samples and config.get('technical_replicates', '') == 'merge' and all(sample not in wildcards.fname for sample in samples.index):
@@ -72,6 +73,7 @@ def get_fastqc_input(wildcards):
         fqc_input = "{fastq_dir}/{{fname}}.{fqsuffix}.gz"
 
     return sorted(expand(fqc_input, **config))
+
 
 rule fastqc:
     """
@@ -352,6 +354,7 @@ def get_qc_files(wildcards):
     # trimming qc on individual samples
     if get_trimming_qc in quality_control:
         if get_workflow() == "scATAC_seq":
+            # scATAC special case to only want fastqc of trimmed merged reps
             for trep in treps[treps['assembly'] == wildcards.assembly].index:
                 qc['files'].update(get_trimming_qc(trep))
         else:
@@ -404,6 +407,8 @@ rule multiqc:
 
 def get_trimming_qc(sample):
     if get_workflow() == "scATAC_seq":
+        # we (at least for now) do not was fastqc for each single cell before and after trimming.
+        # still something to think about to add later, since that might be a good quality check though.
         return expand(f"{{qc_dir}}/fastqc/{sample}_{{fqext}}_trimmed_fastqc.zip", **config)
     else:
         if config['layout'][sample] == 'SINGLE':
