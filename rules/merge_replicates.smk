@@ -48,24 +48,23 @@ def rep_to_descriptive(rep):
 
 if 'replicate' in samples and config.get('technical_replicates') == 'merge':
     def get_merge_replicates(wildcards):
-        output = dict()
-        output["reps"] = expand([f"{{trimmed_dir}}/{sample}{wildcards.fqext}_trimmed.{{fqsuffix}}.gz"
-                         for sample in samples[samples['replicate'] == wildcards.replicate].index], **config)
-
+        input_files = dict()
+        input_files["reps"] = expand([f"{{trimmed_dir}}/{sample}{wildcards.fqext}_trimmed.{{fqsuffix}}.gz"
+                              for sample in samples[samples['replicate'] == wildcards.replicate].index], **config)
         # make sure we make the fastqc report before moving our file
-        if len(output["reps"]) == 1 and config["create_qc_report"]:
-            output["qc"] = expand([f"{{qc_dir}}/fastqc/{sample}{wildcards.fqext}_trimmed_fastqc.zip"
-                           for sample in samples[samples['replicate'] == wildcards.replicate].index], **config)
-        
-        return output
+        if get_workflow() != "scATAC_seq" and len(output["reps"]) == 1 and config["create_qc_report"]:
+            input_files["qc"] = expand([f"{{qc_dir}}/fastqc/{sample}{wildcards.fqext}_trimmed_fastqc.zip"
+                                for sample in samples[samples['replicate'] == wildcards.replicate].index], **config)
+        return input_files
 
     rule merge_replicates:
         """
-        Merge replicates (fastqs) simply by concatenating the files.
+        Merge replicates (fastqs) simply by concatenating the files. We also change the name of the read headers to 
+        contain the name of the original replicate.
         
         Must happen after trimming due to trim-galore's automatic adapter trimming method 
         
-        If a replicate has only 1 sample in it, rename and move instead.
+        If a replicate has only 1 sample in it, simply move the file.
         """
         input:
             unpack(get_merge_replicates)
@@ -78,14 +77,11 @@ if 'replicate' in samples and config.get('technical_replicates') == 'merge':
             expand("{log_dir}/merge_replicates/{{replicate}}{{fqext}}.log", **config)
         benchmark:
             expand("{benchmark_dir}/merge_replicates/{{replicate}}{{fqext}}.benchmark.txt", **config)[0]
-        shell:
-            """
-            arr=({input.reps})
-            if [ ${{#arr[@]}} -eq 1 ]; then
-                echo '\nmoving file:\n{input.reps}' > {log}
-                mv {input.reps} {output}  2> {log}
-            else 
-                echo '\nconcatenating files:\n{input.reps}' > {log}
-                cat {input.reps} > {output} 2> {log}
-            fi
-            """
+        run:
+            if len(input.reps) == 1:
+                shell(f"mv {input.reps} {output} 2> {log}")
+            else:
+                for rep in input.reps:
+                    rep_name = re.findall('\/([^\/_]+)_', rep)[-1]
+                    # please never ask me to explain the curly braces, it's a mess to escape those
+                    shell(f"""zcat {rep} | awk '{{{{if (NR%4==1) {{{{gsub(/^@/, "@{rep_name}:"); print}}}} else {{{{print}}}}}}}}' | gzip >> {output}""")
