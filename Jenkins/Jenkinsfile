@@ -104,21 +104,7 @@ pipeline {
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                         conda activate miniconda/envs/snakemake-workflows/
 
-                        # test rna-seq workflow
-                        # default config
-                        printf "\ndefault rna-seq\n\n"
-                        snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --quiet
-                        snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --config quantifier=salmon decoy_aware_index=True --quiet
-
-                        # test differential expression analysis
-                        printf "\ndifferential expression\n\n"
-                        snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/deseq2.yaml --config samples=../../Jenkins/rna_seq/samples.tsv quantifier=star   --quiet
-                        snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/deseq2.yaml --config samples=../../Jenkins/rna_seq/samples.tsv quantifier=salmon --quiet
-
-                        # test trackhub generation
-                        printf "\ntrackhub\n\n"
-                        snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/counts.yaml --config samples=../../Jenkins/alignment/local_sample.tsv quantifier=star   create_trackhub=True --quiet
-                        snakemake -s workflows/rna_seq/Snakefile --directory workflows/rna_seq -n -j 48 --configfile Jenkins/rna_seq/counts.yaml --config samples=../../Jenkins/alignment/local_sample.tsv quantifier=salmon create_trackhub=True --quiet
+                        ./scripts/dag_tests.sh rna-seq
                         '''
                     }
                 )
