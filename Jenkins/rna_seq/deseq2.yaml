@@ -1,17 +1,16 @@
 # tab-separated file of the samples
-samples: samples.tsv
-
+samples: ../../Jenkins/rna_seq/samples.tsv
 
 # pipeline file locations
-result_dir: ./results
+result_dir: ../../Jenkins_results  # where to store results
 genome_dir: ../../Jenkins  # where to look for or download the genomes
-fastq_dir: ../../Jenkins/tinyfastq
+fastq_dir: ../../Jenkins/dag_fastqs  # where to look for or download the fastqs
 
-# produce bams, bigwigs and QC statistics?
+# produce bigwigs and a trackhub?
 create_trackhub: False
 
-# which method to use in order to generate the counts (salmon or star)
-quantifier: star
+# produce MultiQC output?
+create_qc_report: False
 
 # differential expression analysis
 diffexp: # which analysis to use (DESeq2 or None, default: None)

@@ -343,4 +343,73 @@ if [ $1 = "atac-seq" ]; then
 
 fi
 
+if [ $1 = "rna-seq" ]; then
+
+# RNA-seq workflow
+WF=rna_seq
+
+mkdir -p Jenkins/dag_fastqs
+touch Jenkins/dag_fastqs/S1_1_R1.fastq.gz
+touch Jenkins/dag_fastqs/S1_1_R2.fastq.gz
+
+printf "\nrna-seq default\n"
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config quantifier=star
+
+printf "\nquantifiers\n"
+# snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config quantifier=star  # default
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config quantifier=salmon
+
+printf "\ntrackhub\n"
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config quantifier=star create_trackhub=True
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config quantifier=salmon create_trackhub=True
+
+printf "\nqc multiqc report\n"
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config quantifier=star create_qc_report=True
+
+printf "\ndecoy aware salmon index\n"
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config quantifier=salmon decoy_aware_index=True
+
+touch Jenkins/dag_fastqs/S1_2_R1.fastq.gz
+touch Jenkins/dag_fastqs/S1_2_R2.fastq.gz
+touch Jenkins/dag_fastqs/S2_1.fastq.gz
+touch Jenkins/dag_fastqs/S2_2.fastq.gz
+touch Jenkins/dag_fastqs/S3_1.fastq.gz
+touch Jenkins/dag_fastqs/S4_1.fastq.gz
+touch Jenkins/dag_fastqs/S5_1.fastq.gz
+touch Jenkins/dag_fastqs/S6_1.fastq.gz
+touch Jenkins/dag_fastqs/S7_1.fastq.gz
+touch Jenkins/dag_fastqs/S8_1.fastq.gz
+
+printf "\ndifferential expression analysis\n"
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/deseq2.yaml --config quantifier=star technical_replicates=keep
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/deseq2.yaml --config quantifier=salmon technical_replicates=keep
+
+printf "\nmultiple assemblies with DEA\n"
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/deseq2.yaml --config samples=../../Jenkins/rna_seq/complex_samples.tsv quantifier=star technical_replicates=keep
+
+printf "\nmultiple assemblies with DEA - trackhubs\n"
+# TODO: error!
+#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/deseq2.yaml --config samples=../../Jenkins/rna_seq/complex_samples.tsv quantifier=star technical_replicates=keep create_trackhub=True
+
+printf "\nmultiple assemblies with DEA - multiqc\n"
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/deseq2.yaml --config samples=../../Jenkins/rna_seq/complex_samples.tsv quantifier=star technical_replicates=keep create_qc_report=True
+
+printf "\nmultiple replicates with DEA \n"
+# snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/deseq2.yaml --config technical_replicates=keep  # default
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/deseq2.yaml --config technical_replicates=merge
+
+printf "\nmultiple assemblies and replicates with DEA \n"
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/deseq2.yaml --config samples=../../Jenkins/rna_seq/complex_samples.tsv technical_replicates=keep quantifier=star
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/deseq2.yaml --config samples=../../Jenkins/rna_seq/complex_samples.tsv technical_replicates=merge quantifier=star
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/deseq2.yaml --config samples=../../Jenkins/rna_seq/complex_samples.tsv technical_replicates=merge quantifier=salmon
+
+printf "\nmultiple assemblies and replicates with DEA - trackhub\n"
+# TODO: error!
+#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/deseq2.yaml --config samples=../../Jenkins/rna_seq/complex_samples.tsv technical_replicates=merge create_trackhub=True
+
+printf "\nmultiple assemblies and replicates with DEA - multiqc report\n"
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/deseq2.yaml --config samples=../../Jenkins/rna_seq/complex_samples.tsv technical_replicates=merge create_qc_report=True
+
+fi
+
 # --dag | dot -Tsvg > graph.svg
