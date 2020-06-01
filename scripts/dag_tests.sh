@@ -273,7 +273,8 @@ if [ $1 = "atac-seq" ]; then
 #  touch Jenkins_results/qc/fastqc/S1_1_R2_trimmed_fastqc.zip
 
   printf "\natac-seq default\n"
-  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml
+  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml | tee Jenkins_results/val
+  assert_rulecount macs2_callpeak 1
 
 #  mkdir -p Jenkins_results/macs2
 #  touch Jenkins_results/macs2/assembly1-S1_1_control_lambda.bdg
@@ -287,7 +288,9 @@ if [ $1 = "atac-seq" ]; then
 #  touch Jenkins_results/count_table/macs2/count_table_assembly1.samtools-coordinate.txt
 
   printf "\ntrackhub\n"
-  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config create_trackhub=True
+  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config create_trackhub=True | tee Jenkins_results/val
+  assert_rulecount bedgraph_bigwig 1
+  assert_rulecount trackhub 1
 
 #  touch Jenkins_results/qc/fastqc/S1_1_R1_fastqc.zip
 #  touch Jenkins_results/qc/fastqc/S1_1_R2_fastqc.zip
@@ -305,19 +308,24 @@ if [ $1 = "atac-seq" ]; then
 #  touch Jenkins_results/qc/dedup/assembly1-S1_1.samtools-coordinate.metrics.txt
 
   printf "\nqc multiqc report\n"
-  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config create_qc_report=True
+  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config create_qc_report=True | tee Jenkins_results/val
+  assert_rulecount multiqc 1
 
 #  touch Jenkins_results/dedup/assembly1-S1_1.sambamba-queryname.bam
 #  touch Jenkins_results/dedup/assembly1-S1_1.sambamba-queryname.bam.bai
 
   printf "\npeak callers\n"
-  # snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/macs2.yaml  # default
-  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/genrich.yaml
+  # snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/macs2.yaml  | tee Jenkins_results/val  # default
+  #  assert_rulecount macs2_callpeak 1
+  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/genrich.yaml | tee Jenkins_results/val
+  assert_rulecount call_peak_genrich 1
 
 #  rm Jenkins_results/count_table/macs2/count_table_assembly1.samtools-coordinate.txt
 
   printf "\nmultiple peak callers\n"
-  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/genrich_macs2.yaml
+  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/genrich_macs2.yaml | tee Jenkins_results/val
+  assert_rulecount macs2_callpeak 1
+  assert_rulecount call_peak_genrich 1
 
 #  mkdir -p Jenkins_results/genrich
 #  touch Jenkins_results/genrich/assembly1-S1_1.log
@@ -328,12 +336,15 @@ if [ $1 = "atac-seq" ]; then
 #  touch Jenkins_results/count_table/genrich/count_table_assembly1.samtools-coordinate.txt
 
   printf "\nmultiple peak callers - qc report\n"
-  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/genrich_macs2.yaml --config create_qc_report=True
+  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/genrich_macs2.yaml --config create_qc_report=True | tee Jenkins_results/val
+  assert_rulecount featureCounts 2
 
 #  touch Jenkins_results/genrich/assembly1-S1_1.bedgraph
 
   printf "\nmultiple peak callers - trackhub\n"
-  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/genrich_macs2.yaml --config create_trackhub=True
+  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/genrich_macs2.yaml --config create_trackhub=True | tee Jenkins_results/val
+  assert_rulecount bedgraph_bigwig 2
+  assert_rulecount bedgraphish_to_bedgraph 1
 
 #  touch Jenkins/dag_fastqs/S1_2_R1.fastq.gz
 #  touch Jenkins/dag_fastqs/S1_2_R2.fastq.gz
@@ -343,7 +354,8 @@ if [ $1 = "atac-seq" ]; then
 #  touch Jenkins_results/genrich/assembly2_peaks.bed
 
   printf "\nmultiple peak callers & multiple assemblies\n"
-  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/genrich_macs2.yaml --config samples=../../Jenkins/alignment/assemblies.tsv
+  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/genrich_macs2.yaml --config samples=../../Jenkins/alignment/assemblies.tsv | tee Jenkins_results/val
+  assert_rulecount coverage_table 4
 
 #  mkdir -p Jenkins/assembly2
 #  touch Jenkins/assembly2/assembly2.fa
@@ -371,7 +383,8 @@ if [ $1 = "atac-seq" ]; then
 #  touch Jenkins_results/count_table/macs2/count_table_assembly2.samtools-coordinate.txt
 
   printf "\nmultiple peak callers & multiple assemblies - trackhub\n"
-  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/genrich_macs2.yaml --config samples=../../Jenkins/alignment/assemblies.tsv create_trackhub=True
+  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/genrich_macs2.yaml --config samples=../../Jenkins/alignment/assemblies.tsv create_trackhub=True | tee Jenkins_results/val
+  assert_rulecount bedgraph_bigwig 4
 
 # incomplete intermediate files
 #touch Jenkins_results/qc/fastqc/S1_2_fastqc.zip
@@ -383,16 +396,20 @@ if [ $1 = "atac-seq" ]; then
 #touch Jenkins_results/qc/dedup/assembly2-S1_2.samtools-coordinate.metrics.txt
 
   printf "\nmultiple peak callers & multiple assemblies - qc report\n"
-  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/genrich_macs2.yaml --config samples=../../Jenkins/alignment/assemblies.tsv create_qc_report=True
+  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/genrich_macs2.yaml --config samples=../../Jenkins/alignment/assemblies.tsv create_qc_report=True | tee Jenkins_results/val
+  assert_rulecount featureCounts 4
 
   printf "\nmultiple peak callers & multiple replicates\n"
-  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/genrich_macs2.yaml --config samples=../../Jenkins/alignment/replicates.tsv
+  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/genrich_macs2.yaml --config samples=../../Jenkins/alignment/replicates.tsv | tee Jenkins_results/val
+  assert_rulecount bwa_mem 1
 
   printf "\nmultiple peak callers & multiple replicates - trackhub\n"
-  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/genrich_macs2.yaml --config samples=../../Jenkins/alignment/replicates.tsv create_trackhub=True
+  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/genrich_macs2.yaml --config samples=../../Jenkins/alignment/replicates.tsv create_trackhub=True | tee Jenkins_results/val
+  assert_rulecount bedgraph_bigwig 2
 
   printf "\nmultiple peak callers & multiple replicates - qc report\n"
-  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/genrich_macs2.yaml --config samples=../../Jenkins/alignment/replicates.tsv create_qc_report=True
+  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/genrich_macs2.yaml --config samples=../../Jenkins/alignment/replicates.tsv create_qc_report=True | tee Jenkins_results/val
+  assert_rulecount featureCounts 2
 
 #  touch Jenkins/dag_fastqs/S2_1.fastq.gz
 #  touch Jenkins/dag_fastqs/S2_2.fastq.gz
@@ -404,13 +421,17 @@ if [ $1 = "atac-seq" ]; then
 #  touch Jenkins/dag_fastqs/S8_1.fastq.gz
 
   printf "\nmultiple peak callers, assemblies and replicates\n"
-  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/genrich_macs2.yaml --config samples=../../Jenkins/atac_seq/complex_samples.tsv
+  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/genrich_macs2.yaml --config samples=../../Jenkins/atac_seq/complex_samples.tsv | tee Jenkins_results/val
+  assert_rulecount bwa_mem 8
+  assert_rulecount coverage_table 4
 
   printf "\nmultiple peak callers, assemblies and replicates - trackhub\n"
-  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/genrich_macs2.yaml --config samples=../../Jenkins/atac_seq/complex_samples.tsv create_trackhub=True
+  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/genrich_macs2.yaml --config samples=../../Jenkins/atac_seq/complex_samples.tsv create_trackhub=True | tee Jenkins_results/val
+  assert_rulecount bedgraph_bigwig 16
 
   printf "\nmultiple peak callers, assemblies and replicates - qc report\n"
-  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/genrich_macs2.yaml --config samples=../../Jenkins/atac_seq/complex_samples.tsv create_qc_report=True
+  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/genrich_macs2.yaml --config samples=../../Jenkins/atac_seq/complex_samples.tsv create_qc_report=True | tee Jenkins_results/val
+  assert_rulecount featureCounts 16
 
 fi
 
