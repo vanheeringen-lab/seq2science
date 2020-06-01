@@ -157,8 +157,8 @@ rule bam_stranded_bigwig:
         bam=expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config),
         bai=expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam.bai", **config)
     output:
-        forward=temp(expand("{result_dir}/bigwigs/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.fwd.bw", **config)),
-        reverse=temp(expand("{result_dir}/bigwigs/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.rev.bw", **config))
+        forwards=temp(expand("{result_dir}/bigwigs/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.fwd.bw", **config)),
+        reverses=temp(expand("{result_dir}/bigwigs/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.rev.bw", **config))
     params:
         flags=config['deeptools'],
         strandedness=get_strandedness
@@ -182,8 +182,8 @@ rule bam_stranded_bigwig:
             direction2=forward
         fi
                     
-        bamCoverage --bam {input.bam} --outFileName {output.forward} --filterRNAstrand $direction1 --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1 &&        
-        bamCoverage --bam {input.bam} --outFileName {output.reverse} --filterRNAstrand $direction2 --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1
+        bamCoverage --bam {input.bam} --outFileName {output.forwards} --filterRNAstrand $direction1 --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1 &&        
+        bamCoverage --bam {input.bam} --outFileName {output.reverses} --filterRNAstrand $direction2 --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1
         """
 
 rule bam_bigwig:
@@ -558,8 +558,8 @@ rule trackhub:
 
             for assembly in set(samples['assembly']):
                 assembly_uscs = get_ucsc_name(assembly)[1]
-                # add each assembly to the genomes file
-                if any(assembly in twobit for twobit in input.twobits):
+                # add each assembly to the genomes file, make assembly hub if not supported else trackhub
+                if hasattr(input, 'twobits') and any(assembly in twobit for twobit in input.twobits):
                     basename = f"{config['genome_dir']}/{assembly}/{assembly}"
                     genome = trackhub.Assembly(
                         genome=assembly_uscs,
