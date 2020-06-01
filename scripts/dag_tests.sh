@@ -14,7 +14,7 @@ CORES=48
 trap "rm -rf Jenkins_results; rm -rf Jenkins/dag_fastqs; rm -rf Jenkins/assembly*; rm -rf ~/.config/snakemake/layouts*" EXIT  # remove the test outputs on exit
 set -e  # Exit immediately if a command exits with a non-zero status.
 
-if [ $1 = "download_n_alignment" ]; then
+if [ $1 = "alignment" ]; then
 
   # download workflow
   WF=download_fastq
@@ -42,6 +42,9 @@ if [ $1 = "download_n_alignment" ]; then
 
   printf "\ntrackhub\n"
   snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config create_trackhub=True
+
+  printf "\ntrackhub - stranded bams\n"
+  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config samples=../../Jenkins/alignment/stranded_sample.tsv create_trackhub=True
 
   mkdir -p Jenkins_results/fastq_trimmed
   touch Jenkins_results/fastq_trimmed/S1_1_R1_trimmed.fastq.gz
@@ -177,7 +180,7 @@ fi
 
 if [ $1 = "atac-seq" ]; then
 
-  # ATAC-seq workflow
+  # ATAC-seq workflow (also covers ChIP-seq workflow)
   WF=atac_seq
 
   mkdir -p Jenkins/dag_fastqs
@@ -343,6 +346,22 @@ if [ $1 = "atac-seq" ]; then
 
 fi
 
+#if [ $1 = "scatac-seq" ]; then
+#
+## ATAC-seq workflow (also covers ChIP-seq workflow)
+#WF=scATAC_seq
+#
+#mkdir -p Jenkins/dag_fastqs
+#touch Jenkins/dag_fastqs/S1_1_R1.fastq.gz
+#touch Jenkins/dag_fastqs/S1_1_R2.fastq.gz
+#
+#printf "\nscatac-seq default\n"
+#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml
+#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --dag | dot -Tsvg > graph.svg
+#
+#
+#fi
+
 if [ $1 = "rna-seq" ]; then
 
 # RNA-seq workflow
@@ -411,5 +430,3 @@ printf "\nmultiple assemblies and replicates with DEA - multiqc report\n"
 snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/deseq2.yaml --config samples=../../Jenkins/rna_seq/complex_samples.tsv technical_replicates=merge create_qc_report=True
 
 fi
-
-# --dag | dot -Tsvg > graph.svg
