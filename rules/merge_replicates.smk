@@ -52,7 +52,7 @@ if 'replicate' in samples and config.get('technical_replicates') == 'merge':
         input_files["reps"] = expand([f"{{trimmed_dir}}/{sample}{wildcards.fqext}_trimmed.{{fqsuffix}}.gz"
                               for sample in samples[samples['replicate'] == wildcards.replicate].index], **config)
         # make sure we make the fastqc report before moving our file
-        if get_workflow() != "scATAC_seq" and len(output["reps"]) == 1 and config["create_qc_report"]:
+        if get_workflow() != "scATAC_seq" and len(input_files["reps"]) == 1 and config["create_qc_report"]:
             input_files["qc"] = expand([f"{{qc_dir}}/fastqc/{sample}{wildcards.fqext}_trimmed_fastqc.zip"
                                 for sample in samples[samples['replicate'] == wildcards.replicate].index], **config)
         return input_files
