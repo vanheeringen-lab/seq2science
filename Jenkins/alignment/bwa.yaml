@@ -14,4 +14,3 @@ create_qc_report: False
 
 # which aligner to use
 aligner: bwa
-dedup_dir: ../../Jenkins_results/aligner_dedup

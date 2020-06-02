@@ -107,13 +107,13 @@ if [ $1 = "alignment" ]; then
 #  touch Jenkins_results/qc/fastqc/S1_1_R2_trimmed_fastqc.zip
 
   printf "\naligners\n"
-  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/bowtie2.yaml | tee Jenkins_results/val
+  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml  --config aligner=bowtie2 | tee Jenkins_results/val
   assert_rulecount bowtie2_index 1
-#  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/bwa.yaml | tee Jenkins_results/val  # default
+#  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml  --config aligner=bwa | tee Jenkins_results/val  # default
 #  assert_rulecount bwa_index 1
-  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/hisat2.yaml | tee Jenkins_results/val
+  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml  --config aligner=hisat2 | tee Jenkins_results/val
   assert_rulecount hisat2_index 1
-  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/star.yaml | tee Jenkins_results/val
+  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml  --config aligner=star | tee Jenkins_results/val
   assert_rulecount star_index 1
 
 #  mkdir -p Jenkins_results/bwa/
@@ -274,7 +274,7 @@ if [ $1 = "atac-seq" ]; then
 #  touch Jenkins_results/qc/fastqc/S1_1_R2_trimmed_fastqc.zip
 
   printf "\natac-seq default\n"
-  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml | tee Jenkins_results/val
+  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml | tee Jenkins_results/val
   assert_rulecount macs2_callpeak 1
 
 #  mkdir -p Jenkins_results/macs2
@@ -289,7 +289,7 @@ if [ $1 = "atac-seq" ]; then
 #  touch Jenkins_results/count_table/macs2/count_table_assembly1.samtools-coordinate.txt
 
   printf "\ntrackhub\n"
-  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config create_trackhub=True | tee Jenkins_results/val
+  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config create_trackhub=True | tee Jenkins_results/val
   assert_rulecount bedgraph_bigwig 1
   assert_rulecount trackhub 1
 
@@ -309,7 +309,7 @@ if [ $1 = "atac-seq" ]; then
 #  touch Jenkins_results/qc/dedup/assembly1-S1_1.samtools-coordinate.metrics.txt
 
   printf "\nmultiqc report\n"
-  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config create_qc_report=True | tee Jenkins_results/val
+  snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config create_qc_report=True | tee Jenkins_results/val
   assert_rulecount multiqc 1
 
 #  touch Jenkins_results/dedup/assembly1-S1_1.sambamba-queryname.bam
