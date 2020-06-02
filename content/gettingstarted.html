@@ -85,7 +85,6 @@
 <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#running-a-workflow">Running a workflow</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#where-does-seq2science-store-results-and-looks-for-starting-points">Where does seq2science store results and looks for ‘starting points’?</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#useful-settings">Useful settings</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#what-is-snakemake">What is Snakemake?</a></li>
 </ul>
 </li>
@@ -165,92 +164,56 @@
 <h1>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
-<p>TODO: conda instructions
-Installation of seq2science has been made easy! All you have to do is follow these three simple steps:</p>
-<ul class="simple">
-<li><p>Download and install <a class="reference external" href="https://www.anaconda.com/">anaconda</a></p>
-<ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">wget</span> <span class="pre">https://repo.anaconda.com/archive/Anaconda3-2019.07-Linux-x86_64.sh</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">bash</span> <span class="pre">Anaconda3-2019.07-Linux-x86_64.sh</span></code> (make sure to say <strong>yes</strong> when asked to run conda init)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">source</span> <span class="pre">~/.bashrc</span></code></p></li>
-</ul>
-</li>
-<li><p>clone the snakemake-workflows repository</p>
-<ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">clone</span> <span class="pre">https://github.com/vanheeringen-lab/snakemake-workflows.git</span></code></p></li>
-</ul>
-</li>
-<li><p>Install the snakemake-workflows environment</p>
-<ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">create</span> <span class="pre">-f</span> <span class="pre">snakemake-workflows/envs/snakemake-workflows.yaml</span></code></p></li>
-</ul>
-</li>
-</ul>
+<p>The most straightforward way to install seq2science is by using <a class="reference external" href="https://docs.continuum.io/anaconda/">conda</a> using the <a class="reference external" href="https://bioconda.github.io/">bioconda</a> channel.</p>
+<p>Download and install <a class="reference external" href="https://www.anaconda.com/">minconda</a> if not yet installed:</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>$ wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+$ bash miniconda.sh # (make sure to say **yes** when asked to run conda init)
+$ source ~/.bashrc
+</pre></div>
+</div>
+<p>And install seq2science in a fresh environment:</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>$ conda create -n seq2science -c bioconda seq2science
+</pre></div>
+</div>
 </div>
 <div class="section" id="running-a-workflow">
 <h2>Running a workflow<a class="headerlink" href="#running-a-workflow" title="Permalink to this headline">¶</a></h2>
-<p>TODO: update for seq2science
-To run a workflow all you need to do is follow these simple steps:</p>
-<ul class="simple">
-<li><p>Change to a workflow directory (e.g. download_fastq)</p>
-<ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">snakemake-workflows/workflows/download_fastq</span></code></p></li>
-</ul>
-</li>
-<li><p>Activate the (previously installed) snakemake-workflows environment</p>
-<ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">snakemake-workflows</span></code></p></li>
-</ul>
-</li>
-<li><p>Change the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> and <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> to your needs (see <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/wiki/1.1-Filling-out-the-samples.tsv">filling out the samples.tsv</a> and <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/wiki/1.2-filling-out-the-config.yaml">filling out the config.yaml</a> for tips.</p></li>
-<li><p>Run the workflow</p>
-<ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">snakemake</span> <span class="pre">--cores</span> <span class="pre">6</span> <span class="pre">--use-conda</span></code></p></li>
-</ul>
-</li>
-</ul>
+<p>A typical setup and run of a workflow looks like this, where you start with activating the seq2science environment.</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>$ conda activate seq2science
+</pre></div>
+</div>
+<p>Then navigate to your project dir.</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>$ cd {my_project}
+</pre></div>
+</div>
+<p>Where you initialize the workflow with a configuration file and samples file, and edit those to your needs.</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>$ seq2science init {workflow}
+</pre></div>
+</div>
+<p>And finally run the workflow</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>$ seq2science run {workflow} --cores 24
+</pre></div>
+</div>
 </div>
 <div class="section" id="where-does-seq2science-store-results-and-looks-for-starting-points">
 <h2>Where does seq2science store results and looks for ‘starting points’?<a class="headerlink" href="#where-does-seq2science-store-results-and-looks-for-starting-points" title="Permalink to this headline">¶</a></h2>
-<p>We generally recommend a file structure</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>my_project
-├── samples.tsv
-├── config.yaml
-├── {result_dir}
-|   └── {fastq_dir}  # defaults to {result_dir}/fastq
-|       ├── sample1.fastq.gz
-|       ├── sample2_pass_1.fastq.gz
-|       └── sample2_pass_2.fastq.gz
-└── {genome_dir}
-    └── hg38
-        └── hg38.fa
+<p>We recommend that for a typical run of seq2science you use a folder structure like this:</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>root
+└── my_project
+    ├── samples.tsv
+    ├── config.yaml
+    └── {result_dir}
+        └── {fastq_dir}
+            ├── sample1.fastq.gz
+            ├── sample2_R1.fastq.gz
+            └── sample2_R2.fastq.gz
 </pre></div>
 </div>
-<p>The organizers among us will appreciate that the directory layout can be customized to your heart’s desire, as all output directory destinations can be set in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>.</p>
-</div>
-<div class="section" id="useful-settings">
-<h2>Useful settings<a class="headerlink" href="#useful-settings" title="Permalink to this headline">¶</a></h2>
-<p>TODO: update docs
-Snakemake has a lot of settings (see <a class="reference external" href="https://snakemake.readthedocs.io/en/stable/executable.html#all-options">here</a> for all settings), but here are a couple useful settings we recommend for starting users:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">--use-conda</span></code>: Every rule in this repository comes with a <em>conda environment</em>. This means that for every rule a set of dependencies is specified to execute that rule successfully. When the option use-conda is used snakemake will download and install this environment for each environment. It is virtually impossible to run these workflows without this option!</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--cores</span> <span class="pre">N</span></code>: The (maximum) amount of cores the workflow is allowed to use. Large parts of workflows can be executed in parallel (e.g. alignment of sample_1 and sample_2), and some applications even allow for <em>multithreading</em>. With this option you can make full use of your computer/server.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--keep-going</span></code>: Sometimes the workflow might encounter an error (although it really shouldn’t!). With this option snakemake will continue to finish the workflow for the parts that are independent of the error.</p></li>
-</ul>
-<p>A typical call to the workflow then look like this:</p>
-<p><code class="docutils literal notranslate"><span class="pre">snakemake</span> <span class="pre">--cores</span> <span class="pre">48</span> <span class="pre">--use-conda</span> <span class="pre">--keep-going</span></code></p>
-<p>Take a look at <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/wiki/1.3-Making-a-snakemake-profile">making a snakemake profile</a> for making a profile in which you can specify default behaviour.</p>
+<p>This structure is the default setting of seq2science, however can be adjusted to your liking in the config.yaml.</p>
 </div>
 <div class="section" id="what-is-snakemake">
 <h2>What is Snakemake?<a class="headerlink" href="#what-is-snakemake" title="Permalink to this headline">¶</a></h2>
-<p>Since all these workflows are based on <a class="reference external" href="https://snakemake.readthedocs.io/en/stable/">Snakemake</a>
-These workflows are all based on <a class="reference external" href="https://snakemake.readthedocs.io/en/stable/">Snakemake</a>, allowing for <strong>reproducible</strong> and <strong>scalable</strong> workflows.</p>
-<ul class="simple">
-<li><p>Automated installation of dependencies in self-contained environments through <a class="reference external" href="https://www.anaconda.com/">anaconda</a></p></li>
-<li><p>Re-running the pipeline, either with a new configuration or new samples, is effortless</p></li>
-<li><p>Can be run either on personal computers or superclusters, e.g. surfsara, with minimal finetuning</p></li>
-<li><p>Is an extension on the Python language, which means easy to read (and maintain)</p></li>
-</ul>
+<p>Since <em>under-the-hood</em> seq2science is based on <a class="reference external" href="https://snakemake.readthedocs.io/en/stable/">snakemake</a>, we thought it might be nice to give a little introduction to snakemake.</p>
 <p>Snakemake is a pipeline tool that allows users to specify <em>rules</em>. Each rule is defined with what it requires as input, what it will output, and what command it needs to run to generate the output from the input. This design allows for the linking of many rules, where the input of one rule is the output of another. When invoking Snakemake it will then decide itself which rules need to be run for the output you specified.</p>
 <p>Here is an example Snakefile with just two (very simple) rules:</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>rule one:
@@ -271,12 +234,15 @@ rule two:
 </pre></div>
 </div>
 <p>We can tell snakemake to generate for instance file1.txt like this:</p>
-<p><code class="docutils literal notranslate"><span class="pre">snakemake</span> <span class="pre">file1.txt</span></code></p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>$ snakemake file1.txt
+</pre></div>
+</div>
 <p>And snakemake will see that rule one can generate this output, sees that it requires no input, and executes the shell command. If we tell snakemake to generate file2.txt:</p>
-<p><code class="docutils literal notranslate"><span class="pre">snakemake</span> <span class="pre">file2.txt</span></code></p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>$ snakemake file2.txt
+</pre></div>
+</div>
 <p>It will see that rule two needs to be run, takes a look at the required input for this rule, and checks whether file1.txt already exists. If it does, it will immediatly execute rule two, if file1.txt does not already exist it will execute rule one first.</p>
-<p>Our workflows work in a way that you specify which samples you have, and which workflow you want to run, and the workflow will decide which output corresponds to the combination of those samples and workflow. Snakemake will then take a look at all the rules that are defined, and will only use the ones that are required to generate the output specific to the workflow.</p>
-<p>For a more complete explanation of how snakemake works see the <a class="reference external" href="https://snakemake.readthedocs.io/">snakemake docs</a>.</p>
+<p>We highly recommend everyone interested in automating a part of their analysis to take a look at snakemake! For a more complete explanation of how snakemake works see the <a class="reference external" href="https://snakemake.readthedocs.io/">snakemake docs</a>.</p>
 </div>
 </div>
 

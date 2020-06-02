@@ -1,7 +1,7 @@
 Extensive docs
 ##############
 
-These ...
+The extensive docs serve to have all steps and configurable options documented.
 
 
 .. toctree::
