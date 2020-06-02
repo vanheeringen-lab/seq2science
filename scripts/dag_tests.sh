@@ -11,7 +11,8 @@ if [ -z "$1" ]
 fi
 
 CORES=48
-trap "rm -rf Jenkins_results; rm -rf Jenkins/dag_fastqs; rm -rf ~/.config/snakemake/layouts*" EXIT  # remove the test outputs on exit
+trap "rm -rf Jenkins_results; rm -rf Jenkins/dag_fastqs" EXIT  # remove the test outputs on exit
+#; rm -rf ~/.config/snakemake/layouts*
 set -e  # Exit immediately if a command exits with a non-zero status.
 function assert_rulecount {
   # check if the DAG (stored with  | tee Jenkins_results/val  ) ran rule $1 exactly $2 times
@@ -307,7 +308,7 @@ if [ $1 = "atac-seq" ]; then
 #  mkdir -p Jenkins_results/qc/dedup
 #  touch Jenkins_results/qc/dedup/assembly1-S1_1.samtools-coordinate.metrics.txt
 
-  printf "\nqc multiqc report\n"
+  printf "\nmultiqc report\n"
   snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/default_config.yaml --config create_qc_report=True | tee Jenkins_results/val
   assert_rulecount multiqc 1
 
@@ -335,7 +336,7 @@ if [ $1 = "atac-seq" ]; then
 #  touch Jenkins_results/count_table/macs2/count_table_assembly1.samtools-coordinate.txt
 #  touch Jenkins_results/count_table/genrich/count_table_assembly1.samtools-coordinate.txt
 
-  printf "\nmultiple peak callers - qc report\n"
+  printf "\nmultiple peak callers - multiqc report\n"
   snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/genrich_macs2.yaml --config create_qc_report=True | tee Jenkins_results/val
   assert_rulecount featureCounts 2
 
@@ -395,7 +396,7 @@ if [ $1 = "atac-seq" ]; then
 #touch Jenkins_results/bwa/assembly2-S1_2.samtools-coordinate-unsieved.bam.mtnucratiomtnuc.json
 #touch Jenkins_results/qc/dedup/assembly2-S1_2.samtools-coordinate.metrics.txt
 
-  printf "\nmultiple peak callers & multiple assemblies - qc report\n"
+  printf "\nmultiple peak callers & multiple assemblies - multiqc report\n"
   snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/genrich_macs2.yaml --config samples=../../Jenkins/alignment/assemblies.tsv create_qc_report=True | tee Jenkins_results/val
   assert_rulecount featureCounts 4
 
@@ -407,7 +408,7 @@ if [ $1 = "atac-seq" ]; then
   snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/genrich_macs2.yaml --config samples=../../Jenkins/alignment/replicates.tsv create_trackhub=True | tee Jenkins_results/val
   assert_rulecount bedgraph_bigwig 2
 
-  printf "\nmultiple peak callers & multiple replicates - qc report\n"
+  printf "\nmultiple peak callers & multiple replicates - multiqc report\n"
   snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/genrich_macs2.yaml --config samples=../../Jenkins/alignment/replicates.tsv create_qc_report=True | tee Jenkins_results/val
   assert_rulecount featureCounts 2
 
@@ -429,7 +430,7 @@ if [ $1 = "atac-seq" ]; then
   snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/genrich_macs2.yaml --config samples=../../Jenkins/atac_seq/complex_samples.tsv create_trackhub=True | tee Jenkins_results/val
   assert_rulecount bedgraph_bigwig 16
 
-  printf "\nmultiple peak callers, assemblies and replicates - qc report\n"
+  printf "\nmultiple peak callers, assemblies and replicates - multiqc report\n"
   snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/genrich_macs2.yaml --config samples=../../Jenkins/atac_seq/complex_samples.tsv create_qc_report=True | tee Jenkins_results/val
   assert_rulecount featureCounts 16
 
@@ -465,37 +466,61 @@ snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/
 #assert_rulecount trackhub 1
 
 printf "\nqc multiqc report\n"
-snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config create_qc_report=True
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config create_qc_report=True | tee Jenkins_results/val
+assert_rulecount fastqc 2
 
 printf "\nmultiple assemblies\n"
-snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config samples=../../Jenkins/alignment/assemblies.tsv
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config samples=../../Jenkins/alignment/assemblies.tsv | tee Jenkins_results/val
+assert_rulecount bwa_index 2
+assert_rulecount create_SNAP_object 2
 
 printf "\nmultiple assemblies - trackhubs\n"
-snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config samples=../../Jenkins/alignment/assemblies.tsv create_trackhub=True
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config samples=../../Jenkins/alignment/assemblies.tsv create_trackhub=True | tee Jenkins_results/val
+# TODO: scATAC-seq does not create a trackhub
+#assert_rulecount bam_bigwig 2
+#assert_rulecount twobit 2
 
 printf "\nmultiple assemblies - multiqc\n"
-snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config samples=../../Jenkins/alignment/assemblies.tsv create_qc_report=True
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config samples=../../Jenkins/alignment/assemblies.tsv create_qc_report=True | tee Jenkins_results/val
+assert_rulecount fastqc 4
 
 printf "\nmultiple replicates\n"
-snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config technical_replicates=merge  # nothing to merge
-snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config samples=../../Jenkins/alignment/replicates.tsv technical_replicates=keep
-snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config samples=../../Jenkins/alignment/replicates.tsv technical_replicates=merge
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config technical_replicates=merge | tee Jenkins_results/val  # nothing to merge
+assert_rulecount merge_replicates 0
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config samples=../../Jenkins/alignment/replicates.tsv technical_replicates=keep | tee Jenkins_results/val
+assert_rulecount merge_replicates 0
+assert_rulecount bwa_mem 2
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config samples=../../Jenkins/alignment/replicates.tsv technical_replicates=merge | tee Jenkins_results/val
+assert_rulecount merge_replicates 2
+assert_rulecount bwa_mem 1
 
 printf "\nmultiple replicates - trackhub\n"
-snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config samples=../../Jenkins/alignment/replicates.tsv technical_replicates=merge create_trackhub=True
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config samples=../../Jenkins/alignment/replicates.tsv technical_replicates=merge create_trackhub=True | tee Jenkins_results/val
+# TODO: scATAC-seq does not create a trackhub
+#assert_rulecount bam_bigwig 1
 
 printf "\nmultiple replicates - multiqc report\n"
-snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config samples=../../Jenkins/alignment/replicates.tsv technical_replicates=merge create_qc_report=True
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config samples=../../Jenkins/alignment/replicates.tsv technical_replicates=merge create_qc_report=True | tee Jenkins_results/val
+# different number from other workflows
+assert_rulecount fastqc 2
 
 printf "\nmultiple assemblies and replicates\n"
-snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config samples=../../Jenkins/alignment/complex_samples.tsv technical_replicates=keep
-snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config samples=../../Jenkins/alignment/complex_samples.tsv technical_replicates=merge
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config samples=../../Jenkins/alignment/complex_samples.tsv technical_replicates=keep | tee Jenkins_results/val
+assert_rulecount merge_replicates 0
+assert_rulecount bwa_mem 4
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config samples=../../Jenkins/alignment/complex_samples.tsv technical_replicates=merge | tee Jenkins_results/val
+assert_rulecount merge_replicates 3
+assert_rulecount bwa_mem 2
 
 printf "\nmultiple assemblies and replicates - trackhub\n"
-snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config samples=../../Jenkins/alignment/complex_samples.tsv technical_replicates=merge create_trackhub=True
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config samples=../../Jenkins/alignment/complex_samples.tsv technical_replicates=merge create_trackhub=True | tee Jenkins_results/val
+# TODO: scATAC-seq does not create a trackhub
+#assert_rulecount bam_bigwig 2
 
 printf "\nmultiple assemblies and replicates - multiqc report\n"
-snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config samples=../../Jenkins/alignment/complex_samples.tsv technical_replicates=merge create_qc_report=True
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config samples=../../Jenkins/alignment/complex_samples.tsv technical_replicates=merge create_qc_report=True | tee Jenkins_results/val
+# different number from other workflows
+assert_rulecount fastqc 4
 
 fi
 
@@ -509,21 +534,35 @@ WF=rna_seq
 #touch Jenkins/dag_fastqs/S1_1_R2.fastq.gz
 
 printf "\nrna-seq default\n"
-snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config quantifier=star
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config quantifier=star | tee Jenkins_results/val
+assert_rulecount star_quant 1
 
 printf "\nquantifiers\n"
-# snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config quantifier=star  # default
-snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config quantifier=salmon
-
-printf "\ntrackhub\n"
-snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config quantifier=star create_trackhub=True
-snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config quantifier=salmon create_trackhub=True
-
-printf "\nqc multiqc report\n"
-snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config quantifier=star create_qc_report=True
+# snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config quantifier=star | tee Jenkins_results/val  # default
+# assert_rulecount star_quant 1
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config quantifier=salmon | tee Jenkins_results/val
+assert_rulecount salmon_quant 1
 
 printf "\ndecoy aware salmon index\n"
-snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config quantifier=salmon decoy_aware_index=True
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config quantifier=salmon decoy_aware_index=True | tee Jenkins_results/val
+# TODO: bug: decoy not used!
+#assert_rulecount decoy_transcripts 1
+
+printf "\ntrackhub\n"
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config quantifier=star create_trackhub=True | tee Jenkins_results/val
+assert_rulecount salmon_quant 0
+assert_rulecount star_quant 0
+assert_rulecount star_align 1
+assert_rulecount bam_bigwig 1
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config quantifier=salmon create_trackhub=True | tee Jenkins_results/val
+assert_rulecount salmon_quant 1
+assert_rulecount star_quant 0
+assert_rulecount star_align 1
+assert_rulecount bam_bigwig 1
+
+printf "\nmultiqc report\n"
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/alignment/default_config.yaml --config quantifier=star create_qc_report=True | tee Jenkins_results/val
+assert_rulecount fastqc 4
 
 #touch Jenkins/dag_fastqs/S1_2_R1.fastq.gz
 #touch Jenkins/dag_fastqs/S1_2_R2.fastq.gz
@@ -537,33 +576,66 @@ snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/
 #touch Jenkins/dag_fastqs/S8_1.fastq.gz
 
 printf "\ndifferential expression analysis\n"
-snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/deseq2.yaml --config quantifier=star technical_replicates=keep
-snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/deseq2.yaml --config quantifier=salmon technical_replicates=keep
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/deseq2.yaml --config quantifier=star technical_replicates=keep | tee Jenkins_results/val
+assert_rulecount star_quant 10
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/deseq2.yaml --config quantifier=salmon technical_replicates=keep | tee Jenkins_results/val
+assert_rulecount salmon_quant 10
 
 printf "\nmultiple assemblies with DEA\n"
-snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/deseq2.yaml --config samples=../../Jenkins/rna_seq/complex_samples.tsv quantifier=star technical_replicates=keep
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/deseq2.yaml --config samples=../../Jenkins/rna_seq/complex_samples.tsv quantifier=star technical_replicates=keep | tee Jenkins_results/val
+assert_rulecount star_index 2
+# TODO: bug: quantifier runs 2x too many times (2 assemblies)
+#assert_rulecount star_quant 10
 
 printf "\nmultiple assemblies with DEA - trackhubs\n"
 # TODO: error!
-#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/deseq2.yaml --config samples=../../Jenkins/rna_seq/complex_samples.tsv quantifier=star technical_replicates=keep create_trackhub=True
+#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/deseq2.yaml --config samples=../../Jenkins/rna_seq/complex_samples.tsv quantifier=star technical_replicates=keep create_trackhub=True | tee Jenkins_results/val
+#assert_rulecount bam_bigwig 20
 
 printf "\nmultiple assemblies with DEA - multiqc\n"
-snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/deseq2.yaml --config samples=../../Jenkins/rna_seq/complex_samples.tsv quantifier=star technical_replicates=keep create_qc_report=True
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/deseq2.yaml --config samples=../../Jenkins/rna_seq/complex_samples.tsv quantifier=star technical_replicates=keep create_qc_report=True | tee Jenkins_results/val
+assert_rulecount fastqc 24
+assert_rulecount multiqc 2
 
 printf "\nmultiple replicates with DEA \n"
-# snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/deseq2.yaml --config technical_replicates=keep  # default
-snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/deseq2.yaml --config technical_replicates=merge
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/deseq2.yaml --config quantifier=star technical_replicates=keep | tee Jenkins_results/val
+assert_rulecount merge_replicates 0
+assert_rulecount star_quant 10
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/deseq2.yaml --config quantifier=star technical_replicates=merge | tee Jenkins_results/val
+assert_rulecount star_quant 8
+
+printf "\nmultiple replicates with DEA - trackhubs\n"
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/deseq2.yaml --config quantifier=star technical_replicates=merge create_trackhub=True | tee Jenkins_results/val
+# TODO: error!
+#assert_rulecount bam_bigwig 8
+
+printf "\nmultiple replicates with DEA - multiqc\n"
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/deseq2.yaml --config quantifier=star technical_replicates=merge create_qc_report=True | tee Jenkins_results/val
+assert_rulecount fastqc 24
+assert_rulecount star_quant 8
 
 printf "\nmultiple assemblies and replicates with DEA \n"
-snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/deseq2.yaml --config samples=../../Jenkins/rna_seq/complex_samples.tsv technical_replicates=keep quantifier=star
-snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/deseq2.yaml --config samples=../../Jenkins/rna_seq/complex_samples.tsv technical_replicates=merge quantifier=star
-snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/deseq2.yaml --config samples=../../Jenkins/rna_seq/complex_samples.tsv technical_replicates=merge quantifier=salmon
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/deseq2.yaml --config samples=../../Jenkins/rna_seq/complex_samples.tsv technical_replicates=keep quantifier=star | tee Jenkins_results/val
+assert_rulecount merge_replicates 0
+# TODO: bug: quantifier runs 2x too many times (2 assemblies)
+#assert_rulecount star_quant 10
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/deseq2.yaml --config samples=../../Jenkins/rna_seq/complex_samples.tsv technical_replicates=merge quantifier=star | tee Jenkins_results/val
+# TODO: bug: quantifier runs 2x too many times (2 assemblies)
+#assert_rulecount star_quant 8
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/deseq2.yaml --config samples=../../Jenkins/rna_seq/complex_samples.tsv technical_replicates=merge quantifier=salmon | tee Jenkins_results/val
+# TODO: bug: quantifier runs 2x too many times (2 assemblies)
+#assert_rulecount salmon_quant 8
 
 printf "\nmultiple assemblies and replicates with DEA - trackhub\n"
-# TODO: error!
-#snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/deseq2.yaml --config samples=../../Jenkins/rna_seq/complex_samples.tsv technical_replicates=merge create_trackhub=True
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/deseq2.yaml --config samples=../../Jenkins/rna_seq/complex_samples.tsv technical_replicates=merge quantifier=salmon create_trackhub=True | tee Jenkins_results/val
+# TODO: bug: quantifier runs 16 (2x8) times, aligner runs 8 times.
+#assert_rulecount salmon_quant 8
+assert_rulecount star_align 8
+assert_rulecount bam_bigwig 8
 
 printf "\nmultiple assemblies and replicates with DEA - multiqc report\n"
-snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/deseq2.yaml --config samples=../../Jenkins/rna_seq/complex_samples.tsv technical_replicates=merge create_qc_report=True
+snakemake -n -j $CORES --quiet -s workflows/$WF/Snakefile --directory workflows/$WF --configfile Jenkins/$WF/deseq2.yaml --config samples=../../Jenkins/rna_seq/complex_samples.tsv technical_replicates=merge quantifier=star create_qc_report=True | tee Jenkins_results/val
+# TODO: bug: quantifier runs 16 (2x8) times, aligner runs 8 times.
+assert_rulecount fastqc  24
 
 fi

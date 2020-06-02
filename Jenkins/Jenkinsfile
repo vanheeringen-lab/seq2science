@@ -89,7 +89,7 @@ pipeline {
                         ./scripts/dag_tests.sh download_n_alignment
                         '''
                     },
-                    "2 ATAC-seq" : {
+                    "2 ATAC- & ChIP-seq" : {
                         sh '''#!/usr/bin/env bash
                         set -e
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
@@ -107,6 +107,15 @@ pipeline {
                         ./scripts/dag_tests.sh rna-seq
                         '''
                     }
+                    "4 scATAC-seq" : {
+                        sh '''#!/usr/bin/env bash
+                        set -e
+                        source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+                        conda activate miniconda/envs/snakemake-workflows/
+
+                        ./scripts/dag_tests.sh scatac-seq
+                        '''
+                    },
                 )
             }
         }
