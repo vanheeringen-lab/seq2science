@@ -8,7 +8,6 @@
    :hidden:
 
    content/gettingstarted
-   content/fillingout
    content/workflows.rst
    content/results
    content/extensive_docs

@@ -63,7 +63,7 @@ if config['aligner'] == 'bowtie2':
             """
 
 
-elif config['aligner'] == 'bwa':
+elif config['aligner'] == 'bwa-mem':
     rule bwa_index:
         """
         Make a genome index for bwa.

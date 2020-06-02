@@ -25,11 +25,11 @@ min_mapping_quality: 30
 only_primary_align: True
 
 # use 'our' default parameters
-aligner: bwa
+aligner: bwa-mem
 
 # or specify which aligner to use with the option to specify own parameters
 # aligner:
-#   bwa:
+#   bwa-mem:
 #     index:  # parameters for indexing
 #       '-a bwtsw'
 #     align:  # parameters for alignment

@@ -6,22 +6,11 @@ result_dir: ./results  # where to store results
 genome_dir: ./genomes  # where to look for or download the genomes
 # fastq_dir: (default is inside result_dir) # where to look for or download the fastqs
 
-
 # contact info for multiqc report and trackhub
 email: yourmail@here.com
 
-# peak callers (supported peak callers are macs2, and genrich, and hmmratac is not fully supported yet)
-peak_caller:
-  macs2:
-      --shift -100 --extsize 200 --nomodel --keep-dup 1 --buffer-size 10000
-#  genrich:
-#      -y -j -r
-#  hmmratac:
-#      ""
-
-# how to handle replicates
-biological_replicates: fisher  # change to keep to not combine them
-technical_replicates: merge    # change to keep to not combine them
+# how to handle plates ("technical replicates")
+technical_replicates: merge
 
 # filtering after alignment
 remove_blacklist: True
@@ -40,3 +29,12 @@ aligner: bwa-mem
 #       '-a bwtsw'
 #     align:  # parameters for alignment
 #       ''
+
+
+# produce bams, bigwigs and QC statistics?
+create_trackhub: False
+
+# snaptools options
+# min-mapq & keep-chrm set by config options above
+snaptools_opt: --min-flen=0 --max-flen=1000 --keep-single=FALSE --keep-secondary=FALSE --overwrite=True --min-cov=100 --verbose=True
+bin_opt: --bin-size-list 5000 --verbose=True

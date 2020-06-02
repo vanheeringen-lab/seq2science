@@ -1,5 +1,5 @@
 ## Downloading fastqs
-Downloading public data in bulk from the NCBI, ENA, and DDBJ databases has never been easier or faster!
+Downloading public data in bulk from the NCBI, ENA, and DDBJ databases has never been easier!
 
 ### Pipeline steps
 <p align="center">
@@ -11,6 +11,24 @@ Most databases do not store the actual fastqs, but they do all store the raw dat
 
 #### "Dump" the SRA file to a fastq file
 The second step is translating (dumping) the sra file to a fastq file.
+
+### Filling out the samples.tsv
+Before running a workflow you will have to specify which samples you want to run the workflow on. Each workflow starts with a `samples.tsv` as an example, and you should adapt it to your specific needs. As an example, the `samples.tsv` could look something like this:
+```
+sample
+GSM123
+GSM321
+GSMabc
+GSMxzy
+GSM890
+```
+
+#### Sample column
+This column is necessary for all workflows, not just the atac-seq workflow. If you use the pipeline on public data this should be the name of the accession (e.g. GSM2837484), if you use the pipeline on local data this should be the *basename* of the file without the *extension*. For instance `/home/user/myfastqs/sample1.fastq.gz` would be `sample1`.
+
+#### Final notes
+- Make sure that the samples.tsv is a tab separated values file when running the pipeline.
+- Feel free to add columns to your liking (these will be ignored).
 
 ### Best practices
 #### Downloading with ascp

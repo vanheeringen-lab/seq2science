@@ -1,7 +1,11 @@
 ## RNA-seq
-Running an RNA-seq pipeline has never been easier! See our [RNA-seq](https://github.com/vanheeringen-lab/snakemake-workflows/tree/master/workflows/rna_seq) workflow.
+Running an RNA-seq analysis has never been easier! See our [RNA-seq](https://github.com/vanheeringen-lab/snakemake-workflows/tree/master/workflows/rna_seq) workflow.
 
 ### Pipeline steps
+<p align="center">
+  <img src="../../_static/rna_seq.png">
+</p>
+
 #### Generate count matrices ###
 
 In addition to aligning to the genome, [STAR](https://github.com/alexdobin/STAR) can output a reads per gene table. These counts are required for differential expression analysis. 
