@@ -2,7 +2,9 @@
 Downloading public data in bulk from the NCBI, ENA, and DDBJ databases has never been easier or faster!
 
 ### Pipeline steps
-![download_fastq](../../_static/download_fastq.png "seq2science")
+<p align="center">
+  <img src="../../_static/download_fastq.png">
+</p>
 
 #### Download SRA file
 Most databases do not store the actual fastqs, but they do all store the raw data (as a sra file). For this reason for each sample submitted the sra is downloaded. To convert this data to a fastq it has to be *dumped*. 
