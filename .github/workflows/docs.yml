@@ -27,7 +27,7 @@ jobs:
         run: |
           python docs/scripts/schemas.py
           python docs/scripts/rule_description.py
-          python docs/scripts/gen_dags
+          ./docs/scripts/gen_dags
           sphinx-build docs/ build
           touch build/.nojekyll
 
