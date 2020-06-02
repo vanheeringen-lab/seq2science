@@ -103,6 +103,8 @@
 <li class="toctree-l3"><a class="reference internal" href="#call-peak-genrich">call_peak_genrich</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#computematrix">computeMatrix</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#counts-matrix">counts_matrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#create-snap-object">create_SNAP_object</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#create-bins-snap-object">create_bins_SNAP_object</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#cytoband">cytoband</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#decoy-transcripts">decoy_transcripts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#deseq2">deseq2</a></li>
@@ -328,6 +330,21 @@ run a list is printed of which rules will be run. And while the workflow is runn
 </pre></div>
 </div>
 </div>
+<div class="section" id="create-snap-object">
+<h2>create_SNAP_object<a class="headerlink" href="#create-snap-object" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Create a snapobject for each BAM file.
+
+These snapobjects can be merged later using snaptools in R.
+</pre></div>
+</div>
+</div>
+<div class="section" id="create-bins-snap-object">
+<h2>create_bins_SNAP_object<a class="headerlink" href="#create-bins-snap-object" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Add a Binned genome matrix with 5kb bins to the SNAPobject, after which it is renamed and moved
+to the Snapfiles folder for downstream analysis in R using Snaptools
+</pre></div>
+</div>
+</div>
 <div class="section" id="cytoband">
 <h2>cytoband<a class="headerlink" href="#cytoband" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Generate a cytoband track for each assembly
@@ -487,11 +504,12 @@ Macs2 requires a genome size, which we estimate from the amount of unique kmers 
 </div>
 <div class="section" id="merge-replicates">
 <h2>merge_replicates<a class="headerlink" href="#merge-replicates" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Merge replicates (fastqs) simply by concatenating the files.
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Merge replicates (fastqs) simply by concatenating the files. We also change the name of the read headers to
+contain the name of the original replicate.
 
 Must happen after trimming due to trim-galore&#39;s automatic adapter trimming method
 
-If a replicate has only 1 sample in it, rename and move instead.
+If a replicate has only 1 sample in it, simply move the file.
 </pre></div>
 </div>
 </div>

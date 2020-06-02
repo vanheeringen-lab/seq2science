@@ -5,7 +5,7 @@ Command line interface
 init
 ****
 .. argparse::
-   :filename: scripts/seq2science
+   :filename: bin/seq2science
    :func: seq2science_parser
    :prog: seq2science
    :path: init
@@ -16,7 +16,7 @@ init
 run
 ***
 .. argparse::
-   :filename: scripts/seq2science
+   :filename: bin/seq2science
    :func: seq2science_parser
    :prog: seq2science
    :path: run
@@ -28,7 +28,7 @@ run
 clean
 *****
 .. argparse::
-   :filename: scripts/seq2science
+   :filename: bin/seq2science
    :func: seq2science_parser
    :prog: seq2science
    :path: clean
@@ -39,7 +39,7 @@ clean
 docs
 ****
 .. argparse::
-   :filename: scripts/seq2science
+   :filename: bin/seq2science
    :func: seq2science_parser
    :prog: seq2science
    :path: docs

@@ -84,7 +84,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Getting started</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#running-a-workflow">Running a workflow</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#where-does-the-workflow-store-results-and-looks-for-starting-points">Where does the workflow store results and looks for ‘starting points’?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#where-does-seq2science-store-results-and-looks-for-starting-points">Where does seq2science store results and looks for ‘starting points’?</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#useful-settings">Useful settings</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#what-is-snakemake">What is Snakemake?</a></li>
 </ul>
@@ -210,20 +210,17 @@ To run a workflow all you need to do is follow these simple steps:</p>
 </li>
 </ul>
 </div>
-<div class="section" id="where-does-the-workflow-store-results-and-looks-for-starting-points">
-<h2>Where does the workflow store results and looks for ‘starting points’?<a class="headerlink" href="#where-does-the-workflow-store-results-and-looks-for-starting-points" title="Permalink to this headline">¶</a></h2>
-<p>Under the hood we tell snakemake which output files we expect by editing the <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code>. Snakemake then takes a look at all the rules, decides which steps it need to take to generate this output. So if for instance half of a pipeline is already run (e.g. all the samples are already aligned), snakemake will continue from this point (it will not start by trimming again). By default, Snakemake will look for all the files in the <em>result_dir</em> directory and in the appropriate folders there, and a separate directory is specified for genomes with the <em>genome_dir</em>. A typical start of a project has this layout:</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>workflow  # (e.g. alignment)
-├── Snakefile
+<div class="section" id="where-does-seq2science-store-results-and-looks-for-starting-points">
+<h2>Where does seq2science store results and looks for ‘starting points’?<a class="headerlink" href="#where-does-seq2science-store-results-and-looks-for-starting-points" title="Permalink to this headline">¶</a></h2>
+<p>We generally recommend a file structure</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>my_project
 ├── samples.tsv
 ├── config.yaml
-|
 ├── {result_dir}
-|   └── {fastq_dir}  # defaults to fastq
+|   └── {fastq_dir}  # defaults to {result_dir}/fastq
 |       ├── sample1.fastq.gz
 |       ├── sample2_pass_1.fastq.gz
 |       └── sample2_pass_2.fastq.gz
-|
 └── {genome_dir}
     └── hg38
         └── hg38.fa
