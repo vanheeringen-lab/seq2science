@@ -6,15 +6,18 @@ import sys
 import argparse
 import os
 import shutil
-import json
 import webbrowser
 import re
+import inspect
 
+# we need to be able to get the parser from the file without a valid seq2science installation
 try:
     from snakemake import snakemake
-    snake_import = True
+    import seq2science
+
+    full_import = True
 except ImportError:
-    snake_import = True
+    full_import = False
 
 
 __version__ = "0.0.0"
@@ -22,22 +25,18 @@ __version__ = "0.0.0"
 
 def main():
     # set helpful paths
-    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    base_dir = os.path.dirname(inspect.getfile(seq2science))
     workflows_dir = os.path.join(base_dir, "workflows")
 
     parser = seq2science_parser(workflows_dir)
     args = parser.parse_args()
 
-    # turn config path into absolute path
-    if args.command in ["init", "run"]:
-        config_path = args.config
-        if not os.path.isabs(args.config):
-            config_path = os.path.join(os.getcwd(), args.config)
-
     # now run the command
     if args.command == "init":
-        _init(args, workflows_dir, config_path)
+        dir_path = args.dir if os.path.isabs(args.dir) else os.path.join(os.getcwd(), args.dir)
+        _init(args, workflows_dir, dir_path)
     elif args.command == "run":
+        config_path = args.config if os.path.isabs(args.config) else os.path.join(os.getcwd(), args.config)
         _run(args, base_dir, workflows_dir, config_path)
     elif args.command == "clean":
         _clean()
@@ -45,7 +44,7 @@ def main():
         _docs()
 
 
-def seq2science_parser(workflows_dir="./workflows/"):
+def seq2science_parser(workflows_dir="./seq2science/workflows/"):
     """
     Make the seq2science parser.
     """
@@ -176,6 +175,8 @@ def _run(args, base_dir, workflows_dir, config_path):
         )
         sys.exit(1)
 
+    snakemake_options = args.snakemakeOptions if args.snakemakeOptions is not None else dict()
+
     exit_code = snakemake(
         snakefile=os.path.join(workflows_dir, args.workflow, "Snakefile"),
         configfiles=[config_path],
@@ -184,7 +185,7 @@ def _run(args, base_dir, workflows_dir, config_path):
         use_conda=True,
         conda_prefix=os.path.join(base_dir, ".snakemake"),
         dryrun=args.dryrun,
-        **args.snakemakeOptions
+        **snakemake_options
     )
     sys.exit(exit_code)
 
@@ -236,7 +237,7 @@ class _StoreDictKeyPair(argparse.Action):
 
 
 if __name__ == "__main__":
-    if snake_import:
+    if full_import:
         main()
     else:
-        raise ImportError("Could not import snakemake, which is required to run the workflow.")
+        raise ImportError("seq2science has not been installed properly.")

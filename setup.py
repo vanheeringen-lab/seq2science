@@ -14,9 +14,5 @@ import sys
 sys.stdout.write("\n\n\n\n")
 sys.stdout.write(str(project))
 sys.stdout.write("\n\n\n\n")
-# find packages to install
-# project["packages"] = find_packages(where='./*', exclude=())
-# # print()
-# assert False, project["packages"]
 
 setup(**project)

@@ -18,7 +18,7 @@ We believe that all our default settings are reasonable, and manual finetuning i
 """
 )
 
-path = "schemas/config/"
+path = "seq2science/schemas/config/"
 order = {"general": "general",
          "alignment general": "alignment_general",
          "alignment workflow specific": "alignment_specific",

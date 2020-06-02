@@ -1,14 +1,16 @@
 [project]
 name = "seq2science"
+packages = ["seq2science"]
+package_data = "{'seq2science':['envs/*', 'rules/*', 'schemas/*', 'schemas/*/*', 'scripts/*', 'workflows/*/*']}"
+include_package_data = true
 version = "0.0.0"
-description = "seq2science: preprocessing of ngs data."
+description = "seq2science: easy pre-processing of ngs data."
 author = [
     "Maarten van der Sande <M.vanderSande@science.ru.nl>"]
 license = "MIT"
-url = "https://vanheeringen-lab.github.io/snakemake-workflows"
-scripts = ["scripts/seq2science"]
-package_data = "{'seq2science':['*']}"
-include_package_data = true
+license_file = "LICENSE"
+url = "https://vanheeringen-lab.github.io/seq2science"
+scripts = ["bin/seq2science"]
 
 classifiers = [
     "Development Status :: 1 - Planning",
@@ -21,7 +23,6 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Topic :: Scientific/Engineering :: Bio-Informatics"]
 
-install_requires = ["snakemake", "toml"]
 python_requires = ">3.6"
 
 [build-system]

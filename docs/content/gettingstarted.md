@@ -22,21 +22,18 @@ To run a workflow all you need to do is follow these simple steps:
 - Run the workflow
   - `snakemake --cores 6 --use-conda`
 
-## Where does the workflow store results and looks for 'starting points'?
-Under the hood we tell snakemake which output files we expect by editing the `samples.tsv`. Snakemake then takes a look at all the rules, decides which steps it need to take to generate this output. So if for instance half of a pipeline is already run (e.g. all the samples are already aligned), snakemake will continue from this point (it will not start by trimming again). By default, Snakemake will look for all the files in the *result_dir* directory and in the appropriate folders there, and a separate directory is specified for genomes with the *genome_dir*. A typical start of a project has this layout:
+## Where does seq2science store results and looks for 'starting points'?
+We generally recommend a file structure
 
 ```
-workflow  # (e.g. alignment)
-├── Snakefile
+my_project
 ├── samples.tsv
 ├── config.yaml
-|
 ├── {result_dir}
-|   └── {fastq_dir}  # defaults to fastq
+|   └── {fastq_dir}  # defaults to {result_dir}/fastq
 |       ├── sample1.fastq.gz
 |       ├── sample2_pass_1.fastq.gz
 |       └── sample2_pass_2.fastq.gz
-|
 └── {genome_dir}
     └── hg38
         └── hg38.fa

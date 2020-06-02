@@ -16,7 +16,7 @@ developers to find what is, and isn't yet supported.
 """
 )
 
-path = "rules/"
+path = "seq2science/rules/"
 
 
 def get_dirty_docstrings(string):
