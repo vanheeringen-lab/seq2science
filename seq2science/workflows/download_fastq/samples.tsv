@@ -1,0 +1,6 @@
+# for help with filling out the samples.tsv:
+# https://github.com/vanheeringen-lab/snakemake-workflows/wiki/1.1-Filling-out-the-samples.tsv
+# also make sure that you use tab as a delimiter
+sample
+GSM2520641
+GSM2520642
