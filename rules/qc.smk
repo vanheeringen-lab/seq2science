@@ -353,8 +353,13 @@ def get_qc_files(wildcards):
 
     # trimming qc on individual samples
     if get_trimming_qc in quality_control:
-        for sample in samples[samples['assembly'] == wildcards.assembly].index:
-            qc['files'].update(get_trimming_qc(sample))
+        if get_workflow() == "scATAC_seq":
+            # scATAC special case to only want fastqc of trimmed merged reps
+            for trep in treps[treps['assembly'] == wildcards.assembly].index:
+                qc['files'].update(get_trimming_qc(trep))
+        else:
+            for sample in samples[samples['assembly'] == wildcards.assembly].index:
+                qc['files'].update(get_trimming_qc(sample))
 
     # qc on merged technical replicates/samples
     if get_alignment_qc in quality_control:
@@ -401,16 +406,21 @@ rule multiqc:
 
 
 def get_trimming_qc(sample):
-    if config['layout'][sample] == 'SINGLE':
-        return expand([f"{{qc_dir}}/fastqc/{sample}_fastqc.zip",
-                       f"{{qc_dir}}/fastqc/{sample}_trimmed_fastqc.zip",
-                       f"{{qc_dir}}/trimming/{sample}.{{fqsuffix}}.gz_trimming_report.txt"],
-                       **config)
+    if get_workflow() == "scATAC_seq":
+        # we (at least for now) do not was fastqc for each single cell before and after trimming.
+        # still something to think about to add later, since that might be a good quality check though.
+        return expand(f"{{qc_dir}}/fastqc/{sample}_{{fqext}}_trimmed_fastqc.zip", **config)
     else:
-        return expand([f"{{qc_dir}}/fastqc/{sample}_{{fqext}}_fastqc.zip",
-                       f"{{qc_dir}}/fastqc/{sample}_{{fqext}}_trimmed_fastqc.zip",
-                       f"{{qc_dir}}/trimming/{sample}_{{fqext}}.{{fqsuffix}}.gz_trimming_report.txt"],
-                       **config)
+        if config['layout'][sample] == 'SINGLE':
+            return expand([f"{{qc_dir}}/fastqc/{sample}_fastqc.zip",
+                           f"{{qc_dir}}/fastqc/{sample}_trimmed_fastqc.zip",
+                           f"{{qc_dir}}/trimming/{sample}.{{fqsuffix}}.gz_trimming_report.txt"],
+                           **config)
+        else:
+            return expand([f"{{qc_dir}}/fastqc/{sample}_{{fqext}}_fastqc.zip",
+                           f"{{qc_dir}}/fastqc/{sample}_{{fqext}}_trimmed_fastqc.zip",
+                           f"{{qc_dir}}/trimming/{sample}_{{fqext}}.{{fqsuffix}}.gz_trimming_report.txt"],
+                           **config)
 
 
 def get_alignment_qc(sample):
