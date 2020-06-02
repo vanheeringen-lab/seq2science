@@ -21,12 +21,13 @@ jobs:
       - name: Install dependencies 🔨
         run: |
           python -m pip install --upgrade pip
-          pip install 'sphinx==2.4.4' m2r sphinx_rtd_theme pyyaml sphinx-argparse
+          pip install 'sphinx==2.4.4' m2r sphinx_rtd_theme pyyaml sphinx-argparse snakemake
 
       - name: Build 🔧
         run: |
           python docs/scripts/schemas.py
           python docs/scripts/rule_description.py
+          python docs/scripts/gen_dags
           sphinx-build docs/ build
           touch build/.nojekyll
 
