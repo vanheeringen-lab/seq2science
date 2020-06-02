@@ -21,7 +21,7 @@ jobs:
       - name: Install dependencies 🔨
         run: |
           python -m pip install --upgrade pip
-          pip install 'sphinx==2.4.4' m2r sphinx_rtd_theme pyyaml sphinx-argparse snakemake
+          pip install 'sphinx==2.4.4' m2r sphinx_rtd_theme pyyaml sphinx-argparse snakemake pydot filelock norns
 
       - name: Build 🔧
         run: |
