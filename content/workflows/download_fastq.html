@@ -82,12 +82,16 @@
             
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../gettingstarted.html">Getting started</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../fillingout.html">Filling out the samples.tsv and config.yaml</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../workflows.html">Workflows</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Downloading fastqs</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#pipeline-steps">Pipeline steps</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#download-sra-file">Download SRA file</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#dump-the-sra-file-to-a-fastq-file">“Dump” the SRA file to a fastq file</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#filling-out-the-samples-tsv">Filling out the samples.tsv</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#sample-column">Sample column</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#final-notes">Final notes</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#best-practices">Best practices</a><ul>
@@ -180,7 +184,7 @@
             
   <div class="section" id="downloading-fastqs">
 <h1>Downloading fastqs<a class="headerlink" href="#downloading-fastqs" title="Permalink to this headline">¶</a></h1>
-<p>Downloading public data in bulk from the NCBI, ENA, and DDBJ databases has never been easier or faster!</p>
+<p>Downloading public data in bulk from the NCBI, ENA, and DDBJ databases has never been easier!</p>
 <div class="section" id="pipeline-steps">
 <h2>Pipeline steps<a class="headerlink" href="#pipeline-steps" title="Permalink to this headline">¶</a></h2>
 <p align="center">
@@ -192,6 +196,29 @@
 <div class="section" id="dump-the-sra-file-to-a-fastq-file">
 <h3>“Dump” the SRA file to a fastq file<a class="headerlink" href="#dump-the-sra-file-to-a-fastq-file" title="Permalink to this headline">¶</a></h3>
 <p>The second step is translating (dumping) the sra file to a fastq file.</p>
+</div>
+</div>
+<div class="section" id="filling-out-the-samples-tsv">
+<h2>Filling out the samples.tsv<a class="headerlink" href="#filling-out-the-samples-tsv" title="Permalink to this headline">¶</a></h2>
+<p>Before running a workflow you will have to specify which samples you want to run the workflow on. Each workflow starts with a <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> as an example, and you should adapt it to your specific needs. As an example, the <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> could look something like this:</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>sample
+GSM123
+GSM321
+GSMabc
+GSMxzy
+GSM890
+</pre></div>
+</div>
+<div class="section" id="sample-column">
+<h3>Sample column<a class="headerlink" href="#sample-column" title="Permalink to this headline">¶</a></h3>
+<p>This column is necessary for all workflows, not just the atac-seq workflow. If you use the pipeline on public data this should be the name of the accession (e.g. GSM2837484), if you use the pipeline on local data this should be the <em>basename</em> of the file without the <em>extension</em>. For instance <code class="docutils literal notranslate"><span class="pre">/home/user/myfastqs/sample1.fastq.gz</span></code> would be <code class="docutils literal notranslate"><span class="pre">sample1</span></code>.</p>
+</div>
+<div class="section" id="final-notes">
+<h3>Final notes<a class="headerlink" href="#final-notes" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Make sure that the samples.tsv is a tab separated values file when running the pipeline.</p></li>
+<li><p>Feel free to add columns to your liking (these will be ignored).</p></li>
+</ul>
 </div>
 </div>
 <div class="section" id="best-practices">

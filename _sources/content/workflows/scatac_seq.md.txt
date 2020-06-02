@@ -6,6 +6,10 @@ Does your scATAC protocol generate single cell fastq files? And do they need to 
 If instead you have a large FASTQ file containing a cell specific ID in the header, it might possible to run this pipeline with some alterations. If you have instead a Cellranger object, it is relatively easy to directly generate a SNAPobject, look at the documentation on the SnapATAC github intead.
 
 ### Pipeline steps
+<p align="center">
+  <img src="../../_static/scatac_seq.png">
+</p>
+
 #### WIP: (Automated) downloading of fastq
 scATAC-seq can be done with local fastq files, downloaded files, or a mix of those. Make sure to take a look at our downloading fastq [best practices](https://github.com/vanheeringen-lab/snakemake-workflows/wiki/2.-Downloading-samples) when making use of the downloading functionality.
 

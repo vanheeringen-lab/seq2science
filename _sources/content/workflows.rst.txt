@@ -1,11 +1,10 @@
 Workflows
 #########
 
-These ...
+These are our currently supported workflows. These workflows generally overlap a lot, so once you understand the logic of one of these, learning another should be easy!
 
 
 .. toctree::
-   :caption: Supported workflows
    :maxdepth: 1
 
    Downloading fastqs <workflows/download_fastq.md>

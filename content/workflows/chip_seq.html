@@ -82,7 +82,6 @@
             
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../gettingstarted.html">Getting started</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../fillingout.html">Filling out the samples.tsv and config.yaml</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../workflows.html">Workflows</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="download_fastq.html">Downloading fastqs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="alignment.html">Alignment</a></li>
@@ -90,18 +89,30 @@
 <li class="toctree-l2"><a class="reference internal" href="rna_seq.html">RNA-seq</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">ChIP-seq</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#pipeline-steps">Pipeline steps</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#downloading-of-sample-s">Downloading of sample(s)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#downloading-and-indexing-of-assembly-s">Downloading and indexing of assembly(s)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#read-trimming">Read trimming</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#alignment">Alignment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bam-sieving">Bam sieving</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#peak-calling">Peak calling</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#replicates">Replicates</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#quality-report">Quality report</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#count-table">count table</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#count-table">Count table</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#trackhub">Trackhub</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#filling-out-the-samples-tsv">Filling out the samples.tsv</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#sample-column">Sample column</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#assembly-column">Assembly column</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#control-column">Control column</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#descriptive-name-column">Descriptive_name column</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#technical-replicates">Technical replicates</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#biological-replicates">Biological replicates</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#final-notes">Final notes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#filling-out-the-config-yaml">Filling out the config.yaml</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#best-practices">Best practices</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#automated-downloading-of-fastq">(Automated) downloading of fastq</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#alignment">Alignment</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#irreproducible-discovery-rate">Irreproducible Discovery Rate</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#broad-peaks">Broad peaks</a></li>
 </ul>
 </li>
 </ul>
@@ -183,63 +194,144 @@
             
   <div class="section" id="chip-seq">
 <h1>ChIP-seq<a class="headerlink" href="#chip-seq" title="Permalink to this headline">¶</a></h1>
-<p>Running a CHiP-seq pipeline has never been easier! See our <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/tree/master/workflows/chip_seq">CHiP-seq</a> workflow.</p>
+<p>Running a ChIP-seq analysis has never been easier!</p>
 <div class="section" id="pipeline-steps">
 <h2>Pipeline steps<a class="headerlink" href="#pipeline-steps" title="Permalink to this headline">¶</a></h2>
+<p align="center">
+  <img src="../../_static/chip_seq.png">
+</p><div class="section" id="downloading-of-sample-s">
+<h3>Downloading of sample(s)<a class="headerlink" href="#downloading-of-sample-s" title="Permalink to this headline">¶</a></h3>
+<p>Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples. Take a look at the <a class="reference external" href="download_fastq.md">downloading_fastq</a> workflow for extensive documentation about downloading of public samples.</p>
+</div>
+<div class="section" id="downloading-and-indexing-of-assembly-s">
+<h3>Downloading and indexing of assembly(s)<a class="headerlink" href="#downloading-and-indexing-of-assembly-s" title="Permalink to this headline">¶</a></h3>
+<p>Depending on whether the assembly and its index you align your samples against already exist seq2science will start with downloading of the assembly through <a class="reference external" href="https://github.com/vanheeringen-lab/genomepy">genomepy</a>.</p>
+</div>
+<div class="section" id="read-trimming">
+<h3>Read trimming<a class="headerlink" href="#read-trimming" title="Permalink to this headline">¶</a></h3>
+<p>The pipeline starts by trimming the reads with <a class="reference external" href="https://github.com/FelixKrueger/TrimGalore/blob/master/Docs/Trim_Galore_User_Guide.md">trim galore!</a>. Trim galore automatically first trims the low quality 3’ ends of reads, and removes short reads. After the quality trimming trim galore automatically detects which adapter was used, and trims it. The parameters of trim galore! for the pipeline can be set in the configuration by variable <em>trim_galore</em>.</p>
+</div>
+<div class="section" id="alignment">
+<h3>Alignment<a class="headerlink" href="#alignment" title="Permalink to this headline">¶</a></h3>
+<p>After trimming the reads are aligned against an assembly. Currently we support <code class="docutils literal notranslate"><span class="pre">bowtie2</span></code>, <code class="docutils literal notranslate"><span class="pre">bwa-mem</span></code>, <code class="docutils literal notranslate"><span class="pre">hisat2</span></code> and <code class="docutils literal notranslate"><span class="pre">star</span></code> as aligners. Choosing which aligner is as easy as setting the <em>aligner</em> variable in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>, for example: <code class="docutils literal notranslate"><span class="pre">aligner:</span> <span class="pre">bwa</span></code>. Sensible defaults have been set for every aligner, but can be overwritten for either (or both) the indexing and alignment by specifying them in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>:</p>
+<p>The pipeline will check if the assembly you specified is present in the <em>genome_dir</em>, and otherwise will download it for you through <a class="reference external" href="https://github.com/vanheeringen-lab/genomepy">genomepy</a>. All these aligners require an index to be formed first for each assembly, but don’t worry, the pipeline does this for you.</p>
+</div>
+<div class="section" id="bam-sieving">
+<h3>Bam sieving<a class="headerlink" href="#bam-sieving" title="Permalink to this headline">¶</a></h3>
+<p>After aligning the bam you can choose to remove unmapped reads, low quality mappings, duplicates, and multimappers.</p>
+</div>
 <div class="section" id="peak-calling">
 <h3>Peak calling<a class="headerlink" href="#peak-calling" title="Permalink to this headline">¶</a></h3>
+<p>Currently we support two peak callers for the ChIP-seq workflow, MACS2 and genrich.</p>
 <div class="section" id="macs2">
 <h4>MACS2<a class="headerlink" href="#macs2" title="Permalink to this headline">¶</a></h4>
-<p><a class="reference external" href="https://github.com/taoliu/MACS">MACS2</a> is the successor of MACS, created by <a class="reference external" href="https://github.com/taoliu">taoliu</a> (also one of the co-authors of hmmratac). MACS2 generates a ‘<em>pileup</em>’ of all the reads. You can imagine this pileup as laying all reads on top of each other on the genome, and counting how high your pile gets for each basepair. MACS2 then models ‘<em>background</em>’ values, based on the total length of all your reads and the genome length, to a <a class="reference external" href="https://en.wikipedia.org/wiki/Poisson_distribution">Poisson distribution</a> and decides whether your experimental pileup is significant compared to the poisson distribution. MACS2 is one of the (if not the) most used peak caller.</p>
-<p>For the calculation of peaks MACS2 requires that a genome size is being passed as one of its arguments. For the more common assemblies (e.g. mm10 and human) these numbers can be found online. However we found googling these numbers quite the hassle, so the pipeline automatically estimates this number (we calculate the genome size as <strong>the number of unique kmers of the average read length</strong>).</p>
+<p><a class="reference external" href="https://github.com/taoliu/MACS">MACS2</a> is the successor of MACS, created by <a class="reference external" href="https://github.com/taoliu">taoliu</a> (also one of the co-authors of hmmratac). MACS2 generates a ‘<em>pileup</em>’ of all the reads. You can imagine this pileup as laying all reads on top of each other on the genome, and counting how high your pile gets for each basepair. MACS2 then models ‘<em>background</em>’ values, based on the total length of all your reads and the genome length, to a <a class="reference external" href="https://en.wikipedia.org/wiki/Poisson_distribution">Poisson distribution</a> and decides whether your experimental pileup is significant compared to the poisson distribution. MACS2 is one of the, if not the, most used peak caller.</p>
+<p>For the calculation of peaks MACS2 requires that an “effective” genome size is being passed as one of its arguments. For the more common assemblies (e.g. mm10 and human) these numbers can be found online. However we found googling these numbers quite the hassle, and for lesser studied species these numbers can’t be found online. Therefore the pipeline automatically estimates the effective genome size, we calculate this as <strong>the number of unique kmers of the average read length</strong>.</p>
 </div>
 <div class="section" id="genrich">
 <h4>Genrich<a class="headerlink" href="#genrich" title="Permalink to this headline">¶</a></h4>
-<p><a class="reference external" href="https://github.com/jsh58/Genrich">Genrich</a> is the spiritual successor of MACS2, created by <a class="reference external" href="https://github.com/jsh58">John M. Gaspar</a>. Just like MACS2 is generates a ‘<em>pileup’</em>. However the author of genrich realized that the distribution of pileup never follows a poisson distribution. Genrich then uses a <a class="reference external" href="https://en.wikipedia.org/wiki/Log-normal_distribution">log-normal distribution</a> to model the background. Genrich has many nice features, but is a relatively new and untested, and is not published yet.</p>
+<p><a class="reference external" href="https://github.com/jsh58/Genrich">Genrich</a> is a spiritual successor of MACS2, created by <a class="reference external" href="https://github.com/jsh58">John M. Gaspar</a>. Just like MACS2 is generates a ‘<em>pileup’</em>. However the author of genrich realized that the distribution of pileup never follows a poisson distribution. Genrich then uses a <a class="reference external" href="https://en.wikipedia.org/wiki/Log-normal_distribution">log-normal distribution</a> to model the background.</p>
 </div>
-</div>
-<div class="section" id="replicates">
-<h3>Replicates<a class="headerlink" href="#replicates" title="Permalink to this headline">¶</a></h3>
-<p>All peak callers are capable of combining biological replicates. See <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/wiki/1.1-Filling-out-the-samples.tsv#atac--and-chip-seq">Replicate handling</a> for more information.</p>
 </div>
 <div class="section" id="quality-report">
 <h3>Quality report<a class="headerlink" href="#quality-report" title="Permalink to this headline">¶</a></h3>
-<p>Since the pipeline does a lot of steps automatically, it is very useful to have a quality report of samples. Along the way different quality control steps are taken, and are outputted in a single <a class="reference external" href="https://multiqc.info/">multiqc report</a> in the <code class="docutils literal notranslate"><span class="pre">qc</span></code> folder. Make sure to always check the report, and take a look at <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/wiki/3.0-Interpreting-the-MultiQC-report">interpreting the multiqc report</a>!</p>
+<p>It is always a good idea to check the quality of your samples. Along the way different quality control steps are taken, and are outputted in a single <a class="reference external" href="https://multiqc.info/">multiqc report</a> in the <code class="docutils literal notranslate"><span class="pre">qc</span></code> folder. Make sure to always check the report, and take a look at <a class="reference external" href="../results.html#multiqc-quality-report">interpreting the multiqc report</a>!</p>
 </div>
 <div class="section" id="count-table">
-<h3>count table<a class="headerlink" href="#count-table" title="Permalink to this headline">¶</a></h3>
-<p>A useful result the pipeline outputs is the ‘count table’, located at {peak_caller}/count<em>table</em>{assembly}.bed. For every peak the peak caller found in your data, it outputs the number of reads for each sample that was under that peak.</p>
+<h3>Count table<a class="headerlink" href="#count-table" title="Permalink to this headline">¶</a></h3>
+<p>A useful result the pipeline outputs is the count table, located at {count_table}/{peak_caller}/count<em>table</em>{assembly}.bed. This count table is generated by <a class="reference external" href="https://gimmemotifs.readthedocs.io/en/master/">gimmemotifs</a>’ coverage table command. By default …</p>
+<p>TODO: combine_peaks -&gt; coverage_table</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>                sample1     sample2
 FLLO01000001.1:5649-5849    75.00000    0.00000
 FLLO01000001.1:7399-7599    47.00000    1.00000
 </pre></div>
 </div>
-<p><strong>Note</strong> that this uses the number of raw reads under each peak, and does not use any kind of correction for the difference in total number of reads between samples!</p>
+<p><strong>Note:</strong>
+The count table uses the number of raw reads under each peak, and does not use any kind of correction for the difference in total number of reads between samples!</p>
 </div>
 <div class="section" id="trackhub">
 <h3>Trackhub<a class="headerlink" href="#trackhub" title="Permalink to this headline">¶</a></h3>
-<p>A trackhub is be generated for this workflow. See the <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/wiki/3.1-Trackhub">Trackhub page</a> for more information!</p>
+<p>A UCSC compatible trackhub is be generated for this workflow. See the <a class="reference external" href="../results.html#trackhub">trackhub page</a> for more information!</p>
 </div>
+</div>
+<div class="section" id="filling-out-the-samples-tsv">
+<h2>Filling out the samples.tsv<a class="headerlink" href="#filling-out-the-samples-tsv" title="Permalink to this headline">¶</a></h2>
+<p>Before running a workflow you will have to specify which samples you want to run the workflow on. Each workflow starts with a <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> as an example, and you should adapt it to your specific needs. As an example, the <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> could look something like this:</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>sample    assembly    replicate    descriptive_name    control
+GSM123    GRCh38      heart_1      heart_merged        GSM234
+GSM321    GRCh38      heart_1      heart_merged        GSM234
+GSMabc    GRCh38      heart_2      heart_not_merged    GSM234
+GSMxzy    danRer11    stage_8      stage_8             GSM234
+GSM890    danRer11    stage_9      stage_9             GSM234
+</pre></div>
+</div>
+<div class="section" id="sample-column">
+<h3>Sample column<a class="headerlink" href="#sample-column" title="Permalink to this headline">¶</a></h3>
+<p>This column is necessary for all workflows, not just the atac-seq workflow. If you use the pipeline on public data this should be the name of the accession (e.g. GSM2837484), if you use the pipeline on local data this should be the <em>basename</em> of the file without the <em>extension</em>. For instance <code class="docutils literal notranslate"><span class="pre">/home/user/myfastqs/sample1.fastq.gz</span></code> would be <code class="docutils literal notranslate"><span class="pre">sample1</span></code>.</p>
+</div>
+<div class="section" id="assembly-column">
+<h3>Assembly column<a class="headerlink" href="#assembly-column" title="Permalink to this headline">¶</a></h3>
+<p>This column is necessary for all workflows, except the <em>downloading samples</em> workflow. Here you simply add the name of the assembly you want your samples aligned against and the workflow will download it for you.</p>
+</div>
+<div class="section" id="control-column">
+<h3>Control column<a class="headerlink" href="#control-column" title="Permalink to this headline">¶</a></h3>
+<p>In the <code class="docutils literal notranslate"><span class="pre">control</span></code> column you can (optionally) add the “sample name” of the input control. It is generally a bad idea to add the input control as a sample in the sample since generally peak callers fail on these samples.</p>
+</div>
+<div class="section" id="descriptive-name-column">
+<h3>Descriptive_name column<a class="headerlink" href="#descriptive-name-column" title="Permalink to this headline">¶</a></h3>
+<p>The descriptive_name column is used for the trackhub and multiqc report. In the trackhub your tracks will be called after the descriptive name, and in the multiqc report there will be a button to rename your samples after this column.</p>
+</div>
+<div class="section" id="technical-replicates">
+<h3>Technical replicates<a class="headerlink" href="#technical-replicates" title="Permalink to this headline">¶</a></h3>
+<p>Technical replicates, or any fastq file you may wish to merge, are set using the <code class="docutils literal notranslate"><span class="pre">replicate</span></code> column in the samples.tsv file. All samples with the same name in the <code class="docutils literal notranslate"><span class="pre">replicate</span></code> column will be concatenated into one file with the replicate name.</p>
+<p>Example <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> utilizing replicate merging:</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>sample    assembly    replicate
+GSM123    GRCh38      heart
+GSMabc    GRCh38      heart
+GSMxzy    danRer11    stage8
+GSM890    danRer11
+</pre></div>
+</div>
+<p>Using this file in the alignment workflow will output <em>heart.bam</em>, <em>stage8.bam</em> and <em>GSM890.bam</em>. The MultiQC will inform you of the trimming steps performed on all samples, and subsequent information of the ‘replicate’ files (of which only <em>heart</em> is merged).</p>
+<p><strong>Note:</strong>
+If you are working with multiple assemblies in one workflow, replicate names have to be unique between assemblies (you will receive a warning if names overlap).</p>
+<p>Replicate merging is turned on by default. It can be turned off by setting <code class="docutils literal notranslate"><span class="pre">technical_replicates</span></code> in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> to <code class="docutils literal notranslate"><span class="pre">keep</span></code>.</p>
+</div>
+<div class="section" id="biological-replicates">
+<h3>Biological replicates<a class="headerlink" href="#biological-replicates" title="Permalink to this headline">¶</a></h3>
+<p>During ChIP-seq workflows, peak calling can be performed per biological condition, depending on your configuration setting. Biological conditions are determined by the <code class="docutils literal notranslate"><span class="pre">condition</span></code> column in the samples.tsv file. How these samples are handled is specified by configuration variable <code class="docutils literal notranslate"><span class="pre">biological_replicates</span></code>.</p>
+<p>If you merge technical replicates <em>and</em> combine biological replicates, the technical replicates are merged first.</p>
+<div class="section" id="keep">
+<h4>Keep<a class="headerlink" href="#keep" title="Permalink to this headline">¶</a></h4>
+<p>The default setting. All samples/merged replicates are analyzed individually. The <code class="docutils literal notranslate"><span class="pre">condition</span></code> column is ignored.</p>
+</div>
+<div class="section" id="irreproducible-discovery-rate-idr">
+<h4>Irreproducible Discovery Rate (IDR)<a class="headerlink" href="#irreproducible-discovery-rate-idr" title="Permalink to this headline">¶</a></h4>
+<p>One of the more common methods to combine biological replicates is by the irreproducible discovery rate (<a class="reference external" href="https://github.com/kundajelab/idr">idr</a>). Shortly; idr sorts all the peaks of two replicates separately on their significance. Since true peaks should be very significant for both replicates these peaks will be one of the highest sorted peaks. As peaks get less and less true (and thus their significance) their ordering also becomes more random between the samples. The idr method then only keeps the peak that overlap <em>nonrandomly</em> between the samples. The idr method only works for two replicates, so can not be used when you have more than 2 (<code class="docutils literal notranslate"><span class="pre">n</span> <span class="pre">==</span> <span class="pre">2</span></code>).</p>
+</div>
+<div class="section" id="fisher-s-method">
+<h4>Fisher’s method<a class="headerlink" href="#fisher-s-method" title="Permalink to this headline">¶</a></h4>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Fisher%27s_method">Fisher’s method</a> simply is a method to ‘combine’ multiple p-values. This method is built-in for genrich and macs2, and allows any number of replicates (<code class="docutils literal notranslate"><span class="pre">n</span> <span class="pre">&gt;=</span> <span class="pre">2</span></code>). However a ‘disadvantage’ of this method is that it assumes the p-values a method generates are actual p-values (and not a general indication of significance). MACS2 is slightly notorious for that its p-values are not true p-values. Genrich claims by fitting on a log-normal distribution that their p-values are true. Even though fisher’s method might not be ideal, it’s the only option you have (we provide) within this pipeline for more than 2 replicates.</p>
+</div>
+</div>
+<div class="section" id="final-notes">
+<h3>Final notes<a class="headerlink" href="#final-notes" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Make sure that the samples.tsv is a tab separated values file when running the pipeline.</p></li>
+<li><p>Feel free to delete or add columns to your liking.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="filling-out-the-config-yaml">
+<h2>Filling out the config.yaml<a class="headerlink" href="#filling-out-the-config-yaml" title="Permalink to this headline">¶</a></h2>
+<p>Every workflow has many configurable options, and can be set in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file. In each <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> we highlighted a couple options that we think are relevant for that specific workflow, and set (we think) <strong>reasonable default</strong> values.</p>
+<p>When a workflow starts it prints the complete configuration, and (almost) all these values can be added in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> and changed to your liking. You can see the complete set of configurable options in the <a class="reference external" href="../schemas.html">extensive docs</a>.</p>
 </div>
 <div class="section" id="best-practices">
 <h2>Best practices<a class="headerlink" href="#best-practices" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="automated-downloading-of-fastq">
-<h3>(Automated) downloading of fastq<a class="headerlink" href="#automated-downloading-of-fastq" title="Permalink to this headline">¶</a></h3>
-<p>ATAC-seq can be done with local fastq files, downloaded files, or a mix of those. Make sure to take a look at our downloading fastq <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/wiki/2.-Downloading-samples">best practices</a> when making use of the downloading functionality.</p>
-</div>
-<div class="section" id="alignment">
-<h3>Alignment<a class="headerlink" href="#alignment" title="Permalink to this headline">¶</a></h3>
-<p>Make sure to take a look at our <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/wiki/3.-Alignment">alignment wiki</a>.</p>
-</div>
 <div class="section" id="irreproducible-discovery-rate">
 <h3>Irreproducible Discovery Rate<a class="headerlink" href="#irreproducible-discovery-rate" title="Permalink to this headline">¶</a></h3>
-<p>For idr to work properly, it needs a (large) portion of peaks that are actually not true peaks. Therefore we recommend to call peaks ‘loosely’. One way of doing this is setting the <a class="reference external" href="https://github.com/taoliu/MACS#-p--pvalue">peak threshold p-value</a> high for macs2 in the configuration.</p>
-</div>
-<div class="section" id="broad-peaks">
-<h3>Broad peaks<a class="headerlink" href="#broad-peaks" title="Permalink to this headline">¶</a></h3>
-<p>Some histone marks (such as H3K9me3 and H3K27me3) produce broader (wider) peaks. If you want macs2 to call broad peaks you need to add the <code class="docutils literal notranslate"><span class="pre">--broad</span></code> flag in the macs2 call in the config. Furthermore additional tweaking of the broadness of your peaks is possible by also adding the options: <code class="docutils literal notranslate"><span class="pre">--broad-cutoff</span></code> and especially <code class="docutils literal notranslate"><span class="pre">--max-gap</span></code> in the macs call in the config.
-For example using H3K27me3 data you can use  <code class="docutils literal notranslate"><span class="pre">--broad-cutoff</span> <span class="pre">0.1</span></code>, and  <code class="docutils literal notranslate"><span class="pre">--max-gap</span> <span class="pre">10000</span></code> (10kb), this will merge peaks closer than 10kb together as shown bellow:</p>
-<p>WIP: Genome browser image comparing peak tracks</p>
+<p>For idr to work properly, it needs a large portion of peaks that are actually not true peaks. Therefore we recommend to call peaks ‘loosely’. One way of doing this is setting the <a class="reference external" href="https://github.com/taoliu/MACS#-q--pvalue">peak threshold q-value</a> low for macs2 in the configuration.</p>
 </div>
 </div>
 </div>

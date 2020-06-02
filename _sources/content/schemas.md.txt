@@ -141,7 +141,7 @@ aligner:
             default:
                 index: 
                 align: 
-        bwa:
+        bwa-mem:
             properties:
                 index:
                     default: -a bwtsw
@@ -169,7 +169,7 @@ aligner:
                 index: --limitGenomeGenerateRAM 37000000000 --genomeSAsparseD 1
                 align: 
     default:
-        bwa:
+        bwa-mem:
             index: -a bwtsw
             align: 
 ```

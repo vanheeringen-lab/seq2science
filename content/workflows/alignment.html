@@ -82,7 +82,6 @@
             
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../gettingstarted.html">Getting started</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../fillingout.html">Filling out the samples.tsv and config.yaml</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../workflows.html">Workflows</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="download_fastq.html">Downloading fastqs</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Alignment</a><ul>
@@ -95,10 +94,16 @@
 <li class="toctree-l4"><a class="reference internal" href="#trackhub">Trackhub</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#filling-out-the-samples-tsv">Filling out the samples.tsv</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#sample-column">Sample column</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#assembly-column">Assembly column</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#descriptive-name-column">Descriptive_name column</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#technical-replicates">Technical replicates</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#final-notes">Final notes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#filling-out-the-config-yaml">Filling out the config.yaml</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#best-practices">Best practices</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#automated-downloading-of-fastq">(Automated) downloading of fastq</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#working-with-local-files">Working with local files</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#choosing-an-appropriate-aligner">Choosing an appropriate aligner</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#bam-mapping-quality-filtering">BAM mapping quality filtering</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#cram-support">Cram support</a></li>
 </ul>
@@ -188,7 +193,9 @@
 <p>Aligning samples has never been easier! See our <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/tree/master/workflows/alignment">alignment</a> workflow.</p>
 <div class="section" id="pipeline-steps">
 <h2>Pipeline steps<a class="headerlink" href="#pipeline-steps" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="automated-trimming">
+<p align="center">
+  <img src="../../_static/alignment.png">
+</p><div class="section" id="automated-trimming">
 <h3>Automated trimming<a class="headerlink" href="#automated-trimming" title="Permalink to this headline">¶</a></h3>
 <p>The pipeline starts by trimming the reads with <a class="reference external" href="https://github.com/FelixKrueger/TrimGalore/blob/master/Docs/Trim_Galore_User_Guide.md">trim galore!</a>. Trim galore automatically first trims the low quality 3’ ends of reads, and removes short reads. After the quality trimming trim galore automatically detects which adapter was used, and trims it. The parameters of trim galore! for the pipeline can be set in the configuration by variable <em>trim_galore</em>.</p>
 </div>
@@ -214,33 +221,67 @@
 </div>
 <div class="section" id="quality-report">
 <h3>Quality report<a class="headerlink" href="#quality-report" title="Permalink to this headline">¶</a></h3>
-<p>Since the pipeline does a lot of steps automatically, it is very useful to have a quality report of samples. Along the way different quality control steps are taken, and are outputted in a single <a class="reference external" href="https://multiqc.info/">multiqc report</a>. Make sure to always check the report, and see our <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/wiki/9.-Interpreting-the-quality-report">explanation</a> on how to interpret the different scores!</p>
+<p>It is always a good idea to check the quality of your samples. Along the way different quality control steps are taken, and are outputted in a single <a class="reference external" href="https://multiqc.info/">multiqc report</a> in the <code class="docutils literal notranslate"><span class="pre">qc</span></code> folder. Make sure to always check the report, and take a look at <a class="reference external" href="../results.html#multiqc-quality-report">interpreting the multiqc report</a>!</p>
 </div>
 <div class="section" id="trackhub">
 <h3>Trackhub<a class="headerlink" href="#trackhub" title="Permalink to this headline">¶</a></h3>
-<p>A trackhub can be generated for this workflow. See the <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/wiki/Trackhub">Trackhub page</a> for more information!</p>
+<p>A UCSC compatible trackhub is be generated for this workflow. See the <a class="reference external" href="../results.html#trackhub">trackhub page</a> for more information!</p>
 </div>
+</div>
+<div class="section" id="filling-out-the-samples-tsv">
+<h2>Filling out the samples.tsv<a class="headerlink" href="#filling-out-the-samples-tsv" title="Permalink to this headline">¶</a></h2>
+<p>Before running a workflow you will have to specify which samples you want to run the workflow on. Each workflow starts with a <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> as an example, and you should adapt it to your specific needs. As an example, the <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> could look something like this:</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>sample    assembly    replicate    descriptive_name
+GSM123    GRCh38      heart_1      heart_merged
+GSM321    GRCh38      heart_1      heart_merged
+GSMabc    GRCh38      heart_2      heart_not_merged
+GSMxzy    danRer11    stage_8      stage_8
+GSM890    danRer11    stage_9      stage_9
+</pre></div>
+</div>
+<div class="section" id="sample-column">
+<h3>Sample column<a class="headerlink" href="#sample-column" title="Permalink to this headline">¶</a></h3>
+<p>This column is necessary for all workflows, not just the atac-seq workflow. If you use the pipeline on public data this should be the name of the accession (e.g. GSM2837484), if you use the pipeline on local data this should be the <em>basename</em> of the file without the <em>extension</em>. For instance <code class="docutils literal notranslate"><span class="pre">/home/user/myfastqs/sample1.fastq.gz</span></code> would be <code class="docutils literal notranslate"><span class="pre">sample1</span></code>.</p>
+</div>
+<div class="section" id="assembly-column">
+<h3>Assembly column<a class="headerlink" href="#assembly-column" title="Permalink to this headline">¶</a></h3>
+<p>This column is necessary for all workflows, except the <em>downloading samples</em> workflow. Here you simply add the name of the assembly you want your samples aligned against and the workflow will download it for you.</p>
+</div>
+<div class="section" id="descriptive-name-column">
+<h3>Descriptive_name column<a class="headerlink" href="#descriptive-name-column" title="Permalink to this headline">¶</a></h3>
+<p>The descriptive_name column is used for the trackhub and multiqc report. In the trackhub your tracks will be called after the descriptive name, and in the multiqc report there will be a button to rename your samples after this column.</p>
+</div>
+<div class="section" id="technical-replicates">
+<h3>Technical replicates<a class="headerlink" href="#technical-replicates" title="Permalink to this headline">¶</a></h3>
+<p>Technical replicates, or any fastq file you may wish to merge, are set using the <code class="docutils literal notranslate"><span class="pre">replicate</span></code> column in the samples.tsv file. All samples with the same name in the <code class="docutils literal notranslate"><span class="pre">replicate</span></code> column will be concatenated into one file with the replicate name.</p>
+<p>Example <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> utilizing replicate merging:</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>sample    assembly    replicate
+GSM123    GRCh38      heart
+GSMabc    GRCh38      heart
+GSMxzy    danRer11    stage8
+GSM890    danRer11
+</pre></div>
+</div>
+<p>Using this file in the alignment workflow will output <em>heart.bam</em>, <em>stage8.bam</em> and <em>GSM890.bam</em>. The MultiQC will inform you of the trimming steps performed on all samples, and subsequent information of the ‘replicate’ files (of which only <em>heart</em> is merged).</p>
+<p><strong>Note:</strong>
+If you are working with multiple assemblies in one workflow, replicate names have to be unique between assemblies (you will receive a warning if names overlap).</p>
+<p>Replicate merging is turned on by default. It can be turned off by setting <code class="docutils literal notranslate"><span class="pre">technical_replicates</span></code> in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> to <code class="docutils literal notranslate"><span class="pre">keep</span></code>.</p>
+</div>
+<div class="section" id="final-notes">
+<h3>Final notes<a class="headerlink" href="#final-notes" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Make sure that the samples.tsv is a tab separated values file when running the pipeline.</p></li>
+<li><p>Feel free to delete or add columns to your liking.</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="filling-out-the-config-yaml">
+<h2>Filling out the config.yaml<a class="headerlink" href="#filling-out-the-config-yaml" title="Permalink to this headline">¶</a></h2>
+<p>Every workflow has many configurable options, and can be set in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file. In each <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> we highlighted a couple options that we think are relevant for that specific workflow, and set (we think) <strong>reasonable default</strong> values.</p>
+<p>When a workflow starts it prints the complete configuration, and (almost) all these values can be added in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> and changed to your liking. You can see the complete set of configurable options in the <a class="reference external" href="../schemas.html">extensive docs</a>.</p>
 </div>
 <div class="section" id="best-practices">
 <h2>Best practices<a class="headerlink" href="#best-practices" title="Permalink to this headline">¶</a></h2>
-<p>Additionally, the pipeline will search the <em>fastq_dir</em> directory for paired-ended files with unrecognized fqexts and attempt to parse them for you. As long as the suffixes are lexicographically ordered (R1 &gt; R2, pass1 &gt; pass2), you can ignore the <em>fqext</em> parameters.</p>
-<div class="section" id="automated-downloading-of-fastq">
-<h3>(Automated) downloading of fastq<a class="headerlink" href="#automated-downloading-of-fastq" title="Permalink to this headline">¶</a></h3>
-<p>Alignment can be done with local fastq files, downloaded files, or a mix of those. Make sure to take a look at our downloading fastq <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/wiki/2.-Downloading-samples">best practices</a> when making use of the downloading functionality.</p>
-</div>
-<div class="section" id="working-with-local-files">
-<h3>Working with local files<a class="headerlink" href="#working-with-local-files" title="Permalink to this headline">¶</a></h3>
-<p>See our <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/wiki/1.-Getting-started#where-does-the-workflow-store-results-and-looks-for-starting-points">Getting started</a> about working with local files.</p>
-</div>
-<div class="section" id="choosing-an-appropriate-aligner">
-<h3>Choosing an appropriate aligner<a class="headerlink" href="#choosing-an-appropriate-aligner" title="Permalink to this headline">¶</a></h3>
-<p>The RNA-seq workflow supports STAR and Salmon. By default, STAR is selected.</p>
-<ul class="simple">
-<li><p>STAR required large amounts of memory to index the genome, but is <a class="reference external" href="https://link.springer.com/article/10.1186/1471-2105-14-91">the more accurate</a> of the two.</p></li>
-<li><p>Salmon allows for fast and light-weight transcript quantification. The accuracy can be improved by using a decoy-aware index. This can be achieved by setting <em>decoy_aware_index</em> to True in the config.yaml. However, the generation of the decoy transcripts requires an even larger amounts of memory compared to STAR.</p></li>
-</ul>
-<p>ATAC-seq workflows often use BWA or Bowtie2. By default, BWA is selected.</p>
-</div>
 <div class="section" id="bam-mapping-quality-filtering">
 <h3>BAM mapping quality filtering<a class="headerlink" href="#bam-mapping-quality-filtering" title="Permalink to this headline">¶</a></h3>
 <p>All aligners pass a mapping quality (MAPQ) score to the reads. This score reflects the certainty that a read belongs to a certain genomic position. This score can then be used by <a class="reference external" href="https://deeptools.readthedocs.io/en/develop/">deeptools</a> to only keep reads of which the aligner is certain where it aligns, and to limit multimappers. You can set the minimum mapq score by using the configuration variable <code class="docutils literal notranslate"><span class="pre">min_mapping_quality</span></code>. Unfortunately, most aligners use a different scoring system. This problem has been nicely summarized <a class="reference external" href="https://sequencing.qcfail.com/articles/mapq-values-are-really-useful-but-their-implementation-is-a-mess/">here</a>.</p>

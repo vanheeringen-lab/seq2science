@@ -82,7 +82,6 @@
             
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../gettingstarted.html">Getting started</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../fillingout.html">Filling out the samples.tsv and config.yaml</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../workflows.html">Workflows</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="download_fastq.html">Downloading fastqs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="alignment.html">Alignment</a></li>
@@ -180,10 +179,12 @@
             
   <div class="section" id="rna-seq">
 <h1>RNA-seq<a class="headerlink" href="#rna-seq" title="Permalink to this headline">¶</a></h1>
-<p>Running an RNA-seq pipeline has never been easier! See our <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/tree/master/workflows/rna_seq">RNA-seq</a> workflow.</p>
+<p>Running an RNA-seq analysis has never been easier! See our <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/tree/master/workflows/rna_seq">RNA-seq</a> workflow.</p>
 <div class="section" id="pipeline-steps">
 <h2>Pipeline steps<a class="headerlink" href="#pipeline-steps" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="generate-count-matrices">
+<p align="center">
+  <img src="../../_static/rna_seq.png">
+</p><div class="section" id="generate-count-matrices">
 <h3>Generate count matrices<a class="headerlink" href="#generate-count-matrices" title="Permalink to this headline">¶</a></h3>
 <p>In addition to aligning to the genome, <a class="reference external" href="https://github.com/alexdobin/STAR">STAR</a> can output a reads per gene table. These counts are required for differential expression analysis.</p>
 <p>If alignment is no priority, either STAR or <a class="reference external" href="https://github.com/COMBINE-lab/salmon">Salmon</a> can be used to only quantify the transcripts. This option is used when <code class="docutils literal notranslate"><span class="pre">generate_trackhub</span></code> is set to <code class="docutils literal notranslate"><span class="pre">False</span></code> (the default for this workflow).</p>
