@@ -10,11 +10,11 @@ Seq2science is the attempt of the *van heeringen lab* to generate a collection o
 
 Our supported workflows:
 * [Downloading of fastq](https://vanheeringen-lab.github.io/seq2science/content/workflows/download_fastq.html)
-* [Alignment](https://vanheeringen-lab.github.io/seq2science/content/workflows/download_fastq.html)
-* [ATAC-seq](https://vanheeringen-lab.github.io/seq2science/content/workflows/download_fastq.html)
-* [RNA-seq](https://vanheeringen-lab.github.io/seq2science/content/workflows/download_fastq.html)
-* [ChIP-seq](https://vanheeringen-lab.github.io/seq2science/content/workflows/download_fastq.html)
-* [scATAC-seq](https://vanheeringen-lab.github.io/seq2science/content/workflows/download_fastq.html)
+* [Alignment](https://vanheeringen-lab.github.io/seq2science/content/workflows/alignment.html)
+* [ATAC-seq](https://vanheeringen-lab.github.io/seq2science/content/workflows/atac_seq.html)
+* [RNA-seq](https://vanheeringen-lab.github.io/seq2science/content/workflows/rna_seq.html)
+* [ChIP-seq](https://vanheeringen-lab.github.io/seq2science/content/workflows/chip_seq.html)
+* [scATAC-seq](https://vanheeringen-lab.github.io/seq2science/content/workflows/scatac_seq.html)
 
 ## New users
 Information for new users, such as how to install and configure can be found in our [getting started](https://vanheeringen-lab.github.io/seq2science/content/gettingstarted.html) page.

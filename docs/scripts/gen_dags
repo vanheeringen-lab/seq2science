@@ -1,0 +1,10 @@
+dir=$(pwd)
+
+for f in seq2science/workflows/*; do
+    (
+    if [ -d "$f" ]; then
+        cd "$dir/$f"
+        snakemake --quiet --rulegraph | dot -Tpng > "$dir/docs/resources/$(basename $f).png"
+    fi
+    )
+done
