@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+# #!/usr/bin/env bash
 
 # to run these tests locally:
 # 1)   chmod u+x ./tests/dag_tests.sh

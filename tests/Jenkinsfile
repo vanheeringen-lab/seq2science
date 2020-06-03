@@ -46,7 +46,7 @@ pipeline {
 
                 printf "\nconfigure miniconda\n"
                 conda config --set always_yes yes --set changeps1 false
-                conda update -n base -c defaults conda -q
+                conda update -n base -c defaults conda -q > /dev/null
 
                 # speed up installation
                 conda install mamba -c conda-forge
@@ -65,18 +65,7 @@ pipeline {
                         sh '''#!/usr/bin/env bash
                         set -e
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-
-                        mamba env list
-
-                        conda activate miniconda/envs/s2s
-                        
-                        pwd
-                        
-                        ls miniconda/envs/
-
-                        ls
-
-
+                        conda activate s2s
 
                         ./tests/dag_tests.sh alignment
                         '''
