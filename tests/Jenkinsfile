@@ -84,7 +84,7 @@ pipeline {
 
                         ./tests/dag_tests.sh rna-seq
                         '''
-                    }
+                    },
                     "4 scATAC-seq" : {
                         sh '''#!/usr/bin/env bash
                         set -e
@@ -93,7 +93,7 @@ pipeline {
 
                         ./tests/dag_tests.sh scatac-seq
                         '''
-                    },
+                    }
                 )
             }
         }
