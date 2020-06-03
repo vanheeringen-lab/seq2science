@@ -65,9 +65,11 @@ pipeline {
                         sh '''#!/usr/bin/env bash
                         set -e
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate s2s
-
+                        conda activate miniconda/envs/s2s
+                        
                         pwd
+                        
+                        ls
 
                         ./tests/dag_tests.sh alignment
                         '''
@@ -76,7 +78,7 @@ pipeline {
                         sh '''#!/usr/bin/env bash
                         set -e
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate s2s
+                        conda activate miniconda/envs/s2s
 
                         ./tests/dag_tests.sh atac-seq
                         '''
@@ -85,7 +87,7 @@ pipeline {
                         sh '''#!/usr/bin/env bash
                         set -e
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate s2s
+                        conda activate miniconda/envs/s2s
 
                         ./tests/dag_tests.sh rna-seq
                         '''
@@ -94,7 +96,7 @@ pipeline {
                         sh '''#!/usr/bin/env bash
                         set -e
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate s2s
+                        conda activate miniconda/envs/s2s
 
                         ./tests/dag_tests.sh scatac-seq
                         '''
