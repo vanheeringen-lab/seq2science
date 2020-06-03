@@ -1,8 +1,5 @@
-# #!/usr/bin/env bash
-
 # to run these tests locally:
-# 1)   chmod u+x ./tests/dag_tests.sh
-# 2)   ./tests/dag_tests.sh TEST
+#   source ./tests/dag_tests.sh TEST
 
 if [ -z "$1" ]
   then

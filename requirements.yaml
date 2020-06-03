@@ -16,6 +16,5 @@ dependencies:
   - bioconda::norns=0.1.5
   - anaconda::biopython=1.74
   - pkgs/main::filelock=3.0.12
-  - conda-forge::mamba=0.3.0
   - pip:
     - git+https://github.com/daler/trackhub@params-overhaul
