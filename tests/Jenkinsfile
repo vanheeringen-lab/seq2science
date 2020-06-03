@@ -50,11 +50,10 @@ pipeline {
 
                 # speed up installation
                 conda install mamba -c conda-forge
-                # conda install conda-forge::mamba=0.3.0  # doesn't seem to work
 
                 # create main env
                 printf "\ninstalling seq2science environment\n"
-                conda env create -f requirements.yaml
+                mamba env create -f requirements.yaml
                 '''
             }
         }
@@ -67,24 +66,25 @@ pipeline {
                         set -e
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                         conda activate s2s
+                        snakemake --help
 
-                        source ./tests/dag_tests.sh alignment
+                        ./tests/dag_tests.sh alignment
                         '''
                     },
                     "2 ATAC- & ChIP-seq" : {
                         sh '''#!/usr/bin/env bash
                         set -e
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate s2s
+                        conda activate miniconda/envs/s2s
 
-                        . ./tests/dag_tests.sh atac-seq
+                        ./tests/dag_tests.sh atac-seq
                         '''
                     },
                     "3 RNA-seq" : {
                         sh '''#!/usr/bin/env bash
                         set -e
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate s2s
+                        conda activate miniconda/envs/s2s
 
                         ./tests/dag_tests.sh rna-seq
                         '''
