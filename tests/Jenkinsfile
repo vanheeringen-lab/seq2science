@@ -77,7 +77,7 @@ pipeline {
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                         conda activate s2s
 
-                        . ./tests/dag_tests.sh atac-seq
+                        source ./tests/dag_tests.sh atac-seq
                         '''
                     },
                     "3 RNA-seq" : {
@@ -86,16 +86,16 @@ pipeline {
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                         conda activate s2s
 
-                        ./tests/dag_tests.sh rna-seq
+                        source ./tests/dag_tests.sh rna-seq
                         '''
                     },
                     "4 scATAC-seq" : {
                         sh '''#!/usr/bin/env bash
                         set -e
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate miniconda/envs/s2s
+                        conda activate s2s
 
-                        ./tests/dag_tests.sh scatac-seq
+                        source ./tests/dag_tests.sh scatac-seq
                         '''
                     }
                 )
