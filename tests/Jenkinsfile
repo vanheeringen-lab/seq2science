@@ -68,7 +68,7 @@ pipeline {
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                         conda activate s2s
 
-                        source ./tests/dag_tests.sh alignment
+                        bash ./tests/dag_tests.sh alignment
                         '''
                     },
                     "2 ATAC- & ChIP-seq" : {
