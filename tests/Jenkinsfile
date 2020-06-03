@@ -38,9 +38,9 @@ pipeline {
         stage('Setup Miniconda') {
             steps {
                 sh '''#!/usr/bin/env bash
-                wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -nv -O miniconda.sh > /dev/null
-                bash miniconda.sh -b -p $WORKSPACE/miniconda > /dev/null
-                conda config --set always_yes yes --set changeps1 no
+                wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+                bash miniconda.sh -b -p $WORKSPACE/miniconda
+                conda config --set always_yes yes --set changeps1 false
                 # conda update -q conda
                 # conda update -n base -c defaults conda
                 
@@ -50,7 +50,7 @@ pipeline {
                 # conda config --add channels bioconda    > /dev/null
 
                 # create main env
-                conda env create -f requirements.yaml > /dev/null
+                conda env create -f requirements.yaml
                 '''
             }
         }
