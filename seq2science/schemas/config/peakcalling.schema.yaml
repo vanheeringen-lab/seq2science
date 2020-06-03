@@ -1,0 +1,22 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+description: seq2science peak calling configuration
+
+properties:
+  # peak caller algorithms
+  peak_caller:
+    type: object
+    properties:
+      genrich:  {type: string}
+      hmmratac: {type: string}
+      macs2:    {type: string}
+    minProperties: 1   # if you want to have at least one
+    additionalProperties: false
+    default:
+      macs2: --shift -100 --extsize 200 --nomodel --keep-dup 1 --buffer-size 10000
+
+  # keep macs2 mates when peak calling with shift
+  macs2_keep_mates:
+    description: which method to use to combine replicates (idr or fisher)
+    default: false
+    type: boolean

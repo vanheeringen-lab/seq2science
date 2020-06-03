@@ -1,0 +1,22 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+description: seq2science alignment configuration
+
+properties:
+  bam_sorter:
+    description: which sorting software to use
+    type: object
+#    enum: [sambamba, samtools]
+    properties:
+      description: sort order of aligned reads
+      default: coordinate
+      enum: [queryname, coordinate]
+      type: string
+    default:
+      samtools:
+        coordinate
+
+  cram_no_bam:
+    description: whether to store cram instead of bam
+    type: boolean
+    default: false
