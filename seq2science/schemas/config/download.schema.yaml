@@ -1,6 +1,6 @@
 $schema: "http://json-schema.org/draft-06/schema#"
 
-description: snakemake-workflows downloading configuration
+description: seq2science downloading configuration
 
 properties:
   # paths to download and dump to

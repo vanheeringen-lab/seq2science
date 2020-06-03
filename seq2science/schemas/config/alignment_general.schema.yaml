@@ -1,6 +1,6 @@
 $schema: "http://json-schema.org/draft-06/schema#"
 
-description: snakemake-workflows general alignment configuration
+description: seq2science general alignment configuration
 
 properties:
   # paths to store results
@@ -96,27 +96,36 @@ properties:
 
   # only keep reads with a minimum mapping quality of..
   min_mapping_quality:
+    description: minimum mapq to keep aligned reads
     default: 0
     type: integer
 
   # whether or not to correct for tn5 bias
   tn5_shift:
+    description: whether or not to shift reads to adjust for the tn5 bias
     default: False
     type: boolean
 
   # whether or not to remove blacklisted regions
   remove_blacklist:
+    description: whether or not to remove reads in the encode blacklisted regions
     default: False
+    type: boolean
 
   # whether or not to remove mitochondrial reads
   remove_mito:
+    description: whether or not to remove reads aligned to the mitochondria
     default: False
+    type: boolean
 
   # whether or not to keep only primary aligned reads
   only_primary_align:
+    description: whether or not to only keep primary aligned reads (no multimappers)
     default: False
+    type: boolean
 
   # whether or not to generate a multiqc report
   create_qc_report:
+    description: whether or not to generate a multiqc report
     default: True
     type: boolean

@@ -1,9 +1,7 @@
-import os
-import re
-import gzip
-
-
 def get_reads(wildcards):
+    """
+    Function that returns the reads for any aligner.
+    """
     if 'replicate' in samples and config.get('technical_replicates') == 'merge':
         if config['layout'].get(wildcards.sample, False) == "SINGLE":
             return expand("{trimmed_dir}/merged/{{sample}}_trimmed.{fqsuffix}.gz", **config)
@@ -17,7 +15,7 @@ def get_reads(wildcards):
 if config['aligner'] == 'bowtie2':
     rule bowtie2_index:
         """
-        Make a genome index for bowtie2.
+        Make a genome index for bowtie2. This index is required for faster alignment.
         """
         input:
             expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config)
@@ -66,7 +64,7 @@ if config['aligner'] == 'bowtie2':
 elif config['aligner'] == 'bwa-mem':
     rule bwa_index:
         """
-        Make a genome index for bwa.
+        Make a genome index for bwa (mem). This index is required for faster alignment.
         """
         input:
             expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config)
@@ -90,7 +88,7 @@ elif config['aligner'] == 'bwa-mem':
 
     rule bwa_mem:
         """
-        Align reads against a genome (index) with bwa, and pipe the output to the required sorter(s).
+        Align reads against a genome (index) with bwa-mem, and pipe the output to the required sorter(s).
         """
         input:
             reads=get_reads,
@@ -119,7 +117,7 @@ elif config['aligner'] == 'bwa-mem':
 elif config['aligner'] == 'hisat2':
     rule hisat2_index:
         """
-        Make a genome index for hisat2.
+        Make a genome index for hisat2. This index is required for faster alignment.
         """
         input:
             expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config)
@@ -278,7 +276,7 @@ elif config['aligner'] == 'star' or config.get('quantifier', '') == 'star':
 
 rule samtools_presort:
     """
-    Sort the result of alignment with the samtools sorter.
+    (Pre)sort the result of alignment with the samtools sorter.
     """
     input:
         expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)
@@ -303,238 +301,3 @@ rule samtools_presort:
         trap "rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
         samtools sort {params.sort_order} -@ {params.threads} {input} -o {output} -T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
         """
-
-
-def get_blacklist_files(wildcards):
-    files = {}
-    # ideally get genome is a checkpoint, however there are quite some Snakemake
-    # bugs related to this. So for now we solve it like this
-    # TODO: switch back to checkpoints
-    if config.get('remove_blacklist') and wildcards.assembly.lower() in \
-            ["ce10", "dm3", "hg38", "hg19", "mm9", "mm10"]:
-        blacklist = f"{config['genome_dir']}/{wildcards.assembly}/{wildcards.assembly}.fa"
-        files['blacklist'] = blacklist
-
-    if config.get('remove_mito'):
-        sizes = f"{config['genome_dir']}/{wildcards.assembly}/{wildcards.assembly}.fa.sizes"
-        files['sizes'] = sizes
-
-    return files
-
-
-rule setup_blacklist:
-    input:
-        unpack(get_blacklist_files)
-    output:
-        temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.customblacklist.bed", **config))
-    run:
-        newblacklist = ""
-        if config.get('remove_blacklist') and wildcards.assembly.lower() in \
-                ["ce10", "dm3", "hg38", "hg19", "mm9", "mm10"]:
-            blacklist = f"{config['genome_dir']}/{wildcards.assembly}/{wildcards.assembly}.blacklist.bed.gz"
-            with gzip.GzipFile(blacklist) as file:
-                newblacklist += file.read().decode('utf8')
-
-        if any('.fa.sizes' in inputfile for inputfile in input):
-            with open(input.sizes, 'r') as file:
-                sizesfile = file.read().strip()
-                for match in re.findall("chrM.*|chrm.*|MT.*", sizesfile):
-                    chrm, size = match.split('\t')
-                    newblacklist += f"{chrm}\t0\t{size}\n"
-
-        with open(output[0], 'w') as f:
-            f.write(newblacklist)
-
-rule complement_blacklist:
-    input:
-        blacklist=rules.setup_blacklist.output,
-        sizes=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config)
-    output:
-        temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.customblacklist_complement.bed", **config))
-    log:
-        expand("{log_dir}/complement_blacklist/{{assembly}}.log", **config)
-    benchmark:
-        expand("{benchmark_dir}/complement_blacklist/{{assembly}}.benchmark.txt", **config)[0]
-    conda:
-        "../envs/bedtools.yaml"
-    shell:
-        """
-        sortBed -faidx {input.sizes} -i {input.blacklist} |
-        complementBed -i /dev/stdin -g {input.sizes} > {output} 2> {log}
-        """
-
-
-rule sieve_bam:
-    input:
-        bam=rules.samtools_presort.output,
-        blacklist=rules.complement_blacklist.output,
-        sizes=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config)
-    output:
-        temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-sieved.bam", **config))
-    log:
-        expand("{log_dir}/sieve_bam/{{assembly}}-{{sample}}.log", **config)
-    benchmark:
-        expand("{benchmark_dir}/sieve_bam/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
-    params:
-        minqual=f"-q {config['min_mapping_quality']}",
-        atacshift=lambda wildcards, input: f"| ../../scripts/atacshift.pl /dev/stdin {input.sizes}" if config['tn5_shift'] else "",
-        blacklist=lambda wildcards, input: f"-L {input.blacklist}",
-        prim_align=f"-F 256" if config["only_primary_align"] else ""
-    conda:
-        "../envs/samtools.yaml"
-    threads: 2
-    shell:
-        "samtools view -h {params.prim_align} {params.minqual} {params.blacklist} {input.bam} {params.atacshift} | samtools view -b > {output} 2> {log}"
-
-def get_sambamba_sort_bam(wildcards):
-    if sieve_bam(config):
-        return rules.sieve_bam.output
-    return rules.samtools_presort.output
-
-
-rule sambamba_sort:
-    """
-    Sort the result of alignment or sieving with the sambamba sorter.
-    """
-    input:
-        get_sambamba_sort_bam
-    output:
-        temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.sambamba-{{sorting}}{{sieve}}.bam", **config))
-    wildcard_constraints:
-        sieve="|-sievsort"
-    log:
-        expand("{log_dir}/sambamba_sort/{{assembly}}-{{sample}}-sambamba_{{sorting}}{{sieve}}.log", **config)
-    benchmark:
-        expand("{benchmark_dir}/sambamba_sort/{{assembly}}-{{sample}}-{{sorting}}{{sieve}}.benchmark.txt", **config)[0]
-    params:
-        lambda wildcards: "-n" if 'queryname' in wildcards.sorting else '',
-    threads: 2
-    conda:
-        "../envs/sambamba.yaml"
-    shell:
-        """
-        sambamba view --nthreads {threads} -f bam  {input} -o /dev/stdout  2> {log} |
-        sambamba sort --nthreads {threads} {params} /dev/stdin -o {output}  2> {log}
-        """
-
-
-rule samtools_sort:
-    """
-    Sort the result of sieving with the samtools sorter.
-    """
-    input:
-        rules.sieve_bam.output
-    output:
-        temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-{{sorting}}-sievsort.bam", **config))
-    log:
-        expand("{log_dir}/samtools_sort/{{assembly}}-{{sample}}-samtools_{{sorting}}.log", **config)
-    benchmark:
-        expand("{benchmark_dir}/samtools_sort/{{assembly}}-{{sample}}-{{sorting}}.benchmark.txt", **config)[0]
-    params:
-        sort_order=lambda wildcards: "-n" if wildcards.sorting == 'queryname' else '',
-        threads=lambda wildcards, input, output, threads: max([1, threads - 1]),
-        out_dir=f"{config['result_dir']}/{config['aligner']}"
-    threads: 2
-    resources:
-        mem_mb=2500
-    conda:
-        "../envs/samtools.yaml"
-    shell:
-        """
-        trap "rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
-        samtools sort {params.sort_order} -@ {params.threads} {input} -o {output} -T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
-        """
-
-
-def get_bam_mark_duplicates(wildcards):
-    if sieve_bam(config):
-        # when alignmentsieving but not shifting we do not have to re-sort samtools-coordinate
-        if wildcards.sorter == 'samtools' and wildcards.sorting == 'coordinate' and \
-                not config.get('tn5_shift', False):
-            return rules.sieve_bam.output
-        else:
-            return expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}-sievsort.bam", **config)
-
-    # if we don't want to do anything get the untreated bam
-    if wildcards.sorter == 'samtools':
-        return rules.samtools_presort.output
-    return expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config)
-
-
-rule mark_duplicates:
-    """
-    Mark (but keep) all duplicate reads in a bam file with picard MarkDuplicates
-    """
-    input:
-        get_bam_mark_duplicates
-    output:
-        bam=    expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config),
-        metrics=expand("{qc_dir}/dedup/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.metrics.txt", **config)
-    log:
-        expand("{log_dir}/mark_duplicates/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config)
-    benchmark:
-        expand("{benchmark_dir}/mark_duplicates/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.benchmark.txt", **config)[0]
-    params:
-        config['markduplicates']
-    resources:
-        mem_gb=5
-    conda:
-        "../envs/picard.yaml"
-    shell:
-        "picard MarkDuplicates {params} INPUT={input} "
-        "OUTPUT={output.bam} METRICS_FILE={output.metrics} > {log} 2>&1"
-
-
-rule samtools_index:
-    """
-    Create an index of a bam file which can be used for e.g. visualization.
-    """
-    input:
-        "{filepath}.bam"
-    output:
-        temp("{filepath}.bam.bai") if config.get("cram_no_bam", False) else "{filepath}.bam.bai"
-    params:
-        config['samtools_index']
-    conda:
-        "../envs/samtools.yaml"
-    shell:
-        """
-        samtools index {params} {input} {output}
-        """
-
-        
-rule bam2cram:
-    """
-    Convert bam to the more compressed cram format
-    """
-    input:
-         bam=rules.mark_duplicates.output.bam,
-         assembly=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config)
-    output:
-        expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.cram", **config),
-    log:
-        expand("{log_dir}/bam2cram/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config)
-    benchmark:
-        expand("{benchmark_dir}/bam2cram/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.benchmark.txt", **config)[0]
-    params:
-        threads=lambda wildcards, input, output, threads: threads - 1
-    threads: 4
-    conda:
-        "../envs/samtools.yaml"
-    shell:
-        "samtools view -@ {threads} -T {input.assembly} -C {input.bam} > {output} 2> {log}"
-
-
-rule samtools_index_cram:
-    input:
-        expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.cram", **config),
-    output:
-        expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.cram.crai", **config),
-    log:
-        expand("{log_dir}/samtools_index_cram/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config)
-    benchmark:
-        expand("{benchmark_dir}/samtools_index_cram/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.benchmark.txt", **config)[0]
-    conda:
-        "../envs/samtools.yaml"
-    shell:
-        "samtools index {input} {output} > {log} 2>&1"

@@ -174,6 +174,9 @@ def get_descriptive_names(wildcards, input):
 
 
 rule plotFingerprint:
+    """
+    Plot the "fingerprint" of your bams, using deeptools. 
+    """
     input:
         unpack(fingerprint_multiBamSummary_input)
     output:
@@ -204,6 +207,9 @@ def computematrix_input(wildcards):
 
 
 rule computeMatrix:
+    """
+    Pre-compute correlations between bams using deeptools.
+    """
     input:
         bw=computematrix_input
     output:
@@ -228,6 +234,9 @@ rule computeMatrix:
 
 
 rule plotProfile:
+    """
+    Plot the so-called profile using deeptools.
+    """
     input:
         rules.computeMatrix.output
     output:
@@ -248,6 +257,9 @@ rule plotProfile:
 
 
 rule multiBamSummary:
+    """
+    Pre-compute a bam summary with deeptools.
+    """
     input:
         unpack(fingerprint_multiBamSummary_input)
     output:
@@ -271,6 +283,9 @@ rule multiBamSummary:
 
 
 rule plotCorrelation:
+    """
+    Calculate the correlation between bams with deeptools.
+    """
     input:
         rules.multiBamSummary.output
     output:
@@ -290,6 +305,9 @@ rule plotCorrelation:
 
 
 rule plotPCA:
+    """
+    Plot a PCA between bams using deeptools.
+    """
     input:
         rules.multiBamSummary.output
     output:
@@ -395,7 +413,7 @@ rule multiqc:
     shell:
         """
         multiqc {input.files} -o {params.dir} -n multiqc_{wildcards.assembly}.html \
-        --config ../../schemas/multiqc_config.yaml                                 \
+        --config {config[rule_dir]}/../schemas/multiqc_config.yaml                 \
         --config {input.header}                                                    \
         --sample-names {input.sample_names}                                        \
         --cl_config "extra_fn_clean_exts: [                                        \
@@ -440,7 +458,7 @@ def get_alignment_qc(sample):
 
     if get_workflow() in ["alignment", "chip_seq", "atac_seq"]:
         output.append("{qc_dir}/plotFingerprint/{{assembly}}.tsv")
-    if len(breps["assembly"] == treps.loc[sample, "assembly"]) > 1:
+    if len(breps[breps["assembly"] == treps.loc[sample, "assembly"]].index) > 1:
         output.append("{qc_dir}/plotCorrelation/{{assembly}}.tsv")
         output.append("{qc_dir}/plotPCA/{{assembly}}.tsv")
 

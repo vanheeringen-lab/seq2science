@@ -5,7 +5,6 @@ if config['quantifier'] == 'star':
     else:
         ruleorder: star_quant > star_align
 
-    # rule star_index can be found in alignment.smk
 
     rule star_quant:
         """

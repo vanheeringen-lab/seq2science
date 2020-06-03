@@ -1,16 +1,14 @@
-import re
-
-# complement the configuration
-configfile: "config.yaml"
-
 # do onstart/onexit things
 sample_schemas = ['sample', 'assembly']
 config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific', 'trackhub']
-include: "../../rules/configuration.smk"
+include: "../../rules/configuration_generic.smk"
+include: "../../rules/configuration_workflows.smk"
 
 
 # load all the relevant rules
 include: f"{config['rule_dir']}/alignment.smk"
+include: f"{config['rule_dir']}/bam_cleaning.smk"
+include: f"{config['rule_dir']}/bigfiles.smk"
 include: f"{config['rule_dir']}/get_fastq.smk"
 include: f"{config['rule_dir']}/get_genome.smk"
 include: f"{config['rule_dir']}/merge_replicates.smk"

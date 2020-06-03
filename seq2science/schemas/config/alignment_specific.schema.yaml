@@ -1,6 +1,6 @@
 $schema: "http://json-schema.org/draft-06/schema#"
 
-description: snakemake-workflows alignment configuration
+description: seq2science alignment configuration
 
 properties:
   bam_sorter:

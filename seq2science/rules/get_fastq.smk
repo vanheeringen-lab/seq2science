@@ -8,7 +8,8 @@ rule id2sra:
     """
     Download the SRA of a sample by its unique identifier.
 
-    Tries first downloading with the faster ascp protocol, if that fails it falls back on the slower http protocol.
+    Tries first downloading with the faster ascp protocol, if that fails it 
+    falls back on the slower http protocol.
     """
     output:
         temp(directory(expand("{sra_dir}/{{sample}}", **config)))
@@ -166,7 +167,8 @@ def get_wrong_fqext(wildcards):
 rule renamefastq_PE:
     """
     Create symlinks to fastqs with incorrect fqexts (default R1/R2).
-    Forward and reverse samples will be switched if forward/reverse names are not lexicographically ordered.
+    Forward and reverse samples will be switched if forward/reverse names are not 
+    lexicographically ordered.
     """
     input:
          get_wrong_fqext

@@ -1,11 +1,8 @@
-# complement the configuration
-configfile: "config.yaml"
-
-
 # do onstart/onexit things
 sample_schemas = ['sample']
 config_schemas = ['general', 'download']
-include: "../../rules/configuration.smk"
+include: "../../rules/configuration_generic.smk"
+include: "../../rules/configuration_workflows.smk"
 
 
 # load the relevant rules

@@ -1,6 +1,6 @@
 $schema: "http://json-schema.org/draft-06/schema#"
 
-description: snakemake-workflows general configuration
+description: seq2science general configuration
 
 properties:
   # workflow samples

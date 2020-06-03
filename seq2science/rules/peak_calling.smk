@@ -40,8 +40,8 @@ def get_genrich_replicates(wildcards):
 
 rule genrich_pileup:
     """
-    Generate the pileup. We do this separately from peak-calling since these two processes have a very different
-    computational footprint.
+    Generate the pileup. We do this separately from peak-calling since these two processes 
+    have a very different computational footprint.
     """
     input:
         unpack(get_genrich_replicates)
@@ -154,6 +154,11 @@ rule macs2_callpeak:
 
 
 rule keep_mates:
+    """
+    In-house script that, after alignment, removes the information that reads are paired.
+    This can be beneficial when peak calling with macs2 when shifting + extending, since
+    macs2 in this case only keeps the first in pair.
+    """
     input:
         expand("{dedup_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config)
     output:
@@ -198,7 +203,7 @@ rule hmmratac_genome_info:
     Generate the 'genome info' that hmmratac requires for peak calling.
     https://github.com/LiuLabUB/HMMRATAC/issues/17
     
-    TODO isnt this just .fa.sizes?
+    TODO: isnt this just .fa.sizes?
     """
     input:
         bam=expand("{dedup_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config)
@@ -224,7 +229,7 @@ config['hmmratac_types'] = ['.log', '.model', '_peaks.gappedPeak', '_summits.bed
 
 rule hmmratac:
     """
-    Call 'peaks' with HMMRATAC.
+    Call gappedpeaks with HMMRATAC.
     """
     input:
         genome_size=expand("{result_dir}/hmmratac/{{assembly}}-{{sample}}.genomesizes", **config),
@@ -259,8 +264,8 @@ if 'condition' in samples:
 
         rule idr:
             """
-            Combine replicates based on the irreproducible discovery rate (IDR). Can only handle two replicates, not
-            more, not less. For more than two replicates use fisher's method.
+            Combine replicates based on the irreproducible discovery rate (IDR). Can only handle two replicates.
+            For more than two replicates use fisher's method.
             """
             input:
                 get_idr_replicates

@@ -1,6 +1,6 @@
 $schema: "http://json-schema.org/draft-06/schema#"
 
-description: snakemake-workflows peak calling configuration
+description: seq2science peak calling configuration
 
 properties:
   # peak caller algorithms

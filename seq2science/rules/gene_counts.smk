@@ -120,30 +120,3 @@ elif config['quantifier'] == 'star':
 
                 counts.index.name = "gene"
                 counts.to_csv(output[0], sep="\t")
-#
-#
-# else:
-#     def get_counts(wildcards):
-#         iterator = samples[samples['assembly'] == wildcards.assembly].index
-#         if config.get('combine_replicates', '') == 'merge' and 'condition' in samples:
-#             iterator = set(samples[samples['assembly'] == wildcards.assembly].condition)
-#         output = []
-#         for sample in iterator:
-#             output.append(f"{{result_dir}}/{{quantifier}}/{wildcards.assembly}-{sample}.samtools-coordinate.bam")
-#         return expand(output, **config)
-#
-#     rule counts_matrix:
-#         input:
-#             cts=get_counts,
-#             gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.gtf", **config),
-#         output:
-#             expand("{result_dir}/gene_counts/{{assembly}}-counts.tsv", **config)
-#         log:
-#             expand("{log_dir}/counts_matrix/{{assembly}}-counts_matrix.log", **config)
-#         conda:
-#             "../envs/gene_counts.yaml"
-#         shell:
-#              """
-#              htseq-count -f bam -r pos -m union {input.cts} {input.gtf} &> {log}
-#              grep -v -- 'SAM\|GFF\|Warning' {log} > {output}
-#              """

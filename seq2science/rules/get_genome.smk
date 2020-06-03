@@ -40,15 +40,15 @@ rule get_genome:
         active_plugins=$(genomepy config show | grep -Po '(?<=- ).*' | paste -s -d, -) || echo ""
         trap "genomepy plugin enable {{$active_plugins,}} >> {log} 2>&1; rm -f {params.temp}" EXIT
         genomepy plugin disable {{blacklist,bowtie2,bwa,star,gmap,hisat2,minimap2}} >> {log} 2>&1
-        genomepy plugin enable {{blacklist,sizes}} >> {log} 2>&1
+        genomepy plugin enable {{blacklist,}} >> {log} 2>&1
         
         # download the genome and attempt to download the annotation
         if [[ ! {params.provider} = None  ]]; then
-            genomepy install --genome_dir {params.dir} {wildcards.assembly} {params.provider} --annotation >> {log} 2>&1
+            genomepy install --genomes_dir {params.dir} {wildcards.assembly} {params.provider} --annotation >> {log} 2>&1
         else
-            genomepy install --genome_dir {params.dir} {wildcards.assembly} Ensembl --annotation >> {log} 2>&1 ||
-            genomepy install --genome_dir {params.dir} {wildcards.assembly} UCSC    --annotation >> {log} 2>&1 ||
-            genomepy install --genome_dir {params.dir} {wildcards.assembly} NCBI    --annotation >> {log} 2>&1
+            genomepy install --genomes_dir {params.dir} {wildcards.assembly} Ensembl --annotation >> {log} 2>&1 ||
+            genomepy install --genomes_dir {params.dir} {wildcards.assembly} UCSC    --annotation >> {log} 2>&1 ||
+            genomepy install --genomes_dir {params.dir} {wildcards.assembly} NCBI    --annotation >> {log} 2>&1
         fi
         
         # unzip annotation if downloaded, warn if required but empty

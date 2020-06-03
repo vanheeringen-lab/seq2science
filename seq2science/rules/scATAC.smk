@@ -29,7 +29,7 @@ rule create_SNAP_object:
 
 rule create_bins_SNAP_object:
     """
-    Add a Binned genome matrix with 5kb bins to the SNAPobject, after which it is renamed and moved
+    Add a Binned genome matrix to the SNAPobject, after which it is renamed and moved
     to the Snapfiles folder for downstream analysis in R using Snaptools
     """
     input:

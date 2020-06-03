@@ -1,5 +1,5 @@
 # for help with filling out the samples.tsv:
-# https://github.com/vanheeringen-lab/snakemake-workflows/wiki/1.1-Filling-out-the-samples.tsv
+# https://vanheeringen-lab.github.io/seq2science/content/workflows/rna_seq.html#filling-out-the-samples-tsv
 # also make sure that you use tab as a delimiter
 sample	assembly	stages	descriptive_name
 GSM1483769	GRCz11	1	1360_mpf

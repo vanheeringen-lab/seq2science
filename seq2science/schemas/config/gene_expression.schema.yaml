@@ -1,6 +1,6 @@
 $schema: "http://json-schema.org/draft-06/schema#"
 
-description: snakemake-workflows gene expression configuration
+description: seq2science gene expression configuration
 
 properties:
   # paths to store results

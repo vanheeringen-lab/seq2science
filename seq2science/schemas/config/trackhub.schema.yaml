@@ -1,6 +1,6 @@
 $schema: "http://json-schema.org/draft-06/schema#"
 
-description: snakemake-workflows gene expression configuration
+description: seq2science gene expression configuration
 
 properties:
   # scope of analysis: create a trackhub or only align and/or quantify (and create gene counts)

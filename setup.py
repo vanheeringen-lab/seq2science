@@ -10,9 +10,5 @@ with open("README.md") as f:
 
 project["long_description_content_type"] = "text/markdown"
 project["package_data"] = ast.literal_eval(project["package_data"])
-import sys
-sys.stdout.write("\n\n\n\n")
-sys.stdout.write(str(project))
-sys.stdout.write("\n\n\n\n")
 
 setup(**project)
