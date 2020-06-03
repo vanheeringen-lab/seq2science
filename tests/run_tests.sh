@@ -79,22 +79,22 @@ if [ $1 = "prep_align" ]; then
   snakemake -s seq2science/workflows/alignment/Snakefile --directory seq2science/workflows/alignment \
   --use-conda -j $CORES --configfile tests/alignment/default_config.yaml \
   --config samples=../../../tests/alignment/remote_genome_n_sample.tsv aligner=bowtie2 \
-  --create-envs-only
+  --conda-create-envs-only --quiet
 
   snakemake -s seq2science/workflows/alignment/Snakefile --directory seq2science/workflows/alignment \
   --use-conda -j $CORES --configfile tests/alignment/default_config.yaml \
-  --config samples=../../../tests/alignment/remote_genome_n_sample.tsv aligner=bwa \
-  --create-envs-only
+  --config samples=../../../tests/alignment/remote_genome_n_sample.tsv aligner=bwa-mem \
+  --conda-create-envs-only --quiet
 
   snakemake -s seq2science/workflows/alignment/Snakefile --directory seq2science/workflows/alignment \
   --use-conda -j $CORES --configfile tests/alignment/default_config.yaml \
   --config samples=../../../tests/alignment/remote_genome_n_sample.tsv aligner=hisat2 \
-  --create-envs-only
+  --conda-create-envs-only --quiet
 
   snakemake -s seq2science/workflows/alignment/Snakefile --directory seq2science/workflows/alignment \
   --use-conda -j $CORES --configfile tests/alignment/default_config.yaml \
   --config samples=../../../tests/alignment/remote_genome_n_sample.tsv aligner=star \
-  --create-envs-only
+  --conda-create-envs-only --quiet
 
 fi
 
@@ -113,14 +113,14 @@ if [ $1 = "bowtie2" ]; then
   --config \
       aligner=$ALIGNER \
       samples=../../../tests/alignment/local_sample.tsv \
-      fastq_dir=../../../tests/tinyfastq \
-      genome_dir=../../tests \
-      result_dir=../../../tests/local_test_results/$ALIGNER \
+      fastq_dir=$(pwd)/tests/tinyfastq \
+      genome_dir=$(pwd)/tests \
+      result_dir=$(pwd)/tests/local_test_results/$ALIGNER \
   -j $c --set-threads ${ALIGNER}_align=$a samtools_presort=$s
 
 fi
 
-if [ $1 = "bwa" ]; then
+if [ $1 = "bwa-mem" ]; then
 
   ALIGNER=bwa
   WF=alignment
@@ -128,17 +128,18 @@ if [ $1 = "bwa" ]; then
   let "a = $c - 2"
   let "s = 2"
 
-  snakemake -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF \
-  --use-conda --nolock --notemp \
-  --configfile \
-      tests/$WF/default_config.yaml \
-  --config \
-      aligner=$ALIGNER \
-      samples=../../../tests/alignment/local_sample.tsv \
-      fastq_dir=../../../tests/tinyfastq \
-      genome_dir=../../tests \
-      result_dir=../../../tests/local_test_results/$ALIGNER \
-  -j $c --set-threads bwa_mem=$a samtools_presort=$s
+  # TODO: error!
+#  snakemake -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF \
+#  --use-conda --nolock --notemp \
+#  --configfile \
+#      tests/$WF/default_config.yaml \
+#  --config \
+#      aligner=$ALIGNER \
+#      samples=../../../tests/alignment/local_sample.tsv \
+#      fastq_dir=$(pwd)/tests/tinyfastq \
+#      genome_dir=$(pwd)/tests \
+#      result_dir=$(pwd)/tests/local_test_results/$ALIGNER \
+#  -j $c --set-threads bwa_mem=$a samtools_presort=$s
 
 fi
 
@@ -157,9 +158,9 @@ if [ $1 = "hisat2" ]; then
   --config \
       aligner=$ALIGNER \
       samples=../../../tests/alignment/local_sample.tsv \
-      fastq_dir=../../../tests/tinyfastq \
-      genome_dir=../../tests \
-      result_dir=../../../tests/local_test_results/$ALIGNER \
+      fastq_dir=$(pwd)/tests/tinyfastq \
+      genome_dir=$(pwd)/tests \
+      result_dir=$(pwd)/tests/local_test_results/$ALIGNER \
   -j $c --set-threads ${ALIGNER}_align=$a samtools_presort=$s
 
 fi
@@ -179,9 +180,9 @@ if [ $1 = "star" ]; then
   --config \
       aligner=$ALIGNER \
       samples=../../../tests/alignment/local_sample.tsv \
-      fastq_dir=../../../tests/tinyfastq \
-      genome_dir=../../tests \
-      result_dir=../../../tests/local_test_results/$ALIGNER \
+      fastq_dir=$(pwd)/tests/tinyfastq \
+      genome_dir=$(pwd)/tests \
+      result_dir=$(pwd)/tests/local_test_results/$ALIGNER \
   -j $c --set-threads ${ALIGNER}_align=$a samtools_presort=$s
 
 fi

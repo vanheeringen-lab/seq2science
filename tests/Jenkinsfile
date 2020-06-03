@@ -41,16 +41,16 @@ pipeline {
                 wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -nv -O miniconda.sh > /dev/null
                 bash miniconda.sh -b -p $WORKSPACE/miniconda > /dev/null
                 conda config --set always_yes yes --set changeps1 no
-                conda update -q conda
-                conda update -n base -c defaults conda
+                # conda update -q conda
+                # conda update -n base -c defaults conda
                 
                 # add channels
-                conda config --add channels defaults    > /dev/null
-                conda config --add channels conda-forge > /dev/null
-                conda config --add channels bioconda    > /dev/null
+                # conda config --add channels defaults    > /dev/null
+                # conda config --add channels conda-forge > /dev/null
+                # conda config --add channels bioconda    > /dev/null
 
-                # create snakemake-workflows env
-                conda env create -f envs/snakemake-workflows.yaml > /dev/null
+                # create main env
+                conda env create -f requirements.yaml > /dev/null
                 '''
             }
         }
@@ -62,7 +62,7 @@ pipeline {
                         sh '''#!/usr/bin/env bash
                         set -e
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate miniconda/envs/snakemake-seq2science/workflows/
+                        conda activate s2s
 
                         ./tests/dag_tests.sh alignment
                         '''
@@ -71,7 +71,7 @@ pipeline {
                         sh '''#!/usr/bin/env bash
                         set -e
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate miniconda/envs/snakemake-seq2science/workflows/
+                        conda activate s2s
 
                         ./tests/dag_tests.sh atac-seq
                         '''
@@ -80,7 +80,7 @@ pipeline {
                         sh '''#!/usr/bin/env bash
                         set -e
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate miniconda/envs/snakemake-seq2science/workflows/
+                        conda activate s2s
 
                         ./tests/dag_tests.sh rna-seq
                         '''
@@ -89,7 +89,7 @@ pipeline {
                         sh '''#!/usr/bin/env bash
                         set -e
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate miniconda/envs/snakemake-seq2science/workflows/
+                        conda activate s2s
 
                         ./tests/dag_tests.sh scatac-seq
                         '''
