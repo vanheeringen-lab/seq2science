@@ -1,5 +1,5 @@
-# tab-separated file of the samples
-samples: ../../Jenkins/rna_seq/dag_samples.tsv
+# tab-separated file
+samples: ../../tests/alignment/dag_sample.tsv
 
 # pipeline file locations
 result_dir: ../../Jenkins_results  # where to store results
@@ -11,8 +11,7 @@ create_trackhub: False
 # produce MultiQC output?
 create_qc_report: False
 
-# differential expression analysis
-diffexp: # which analysis to use (DESeq2 or None, default: None)
-  deseq2:
-    contrasts:
-      - batch + stage_2_1
+# how to sort bam
+bam_sorter:
+  sambamba:
+    queryname

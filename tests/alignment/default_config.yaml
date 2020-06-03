@@ -1,5 +1,5 @@
-# tab-separated file of the samples
-samples: ../../Jenkins/alignment/remote_genome_n_sample.tsv
+# tab-separated file
+samples: ../../tests/alignment/dag_sample.tsv
 
 # pipeline file locations
 result_dir: ../../Jenkins_results  # where to store results
@@ -10,6 +10,3 @@ create_trackhub: False
 
 # produce MultiQC output?
 create_qc_report: False
-
-# which aligner to use
-aligner: star

@@ -30,18 +30,18 @@ set -e  # Exit immediately if a command exits with a non-zero status.
 
 if [ $1 = "cleanup_files" ]; then
   rm -rf Jenkins_results
-  rm -rf Jenkins/tinydata/index
-  rm -rf Jenkins/tinydata/decoy_transcripts
-  rm -rf Jenkins/tinydata/tinydata.2bit
-  rm -rf Jenkins/tinydata/cytoBandIdeo.bb
-  rm -rf Jenkins/tinydata/tinydata.bb
-  rm -rf Jenkins/tinydata/tinydata.custom*
-  rm -rf Jenkins/tinydata/tinydata.gc5Base.bw
-  rm -rf Jenkins/tinydata/tinydata.gtf
-  rm -rf Jenkins/tinydata/tinydata.ix
-  rm -rf Jenkins/tinydata/tinydata.ixx
-  rm -rf Jenkins/tinydata/tinydata.transcripts.fa
-  rm -rf Jenkins/tinydata/tinydata_softmasking.bb
+  rm -rf tests/tinydata/index
+  rm -rf tests/tinydata/decoy_transcripts
+  rm -rf tests/tinydata/tinydata.2bit
+  rm -rf tests/tinydata/cytoBandIdeo.bb
+  rm -rf tests/tinydata/tinydata.bb
+  rm -rf tests/tinydata/tinydata.custom*
+  rm -rf tests/tinydata/tinydata.gc5Base.bw
+  rm -rf tests/tinydata/tinydata.gtf
+  rm -rf tests/tinydata/tinydata.ix
+  rm -rf tests/tinydata/tinydata.ixx
+  rm -rf tests/tinydata/tinydata.transcripts.fa
+  rm -rf tests/tinydata/tinydata_softmasking.bb
 fi
 
 if [ $1 = "cleanup_envs" ]; then
@@ -61,15 +61,15 @@ if [ $1 = "download" ]; then
   # test basic downloading 1 PE and 1 SE
   printf "\ndownload SE and PE fastqs\n\n"
   snakemake --use-conda -j $CORES -s workflows/$WF/Snakefile --directory workflows/$WF \
-  --configfile Jenkins/$WF/default_config.yaml \
-  --config samples=../../Jenkins/download_fastq/remote_samples.tsv
+  --configfile tests/$WF/default_config.yaml \
+  --config samples=../../tests/download_fastq/remote_samples.tsv
 
   WF=alignment
 
   # test genome & annotation downloading
   printf "\ndownload genome & annotation\n\n"
   snakemake --use-conda -j $CORES -s workflows/$WF/Snakefile --directory workflows/$WF \
-  --configfile Jenkins/$WF/remote_genome_n_sample.yaml \
+  --configfile tests/$WF/remote_genome_n_sample.yaml \
   --until get_genome
 
 fi
@@ -77,23 +77,23 @@ fi
 if [ $1 = "prep_align" ]; then
 
   snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
-  --use-conda -j $CORES --configfile Jenkins/alignment/default_config.yaml \
-  --config samples=../../Jenkins/alignment/remote_genome_n_sample.tsv aligner=bowtie2 \
+  --use-conda -j $CORES --configfile tests/alignment/default_config.yaml \
+  --config samples=../../tests/alignment/remote_genome_n_sample.tsv aligner=bowtie2 \
   --create-envs-only
 
   snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
-  --use-conda -j $CORES --configfile Jenkins/alignment/default_config.yaml \
-  --config samples=../../Jenkins/alignment/remote_genome_n_sample.tsv aligner=bwa \
+  --use-conda -j $CORES --configfile tests/alignment/default_config.yaml \
+  --config samples=../../tests/alignment/remote_genome_n_sample.tsv aligner=bwa \
   --create-envs-only
 
   snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
-  --use-conda -j $CORES --configfile Jenkins/alignment/default_config.yaml \
-  --config samples=../../Jenkins/alignment/remote_genome_n_sample.tsv aligner=hisat2 \
+  --use-conda -j $CORES --configfile tests/alignment/default_config.yaml \
+  --config samples=../../tests/alignment/remote_genome_n_sample.tsv aligner=hisat2 \
   --create-envs-only
 
   snakemake -s workflows/alignment/Snakefile --directory workflows/alignment \
-  --use-conda -j $CORES --configfile Jenkins/alignment/default_config.yaml \
-  --config samples=../../Jenkins/alignment/remote_genome_n_sample.tsv aligner=star \
+  --use-conda -j $CORES --configfile tests/alignment/default_config.yaml \
+  --config samples=../../tests/alignment/remote_genome_n_sample.tsv aligner=star \
   --create-envs-only
 
 fi
@@ -109,12 +109,12 @@ if [ $1 = "bowtie2" ]; then
   snakemake -s workflows/$WF/Snakefile --directory workflows/$WF \
   --use-conda --nolock --notemp \
   --configfile \
-      Jenkins/$WF/default_config.yaml \
+      tests/$WF/default_config.yaml \
   --config \
       aligner=$ALIGNER \
-      samples=../../Jenkins/alignment/local_sample.tsv \
-      fastq_dir=../../Jenkins/tinyfastq \
-      genome_dir=../../Jenkins \
+      samples=../../tests/alignment/local_sample.tsv \
+      fastq_dir=../../tests/tinyfastq \
+      genome_dir=../../tests \
       result_dir=../../Jenkins_results/$ALIGNER \
   -j $c --set-threads ${ALIGNER}_align=$a samtools_presort=$s
 
@@ -131,12 +131,12 @@ if [ $1 = "bwa" ]; then
   snakemake -s workflows/$WF/Snakefile --directory workflows/$WF \
   --use-conda --nolock --notemp \
   --configfile \
-      Jenkins/$WF/default_config.yaml \
+      tests/$WF/default_config.yaml \
   --config \
       aligner=$ALIGNER \
-      samples=../../Jenkins/alignment/local_sample.tsv \
-      fastq_dir=../../Jenkins/tinyfastq \
-      genome_dir=../../Jenkins \
+      samples=../../tests/alignment/local_sample.tsv \
+      fastq_dir=../../tests/tinyfastq \
+      genome_dir=../../tests \
       result_dir=../../Jenkins_results/$ALIGNER \
   -j $c --set-threads bwa_mem=$a samtools_presort=$s
 
@@ -153,12 +153,12 @@ if [ $1 = "hisat2" ]; then
   snakemake -s workflows/$WF/Snakefile --directory workflows/$WF \
   --use-conda --nolock --notemp \
   --configfile \
-      Jenkins/$WF/default_config.yaml \
+      tests/$WF/default_config.yaml \
   --config \
       aligner=$ALIGNER \
-      samples=../../Jenkins/alignment/local_sample.tsv \
-      fastq_dir=../../Jenkins/tinyfastq \
-      genome_dir=../../Jenkins \
+      samples=../../tests/alignment/local_sample.tsv \
+      fastq_dir=../../tests/tinyfastq \
+      genome_dir=../../tests \
       result_dir=../../Jenkins_results/$ALIGNER \
   -j $c --set-threads ${ALIGNER}_align=$a samtools_presort=$s
 
@@ -175,12 +175,12 @@ if [ $1 = "star" ]; then
   snakemake -s workflows/$WF/Snakefile --directory workflows/$WF \
   --use-conda --nolock --notemp \
   --configfile \
-      Jenkins/$WF/default_config.yaml \
+      tests/$WF/default_config.yaml \
   --config \
       aligner=$ALIGNER \
-      samples=../../Jenkins/alignment/local_sample.tsv \
-      fastq_dir=../../Jenkins/tinyfastq \
-      genome_dir=../../Jenkins \
+      samples=../../tests/alignment/local_sample.tsv \
+      fastq_dir=../../tests/tinyfastq \
+      genome_dir=../../tests \
       result_dir=../../Jenkins_results/$ALIGNER \
   -j $c --set-threads ${ALIGNER}_align=$a samtools_presort=$s
 
@@ -199,7 +199,7 @@ if [ $1 = "atac-seq" ]; then
 #  snakemake -s workflows/$WF/Snakefile --directory workflows/$WF \
 #  --use-conda -j $CORES \
 #  --configfile \
-#      Jenkins/alignment/remote_genome_n_sample.yaml \
+#      tests/alignment/remote_genome_n_sample.yaml \
 #  --config \
 #      aligner=bowtie2
 
@@ -207,7 +207,7 @@ if [ $1 = "atac-seq" ]; then
   snakemake -s workflows/$WF/Snakefile --directory workflows/$WF \
   --use-conda -j $CORES \
   --configfile \
-      Jenkins/alignment/remote_genome_n_sample.yaml \
+      tests/alignment/remote_genome_n_sample.yaml \
   --config \
       aligner=bowtie2 \
       create_qc_report=True
@@ -216,7 +216,7 @@ if [ $1 = "atac-seq" ]; then
   snakemake -s workflows/$WF/Snakefile --directory workflows/$WF \
   --use-conda -j $CORES \
   --configfile \
-      Jenkins/alignment/remote_genome_n_sample.yaml \
+      tests/alignment/remote_genome_n_sample.yaml \
   --config \
       aligner=bowtie2 \
       create_trackhub=True
@@ -241,7 +241,7 @@ if [ $1 = "rna-seq" ]; then
   snakemake -s workflows/$WF/Snakefile --directory workflows/$WF \
   --use-conda -j $CORES \
   --configfile \
-      Jenkins/rna_seq/salmon_config.yaml \
+      tests/rna_seq/salmon_config.yaml \
   --omit-from blind_clustering deseq2
 
 #  test samples are too similar for deseq2
@@ -249,7 +249,7 @@ if [ $1 = "rna-seq" ]; then
 #  snakemake -s workflows/$WF/Snakefile --directory workflows/$WF \
 #  --use-conda -j $CORES \
 #  --configfile \
-#      Jenkins/rna_seq/salmon_config.yaml
+#      tests/rna_seq/salmon_config.yaml
 
   rm -rf Jenkins_results/gene_counts
 
@@ -258,7 +258,7 @@ if [ $1 = "rna-seq" ]; then
   snakemake -s workflows/$WF/Snakefile --directory workflows/$WF \
   --use-conda -j $CORES \
   --configfile \
-      Jenkins/rna_seq/salmon_config.yaml \
+      tests/rna_seq/salmon_config.yaml \
   --config quantifier=star \
   --omit-from blind_clustering deseq2
 
@@ -266,29 +266,29 @@ if [ $1 = "rna-seq" ]; then
   snakemake -s workflows/$WF/Snakefile --directory workflows/$WF \
   --use-conda -j $CORES \
   --configfile \
-      Jenkins/rna_seq/salmon_config.yaml \
+      tests/rna_seq/salmon_config.yaml \
   --config quantifier=star
 
   printf "\nrna-seq default - trackhub\n"
   snakemake -s workflows/$WF/Snakefile --directory workflows/$WF \
   --use-conda -j $CORES \
   --configfile \
-      Jenkins/alignment/default_config.yaml \
+      tests/alignment/default_config.yaml \
   --config \
-    samples=../../Jenkins/alignment/local_sample.tsv \
-    genome_dir=../../Jenkins \
-    fastq_dir=../Jenkins/tinyfastq \
+    samples=../../tests/alignment/local_sample.tsv \
+    genome_dir=../../tests \
+    fastq_dir=../tests/tinyfastq \
     create_trackhub=True
 
   printf "\nrna-seq default - multiqc report\n"
   snakemake -s workflows/$WF/Snakefile --directory workflows/$WF \
   --use-conda -j $CORES \
   --configfile \
-      Jenkins/alignment/default_config.yaml \
+      tests/alignment/default_config.yaml \
   --config \
-    samples=../../Jenkins/alignment/local_sample.tsv \
-    genome_dir=../../Jenkins \
-    fastq_dir=../Jenkins/tinyfastq \
+    samples=../../tests/alignment/local_sample.tsv \
+    genome_dir=../../tests \
+    fastq_dir=../tests/tinyfastq \
     create_qc_report=True
 
 fi

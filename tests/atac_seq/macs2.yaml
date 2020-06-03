@@ -1,5 +1,5 @@
 # tab-separated file
-samples: ../../Jenkins/alignment/dag_sample.tsv
+samples: ../../tests/alignment/dag_sample.tsv
 
 # pipeline file locations
 result_dir: ../../Jenkins_results  # where to store results
@@ -15,5 +15,4 @@ create_qc_report: False
 peak_caller:
   macs2:
       --shift -100 --extsize 200 --nomodel --keep-dup 1 --buffer-size 10000
-  genrich:
-      -y -j
+

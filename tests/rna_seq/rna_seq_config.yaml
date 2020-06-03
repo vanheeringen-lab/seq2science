@@ -1,5 +1,5 @@
-# tab-separated file
-samples: ../../Jenkins/alignment/dag_sample.tsv
+# tab-separated file of the samples
+samples: ../../tests/rna_seq/dag_samples.tsv
 
 # pipeline file locations
 result_dir: ../../Jenkins_results  # where to store results
@@ -11,8 +11,8 @@ create_trackhub: False
 # produce MultiQC output?
 create_qc_report: False
 
-# peak callers (supported peak callers are macs2, and genrich, and hmmratac is not fully supported yet)
-peak_caller:
-  macs2:
-      --shift -100 --extsize 200 --nomodel --keep-dup 1 --buffer-size 10000
-
+# differential expression analysis
+diffexp: # which analysis to use (DESeq2 or None, default: None)
+  deseq2:
+    contrasts:
+      - batch + stage_2_1

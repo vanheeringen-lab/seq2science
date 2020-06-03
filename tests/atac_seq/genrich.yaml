@@ -1,5 +1,5 @@
 # tab-separated file
-samples: ../../Jenkins/alignment/dag_sample.tsv
+samples: ../../tests/alignment/dag_sample.tsv
 
 # pipeline file locations
 result_dir: ../../Jenkins_results  # where to store results
@@ -11,7 +11,7 @@ create_trackhub: False
 # produce MultiQC output?
 create_qc_report: False
 
-# how to sort bam
-bam_sorter:
-  samtools:
-    coordinate
+# peak callers (supported peak callers are macs2, and genrich, and hmmratac is not fully supported yet)
+peak_caller:
+  genrich:
+      -y -j

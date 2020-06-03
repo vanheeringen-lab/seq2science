@@ -1,5 +1,5 @@
 # tab-separated file
-samples: ../../Jenkins/alignment/dag_sample.tsv
+samples: ../../tests/alignment/dag_sample.tsv
 
 # pipeline file locations
 result_dir: ../../Jenkins_results  # where to store results
@@ -11,7 +11,8 @@ create_trackhub: False
 # produce MultiQC output?
 create_qc_report: False
 
-# how to sort bam
-bam_sorter:
-  sambamba:
-    coordinate
+# filtering after alignment
+remove_blacklist: False
+remove_mito: False
+tn5_shift: False
+minqual: 0
