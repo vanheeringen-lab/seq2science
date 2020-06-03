@@ -1,8 +1,9 @@
 name: docs
 
-push:
-  branches:
-    - master
+on:
+  push:
+    branches:
+      - master
 
 jobs:
   docs:
