@@ -47,19 +47,13 @@ pipeline {
                 printf "\nconfigure miniconda\n"
                 conda config --set always_yes yes --set changeps1 false
                 conda update -n base -c defaults conda -q
-                # conda install mamba -c conda-forge
 
-                # conda update -q conda
-                # conda update -n base -c defaults conda
-                
-                # add channels
-                # conda config --add channels defaults    > /dev/null
-                # conda config --add channels conda-forge > /dev/null
-                # conda config --add channels bioconda    > /dev/null
+                # speed up installation
+                conda install mamba -c conda-forge
 
                 # create main env
                 printf "\ninstalling seq2science environment\n"
-                conda env create -f requirements.yaml
+                mamba env create -f requirements.yaml
                 '''
             }
         }
