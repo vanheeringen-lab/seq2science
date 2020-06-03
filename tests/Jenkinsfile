@@ -67,6 +67,8 @@ pipeline {
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                         conda activate s2s
 
+                        pwd
+
                         ./tests/dag_tests.sh alignment
                         '''
                     },
