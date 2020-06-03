@@ -450,6 +450,7 @@
 <div class="section" id="min-mapping-quality">
 <h3>min_mapping_quality<a class="headerlink" href="#min-mapping-quality" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">min_mapping_quality:</span>
+<span class="c">    description: minimum mapq to keep aligned reads</span>
 <span class="c">    default: 0</span>
 <span class="c">    type: integer</span>
 </pre></div>
@@ -458,6 +459,7 @@
 <div class="section" id="tn5-shift">
 <h3>tn5_shift<a class="headerlink" href="#tn5-shift" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">tn5_shift:</span>
+<span class="c">    description: whether or not to shift reads to adjust for the tn5 bias</span>
 <span class="c">    default: False</span>
 <span class="c">    type: boolean</span>
 </pre></div>
@@ -466,27 +468,34 @@
 <div class="section" id="remove-blacklist">
 <h3>remove_blacklist<a class="headerlink" href="#remove-blacklist" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">remove_blacklist:</span>
+<span class="c">    description: whether or not to remove reads in the encode blacklisted regions</span>
 <span class="c">    default: False</span>
+<span class="c">    type: boolean</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="remove-mito">
 <h3>remove_mito<a class="headerlink" href="#remove-mito" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">remove_mito:</span>
+<span class="c">    description: whether or not to remove reads aligned to the mitochondria</span>
 <span class="c">    default: False</span>
+<span class="c">    type: boolean</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="only-primary-align">
 <h3>only_primary_align<a class="headerlink" href="#only-primary-align" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">only_primary_align:</span>
+<span class="c">    description: whether or not to only keep primary aligned reads (no multimappers)</span>
 <span class="c">    default: False</span>
+<span class="c">    type: boolean</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="create-qc-report">
 <h3>create_qc_report<a class="headerlink" href="#create-qc-report" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">create_qc_report:</span>
+<span class="c">    description: whether or not to generate a multiqc report</span>
 <span class="c">    default: True</span>
 <span class="c">    type: boolean</span>
 </pre></div>

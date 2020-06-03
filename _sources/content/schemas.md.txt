@@ -190,33 +190,42 @@ markduplicates:
 #####min_mapping_quality
 ```
 min_mapping_quality:
+    description: minimum mapq to keep aligned reads
     default: 0
     type: integer
 ```
 #####tn5_shift
 ```
 tn5_shift:
+    description: whether or not to shift reads to adjust for the tn5 bias
     default: False
     type: boolean
 ```
 #####remove_blacklist
 ```
 remove_blacklist:
+    description: whether or not to remove reads in the encode blacklisted regions
     default: False
+    type: boolean
 ```
 #####remove_mito
 ```
 remove_mito:
+    description: whether or not to remove reads aligned to the mitochondria
     default: False
+    type: boolean
 ```
 #####only_primary_align
 ```
 only_primary_align:
+    description: whether or not to only keep primary aligned reads (no multimappers)
     default: False
+    type: boolean
 ```
 #####create_qc_report
 ```
 create_qc_report:
+    description: whether or not to generate a multiqc report
     default: True
     type: boolean
 ```
