@@ -61,77 +61,16 @@ rule get_genome:
         """
 
 
-# TODO: this rule can be removed from genomepy >0.7.1
 rule get_annotation:
     """
     Matches the chromosome/scaffold names in annotation.gtf to those in the genome.fa.
     """
     input:
-        fa=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
-        sizefile= expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
-        gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config)
+        expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config)
     output:
         expand("{genome_dir}/{{assembly}}/{{assembly}}.gtf", **config)
-    log:
-        expand("{log_dir}/get_genome/{{assembly}}.annotation.log", **config)
-    benchmark:
-        expand("{benchmark_dir}/get_genome/{{assembly}}.annotation.benchmark.txt", **config)[0]
-    priority: 1
-    run:
-        # Check if genome and annotation have matching chromosome/scaffold names
-        with open(input.gtf[0], 'r') as gtf:
-            for line in gtf:
-                if not line.startswith('#'):
-                    gtf_id = line.split('\t')[0]
-                    break
-
-        with open(input.sizefile[0], 'r') as sizes:
-            for line in sizes:
-                fa_id = line.split('\t')[0]
-                if fa_id == gtf_id:
-                    shell("echo 'Genome and annotation have matching chromosome/scaffold names!' >> {log}")
-                    shell('ln {input.gtf} {output}')
-                    break
-            else:
-                # generate a gtf with matching scaffold/chromosome IDs
-                shell("echo 'Genome and annotation do not have matching chromosome/scaffold names! Creating matching gtf...' >> {log}")
-
-                # determine which element in the genome.fasta's header contains the location identifiers used in the annotation.gtf
-                header = []
-                with open(input.fa[0], 'r') as fa:
-                    for line in fa:
-                        if line.startswith('>'):
-                            header = line.strip(">\n").split(' ')
-                            break
-
-                with open(input.gtf[0], 'r') as gtf:
-                    for line in gtf:
-                        if not line.startswith('#'):
-                            loc_id = line.strip().split('\t')[0]
-                            try:
-                                element = header.index(loc_id)
-                                break
-                            except:
-                                continue
-
-                # build a conversion table
-                ids = {}
-                with open(input.fa[0], 'r') as fa:
-                    for line in fa:
-                        if line.startswith('>'):
-                            line = line.strip(">\n").split(' ')
-                            if line[element] not in ids.keys():
-                                ids.update({line[element] : line[0]})
-
-                # rename the location identifier in the gtf (using the conversion table)
-                with open(input.gtf[0], 'r') as oldgtf, open(output[0], 'w') as newgtf:
-                    for line in oldgtf:
-                        line = line.split('\t')
-                        line[0] = ids[line[0]]
-                        line = '\t'.join(line)
-                        newgtf.write(line)
-
-                shell("echo '\nCorrected GTF creation completed.' >> {log}")
+    shell:
+        "cp {input} {output}"
 
 
 rule get_transcripts:
