@@ -60,6 +60,7 @@ pipeline {
                 parallel (
                     "1 Download & align" : {
                         sh '''#!/usr/bin/env bash
+                        set -e
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                         conda activate miniconda/envs/snakemake-workflows/
 
