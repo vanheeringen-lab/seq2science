@@ -1,5 +1,5 @@
 # tab-separated file
-samples: ../../tests/download_fastq/remote_samples.tsv
+samples: ../../../tests/download_fastq/remote_samples.tsv
 
 # pipeline file locations
-result_dir: ../../Jenkins_results  # where to store results
+result_dir: ../../../tests/local_test_results  # where to store results

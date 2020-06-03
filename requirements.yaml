@@ -1,3 +1,4 @@
+name: s2s
 channels:
   - bioconda
   - conda-forge

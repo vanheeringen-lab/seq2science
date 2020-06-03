@@ -62,7 +62,7 @@ pipeline {
                         sh '''#!/usr/bin/env bash
                         set -e
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate miniconda/envs/snakemake-workflows/
+                        conda activate miniconda/envs/snakemake-seq2science/workflows/
 
                         ./tests/dag_tests.sh alignment
                         '''
@@ -71,7 +71,7 @@ pipeline {
                         sh '''#!/usr/bin/env bash
                         set -e
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate miniconda/envs/snakemake-workflows/
+                        conda activate miniconda/envs/snakemake-seq2science/workflows/
 
                         ./tests/dag_tests.sh atac-seq
                         '''
@@ -80,7 +80,7 @@ pipeline {
                         sh '''#!/usr/bin/env bash
                         set -e
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate miniconda/envs/snakemake-workflows/
+                        conda activate miniconda/envs/snakemake-seq2science/workflows/
 
                         ./tests/dag_tests.sh rna-seq
                         '''
@@ -89,7 +89,7 @@ pipeline {
                         sh '''#!/usr/bin/env bash
                         set -e
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate miniconda/envs/snakemake-workflows/
+                        conda activate miniconda/envs/snakemake-seq2science/workflows/
 
                         ./tests/dag_tests.sh scatac-seq
                         '''
@@ -112,7 +112,7 @@ pipeline {
 //                     changeset 'rules/configuration.smk'
 //
 //                     // run when relevant rules are changed
-//                     changeset glob: 'workflows/download_fastq/*'
+//                     changeset glob: 'seq2science/workflows/download_fastq/*'
 //                     changeset 'rules/get_fastq.smk'
 //
 //                     // run when last time you failed
@@ -126,7 +126,7 @@ pipeline {
                 sh '''#!/usr/bin/env bash
                 set -e
                 source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                conda activate miniconda/envs/snakemake-workflows/
+                conda activate miniconda/envs/snakemake-seq2science/workflows/
 
                 ./tests/run_tests.sh download
                 '''
@@ -147,7 +147,7 @@ pipeline {
 //                     changeset 'rules/configuration.smk'
 //
 //                     // run when relevant rules are changed
-//                     changeset glob: 'workflows/alignment/*'
+//                     changeset glob: 'seq2science/workflows/alignment/*'
 //                     changeset 'rules/alignment.smk'
 //                     changeset 'rules/trimming.smk'
 //                     changeset 'rules/qc.smk'
@@ -165,7 +165,7 @@ pipeline {
 
                 # set up parallel alignment environments
                 source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                conda activate miniconda/envs/snakemake-workflows/
+                conda activate miniconda/envs/snakemake-seq2science/workflows/
 
                 ./tests/run_tests.sh prep-align
                 '''
@@ -186,7 +186,7 @@ pipeline {
 //                     changeset 'rules/configuration.smk'
 //
 //                     // run when relevant rules are changed
-//                     changeset glob: 'workflows/alignment/*'
+//                     changeset glob: 'seq2science/workflows/alignment/*'
 //                     changeset 'rules/alignment.smk'
 //                     changeset 'rules/trimming.smk'
 //                     changeset 'rules/qc.smk'
@@ -204,7 +204,7 @@ pipeline {
                         sh '''#!/usr/bin/env bash
                         set -e
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate miniconda/envs/snakemake-workflows/
+                        conda activate miniconda/envs/snakemake-seq2science/workflows/
 
                         ./tests/run_tests.sh bowtie2
                         '''
@@ -213,7 +213,7 @@ pipeline {
                         sh '''#!/usr/bin/env bash
                         set -e
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate miniconda/envs/snakemake-workflows/
+                        conda activate miniconda/envs/snakemake-seq2science/workflows/
 
                         ./tests/run_tests.sh bwa
                         '''
@@ -222,7 +222,7 @@ pipeline {
                         sh '''#!/usr/bin/env bash
                         set -e
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate miniconda/envs/snakemake-workflows/
+                        conda activate miniconda/envs/snakemake-seq2science/workflows/
 
                         ./tests/run_tests.sh hisat2
                         '''
@@ -231,7 +231,7 @@ pipeline {
                         sh '''#!/usr/bin/env bash
                         set -e
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate miniconda/envs/snakemake-workflows/
+                        conda activate miniconda/envs/snakemake-seq2science/workflows/
 
                         ./tests/run_tests.sh star
                         '''
@@ -254,7 +254,7 @@ pipeline {
 //                     changeset 'rules/configuration.smk'
 //
 //                     // run when relevant rules are changed
-//                     changeset glob: 'workflows/atac_seq/*'
+//                     changeset glob: 'seq2science/workflows/atac_seq/*'
 //                     changeset 'rules/alignment.smk'
 //                     changeset 'rules/trimming.smk'
 //                     changeset 'rules/qc.smk'
@@ -274,7 +274,7 @@ pipeline {
                 sh '''#!/usr/bin/env bash
                 set -e
                 source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                conda activate miniconda/envs/snakemake-workflows/
+                conda activate miniconda/envs/snakemake-seq2science/workflows/
 
                 ./tests/run_tests.sh atac-seq
                 '''
@@ -286,7 +286,7 @@ pipeline {
                 sh '''#!/usr/bin/env bash
                 set -e
                 source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                conda activate miniconda/envs/snakemake-workflows/
+                conda activate miniconda/envs/snakemake-seq2science/workflows/
 
                 ./tests/run_tests.sh scatac-seq
                 '''
@@ -307,7 +307,7 @@ pipeline {
 //                     changeset 'rules/configuration.smk'
 //
 //                     // run when relevant rules are changed
-//                     changeset glob: 'workflows/rna_seq/*'
+//                     changeset glob: 'seq2science/workflows/rna_seq/*'
 //                     changeset 'rules/get_genome.smk'
 //                     changeset 'rules/trimming.smk'
 //                     changeset 'rules/alignment.smk'
@@ -328,7 +328,7 @@ pipeline {
                 sh '''#!/usr/bin/env bash
                 set -e
                 source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                conda activate miniconda/envs/snakemake-workflows/
+                conda activate miniconda/envs/snakemake-seq2science/workflows/
 
                 ./tests/run_tests.sh rna-seq
                 '''
@@ -341,7 +341,7 @@ pipeline {
                     sh '''#!/usr/bin/env bash
                     set -e
                     source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                    conda activate miniconda/envs/snakemake-workflows/
+                    conda activate miniconda/envs/snakemake-seq2science/workflows/
                     conda install -q --yes flake8
 
                     # flake8
@@ -350,8 +350,8 @@ pipeline {
 
                     # linting
                     printf "\nlinting\n\n"
-                    snakemake -s workflows/atac_seq/Snakefile --directory workflows/atac_seq --lint
-                    snakemake -s workflows/rna_seq/Snakefile  --directory workflows/rna_seq --lint
+                    snakemake -s seq2science/workflows/atac_seq/Snakefile --directory seq2science/workflows/atac_seq --lint
+                    snakemake -s seq2science/workflows/rna_seq/Snakefile  --directory seq2science/workflows/rna_seq --lint
                     '''
                 }
             }
