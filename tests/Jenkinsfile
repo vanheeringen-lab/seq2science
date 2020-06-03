@@ -42,7 +42,7 @@ pipeline {
                 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -nv -O miniconda.sh
 
                 printf "\ninstall miniconda\n"
-                bash miniconda.sh -b -p $WORKSPACE/miniconda
+                bash miniconda.sh -b -p $WORKSPACE/miniconda > /dev/null
 
                 printf "\nconfigure miniconda\n"
                 conda config --set always_yes yes --set changeps1 false
@@ -65,11 +65,18 @@ pipeline {
                         sh '''#!/usr/bin/env bash
                         set -e
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+
+                        mamba env list
+
                         conda activate miniconda/envs/s2s
                         
                         pwd
                         
+                        ls miniconda/envs/
+
                         ls
+
+
 
                         ./tests/dag_tests.sh alignment
                         '''
