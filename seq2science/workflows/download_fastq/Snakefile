@@ -1,0 +1,18 @@
+# do onstart/onexit things
+sample_schemas = ['sample']
+config_schemas = ['general', 'download']
+include: "../../rules/configuration_generic.smk"
+include: "../../rules/configuration_workflows.smk"
+
+
+# load the relevant rules
+include: f"{config['rule_dir']}/get_fastq.smk"
+
+
+rule download_all:
+    """
+    download all samples
+    """
+    input:
+        [expand(f"{{fastq_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz", **config) if config['layout'][sample] == "PAIRED" else
+         expand(f"{{fastq_dir}}/{sample}.{{fqsuffix}}.gz", **config) for sample in samples.index]

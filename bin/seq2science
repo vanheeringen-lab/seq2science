@@ -1,0 +1,270 @@
+#!/usr/bin/env python
+"""
+This is the user's entry-point for the seq2science pipeline.
+"""
+import sys
+import argparse
+import os
+import shutil
+import webbrowser
+import re
+import inspect
+import yaml
+
+# we need to be able to get the parser from the file without a valid seq2science installation
+try:
+    import snakemake
+    import seq2science
+
+    full_import = True
+except ImportError:
+    full_import = False
+
+
+__version__ = "0.0.0"
+
+def main():
+    # set helpful paths
+    base_dir = os.path.dirname(inspect.getfile(seq2science))
+    workflows_dir = os.path.join(base_dir, "workflows")
+
+    parser = seq2science_parser(workflows_dir)
+    args = parser.parse_args()
+
+    # now run the command
+    if args.command == "init":
+        dir_path = args.dir if os.path.isabs(args.dir) else os.path.join(os.getcwd(), args.dir)
+        _init(args, workflows_dir, dir_path)
+    elif args.command == "run":
+        config_path = args.config if os.path.isabs(args.config) else os.path.join(os.getcwd(), args.config)
+        _run(args, base_dir, workflows_dir, config_path)
+    elif args.command == "clean":
+        _clean(base_dir)
+    elif args.command == "docs":
+        _docs()
+
+
+def seq2science_parser(workflows_dir="./seq2science/workflows/"):
+    """
+    Make the seq2science parser.
+    """
+    # setup the parser
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-v", "--version", action="version", version=f"seq2science: v{__version__}"
+    )
+    subparsers = parser.add_subparsers(dest="command")
+    subparsers.required = True
+    init = subparsers.add_parser(
+        "init",
+        help="Initialise a workflow with an example config and samples file.",
+        description="Each workflow requires a configuration and samples file to run. "
+                    'Running "seq2science init {workflow}" initialises a default '
+                    "configuration and samples file for the specific workflow."
+    )
+    run = subparsers.add_parser(
+        "run",
+        help="Run a complete workflow.",
+        description="Run a complete workflow. This requires that a config and samples file "
+        "are either present in the current directory, or passed as an argument."
+    )
+    clean = subparsers.add_parser(
+        "clean",
+        help="Remove all cached sample layouts and conda environments.",
+        description="At the start of each workflow run, seq2science starts with installing environments for each "
+                    "rule. It also stores the layout of public samples in its cache. These environments can get large "
+                    "and it might be best to remove them when you are done with an analysis. \n"
+                    "seq2science clean will clean up these files for you."
+    )
+    docs = subparsers.add_parser(
+        "docs",
+        description="The docs command tries to open your browser and open the docs' webpage, "
+        "if that didn't work it prints the url.",
+        help="Take me to the docs!",
+    )
+
+    # both init and run can use all workflows
+    for subparser in [init, run]:
+        subparser.add_argument("workflow", choices=os.listdir(workflows_dir))
+
+    # setup init arguments
+    init.add_argument(
+        "--dir",
+        default=".",
+        metavar="PATH",
+        help="The path to the directory where to initialise the config and samples files.",
+    )
+
+    run.add_argument(
+        "-c",
+        "--config",
+        default="./config.yaml",
+        metavar="FILE",
+        help="The path to the config file.",
+    )
+    run.add_argument(
+        "--cores",
+        metavar="N",
+        help="Use at most N cores in parallel. Requires at least 12 cores.",
+    )
+    run.add_argument(
+        "-n", "--dryrun",
+        help="Do not execute anything, and display what would be done.",
+        action='store_true'
+    )
+    run.add_argument(
+        "--unlock",
+        help="Remove a lock on the working directory.",
+        action='store_true'
+    )
+    run.add_argument(
+        "--snakemakeOptions",
+        nargs="+",
+        action=_StoreDictKeyPair,
+        metavar="KEY=VAL",
+        help="Extra arguments to pass along to snakemake. An example could be seq2science run "
+        "alignment --cores 12 --snakemakeOptions resources={mem_gb:100} local_cores=3. Here we pass local_cores as "
+        "KEY=VALUE and additional resources can even be passed along in a dictionary. Take a look at the snakemake API "
+        "for a complete list of all possible options: "
+        "https://snakemake.readthedocs.io/en/latest/api_reference/snakemake.html",
+    )
+    run.add_argument(
+        "--profile",
+        metavar="PROFILE NAME",
+        help="Use a snakemake/seq2science profile. Profiles can be taken from: https://github.com/snakemake-profiles",
+    )
+
+    return parser
+
+
+def _init(args, workflows_dir, config_path):
+    """
+    Initialise a config.yaml and samples.tsv from the relevant workflow.
+    """
+    for file in ["samples.tsv", "config.yaml"]:
+        src = os.path.join(workflows_dir, args.workflow, file)
+        dest = os.path.join(os.path.dirname(config_path), file)
+
+        copy_file = True
+        if os.path.exists(dest):
+            choices = {"yes": True, "y": True, "no": False, "n": False}
+
+            sys.stdout.write(
+                f"File: {dest} already exists. Do you want to overwrite it? (yes/no) "
+            )
+            while True:
+                choice = input().lower()
+                if choice in choices:
+                    copy_file = choices[choice]
+                    break
+                else:
+                    print("Please respond with yes (y) or no (n).")
+
+        if copy_file:
+            shutil.copyfile(src, dest)
+
+
+def _run(args, base_dir, workflows_dir, config_path):
+    """
+    Run a complete workflow.
+    """
+    if not os.path.exists(config_path):
+        sys.stdout.write(
+            f"The config file: {config_path} does not exist.\nProvide a path to the config file with "
+            f"--config or if you do not have a config file run:\n"
+            f"seq2science init {args.workflow}\n"
+        )
+        sys.exit(1)
+
+    # parse the args
+    parsed_args = {"snakefile": os.path.join(workflows_dir, args.workflow, "Snakefile"),
+                   "config": {"rule_dir": os.path.join(base_dir, "rules")},
+                   "cores": args.cores,
+                   "use_conda": True,
+                   "conda_prefix": os.path.join(base_dir, ".snakemake"),
+                   "dryrun": args.dryrun}
+
+    # get the additional snakemake options
+    snakemake_options = args.snakemakeOptions if args.snakemakeOptions is not None else dict()
+
+    # parse the profile
+    snakemake_options["configfiles"] = [config_path]
+    if args.profile is not None:
+        config_file = snakemake.get_profile_file(args.profile, "config.yaml")
+        if config_file is None:
+            print("Error: profile given but no config.yaml found.")
+            sys.exit(1)
+        parsed_args["configfiles"] += [config_file]
+        profile = yaml.safe_load(open(config_file).read())
+        if "cores" in profile:
+            parsed_args["cores"] = profile["cores"]
+
+    parsed_args.update(snakemake_options)
+
+    # make sure some cores are used
+    if "cores" not in parsed_args or parsed_args["cores"] is None or int(parsed_args["cores"]) < 12:
+        raise ValueError("Please specify at least 12 cores.")
+    parsed_args["cores"] = int(parsed_args["cores"])
+
+    # run snakemake
+    exit_code = snakemake.snakemake(**parsed_args)
+    sys.exit(exit_code)
+
+
+def _clean(base_dir):
+    """
+    Clean the .snakemake folder and layouts cache.
+    """
+    # remove the snakemake cache
+    shutil.rmtree(os.path.join(base_dir, ".snakemake"), ignore_errors=True)
+
+    # remove seq2science cache
+    shutil.rmtree(os.path.expanduser('~/.config/snakemake/layouts.p'), ignore_errors=True)
+
+    print("All cleaned up!")
+
+
+def _docs():
+    """
+    Open a webbrowser to the docs, if that fails simply print the url.
+    """
+    url = "https://vanheeringen-lab.github.io/seq2science"
+    if not webbrowser.open(url):
+        print(url)
+
+
+class _StoreDictKeyPair(argparse.Action):
+    """
+    Class that allows us to take key=value pairs from command-line to feed to
+    snakemake. Solution taken from:
+    https://stackoverflow.com/questions/29986185/python-argparse-dict-arg
+    """
+
+    def __init__(self, option_strings, dest, nargs=None, **kwargs):
+        self._nargs = nargs
+        super(_StoreDictKeyPair, self).__init__(
+            option_strings, dest, nargs=nargs, **kwargs
+        )
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        my_dict = {}
+        for kv in values:
+            k, v = kv.split("=")
+            if v[0] == "{" and v[-1] == "}":
+                pairs = list(filter(None, re.split('{|:| |}', v)))
+                assert len(pairs) % 2 == 0
+                v = {pairs[i]: pairs[i+1] for i in range(0, len(pairs), 2)}
+                v = {k: int(v) if v.isdigit() else v for k, v in v.items()}
+            try:
+                my_dict[k] = int(v)
+            except:
+                my_dict[k] = v
+
+        setattr(namespace, self.dest, my_dict)
+
+
+if __name__ == "__main__":
+    if full_import:
+        main()
+    else:
+        raise ImportError("seq2science has not been installed properly.")
