@@ -10,8 +10,3 @@ create_trackhub: False
 
 # produce MultiQC output?
 create_qc_report: False
-
-# how to sort bam
-bam_sorter:
-  samtools:
-    coordinate

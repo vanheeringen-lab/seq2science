@@ -1,5 +1,5 @@
-# tab-separated file
-samples: ../../../tests/alignment/dag_sample.tsv
+# tab-separated file of the samples
+samples: ../../../tests/alignment/remote_genome_n_sample.tsv
 
 # pipeline file locations
 result_dir: ../../../tests/local_test_results  # where to store results
@@ -11,7 +11,5 @@ create_trackhub: False
 # produce MultiQC output?
 create_qc_report: False
 
-# how to sort bam
-bam_sorter:
-  samtools:
-    coordinate
+# which aligner to use
+aligner: star

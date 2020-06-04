@@ -1,6 +1,0 @@
-# tab-separated file of the samples
-samples: samples.tsv
-
-
-# store aligned reads in cram format
-cram_no_bam: true
