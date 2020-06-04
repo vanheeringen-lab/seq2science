@@ -16,6 +16,7 @@ dependencies:
   - bioconda::norns=0.1.5
   - anaconda::biopython=1.74
   - pkgs/main::filelock=3.0.12
+  - pkgs/main::beautifulsoup4=4.9.0
   - pip:
     - git+https://github.com/daler/trackhub@params-overhaul
     - pretty_html_table=0.9.dev0
