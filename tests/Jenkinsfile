@@ -97,6 +97,15 @@ pipeline {
 
                         bash ./tests/dag_tests.sh scatac-seq
                         '''
+                    },
+                    "- setup conda environments" : {
+                        sh '''#!/usr/bin/env bash
+                        set -e
+                        source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+                        conda activate s2s
+
+                        bash ./tests/run_tests.sh prep_align
+                        '''
                     }
                 )
             }
@@ -138,43 +147,43 @@ pipeline {
         }
 
 
-        stage('Setup alignment') {
-//             when {
-//                 anyOf {
-//                     // always fully build develop and master
-//                     branch 'master'
-//                     branch 'develop'
+//         stage('Setup alignment') {
+// //             when {
+// //                 anyOf {
+// //                     // always fully build develop and master
+// //                     branch 'master'
+// //                     branch 'develop'
+// //
+// //                     // always run when jenkins, envs or configuration is changed
+// //                     changeset glob: 'Jenkins/*'
+// //                     changeset glob: 'envs/*'
+// //                     changeset 'rules/configuration.smk'
+// //
+// //                     // run when relevant rules are changed
+// //                     changeset glob: 'seq2science/workflows/alignment/*'
+// //                     changeset 'rules/alignment.smk'
+// //                     changeset 'rules/trimming.smk'
+// //                     changeset 'rules/qc.smk'
+// //
+// //                     // run when last time you failed
+// //                     expression {
+// //                         return getFailedStages(Jenkins.instance.getItemByFullName("Snakemake-Workflows")\
+// //                         .getItem("$GIT_BRANCH")._getRuns().last()).contains("Test alignment")
+// //                     }
+// //                 }
+// //             }
+//             steps {
+//                 sh '''#!/usr/bin/env bash
+//                 set -e
 //
-//                     // always run when jenkins, envs or configuration is changed
-//                     changeset glob: 'Jenkins/*'
-//                     changeset glob: 'envs/*'
-//                     changeset 'rules/configuration.smk'
+//                 # set up parallel alignment environments
+//                 source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+//                 conda activate s2s
 //
-//                     // run when relevant rules are changed
-//                     changeset glob: 'seq2science/workflows/alignment/*'
-//                     changeset 'rules/alignment.smk'
-//                     changeset 'rules/trimming.smk'
-//                     changeset 'rules/qc.smk'
-//
-//                     // run when last time you failed
-//                     expression {
-//                         return getFailedStages(Jenkins.instance.getItemByFullName("Snakemake-Workflows")\
-//                         .getItem("$GIT_BRANCH")._getRuns().last()).contains("Test alignment")
-//                     }
-//                 }
+//                 bash ./tests/run_tests.sh prep_align
+//                 '''
 //             }
-            steps {
-                sh '''#!/usr/bin/env bash
-                set -e
-
-                # set up parallel alignment environments
-                source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                conda activate s2s
-
-                bash ./tests/run_tests.sh prep_align
-                '''
-            }
-        }
+//         }
 
 
         stage('Test alignment') {
