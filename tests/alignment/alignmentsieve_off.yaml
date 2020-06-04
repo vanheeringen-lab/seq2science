@@ -11,7 +11,8 @@ create_trackhub: False
 # produce MultiQC output?
 create_qc_report: False
 
-# how to sort bam
-bam_sorter:
-  samtools:
-    coordinate
+# filtering after alignment
+remove_blacklist: False
+remove_mito: False
+tn5_shift: False
+minqual: 0
