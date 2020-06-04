@@ -92,6 +92,8 @@ if [ $1 = "bowtie2" ]; then
 
   ALIGNER=bowtie2
   WF=alignment
+  RESULTS_DIR=tests/local_test_results/${ALIGNER}
+  mkdir -p $RESULTS_DIR
   let "c = $CORES / 4"
   let "a = $c - 2"
   let "s = 2"
@@ -103,9 +105,9 @@ if [ $1 = "bowtie2" ]; then
   --config \
       aligner=$ALIGNER \
       samples=../../../tests/alignment/local_sample.tsv \
-      fastq_dir=$(pwd)/tests/tinyfastq \
-      genome_dir=$(pwd)/tests \
-      result_dir=$(pwd)/tests/local_test_results/$ALIGNER \
+      fastq_dir=../../../tests/tinyfastq \
+      genome_dir=../../../tests \
+      result_dir=../../../${RESULTS_DIR} \
   -j $c --set-threads ${ALIGNER}_align=$a samtools_presort=$s
 
   test_ran=1
@@ -115,6 +117,8 @@ if [ $1 = "bwa-mem" ]; then
 
   ALIGNER=bwa-mem
   WF=alignment
+  RESULTS_DIR=tests/local_test_results/${ALIGNER}
+  mkdir -p $RESULTS_DIR
   let "c = $CORES / 4"
   let "a = $c - 2"
   let "s = 2"
@@ -127,9 +131,9 @@ if [ $1 = "bwa-mem" ]; then
 #  --config \
 #      aligner=$ALIGNER \
 #      samples=../../../tests/alignment/local_sample.tsv \
-#      fastq_dir=$(pwd)/tests/tinyfastq \
-#      genome_dir=$(pwd)/tests \
-#      result_dir=$(pwd)/tests/local_test_results/$ALIGNER \
+#      fastq_dir=../../../tests/tinyfastq \
+#      genome_dir=../../../tests \
+#      result_dir=../../../${RESULTS_DIR} \
 #  -j $c --set-threads bwa_mem=$a samtools_presort=$s
 
   test_ran=1
@@ -139,6 +143,8 @@ if [ $1 = "hisat2" ]; then
 
   ALIGNER=hisat2
   WF=alignment
+  RESULTS_DIR=tests/local_test_results/${ALIGNER}
+  mkdir -p $RESULTS_DIR
   let "c = $CORES / 4"
   let "a = $c - 2"
   let "s = 2"
@@ -150,9 +156,9 @@ if [ $1 = "hisat2" ]; then
   --config \
       aligner=$ALIGNER \
       samples=../../../tests/alignment/local_sample.tsv \
-      fastq_dir=$(pwd)/tests/tinyfastq \
-      genome_dir=$(pwd)/tests \
-      result_dir=$(pwd)/tests/local_test_results/$ALIGNER \
+      fastq_dir=../../../tests/tinyfastq \
+      genome_dir=../../../tests \
+      result_dir=../../../${RESULTS_DIR} \
   -j $c --set-threads ${ALIGNER}_align=$a samtools_presort=$s
 
   test_ran=1
@@ -162,6 +168,8 @@ if [ $1 = "star" ]; then
 
   ALIGNER=star
   WF=alignment
+  RESULTS_DIR=tests/local_test_results/${ALIGNER}
+  mkdir -p $RESULTS_DIR
   let "c = $CORES / 4"
   let "a = $c - 2"
   let "s = 2"
@@ -173,9 +181,9 @@ if [ $1 = "star" ]; then
   --config \
       aligner=$ALIGNER \
       samples=../../../tests/alignment/local_sample.tsv \
-      fastq_dir=$(pwd)/tests/tinyfastq \
-      genome_dir=$(pwd)/tests \
-      result_dir=$(pwd)/tests/local_test_results/$ALIGNER \
+      fastq_dir=../../../tests/tinyfastq \
+      genome_dir=../../../tests \
+      result_dir=../../../${RESULTS_DIR} \
   -j $c --set-threads ${ALIGNER}_align=$a samtools_presort=$s
 
   test_ran=1
@@ -237,21 +245,20 @@ if [ $1 = "rna-seq" ]; then
   WF=rna_seq
 
   printf "\nrna-seq default - salmon\n"
-# TODO: error!
+# test samples are too similar for deseq2
 #  snakemake -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF \
 #  --use-conda --conda-frontend mamba -j $CORES \
 #  --configfile \
 #      tests/rna_seq/salmon_config.yaml \
 #  --config \
-#      counts_dir=$(pwd)/tests/local_test_results/salmon_counts \
-#  --omit-from blind_clustering deseq2
+#      counts_dir=$(pwd)/tests/local_test_results/salmon_counts
 
-  # test samples are too similar for deseq2
+# TODO: error: ChildIOException: tinydata.gtf linked_txome/get_annotation
 #  printf "\nrna-seq default - salmon deseq2\n"
 #  snakemake -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF \
 #  --use-conda --conda-frontend mamba -j $CORES \
 #  --configfile \
-#      tests/rna_seq/salmon_config.yaml \
+#      tests/rna_seq/deseq2_config.yaml \
 #  --config \
 #      counts_dir=$(pwd)/tests/local_test_results/salmon_counts
 
@@ -261,39 +268,36 @@ if [ $1 = "rna-seq" ]; then
   --use-conda --conda-frontend mamba -j $CORES \
   --configfile \
       tests/rna_seq/salmon_config.yaml \
-  --config quantifier=star \
-  --omit-from blind_clustering deseq2
+  --config quantifier=star
 
   printf "\nrna-seq default - star deseq2\n"
   snakemake -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF \
   --use-conda --conda-frontend mamba -j $CORES \
   --configfile \
-      tests/rna_seq/salmon_config.yaml \
+      tests/rna_seq/deseq2_config.yaml \
   --config quantifier=star
 
-  # TODO: error!
   printf "\nrna-seq default - trackhub\n"
-#  snakemake -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF \
-#  --use-conda --conda-frontend mamba -j $CORES \
-#  --configfile \
-#      tests/alignment/default_config.yaml \
-#  --config \
-#    samples=../../../tests/alignment/local_sample.tsv \
-#    genome_dir=../../tests \
-#    fastq_dir=../tests/tinyfastq \
-#    create_trackhub=True
+  snakemake -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF \
+  --use-conda --conda-frontend mamba -j $CORES \
+  --configfile \
+      tests/alignment/default_config.yaml \
+  --config \
+    samples=../../../tests/alignment/local_sample.tsv \
+    genome_dir=../../../tests \
+    fastq_dir=../../tests/tinyfastq \
+    create_trackhub=True
 
   printf "\nrna-seq default - multiqc report\n"
-  # TODO: error!
-#  snakemake -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF \
-#  --use-conda --conda-frontend mamba -j $CORES \
-#  --configfile \
-#      tests/alignment/default_config.yaml \
-#  --config \
-#    samples=../../../tests/alignment/local_sample.tsv \
-#    genome_dir=../../tests \
-#    fastq_dir=../tests/tinyfastq \
-#    create_qc_report=True
+  snakemake -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF \
+  --use-conda --conda-frontend mamba -j $CORES \
+  --configfile \
+      tests/alignment/default_config.yaml \
+  --config \
+    samples=../../../tests/alignment/local_sample.tsv \
+    genome_dir=../../../tests \
+    fastq_dir=../../tests/tinyfastq \
+    create_qc_report=True
 
   test_ran=1
 fi
