@@ -126,9 +126,8 @@ if [ $1 = "alignment" ]; then
   assert_rulecount $1 bwa_mem 1
 
   printf "\nmultiple replicates - trackhubs\n"
-  # TODO: error
-#  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/default_config.yaml --config samples=../../../tests/alignment/replicates.tsv technical_replicates=merge create_trackhub=True | tee tests/local_test_results/${1}_dag
-#  assert_rulecount $1 bam_bigwig 1
+  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/default_config.yaml --config samples=../../../tests/alignment/replicates.tsv technical_replicates=merge create_trackhub=True | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 bam_bigwig 1
 
   printf "\nmultiple replicates - multiqc report\n"
   snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/default_config.yaml --config samples=../../../tests/alignment/replicates.tsv technical_replicates=merge create_qc_report=True | tee tests/local_test_results/${1}_dag
@@ -144,14 +143,12 @@ if [ $1 = "alignment" ]; then
   assert_rulecount $1 bwa_mem 2
 
   printf "\nmultiple assemblies and replicates - trackhub\n"
-  # TODO: error
-#  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/default_config.yaml --config samples=../../../tests/alignment/complex_samples.tsv technical_replicates=merge create_trackhub=True | tee tests/local_test_results/${1}_dag
-#  assert_rulecount $1 bam_bigwig 2
+  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/default_config.yaml --config samples=../../../tests/alignment/complex_samples.tsv technical_replicates=merge create_trackhub=True | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 bam_bigwig 2
 
   printf "\nmultiple assemblies and replicates - multiqc report\n"
-  # TODO: error
-#  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/default_config.yaml --config samples=../../../tests/alignment/complex_samples.tsv technical_replicates=merge create_qc_report=True | tee tests/local_test_results/${1}_dag
-#  assert_rulecount $1 samtools_stats 2
+  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/default_config.yaml --config samples=../../../tests/alignment/complex_samples.tsv technical_replicates=merge create_qc_report=True | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 samtools_stats 2
 
   test_ran=1
 fi
@@ -223,14 +220,12 @@ if [ $1 = "atac-seq" ]; then
   assert_rulecount $1 coverage_table 4
 
   printf "\nmultiple peak callers, assemblies and replicates - trackhub\n"
-# TODO: error
-#  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/genrich_macs2.yaml --config samples=../../../tests/atac_seq/complex_samples.tsv create_trackhub=True | tee tests/local_test_results/${1}_dag
-#  assert_rulecount $1 bedgraph_bigwig 16
+  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/genrich_macs2.yaml --config samples=../../../tests/atac_seq/complex_samples.tsv create_trackhub=True | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 bedgraph_bigwig 16
 
   printf "\nmultiple peak callers, assemblies and replicates - multiqc report\n"
-# TODO: error
-#  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/genrich_macs2.yaml --config samples=../../../tests/atac_seq/complex_samples.tsv create_qc_report=True | tee tests/local_test_results/${1}_dag
-#  assert_rulecount $1 featureCounts 16
+  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/genrich_macs2.yaml --config samples=../../../tests/atac_seq/complex_samples.tsv create_qc_report=True | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 featureCounts 16
 
   test_ran=1
 fi
@@ -326,9 +321,8 @@ if [ $1 = "rna-seq" ]; then
   assert_rulecount $1 salmon_quant 1
 
   printf "\ndecoy aware salmon index\n"
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/alignment/default_config.yaml --config quantifier=salmon decoy_aware_index=True | tee tests/local_test_results/${1}_dag
-  # TODO: bug: decoy not used!
-  #assert_rulecount $1 decoy_transcripts 1
+  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/salmon_config.yaml --config samples=../../../tests/alignment/dag_sample.tsv fastq_dir=../../../tests/local_test_results/fastq genome_dir=../../../tests/local_test_results | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 decoy_transcripts 1
 
   printf "\ntrackhub\n"
   snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/alignment/default_config.yaml --config quantifier=star create_trackhub=True | tee tests/local_test_results/${1}_dag
@@ -376,10 +370,8 @@ if [ $1 = "rna-seq" ]; then
   assert_rulecount $1 star_quant 8
 
   printf "\nmultiple replicates with DEA - trackhubs\n"
-  # TODO: error!
-#  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/rna_seq_config.yaml --config quantifier=star technical_replicates=merge create_trackhub=True | tee tests/local_test_results/${1}_dag
-#  # TODO: error!
-#  #assert_rulecount $1 bam_bigwig 8
+  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/rna_seq_config.yaml --config quantifier=star technical_replicates=merge create_trackhub=True | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 bam_bigwig 8
 
   printf "\nmultiple replicates with DEA - multiqc\n"
   snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/rna_seq_config.yaml --config quantifier=star technical_replicates=merge create_qc_report=True | tee tests/local_test_results/${1}_dag
@@ -399,12 +391,11 @@ if [ $1 = "rna-seq" ]; then
   #assert_rulecount $1 salmon_quant 8
 
   printf "\nmultiple assemblies and replicates with DEA - trackhub\n"
-  # TODO: error!
-#  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/rna_seq_config.yaml --config samples=../../../tests/rna_seq/complex_samples.tsv technical_replicates=merge quantifier=salmon create_trackhub=True | tee tests/local_test_results/${1}_dag
-#  # TODO: bug: quantifier runs 16 (2x8) times, aligner runs 8 times.
-#  #assert_rulecount $1 salmon_quant 8
-#  assert_rulecount $1 star_align 8
-#  assert_rulecount $1 bam_bigwig 8
+  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/rna_seq_config.yaml --config samples=../../../tests/rna_seq/complex_samples.tsv technical_replicates=merge quantifier=salmon create_trackhub=True | tee tests/local_test_results/${1}_dag
+  # TODO: bug: quantifier runs 16 (2x8) times, aligner runs 8 times.
+  #assert_rulecount $1 salmon_quant 8
+  assert_rulecount $1 star_align 8
+  assert_rulecount $1 bam_bigwig 8
 
   printf "\nmultiple assemblies and replicates with DEA - multiqc report\n"
   snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/rna_seq_config.yaml --config samples=../../../tests/rna_seq/complex_samples.tsv technical_replicates=merge quantifier=star create_qc_report=True | tee tests/local_test_results/${1}_dag

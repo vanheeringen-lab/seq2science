@@ -157,7 +157,7 @@ def fingerprint_multiBamSummary_input(wildcards):
 
 
 def get_descriptive_names(wildcards, input):
-    if "descriptive_name" not in treps:
+    if "descriptive_name" not in samples:
         return ""
 
     labels = ""
@@ -167,8 +167,10 @@ def get_descriptive_names(wildcards, input):
         trep = trep[:trep.find(".sam")]
         if "control" in treps and trep not in treps.index:
             labels += f"control_{trep} "
+        elif trep in samples.index:
+            labels += samples.loc[trep, "descriptive_name"] + " "
         else:
-            labels += treps.loc[trep, "descriptive_name"] + " "
+            labels += trep
 
     return labels
 
