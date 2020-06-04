@@ -92,6 +92,8 @@ if [ $1 = "bowtie2" ]; then
 
   ALIGNER=bowtie2
   WF=alignment
+  RESULTS_DIR=tests/local_test_results/${ALIGNER}
+  mkdir -p $RESULTS_DIR
   let "c = $CORES / 4"
   let "a = $c - 2"
   let "s = 2"
@@ -103,9 +105,9 @@ if [ $1 = "bowtie2" ]; then
   --config \
       aligner=$ALIGNER \
       samples=../../../tests/alignment/local_sample.tsv \
-      fastq_dir=$(pwd)/tests/tinyfastq \
-      genome_dir=$(pwd)/tests \
-      result_dir=$(pwd)/tests/local_test_results/$ALIGNER \
+      fastq_dir=../../../tests/tinyfastq \
+      genome_dir=../../../tests \
+      result_dir=../../../${RESULTS_DIR} \
   -j $c --set-threads ${ALIGNER}_align=$a samtools_presort=$s
 
   test_ran=1
@@ -115,6 +117,8 @@ if [ $1 = "bwa-mem" ]; then
 
   ALIGNER=bwa-mem
   WF=alignment
+  RESULTS_DIR=tests/local_test_results/${ALIGNER}
+  mkdir -p $RESULTS_DIR
   let "c = $CORES / 4"
   let "a = $c - 2"
   let "s = 2"
@@ -127,9 +131,9 @@ if [ $1 = "bwa-mem" ]; then
 #  --config \
 #      aligner=$ALIGNER \
 #      samples=../../../tests/alignment/local_sample.tsv \
-#      fastq_dir=$(pwd)/tests/tinyfastq \
-#      genome_dir=$(pwd)/tests \
-#      result_dir=$(pwd)/tests/local_test_results/$ALIGNER \
+#      fastq_dir=../../../tests/tinyfastq \
+#      genome_dir=../../../tests \
+#      result_dir=../../../${RESULTS_DIR} \
 #  -j $c --set-threads bwa_mem=$a samtools_presort=$s
 
   test_ran=1
@@ -139,6 +143,8 @@ if [ $1 = "hisat2" ]; then
 
   ALIGNER=hisat2
   WF=alignment
+  RESULTS_DIR=tests/local_test_results/${ALIGNER}
+  mkdir -p $RESULTS_DIR
   let "c = $CORES / 4"
   let "a = $c - 2"
   let "s = 2"
@@ -150,9 +156,9 @@ if [ $1 = "hisat2" ]; then
   --config \
       aligner=$ALIGNER \
       samples=../../../tests/alignment/local_sample.tsv \
-      fastq_dir=$(pwd)/tests/tinyfastq \
-      genome_dir=$(pwd)/tests \
-      result_dir=$(pwd)/tests/local_test_results/$ALIGNER \
+      fastq_dir=../../../tests/tinyfastq \
+      genome_dir=../../../tests \
+      result_dir=../../../${RESULTS_DIR} \
   -j $c --set-threads ${ALIGNER}_align=$a samtools_presort=$s
 
   test_ran=1
@@ -162,6 +168,8 @@ if [ $1 = "star" ]; then
 
   ALIGNER=star
   WF=alignment
+  RESULTS_DIR=tests/local_test_results/${ALIGNER}
+  mkdir -p $RESULTS_DIR
   let "c = $CORES / 4"
   let "a = $c - 2"
   let "s = 2"
@@ -173,9 +181,9 @@ if [ $1 = "star" ]; then
   --config \
       aligner=$ALIGNER \
       samples=../../../tests/alignment/local_sample.tsv \
-      fastq_dir=$(pwd)/tests/tinyfastq \
-      genome_dir=$(pwd)/tests \
-      result_dir=$(pwd)/tests/local_test_results/$ALIGNER \
+      fastq_dir=../../../tests/tinyfastq \
+      genome_dir=../../../tests \
+      result_dir=../../../${RESULTS_DIR} \
   -j $c --set-threads ${ALIGNER}_align=$a samtools_presort=$s
 
   test_ran=1
