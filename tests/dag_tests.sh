@@ -1,13 +1,11 @@
 # to run these tests locally:
-#   source ./tests/dag_tests.sh TEST
+#   bash ./tests/dag_tests.sh TEST
 
 if [ -z "$1" ]
   then
     echo "No test specified"
     exit
 fi
-
-echo $PWD
 
 CORES=48
 trap "rm -rf tests/local_test_results" EXIT  # remove the test outputs on exit
