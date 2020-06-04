@@ -123,18 +123,17 @@ if [ $1 = "bwa-mem" ]; then
   let "a = $c - 2"
   let "s = 2"
 
-  # TODO: error!
-#  snakemake -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF \
-#  --use-conda --nolock --notemp \
-#  --configfile \
-#      tests/$WF/default_config.yaml \
-#  --config \
-#      aligner=$ALIGNER \
-#      samples=../../../tests/alignment/local_sample.tsv \
-#      fastq_dir=../../../tests/tinyfastq \
-#      genome_dir=../../../tests \
-#      result_dir=../../../${RESULTS_DIR} \
-#  -j $c --set-threads bwa_mem=$a samtools_presort=$s
+  snakemake -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF \
+  --use-conda --nolock --notemp \
+  --configfile \
+      tests/$WF/default_config.yaml \
+  --config \
+      aligner=$ALIGNER \
+      samples=../../../tests/alignment/local_sample.tsv \
+      fastq_dir=../../../tests/tinyfastq \
+      genome_dir=../../../tests \
+      result_dir=../../../${RESULTS_DIR} \
+  -j $c --set-threads bwa_mem=$a samtools_presort=$s
 
   test_ran=1
 fi
