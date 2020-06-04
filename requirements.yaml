@@ -17,3 +17,4 @@ dependencies:
   - pkgs/main::filelock=3.0.12
   - pip:
     - git+https://github.com/daler/trackhub@params-overhaul
+    - pretty_html_table=0.9.dev0
