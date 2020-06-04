@@ -171,7 +171,7 @@ pipeline {
                 source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                 conda activate s2s
 
-                bash ./tests/run_tests.sh prep-align
+                bash ./tests/run_tests.sh prep_align
                 '''
             }
         }

@@ -60,25 +60,27 @@ fi
 
 if [ $1 = "prep_align" ]; then
 
-  snakemake -s seq2science/workflows/alignment/Snakefile --directory seq2science/workflows/alignment \
-  --use-conda -j $CORES --configfile tests/alignment/default_config.yaml \
-  --config samples=../../../tests/alignment/remote_genome_n_sample.tsv aligner=bowtie2 \
-  --conda-create-envs-only --quiet
+  WF=alignment
 
-  snakemake -s seq2science/workflows/alignment/Snakefile --directory seq2science/workflows/alignment \
-  --use-conda -j $CORES --configfile tests/alignment/default_config.yaml \
-  --config samples=../../../tests/alignment/remote_genome_n_sample.tsv aligner=bwa-mem \
-  --conda-create-envs-only --quiet
+  snakemake -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF \
+  -j $CORES --quiet --configfile tests/$WF/default_config.yaml \
+  --config samples=../../../tests/$WF/remote_genome_n_sample.tsv aligner=bowtie2 \
+  --use-conda --conda-create-envs-only --conda-frontend mamba
 
-  snakemake -s seq2science/workflows/alignment/Snakefile --directory seq2science/workflows/alignment \
-  --use-conda -j $CORES --configfile tests/alignment/default_config.yaml \
-  --config samples=../../../tests/alignment/remote_genome_n_sample.tsv aligner=hisat2 \
-  --conda-create-envs-only --quiet
+  snakemake -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF \
+  -j $CORES --quiet --configfile tests/$WF/default_config.yaml \
+  --config samples=../../../tests/$WF/remote_genome_n_sample.tsv aligner=bwa-mem \
+  --conda-create-envs-only --conda-frontend mamba
 
-  snakemake -s seq2science/workflows/alignment/Snakefile --directory seq2science/workflows/alignment \
-  --use-conda -j $CORES --configfile tests/alignment/default_config.yaml \
-  --config samples=../../../tests/alignment/remote_genome_n_sample.tsv aligner=star \
-  --conda-create-envs-only --quiet
+  snakemake -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF \
+  -j $CORES --quiet --configfile tests/$WF/default_config.yaml \
+  --config samples=../../../tests/$WF/remote_genome_n_sample.tsv aligner=hisat2 \
+  --conda-create-envs-only --conda-frontend mamba
+
+  snakemake -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF \
+  -j $CORES --quiet --configfile tests/$WF/default_config.yaml \
+  --config samples=../../../tests/$WF/remote_genome_n_sample.tsv aligner=star \
+  --use-conda --conda-create-envs-only --conda-frontend mamba
 
   test_ran=1
 fi
@@ -108,7 +110,7 @@ fi
 
 if [ $1 = "bwa-mem" ]; then
 
-  ALIGNER=bwa
+  ALIGNER=bwa-mem
   WF=alignment
   let "c = $CORES / 4"
   let "a = $c - 2"
@@ -125,7 +127,7 @@ if [ $1 = "bwa-mem" ]; then
 #      fastq_dir=$(pwd)/tests/tinyfastq \
 #      genome_dir=$(pwd)/tests \
 #      result_dir=$(pwd)/tests/local_test_results/$ALIGNER \
-#  -j $c --set-threads bwa-mem=$a samtools_presort=$s
+#  -j $c --set-threads bwa_mem=$a samtools_presort=$s
 
   test_ran=1
 fi
