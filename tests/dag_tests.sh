@@ -7,6 +7,8 @@ if [ -z "$1" ]
     exit
 fi
 
+echo $PWD
+
 CORES=48
 trap "rm -rf tests/local_test_results" EXIT  # remove the test outputs on exit
 function assert_rulecount {
