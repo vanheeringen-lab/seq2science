@@ -178,9 +178,9 @@ Genrich -X -t $input -f {output.log} {params.control} -k {output.bedgraphish} {p
 #### get_annotation
 Matches the chromosome/scaffold names in annotation.gtf to those in the genome.fa.
 ```
-Generate decoy_transcripts.txt for Salmon indexing  
+Generate transcripts.fasta using gffread.
 
-script source: https://github.com/COMBINE-lab/SalmonTools
+Requires genome.fa and annotation.gtf (with matching chromosome/scaffold names)
 ```
 
 #### get_genome
