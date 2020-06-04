@@ -130,9 +130,9 @@ pipeline {
                 sh '''#!/usr/bin/env bash
                 set -e
                 source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                conda activate miniconda/envs/snakemake-seq2science/workflows/
+                conda activate s2s
 
-                ./tests/run_tests.sh download
+                bash ./tests/run_tests.sh download
                 '''
             }
         }
@@ -169,9 +169,9 @@ pipeline {
 
                 # set up parallel alignment environments
                 source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                conda activate miniconda/envs/snakemake-seq2science/workflows/
+                conda activate s2s
 
-                ./tests/run_tests.sh prep-align
+                bash ./tests/run_tests.sh prep-align
                 '''
             }
         }
@@ -208,36 +208,36 @@ pipeline {
                         sh '''#!/usr/bin/env bash
                         set -e
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate miniconda/envs/snakemake-seq2science/workflows/
+                        conda activate s2s
 
-                        ./tests/run_tests.sh bowtie2
+                        bash ./tests/run_tests.sh bowtie2
                         '''
                     },
                     "BWA" : {
                         sh '''#!/usr/bin/env bash
                         set -e
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate miniconda/envs/snakemake-seq2science/workflows/
+                        conda activate s2s
 
-                        ./tests/run_tests.sh bwa
+                        bash ./tests/run_tests.sh bwa-mem
                         '''
                     },
                     "HISAT2" : {
                         sh '''#!/usr/bin/env bash
                         set -e
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate miniconda/envs/snakemake-seq2science/workflows/
+                        conda activate s2s
 
-                        ./tests/run_tests.sh hisat2
+                        bash ./tests/run_tests.sh hisat2
                         '''
                     },
                     "STAR" : {
                         sh '''#!/usr/bin/env bash
                         set -e
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate miniconda/envs/snakemake-seq2science/workflows/
+                        conda activate s2s
 
-                        ./tests/run_tests.sh star
+                        bash ./tests/run_tests.sh star
                         '''
                     }
                 )
@@ -278,9 +278,9 @@ pipeline {
                 sh '''#!/usr/bin/env bash
                 set -e
                 source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                conda activate miniconda/envs/snakemake-seq2science/workflows/
+                conda activate s2s
 
-                ./tests/run_tests.sh atac-seq
+                bash ./tests/run_tests.sh atac-seq
                 '''
             }
         }
@@ -290,9 +290,9 @@ pipeline {
                 sh '''#!/usr/bin/env bash
                 set -e
                 source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                conda activate miniconda/envs/snakemake-seq2science/workflows/
+                conda activate s2s
 
-                ./tests/run_tests.sh scatac-seq
+                bash ./tests/run_tests.sh scatac-seq
                 '''
             }
         }
@@ -332,9 +332,9 @@ pipeline {
                 sh '''#!/usr/bin/env bash
                 set -e
                 source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                conda activate miniconda/envs/snakemake-seq2science/workflows/
+                conda activate s2s
 
-                ./tests/run_tests.sh rna-seq
+                bash ./tests/run_tests.sh rna-seq
                 '''
             }
         }
@@ -345,7 +345,7 @@ pipeline {
                     sh '''#!/usr/bin/env bash
                     set -e
                     source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                    conda activate miniconda/envs/snakemake-seq2science/workflows/
+                    conda activate s2s
                     conda install -q --yes flake8
 
                     # flake8

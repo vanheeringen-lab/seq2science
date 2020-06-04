@@ -1,29 +1,13 @@
 # to run these tests locally:
-#   source ./tests/dag_tests.sh TEST
+#   bash ./tests/dag_tests.sh TEST
 
-if [ -z "$1" ]
-  then
-    echo "No test specified"
-    exit
+# check if an argument was passed
+if [ -z "$1" ]; then
+    echo "No test specified"; exit
 fi
 
-CORES=48
+CORES=28
 set -e  # Exit immediately if a command exits with a non-zero status.
-#function assert_rulecount {
-#  # check if the DAG (stored with  | tee tests/local_test_results/val  ) ran rule $1 exactly $2 times
-#  val=$(cat tests/local_test_results/val | grep -w $1 | cut -f2);
-#
-#  # check if the rule was found in the DAG at all
-#  if [ -z "$val" ]; then
-#    # if specified count is zero, that's OK
-#    (($2!=0)) && printf "\nrule $1 did not run at all. Exiting.\n\n" && exit 1;
-#  else
-#    # else check if the count equals the specified number
-#    (($val!=$2)) && printf "\nrule $1 ran $val times instead of the expected $2 times. Exiting.\n\n" && exit 1;
-#  fi
-#  :
-#}
-#mkdir -p tests/local_test_results
 
 if [ $1 = "cleanup_files" ]; then
   rm -rf tests/local_test_results
@@ -39,6 +23,7 @@ if [ $1 = "cleanup_files" ]; then
   rm -rf tests/tinydata/tinydata.ixx
   rm -rf tests/tinydata/tinydata.transcripts.fa
   rm -rf tests/tinydata/tinydata_softmasking.bb
+  test_ran=1
 fi
 
 if [ $1 = "cleanup_envs" ]; then
@@ -49,6 +34,7 @@ if [ $1 = "cleanup_envs" ]; then
   rm -rf seq2science/workflows/chip_seq/.snakemake
   rm -rf seq2science/workflows/rna_seq/.snakemake
   rm -rf seq2science/workflows/scATAC_seq/.snakemake
+  test_ran=1
 fi
 
 if [ $1 = "download" ]; then
@@ -56,7 +42,7 @@ if [ $1 = "download" ]; then
   WF=download_fastq
 
   # test basic downloading 1 PE and 1 SE
-  printf "\ndownload SE and PE fastqs\n\n"
+  printf "\ndownload SE and PE fastqs\n"
   snakemake --use-conda -j $CORES -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF \
   --configfile tests/$WF/default_config.yaml \
   --config samples=../../../tests/download_fastq/remote_samples.tsv
@@ -64,11 +50,12 @@ if [ $1 = "download" ]; then
   WF=alignment
 
   # test genome & annotation downloading
-  printf "\ndownload genome & annotation\n\n"
+  printf "\ndownload genome & annotation\n"
   snakemake --use-conda -j $CORES -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF \
   --configfile tests/$WF/remote_genome_n_sample.yaml \
   --until get_genome
 
+  test_ran=1
 fi
 
 if [ $1 = "prep_align" ]; then
@@ -93,6 +80,7 @@ if [ $1 = "prep_align" ]; then
   --config samples=../../../tests/alignment/remote_genome_n_sample.tsv aligner=star \
   --conda-create-envs-only --quiet
 
+  test_ran=1
 fi
 
 if [ $1 = "bowtie2" ]; then
@@ -115,6 +103,7 @@ if [ $1 = "bowtie2" ]; then
       result_dir=$(pwd)/tests/local_test_results/$ALIGNER \
   -j $c --set-threads ${ALIGNER}_align=$a samtools_presort=$s
 
+  test_ran=1
 fi
 
 if [ $1 = "bwa-mem" ]; then
@@ -136,8 +125,9 @@ if [ $1 = "bwa-mem" ]; then
 #      fastq_dir=$(pwd)/tests/tinyfastq \
 #      genome_dir=$(pwd)/tests \
 #      result_dir=$(pwd)/tests/local_test_results/$ALIGNER \
-#  -j $c --set-threads bwa_mem=$a samtools_presort=$s
+#  -j $c --set-threads bwa-mem=$a samtools_presort=$s
 
+  test_ran=1
 fi
 
 if [ $1 = "hisat2" ]; then
@@ -160,6 +150,7 @@ if [ $1 = "hisat2" ]; then
       result_dir=$(pwd)/tests/local_test_results/$ALIGNER \
   -j $c --set-threads ${ALIGNER}_align=$a samtools_presort=$s
 
+  test_ran=1
 fi
 
 if [ $1 = "star" ]; then
@@ -182,6 +173,7 @@ if [ $1 = "star" ]; then
       result_dir=$(pwd)/tests/local_test_results/$ALIGNER \
   -j $c --set-threads ${ALIGNER}_align=$a samtools_presort=$s
 
+  test_ran=1
 fi
 
 if [ $1 = "atac-seq" ]; then
@@ -219,6 +211,7 @@ if [ $1 = "atac-seq" ]; then
       aligner=bowtie2 \
       create_trackhub=True
 
+  test_ran=1
 fi
 
 if [ $1 = "scatac-seq" ]; then
@@ -228,6 +221,7 @@ if [ $1 = "scatac-seq" ]; then
 
   echo "Requires test sample(s)"
 
+  test_ran=1
 fi
 
 if [ $1 = "rna-seq" ]; then
@@ -291,4 +285,10 @@ if [ $1 = "rna-seq" ]; then
 #    fastq_dir=../tests/tinyfastq \
 #    create_qc_report=True
 
+  test_ran=1
+fi
+
+# check if any test has run
+if [ -z "$test_ran" ]; then
+  printf "\nunrecognized input: ${1}\n"; exit
 fi

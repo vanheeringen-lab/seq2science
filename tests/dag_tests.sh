@@ -2,10 +2,8 @@
 #   bash ./tests/dag_tests.sh TEST
 
 # check if an argument was passed
-if [ -z "$1" ]
-  then
-    echo "No test specified"
-    exit
+if [ -z "$1" ]; then
+    echo "No test specified"; exit
 fi
 
 # remove the test outputs on exit locally
@@ -13,7 +11,7 @@ if [[ $(pwd) != *lib/jenkins* ]]; then
   trap "rm -rf tests/local_test_results" EXIT
 fi
 
-CORES=48
+CORES=28
 function assert_rulecount {
   # check if the DAG (stored with  | tee tests/local_test_results/${1}_dag  ) ran rule $2 exactly $3 times
   val=$(cat tests/local_test_results/${1}_dag | grep -w $2 | cut -f2);
@@ -155,6 +153,7 @@ if [ $1 = "alignment" ]; then
 #  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/default_config.yaml --config samples=../../../tests/alignment/complex_samples.tsv technical_replicates=merge create_qc_report=True | tee tests/local_test_results/${1}_dag
 #  assert_rulecount $1 samtools_stats 2
 
+  test_ran=1
 fi
 
 if [ $1 = "atac-seq" ]; then
@@ -233,6 +232,7 @@ if [ $1 = "atac-seq" ]; then
 #  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/genrich_macs2.yaml --config samples=../../../tests/atac_seq/complex_samples.tsv create_qc_report=True | tee tests/local_test_results/${1}_dag
 #  assert_rulecount $1 featureCounts 16
 
+  test_ran=1
 fi
 
 if [ $1 = "scatac-seq" ]; then
@@ -307,6 +307,7 @@ if [ $1 = "scatac-seq" ]; then
 #  # different number from other workflows
 #  assert_rulecount $1 fastqc 4
 
+  test_ran=1
 fi
 
 if [ $1 = "rna-seq" ]; then
@@ -410,4 +411,10 @@ if [ $1 = "rna-seq" ]; then
   # TODO: bug: quantifier runs 16 (2x8) times, aligner runs 8 times.
   assert_rulecount $1 fastqc  24
 
+  test_ran=1
+fi
+
+# check if any test has run
+if [ -z "$test_ran" ]; then
+  printf "\nunrecognized input: ${1}\n"; exit
 fi
