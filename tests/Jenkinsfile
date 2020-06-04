@@ -98,6 +98,15 @@ pipeline {
                         bash ./tests/dag_tests.sh rna-seq
                         '''
                     },
+                    "5 scATAC-seq" : {
+                        sh '''#!/usr/bin/env bash
+                        set -e
+                        source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+                        conda activate s2s
+
+                        bash ./tests/dag_tests.sh scatac-seq
+                        '''
+                    },
                     "~ setup conda environments" : {
                         sh '''#!/usr/bin/env bash
                         set -e
