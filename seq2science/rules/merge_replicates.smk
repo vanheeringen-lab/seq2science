@@ -4,16 +4,16 @@ if 'replicate' in samples and config.get('technical_replicates')  != 'keep':
     cols = ['replicate', 'assembly']
 if 'condition' in samples and config.get('biological_replicates') != 'keep':
     cols.append('condition')
-if "descriptive_name" in samples:
-    cols.append('descriptive_name')
 if "control" in samples:
     cols.append("control")
 treps = samples.reset_index()[cols].drop_duplicates().set_index(cols[0])
+assert treps.index.is_unique, "duplicate value found in treps"
 
 # dataframe with all replicates collapsed
 breps = treps
 if 'condition' in treps:
     breps = treps.reset_index(drop=True).drop_duplicates().set_index('condition')
+    assert breps.index.is_unique, "duplicate value found in breps"
 
 
 # make a dict that returns the treps that belong to a brep
@@ -37,12 +37,8 @@ def rep_to_descriptive(rep):
     """
     Return the descriptive name for a replicate.
     """
-    if "descriptive_name" not in samples:
-        return rep
-
-    if rep in samples.index:
+    if "descriptive_name" in samples and rep in samples.index:
         return samples.loc[rep, "descriptive_name"]
-
     return rep
 
 
