@@ -237,21 +237,20 @@ if [ $1 = "rna-seq" ]; then
   WF=rna_seq
 
   printf "\nrna-seq default - salmon\n"
-# TODO: error!
+# test samples are too similar for deseq2
 #  snakemake -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF \
 #  --use-conda --conda-frontend mamba -j $CORES \
 #  --configfile \
 #      tests/rna_seq/salmon_config.yaml \
 #  --config \
-#      counts_dir=$(pwd)/tests/local_test_results/salmon_counts \
-#  --omit-from blind_clustering deseq2
+#      counts_dir=$(pwd)/tests/local_test_results/salmon_counts
 
-  # test samples are too similar for deseq2
+# TODO: error: ChildIOException: tinydata.gtf linked_txome/get_annotation
 #  printf "\nrna-seq default - salmon deseq2\n"
 #  snakemake -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF \
 #  --use-conda --conda-frontend mamba -j $CORES \
 #  --configfile \
-#      tests/rna_seq/salmon_config.yaml \
+#      tests/rna_seq/deseq2_config.yaml \
 #  --config \
 #      counts_dir=$(pwd)/tests/local_test_results/salmon_counts
 
@@ -261,39 +260,36 @@ if [ $1 = "rna-seq" ]; then
   --use-conda --conda-frontend mamba -j $CORES \
   --configfile \
       tests/rna_seq/salmon_config.yaml \
-  --config quantifier=star \
-  --omit-from blind_clustering deseq2
+  --config quantifier=star
 
   printf "\nrna-seq default - star deseq2\n"
   snakemake -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF \
   --use-conda --conda-frontend mamba -j $CORES \
   --configfile \
-      tests/rna_seq/salmon_config.yaml \
+      tests/rna_seq/deseq2_config.yaml \
   --config quantifier=star
 
-  # TODO: error!
   printf "\nrna-seq default - trackhub\n"
-#  snakemake -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF \
-#  --use-conda --conda-frontend mamba -j $CORES \
-#  --configfile \
-#      tests/alignment/default_config.yaml \
-#  --config \
-#    samples=../../../tests/alignment/local_sample.tsv \
-#    genome_dir=../../tests \
-#    fastq_dir=../tests/tinyfastq \
-#    create_trackhub=True
+  snakemake -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF \
+  --use-conda --conda-frontend mamba -j $CORES \
+  --configfile \
+      tests/alignment/default_config.yaml \
+  --config \
+    samples=../../../tests/alignment/local_sample.tsv \
+    genome_dir=../../../tests \
+    fastq_dir=../../tests/tinyfastq \
+    create_trackhub=True
 
   printf "\nrna-seq default - multiqc report\n"
-  # TODO: error!
-#  snakemake -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF \
-#  --use-conda --conda-frontend mamba -j $CORES \
-#  --configfile \
-#      tests/alignment/default_config.yaml \
-#  --config \
-#    samples=../../../tests/alignment/local_sample.tsv \
-#    genome_dir=../../tests \
-#    fastq_dir=../tests/tinyfastq \
-#    create_qc_report=True
+  snakemake -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF \
+  --use-conda --conda-frontend mamba -j $CORES \
+  --configfile \
+      tests/alignment/default_config.yaml \
+  --config \
+    samples=../../../tests/alignment/local_sample.tsv \
+    genome_dir=../../../tests \
+    fastq_dir=../../tests/tinyfastq \
+    create_qc_report=True
 
   test_ran=1
 fi

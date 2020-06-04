@@ -321,9 +321,8 @@ if [ $1 = "rna-seq" ]; then
   assert_rulecount $1 salmon_quant 1
 
   printf "\ndecoy aware salmon index\n"
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/alignment/default_config.yaml --config quantifier=salmon decoy_aware_index=True | tee tests/local_test_results/${1}_dag
-  # TODO: bug: decoy not used!
-  #assert_rulecount $1 decoy_transcripts 1
+  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/salmon_config.yaml --config samples=../../../tests/alignment/dag_sample.tsv fastq_dir=../../../tests/local_test_results/fastq genome_dir=../../../tests/local_test_results | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 decoy_transcripts 1
 
   printf "\ntrackhub\n"
   snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/alignment/default_config.yaml --config quantifier=star create_trackhub=True | tee tests/local_test_results/${1}_dag
