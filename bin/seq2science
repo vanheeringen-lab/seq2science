@@ -181,6 +181,7 @@ def _run(args, base_dir, workflows_dir, config_path):
     parsed_args = {"snakefile": os.path.join(workflows_dir, args.workflow, "Snakefile"),
                    "cores": args.cores,
                    "use_conda": True,
+                   "conda_frontend": "mamba",
                    "conda_prefix": os.path.join(base_dir, ".snakemake"),
                    "dryrun": args.dryrun}
 
@@ -190,13 +191,13 @@ def _run(args, base_dir, workflows_dir, config_path):
     # parse the profile
     snakemake_options["configfiles"] = [config_path]
     if args.profile is not None:
-        config_file = snakemake.get_profile_file(args.profile, "config.yaml")
-        if config_file is None:
+        profile_file = snakemake.get_profile_file(args.profile, "config.yaml")
+        if profile_file is None:
             print("Error: profile given but no config.yaml found.")
             sys.exit(1)
-        parsed_args["configfiles"] += [config_file]
-        profile = yaml.safe_load(open(config_file).read())
-        if "cores" in profile:
+        snakemake_options["configfiles"] += [profile_file]
+        profile = yaml.safe_load(open(profile_file).read())
+        if "cores" in profile and parsed_args["cores"] is None:
             parsed_args["cores"] = profile["cores"]
 
     parsed_args.update(snakemake_options)

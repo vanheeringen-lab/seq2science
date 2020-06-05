@@ -48,7 +48,7 @@ properties:
       release:
         default: 42 # release number (e.g. "27")
     default:
-      soure: Ensembl
+      source: Ensembl
       organism: tximeta_file
       release: 42
 
