@@ -182,7 +182,7 @@ elif config['aligner'] == 'star' or config.get('quantifier', '') == 'star':
         input:
             genome = expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
             sizefile= expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
-            gtf = expand("{genome_dir}/{{assembly}}/{{assembly}}.gtf", **config)
+            gtf = expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config)
         output:
             directory(expand("{genome_dir}/{{assembly}}/index/{aligner}", **config))
         log:

@@ -243,16 +243,15 @@ if [ $1 = "rna-seq" ]; then
   # RNA-seq workflow
   WF=rna_seq
 
-  printf "\nrna-seq default - salmon\n"
-# test samples are too similar for deseq2
+# TODO: test samples are too similar for blind clustering and deseq2
+#  printf "\nrna-seq default - salmon\n"
 #  snakemake -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF \
 #  --use-conda --conda-frontend mamba -j $CORES \
 #  --configfile \
 #      tests/rna_seq/salmon_config.yaml \
 #  --config \
 #      counts_dir=$(pwd)/tests/local_test_results/salmon_counts
-
-# TODO: error: ChildIOException: tinydata.gtf linked_txome/get_annotation
+#
 #  printf "\nrna-seq default - salmon deseq2\n"
 #  snakemake -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF \
 #  --use-conda --conda-frontend mamba -j $CORES \
