@@ -25,7 +25,7 @@ if config['quantifier'] == 'salmon':
             index_dir=get_index
         output:
             index=expand("{genome_dir}/{{assembly}}/index/tximeta/linked_txome.json", **config),
-            symlink=expand(f"{{genome_dir}}/{{{{assembly}}}}/index/tximeta/{config['tximeta']['organism']}.{{{{assembly}}}}.{config['tximeta']['release']}.gtf", **config)
+            # symlink=expand(f"{{genome_dir}}/{{{{assembly}}}}/index/tximeta/{config['tximeta']['organism']}.{{{{assembly}}}}.{config['tximeta']['release']}.gtf", **config)
         params:
             source=config['tximeta']['source'],
             organism=config['tximeta']['organism'],
