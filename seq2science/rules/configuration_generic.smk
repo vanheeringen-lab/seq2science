@@ -6,6 +6,7 @@ import re
 import shutil
 import subprocess
 import time
+import copy
 
 import norns
 import numpy as np
@@ -114,6 +115,7 @@ for schema in sample_schemas:
 samples = samples.set_index('sample')
 samples.index = samples.index.map(str)
 
+sanitized_samples = copy.copy(samples)
 
 try:
     user_config = norns.config(config_file=workflow.overwrite_configfiles[-1])
