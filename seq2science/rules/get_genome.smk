@@ -61,18 +61,6 @@ rule get_genome:
         """
 
 
-rule get_annotation:
-    """
-    Matches the chromosome/scaffold names in annotation.gtf to those in the genome.fa.
-    """
-    input:
-        expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config)
-    output:
-        expand("{genome_dir}/{{assembly}}/{{assembly}}.gtf", **config)
-    shell:
-        "cp {input} {output}"
-
-
 rule get_transcripts:
     """
     Generate transcripts.fasta using gffread.
@@ -81,7 +69,7 @@ rule get_transcripts:
     """
     input:
         fa=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
-        gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.gtf", **config)
+        gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config)
     output:
         expand("{genome_dir}/{{assembly}}/{{assembly}}.transcripts.fa", **config)
     log:
@@ -104,7 +92,7 @@ rule decoy_transcripts:
     input:
         script="../../scripts/generateDecoyTranscriptome.sh",
         genome=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
-        gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.gtf", **config),
+        gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
         transcripts=expand("{genome_dir}/{{assembly}}/{{assembly}}.transcripts.fa", **config),
     output:
         expand("{genome_dir}/{{assembly}}/decoy_transcripts/decoys.txt", **config)

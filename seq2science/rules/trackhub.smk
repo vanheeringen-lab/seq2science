@@ -164,7 +164,7 @@ rule trackhub_index:
     """
     input:
         sizes = expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
-        gtf   = expand("{genome_dir}/{{assembly}}/{{assembly}}.gtf", **config),
+        gtf   = expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
     output:
         genePred =       temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.gp",  **config)),
         genePredbed =    temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.gp.bed", **config)),

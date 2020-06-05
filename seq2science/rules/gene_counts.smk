@@ -21,7 +21,7 @@ if config['quantifier'] == 'salmon':
         """
         input:
             fasta=expand("{genome_dir}/{{assembly}}/{{assembly}}.transcripts.fa", **config),
-            gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.gtf", **config),
+            gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
             index_dir=get_index
         output:
             index=expand("{genome_dir}/{{assembly}}/index/tximeta/linked_txome.json", **config),
