@@ -357,9 +357,21 @@ rule multiqc_rename_buttons:
     output:
         temp(expand('{qc_dir}/sample_names_{{assembly}}.tsv', **config))
     run:
+        newsamples = samples[samples["assembly"] == wildcards.assembly].reset_index(level=0, inplace=False)
+        newsamples = newsamples.drop(["assembly"], axis=1)
+        newsamples.to_csv(output[0], sep="\t", index=False)
+
+
+rule multiqc_filter_buttons:
+    """
+    Generate filter buttons.
+    """
+    output:
+        temp(expand('{qc_dir}/sample_filters_{{assembly}}.tsv', **config))
+    run:
         with open(output[0], "w") as f:
-        f.write("Read Group 1   show    _R1\n"
-                "Read Group 2   show    _R2\n")
+            f.write("Read Group 1 & Alignment\thide\t_R2\n"
+                    "Read Group 2\tshow\t_R2\n")
 
 
 def get_qc_files(wildcards):
@@ -369,7 +381,9 @@ def get_qc_files(wildcards):
     qc = dict()
     qc['header'] = expand('{qc_dir}/header_info.yaml', **config)[0]
     qc['sample_names'] = expand('{qc_dir}/sample_names_{{assembly}}.tsv', **config)[0]
-    qc['files'] = set([expand('{qc_dir}/sample_names_{{assembly}}.tsv', **config)[0]])
+    if any([config['layout'][trep] == "PAIRED" for trep in treps[treps['assembly'] == wildcards.assembly].index]):
+        qc['filter_buttons'] = expand('{qc_dir}/sample_filters_{{assembly}}.tsv', **config)[0]
+    qc['files'] = set()
 
     # trimming qc on individual samples
     if get_trimming_qc in quality_control:
@@ -418,7 +432,7 @@ rule multiqc:
         --config {config[rule_dir]}/../schemas/multiqc_config.yaml                 \
         --config {input.header}                                                    \
         --sample-names {input.sample_names}                                        \
-        --sample-filters {input.rename_buttons}                                    \
+        --sample-filters {input.filter_buttons}                                    \
         --cl_config "extra_fn_clean_exts: [                                        \
             {{'pattern': ^.*{wildcards.assembly}-, 'type': 'regex'}},              \
             {{'pattern': {params.fqext1},          'type': 'regex'}},              \
