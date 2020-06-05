@@ -17,7 +17,18 @@ module_order:
         path_filters:
             - '*_trimmed_fastqc.zip'
     - picard
-    - samtools
+    - samtools:
+        name: 'SamTools pre-sieve'
+        path_filters:
+            - '*bowtie2*|*hisat2*|*bwa-mem*|*star*'
+        path_filters_exclude:
+            - 'markdup'
+    - samtools:
+        name: 'SamTools post-sieve'
+        path_filters:
+            - '*markdup*'
+        path_filters_exclude:
+            - '*bowtie2*|*hisat2*|*bwa-mem*|*star*'
     - deeptools
     - MACS2
     - featureCounts:
