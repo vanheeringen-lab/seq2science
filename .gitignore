@@ -2,6 +2,8 @@
 *.Rhistory
 slurm*.out
 report.html
+build/
+*.egg*
 .idea/
 .snakemake/
 tinydata/
