@@ -50,7 +50,7 @@ assert sorted(config['fqext'])[0] == config['fqext1'], \
      f"Your suffixes:    fqext1: {config['fqext1']}, fqext2: {config['fqext2']}\n")
 
 # read the config.yaml (not the profile)
-user_config = norns.config(config_file=workflow.overwrite_configfiles[1])
+user_config = norns.config(config_file=workflow.overwrite_configfiles[0])
 
 # make absolute paths, cut off trailing slashes
 for key, value in config.items():
