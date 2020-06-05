@@ -179,8 +179,8 @@ rule mark_duplicates:
     input:
         get_bam_mark_duplicates
     output:
-        bam=    expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config),
-        metrics=expand("{qc_dir}/dedup/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.metrics.txt", **config)
+        bam=    expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config),
+        metrics=expand("{qc_dir}/markdup/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.metrics.txt", **config)
     log:
         expand("{log_dir}/mark_duplicates/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config)
     benchmark:
@@ -222,7 +222,7 @@ rule bam2cram:
          bam=rules.mark_duplicates.output.bam,
          assembly=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config)
     output:
-        expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.cram", **config),
+        expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.cram", **config),
     log:
         expand("{log_dir}/bam2cram/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config)
     benchmark:
@@ -241,9 +241,9 @@ rule samtools_index_cram:
     Generate the index for a cram file.
     """
     input:
-        expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.cram", **config),
+        expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.cram", **config),
     output:
-        expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.cram.crai", **config),
+        expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.cram.crai", **config),
     log:
         expand("{log_dir}/samtools_index_cram/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config)
     benchmark:

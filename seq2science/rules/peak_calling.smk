@@ -25,16 +25,16 @@ def get_genrich_replicates(wildcards):
         if "control" in samples:
             control_name = treps.loc[sample_condition, "control"]
             if isinstance(control_name, str):  # ignore nan
-                control = expand(f"{{dedup_dir}}/{assembly}-{control_name}.sambamba-queryname.bam", **config)
+                control = expand(f"{{final_bam_dir}}/{assembly}-{control_name}.sambamba-queryname.bam", **config)
         return {"control": control,
-                "reps": expand(f"{{dedup_dir}}/{wildcards.fname}.sambamba-queryname.bam", **config)}
+                "reps": expand(f"{{final_bam_dir}}/{wildcards.fname}.sambamba-queryname.bam", **config)}
     else:
         if "control" in samples:
             control_name = breps.loc[sample_condition, "control"]
             if isinstance(control_name, str):  # ignore nan
-                control = expand(f"{{dedup_dir}}/{assembly}-{control_name}.sambamba-queryname.bam", **config)
+                control = expand(f"{{final_bam_dir}}/{assembly}-{control_name}.sambamba-queryname.bam", **config)
         return {"control": control,
-                "reps": expand([f"{{dedup_dir}}/{assembly}-{replicate}.sambamba-queryname.bam"
+                "reps": expand([f"{{final_bam_dir}}/{assembly}-{replicate}.sambamba-queryname.bam"
                                 for replicate in treps_from_brep[(sample_condition, assembly)]], **config)} 
 
 
@@ -95,7 +95,7 @@ def get_fastqc(wildcards):
 
 def get_macs2_bam(wildcards):
     if not config['macs2_keep_mates'] is True or config['layout'].get(wildcards.sample, False) == "SINGLE":
-        return expand("{dedup_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config)
+        return expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config)
     return rules.keep_mates.output
 
 
@@ -108,8 +108,8 @@ def get_control_macs(wildcards):
         return dict()
 
     if not config['macs2_keep_mates'] is True or config['layout'].get(wildcards.sample, False) == "SINGLE":
-        return {"control": expand(f"{{dedup_dir}}/{{{{assembly}}}}-{control}.samtools-coordinate.bam", **config)}
-    return {"control": expand(f"{{dedup_dir}}/{control}-mates-{{{{assembly}}}}.samtools-coordinate.bam", **config)}
+        return {"control": expand(f"{{final_bam_dir}}/{{{{assembly}}}}-{control}.samtools-coordinate.bam", **config)}
+    return {"control": expand(f"{{final_bam_dir}}/{control}-mates-{{{{assembly}}}}.samtools-coordinate.bam", **config)}
 
 
 rule macs2_callpeak:
@@ -160,9 +160,9 @@ rule keep_mates:
     macs2 in this case only keeps the first in pair.
     """
     input:
-        expand("{dedup_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config)
+        expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config)
     output:
-        expand("{dedup_dir}/{{sample}}-mates-{{assembly}}.samtools-coordinate.bam", **config)
+        expand("{final_bam_dir}/{{sample}}-mates-{{assembly}}.samtools-coordinate.bam", **config)
     log:
         expand("{log_dir}/keep_mates/{{assembly}}-{{sample}}.log", **config)
     benchmark:
@@ -206,7 +206,7 @@ rule hmmratac_genome_info:
     TODO: isnt this just .fa.sizes?
     """
     input:
-        bam=expand("{dedup_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config)
+        bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config)
     output:
         out=expand("{result_dir}/hmmratac/{{assembly}}-{{sample}}.genomesizes", **config),
         tmp1=temp(expand("{result_dir}/hmmratac/{{assembly}}-{{sample}}.tmp1", **config)),
@@ -233,8 +233,8 @@ rule hmmratac:
     """
     input:
         genome_size=expand("{result_dir}/hmmratac/{{assembly}}-{{sample}}.genomesizes", **config),
-        bam      =expand("{dedup_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config),
-        bam_index=expand("{dedup_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam.bai", **config),
+        bam      =expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config),
+        bam_index=expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam.bai", **config),
     output:
         expand("{result_dir}/hmmratac/{{assembly}}-{{sample}}{hmmratac_types}", **config)
     log:
