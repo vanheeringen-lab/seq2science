@@ -1,4 +1,6 @@
 # to run these tests locally:
+#   python setup.py develop
+#   python setup.py build
 #   bash ./tests/dag_tests.sh TEST
 
 # check if an argument was passed
@@ -58,10 +60,6 @@ if [ $1 = "alignment" ]; then
   assert_rulecount $1 bwa_index 1
   assert_rulecount $1 mark_duplicates 1
 
-  printf "\ntrackhub - stranded bams\n"
-  seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={create_trackhub:True,samples:tests/alignment/stranded_sample.tsv} | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 bam_stranded_bigwig 1
-
   printf "\naligners\n"
   seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={aligner:bowtie2,samples:tests/alignment/stranded_sample.tsv} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bowtie2_index 1
@@ -102,13 +100,20 @@ if [ $1 = "alignment" ]; then
   assert_rulecount $1 softmask_track_2 1
   assert_rulecount $1 twobit 1
 
+  printf "\ntrackhub - stranded bams\n"
+  seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={create_trackhub:True,samples:tests/alignment/stranded_sample.tsv} | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 bam_stranded_bigwig 1
+
   printf "\nmultiqc report\n"
   seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={create_qc_report:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 fastqc 4
 
   printf "\nmultiple assemblies\n"
-  seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/alignment/assemblies.tsv,create_trackhub:True} | tee tests/local_test_results/${1}_dag
+  seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/alignment/assemblies.tsv} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bwa_index 2
+
+  printf "\nmultiple assemblies - trackhub\n"
+  seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/alignment/assemblies.tsv,create_trackhub:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 twobit 2
 
   printf "\nmultiple assemblies - multiqc report\n"
@@ -158,72 +163,72 @@ if [ $1 = "atac-seq" ]; then
   WF=atac_seq
 
   printf "\natac-seq default\n"
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/alignment/default_config.yaml | tee tests/local_test_results/${1}_dag
+  seq2science run atac_seq -n --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions dryrun=True quiet=True | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 macs2_callpeak 1
 
   printf "\npeak callers\n"
-  # snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/macs2.yaml  | tee tests/local_test_results/${1}_dag  # default
-  #  assert_rulecount $1 macs2_callpeak 1
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/genrich.yaml | tee tests/local_test_results/${1}_dag
+  # seq2science run atac_seq -n --cores $CORES --configfile tests/$WF/macs2.yaml --snakemakeOptions dryrun=True quiet=True | tee tests/local_test_results/${1}_dag
+  # assert_rulecount $1 macs2_callpeak 1
+  seq2science run atac_seq -n --cores $CORES --configfile tests/$WF/genrich.yaml --snakemakeOptions dryrun=True quiet=True | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 call_peak_genrich 1
 
   printf "\ntrackhub\n"
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/alignment/default_config.yaml --config create_trackhub=True | tee tests/local_test_results/${1}_dag
+  seq2science run atac_seq -n --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={create_trackhub:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bedgraph_bigwig 1
 
   printf "\nmultiqc report\n"
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/alignment/default_config.yaml --config create_qc_report=True | tee tests/local_test_results/${1}_dag
+  seq2science run atac_seq -n --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={create_qc_report:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 fastqc 4
 
   printf "\nmultiple peak callers\n"
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/genrich_macs2.yaml | tee tests/local_test_results/${1}_dag
+  seq2science run atac_seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 macs2_callpeak 1
   assert_rulecount $1 call_peak_genrich 1
 
   printf "\nmultiple peak callers - trackhub\n"
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/genrich_macs2.yaml --config create_trackhub=True | tee tests/local_test_results/${1}_dag
+  seq2science run atac_seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={create_trackhub:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bedgraph_bigwig 2
   assert_rulecount $1 bedgraphish_to_bedgraph 1
 
   printf "\nmultiple peak callers - multiqc report\n"
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/genrich_macs2.yaml --config create_qc_report=True | tee tests/local_test_results/${1}_dag
+  seq2science run atac_seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={create_qc_report:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 featureCounts 2
 
   printf "\nmultiple peak callers & multiple assemblies\n"
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/genrich_macs2.yaml --config samples=../../../tests/alignment/assemblies.tsv | tee tests/local_test_results/${1}_dag
+  seq2science run atac_seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/alignment/assemblies.tsv} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 coverage_table 4
 
   printf "\nmultiple peak callers & multiple assemblies - trackhub\n"
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/genrich_macs2.yaml --config samples=../../../tests/alignment/assemblies.tsv create_trackhub=True | tee tests/local_test_results/${1}_dag
+  seq2science run atac_seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/alignment/assemblies.tsv,create_trackhub:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bedgraph_bigwig 4
 
   printf "\nmultiple peak callers & multiple assemblies - multiqc report\n"
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/genrich_macs2.yaml --config samples=../../../tests/alignment/assemblies.tsv create_qc_report=True | tee tests/local_test_results/${1}_dag
+  seq2science run atac_seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/alignment/assemblies.tsv,create_qc_report:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 featureCounts 4
 
   printf "\nmultiple peak callers & multiple replicates\n"
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/genrich_macs2.yaml --config samples=../../../tests/alignment/replicates.tsv | tee tests/local_test_results/${1}_dag
+  seq2science run atac_seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/alignment/replicates.tsv} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bwa_mem 1
 
   printf "\nmultiple peak callers & multiple replicates - trackhub\n"
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/genrich_macs2.yaml --config samples=../../../tests/alignment/replicates.tsv create_trackhub=True | tee tests/local_test_results/${1}_dag
+  seq2science run atac_seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/alignment/replicates.tsv,create_trackhub:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bedgraph_bigwig 2
 
   printf "\nmultiple peak callers & multiple replicates - multiqc report\n"
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/genrich_macs2.yaml --config samples=../../../tests/alignment/replicates.tsv create_qc_report=True | tee tests/local_test_results/${1}_dag
+  seq2science run atac_seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/alignment/replicates.tsv,create_qc_report:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 featureCounts 2
 
   printf "\nmultiple peak callers, assemblies and replicates\n"
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/genrich_macs2.yaml --config samples=../../../tests/atac_seq/complex_samples.tsv | tee tests/local_test_results/${1}_dag
+  seq2science run atac_seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/atac_seq/complex_samples.tsv} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bwa_mem 8
   assert_rulecount $1 coverage_table 4
 
   printf "\nmultiple peak callers, assemblies and replicates - trackhub\n"
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/genrich_macs2.yaml --config samples=../../../tests/atac_seq/complex_samples.tsv create_trackhub=True | tee tests/local_test_results/${1}_dag
+  seq2science run atac_seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/atac_seq/complex_samples.tsv,create_trackhub:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bedgraph_bigwig 16
 
   printf "\nmultiple peak callers, assemblies and replicates - multiqc report\n"
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/genrich_macs2.yaml --config samples=../../../tests/atac_seq/complex_samples.tsv create_qc_report=True | tee tests/local_test_results/${1}_dag
+  seq2science run atac_seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/atac_seq/complex_samples.tsv,create_qc_report:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 featureCounts 16
 
   test_ran=1
