@@ -28,6 +28,7 @@ jobs:
           python docs/scripts/schemas.py
           python docs/scripts/rule_description.py
           ./docs/scripts/gen_dags
+          cp CHANGELOG.md docs/content
           sphinx-build docs/ build
           touch build/.nojekyll
 
