@@ -19,4 +19,4 @@ dependencies:
   - pkgs/main::beautifulsoup4=4.9.0
   - pip:
     - git+https://github.com/daler/trackhub@params-overhaul
-    - pretty_html_table=0.9.dev0
+    - pretty_html_table==0.9.dev0
