@@ -240,33 +240,66 @@ if [ $1 = "scatac-seq" ]; then
   WF=scatac_seq
 
   printf "\nscatac-seq default\n"
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/scatac/default_config.yaml | tee tests/local_test_results/${1}_dag
+  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/scatac_seq/default_config.yaml | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 create_SNAP_object 1
 
   printf "\ntrackhub\n"
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/scatac/default_config.yaml --config create_trackhub=True | tee tests/local_test_results/${1}_dag
+  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/scatac_seq/default_config.yaml --config create_trackhub=True | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 trackhub 1
 
   printf "\nqc multiqc report\n"
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/scatac/default_config.yaml --config create_qc_report=True | tee tests/local_test_results/${1}_dag
+  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/scatac_seq/default_config.yaml --config create_qc_report=True | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 fastqc 4  # twice for sample and twice for trep
 
   printf "\nmultiple assemblies\n"
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/scatac/default_config.yaml --config samples=../../../tests/scatac/assemblies.tsv | tee tests/local_test_results/${1}_dag
+  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/scatac_seq/default_config.yaml --config samples=../../../tests/scatac_seq/assemblies.tsv | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bwa_index 2
   assert_rulecount $1 create_SNAP_object 2
 
+  printf "\nmultiple assemblies - trackhubs\n"
+  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/scatac_seq/default_config.yaml --config samples=../../../tests/scatac_seq/assemblies.tsv create_trackhub=True | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 twobit 2
+
+  printf "\nmultiple assemblies - multiqc\n"
+  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/scatac_seq/default_config.yaml --config samples=../../../tests/scatac_seq/assemblies.tsv create_qc_report=True | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 fastqc 8  # twice for sample and twice for trep
+
   printf "\nmultiple replicates\n"
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/scatac/default_config.yaml --config technical_replicates=merge | tee tests/local_test_results/${1}_dag  # nothing to merge
-  assert_rulecount $1 merge_replicates 2
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/scatac/default_config.yaml --config samples=../../../tests/scatac/replicates.tsv technical_replicates=merge | tee tests/local_test_results/${1}_dag
+  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/scatac_seq/default_config.yaml --config samples=../../../tests/alignment/dag_sample.tsv technical_replicates=merge | tee tests/local_test_results/${1}_dag  # nothing to merge
+  assert_rulecount $1 merge_replicates 0
+  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/scatac_seq/default_config.yaml --config samples=../../../tests/scatac_seq/replicates.tsv technical_replicates=keep | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 merge_replicates 0
+  assert_rulecount $1 bwa_mem 2
+  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/scatac_seq/default_config.yaml --config samples=../../../tests/scatac_seq/replicates.tsv technical_replicates=merge | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 merge_replicates 2
   assert_rulecount $1 bwa_mem 1
 
+  printf "\nmultiple replicates - trackhub\n"
+  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/scatac_seq/default_config.yaml --config samples=../../../tests/scatac_seq/replicates.tsv technical_replicates=merge create_trackhub=True | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 twobit 1
+
+  printf "\nmultiple replicates - multiqc report\n"
+  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/scatac_seq/default_config.yaml --config samples=../../../tests/scatac_seq/replicates.tsv technical_replicates=merge create_qc_report=True | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 fastqc 8  # twice for sample and twice for trep
+
   printf "\nmultiple assemblies and replicates\n"
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/scatac/default_config.yaml --config samples=../../../tests/scatac/complex_samples.tsv technical_replicates=merge create_trackhub=True | tee tests/local_test_results/${1}_dag
+  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/scatac_seq/default_config.yaml --config samples=../../../tests/alignment/dag_sample.tsv technical_replicates=keep | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 merge_replicates 0
+  assert_rulecount $1 bwa_mem 1
+  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/scatac_seq/default_config.yaml --config samples=../../../tests/scatac_seq/complex_samples.tsv technical_replicates=keep | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 merge_replicates 0
+  assert_rulecount $1 bwa_mem 4
+  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/scatac_seq/default_config.yaml --config samples=../../../tests/scatac_seq/complex_samples.tsv technical_replicates=merge | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 merge_replicates 3
   assert_rulecount $1 bwa_mem 2
+
+  printf "\nmultiple assemblies and replicates - trackhub\n"
+  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/scatac_seq/default_config.yaml --config samples=../../../tests/scatac_seq/complex_samples.tsv technical_replicates=merge create_trackhub=True | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 twobit 2
+
+  printf "\nmultiple assemblies and replicates - multiqc report\n"
+  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/scatac_seq/default_config.yaml --config samples=../../../tests/scatac_seq/complex_samples.tsv technical_replicates=merge create_qc_report=True | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 fastqc 12  # twice for sample and twice for trep
 
   test_ran=1
 fi
