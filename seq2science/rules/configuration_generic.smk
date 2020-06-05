@@ -360,7 +360,7 @@ def convert_size(size_bytes, order=None):
     return s, size_name[order]
 
 # make sure the snakemake version corresponds to version in environment
-min_version("5.10")
+min_version("5.18")
 
 # set some defaults
 workflow.global_resources = {**{'parallel_downloads': 3, 'deeptools_limit': 16, 'R_scripts': 1},
