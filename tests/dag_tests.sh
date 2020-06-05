@@ -46,7 +46,7 @@ if [ $1 = "alignment" ]; then
   WF=download_fastq
 
   printf "\ndownload default\n"
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/default_config.yaml | tee tests/local_test_results/${1}_dag
+  seq2science run download_fastq -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 sra2fastq_PE 1
   assert_rulecount $1 sra2fastq_SE 1
 
@@ -54,46 +54,48 @@ if [ $1 = "alignment" ]; then
   WF=alignment
 
   printf "\nalignment default\n"
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/default_config.yaml | tee tests/local_test_results/${1}_dag
+  seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bwa_index 1
   assert_rulecount $1 mark_duplicates 1
 
   printf "\ntrackhub - stranded bams\n"
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/default_config.yaml --config samples=../../../tests/alignment/stranded_sample.tsv create_trackhub=True | tee tests/local_test_results/${1}_dag
+  seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={create_trackhub:True,samples:tests/alignment/stranded_sample.tsv} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bam_stranded_bigwig 1
 
   printf "\naligners\n"
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/default_config.yaml  --config aligner=bowtie2 | tee tests/local_test_results/${1}_dag
+  seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={aligner:bowtie2,samples:tests/alignment/stranded_sample.tsv} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bowtie2_index 1
-#  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/default_config.yaml  --config aligner=bwa | tee tests/local_test_results/${1}_dag  # default
-#  assert_rulecount $1 bwa_index 1
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/default_config.yaml  --config aligner=hisat2 | tee tests/local_test_results/${1}_dag
+  seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={aligner:bwa-mem,samples:tests/alignment/stranded_sample.tsv} | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 bwa_index 1
+  seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={aligner:hisat2,samples:tests/alignment/stranded_sample.tsv} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 hisat2_index 1
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/default_config.yaml  --config aligner=star | tee tests/local_test_results/${1}_dag
+  seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={aligner:star,samples:tests/alignment/stranded_sample.tsv} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 star_index 1
 
   printf "\nalignmentsieve\n"
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/alignmentsieve.yaml | tee tests/local_test_results/${1}_dag
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/alignmentsieve_off.yaml | tee tests/local_test_results/${1}_dag
+  seq2science run alignment -n --cores $CORES --configfile tests/$WF/alignmentsieve.yaml --snakemakeOptions dryrun=True quiet=True| tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 sieve_bam 1
+  seq2science run alignment -n --cores $CORES --configfile tests/$WF/alignmentsieve_off.yaml --snakemakeOptions dryrun=True quiet=True| tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 sieve_bam 0
 
   printf "\nsorting\n"
-  # snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/samtools_coordinate.yaml  # default
-  # assert_rulecount $1 samtools_presort 1
-  # assert_rulecount $1 sambamba_sort 0
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/samtools_queryname.yaml | tee tests/local_test_results/${1}_dag
+  seq2science run alignment -n --cores $CORES --configfile tests/$WF/samtools_coordinate.yaml --snakemakeOptions dryrun=True quiet=True| tee tests/local_test_results/${1}_dag
   assert_rulecount $1 samtools_presort 1
   assert_rulecount $1 sambamba_sort 0
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/sambamba_coordinate.yaml | tee tests/local_test_results/${1}_dag
+  seq2science run alignment -n --cores $CORES --configfile tests/$WF/samtools_queryname.yaml --snakemakeOptions dryrun=True quiet=True| tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 samtools_presort 1
+  assert_rulecount $1 sambamba_sort 0
+  seq2science run alignment -n --cores $CORES --configfile tests/$WF/sambamba_coordinate.yaml --snakemakeOptions dryrun=True quiet=True| tee tests/local_test_results/${1}_dag
   assert_rulecount $1 sambamba_sort 1
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/sambamba_queryname.yaml | tee tests/local_test_results/${1}_dag
+  seq2science run alignment -n --cores $CORES --configfile tests/$WF/sambamba_queryname.yaml --snakemakeOptions dryrun=True quiet=True| tee tests/local_test_results/${1}_dag
   assert_rulecount $1 sambamba_sort 1
 
   printf "\ncram support\n"
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/default_config.yaml --config cram_no_bam=True | tee tests/local_test_results/${1}_dag
+  seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={cram_no_bam:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bam2cram 1
 
   printf "\ntrackhub\n"
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/default_config.yaml --config create_trackhub=True | tee tests/local_test_results/${1}_dag
+  seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={create_trackhub:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bam_bigwig 1
   assert_rulecount $1 cytoband 1
   assert_rulecount $1 gcPercent 1
@@ -101,53 +103,50 @@ if [ $1 = "alignment" ]; then
   assert_rulecount $1 twobit 1
 
   printf "\nmultiqc report\n"
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/default_config.yaml --config create_qc_report=True | tee tests/local_test_results/${1}_dag
+  seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={create_qc_report:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 fastqc 4
 
   printf "\nmultiple assemblies\n"
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/default_config.yaml --config samples=../../../tests/alignment/assemblies.tsv | tee tests/local_test_results/${1}_dag
+  seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/alignment/assemblies.tsv,create_trackhub:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bwa_index 2
-
-  printf "\nmultiple assemblies - trackhubs\n"
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/default_config.yaml --config samples=../../../tests/alignment/assemblies.tsv create_trackhub=True | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 twobit 2
 
   printf "\nmultiple assemblies - multiqc report\n"
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/default_config.yaml --config samples=../../../tests/alignment/assemblies.tsv create_qc_report=True | tee tests/local_test_results/${1}_dag
+  seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/alignment/assemblies.tsv,create_qc_report:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 samtools_stats 2
 
   printf "\nmultiple replicates\n"
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/default_config.yaml --config technical_replicates=merge | tee tests/local_test_results/${1}_dag  # nothing to merge
+  seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={technical_replicates:merge} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 merge_replicates 0
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/default_config.yaml --config samples=../../../tests/alignment/replicates.tsv technical_replicates=keep | tee tests/local_test_results/${1}_dag
+  seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={technical_replicates:keep,samples:tests/alignment/replicates.tsv} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 merge_replicates 0
   assert_rulecount $1 bwa_mem 2
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/default_config.yaml --config samples=../../../tests/alignment/replicates.tsv technical_replicates=merge | tee tests/local_test_results/${1}_dag
+  seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={technical_replicates:merge,samples:tests/alignment/replicates.tsv} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bwa_mem 1
 
   printf "\nmultiple replicates - trackhubs\n"
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/default_config.yaml --config samples=../../../tests/alignment/replicates.tsv technical_replicates=merge create_trackhub=True | tee tests/local_test_results/${1}_dag
+  seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={technical_replicates:merge,samples:tests/alignment/replicates.tsv,create_trackhub:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bam_bigwig 1
 
   printf "\nmultiple replicates - multiqc report\n"
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/default_config.yaml --config samples=../../../tests/alignment/replicates.tsv technical_replicates=merge create_qc_report=True | tee tests/local_test_results/${1}_dag
+  seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={technical_replicates:merge,samples:tests/alignment/replicates.tsv,create_qc_report:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 fastqc 8
 
   printf "\nmultiple assemblies and replicates\n"
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/default_config.yaml --config samples=../../../tests/alignment/complex_samples.tsv technical_replicates=keep | tee tests/local_test_results/${1}_dag
+  seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={technical_replicates:keep,samples:tests/alignment/complex_samples.tsv} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bwa_index 2
   assert_rulecount $1 bwa_mem 4
 
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/default_config.yaml --config samples=../../../tests/alignment/complex_samples.tsv technical_replicates=merge | tee tests/local_test_results/${1}_dag
+  seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={technical_replicates:merge,samples:tests/alignment/complex_samples.tsv} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bwa_index 2
   assert_rulecount $1 bwa_mem 2
 
   printf "\nmultiple assemblies and replicates - trackhub\n"
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/default_config.yaml --config samples=../../../tests/alignment/complex_samples.tsv technical_replicates=merge create_trackhub=True | tee tests/local_test_results/${1}_dag
+  seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={technical_replicates:merge,create_trackhub:True,samples:tests/alignment/complex_samples.tsv} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bam_bigwig 2
 
   printf "\nmultiple assemblies and replicates - multiqc report\n"
-  snakemake -n -j $CORES --quiet -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF --configfile tests/$WF/default_config.yaml --config samples=../../../tests/alignment/complex_samples.tsv technical_replicates=merge create_qc_report=True | tee tests/local_test_results/${1}_dag
+  seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={technical_replicates:merge,create_qc_report:True,samples:tests/alignment/complex_samples.tsv} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 samtools_stats 2
 
   test_ran=1

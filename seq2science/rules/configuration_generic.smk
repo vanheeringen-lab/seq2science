@@ -278,12 +278,6 @@ if 'replicate' in samples and config.get('technical_replicates') == 'merge':
         replicate = samples.loc[sample, 'replicate']
         config['layout'][replicate] = config['layout'][sample]
 
-# after all is done, log (print) the configuration
-logger.info("CONFIGURATION VARIABLES:")
-for key, value in config.items():
-     logger.info(f"{key: <23}: {value}")
-logger.info("\n\n")
-
 # save a copy of the latest samples and config file in the log_dir
 # skip this step on Jenkins, as it runs in parallel
 if os.getcwd() != config['log_dir'] and not os.getcwd().startswith('/var/lib/jenkins'):
