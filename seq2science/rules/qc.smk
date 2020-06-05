@@ -336,7 +336,6 @@ rule multiqc_header_info:
         temp(expand('{qc_dir}/header_info.yaml', **config))
     run:
         import os
-        import copy
         from datetime import date
 
         cwd = os.getcwd().split('/')[-1]
@@ -352,7 +351,7 @@ rule multiqc_header_info:
 
 rule multiqc_rename_buttons:
     """
-    Generate rename buttons.
+    Generate rename buttons for the multiqc report.
     """
     output:
         temp(expand('{qc_dir}/sample_names_{{assembly}}.tsv', **config))
@@ -362,6 +361,34 @@ rule multiqc_rename_buttons:
         newsamples.to_csv(output[0], sep="\t", index=False)
 
 
+rule multiqc_samplesconfig:
+    """
+    Add a section in the multiqc report that reports the samples.tsv and config.yaml
+    """
+    output:
+        temp(expand('{qc_dir}/samplesconfig_mqc.html', **config))
+    run:
+        outstring = \
+            "<!--\n" \
+            "id: 'samplesconfig'\n" \
+            "section_name: 'Samples & Config'\n" \
+            "-->\n"
+
+        from pretty_html_table import build_table
+        outstring += "The samples file used for this run: <br>" \
+                     f"{build_table(sanitized_samples, 'blue_dark')}"
+
+        if len(workflow.overwrite_configfiles) > 0:
+            outstring += "The config file used for this run: <br>"
+            outstring += '<pre><code class="codeblock">'
+            with open(workflow.overwrite_configfiles[-1], "r") as config_file:
+                outstring += config_file.read()
+            outstring += '</code></pre>'
+
+        with open(output[0], "w") as out_file:
+            out_file.write(outstring)
+
+
 def get_qc_files(wildcards):
     assert 'quality_control' in globals(), "When trying to generate multiqc output, make sure that the "\
                                            "variable 'quality_control' exists and contains all the "\
@@ -369,7 +396,7 @@ def get_qc_files(wildcards):
     qc = dict()
     qc['header'] = expand('{qc_dir}/header_info.yaml', **config)[0]
     qc['sample_names'] = expand('{qc_dir}/sample_names_{{assembly}}.tsv', **config)[0]
-    qc['files'] = set()
+    qc['files'] = set([expand('{qc_dir}/samplesconfig_mqc.html', **config)[0]])
 
     # trimming qc on individual samples
     if get_trimming_qc in quality_control:
