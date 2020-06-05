@@ -181,6 +181,7 @@ def _run(args, base_dir, workflows_dir, config_path):
                    "config": {"rule_dir": os.path.join(base_dir, "rules")},
                    "cores": args.cores,
                    "use_conda": True,
+                   "conda_frontend": "mamba",
                    "conda_prefix": os.path.join(base_dir, ".snakemake"),
                    "dryrun": args.dryrun}
 
@@ -194,7 +195,7 @@ def _run(args, base_dir, workflows_dir, config_path):
         if config_file is None:
             print("Error: profile given but no config.yaml found.")
             sys.exit(1)
-        parsed_args["configfiles"] += [config_file]
+        snakemake_options["configfiles"] += [config_file]
         profile = yaml.safe_load(open(config_file).read())
         if "cores" in profile:
             parsed_args["cores"] = profile["cores"]

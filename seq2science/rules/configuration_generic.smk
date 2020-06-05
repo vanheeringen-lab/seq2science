@@ -49,12 +49,8 @@ assert sorted(config['fqext'])[0] == config['fqext1'], \
      f"Example suffixes: fqext1: R1, fqext2: R2\n" +
      f"Your suffixes:    fqext1: {config['fqext1']}, fqext2: {config['fqext2']}\n")
 
-# read the last config file added over the command line, or the config file in the directory
-# TODO: this does not parse individual config items added over the command line (with --config)
-try:
-    user_config = norns.config(config_file=workflow.overwrite_configfiles[-1])
-except:
-    user_config = norns.config(config_file='config.yaml')
+# read the config.yaml (not the profile)
+user_config = norns.config(config_file=workflow.overwrite_configfiles[1])
 
 # make absolute paths, cut off trailing slashes
 for key, value in config.items():
@@ -389,9 +385,9 @@ onstart:
     # skip this step on Jenkins, as it runs in parallel
     if os.getcwd() != config['log_dir'] and not os.getcwd().startswith('/var/lib/jenkins'):
         os.makedirs(config['log_dir'], exist_ok=True)
-        for file in [config['samples']] + workflow.overwrite_configfiles:
+        for n, file in enumerate([config['samples']] + workflow.overwrite_configfiles):
             src = os.path.join(os.getcwd(), file)
-            dst = os.path.join(config['log_dir'], os.path.basename(file))
+            dst = os.path.join(config['log_dir'], os.path.basename(file) if n<2 else "profile.yaml")
             shutil.copy(src, dst)
 onsuccess:
     if config["email"] not in ["none@provided.com", "yourmail@here.com"]:
