@@ -44,23 +44,12 @@ if [ $1 = "download" ]; then
   # test basic downloading 1 PE and 1 SE
   printf "\ndownload SE and PE fastqs\n"
   seq2science run download_fastq --cores $CORES --configfile tests/$WF/default_config.yaml
-#  snakemake -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF \
-#  --configfile tests/$WF/default_config.yaml \
-#  --config \
-#    samples=../../../tests/download_fastq/remote_samples.tsv \
-#    result_dir=../../../tests/local_test_results \
-#  --use-conda --conda-frontend mamba -j $CORES
 
   WF=alignment
 
   # test genome & annotation downloading
   printf "\ndownload genome & annotation\n"
-  seq2science run alignment --cores $CORES --configfile tests/$WF/remote_genome_n_sample.yaml --snakemakeOptions dryrun=True config={until:["get_genome"]}
-  # TODO: this should ONLY RUN get_genome
-#  snakemake -s seq2science/workflows/$WF/Snakefile --directory seq2science/workflows/$WF \
-#  --configfile tests/$WF/remote_genome_n_sample.yaml \
-#  --use-conda --conda-frontend mamba -j $CORES \
-#  --until get_genome
+  seq2science run alignment --cores $CORES --configfile tests/$WF/remote_genome_n_sample.yaml --snakemakeOptions until=[get_genome]
 
   test_ran=1
 fi
