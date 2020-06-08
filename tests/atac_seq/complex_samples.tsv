@@ -1,0 +1,12 @@
+# 2 (merged) samples per condition, 2 assemblies & incomplete fields
+sample	assembly	replicate	condition	descriptive_name
+S1_1	assembly1	R1_1	A	sample1_1
+S1_2	assembly1	R1_1	A	sample1_2
+S2_1	assembly1	R2_1	A	sample2
+S2_2	assembly1	R2_1	A	sample2
+S3_1	assembly1		B	sample3
+S4_1	assembly1		B
+S5_1	assembly2		C
+S6_1	assembly2		C
+S7_1	assembly2	S7_1	D
+S8_1	assembly2		D

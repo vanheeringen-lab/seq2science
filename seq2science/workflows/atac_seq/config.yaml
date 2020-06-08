@@ -1,0 +1,42 @@
+# tab-separated file of the samples
+samples: samples.tsv
+
+# pipeline file locations
+result_dir: ./results  # where to store results
+genome_dir: ./genomes  # where to look for or download the genomes
+# fastq_dir: (default is inside result_dir) # where to look for or download the fastqs
+
+
+# contact info for multiqc report and trackhub
+email: yourmail@here.com
+
+# peak callers (supported peak callers are macs2, and genrich, and hmmratac is not fully supported yet)
+peak_caller:
+  macs2:
+      --shift -100 --extsize 200 --nomodel --keep-dup 1 --buffer-size 10000
+#  genrich:
+#      -y -j -r
+#  hmmratac:
+#      ""
+
+# how to handle replicates
+biological_replicates: fisher  # change to keep to not combine them
+technical_replicates: merge    # change to keep to not combine them
+
+# filtering after alignment
+remove_blacklist: True
+remove_mito: True
+tn5_shift: True
+min_mapping_quality: 30
+only_primary_align: True
+
+# use 'our' default parameters
+aligner: bwa-mem
+
+# or specify which aligner to use with the option to specify own parameters
+# aligner:
+#   bwa-mem:
+#     index:  # parameters for indexing
+#       '-a bwtsw'
+#     align:  # parameters for alignment
+#       ''

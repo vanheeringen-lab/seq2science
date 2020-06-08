@@ -1,7 +1,0 @@
-# tab-separated file of the samples
-samples: samples.tsv
-
-remove_blacklist: True
-remove_mito: True
-tn5_shift: True
-minqual: 30

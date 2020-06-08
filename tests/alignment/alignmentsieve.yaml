@@ -1,0 +1,18 @@
+# tab-separated file
+samples: ../../../tests/alignment/dag_sample.tsv
+
+# pipeline file locations
+result_dir: ../../../tests/local_test_results  # where to store results
+genome_dir: ../../../tests/local_test_results  # where to look for or download the genomes
+
+# produce bigwigs and a trackhub?
+create_trackhub: False
+
+# produce MultiQC output?
+create_qc_report: False
+
+# filtering after alignment
+remove_blacklist: True
+remove_mito: True
+tn5_shift: True
+minqual: 30

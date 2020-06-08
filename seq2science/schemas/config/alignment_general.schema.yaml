@@ -1,0 +1,131 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+description: seq2science general alignment configuration
+
+properties:
+  # paths to store results
+  trimmed_dir:
+    description: directory where to store the workflow trimmed fastqs (defaults inside the result dir)
+    default: fastq_trimmed
+    type: string
+  qc_dir:
+    description: directory where to store the workflow quality controls (defaults inside the result dir)
+    default: qc
+    type: string
+  dedup_dir:
+    description: directory where to store the workflow deduplicated alignment (defaults inside the result dir)
+    default: dedup
+    type: string
+
+
+  # trim_galore parameters
+  trim_galore:
+    description: trim_galore settings (note that the adapter is autodetected, so you do not have to set it here)
+    default: --quality 10 --length 20 --consider_already_trimmed 10
+    type: string
+
+  # replicate handling
+  technical_replicates:
+    description: concatenates samples depending on the names given in the 'replicates' column of samples.tsv
+    default: merge
+    enum: [merge, keep]
+
+  biological_replicates:
+    description: which method to use to combine replicates (fisher (n >=2), idr (n==2), or keep)
+    default: keep
+    enum: [fisher, idr, keep]
+    type: string
+
+  # aligner
+  aligner:
+    description: which aligner to use
+    properties:
+      bowtie2:
+        properties:
+          index:
+            default: ''
+          align:
+            default: ''
+        default:
+          index: ''
+          align: ''
+      bwa-mem:
+        properties:
+          index:
+            default: '-a bwtsw'
+          align:
+            default: '-M'
+        default:
+          index: '-a bwtsw'
+          align: '-M'
+      hisat2:
+        properties:
+          index:
+            default: ''
+          align:
+            default: ''
+        default:
+          index: ''
+          align: ''
+      star:
+        properties:
+          index:
+            default: '--limitGenomeGenerateRAM 37000000000 --genomeSAsparseD 1'
+          align:
+            default: ''
+        default:
+          index: '--limitGenomeGenerateRAM 37000000000 --genomeSAsparseD 1'
+          align: ''
+    default:
+      bwa-mem:
+        index: '-a bwtsw'
+        align: ''
+
+
+  # samtools index
+  samtools_index:
+    description: samtools index settings
+    default: ''
+    type: string
+
+  # picard markduplicates
+  markduplicates:
+    description: the parameters of picard markduplicates
+    default: REMOVE_DUPLICATES=false -Xms4G -Xmx6G MAX_FILE_HANDLES_FOR_READ_ENDS_MAP=999
+    type: string
+
+  # only keep reads with a minimum mapping quality of..
+  min_mapping_quality:
+    description: minimum mapq to keep aligned reads
+    default: 0
+    type: integer
+
+  # whether or not to correct for tn5 bias
+  tn5_shift:
+    description: whether or not to shift reads to adjust for the tn5 bias
+    default: False
+    type: boolean
+
+  # whether or not to remove blacklisted regions
+  remove_blacklist:
+    description: whether or not to remove reads in the encode blacklisted regions
+    default: False
+    type: boolean
+
+  # whether or not to remove mitochondrial reads
+  remove_mito:
+    description: whether or not to remove reads aligned to the mitochondria
+    default: False
+    type: boolean
+
+  # whether or not to keep only primary aligned reads
+  only_primary_align:
+    description: whether or not to only keep primary aligned reads (no multimappers)
+    default: False
+    type: boolean
+
+  # whether or not to generate a multiqc report
+  create_qc_report:
+    description: whether or not to generate a multiqc report
+    default: True
+    type: boolean
