@@ -88,7 +88,7 @@ rule sieve_bam:
         expand("{benchmark_dir}/sieve_bam/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
     params:
         minqual=f"-q {config['min_mapping_quality']}",
-        atacshift=lambda wildcards, input: f"| ../../scripts/atacshift.pl /dev/stdin {input.sizes}" if config['tn5_shift'] else "",
+        atacshift=lambda wildcards, input: f"| {config['rule_dir']}/../scripts/atacshift.pl /dev/stdin {input.sizes}" if config['tn5_shift'] else "",
         blacklist=lambda wildcards, input: f"-L {input.blacklist}",
         prim_align=f"-F 256" if config["only_primary_align"] else ""
     conda:

@@ -41,7 +41,7 @@ for kw in ['aligner', 'quantifier', 'bam_sorter']:
 
 # validate and complement the config dict
 for schema in config_schemas:
-    validate(config, schema=f"../schemas/config/{schema}.schema.yaml")
+    validate(config, schema=f"{config['rule_dir']}/../schemas/config/{schema}.schema.yaml")
 
 # check if paired-end filename suffixes are lexicographically ordered
 config['fqext'] = [config['fqext1'], config['fqext2']]
