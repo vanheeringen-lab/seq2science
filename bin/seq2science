@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-This is the user's entry-point for the seq2science pipeline.
+This is the user's entry-point for the seq2science tool.
 """
 import sys
 import argparse
