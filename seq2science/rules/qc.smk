@@ -1,3 +1,6 @@
+import re
+
+
 def samtools_stats_input(wildcards):
     if wildcards.directory == config["aligner"]:
         return expand("{result_dir}/{{directory}}/{{assembly}}-{{sample}}.samtools-coordinate-unsieved.bam", **config)
@@ -403,6 +406,25 @@ rule multiqc_samplesconfig:
             out_file.write(outstring)
 
 
+rule multiqc_schema:
+    """
+    """
+    output:
+        temp(expand('{qc_dir}/schema.yaml', **config))
+    run:
+        with open(f'{config["rule_dir"]}/../schemas/multiqc_config.yaml') as cookie_schema:
+            cookie = cookie_schema.read()
+        
+        while len(list(re.finditer("{{.*}}", cookie))):
+            match_obj = next(re.finditer("{{.*}}", cookie))
+            span = match_obj.span()
+            match = eval(match_obj.group(0)[2:-2])  # without the curly braces
+            cookie = cookie[:span[0]] + match + cookie[span[1]:]
+
+        with open(output[0], "w") as out_file:
+            out_file.write(cookie)
+
+
 def get_qc_files(wildcards):
     assert 'quality_control' in globals(), "When trying to generate multiqc output, make sure that the "\
                                            "variable 'quality_control' exists and contains all the "\
@@ -410,8 +432,8 @@ def get_qc_files(wildcards):
     qc = dict()
     qc['header'] = expand('{qc_dir}/header_info.yaml', **config)[0]
     qc['sample_names'] = expand('{qc_dir}/sample_names_{{assembly}}.tsv', **config)[0]
-    if any([config['layout'][trep] == "PAIRED" for trep in treps[treps['assembly'] == wildcards.assembly].index]):
-        qc['filter_buttons'] = expand('{qc_dir}/sample_filters_{{assembly}}.tsv', **config)[0]
+    qc['schema'] = expand('{qc_dir}/schema.yaml', **config)[0]
+    qc['filter_buttons'] = expand('{qc_dir}/sample_filters_{{assembly}}.tsv', **config)[0]
     qc['files'] = set([expand('{qc_dir}/samplesconfig_mqc.html', **config)[0]])
 
     # trimming qc on individual samples

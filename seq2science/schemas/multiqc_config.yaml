@@ -19,16 +19,14 @@ module_order:
     - picard
     - samtools:
         name: 'SamTools pre-sieve'
-        path_filters:
-            - '*bowtie2*|*hisat2*|*bwa-mem*|*star*'
+        extra: 'The pre-sieve statistics are quality metrics measured before applying (optional) minimum mapping quality, blacklist removal, mitochondrial read removal, and tn5 shift.'
         path_filters_exclude:
-            - 'markdup'
+            - '*{{config["aligner"]}}*.samtools_stats.txt'
     - samtools:
         name: 'SamTools post-sieve'
-        path_filters:
-            - '*markdup*'
+        extra: 'The post-sieve statistics are quality metrics measured after applying (optional) minimum mapping quality, blacklist removal, mitochondrial read removal, and tn5 shift.'
         path_filters_exclude:
-            - '*bowtie2*|*hisat2*|*bwa-mem*|*star*'
+            - '*{{os.path.basename(config["final_bam_dir"])}}*.samtools_stats.txt'
     - deeptools
     - MACS2
     - featureCounts:
@@ -68,11 +66,18 @@ table_columns_visible:
         summed_median: True
         summed_mean: False
         PERCENT_DUPLICATION: True
-    Samtools Stats:
-        error_rate: True
+    SamTools pre-sieve:
+        error_rate: False
         non-primary_alignments: False
         raw_total_sequences: True
         reads_mapped: True
+        reads_mapped_percent: True
+    SamTools post-sieve:
+        non-primary_alignments: False
+        raw_total_sequences: True
+        reads_mapped: True 
+        error_rate: True
+        reads_mapped_percent: False
     MACS2:
         treatment_redundant_rate: True
         d: False
