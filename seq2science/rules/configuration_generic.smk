@@ -29,9 +29,13 @@ for key, value in config.items():
     if '_dir' in key:
         assert value not in [None, '', ' '], f"\n{key} cannot be empty. For current directory, set '{key}: .'\n"
         # allow tilde as the first character, \w = all letters and numbers
-        assert re.match('^[~\w_./-]*$', value[0]) and re.match('^[\w_./-]*$', value[1:]), \
-            (f"\nIn the config.yaml you set '{key}' to '{value}'. Please use file paths that only contain letters, " +
-            "numbers and any of the following symbols: underscores (_), periods (.), and minuses (-). The first character may also be a tilde (~).\n")
+        # ignore on Jenkins. it puts @ in the path
+        assert (re.match('^[~\w_./-]*$', value[0]) and re.match('^[\w_./-]*$', value[1:])) \
+               or os.getcwd().startswith('/var/lib/jenkins'), \
+            (f"\nIn the config.yaml you set '{key}' to '{value}'. " +
+              "Please use file paths that only contain letters, " +
+              "numbers and any of the following symbols: underscores (_), periods (.), " +
+              "and minuses (-). The first character may also be a tilde (~).\n")
         config[key] = os.path.expanduser(value)
 
 # make sure that difficult data-types (yaml objects) are in correct data format
