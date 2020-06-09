@@ -160,7 +160,7 @@ def get_wrong_fqext(wildcards):
     r2 = wildcards.sample + "_" + config["fqext2"] + "." + config["fqsuffix"] + ".gz"
     fastqs = [f for f in fastqs if not re.match(r1+"|"+r2, f)]
     if len(fastqs) == 0:
-        fastqs.append("impossible input to prevent Snakemake from running the rule without input")
+        fastqs.append(f"impossible input to prevent Snakemake from running the rule without input, {wildcards}")
     return sorted(fastqs)
 
 

@@ -6,6 +6,7 @@ import re
 import shutil
 import subprocess
 import time
+import copy
 
 import norns
 import numpy as np
@@ -20,17 +21,21 @@ from snakemake.utils import validate
 from snakemake.utils import min_version
 
 
-# make sure the snakemake version corresponds to version in environment
-min_version("5.10")
+# config.yaml(s)
+
 
 # check config file for correct directory names
 for key, value in config.items():
     if '_dir' in key:
         assert value not in [None, '', ' '], f"\n{key} cannot be empty. For current directory, set '{key}: .'\n"
         # allow tilde as the first character, \w = all letters and numbers
-        assert re.match('^[~\w_./-]*$', value[0]) and re.match('^[\w_./-]*$', value[1:]), \
-            (f"\nIn the config.yaml you set '{key}' to '{value}'. Please use file paths that only contain letters, " +
-            "numbers and any of the following symbols: underscores (_), periods (.), and minuses (-). The first character may also be a tilde (~).\n")
+        # ignore on Jenkins. it puts @ in the path
+        assert (re.match('^[~\w_./-]*$', value[0]) and re.match('^[\w_./-]*$', value[1:])) \
+               or os.getcwd().startswith('/var/lib/jenkins'), \
+            (f"\nIn the config.yaml you set '{key}' to '{value}'. " +
+              "Please use file paths that only contain letters, " +
+              "numbers and any of the following symbols: underscores (_), periods (.), " +
+              "and minuses (-). The first character may also be a tilde (~).\n")
         config[key] = os.path.expanduser(value)
 
 # make sure that difficult data-types (yaml objects) are in correct data format
@@ -40,7 +45,7 @@ for kw in ['aligner', 'quantifier', 'bam_sorter']:
 
 # validate and complement the config dict
 for schema in config_schemas:
-    validate(config, schema=f"../schemas/config/{schema}.schema.yaml")
+    validate(config, schema=f"{config['rule_dir']}/../schemas/config/{schema}.schema.yaml")
 
 # check if paired-end filename suffixes are lexicographically ordered
 config['fqext'] = [config['fqext1'], config['fqext2']]
@@ -49,52 +54,79 @@ assert sorted(config['fqext'])[0] == config['fqext1'], \
      f"Example suffixes: fqext1: R1, fqext2: R2\n" +
      f"Your suffixes:    fqext1: {config['fqext1']}, fqext2: {config['fqext2']}\n")
 
-# read and sanitize the samples file
-samples = pd.read_csv(config["samples"], sep='\t', dtype='str', comment='#')
+# read the config.yaml (not the profile)
+user_config = norns.config(config_file=workflow.overwrite_configfiles[0])
 
-# sanitize column names
+# make absolute paths, cut off trailing slashes
+for key, value in config.items():
+    if '_dir' in key:
+        if key in ['result_dir', 'genome_dir', 'rule_dir'] or key in user_config:
+            value = os.path.abspath(value)
+        config[key] = re.split("\/$", value)[0]
+
+# nest default directories in result_dir
+for key, value in config.items():
+    if '_dir' in key:
+        if key not in ['result_dir', 'genome_dir', 'rule_dir'] and key not in user_config:
+            config[key] = os.path.join(config['result_dir'], config[key])
+
+
+# samples.tsv
+
+
+# read the samples.tsv file as all text, drop comment lines
+samples = pd.read_csv(config["samples"], sep='\t', dtype='str', comment='#')
 samples.columns = samples.columns.str.strip()
+
+# check that the columns are named
 assert all([col[0:7] not in ["Unnamed", ''] for col in samples]), \
     (f"\nEncountered unnamed column in {config['samples']}.\n" +
      f"Column names: {str(', '.join(samples.columns))}.\n")
+
+# check that the columns contains no irregular characters
 assert not any(samples.columns.str.contains('[^A-Za-z0-9_.\-%]+', regex=True)), \
     (f"\n{config['samples']} may only contain letters, numbers and " +
     "percentage signs (%), underscores (_), periods (.), or minuses (-).\n")
 
-# sanitize table content
+# check that the file contains no irregular characters
+assert not any([any(samples[col].str.contains('[^A-Za-z0-9_.\-%]+', regex=True, na=False)) for col in samples if col != "control"]), \
+    (f"\n{config['samples']} may only contain letters, numbers and " +
+    "percentage signs (%), underscores (_), periods (.), or minuses (-).\n")
+
+# check that sample names are unique
+assert len(samples["sample"]) == len(set(samples["sample"])), \
+    (f"\nDuplicate samples found in {config['samples']}:\n" +
+     f"{samples[samples.duplicated(['sample'], keep=False)].to_string()}\n")
+
+# for each column, if found in samples.tsv:
+# 1) if it is incomplete, fill the blanks with replicate/sample names
+# (sample names if replicates are not found/applicable)
+# 2) drop column if it is identical to the replicate/sample column, or if not needed
 if 'replicate' in samples:
     samples['replicate'] = samples['replicate'].mask(pd.isnull, samples['sample'])
-    # if there is nothing to merge, drop the column. keep it simple
     if samples['replicate'].tolist() == samples['sample'].tolist() or config.get('technical_replicates') == 'keep':
         samples = samples.drop(columns=['replicate'])
 if 'condition' in samples:
     samples['condition'] = samples['condition'].mask(pd.isnull, samples['replicate']) if 'replicate' in samples else \
         samples['condition'].mask(pd.isnull, samples['sample'])
-    # if there is nothing to merge, drop the column. keep it simple
     if samples['condition'].tolist() == samples['sample'].tolist() or config.get('biological_replicates') == 'keep':
         samples = samples.drop(columns=['condition'])
 if 'descriptive_name' in samples:
     samples['descriptive_name'] = samples['descriptive_name'].mask(pd.isnull, samples['replicate']) if \
         'replicate' in samples else samples['descriptive_name'].mask(pd.isnull, samples['sample'])
-    # if there is nothing to merge, drop the column. keep it simple
     if ('replicate' in samples and samples['descriptive_name'].to_list() == samples['replicate'].to_list()) or \
         samples['descriptive_name'].to_list() == samples['sample'].to_list():
         samples = samples.drop(columns=['descriptive_name'])
 
 if 'replicate' in samples:
+    # check if replicate names are unique between assemblies
     r = samples[['assembly', 'replicate']].drop_duplicates().set_index('replicate')
     for replicate in r.index:
         assert len(r[r.index == replicate]) == 1, \
             ("\nReplicate names must be different between assemblies.\n" +
              f"Replicate name '{replicate}' was found in assemblies {r[r.index == replicate]['assembly'].tolist()}.")
 
-assert not any([any(samples[col].str.contains('[^A-Za-z0-9_.\-%]+', regex=True, na=False)) for col in samples if col != "control"]), \
-    (f"\n{config['samples']} may only contain letters, numbers and " +
-    "percentage signs (%), underscores (_), periods (.), or minuses (-).\n")
-assert len(samples["sample"]) == len(set(samples["sample"])), \
-    (f"\nDuplicate samples found in {config['samples']}:\n" +
-     f"{samples[samples.duplicated(['sample'], keep=False)].to_string()}\n")
-
+# check if sample, replicate and condition names are unique between the columns
 for idx in samples.index:
     if "condition" in samples:
         assert idx not in samples["condition"].values, f"sample names, conditions, and replicates can not overlap. " \
@@ -114,25 +146,10 @@ for schema in sample_schemas:
 samples = samples.set_index('sample')
 samples.index = samples.index.map(str)
 
-
-try:
-    user_config = norns.config(config_file=workflow.overwrite_configfiles[-1])
-except:
-    user_config = norns.config(config_file='config.yaml')
+sanitized_samples = copy.copy(samples)
 
 
-# make absolute paths, cut off trailing slashes
-for key, value in config.items():
-    if '_dir' in key:
-        if key in ['result_dir', 'genome_dir', 'rule_dir'] or key in user_config:
-            value = os.path.abspath(value)
-        config[key] = re.split("\/$", value)[0]
-
-# nest default directories in result_dir
-for key, value in config.items():
-    if '_dir' in key:
-        if key not in ['result_dir', 'genome_dir', 'rule_dir'] and key not in user_config:
-            config[key] = os.path.join(config['result_dir'], config[key])
+# sample layouts
 
 
 # check if a sample is single-end or paired end, and store it
@@ -278,20 +295,12 @@ if 'replicate' in samples and config.get('technical_replicates') == 'merge':
         replicate = samples.loc[sample, 'replicate']
         config['layout'][replicate] = config['layout'][sample]
 
-# after all is done, log (print) the configuration
-logger.info("CONFIGURATION VARIABLES:")
-for key, value in config.items():
-     logger.info(f"{key: <23}: {value}")
-logger.info("\n\n")
 
-# save a copy of the latest samples and config file in the log_dir
-# skip this step on Jenkins, as it runs in parallel
-if os.getcwd() != config['log_dir'] and not os.getcwd().startswith('/var/lib/jenkins'):
-    os.makedirs(config['log_dir'], exist_ok=True)
-    for file in [config['samples']] + workflow.configfiles:
-        src = os.path.join(os.getcwd(), file)
-        dst = os.path.join(config['log_dir'], os.path.basename(file))
-        shutil.copy(src, dst)
+# workflow
+
+
+def get_workflow():
+    return workflow.snakefile.split('/')[-2]
 
 
 def any_given(*args):
@@ -338,10 +347,6 @@ wildcard_constraints:
     sample=any_given(*sample_constraints)
 
 
-def get_workflow():
-    return workflow.snakefile.split('/')[-2]
-
-
 # set default parameters (parallel downloads and memory)
 def convert_size(size_bytes, order=None):
     # https://stackoverflow.com/questions/5194057/better-way-to-convert-file-sizes-in-python/14822210#14822210
@@ -351,6 +356,8 @@ def convert_size(size_bytes, order=None):
     s = int(size_bytes // math.pow(1024, order))
     return s, size_name[order]
 
+# make sure the snakemake version corresponds to version in environment
+min_version("5.18")
 
 # set some defaults
 workflow.global_resources = {**{'parallel_downloads': 3, 'deeptools_limit': 16, 'R_scripts': 1},
@@ -374,9 +381,18 @@ else:
                                  **workflow.global_resources}
 
 
+onstart:
+    # save a copy of the latest samples and config file(s) in the log_dir
+    # skip this step on Jenkins, as it runs in parallel
+    if os.getcwd() != config['log_dir'] and not os.getcwd().startswith('/var/lib/jenkins'):
+        os.makedirs(config['log_dir'], exist_ok=True)
+        for n, file in enumerate([config['samples']] + workflow.overwrite_configfiles):
+            src = os.path.join(os.getcwd(), file)
+            dst = os.path.join(config['log_dir'], os.path.basename(file) if n<2 else "profile.yaml")
+            shutil.copy(src, dst)
 onsuccess:
-    if config["email"] != "none@provided.com" and config["email"] != "yourmail@here.com":
+    if config["email"] not in ["none@provided.com", "yourmail@here.com"]:
         os.system(f"""echo "Succesful pipeline run! :)" | mail -s "The seq2science pipeline finished succesfully." {config["email"]} 2> /dev/null""")
 onerror:
-    if config["email"] != "none@provided.com" and config["email"] != "yourmail@here.com":
+    if config["email"] not in ["none@provided.com", "yourmail@here.com"]:
         os.system(f"""echo "Unsuccessful pipeline run! :(" | mail -s "The seq2science pipeline finished prematurely..." {config["email"]} 2> /dev/null """)

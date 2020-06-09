@@ -64,6 +64,8 @@ rule cytoband:
     output:
         cytoband_bb = expand("{genome_dir}/{{assembly}}/cytoBandIdeo.bb", **config),
         cytoband_bd = temp(expand("{genome_dir}/{{assembly}}/cytoBandIdeo.bed", **config)),
+    params:
+        schema = f"{config['rule_dir']}/../schemas/cytoBand.as"
     log:
         expand("{log_dir}/trackhub/{{assembly}}.cytoband.log", **config)
     benchmark:
@@ -74,7 +76,7 @@ rule cytoband:
         """
         cat {input.sizes} | bedSort /dev/stdin /dev/stdout | awk '{{print $1,0,$2,$1,"gneg"}}' > {output.cytoband_bd}
 
-        bedToBigBed -type=bed4 {output.cytoband_bd} -as=../../schemas/cytoBand.as {input.sizes} {output.cytoband_bb} >> {log} 2>&1
+        bedToBigBed -type=bed4 {output.cytoband_bd} -as={params.schema} {input.sizes} {output.cytoband_bb} >> {log} 2>&1
         """
 
 
@@ -164,7 +166,7 @@ rule trackhub_index:
     """
     input:
         sizes = expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
-        gtf   = expand("{genome_dir}/{{assembly}}/{{assembly}}.gtf", **config),
+        gtf   = expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
     output:
         genePred =       temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.gp",  **config)),
         genePredbed =    temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.gp.bed", **config)),
