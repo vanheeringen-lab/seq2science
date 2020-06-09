@@ -6,7 +6,6 @@ channels:
 dependencies:
   - pkgs/main::python=3.6
   - bioconda::snakemake>=5.18
-  - pip=20.0.2
   - bioconda::sra-tools=2.9.1
   - bioconda::entrez-direct=11.0
   - bioconda::pysam=0.15.3
@@ -18,6 +17,5 @@ dependencies:
   - pkgs/main::filelock=3.0.12
   - pkgs/mean::pyyaml
   - pkgs/main::beautifulsoup4=4.9.0
-  - conda-forge:pretty_html_table==0.9.dev0
-  - pip:
-    - git+https://github.com/daler/trackhub@params-overhaul
+  - conda-forge:pretty_html_table=0.9.dev0
+  - bioconda::trackhub=0.1.2019.12.24
