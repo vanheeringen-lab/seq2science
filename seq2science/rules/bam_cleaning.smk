@@ -1,6 +1,3 @@
-import gzip
-
-
 def get_blacklist_files(wildcards):
     files = {}
     # ideally get genome is a checkpoint, however there are quite some Snakemake
@@ -30,9 +27,9 @@ rule setup_blacklist:
         newblacklist = ""
         if config.get('remove_blacklist') and wildcards.assembly.lower() in \
                 ["ce10", "dm3", "hg38", "hg19", "mm9", "mm10"]:
-            blacklist = f"{config['genome_dir']}/{wildcards.assembly}/{wildcards.assembly}.blacklist.bed.gz"
-            with gzip.GzipFile(blacklist) as file:
-                newblacklist += file.read().decode('utf8')
+            blacklist = f"{config['genome_dir']}/{wildcards.assembly}/{wildcards.assembly}.blacklist.bed"
+            with open(blacklist) as file:
+                newblacklist += file.read()
 
         if any('.fa.sizes' in inputfile for inputfile in input):
             with open(input.sizes, 'r') as file:
@@ -62,7 +59,7 @@ rule complement_blacklist:
     shell:
         """
         sortBed -faidx {input.sizes} -i {input.blacklist} |
-        complementBed -i /dev/stdin -g {input.sizes} > {output} 2> {log}
+        complementBed -i stdin -g {input.sizes} > {output} 2> {log}
         """
 
 
