@@ -208,7 +208,8 @@ def _run(args, base_dir, workflows_dir, config_path):
     parsed_args["cores"] = int(parsed_args["cores"])
 
     # run snakemake
-    snakemake.snakemake(**parsed_args)
+    exit_code = snakemake.snakemake(**parsed_args)
+    sys.exit(0) if exit_code else sys.exit(1)
 
 
 def _clean(base_dir):
