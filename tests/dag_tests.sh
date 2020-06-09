@@ -348,13 +348,11 @@ if [ $1 = "rna-seq" ]; then
   printf "\nmultiple assemblies with DEA\n"
   seq2science run rna_seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:star,technical_replicates:keep,samples:tests/rna_seq/complex_samples.tsv} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 star_index 2
-  # TODO: bug: quantifier runs 2x too many times (2 assemblies)
-  #assert_rulecount $1 star_quant 10
+  assert_rulecount $1 star_quant 10
 
   printf "\nmultiple assemblies with DEA - trackhubs\n"
-  # TODO: error!
-  #seq2science run rna_seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:star,technical_replicates:keep,samples:tests/rna_seq/complex_samples.tsv,create_trackhub:True} | tee tests/local_test_results/${1}_dag
-  #assert_rulecount $1 bam_bigwig 20
+  seq2science run rna_seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:star,technical_replicates:keep,samples:tests/rna_seq/complex_samples.tsv,create_trackhub:True} | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 bam_bigwig 10
 
   printf "\nmultiple assemblies with DEA - multiqc\n"
   seq2science run rna_seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:star,technical_replicates:keep,samples:tests/rna_seq/complex_samples.tsv,create_qc_report:True} | tee tests/local_test_results/${1}_dag
@@ -380,25 +378,20 @@ if [ $1 = "rna-seq" ]; then
   printf "\nmultiple assemblies and replicates with DEA \n"
   seq2science run rna_seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:star,technical_replicates:keep,samples:tests/rna_seq/complex_samples.tsv} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 merge_replicates 0
-  # TODO: bug: quantifier runs 2x too many times (2 assemblies)
-  #assert_rulecount $1 star_quant 10
+  assert_rulecount $1 star_quant 10
   seq2science run rna_seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:star,technical_replicates:merge,samples:tests/rna_seq/complex_samples.tsv} | tee tests/local_test_results/${1}_dag
-  # TODO: bug: quantifier runs 2x too many times (2 assemblies)
-  #assert_rulecount $1 star_quant 8
+  assert_rulecount $1 star_quant 8
   seq2science run rna_seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:salmon,technical_replicates:merge,samples:tests/rna_seq/complex_samples.tsv} | tee tests/local_test_results/${1}_dag
-  # TODO: bug: quantifier runs 2x too many times (2 assemblies)
-  #assert_rulecount $1 salmon_quant 8
+  assert_rulecount $1 salmon_quant 8
 
   printf "\nmultiple assemblies and replicates with DEA - trackhub\n"
   seq2science run rna_seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:salmon,technical_replicates:merge,samples:tests/rna_seq/complex_samples.tsv,create_trackhub:True} | tee tests/local_test_results/${1}_dag
-  # TODO: bug: quantifier runs 16 (2x8) times, aligner runs 8 times.
-  #assert_rulecount $1 salmon_quant 8
+  assert_rulecount $1 salmon_quant 8
   assert_rulecount $1 star_align 8
   assert_rulecount $1 bam_bigwig 8
 
   printf "\nmultiple assemblies and replicates with DEA - multiqc report\n"
   seq2science run rna_seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:star,technical_replicates:merge,samples:tests/rna_seq/complex_samples.tsv,create_qc_report:True} | tee tests/local_test_results/${1}_dag
-  # TODO: bug: quantifier runs 16 (2x8) times, aligner runs 8 times.
   assert_rulecount $1 fastqc  24
 
   test_ran=1

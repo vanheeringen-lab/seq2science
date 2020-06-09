@@ -1,7 +1,7 @@
 def get_counts(wildcards):
     quant_dirs = []
-    for replicate in treps.index:
-        quant_dirs.append(f"{{result_dir}}/{{quantifier}}/{wildcards.assembly}-{replicate}")
+    for sample in treps[treps['assembly'] == wildcards.assembly].index:
+        quant_dirs.append(f"{{result_dir}}/{{quantifier}}/{wildcards.assembly}-{sample}")
     return expand(quant_dirs, **config)
 
 if config['quantifier'] == 'salmon':
