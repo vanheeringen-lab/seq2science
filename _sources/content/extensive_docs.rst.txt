@@ -11,3 +11,4 @@ The extensive docs serve to have all steps and configurable options documented.
    cli.rst
    all_rules.md
    schemas.md
+   CHANGELOG.md

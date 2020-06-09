@@ -112,7 +112,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#featurecounts">featureCounts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#gcpercent">gcPercent</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#genrich-pileup">genrich_pileup</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#get-annotation">get_annotation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#get-genome">get_genome</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#get-transcripts">get_transcripts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#hisat2-align">hisat2_align</a></li>
@@ -130,8 +129,10 @@
 <li class="toctree-l3"><a class="reference internal" href="#merge-replicates">merge_replicates</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multibamsummary">multiBamSummary</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multiqc">multiqc</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multiqc-filter-buttons">multiqc_filter_buttons</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multiqc-header-info">multiqc_header_info</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multiqc-rename-buttons">multiqc_rename_buttons</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multiqc-samplesconfig">multiqc_samplesconfig</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#peak-bigpeak">peak_bigpeak</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#peak-union">peak_union</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#plotcorrelation">plotCorrelation</a></li>
@@ -166,6 +167,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="schemas.html">All configurable options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="CHANGELOG.html">Changelog</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="extracontent.html">Extra resources</a></li>
@@ -392,7 +394,7 @@ mv {input} {output} &gt;&gt; {log} 2&gt;&amp;1
 <p>source: <a class="reference external" href="http://genomewiki.ucsc.edu/index.php/Assembly_Hubs#Cytoband_Track">http://genomewiki.ucsc.edu/index.php/Assembly_Hubs#Cytoband_Track</a></p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>cat {input.sizes} | bedSort /dev/stdin /dev/stdout | awk &#39;{{print $1,0,$2,$1,&quot;gneg&quot;}}&#39; &gt; {output.cytoband_bd}
 
-bedToBigBed -type=bed4 {output.cytoband_bd} -as=../../schemas/cytoBand.as {input.sizes} {output.cytoband_bb} &gt;&gt; {log} 2&gt;&amp;1
+bedToBigBed -type=bed4 {output.cytoband_bd} -as={params.schema} {input.sizes} {output.cytoband_bb} &gt;&gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
 </div>
@@ -429,15 +431,6 @@ bedToBigBed -type=bed4 {output.cytoband_bd} -as=../../schemas/cytoBand.as {input
 have a very different computational footprint.</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>input=$(echo {input.reps} | tr &#39; &#39; &#39;,&#39;)
 Genrich -X -t $input -f {output.log} {params.control} -k {output.bedgraphish} {params.params} -v &gt; {log} 2&gt;&amp;1
-</pre></div>
-</div>
-</div>
-<div class="section" id="get-annotation">
-<h2>get_annotation<a class="headerlink" href="#get-annotation" title="Permalink to this headline">¶</a></h2>
-<p>Matches the chromosome/scaffold names in annotation.gtf to those in the genome.fa.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Generate transcripts.fasta using gffread.
-
-Requires genome.fa and annotation.gtf (with matching chromosome/scaffold names)
 </pre></div>
 </div>
 </div>
@@ -478,6 +471,11 @@ fi
 <h2>get_transcripts<a class="headerlink" href="#get-transcripts" title="Permalink to this headline">¶</a></h2>
 <p>Generate transcripts.fasta using gffread.</p>
 <p>Requires genome.fa and annotation.gtf (with matching chromosome/scaffold names)</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Generate decoy_transcripts.txt for Salmon indexing
+
+script source: https://github.com/COMBINE-lab/SalmonTools
+</pre></div>
+</div>
 </div>
 <div class="section" id="hisat2-align">
 <h2>hisat2_align<a class="headerlink" href="#hisat2-align" title="Permalink to this headline">¶</a></h2>
@@ -604,6 +602,10 @@ contain the name of the original replicate.</p>
 <h2>multiqc<a class="headerlink" href="#multiqc" title="Permalink to this headline">¶</a></h2>
 <p>Aggregate all the quality control metrics for every sample into a single multiqc report.</p>
 </div>
+<div class="section" id="multiqc-filter-buttons">
+<h2>multiqc_filter_buttons<a class="headerlink" href="#multiqc-filter-buttons" title="Permalink to this headline">¶</a></h2>
+<p>Generate filter buttons.</p>
+</div>
 <div class="section" id="multiqc-header-info">
 <h2>multiqc_header_info<a class="headerlink" href="#multiqc-header-info" title="Permalink to this headline">¶</a></h2>
 <p>Generate a multiqc header file with contact info and date of multiqc generation.</p>
@@ -611,6 +613,7 @@ contain the name of the original replicate.</p>
 --config {config[rule_dir]}/../schemas/multiqc_config.yaml \
 --config {input.header}\
 --sample-names {input.sample_names}\
+--sample-filters {input.filter_buttons}\
 --cl_config &quot;extra_fn_clean_exts: [\
 {{&#39;pattern&#39;: ^.*{wildcards.assembly}-, &#39;type&#39;: &#39;regex&#39;}},  \
 {{&#39;pattern&#39;: {params.fqext1},  &#39;type&#39;: &#39;regex&#39;}},  \
@@ -620,7 +623,11 @@ contain the name of the original replicate.</p>
 </div>
 <div class="section" id="multiqc-rename-buttons">
 <h2>multiqc_rename_buttons<a class="headerlink" href="#multiqc-rename-buttons" title="Permalink to this headline">¶</a></h2>
-<p>Generate rename buttons.</p>
+<p>Generate rename buttons for the multiqc report.</p>
+</div>
+<div class="section" id="multiqc-samplesconfig">
+<h2>multiqc_samplesconfig<a class="headerlink" href="#multiqc-samplesconfig" title="Permalink to this headline">¶</a></h2>
+<p>Add a section in the multiqc report that reports the samples.tsv and config.yaml</p>
 </div>
 <div class="section" id="peak-bigpeak">
 <h2>peak_bigpeak<a class="headerlink" href="#peak-bigpeak" title="Permalink to this headline">¶</a></h2>
@@ -743,7 +750,7 @@ https://www.biostars.org/p/228636/
 <h2>setup_blacklist<a class="headerlink" href="#setup-blacklist" title="Permalink to this headline">¶</a></h2>
 <p>Combine the encode blacklist with mitochrondrial dna depending on config.</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>sortBed -faidx {input.sizes} -i {input.blacklist} |
-complementBed -i /dev/stdin -g {input.sizes} &gt; {output} 2&gt; {log}
+complementBed -i stdin -g {input.sizes} &gt; {output} 2&gt; {log}
 </pre></div>
 </div>
 </div>

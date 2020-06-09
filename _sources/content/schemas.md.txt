@@ -331,7 +331,7 @@ tximeta:
         release:
             default: 42
     default:
-        soure: Ensembl
+        source: Ensembl
         organism: tximeta_file
         release: 42
 ```

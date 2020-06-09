@@ -139,7 +139,7 @@ source: http://genomewiki.ucsc.edu/index.php/Assembly_Hubs#Cytoband_Track
 ```
         cat {input.sizes} | bedSort /dev/stdin /dev/stdout | awk '{{print $1,0,$2,$1,"gneg"}}' > {output.cytoband_bd}
 
-        bedToBigBed -type=bed4 {output.cytoband_bd} -as=../../schemas/cytoBand.as {input.sizes} {output.cytoband_bb} >> {log} 2>&1
+        bedToBigBed -type=bed4 {output.cytoband_bd} -as={params.schema} {input.sizes} {output.cytoband_bb} >> {log} 2>&1
         
 ```
 
@@ -173,14 +173,6 @@ have a very different computational footprint.
 ```
 input=$(echo {input.reps} | tr ' ' ',')
 Genrich -X -t $input -f {output.log} {params.control} -k {output.bedgraphish} {params.params} -v > {log} 2>&1
-```
-
-#### get_annotation
-Matches the chromosome/scaffold names in annotation.gtf to those in the genome.fa.
-```
-Generate transcripts.fasta using gffread.
-
-Requires genome.fa and annotation.gtf (with matching chromosome/scaffold names)
 ```
 
 #### get_genome
@@ -221,6 +213,11 @@ fi
 Generate transcripts.fasta using gffread.
 
 Requires genome.fa and annotation.gtf (with matching chromosome/scaffold names)
+```
+Generate decoy_transcripts.txt for Salmon indexing  
+
+script source: https://github.com/COMBINE-lab/SalmonTools
+```
 
 #### hisat2_align
 Align reads against a genome (index) with hisat2, and pipe the output to the required sorter(s).
@@ -339,6 +336,9 @@ multiBamSummary bins --bamfiles {input.bams} -out {output} {params} -p {threads}
 #### multiqc
 Aggregate all the quality control metrics for every sample into a single multiqc report.
 
+#### multiqc_filter_buttons
+Generate filter buttons.
+
 #### multiqc_header_info
 Generate a multiqc header file with contact info and date of multiqc generation.
 ```
@@ -346,6 +346,7 @@ multiqc {input.files} -o {params.dir} -n multiqc_{wildcards.assembly}.html \
 --config {config[rule_dir]}/../schemas/multiqc_config.yaml \
 --config {input.header}\
 --sample-names {input.sample_names}\
+--sample-filters {input.filter_buttons}\
 --cl_config "extra_fn_clean_exts: [\
 {{'pattern': ^.*{wildcards.assembly}-, 'type': 'regex'}},  \
 {{'pattern': {params.fqext1},  'type': 'regex'}},  \
@@ -353,7 +354,10 @@ multiqc {input.files} -o {params.dir} -n multiqc_{wildcards.assembly}.html \
 ```
 
 #### multiqc_rename_buttons
-Generate rename buttons.
+Generate rename buttons for the multiqc report.
+
+#### multiqc_samplesconfig
+Add a section in the multiqc report that reports the samples.tsv and config.yaml
 
 #### peak_bigpeak
 Convert a narrowpeak file into a bignarrowpeak file.
@@ -460,7 +464,7 @@ https://www.biostars.org/p/228636/
 Combine the encode blacklist with mitochrondrial dna depending on config.
 ```
 sortBed -faidx {input.sizes} -i {input.blacklist} |
-complementBed -i /dev/stdin -g {input.sizes} > {output} 2> {log}
+complementBed -i stdin -g {input.sizes} > {output} 2> {log}
 ```
 
 #### sieve_bam
