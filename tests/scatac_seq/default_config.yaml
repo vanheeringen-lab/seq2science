@@ -1,5 +1,5 @@
 # tab-separated file
-samples: tests/alignment/dag_sample.tsv
+samples: tests/scatac_seq/samples.tsv
 
 # pipeline file locations
 result_dir: tests/local_test_results  # where to store results

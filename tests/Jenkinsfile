@@ -55,6 +55,11 @@ pipeline {
                 # create main env
                 printf "\ninstalling seq2science environment\n"
                 mamba env create -f requirements.yaml
+
+                # install seq2science
+                source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+                conda activate s2s
+                pip install .
                 '''
             }
         }

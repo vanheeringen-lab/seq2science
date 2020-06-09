@@ -157,7 +157,7 @@ def fingerprint_multiBamSummary_input(wildcards):
 
 
 def get_descriptive_names(wildcards, input):
-    if "descriptive_name" not in treps:
+    if "descriptive_name" not in samples:
         return ""
 
     labels = ""
@@ -167,8 +167,10 @@ def get_descriptive_names(wildcards, input):
         trep = trep[:trep.find(".sam")]
         if "control" in treps and trep not in treps.index:
             labels += f"control_{trep} "
+        elif trep in samples.index:
+            labels += samples.loc[trep, "descriptive_name"] + " "
         else:
-            labels += treps.loc[trep, "descriptive_name"] + " "
+            labels += trep
 
     return labels
 
@@ -334,7 +336,6 @@ rule multiqc_header_info:
         temp(expand('{qc_dir}/header_info.yaml', **config))
     run:
         import os
-        import copy
         from datetime import date
 
         cwd = os.getcwd().split('/')[-1]
@@ -350,7 +351,7 @@ rule multiqc_header_info:
 
 rule multiqc_rename_buttons:
     """
-    Generate rename buttons.
+    Generate rename buttons for the multiqc report.
     """
     output:
         temp(expand('{qc_dir}/sample_names_{{assembly}}.tsv', **config))
@@ -360,6 +361,46 @@ rule multiqc_rename_buttons:
         newsamples.to_csv(output[0], sep="\t", index=False)
 
 
+rule multiqc_filter_buttons:
+    """
+    Generate filter buttons.
+    """
+    output:
+        temp(expand('{qc_dir}/sample_filters_{{assembly}}.tsv', **config))
+    run:
+        with open(output[0], "w") as f:
+            f.write("Read Group 1 & Alignment\thide\t_R2\n"
+                    "Read Group 2\tshow\t_R2\n")
+
+
+rule multiqc_samplesconfig:
+    """
+    Add a section in the multiqc report that reports the samples.tsv and config.yaml
+    """
+    output:
+        temp(expand('{qc_dir}/samplesconfig_mqc.html', **config))
+    run:
+        outstring = \
+            "<!--\n" \
+            "id: 'samplesconfig'\n" \
+            "section_name: 'Samples & Config'\n" \
+            "-->\n"
+
+        from pretty_html_table import build_table
+        outstring += "The samples file used for this run: <br>" \
+                     f"{build_table(sanitized_samples, 'blue_dark')}"
+
+        if len(workflow.overwrite_configfiles) > 0:
+            outstring += "The config file used for this run: <br>"
+            outstring += '<pre><code class="codeblock">'
+            with open(workflow.overwrite_configfiles[-1], "r") as config_file:
+                outstring += config_file.read()
+            outstring += '</code></pre>'
+
+        with open(output[0], "w") as out_file:
+            out_file.write(outstring)
+
+
 def get_qc_files(wildcards):
     assert 'quality_control' in globals(), "When trying to generate multiqc output, make sure that the "\
                                            "variable 'quality_control' exists and contains all the "\
@@ -367,7 +408,9 @@ def get_qc_files(wildcards):
     qc = dict()
     qc['header'] = expand('{qc_dir}/header_info.yaml', **config)[0]
     qc['sample_names'] = expand('{qc_dir}/sample_names_{{assembly}}.tsv', **config)[0]
-    qc['files'] = set()
+    if any([config['layout'][trep] == "PAIRED" for trep in treps[treps['assembly'] == wildcards.assembly].index]):
+        qc['filter_buttons'] = expand('{qc_dir}/sample_filters_{{assembly}}.tsv', **config)[0]
+    qc['files'] = set([expand('{qc_dir}/samplesconfig_mqc.html', **config)[0]])
 
     # trimming qc on individual samples
     if get_trimming_qc in quality_control:
@@ -416,6 +459,7 @@ rule multiqc:
         --config {config[rule_dir]}/../schemas/multiqc_config.yaml                 \
         --config {input.header}                                                    \
         --sample-names {input.sample_names}                                        \
+        --sample-filters {input.filter_buttons}                                    \
         --cl_config "extra_fn_clean_exts: [                                        \
             {{'pattern': ^.*{wildcards.assembly}-, 'type': 'regex'}},              \
             {{'pattern': {params.fqext1},          'type': 'regex'}},              \

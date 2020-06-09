@@ -1,7 +1,7 @@
 def get_counts(wildcards):
     quant_dirs = []
-    for replicate in treps.index:
-        quant_dirs.append(f"{{result_dir}}/{{quantifier}}/{wildcards.assembly}-{replicate}")
+    for sample in treps[treps['assembly'] == wildcards.assembly].index:
+        quant_dirs.append(f"{{result_dir}}/{{quantifier}}/{wildcards.assembly}-{sample}")
     return expand(quant_dirs, **config)
 
 if config['quantifier'] == 'salmon':
@@ -21,11 +21,11 @@ if config['quantifier'] == 'salmon':
         """
         input:
             fasta=expand("{genome_dir}/{{assembly}}/{{assembly}}.transcripts.fa", **config),
-            gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.gtf", **config),
+            gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
             index_dir=get_index
         output:
             index=expand("{genome_dir}/{{assembly}}/index/tximeta/linked_txome.json", **config),
-            symlink=expand(f"{{genome_dir}}/{{{{assembly}}}}/index/tximeta/{config['tximeta']['organism']}.{{{{assembly}}}}.{config['tximeta']['release']}.gtf", **config)
+            # symlink=expand(f"{{genome_dir}}/{{{{assembly}}}}/index/tximeta/{config['tximeta']['organism']}.{{{{assembly}}}}.{config['tximeta']['release']}.gtf", **config)
         params:
             source=config['tximeta']['source'],
             organism=config['tximeta']['organism'],
@@ -37,7 +37,7 @@ if config['quantifier'] == 'salmon':
         resources:
             R_scripts=1 # conda's R can have issues when starting multiple times
         script:
-            "../scripts/linked_txome.R"
+            f"{config['rule_dir']}/../scripts/linked_txome.R"
 
     rule txi_count_matrix:
         """
@@ -60,7 +60,7 @@ if config['quantifier'] == 'salmon':
         resources:
             R_scripts=1 # conda's R can have issues when starting multiple times
         script:
-            "../scripts/txi.R"
+            f"{config['rule_dir']}/../scripts/txi.R"
 
 
 elif config['quantifier'] == 'star':
