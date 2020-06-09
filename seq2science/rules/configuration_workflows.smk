@@ -1,3 +1,6 @@
+from snakemake.logging import logger
+
+
 # apply workflow specific changes...
 # ...for atac-seq
 if config.get('peak_caller', False):
@@ -141,3 +144,10 @@ def sieve_bam(configdict):
            configdict.get('tn5_shift', False) or \
            configdict.get('remove_blacklist', False) or \
            configdict.get('remove_mito', False)
+
+
+# after all is done, log (print) the configuration
+logger.info("CONFIGURATION VARIABLES:")
+for key, value in config.items():
+     logger.info(f"{key: <23}: {value}")
+logger.info("\n\n")

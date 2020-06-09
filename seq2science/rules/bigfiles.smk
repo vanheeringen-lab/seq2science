@@ -93,11 +93,11 @@ def get_bigpeak_type(wildcards):
 
 def get_bigpeak_schema(wildcards):
     if get_ftype(wildcards.peak_caller) == "narrowPeak":
-        return "../../schemas/bignarrowPeak.as"
+        return f"{config['rule_dir']}/../schemas/bignarrowPeak.as"
     if get_ftype(wildcards.peak_caller) == "broadPeak":
         if len(treps_from_brep[(wildcards.sample, wildcards.assembly)]) == 1:
-            return "../../schemas/bigbroadPeak.as"
-        return "../../schemas/bigBed.as"
+            return f"{config['rule_dir']}/../schemas/bigbroadPeak.as"
+        return f"{config['rule_dir']}/../schemas/bigBed.as"
     raise NotImplementedError()
 
 
