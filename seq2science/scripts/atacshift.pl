@@ -52,15 +52,9 @@ while (my $line = <$in_sam>) {
   
   if (not ($read[1] & 0x04)) {  # read must be mapped to shift
 
-    # cut of trailing unmapped nucs
+    # cut of unmapped reads & deletions
     @cigar = split /(?<=[A-Z])/, $read[5];
     @cigar = grep {!/\d(S|D)/}  @cigar; 
-    #if ($cigar[0] =~ /\dS/) {
-    #  shift @cigar;
-    #}
-    #if ($cigar[-1] =~ /\dS/) {
-    #  pop @cigar;
-    #}
     $rlen = sum(split /[A-Z]/, join '', @cigar);
 
     if ($read[1] & 0x10) {  # reverse strand
