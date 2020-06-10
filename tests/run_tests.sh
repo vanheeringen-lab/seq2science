@@ -20,7 +20,6 @@ if [ $1 = "cleanup_files" ]; then
   rm -rf tests/tinydata/tinydata.bb
   rm -rf tests/tinydata/tinydata.custom*
   rm -rf tests/tinydata/tinydata.gc5Base.bw
-  rm -rf tests/tinydata/tinydata.gtf
   rm -rf tests/tinydata/tinydata.ix
   rm -rf tests/tinydata/tinydata.ixx
   rm -rf tests/tinydata/tinydata.transcripts.fa
