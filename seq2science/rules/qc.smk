@@ -296,18 +296,18 @@ rule plotCorrelation:
     input:
         rules.multiBamSummary.output
     output:
-        expand("{qc_dir}/plotCorrelation/{{assembly}}.tsv", **config)
+        expand("{qc_dir}/plotCorrelation/{{method}}-{{assembly}}.png", **config)
     log:
-        expand("{log_dir}/plotCorrelation/{{assembly}}.log", **config)
+        expand("{log_dir}/plotCorrelation/{{method}}-{{assembly}}.log", **config)
     benchmark:
-        expand("{benchmark_dir}/plotCorrelation/{{assembly}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/plotCorrelation/{{method}}-{{assembly}}.benchmark.txt", **config)[0]
     conda:
         "../envs/deeptools.yaml"
     resources:
         deeptools_limit=lambda wildcards, threads: threads
     shell:
         """
-        plotCorrelation --corData {input} --outFileCorMatrix {output} -c spearman -p heatmap > {log} 2>&1
+        plotCorrelation --corData {input} --plotFile {output} -c {wildcards.method} -p heatmap > {log} 2>&1
         """
 
 
@@ -528,7 +528,8 @@ def get_alignment_qc(sample):
     if get_workflow() in ["alignment", "chip_seq", "atac_seq", "scatac_seq"]:
         output.append("{qc_dir}/plotFingerprint/{{assembly}}.tsv")
     if len(breps[breps["assembly"] == treps.loc[sample, "assembly"]].index) > 1:
-        output.append("{qc_dir}/plotCorrelation/{{assembly}}.tsv")
+        output.append("{qc_dir}/plotCorrelation/pearson-{{assembly}}.png")
+        output.append("{qc_dir}/plotCorrelation/spearman-{{assembly}}.png")
         output.append("{qc_dir}/plotPCA/{{assembly}}.tsv")
 
     return expand(output, **config)
