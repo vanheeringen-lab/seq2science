@@ -54,12 +54,13 @@ while (my $line = <$in_sam>) {
 
     # cut of trailing unmapped nucs
     @cigar = split /(?<=[A-Z])/, $read[5];
-    if ($cigar[0] =~ /\dS/) {
-      shift @cigar;
-    }
-    if ($cigar[-1] =~ /\dS/) {
-      pop @cigar;
-    }
+    @cigar = grep {!/\d(S|D)/}  @cigar; 
+    #if ($cigar[0] =~ /\dS/) {
+    #  shift @cigar;
+    #}
+    #if ($cigar[-1] =~ /\dS/) {
+    #  pop @cigar;
+    #}
     $rlen = sum(split /[A-Z]/, join '', @cigar);
 
     if ($read[1] & 0x10) {  # reverse strand
@@ -68,6 +69,7 @@ while (my $line = <$in_sam>) {
           $read[8] = $read[8] + 9;  # template length increases 4 + 5
       }
       $rlen -= 5;
+      $read[9] = substr($read[9], 0, $rlen)
     }
     else {  # forward strand
       if (($read[1] & 0x01) && not ($read[1] & 0x08) && not ($read[8] == 0)) {  # read paired and mate not unmapped
@@ -75,6 +77,7 @@ while (my $line = <$in_sam>) {
       }
       $read[3] = $read[3] + 4;  # shift the position +4
       $rlen -= 4;
+      $read[9] = substr($read[9], 4)
     }
 
     # make sure the starting position doesn't map off the chr
@@ -87,11 +90,12 @@ while (my $line = <$in_sam>) {
       $rlen = $sizes{$read[2]} - $read[3] - 1;
     }
 
+    $read[9] = substr($read[9], 0, $rlen);
     # Set the CIGAR
     $read[5] = "${rlen}M";
 
     # empty QUAL and SEQ
-    $read[9] = "*";
+    # $read[9] = "*";
     $read[10] = "*";
   }
   print join "\t", @read, "\n";

@@ -480,7 +480,7 @@ rule multiqc:
     shell:
         """
         multiqc {input.files} -o {params.dir} -n multiqc_{wildcards.assembly}.html \
-        --config {config[rule_dir]}/../schemas/multiqc_config.yaml                 \
+        --config {input.schema}                                                    \
         --config {input.header}                                                    \
         --sample-names {input.sample_names}                                        \
         --sample-filters {input.filter_buttons}                                    \
