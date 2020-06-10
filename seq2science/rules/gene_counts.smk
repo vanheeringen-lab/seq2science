@@ -1,7 +1,7 @@
 def get_counts(wildcards):
     quant_dirs = []
-    for replicate in treps.index:
-        quant_dirs.append(f"{{result_dir}}/{{quantifier}}/{wildcards.assembly}-{replicate}")
+    for sample in treps[treps['assembly'] == wildcards.assembly].index:
+        quant_dirs.append(f"{{result_dir}}/{{quantifier}}/{wildcards.assembly}-{sample}")
     return expand(quant_dirs, **config)
 
 if config['quantifier'] == 'salmon':
@@ -37,7 +37,7 @@ if config['quantifier'] == 'salmon':
         resources:
             R_scripts=1 # conda's R can have issues when starting multiple times
         script:
-            "../scripts/linked_txome.R"
+            f"{config['rule_dir']}/../scripts/linked_txome.R"
 
     rule txi_count_matrix:
         """
@@ -60,7 +60,7 @@ if config['quantifier'] == 'salmon':
         resources:
             R_scripts=1 # conda's R can have issues when starting multiple times
         script:
-            "../scripts/txi.R"
+            f"{config['rule_dir']}/../scripts/txi.R"
 
 
 elif config['quantifier'] == 'star':

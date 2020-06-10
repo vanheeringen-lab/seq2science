@@ -90,12 +90,13 @@ rule decoy_transcripts:
     script source: https://github.com/COMBINE-lab/SalmonTools
     """
     input:
-        script="../../scripts/generateDecoyTranscriptome.sh",
         genome=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
         gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
         transcripts=expand("{genome_dir}/{{assembly}}/{{assembly}}.transcripts.fa", **config),
     output:
         expand("{genome_dir}/{{assembly}}/decoy_transcripts/decoys.txt", **config)
+    params:
+        script=f"{config['rule_dir']}/../scripts/generateDecoyTranscriptome.sh"
     log:
         expand("{log_dir}/get_genome/{{assembly}}.decoy_transcripts.log", **config)
     benchmark:
@@ -108,4 +109,4 @@ rule decoy_transcripts:
     priority: 1
     shell:
          ("cpulimit --include-children -l {threads}00 -- " if config.get("cpulimit", True) else " ") +
-         "sh {input.script} -j {threads} -g {input.genome} -a {input.gtf} -t {input.transcripts} -o $(dirname {output}) > {log} 2>&1"
+         "sh {params.script} -j {threads} -g {input.genome} -a {input.gtf} -t {input.transcripts} -o $(dirname {output}) > {log} 2>&1"

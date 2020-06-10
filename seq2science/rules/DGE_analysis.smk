@@ -67,7 +67,7 @@ rule deseq2:
     resources:
         R_scripts=1 # conda's R can have issues when starting multiple times
     script:
-        "../scripts/deseq2.R"
+        f"{config['rule_dir']}/../scripts/deseq2.R"
 
 
 rule blind_clustering:
@@ -91,4 +91,4 @@ rule blind_clustering:
     resources:
         R_scripts=1 # conda's R can have issues when starting multiple times
     script:
-        "../scripts/deseq2_clustering.R"
+        f"{config['rule_dir']}/../scripts/deseq2_clustering.R"

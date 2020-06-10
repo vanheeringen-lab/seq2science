@@ -1,6 +1,3 @@
-import gzip
-
-
 def get_blacklist_files(wildcards):
     files = {}
     # ideally get genome is a checkpoint, however there are quite some Snakemake
@@ -30,9 +27,9 @@ rule setup_blacklist:
         newblacklist = ""
         if config.get('remove_blacklist') and wildcards.assembly.lower() in \
                 ["ce10", "dm3", "hg38", "hg19", "mm9", "mm10"]:
-            blacklist = f"{config['genome_dir']}/{wildcards.assembly}/{wildcards.assembly}.blacklist.bed.gz"
-            with gzip.GzipFile(blacklist) as file:
-                newblacklist += file.read().decode('utf8')
+            blacklist = f"{config['genome_dir']}/{wildcards.assembly}/{wildcards.assembly}.blacklist.bed"
+            with open(blacklist) as file:
+                newblacklist += file.read()
 
         if any('.fa.sizes' in inputfile for inputfile in input):
             with open(input.sizes, 'r') as file:
@@ -62,7 +59,7 @@ rule complement_blacklist:
     shell:
         """
         sortBed -faidx {input.sizes} -i {input.blacklist} |
-        complementBed -i /dev/stdin -g {input.sizes} > {output} 2> {log}
+        complementBed -i stdin -g {input.sizes} > {output} 2> {log}
         """
 
 
@@ -88,7 +85,7 @@ rule sieve_bam:
         expand("{benchmark_dir}/sieve_bam/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
     params:
         minqual=f"-q {config['min_mapping_quality']}",
-        atacshift=lambda wildcards, input: f"| ../../scripts/atacshift.pl /dev/stdin {input.sizes}" if config['tn5_shift'] else "",
+        atacshift=lambda wildcards, input: f"| {config['rule_dir']}/../scripts/atacshift.pl /dev/stdin {input.sizes}" if config['tn5_shift'] else "",
         blacklist=lambda wildcards, input: f"-L {input.blacklist}",
         prim_align=f"-F 256" if config["only_primary_align"] else ""
     conda:

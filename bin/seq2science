@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-This is the user's entry-point for the seq2science pipeline.
+This is the user's entry-point for the seq2science tool.
 """
 import sys
 import argparse
@@ -23,6 +23,7 @@ except ImportError:
 
 __version__ = "0.0.0"
 
+
 def main():
     # set helpful paths
     base_dir = os.path.dirname(inspect.getfile(seq2science))
@@ -36,7 +37,7 @@ def main():
         dir_path = args.dir if os.path.isabs(args.dir) else os.path.join(os.getcwd(), args.dir)
         _init(args, workflows_dir, dir_path)
     elif args.command == "run":
-        config_path = args.config if os.path.isabs(args.config) else os.path.join(os.getcwd(), args.config)
+        config_path = args.configfile if os.path.isabs(args.configfile) else os.path.join(os.getcwd(), args.configfile)
         _run(args, base_dir, workflows_dir, config_path)
     elif args.command == "clean":
         _clean(base_dir)
@@ -97,7 +98,7 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
 
     run.add_argument(
         "-c",
-        "--config",
+        "--configfile",
         default="./config.yaml",
         metavar="FILE",
         help="The path to the config file.",
@@ -178,7 +179,6 @@ def _run(args, base_dir, workflows_dir, config_path):
 
     # parse the args
     parsed_args = {"snakefile": os.path.join(workflows_dir, args.workflow, "Snakefile"),
-                   "config": {"rule_dir": os.path.join(base_dir, "rules")},
                    "cores": args.cores,
                    "use_conda": True,
                    "conda_frontend": "mamba",
@@ -187,7 +187,7 @@ def _run(args, base_dir, workflows_dir, config_path):
 
     # get the additional snakemake options
     snakemake_options = args.snakemakeOptions if args.snakemakeOptions is not None else dict()
-
+    snakemake_options.setdefault("config", {}).update({"rule_dir": os.path.join(base_dir, "rules")})
     # parse the profile
     snakemake_options["configfiles"] = [config_path]
     if args.profile is not None:
@@ -209,7 +209,7 @@ def _run(args, base_dir, workflows_dir, config_path):
 
     # run snakemake
     exit_code = snakemake.snakemake(**parsed_args)
-    sys.exit(exit_code)
+    sys.exit(0) if exit_code else sys.exit(1)
 
 
 def _clean(base_dir):
@@ -248,18 +248,26 @@ class _StoreDictKeyPair(argparse.Action):
         )
 
     def __call__(self, parser, namespace, values, option_string=None):
+        # TODO: cleanup
         my_dict = {}
         for kv in values:
             k, v = kv.split("=")
-            if v[0] == "{" and v[-1] == "}":
-                pairs = list(filter(None, re.split('{|:| |}', v)))
-                assert len(pairs) % 2 == 0
-                v = {pairs[i]: pairs[i+1] for i in range(0, len(pairs), 2)}
-                v = {k: int(v) if v.isdigit() else v for k, v in v.items()}
+
+            if ":" in v:
+                pair = list(filter(None, re.split('{|:| |}', v)))
+                assert len(pair) == 2
+                if pair[1].lower() == 'true':
+                    pair[1] = True
+                v = {pair[0]: int(pair[1]) if isinstance(pair[1], str) and pair[1].isdigit() else pair[1]}
+            elif "[" in v:
+                v = re.sub("\[|\]", "", v).split(",")
             try:
                 my_dict[k] = int(v)
             except:
-                my_dict[k] = v
+                if k not in my_dict:
+                    my_dict[k] = v
+                else:
+                    my_dict[k].update(v)
 
         setattr(namespace, self.dest, my_dict)
 
