@@ -118,7 +118,7 @@ if 'descriptive_name' in samples:
         samples['descriptive_name'].to_list() == samples['sample'].to_list():
         samples = samples.drop(columns=['descriptive_name'])
 if 'strandedness' in samples:
-    samples['strandedness'] = samples['strandedness'].mask(pd.isnull, 'unknown')
+    samples['strandedness'] = samples['strandedness'].mask(pd.isnull, 'nan')
     if config['filter_bam_by_strand'] is False or not any([field in list(samples['strandedness']) for field in ['forward', 'yes', 'reverse']]):
         samples = samples.drop(columns=['strandedness'])
 
