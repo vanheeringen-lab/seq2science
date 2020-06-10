@@ -1,8 +1,8 @@
 # dataframe with all technical replicates collapsed
 cols = ['sample', 'assembly']
-if 'replicate' in samples and config.get('technical_replicates')  != 'keep':
+if 'replicate' in samples:
     cols = ['replicate', 'assembly']
-if 'condition' in samples and config.get('biological_replicates') != 'keep':
+if 'condition' in samples:
     cols.append('condition')
 if "control" in samples:
     cols.append("control")
@@ -42,7 +42,7 @@ def rep_to_descriptive(rep):
     return rep
 
 
-if 'replicate' in samples and config.get('technical_replicates') == 'merge':
+if 'replicate' in samples:
     def get_merge_replicates(wildcards):
         input_files = dict()
         input_files["reps"] = expand([f"{{trimmed_dir}}/{sample}{wildcards.fqext}_trimmed.{{fqsuffix}}.gz"

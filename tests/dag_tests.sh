@@ -1,6 +1,5 @@
 # to run these tests locally:
 #   python setup.py develop
-#   python setup.py build
 #   bash ./tests/dag_tests.sh TEST
 
 # check if an argument was passed

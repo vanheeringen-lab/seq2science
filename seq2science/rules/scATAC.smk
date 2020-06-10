@@ -19,11 +19,10 @@ rule create_SNAP_object:
     params:
         params=config["snaptools_opt"],
         chrm=f"--keep-chrm={'TRUE' if not config['remove_mito'] else 'FALSE'}",
-        mapq=f"--min-mapq={config['min_mapping_quality']}",
-        assembly=samples["assembly"][0]
+        mapq=f"--min-mapq={config['min_mapping_quality']}"
     shell:
         """
-        snaptools snap-pre --input-file={input.bams} --output-snap={output} --genome-name={params.assembly} \
+        snaptools snap-pre --input-file={input.bams} --output-snap={output} --genome-name={wildcards.assembly} \
         --genome-size={input.genome_size} {params.params} {params.chrm} {params.mapq} > {log} 2>&1
         """
 

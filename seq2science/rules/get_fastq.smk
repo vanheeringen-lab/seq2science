@@ -160,7 +160,9 @@ def get_wrong_fqext(wildcards):
     r2 = wildcards.sample + "_" + config["fqext2"] + "." + config["fqsuffix"] + ".gz"
     fastqs = [f for f in fastqs if not re.match(r1+"|"+r2, f)]
     if len(fastqs) == 0:
-        fastqs.append(f"impossible input to prevent Snakemake from running the rule without input, {wildcards}")
+        fastqs.append("If you can read this, snakemake is looking for non-existing files or in the wrong location. "
+                      f"Wildcards: {wildcards}"
+                      "Tip: try deleting ~/.config/snakemake/layouts.p")
     return sorted(fastqs)
 
 

@@ -203,16 +203,14 @@ def get_bigwig_strand(sample):
     """
     return a list of extensions for (un)stranded bigwigs
     """
-    if 'strandedness' in samples and config['filter_bam_by_strand']:
-        if 'replicate' in samples and config.get('technical_replicates') == 'merge':
-            s2 = samples[['replicate', 'strandedness']].drop_duplicates().set_index('replicate')
-            strandedness = s2["strandedness"].loc[sample]
-            if strandedness in ['forward', 'yes', 'reverse']:
-                return ['.fwd', '.rev']
-        else:
-            strandedness = samples["strandedness"].loc[sample]
-            if strandedness in ['forward', 'yes', 'reverse']:
-                return ['.fwd', '.rev']
+    if 'strandedness' in samples:
+        s2 = samples
+        if 'replicate' in samples:
+            s2 = samples.reset_index()[['replicate', 'strandedness']].drop_duplicates().set_index('replicate')
+
+        strandedness = s2["strandedness"].loc[sample]
+        if strandedness in ['forward', 'yes', 'reverse']:
+            return ['.fwd', '.rev']
     return ['']
 
 
@@ -222,6 +220,9 @@ def get_ucsc_name(assembly):
     ucsc genome browser, and as second value the name of the assembly according to ucsc
     "convention".
     """
+    if dryrun:
+        return False, assembly
+
     with urllib.request.urlopen("https://api.genome.ucsc.edu/list/ucscGenomes") as url:
         data = json.loads(url.read().decode())['ucscGenomes']
 
@@ -270,9 +271,10 @@ def get_trackhub_files(wildcards):
         gtf = True if get_workflow() == 'rna_seq' else False
 
         # check for response of ucsc
-        response = requests.get(f"https://genome.ucsc.edu/cgi-bin/hgTracks?db={assembly}",
-                                allow_redirects=True)
-        assert response.ok, "Make sure you are connected to the internet"
+        if not dryrun:
+            response = requests.get(f"https://genome.ucsc.edu/cgi-bin/hgTracks?db={assembly}",
+                                    allow_redirects=True)
+            assert response.ok, "Make sure you are connected to the internet"
 
         # see if the title of the page mentions our assembly
         if not get_ucsc_name(assembly)[0]:

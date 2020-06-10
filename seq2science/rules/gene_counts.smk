@@ -85,9 +85,7 @@ elif config['quantifier'] == 'star':
                 sys.stderr = sys.stdout = log_file
 
                 # check if samples.tsv has at least one sample with strandedness
-                samples_have_strandedness = 'strandedness' in samples and \
-                                            any(samples['strandedness'].str.contains('yes|forward|reverse'))
-                if samples_have_strandedness:
+                if 'strandedness' in samples.columns:
                     def get_column(strandedness):
                         if pd.isnull(strandedness) or strandedness in ['no', 'NaN']:
                             return 1 #non stranded protocol
@@ -96,20 +94,20 @@ elif config['quantifier'] == 'star':
                         elif strandedness == 'reverse':
                             return 3 #4th column, usually for Illumina truseq
                         else:
-                            raise ValueError(("'strandedness' column should be empty or have the " 
-                                              "value 'none', 'yes', 'forward' (same as yes) or 'reverse', instead has the " 
-                                              "value {}").format(repr(strandedness)))
+                            raise ValueError("'strandedness' column should be empty or have the " 
+                                             "value 'none', 'yes', 'forward' (same as yes) or 'reverse', instead has the " 
+                                             f"value {repr(strandedness)}")
 
                     # strandedness per sample/replicate
                     s2 = samples['strandedness']
-                    if 'replicate' in samples and config.get('technical_replicates') == 'merge':
+                    if 'replicate' in samples:
                         s2 = samples.reset_index()[['replicate', 'strandedness']].drop_duplicates().set_index('replicate')
 
                 counts = pd.DataFrame()
                 for sample in input.cts:
                     sample_name = os.path.basename(sample).replace(wildcards.assembly + '-', '', 1)
                     strand_dependent_column = 1
-                    if samples_have_strandedness:
+                    if 'strandedness' in samples:
                         strandedness = s2["strandedness"].loc[sample_name]
                         strand_dependent_column = get_column(strandedness)
 

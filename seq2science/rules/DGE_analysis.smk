@@ -2,35 +2,27 @@ def get_contrasts():
     """
     splits contrasts that contain multiple comparisons
     """
-    if not config.get('contrasts', False):
+    if 'contrasts' not in config:
         return []
 
-    # contrasts from config
-    old_contrasts = list(config["contrasts"])
-
     new_contrasts = []
-    for contrast in old_contrasts:
-        original_contrast, contrast, batch = parse_DE_contrasts(contrast)
-
-        l = len(contrast)
-        if l == 1:
-            # write out the full contrast
-            lvls = samples[contrast[0]].dropna().unique().tolist()
-            new_contrast = batch + '+' + contrast[0] + '_' + lvls[0] + '_' + lvls[1] if batch is not None else contrast[0] + '_' + lvls[0] + '_' + lvls[1]
-            new_contrasts.append(new_contrast)
-        elif l == 2 or (l == 3 and 'all' in contrast[1:]):
+    for contrast in list(config["contrasts"]):
+        parsed_contrast, batch = parse_de_contrasts(contrast)
+        column_name = parsed_contrast[0]
+        components = len(parsed_contrast)
+        if components == 2 or (components == 3 and 'all' in contrast[1:]):
             # create a list of all contrasts designed by the 'groupA vs all' design
-            reflvl = str(contrast[2]) if contrast[1] == 'all' else str(contrast[1])
-            lvls = samples[contrast[0]].dropna().unique().tolist()
-            lvls = list(map(lambda x: str(x), lvls))
+            reflvl = str(parsed_contrast[2]) if parsed_contrast[1] == 'all' else str(parsed_contrast[1])
+            lvls = [str(lvl) for lvl in samples[column_name].dropna().unique().tolist()]
             lvls.remove(reflvl)
-
-            for lvl in lvls:
-                new_contrast = batch + '+' + contrast[0] + '_' + lvl + '_' + reflvl if batch is not None else contrast[0] + '_' + lvl + '_'  + reflvl
-                new_contrasts.append(new_contrast)
         else:
-            # remove '~', for uniformity
-            new_contrast = original_contrast.replace("~", "").replace(" ", "")
+            reflvl = parsed_contrast[2]
+            lvls = [parsed_contrast[1]]
+
+        for lvl in lvls:
+            new_contrast = f"{column_name}_{lvl}_{reflvl}"
+            if batch:
+                new_contrast = f"{batch}+{new_contrast}"
             new_contrasts.append(new_contrast)
 
     # get unique elements
@@ -63,7 +55,7 @@ rule deseq2:
     threads: 4
     params:
         samples=os.path.abspath(config["samples"]),
-        replicates=True if config['technical_replicates'] == 'merge' else False
+        replicates=True if 'replicate' in samples else False
     resources:
         R_scripts=1 # conda's R can have issues when starting multiple times
     script:
@@ -87,7 +79,7 @@ rule blind_clustering:
     threads: 4
     params:
         samples=os.path.abspath(config["samples"]),
-        replicates=True if config['technical_replicates'] == 'merge' else False
+        replicates=True if 'replicate' in samples else False
     resources:
         R_scripts=1 # conda's R can have issues when starting multiple times
     script:

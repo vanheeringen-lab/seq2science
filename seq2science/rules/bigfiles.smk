@@ -134,11 +134,10 @@ rule peak_bigpeak:
 
 def get_strandedness(wildcards):
     sample = f"{wildcards.sample}"
-    if 'replicate' in samples and config.get('technical_replicates') == 'merge':
-        s2 = samples[['replicate', 'strandedness']].drop_duplicates().set_index('replicate')
-        strandedness = s2["strandedness"].loc[sample]
-    else:
-        strandedness = samples["strandedness"].loc[sample]
+    s2 = samples
+    if 'replicate' in samples:
+        s2 = samples.reset_index()[['replicate', 'strandedness']].drop_duplicates().set_index('replicate')
+    strandedness = s2["strandedness"].loc[sample]
     return strandedness
 
 

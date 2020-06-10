@@ -117,6 +117,10 @@ if 'descriptive_name' in samples:
     if ('replicate' in samples and samples['descriptive_name'].to_list() == samples['replicate'].to_list()) or \
         samples['descriptive_name'].to_list() == samples['sample'].to_list():
         samples = samples.drop(columns=['descriptive_name'])
+if 'strandedness' in samples:
+    samples['strandedness'] = samples['strandedness'].mask(pd.isnull, 'nan')
+    if config['filter_bam_by_strand'] is False or not any([field in list(samples['strandedness']) for field in ['forward', 'yes', 'reverse']]):
+        samples = samples.drop(columns=['strandedness'])
 
 if 'replicate' in samples:
     # check if replicate names are unique between assemblies
@@ -142,7 +146,7 @@ if "condition" in samples and "replicate" in samples:
 
 # validate samples file
 for schema in sample_schemas:
-    validate(samples, schema=f"../schemas/samples/{schema}.schema.yaml")
+    validate(samples, schema=f"{config['rule_dir']}/../schemas/samples/{schema}.schema.yaml")
 
 sanitized_samples = copy.copy(samples)
 
@@ -289,7 +293,7 @@ config['layout'] = {**{key: value for key, value in config['layout'].items() if 
 logger.info("Done!\n\n")
 
 # if samples are merged add the layout of the technical replicate to the config
-if 'replicate' in samples and config.get('technical_replicates') == 'merge':
+if 'replicate' in samples:
     for sample in samples.index:
         replicate = samples.loc[sample, 'replicate']
         config['layout'][replicate] = config['layout'][sample]
@@ -379,8 +383,9 @@ else:
     workflow.global_resources = {**{'mem_gb': np.clip(workflow.global_resources.get('mem_gb', 9999), 0, convert_size(mem.total, 3)[0])},
                                  **workflow.global_resources}
 
-
+dryrun=True
 onstart:
+    dryrun=False
     # save a copy of the latest samples and config file(s) in the log_dir
     # skip this step on Jenkins, as it runs in parallel
     if os.getcwd() != config['log_dir'] and not os.getcwd().startswith('/var/lib/jenkins'):
