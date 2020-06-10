@@ -147,15 +147,14 @@ if "condition" in samples and "replicate" in samples:
 # validate samples file
 for schema in sample_schemas:
     validate(samples, schema=f"{config['rule_dir']}/../schemas/samples/{schema}.schema.yaml")
-samples = samples.set_index('sample')
-samples.index = samples.index.map(str)
 
 sanitized_samples = copy.copy(samples)
 
+samples = samples.set_index('sample')
+samples.index = samples.index.map(str)
+
 
 # sample layouts
-
-
 # check if a sample is single-end or paired end, and store it
 logger.info("Checking if samples are single-end or paired-end...")
 layout_cachefile = os.path.expanduser('~/.config/snakemake/layouts.p')

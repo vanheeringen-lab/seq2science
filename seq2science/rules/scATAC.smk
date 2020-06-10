@@ -5,7 +5,7 @@ rule create_SNAP_object:
     These snapobjects can be merged later using snaptools in R.
     """
     input:
-        bams=expand("{dedup_dir}/{{assembly}}-{{sample}}.sambamba-queryname.bam", **config),
+        bams=expand("{final_bam_dir}/{{assembly}}-{{sample}}.sambamba-queryname.bam", **config),
         genome_size=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config)
     output:
         expand("{result_dir}/snap/{{sample}}-{{assembly}}.snap", **config)

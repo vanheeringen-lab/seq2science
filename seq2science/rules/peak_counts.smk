@@ -26,7 +26,7 @@ def get_coverage_table_replicates(file_ext):
     TODO improve + explain
     """
     def wrapped(wildcards):
-        return expand([f"{{dedup_dir}}/{wildcards.assembly}-{replicate}.{wildcards.sorter}-{wildcards.sorting}.{file_ext}"
+        return expand([f"{{final_bam_dir}}/{wildcards.assembly}-{replicate}.{wildcards.sorter}-{wildcards.sorting}.{file_ext}"
             for replicate in treps[treps['assembly'] == wildcards.assembly].index], **config)
     return wrapped
 
