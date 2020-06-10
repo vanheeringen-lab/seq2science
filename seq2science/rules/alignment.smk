@@ -2,7 +2,7 @@ def get_reads(wildcards):
     """
     Function that returns the reads for any aligner.
     """
-    if 'replicate' in samples and config.get('technical_replicates') == 'merge':
+    if 'replicate' in samples:
         if config['layout'].get(wildcards.sample, False) == "SINGLE":
             return expand("{trimmed_dir}/merged/{{sample}}_trimmed.{fqsuffix}.gz", **config)
         return sorted(expand("{trimmed_dir}/merged/{{sample}}_{fqext}_trimmed.{fqsuffix}.gz", **config))

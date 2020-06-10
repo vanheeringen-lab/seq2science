@@ -102,7 +102,7 @@ elif config['quantifier'] == 'star':
 
                     # strandedness per sample/replicate
                     s2 = samples['strandedness']
-                    if 'replicate' in samples and config.get('technical_replicates') == 'merge':
+                    if 'replicate' in samples:
                         s2 = samples.reset_index()[['replicate', 'strandedness']].drop_duplicates().set_index('replicate')
 
                 counts = pd.DataFrame()

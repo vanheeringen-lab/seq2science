@@ -59,14 +59,14 @@ if config.get('bam_sorter', False):
 
 # make sure that our samples.tsv and configuration work together...
 # ...on biological replicates
-if 'condition' in samples and config.get('biological_replicates', '') != 'keep':
+if 'condition' in samples:
     if 'hmmratac' in config['peak_caller']:
         assert config.get('biological_replicates', '') == 'idr', \
         f'HMMRATAC peaks can only be combined through idr'
 
     for condition in set(samples['condition']):
         for assembly in set(samples[samples['condition'] == condition]['assembly']):
-            if 'replicate' in samples and config.get('technical_replicates') == 'merge':
+            if 'replicate' in samples:
                 nr_samples = len(set(samples[(samples['condition'] == condition) & (samples['assembly'] == assembly)]['replicate']))
             else:
                 nr_samples = len(samples[(samples['condition'] == condition) & (samples['assembly'] == assembly)])
@@ -77,63 +77,58 @@ if 'condition' in samples and config.get('biological_replicates', '') != 'keep':
                 f' condition {condition} and assembly {assembly}'
 
 # ...on DE contrasts
-def parse_DE_contrasts(de_contrast):
-    """
-    Extract batch and contrast groups from a DE contrast design
-    """
-    original_contrast = de_contrast
+if config.get('contrasts'):
+    def parse_de_contrasts(de_contrast):
+        """
+        Extract contrast column, groups and batch effect column from a DE contrast design
 
-    # remove whitespaces (and '~'s if used)
-    de_contrast = de_contrast.replace(" ", "").replace("~", "")
+        Accepts a string containing a DESeq2 contrast design
 
-    # split and store batch effect
-    batch = None
-    if '+' in de_contrast:
-        batch =  de_contrast.split('+')[0]
-        de_contrast = de_contrast.split('+')[1]
+        Returns
+        parsed_contrast, lst: the contrast components
+        batch, str: the batch effect column or None
+        """
+        # remove whitespaces (and '~'s if used)
+        de_contrast = de_contrast.replace(" ", "").replace("~", "")
 
-    # parse contrast
-    parsed_contrast = de_contrast.split('_')
-    return original_contrast, parsed_contrast, batch
+        # split and store batch effect
+        batch = None
+        if '+' in de_contrast:
+            batch, de_contrast = de_contrast.split('+')[0:2]
 
-if config.get('contrasts', False):
+        # parse contrast column and groups
+        parsed_contrast = de_contrast.split('_')
+        return parsed_contrast, batch
+
     # check differential gene expression contrasts
-    old_contrasts = list(config["contrasts"])
-    for contrast in old_contrasts:
-        original_contrast, parsed_contrast, batch = parse_DE_contrasts(contrast)
+    for contrast in list(config["contrasts"]):
+        parsed_contrast, batch = parse_de_contrasts(contrast)
+        column_name = parsed_contrast[0]
 
         # Check if the column names can be recognized in the contrast
-        assert parsed_contrast[0] in samples.columns and parsed_contrast[0] not in ["sample", "assembly"], \
-            (f'\nIn contrast design "{original_contrast}", "{parsed_contrast[0]} ' +
+        assert column_name in samples.columns and column_name not in ["sample", "assembly"], \
+            (f'\nIn contrast design "{contrast}", "{column_name} ' +
              f'does not match any valid column name in {config["samples"]}.\n')
         if batch is not None:
             assert batch in samples.columns and batch not in ["sample", "assembly"], \
-                (f'\nIn contrast design "{original_contrast}", the batch effect "{batch}" ' +
+                (f'\nIn contrast design "{contrast}", the batch effect "{batch}" ' +
                  f'does not match any valid column name in {config["samples"]}.\n')
 
-        # Check if the groups described by the contrast can be identified and found in samples.tsv
-        l = len(parsed_contrast)
-        assert l < 4, ("\nA differential expression contrast couldn't be parsed correctly.\n" +
-                       f"{str(l-1)} groups were found in '{original_contrast}' " +
+        # Check if the contrast contains the number of components we can parse
+        components = len(parsed_contrast)
+        assert components > 1, (f"\nA differential expression contrast is too short: '{contrast}'.\n"
+                                 "Specify at least one reference group to compare against.\n")
+        assert components < 4, ("\nA differential expression contrast couldn't be parsed correctly.\n" +
+                       f"{str(components-1)} groups were found in '{contrast}' " +
                        f"(groups: {', '.join(parsed_contrast[1:])}).\n\n" +
                        f'Tip: do not use underscores in the columns of {config["samples"]} referenced by your contrast.\n')
-        if l == 1:
-            # check if contrast column has exactly 2 factor levels (per assembly)
-            tmp = samples[['assembly', parsed_contrast[0]]].dropna()
-            factors = pd.DataFrame(tmp.groupby('assembly')[parsed_contrast[0]].nunique())
-            assert all(factors[parsed_contrast[0]] == 2),\
-                ('\nYour contrast design, ' + original_contrast +
-                 ', contains only a column name (' + parsed_contrast[0] +
-                 '). \nIf you wish to compare all groups in this column, add a reference group. ' +
-                 'Number of groups found (per assembly): \n' + str(factors[parsed_contrast[0]]))
-        else:
-            # check if contrast column contains the groups
-            for group in parsed_contrast[1:]:
-                if group != 'all':
-                    assert str(group) in [str(i) for i in samples[parsed_contrast[0]].tolist()],\
-                        ('\nYour contrast design contains group ' + group +
-                        ' which cannot be found in column ' + parsed_contrast[0] +
-                         ' of ' + config["samples"] + '.\n')
+
+        # Check if the groups in the contrast can be found in the right column of the samples.tsv
+        for group in parsed_contrast[1:]:
+            if group != 'all':
+                assert str(group) in [str(i) for i in samples[column_name].tolist()],\
+                    (f'\nYour contrast design contains group {group} which cannot be found '
+                     f'in column {column_name} of {config["samples"]}.\n')
 
 
 def sieve_bam(configdict):
