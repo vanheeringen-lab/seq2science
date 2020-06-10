@@ -146,7 +146,7 @@ if "condition" in samples and "replicate" in samples:
 
 # validate samples file
 for schema in sample_schemas:
-    validate(samples, schema=f"../schemas/samples/{schema}.schema.yaml")
+    validate(samples, schema=f"{config['rule_dir']}/../schemas/samples/{schema}.schema.yaml")
 samples = samples.set_index('sample')
 samples.index = samples.index.map(str)
 
