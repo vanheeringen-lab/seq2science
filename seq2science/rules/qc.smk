@@ -1,5 +1,10 @@
-import os
 import re
+
+
+def samtools_stats_input(wildcards):
+    if wildcards.directory == config["aligner"]:
+        return expand("{result_dir}/{{directory}}/{{assembly}}-{{sample}}.samtools-coordinate-unsieved.bam", **config)
+    return expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config)
 
 
 rule samtools_stats:
@@ -7,11 +12,11 @@ rule samtools_stats:
     Get general stats from bam files like percentage mapped.
     """
     input:
-        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-unsieved.bam", **config)
+        samtools_stats_input
     output:
-        expand("{qc_dir}/samtools_stats/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.samtools_stats.txt", **config)
+        expand("{qc_dir}/samtools_stats/{{directory}}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.samtools_stats.txt", **config)
     log:
-        expand("{log_dir}/samtools_stats/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config)
+        expand("{log_dir}/samtools_stats/{{directory}}/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config)
     conda:
         "../envs/samtools.yaml"
     shell:
@@ -22,8 +27,8 @@ rule samtools_stats:
 #  I added this as it was sufficient for rule idr
 def get_featureCounts_bam(wildcards):
     if wildcards.peak_caller in ['macs2','hmmratac']:
-        return expand("{dedup_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config)
-    return expand("{dedup_dir}/{{assembly}}-{{sample}}.sambamba-queryname.bam", **config)
+        return expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config)
+    return expand("{final_bam_dir}/{{assembly}}-{{sample}}.sambamba-queryname.bam", **config)
 
 # TODO: featurecounts was not set up to accept hmmratac's gappedPeaks,
 #  I added this as it was sufficient for rule idr
@@ -65,7 +70,7 @@ rule featureCounts:
 
 def get_fastqc_input(wildcards):
     if '_trimmed' in wildcards.fname:
-        if 'replicate' in samples and config.get('technical_replicates', '') == 'merge' and all(sample not in wildcards.fname for sample in samples.index):
+        if 'replicate' in samples and all(sample not in wildcards.fname for sample in samples.index):
             fqc_input = "{trimmed_dir}/merged/{{fname}}.{fqsuffix}.gz"
         else:
             fqc_input = "{trimmed_dir}/{{fname}}.{fqsuffix}.gz"
@@ -100,7 +105,7 @@ rule InsertSizeMetrics:
     Get the insert size metrics from a (paired-end) bam.
     """
     input:
-        expand("{dedup_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config)
+        expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config)
     output:
         tsv=expand("{qc_dir}/InsertSizeMetrics/{{assembly}}-{{sample}}.tsv", **config),
         pdf=expand("{qc_dir}/InsertSizeMetrics/{{assembly}}-{{sample}}.pdf", **config)
@@ -146,12 +151,12 @@ def fingerprint_multiBamSummary_input(wildcards):
     output = {"bams": set(), "bais": set()}
 
     for trep in set(treps[treps['assembly'] == wildcards.assembly].index):
-        output["bams"].update(expand(f"{{dedup_dir}}/{wildcards.assembly}-{trep}.samtools-coordinate.bam", **config))
-        output["bais"].update(expand(f"{{dedup_dir}}/{wildcards.assembly}-{trep}.samtools-coordinate.bam.bai", **config))
+        output["bams"].update(expand(f"{{final_bam_dir}}/{wildcards.assembly}-{trep}.samtools-coordinate.bam", **config))
+        output["bais"].update(expand(f"{{final_bam_dir}}/{wildcards.assembly}-{trep}.samtools-coordinate.bam.bai", **config))
         if "control" in treps and isinstance(treps.loc[trep, "control"], str):
             control = treps.loc[trep, "control"]
-            output["bams"].update(expand(f"{{dedup_dir}}/{wildcards.assembly}-{control}.samtools-coordinate.bam", **config))
-            output["bais"].update(expand(f"{{dedup_dir}}/{wildcards.assembly}-{control}.samtools-coordinate.bam.bai", **config))
+            output["bams"].update(expand(f"{{final_bam_dir}}/{wildcards.assembly}-{control}.samtools-coordinate.bam", **config))
+            output["bais"].update(expand(f"{{final_bam_dir}}/{wildcards.assembly}-{control}.samtools-coordinate.bam.bai", **config))
 
     return output
 
@@ -401,6 +406,25 @@ rule multiqc_samplesconfig:
             out_file.write(outstring)
 
 
+rule multiqc_schema:
+    """
+    """
+    output:
+        temp(expand('{qc_dir}/schema.yaml', **config))
+    run:
+        with open(f'{config["rule_dir"]}/../schemas/multiqc_config.yaml') as cookie_schema:
+            cookie = cookie_schema.read()
+        
+        while len(list(re.finditer("{{.*}}", cookie))):
+            match_obj = next(re.finditer("{{.*}}", cookie))
+            span = match_obj.span()
+            match = eval(match_obj.group(0)[2:-2])  # without the curly braces
+            cookie = cookie[:span[0]] + match + cookie[span[1]:]
+
+        with open(output[0], "w") as out_file:
+            out_file.write(cookie)
+
+
 def get_qc_files(wildcards):
     assert 'quality_control' in globals(), "When trying to generate multiqc output, make sure that the "\
                                            "variable 'quality_control' exists and contains all the "\
@@ -408,8 +432,8 @@ def get_qc_files(wildcards):
     qc = dict()
     qc['header'] = expand('{qc_dir}/header_info.yaml', **config)[0]
     qc['sample_names'] = expand('{qc_dir}/sample_names_{{assembly}}.tsv', **config)[0]
-    if any([config['layout'][trep] == "PAIRED" for trep in treps[treps['assembly'] == wildcards.assembly].index]):
-        qc['filter_buttons'] = expand('{qc_dir}/sample_filters_{{assembly}}.tsv', **config)[0]
+    qc['schema'] = expand('{qc_dir}/schema.yaml', **config)[0]
+    qc['filter_buttons'] = expand('{qc_dir}/sample_filters_{{assembly}}.tsv', **config)[0]
     qc['files'] = set([expand('{qc_dir}/samplesconfig_mqc.html', **config)[0]])
 
     # trimming qc on individual samples
@@ -456,7 +480,7 @@ rule multiqc:
     shell:
         """
         multiqc {input.files} -o {params.dir} -n multiqc_{wildcards.assembly}.html \
-        --config {config[rule_dir]}/../schemas/multiqc_config.yaml                 \
+        --config {input.schema}                                                    \
         --config {input.header}                                                    \
         --sample-names {input.sample_names}                                        \
         --sample-filters {input.filter_buttons}                                    \
@@ -489,18 +513,19 @@ def get_alignment_qc(sample):
     output = []
 
     # add samtools stats
-    output.append(f"{{qc_dir}}/dedup/{{{{assembly}}}}-{sample}.samtools-coordinate.metrics.txt")
-    output.append(f"{{qc_dir}}/samtools_stats/{{{{assembly}}}}-{sample}.samtools-coordinate.samtools_stats.txt")
+    output.append(f"{{qc_dir}}/markdup/{{{{assembly}}}}-{sample}.samtools-coordinate.metrics.txt")
+    output.append(f"{{qc_dir}}/samtools_stats/{{aligner}}/{{{{assembly}}}}-{sample}.samtools-coordinate.samtools_stats.txt")
+    if sieve_bam(config):
+        output.append(f"{{qc_dir}}/samtools_stats/{os.path.basename(config['final_bam_dir'])}/{{{{assembly}}}}-{sample}.samtools-coordinate.samtools_stats.txt")
 
-    if "atac_seq" in get_workflow():
-        # add insert size metrics
-        if config['layout'][sample] == "PAIRED":
-            output.append(f"{{qc_dir}}/InsertSizeMetrics/{{{{assembly}}}}-{sample}.tsv")
+    # add insert size metrics
+    if config['layout'][sample] == "PAIRED":
+        output.append(f"{{qc_dir}}/InsertSizeMetrics/{{{{assembly}}}}-{sample}.tsv")
 
     # get the ratio mitochondrial dna
     output.append(f"{{result_dir}}/{config['aligner']}/{{{{assembly}}}}-{sample}.samtools-coordinate-unsieved.bam.mtnucratiomtnuc.json")
 
-    if get_workflow() in ["alignment", "chip_seq", "atac_seq"]:
+    if get_workflow() in ["alignment", "chip_seq", "atac_seq", "scatac_seq"]:
         output.append("{qc_dir}/plotFingerprint/{{assembly}}.tsv")
     if len(breps[breps["assembly"] == treps.loc[sample, "assembly"]].index) > 1:
         output.append("{qc_dir}/plotCorrelation/{{assembly}}.tsv")

@@ -20,6 +20,12 @@ try:
 except ImportError:
     full_import = False
 
+try:
+    import mamba
+    conda_frontend = "mamba"
+except ImportError:
+    conda_frontend = "conda"
+
 
 __version__ = "0.0.0"
 
@@ -181,7 +187,7 @@ def _run(args, base_dir, workflows_dir, config_path):
     parsed_args = {"snakefile": os.path.join(workflows_dir, args.workflow, "Snakefile"),
                    "cores": args.cores,
                    "use_conda": True,
-                   "conda_frontend": "mamba",
+                   "conda_frontend": conda_frontend,
                    "conda_prefix": os.path.join(base_dir, ".snakemake"),
                    "dryrun": args.dryrun}
 

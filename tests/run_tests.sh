@@ -1,6 +1,5 @@
 # to run these tests locally:
 #   python setup.py develop
-#   python setup.py build
 #   bash ./tests/dag_tests.sh TEST
 
 # check if an argument was passed
@@ -15,12 +14,11 @@ if [ $1 = "cleanup_files" ]; then
   rm -rf tests/local_test_results
   rm -rf tests/tinydata/index
   rm -rf tests/tinydata/decoy_transcripts
-  rm -rf tests/tinydata/tinydata.2bit
   rm -rf tests/tinydata/cytoBandIdeo.bb
+  rm -rf tests/tinydata/tinydata.2bit
   rm -rf tests/tinydata/tinydata.bb
   rm -rf tests/tinydata/tinydata.custom*
   rm -rf tests/tinydata/tinydata.gc5Base.bw
-  rm -rf tests/tinydata/tinydata.gtf
   rm -rf tests/tinydata/tinydata.ix
   rm -rf tests/tinydata/tinydata.ixx
   rm -rf tests/tinydata/tinydata.transcripts.fa
@@ -30,12 +28,7 @@ fi
 
 if [ $1 = "cleanup_envs" ]; then
   rm -rf .snakemake
-  rm -rf seq2science/workflows/download_fastq/.snakemake
-  rm -rf seq2science/workflows/alignment/.snakemake
-  rm -rf seq2science/workflows/atac_seq/.snakemake
-  rm -rf seq2science/workflows/chip_seq/.snakemake
-  rm -rf seq2science/workflows/rna_seq/.snakemake
-  rm -rf seq2science/workflows/scATAC_seq/.snakemake
+  rm -rf seq2science/.snakemake
   test_ran=1
 fi
 

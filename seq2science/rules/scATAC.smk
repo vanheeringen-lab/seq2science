@@ -5,7 +5,7 @@ rule create_SNAP_object:
     These snapobjects can be merged later using snaptools in R.
     """
     input:
-        bams=expand("{dedup_dir}/{{assembly}}-{{sample}}.sambamba-queryname.bam", **config),
+        bams=expand("{final_bam_dir}/{{assembly}}-{{sample}}.sambamba-queryname.bam", **config),
         genome_size=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config)
     output:
         expand("{result_dir}/snap/{{sample}}-{{assembly}}.snap", **config)
@@ -19,11 +19,10 @@ rule create_SNAP_object:
     params:
         params=config["snaptools_opt"],
         chrm=f"--keep-chrm={'TRUE' if not config['remove_mito'] else 'FALSE'}",
-        mapq=f"--min-mapq={config['min_mapping_quality']}",
-        assembly=samples["assembly"][0]
+        mapq=f"--min-mapq={config['min_mapping_quality']}"
     shell:
         """
-        snaptools snap-pre --input-file={input.bams} --output-snap={output} --genome-name={params.assembly} \
+        snaptools snap-pre --input-file={input.bams} --output-snap={output} --genome-name={wildcards.assembly} \
         --genome-size={input.genome_size} {params.params} {params.chrm} {params.mapq} > {log} 2>&1
         """
 

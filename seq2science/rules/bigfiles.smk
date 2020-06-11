@@ -134,11 +134,10 @@ rule peak_bigpeak:
 
 def get_strandedness(wildcards):
     sample = f"{wildcards.sample}"
-    if 'replicate' in samples and config.get('technical_replicates') == 'merge':
-        s2 = samples[['replicate', 'strandedness']].drop_duplicates().set_index('replicate')
-        strandedness = s2["strandedness"].loc[sample]
-    else:
-        strandedness = samples["strandedness"].loc[sample]
+    s2 = samples
+    if 'replicate' in samples:
+        s2 = samples.reset_index()[['replicate', 'strandedness']].drop_duplicates().set_index('replicate')
+    strandedness = s2["strandedness"].loc[sample]
     return strandedness
 
 
@@ -147,8 +146,8 @@ rule bam_stranded_bigwig:
     Convert a bam file into two bigwig files, one for each strand    
     """
     input:
-        bam=expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config),
-        bai=expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam.bai", **config)
+        bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config),
+        bai=expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam.bai", **config)
     output:
         forwards=temp(expand("{result_dir}/bigwigs/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.fwd.bw", **config)),
         reverses=temp(expand("{result_dir}/bigwigs/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.rev.bw", **config))
@@ -184,8 +183,8 @@ rule bam_bigwig:
     Convert a bam file into a bigwig file
     """
     input:
-        bam=expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config),
-        bai=expand("{dedup_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam.bai", **config)
+        bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config),
+        bai=expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam.bai", **config)
     output:
         temp(expand("{result_dir}/bigwigs/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bw", **config))
     params:
