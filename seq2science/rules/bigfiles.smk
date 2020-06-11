@@ -143,7 +143,8 @@ def get_strandedness(wildcards):
 
 rule bam_stranded_bigwig:
     """
-    Convert a bam file into two bigwig files, one for each strand    
+    Convert a bam file into two bigwig files, one for each strand.
+    TODO: split this rule into two or better: forward & backward logic
     """
     input:
         bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config),
@@ -174,8 +175,10 @@ rule bam_stranded_bigwig:
             direction2=forward
         fi
                     
-        bamCoverage --bam {input.bam} --outFileName {output.forwards} --filterRNAstrand $direction1 --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1 &&        
-        bamCoverage --bam {input.bam} --outFileName {output.reverses} --filterRNAstrand $direction2 --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1
+        bamCoverage --bam {input.bam} --outFileName {output.forwards} --filterRNAstrand $direction1
+        --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1 &&        
+        bamCoverage --bam {input.bam} --outFileName {output.reverses} --filterRNAstrand $direction2
+        --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1
         """
 
 rule bam_bigwig:

@@ -100,9 +100,10 @@ rule fastqc:
         "fastqc {input} -O {params} > {log} 2>&1"
 
 
-rule InsertSizeMetrics:
+rule insert_size_metrics:
     """
-    Get the insert size metrics from a (paired-end) bam.
+    Get insert size metrics from a (paired-end) bam. This score is then used by
+    MultiQC in the report.
     """
     input:
         expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config)
@@ -115,7 +116,8 @@ rule InsertSizeMetrics:
         "../envs/picard.yaml"
     shell:
         """
-        picard CollectInsertSizeMetrics INPUT={input} OUTPUT={output.tsv} H={output.pdf} > {log} 2>&1
+        picard CollectInsertSizeMetrics INPUT={input} 
+        OUTPUT={output.tsv} H={output.pdf} > {log} 2>&1
         """
 
 def get_chrM_name(wildcards, input):
@@ -126,9 +128,14 @@ def get_chrM_name(wildcards, input):
     return "no_chrm_found"
 
 
-rule MTNucRatioCalculator:
+rule mt_nuc_ratio_calculator:
     """
-    Calculate the ratio mitochondrial dna in your sample.
+    Estimate the amount of nuclear and mitochondrial reads in a sample. This metric
+    is especially important in ATAC-seq experiments where mitochondrial DNA can
+    be overrepresented. Reads are classified as mitochondrial reads if they map
+    against either "chrM" or "MT".
+    
+    These values are aggregated and displayed in the MultiQC report.
     """
     input:
         bam=expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-unsieved.bam", **config),
@@ -140,10 +147,10 @@ rule MTNucRatioCalculator:
     conda:
         "../envs/mtnucratio.yaml"
     params:
-        lambda wildcards, input: get_chrM_name(wildcards, input)
+        mitochondria=lambda wildcards, input: get_chrM_name(wildcards, input)
     shell:
         """
-        mtnucratio {input.bam} {params}
+        mtnucratio {input.bam} {params.mitochondria}
         """
 
 

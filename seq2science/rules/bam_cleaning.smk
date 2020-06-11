@@ -213,7 +213,7 @@ rule samtools_index:
 
 rule bam2cram:
     """
-    Convert bam to the more compressed cram format
+    Convert a bam file to the more compressed cram format.
     """
     input:
          bam=rules.mark_duplicates.output.bam,
@@ -230,7 +230,7 @@ rule bam2cram:
     conda:
         "../envs/samtools.yaml"
     shell:
-        "samtools view -@ {threads} -T {input.assembly} -C {input.bam} > {output} 2> {log}"
+        "samtools view -T {input.assembly} -C {input.bam} -@ {threads} > {output} 2> {log}"
 
 
 rule samtools_index_cram:
