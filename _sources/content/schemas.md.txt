@@ -98,11 +98,11 @@ qc_dir:
     default: qc
     type: string
 ```
-#####dedup_dir
+#####final_bam_dir
 ```
-dedup_dir:
-    description: directory where to store the workflow deduplicated alignment (defaults inside the result dir)
-    default: dedup
+final_bam_dir:
+    description: directory where to store the workflow's final deduplicated & sieved bams (defaults inside the result dir)
+    default: final_bam
     type: string
 ```
 #####trim_galore

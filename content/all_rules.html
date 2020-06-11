@@ -133,6 +133,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#multiqc-header-info">multiqc_header_info</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multiqc-rename-buttons">multiqc_rename_buttons</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multiqc-samplesconfig">multiqc_samplesconfig</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multiqc-schema">multiqc_schema</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#peak-bigpeak">peak_bigpeak</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#peak-union">peak_union</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#plotcorrelation">plotCorrelation</a></li>
@@ -373,7 +374,7 @@ Macs2 requires a genome size, which we estimate from the amount of unique kmers 
 <h2>create_SNAP_object<a class="headerlink" href="#create-snap-object" title="Permalink to this headline">¶</a></h2>
 <p>Create a snapobject for each BAM file.</p>
 <p>These snapobjects can be merged later using snaptools in R.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>snaptools snap-pre --input-file={input.bams} --output-snap={output} --genome-name={params.assembly} \
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>snaptools snap-pre --input-file={input.bams} --output-snap={output} --genome-name={wildcards.assembly} \
 --genome-size={input.genome_size} {params.params} {params.chrm} {params.mapq} &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
@@ -610,7 +611,7 @@ contain the name of the original replicate.</p>
 <h2>multiqc_header_info<a class="headerlink" href="#multiqc-header-info" title="Permalink to this headline">¶</a></h2>
 <p>Generate a multiqc header file with contact info and date of multiqc generation.</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>multiqc {input.files} -o {params.dir} -n multiqc_{wildcards.assembly}.html \
---config {config[rule_dir]}/../schemas/multiqc_config.yaml \
+--config {input.schema}\
 --config {input.header}\
 --sample-names {input.sample_names}\
 --sample-filters {input.filter_buttons}\
@@ -628,6 +629,9 @@ contain the name of the original replicate.</p>
 <div class="section" id="multiqc-samplesconfig">
 <h2>multiqc_samplesconfig<a class="headerlink" href="#multiqc-samplesconfig" title="Permalink to this headline">¶</a></h2>
 <p>Add a section in the multiqc report that reports the samples.tsv and config.yaml</p>
+</div>
+<div class="section" id="multiqc-schema">
+<h2>multiqc_schema<a class="headerlink" href="#multiqc-schema" title="Permalink to this headline">¶</a></h2>
 </div>
 <div class="section" id="peak-bigpeak">
 <h2>peak_bigpeak<a class="headerlink" href="#peak-bigpeak" title="Permalink to this headline">¶</a></h2>

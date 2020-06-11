@@ -29,7 +29,7 @@ To install the latest unreleased version of seq2science you can install from sou
 ### Mamba
 We recommend you to install [mamba](https://github.com/QuantStack/mamba) in your seq2science environment to install dependencies faster:
 ```console
-(seq2science) user@comp:~$ conda install mamba
+(seq2science) user@comp:~$ conda install mamba -c conda-forge
 ```
 
 ## Running a workflow

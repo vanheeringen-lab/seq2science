@@ -5,7 +5,9 @@ The first thing the pipeline does is making separate conda environments for the 
 
 ## I changed the config/samples file but seq2science does not rerun
 TODO: we should support rerunning!
-Seq2science (actually Snakemake) has a "lazy" policy regarding the generation of files. 
+Seq2science (actually Snakemake) has a "lazy" policy regarding the generation of files, and will normally only rerun jobs if the input is younger than the output. 
+
+To push seq2science to do this anyway, you need to remove one or two downstream files. We suggest deleting the MultiQC file, and a fastqc file of the samples that need to rerun.
 
 ## Failed to call external services.
 TODO explain that downloading can fail on server side. Retry later

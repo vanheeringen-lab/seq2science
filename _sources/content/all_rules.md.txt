@@ -119,7 +119,7 @@ Create a snapobject for each BAM file.
 
 These snapobjects can be merged later using snaptools in R.
 ```
-snaptools snap-pre --input-file={input.bams} --output-snap={output} --genome-name={params.assembly} \
+snaptools snap-pre --input-file={input.bams} --output-snap={output} --genome-name={wildcards.assembly} \
 --genome-size={input.genome_size} {params.params} {params.chrm} {params.mapq} > {log} 2>&1
 ```
 
@@ -343,7 +343,7 @@ Generate filter buttons.
 Generate a multiqc header file with contact info and date of multiqc generation.
 ```
 multiqc {input.files} -o {params.dir} -n multiqc_{wildcards.assembly}.html \
---config {config[rule_dir]}/../schemas/multiqc_config.yaml \
+--config {input.schema}\
 --config {input.header}\
 --sample-names {input.sample_names}\
 --sample-filters {input.filter_buttons}\
@@ -358,6 +358,9 @@ Generate rename buttons for the multiqc report.
 
 #### multiqc_samplesconfig
 Add a section in the multiqc report that reports the samples.tsv and config.yaml
+
+#### multiqc_schema
+
 
 #### peak_bigpeak
 Convert a narrowpeak file into a bignarrowpeak file.
