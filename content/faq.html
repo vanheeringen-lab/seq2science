@@ -166,8 +166,7 @@
 <div class="section" id="i-changed-the-config-samples-file-but-seq2science-does-not-rerun">
 <h2>I changed the config/samples file but seq2science does not rerun<a class="headerlink" href="#i-changed-the-config-samples-file-but-seq2science-does-not-rerun" title="Permalink to this headline">¶</a></h2>
 <p>TODO: we should support rerunning!
-Seq2science (actually Snakemake) has a “lazy” policy regarding the generation of files, and will normally only rerun jobs if the input is younger than the output.</p>
-<p>To push seq2science to do this anyway, you need to remove one or two downstream files. We suggest deleting the MultiQC file, and a fastqc file of the samples that need to rerun.</p>
+Seq2science (actually Snakemake) has a “lazy” policy regarding the generation of files.</p>
 </div>
 <div class="section" id="failed-to-call-external-services">
 <h2>Failed to call external services.<a class="headerlink" href="#failed-to-call-external-services" title="Permalink to this headline">¶</a></h2>

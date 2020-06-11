@@ -82,13 +82,7 @@
             
               <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Getting started</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#seq2science-requires-anaconda">seq2science requires anaconda</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#easy-installation-bioconda">Easy installation (bioconda)</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#install-from-source">Install from source</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#mamba">Mamba</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#running-a-workflow">Running a workflow</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#where-does-seq2science-store-results-and-looks-for-starting-points">Where does seq2science store results and looks for ‘starting points’?</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#what-is-snakemake">What is Snakemake?</a></li>
@@ -169,58 +163,34 @@
 <h1>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="seq2science-requires-anaconda">
-<h3>seq2science requires anaconda<a class="headerlink" href="#seq2science-requires-anaconda" title="Permalink to this headline">¶</a></h3>
-<p>Download and install <a class="reference external" href="https://www.anaconda.com/">minconda</a> if not yet installed:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">user@comp:~$</span> wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
-<span class="gp">user@comp:~$</span> bash miniconda.sh <span class="c1"># (make sure to say **yes** when asked to run conda init)</span>
-<span class="gp">user@comp:~$</span> <span class="nb">source</span> ~/.bashrc
-</pre></div>
-</div>
-</div>
-<div class="section" id="easy-installation-bioconda">
-<h3>Easy installation (bioconda)<a class="headerlink" href="#easy-installation-bioconda" title="Permalink to this headline">¶</a></h3>
 <p>The most straightforward way to install seq2science is by using <a class="reference external" href="https://docs.continuum.io/anaconda/">conda</a> using the <a class="reference external" href="https://bioconda.github.io/">bioconda</a> channel.</p>
-<p>To install seq2science in a fresh environment:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(base)</span> <span class="gp">user@comp:~$</span> conda create -n seq2science -c bioconda seq2science
+<p>Download and install <a class="reference external" href="https://www.anaconda.com/">minconda</a> if not yet installed:</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>$ wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+$ bash miniconda.sh # (make sure to say **yes** when asked to run conda init)
+$ source ~/.bashrc
 </pre></div>
 </div>
-</div>
-<div class="section" id="install-from-source">
-<h3>Install from source<a class="headerlink" href="#install-from-source" title="Permalink to this headline">¶</a></h3>
-<p>To install the latest unreleased version of seq2science you can install from source:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(base)</span> <span class="gp">user@comp:~$</span> git clone https://github.com/vanheeringen-lab/seq2science
-<span class="gp gp-VirtualEnv">(base)</span> <span class="gp">user@comp:~$</span> <span class="nb">cd</span> seq2science
-<span class="gp gp-VirtualEnv">(base)</span> <span class="gp">user@comp:~/seq2science$</span> conda env create --name seq2science -f requirements.yaml
-<span class="gp gp-VirtualEnv">(base)</span> <span class="gp">user@comp:~/seq2science$</span> conda activate seq2science
-<span class="gp gp-VirtualEnv">(seq2science)</span> <span class="gp">user@comp:~/seq2science$</span> pip install .
+<p>And install seq2science in a fresh environment:</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>$ conda create -n seq2science -c bioconda seq2science
 </pre></div>
-</div>
-</div>
-<div class="section" id="mamba">
-<h3>Mamba<a class="headerlink" href="#mamba" title="Permalink to this headline">¶</a></h3>
-<p>We recommend you to install <a class="reference external" href="https://github.com/QuantStack/mamba">mamba</a> in your seq2science environment to install dependencies faster:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(seq2science)</span> <span class="gp">user@comp:~$</span> conda install mamba -c conda-forge
-</pre></div>
-</div>
 </div>
 </div>
 <div class="section" id="running-a-workflow">
 <h2>Running a workflow<a class="headerlink" href="#running-a-workflow" title="Permalink to this headline">¶</a></h2>
 <p>A typical setup and run of a workflow looks like this, where you start with activating the seq2science environment.</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(base)</span> <span class="gp">user@comp:~$</span> conda activate seq2science
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>$ conda activate seq2science
 </pre></div>
 </div>
 <p>Then navigate to your project dir.</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(seq2science)</span> <span class="gp">user@comp:~$</span> <span class="nb">cd</span> my_project
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>$ cd {my_project}
 </pre></div>
 </div>
 <p>Where you initialize the workflow with a configuration file and samples file, and edit those to your needs.</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(seq2science)</span> <span class="gp">user@comp:~/my_project$</span> seq2science init <span class="o">{</span>workflow<span class="o">}</span>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>$ seq2science init {workflow}
 </pre></div>
 </div>
 <p>And finally run the workflow</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(seq2science)</span> <span class="gp">user@comp:~.my_project$</span> seq2science run <span class="o">{</span>workflow<span class="o">}</span> --cores <span class="m">24</span>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>$ seq2science run {workflow} --cores 24
 </pre></div>
 </div>
 </div>
@@ -263,11 +233,11 @@ rule two:
 </pre></div>
 </div>
 <p>We can tell snakemake to generate for instance file1.txt like this:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(base)</span> <span class="gp">user@comp:~$</span> snakemake file1.txt
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>$ snakemake file1.txt
 </pre></div>
 </div>
 <p>And snakemake will see that rule one can generate this output, sees that it requires no input, and executes the shell command. If we tell snakemake to generate file2.txt:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(base)</span> <span class="gp">user@comp:~$</span> snakemake file2.txt
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>$ snakemake file2.txt
 </pre></div>
 </div>
 <p>It will see that rule two needs to be run, takes a look at the required input for this rule, and checks whether file1.txt already exists. If it does, it will immediatly execute rule two, if file1.txt does not already exist it will execute rule one first.</p>
