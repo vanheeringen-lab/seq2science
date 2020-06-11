@@ -87,8 +87,6 @@
 <li class="toctree-l1 current"><a class="reference internal" href="extensive_docs.html">Extensive docs</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="cli.html">Command line interface</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Per rule explanation</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#insertsizemetrics">InsertSizeMetrics</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#mtnucratiocalculator">MTNucRatioCalculator</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#bam2cram">bam2cram</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#bam-bigwig">bam_bigwig</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#bam-stranded-bigwig">bam_stranded_bigwig</a></li>
@@ -120,6 +118,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#hmmratac-genome-info">hmmratac_genome_info</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id2sra">id2sra</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#idr">idr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#insert-size-metrics">insert_size_metrics</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#keep-mates">keep_mates</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#linked-txome">linked_txome</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#macs2-callpeak">macs2_callpeak</a></li>
@@ -127,6 +126,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#macs-cmbreps">macs_cmbreps</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#mark-duplicates">mark_duplicates</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#merge-replicates">merge_replicates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mt-nuc-ratio-calculator">mt_nuc_ratio_calculator</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multibamsummary">multiBamSummary</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multiqc">multiqc</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multiqc-filter-buttons">multiqc_filter_buttons</a></li>
@@ -244,20 +244,9 @@
   <div class="section" id="per-rule-explanation">
 <h1>Per rule explanation<a class="headerlink" href="#per-rule-explanation" title="Permalink to this headline">¶</a></h1>
 <p>This is an automatically generated list of all supported rules, their docstrings, and command. At the start of each workflow run a list is printed of which rules will be run. And while the workflow is running it prints which rules are being started and finished. This page is here to give an explanation to the user about what each rule does, and for developers to find what is, and isn’t yet supported.</p>
-<div class="section" id="insertsizemetrics">
-<h2>InsertSizeMetrics<a class="headerlink" href="#insertsizemetrics" title="Permalink to this headline">¶</a></h2>
-<p>Get the insert size metrics from a (paired-end) bam.</p>
-</div>
-<div class="section" id="mtnucratiocalculator">
-<h2>MTNucRatioCalculator<a class="headerlink" href="#mtnucratiocalculator" title="Permalink to this headline">¶</a></h2>
-<p>Calculate the ratio mitochondrial dna in your sample.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>mtnucratio {input.bam} {params}
-</pre></div>
-</div>
-</div>
 <div class="section" id="bam2cram">
 <h2>bam2cram<a class="headerlink" href="#bam2cram" title="Permalink to this headline">¶</a></h2>
-<p>Convert bam to the more compressed cram format</p>
+<p>Convert a bam file to the more compressed cram format.</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Generate the index for a cram file.
 </pre></div>
 </div>
@@ -271,7 +260,8 @@
 </div>
 <div class="section" id="bam-stranded-bigwig">
 <h2>bam_stranded_bigwig<a class="headerlink" href="#bam-stranded-bigwig" title="Permalink to this headline">¶</a></h2>
-<p>Convert a bam file into two bigwig files, one for each strand</p>
+<p>Convert a bam file into two bigwig files, one for each strand.
+TODO: split this rule into two or better: forward &amp; backward logic</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>direction1=forward
 direction2=reverse
 if [ {params.strandedness} == &#39;reverse&#39; ]; then
@@ -279,8 +269,10 @@ direction1=reverse
 direction2=forward
 fi
 
-bamCoverage --bam {input.bam} --outFileName {output.forwards} --filterRNAstrand $direction1 --numberOfProcessors {threads} {params.flags} --verbose &gt;&gt; {log} 2&gt;&amp;1 &amp;&amp;
-bamCoverage --bam {input.bam} --outFileName {output.reverses} --filterRNAstrand $direction2 --numberOfProcessors {threads} {params.flags} --verbose &gt;&gt; {log} 2&gt;&amp;1
+bamCoverage --bam {input.bam} --outFileName {output.forwards} --filterRNAstrand $direction1
+--numberOfProcessors {threads} {params.flags} --verbose &gt;&gt; {log} 2&gt;&amp;1 &amp;&amp;
+bamCoverage --bam {input.bam} --outFileName {output.reverses} --filterRNAstrand $direction2
+--numberOfProcessors {threads} {params.flags} --verbose &gt;&gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
 </div>
@@ -411,7 +403,8 @@ bedToBigBed -type=bed4 {output.cytoband_bd} -as={params.schema} {input.sizes} {o
 <div class="section" id="fastqc">
 <h2>fastqc<a class="headerlink" href="#fastqc" title="Permalink to this headline">¶</a></h2>
 <p>Generate quality control report for fastq files.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Get the insert size metrics from a (paired-end) bam.
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Get insert size metrics from a (paired-end) bam. This score is then used by
+MultiQC in the report.
 </pre></div>
 </div>
 </div>
@@ -534,6 +527,11 @@ fi
 </pre></div>
 </div>
 </div>
+<div class="section" id="insert-size-metrics">
+<h2>insert_size_metrics<a class="headerlink" href="#insert-size-metrics" title="Permalink to this headline">¶</a></h2>
+<p>Get insert size metrics from a (paired-end) bam. This score is then used by
+MultiQC in the report.</p>
+</div>
 <div class="section" id="keep-mates">
 <h2>keep_mates<a class="headerlink" href="#keep-mates" title="Permalink to this headline">¶</a></h2>
 <p>In-house script that, after alignment, removes the information that reads are paired.
@@ -591,6 +589,17 @@ fi
 contain the name of the original replicate.</p>
 <p>Must happen after trimming due to trim-galore’s automatic adapter trimming method</p>
 <p>If a replicate has only 1 sample in it, simply move the file.</p>
+</div>
+<div class="section" id="mt-nuc-ratio-calculator">
+<h2>mt_nuc_ratio_calculator<a class="headerlink" href="#mt-nuc-ratio-calculator" title="Permalink to this headline">¶</a></h2>
+<p>Estimate the amount of nuclear and mitochondrial reads in a sample. This metric
+is especially important in ATAC-seq experiments where mitochondrial DNA can
+be overrepresented. Reads are classified as mitochondrial reads if they map
+against either “chrM” or “MT”.</p>
+<p>These values are aggregated and displayed in the MultiQC report.</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>mtnucratio {input.bam} {params.mitochondria}
+</pre></div>
+</div>
 </div>
 <div class="section" id="multibamsummary">
 <h2>multiBamSummary<a class="headerlink" href="#multibamsummary" title="Permalink to this headline">¶</a></h2>

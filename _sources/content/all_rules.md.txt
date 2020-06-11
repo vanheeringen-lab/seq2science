@@ -2,17 +2,8 @@
 
 This is an automatically generated list of all supported rules, their docstrings, and command. At the start of each workflow run a list is printed of which rules will be run. And while the workflow is running it prints which rules are being started and finished. This page is here to give an explanation to the user about what each rule does, and for developers to find what is, and isn't yet supported.
 
-#### InsertSizeMetrics
-Get the insert size metrics from a (paired-end) bam.
-
-#### MTNucRatioCalculator
-Calculate the ratio mitochondrial dna in your sample.
-```
-mtnucratio {input.bam} {params}
-```
-
 #### bam2cram
-Convert bam to the more compressed cram format
+Convert a bam file to the more compressed cram format.
 ```
 Generate the index for a cram file.
 ```
@@ -24,7 +15,8 @@ bamCoverage --bam {input.bam} --outFileName {output} --numberOfProcessors {threa
 ```
 
 #### bam_stranded_bigwig
-Convert a bam file into two bigwig files, one for each strand
+Convert a bam file into two bigwig files, one for each strand.
+TODO: split this rule into two or better: forward & backward logic
 ```
   
 direction1=forward
@@ -34,8 +26,10 @@ direction1=reverse
 direction2=forward
 fi
 
-bamCoverage --bam {input.bam} --outFileName {output.forwards} --filterRNAstrand $direction1 --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1 &&
-bamCoverage --bam {input.bam} --outFileName {output.reverses} --filterRNAstrand $direction2 --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1
+bamCoverage --bam {input.bam} --outFileName {output.forwards} --filterRNAstrand $direction1
+--numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1 &&
+bamCoverage --bam {input.bam} --outFileName {output.reverses} --filterRNAstrand $direction2
+--numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1
 ```
 
 #### bedgraph_bigwig
@@ -154,7 +148,8 @@ Differential gene expression analysis with DESeq2.
 #### fastqc
 Generate quality control report for fastq files.
 ```
-Get the insert size metrics from a (paired-end) bam.
+Get insert size metrics from a (paired-end) bam. This score is then used by
+MultiQC in the report.
 ```
 
 #### featureCounts
@@ -271,6 +266,10 @@ idr --samples {input} {params.rank} --output-file {output} > {log} 2>&1
 fi
 ```
 
+#### insert_size_metrics
+Get insert size metrics from a (paired-end) bam. This score is then used by
+MultiQC in the report.
+
 #### keep_mates
 In-house script that, after alignment, removes the information that reads are paired.
 This can be beneficial when peak calling with macs2 when shifting + extending, since
@@ -326,6 +325,17 @@ contain the name of the original replicate.
 Must happen after trimming due to trim-galore's automatic adapter trimming method 
 
 If a replicate has only 1 sample in it, simply move the file.
+
+#### mt_nuc_ratio_calculator
+Estimate the amount of nuclear and mitochondrial reads in a sample. This metric
+is especially important in ATAC-seq experiments where mitochondrial DNA can
+be overrepresented. Reads are classified as mitochondrial reads if they map
+against either "chrM" or "MT".
+
+These values are aggregated and displayed in the MultiQC report.
+```
+mtnucratio {input.bam} {params.mitochondria}
+```
 
 #### multiBamSummary
 Pre-compute a bam summary with deeptools.
