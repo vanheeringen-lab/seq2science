@@ -200,7 +200,7 @@
 <div class="section" id="mamba">
 <h3>Mamba<a class="headerlink" href="#mamba" title="Permalink to this headline">¶</a></h3>
 <p>We recommend you to install <a class="reference external" href="https://github.com/QuantStack/mamba">mamba</a> in your seq2science environment to install dependencies faster:</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>(seq2science) user@comp:~$ conda install mamba
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(seq2science)</span> <span class="gp">user@comp:~$</span> conda install mamba
 </pre></div>
 </div>
 </div>
@@ -208,19 +208,19 @@
 <div class="section" id="running-a-workflow">
 <h2>Running a workflow<a class="headerlink" href="#running-a-workflow" title="Permalink to this headline">¶</a></h2>
 <p>A typical setup and run of a workflow looks like this, where you start with activating the seq2science environment.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>$ conda activate seq2science
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(base)</span> <span class="gp">user@comp:~$</span> conda activate seq2science
 </pre></div>
 </div>
 <p>Then navigate to your project dir.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>$ cd {my_project}
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(seq2science)</span> <span class="gp">user@comp:~$</span> <span class="nb">cd</span> my_project
 </pre></div>
 </div>
 <p>Where you initialize the workflow with a configuration file and samples file, and edit those to your needs.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>$ seq2science init {workflow}
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(seq2science)</span> <span class="gp">user@comp:~/my_project$</span> seq2science init <span class="o">{</span>workflow<span class="o">}</span>
 </pre></div>
 </div>
 <p>And finally run the workflow</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>$ seq2science run {workflow} --cores 24
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(seq2science)</span> <span class="gp">user@comp:~.my_project$</span> seq2science run <span class="o">{</span>workflow<span class="o">}</span> --cores <span class="m">24</span>
 </pre></div>
 </div>
 </div>
@@ -263,11 +263,11 @@ rule two:
 </pre></div>
 </div>
 <p>We can tell snakemake to generate for instance file1.txt like this:</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>$ snakemake file1.txt
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(base)</span> <span class="gp">user@comp:~$</span> snakemake file1.txt
 </pre></div>
 </div>
 <p>And snakemake will see that rule one can generate this output, sees that it requires no input, and executes the shell command. If we tell snakemake to generate file2.txt:</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>$ snakemake file2.txt
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(base)</span> <span class="gp">user@comp:~$</span> snakemake file2.txt
 </pre></div>
 </div>
 <p>It will see that rule two needs to be run, takes a look at the required input for this rule, and checks whether file1.txt already exists. If it does, it will immediatly execute rule two, if file1.txt does not already exist it will execute rule one first.</p>

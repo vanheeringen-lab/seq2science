@@ -28,29 +28,29 @@ To install the latest unreleased version of seq2science you can install from sou
 
 ### Mamba
 We recommend you to install [mamba](https://github.com/QuantStack/mamba) in your seq2science environment to install dependencies faster:
-```
+```console
 (seq2science) user@comp:~$ conda install mamba
 ```
 
 ## Running a workflow
 A typical setup and run of a workflow looks like this, where you start with activating the seq2science environment.
-```
-$ conda activate seq2science
+```console
+(base) user@comp:~$ conda activate seq2science
 ```
 
 Then navigate to your project dir.
-```
-$ cd {my_project}
+```console
+(seq2science) user@comp:~$ cd my_project
 ```
 
 Where you initialize the workflow with a configuration file and samples file, and edit those to your needs. 
-```
-$ seq2science init {workflow}
+```console
+(seq2science) user@comp:~/my_project$ seq2science init {workflow}
 ```
 
 And finally run the workflow
-```
-$ seq2science run {workflow} --cores 24
+```console
+(seq2science) user@comp:~.my_project$ seq2science run {workflow} --cores 24
 ```
 
 ## Where does seq2science store results and looks for 'starting points'?
@@ -94,14 +94,14 @@ rule two:
 
 We can tell snakemake to generate for instance file1.txt like this:
 
-```
-$ snakemake file1.txt
+```console
+(base) user@comp:~$ snakemake file1.txt
 ```
 
 And snakemake will see that rule one can generate this output, sees that it requires no input, and executes the shell command. If we tell snakemake to generate file2.txt:
 
-```
-$ snakemake file2.txt
+```console
+(base) user@comp:~$ snakemake file2.txt
 ```
 
 It will see that rule two needs to be run, takes a look at the required input for this rule, and checks whether file1.txt already exists. If it does, it will immediatly execute rule two, if file1.txt does not already exist it will execute rule one first.
