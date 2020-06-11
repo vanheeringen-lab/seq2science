@@ -1,16 +1,35 @@
 # Getting started
 ## Installation
+### seq2science requires anaconda
+Download and install [minconda](https://www.anaconda.com/) if not yet installed:
+```console
+user@comp:~$ wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+user@comp:~$ bash miniconda.sh # (make sure to say **yes** when asked to run conda init)
+user@comp:~$ source ~/.bashrc
+```
+
+### Easy installation (bioconda)
 The most straightforward way to install seq2science is by using [conda](https://docs.continuum.io/anaconda/) using the [bioconda](https://bioconda.github.io/) channel.
 
-Download and install [minconda](https://www.anaconda.com/) if not yet installed:
+To install seq2science in a fresh environment:
+```console
+(base) user@comp:~$ conda create -n seq2science -c bioconda seq2science
 ```
-$ wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
-$ bash miniconda.sh # (make sure to say **yes** when asked to run conda init)
-$ source ~/.bashrc
+
+### Install from source
+To install the latest unreleased version of seq2science you can install from source:
+```console
+(base) user@comp:~$ git clone https://github.com/vanheeringen-lab/seq2science
+(base) user@comp:~$ cd seq2science
+(base) user@comp:~/seq2science$ conda env create --name seq2science -f requirements.yaml
+(base) user@comp:~/seq2science$ conda activate seq2science
+(seq2science) user@comp:~/seq2science$ pip install .
 ```
-And install seq2science in a fresh environment:
+
+### Mamba
+We recommend you to install [mamba](https://github.com/QuantStack/mamba) in your seq2science environment to install dependencies faster:
 ```
-$ conda create -n seq2science -c bioconda seq2science
+(seq2science) user@comp:~$ conda install mamba
 ```
 
 ## Running a workflow
