@@ -1,8 +1,8 @@
 name: deseq2
 channels:
-  - conda-forge
   - bioconda
   - r
+  - conda-forge
   - defaults
 dependencies:
   - r::r-base=3.6.1
