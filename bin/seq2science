@@ -224,7 +224,6 @@ def _run(args, base_dir, workflows_dir, config_path):
     if "overwrite_threads" in snakemake_options:
         parsed_args["overwrite_threads"].update(snakemake_options["overwrite_threads"])
 
-    print(parsed_args["overwrite_threads"])
     parsed_args.update(snakemake_options)
 
     parsed_args["cores"] = int(parsed_args["cores"])
