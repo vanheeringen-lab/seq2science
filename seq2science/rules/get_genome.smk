@@ -42,7 +42,7 @@ rule get_genome:
         genomepy plugin disable {{blacklist,bowtie2,bwa,star,gmap,hisat2,minimap2}} >> {log} 2>&1
         genomepy plugin enable {{blacklist,}} >> {log} 2>&1
         
-        # download the genome and attempt to download the annotation
+        # download the genome and attempt to download the annotation and blacklist
         if [[ ! {params.provider} = None  ]]; then
             genomepy install --genomes_dir {params.dir} {wildcards.assembly} {params.provider} --annotation >> {log} 2>&1
         else
@@ -51,13 +51,20 @@ rule get_genome:
             genomepy install --genomes_dir {params.dir} {wildcards.assembly} NCBI    --annotation >> {log} 2>&1
         fi
         
-        # unzip annotation if downloaded and gzipped, warn if required but empty
+        # unzip annotation if downloaded and gzipped
         if [ -f {params.gtf}.gz ]; then
-            gunzip {params.gtf} >> {log} 2>&1
+            gunzip -f {params.gtf}.gz >> {log} 2>&1
         fi
-        if [ ! -f {params.gtf} ] && [ echo {output} | grep -q annotation.gtf ]; then
-            echo '\nAnnotation for {wildcards.assembly} contains no genes. Select a different assembly or provide an annotation file manually.\n\n' > {log}
-            exit 1
+        
+        # if assembly has no annotation, or annotation has no genes, throw an warning
+        if [ ! -f {params.gtf} ] || $(grep -q "No genes found" {log}); then
+            echo '\nEmpty or no annotation found for {wildcards.assembly}.\n' | tee -a {log}
+            
+            # if an annotation is required, make it an error and exit.
+            if $(echo {output} | grep -q annotation.gtf); then
+                echo'\nSelect a different assembly or provide an annotation file manually.\n\n' | tee -a {log}
+                exit 1
+            fi
         fi
         """
 
