@@ -195,7 +195,7 @@ def _run(args, base_dir, workflows_dir, config_path):
                    "conda_frontend": conda_frontend,
                    "conda_prefix": os.path.join(base_dir, ".snakemake"),
                    "dryrun": args.dryrun,
-                   "keep-going": args.keep_going,
+                   "keepgoing": args.keep_going,
                    "unlock": args.unlock}
 
     # get the additional snakemake options
