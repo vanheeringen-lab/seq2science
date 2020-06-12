@@ -357,6 +357,20 @@ diffexp:
             contrasts: 
 ```
 
+## single-cell ATAC
+#####snaptools_opt
+```
+snaptools_opt:
+    description: TODO @JGASmits add description
+    default: --min-flen=0 --max-flen=1000 --keep-single=FALSE --keep-secondary=FALSE --overwrite=True --min-cov=100 --verbose=True
+```
+#####bin_opt
+```
+bin_opt:
+    description: TODO @JGASmits add description
+    default: --bin-size-list 5000 --verbose=True
+```
+
 ## trackhub
 #####create_trackhub
 ```
