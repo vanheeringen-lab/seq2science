@@ -145,6 +145,11 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         help="Go on with independent jobs if a job fails.",
         action='store_true'
     )
+    run.add_argument(
+        "rerun-incomplete"
+        help="Re-run all jobs the output of which is recognized as incomplete.",
+        action='store_true'
+    )
 
     return parser
 
@@ -196,7 +201,8 @@ def _run(args, base_dir, workflows_dir, config_path):
                    "conda_prefix": os.path.join(base_dir, ".snakemake"),
                    "dryrun": args.dryrun,
                    "keepgoing": args.keep_going,
-                   "unlock": args.unlock}
+                   "unlock": args.unlock,
+                   "force_incomplete": args.rerun_incomplete}
 
     # get the additional snakemake options
     snakemake_options = args.snakemakeOptions if args.snakemakeOptions is not None else dict()
