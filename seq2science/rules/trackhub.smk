@@ -1,6 +1,4 @@
 import os.path
-import json
-import requests
 from Bio import SeqIO
 from multiprocessing import Pool
 
