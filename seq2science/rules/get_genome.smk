@@ -55,7 +55,7 @@ rule get_genome:
         if [ -f {params.gtf}.gz ]; then
             gunzip {params.gtf} >> {log} 2>&1
         fi
-        if [ ! -f {params.gtf} && echo {output} | grep -q annotation.gtf ]; then
+        if [ ! -f {params.gtf} ] && [ echo {output} | grep -q annotation.gtf ]; then
             echo '\nAnnotation for {wildcards.assembly} contains no genes. Select a different assembly or provide an annotation file manually.\n\n' > {log}
             exit 1
         fi
