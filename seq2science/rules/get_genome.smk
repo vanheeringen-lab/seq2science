@@ -30,7 +30,7 @@ rule get_genome:
     params:
         dir=config['genome_dir'],
         provider=config.get('provider', None),
-        gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf.gz", **config),
+        gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
         temp=expand("{genome_dir}/{{assembly}}/{{assembly}}.{genomepy_temp}", **config)
     conda:
         "../envs/get_genome.yaml"
@@ -51,10 +51,11 @@ rule get_genome:
             genomepy install --genomes_dir {params.dir} {wildcards.assembly} NCBI    --annotation >> {log} 2>&1
         fi
         
-        # unzip annotation if downloaded, warn if required but empty
-        if [ -f {params.gtf} ]; then
+        # unzip annotation if downloaded and gzipped, warn if required but empty
+        if [ -f {params.gtf}.gz ]; then
             gunzip {params.gtf} >> {log} 2>&1
-        elif echo {output} | grep -q annotation.gtf; then
+        fi
+        if [ ! -f {params.gtf} && echo {output} | grep -q annotation.gtf ]; then
             echo '\nAnnotation for {wildcards.assembly} contains no genes. Select a different assembly or provide an annotation file manually.\n\n' > {log}
             exit 1
         fi
