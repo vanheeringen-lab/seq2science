@@ -110,7 +110,7 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         help="The path to the config file.",
     )
     run.add_argument(
-        "--cores",
+        "-j", "--cores",
         metavar="N",
         help="Use at most N cores in parallel. Requires at least 12 cores.",
     )
