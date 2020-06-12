@@ -106,7 +106,8 @@ rule sra2fastq_SE:
         mkdir -p $tmpdir; trap "rm -rf $tmpdir" EXIT
 
         # dump to tmp dir
-        parallel-fastq-dump -s {{input}}/* -O $tmpdir {config['splot']} --threads {{threads}} --gzip >> {{log}} 2>&1
+        parallel-fastq-dump -s {{input}}/* -O $tmpdir {config['splot']} \
+        --threads {{threads}} --gzip >> {{log}} 2>&1
 
         # rename file and move to output dir
         for f in $(ls -1q $tmpdir | grep -oP "^[^_]+" | uniq); do
@@ -140,7 +141,8 @@ rule sra2fastq_PE:
         mkdir -p $tmpdir; trap "rm -rf $tmpdir" EXIT
 
         # dump to tmp dir
-        parallel-fastq-dump -s {{input}}/* -O $tmpdir {config['split']} --threads {{threads}} --gzip >> {{log}} 2>&1
+        parallel-fastq-dump -s {{input}}/* -O $tmpdir {config['split']} \
+        --threads {{threads}} --gzip >> {{log}} 2>&1
 
         # rename files and move to output dir
         for f in $(ls -1q $tmpdir | grep -oP "^[^_]+" | uniq); do

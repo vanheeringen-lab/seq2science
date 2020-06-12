@@ -74,9 +74,12 @@ rule cytoband:
         "../envs/ucsc.yaml"
     shell:
         """
-        cat {input.sizes} | bedSort /dev/stdin /dev/stdout | awk '{{print $1,0,$2,$1,"gneg"}}' > {output.cytoband_bd}
+        cat {input.sizes} | 
+        bedSort /dev/stdin /dev/stdout | 
+        awk '{{print $1,0,$2,$1,"gneg"}}' > {output.cytoband_bd}
 
-        bedToBigBed -type=bed4 {output.cytoband_bd} -as={params.schema} {input.sizes} {output.cytoband_bb} >> {log} 2>&1
+        bedToBigBed -type=bed4 {output.cytoband_bd} -as={params.schema} \
+        {input.sizes} {output.cytoband_bb} >> {log} 2>&1
         """
 
 

@@ -15,7 +15,7 @@ def get_reads(wildcards):
 if config['aligner'] == 'bowtie2':
     rule bowtie2_index:
         """
-        Make a genome index for bowtie2. This index is required for faster alignment.
+        Make a genome index for bowtie2. This index is required for alignment.
         """
         input:
             expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config)
@@ -31,7 +31,9 @@ if config['aligner'] == 'bowtie2':
             "../envs/bowtie2.yaml"
         params: config['index']
         shell:
-            "bowtie2-build {params} --threads {threads} {input} {output}/{wildcards.assembly} > {log} 2>&1"
+            """
+            bowtie2-build {params} --threads {threads} {input} {output}/{wildcards.assembly} > {log} 2>&1
+            """
 
 
     rule bowtie2_align:
@@ -64,7 +66,7 @@ if config['aligner'] == 'bowtie2':
 elif config['aligner'] == 'bwa-mem':
     rule bwa_index:
         """
-        Make a genome index for bwa (mem). This index is required for faster alignment.
+        Make a genome index for bwa (mem). This index is required for alignment.
         """
         input:
             expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config)
@@ -83,7 +85,9 @@ elif config['aligner'] == 'bwa-mem':
         conda:
             "../envs/bwa.yaml"
         shell:
-            "bwa index -p {params.prefix} {params.params} {input} > {log} 2>&1"
+            """
+            bwa index -p {params.prefix} {params.params} {input} > {log} 2>&1
+            """
 
 
     rule bwa_mem:
@@ -117,7 +121,7 @@ elif config['aligner'] == 'bwa-mem':
 elif config['aligner'] == 'hisat2':
     rule hisat2_index:
         """
-        Make a genome index for hisat2. This index is required for faster alignment.
+        Make a genome index for hisat2. This index is required for alignment.
         """
         input:
             expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config)
@@ -133,7 +137,9 @@ elif config['aligner'] == 'hisat2':
             "../envs/hisat2.yaml"
         params: config['index']
         shell:
-            "hisat2-build {params} -p {threads} {input} {output}/{wildcards.assembly} > {log} 2>&1"
+            """
+            hisat2-build {params} -p {threads} {input} {output}/{wildcards.assembly} > {log} 2>&1
+            """
 
 
     rule hisat2_align:
@@ -298,6 +304,9 @@ rule samtools_presort:
         "../envs/samtools.yaml"
     shell:
         """
+        # we set this trap to remove temp files when prematurely ending the rule
         trap "rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
-        samtools sort {params.sort_order} -@ {params.threads} {input} -o {output} -T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
+        
+        samtools sort {params.sort_order} -@ {params.threads} {input} -o {output} \
+        -T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
         """

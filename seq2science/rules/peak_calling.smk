@@ -40,8 +40,8 @@ def get_genrich_replicates(wildcards):
 
 rule genrich_pileup:
     """
-    Generate the pileup. We do this separately from peak-calling since these two processes 
-    have a very different computational footprint.
+    Generate the pileup. We do this separately from peak-calling since these two
+    processes have a very different computational footprint.
     """
     input:
         unpack(get_genrich_replicates)
@@ -62,7 +62,8 @@ rule genrich_pileup:
     shell:
         """
         input=$(echo {input.reps} | tr ' ' ',')
-        Genrich -X -t $input -f {output.log} {params.control} -k {output.bedgraphish} {params.params} -v > {log} 2>&1
+        Genrich -X -t $input -f {output.log} {params.control} -k {output.bedgraphish} \
+        {params.params} -v > {log} 2>&1
         """
 
 
@@ -83,7 +84,9 @@ rule call_peak_genrich:
     params:
         config['peak_caller'].get('genrich', "")
     shell:
-        "Genrich -P -f {input.log} -o {output.narrowpeak} {params} -v > {log} 2>&1"
+        """
+        Genrich -P -f {input.log} -o {output.narrowpeak} {params} -v > {log} 2>&1
+        """
 
 
 def get_fastqc(wildcards):

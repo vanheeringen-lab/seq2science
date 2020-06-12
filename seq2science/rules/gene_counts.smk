@@ -41,11 +41,13 @@ if config['quantifier'] == 'salmon':
 
     rule txi_count_matrix:
         """
-        Convert estimated transcript abundances to gene count estimations and merge gene counts per assembly
+        Convert estimated transcript abundances to gene count estimations and merge 
+        gene counts per assembly.
         
-        Also outputs a single cell experiment object similar to ARMOR (https://github.com/csoneson/ARMOR)
+        Also outputs a single cell experiment object similar to ARMOR 
+        (https://github.com/csoneson/ARMOR).
         
-        Only works with Ensembl assemblies
+        Only works with Ensembl assemblies.
         """
         input:
             linked_txome = expand("{genome_dir}/{{assembly}}/index/tximeta/linked_txome.json", **config),
