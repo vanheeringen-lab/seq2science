@@ -50,8 +50,8 @@ pipeline {
                 conda config --set channel_priority strict
 
                 # speed up installation
-                conda install mamba -c conda-forge
-                # conda install conda-forge::mamba=0.3.0  # doesn't seem to work
+                # conda install mamba -c conda-forge
+                conda install conda-forge::mamba=0.3.3  # doesn't seem to work
 
                 # create main env
                 printf "\ninstalling seq2science environment\n"
