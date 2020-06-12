@@ -146,7 +146,7 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         action='store_true'
     )
     run.add_argument(
-        "rerun-incomplete"
+        "rerun-incomplete",
         help="Re-run all jobs the output of which is recognized as incomplete.",
         action='store_true'
     )
