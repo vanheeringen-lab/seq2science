@@ -1,7 +1,7 @@
 name: decoy
 channels:
-  - bioconda
   - conda-forge
+  - bioconda
   - defaults
 dependencies:
   - bioconda::bedtools=2.29.1

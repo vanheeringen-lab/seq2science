@@ -1,8 +1,8 @@
 name: gene_counts
 channels:
+  - conda-forge
   - bioconda
   - r
-  - conda-forge
   - defaults
 dependencies:
   # linked_txome & txi count table

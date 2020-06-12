@@ -47,6 +47,7 @@ pipeline {
                 printf "\nconfigure miniconda\n"
                 conda config --set always_yes yes --set changeps1 false
                 conda update -n base -c defaults conda -q > /dev/null
+                conda config --set channel_priority strict
 
                 # speed up installation
                 conda install mamba -c conda-forge
