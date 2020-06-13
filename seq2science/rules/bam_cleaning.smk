@@ -198,7 +198,7 @@ rule mark_duplicates:
         "../envs/picard.yaml"
     shell:
         """
-        picard MarkDuplicates {params} INPUT={input} \ 
+        picard MarkDuplicates {params} INPUT={input} \
         OUTPUT={output.bam} METRICS_FILE={output.metrics} > {log} 2>&1
         """
 
