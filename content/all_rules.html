@@ -608,7 +608,7 @@ cat {output.tmppeaks} | tail -n +2 &gt; {output.peaks}
 <div class="section" id="mark-duplicates">
 <h2>mark_duplicates<a class="headerlink" href="#mark-duplicates" title="Permalink to this headline">¶</a></h2>
 <p>Mark all duplicate reads in a bam file with picard MarkDuplicates</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>picard MarkDuplicates {params} INPUT={input}
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>picard MarkDuplicates {params} INPUT={input} \
 OUTPUT={output.bam} METRICS_FILE={output.metrics} &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>

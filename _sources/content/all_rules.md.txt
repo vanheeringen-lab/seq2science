@@ -346,7 +346,7 @@ cat {output.tmppeaks} | tail -n +2 > {output.peaks}
 #### mark_duplicates
 Mark all duplicate reads in a bam file with picard MarkDuplicates
 ```
-picard MarkDuplicates {params} INPUT={input} \ 
+picard MarkDuplicates {params} INPUT={input} \
 OUTPUT={output.bam} METRICS_FILE={output.metrics} > {log} 2>&1
 ```
 
