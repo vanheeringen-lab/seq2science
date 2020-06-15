@@ -208,9 +208,9 @@
 <h2>run<a class="headerlink" href="#run" title="Permalink to this headline">¶</a></h2>
 <p><p>Run a complete workflow. This requires that a config and samples file are either present in the current directory, or passed as an argument.</p>
 </p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">seq2science</span> <span class="n">run</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">c</span> <span class="n">FILE</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">cores</span> <span class="n">N</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">n</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">unlock</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">seq2science</span> <span class="n">run</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">c</span> <span class="n">FILE</span><span class="p">]</span> <span class="o">-</span><span class="n">j</span> <span class="n">N</span> <span class="p">[</span><span class="o">-</span><span class="n">n</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">unlock</span><span class="p">]</span>
                        <span class="p">[</span><span class="o">--</span><span class="n">snakemakeOptions</span> <span class="n">KEY</span><span class="o">=</span><span class="n">VAL</span> <span class="p">[</span><span class="n">KEY</span><span class="o">=</span><span class="n">VAL</span> <span class="o">...</span><span class="p">]]</span>
-                       <span class="p">[</span><span class="o">--</span><span class="n">profile</span> <span class="n">PROFILE</span> <span class="n">NAME</span><span class="p">]</span>
+                       <span class="p">[</span><span class="o">--</span><span class="n">profile</span> <span class="n">PROFILE</span> <span class="n">NAME</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">k</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">rerun</span><span class="o">-</span><span class="n">incomplete</span><span class="p">]</span>
                        <span class="p">{</span><span class="n">atac_seq</span><span class="p">,</span><span class="n">chip_seq</span><span class="p">,</span><span class="n">download_fastq</span><span class="p">,</span><span class="n">scatac_seq</span><span class="p">,</span><span class="n">alignment</span><span class="p">,</span><span class="n">rna_seq</span><span class="p">}</span>
 </pre></div>
 </div>
@@ -229,8 +229,8 @@
 <dd><p>The path to the config file.</p>
 <p>Default: “./config.yaml”</p>
 </dd>
-<dt><kbd>--cores</kbd></dt>
-<dd><p>Use at most N cores in parallel. Requires at least 12 cores.</p>
+<dt><kbd>-j, --cores</kbd></dt>
+<dd><p>Use at most N cores in parallel. Must be at least 2.</p>
 </dd>
 <dt><kbd>-n, --dryrun</kbd></dt>
 <dd><p>Do not execute anything, and display what would be done.</p>
@@ -245,6 +245,14 @@
 </dd>
 <dt><kbd>--profile</kbd></dt>
 <dd><p>Use a snakemake/seq2science profile. Profiles can be taken from: <a class="reference external" href="https://github.com/snakemake-profiles">https://github.com/snakemake-profiles</a></p>
+</dd>
+<dt><kbd>-k, --keep-going</kbd></dt>
+<dd><p>Go on with independent jobs if a job fails.</p>
+<p>Default: False</p>
+</dd>
+<dt><kbd>--rerun-incomplete</kbd></dt>
+<dd><p>Re-run all jobs the output of which is recognized as incomplete.</p>
+<p>Default: False</p>
 </dd>
 </dl>
 </div>
