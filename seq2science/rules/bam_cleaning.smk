@@ -150,6 +150,7 @@ rule samtools_sort:
     shell:
         """
         trap "rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
+        rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam
         samtools sort {params.sort_order} -@ {params.threads} {input} -o {output} -T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
         """
 
