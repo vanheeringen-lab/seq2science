@@ -312,6 +312,7 @@ def core_parser(cores):
         try:
             raise argparse.ArgumentError(core_arg, "specify at least two cores.")
         except argparse.ArgumentError as e:
+            print()  # empty line
             print(e)
             sys.exit(1)
 
