@@ -89,6 +89,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#mamba">Mamba</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#running-a-workflow">Running a workflow</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#where-does-seq2science-store-results-and-looks-for-starting-points">Where does seq2science store results and looks for ‘starting points’?</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#what-is-snakemake">What is Snakemake?</a></li>
 </ul>
@@ -205,13 +206,14 @@
 <h3>Mamba<a class="headerlink" href="#mamba" title="Permalink to this headline">¶</a></h3>
 <p>We recommend you to install <a class="reference external" href="https://github.com/QuantStack/mamba">mamba</a> in your seq2science environment to install dependencies faster:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(seq2science)</span> <span class="gp">user@comp:~$</span> conda install mamba -c conda-forge
-
-<span class="gp">#</span><span class="c1"># Running a workflow</span>
-
-<span class="go">A typical setup and run of a workflow looks like this, where you start with activating the seq2science environment.</span>
-
-<span class="go">```console</span>
-<span class="gp gp-VirtualEnv">(base)</span> <span class="gp">user@comp:~$</span> conda activate seq2science
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="running-a-workflow">
+<h2>Running a workflow<a class="headerlink" href="#running-a-workflow" title="Permalink to this headline">¶</a></h2>
+<p>A typical setup and run of a workflow looks like this, where you start with activating the seq2science environment.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(base)</span> <span class="gp">user@comp:~$</span> conda activate seq2science
 </pre></div>
 </div>
 <p>Then navigate to your project dir.</p>
@@ -225,7 +227,6 @@
 <p>And finally run the workflow. Note that the first time you run a workflow it will take longer as it will create the snakemake environments for all analysis steps.</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(seq2science)</span> <span class="gp">user@comp:~.my_project$</span> seq2science run <span class="o">{</span>workflow<span class="o">}</span> --cores <span class="m">24</span>
 </pre></div>
-</div>
 </div>
 </div>
 <div class="section" id="where-does-seq2science-store-results-and-looks-for-starting-points">
