@@ -69,6 +69,7 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
                     'Running "seq2science init {workflow}" initialises a default '
                     "configuration and samples file for the specific workflow."
     )
+    global run
     run = subparsers.add_parser(
         "run",
         help="Run a complete workflow.",
@@ -109,12 +110,13 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         metavar="FILE",
         help="The path to the config file.",
     )
-    run.add_argument(
+    global core_arg
+    core_arg = run.add_argument(
         "-j", "--cores",
         metavar="N",
         type=int,
         required=True,
-        help="Use at most N cores in parallel.",
+        help="Use at most N cores in parallel. Must be at least 2.",
     )
     run.add_argument(
         "-n", "--dryrun",
@@ -305,9 +307,14 @@ def core_parser(cores):
     d_sorters_threads = 2
     d_aligner_threads = 10
     desired_threads = d_sorters_threads + d_aligner_threads
-    if cores == 1:
-        # too bad, we are going to use two threads anyways!
-        d_aligner_threads = d_sorters_threads = 1
+    if cores <= 1:
+        run.print_help()
+        try:
+            raise argparse.ArgumentError(core_arg, "specify at least two cores.")
+        except argparse.ArgumentError as e:
+            print(e)
+            sys.exit(1)
+
     elif cores < desired_threads:
         # scale the threads accordingly
         d_aligner_threads = round(d_aligner_threads / desired_threads * cores)
