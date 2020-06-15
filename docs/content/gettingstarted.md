@@ -46,6 +46,7 @@ We recommend you to install [mamba](https://github.com/QuantStack/mamba) in your
 
 ```console
 (seq2science) user@comp:~$ conda install mamba -c conda-forge
+```
 
 ## Running a workflow
 
