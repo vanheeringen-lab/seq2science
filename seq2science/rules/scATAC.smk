@@ -22,9 +22,8 @@ rule create_SNAP_object:
         mapq=f"--min-mapq={config['min_mapping_quality']}"
     shell:
         """
-        snaptools snap-pre --input-file={input.bams} --output-snap={output} \
-        --genome-name={wildcards.assembly} --genome-size={input.genome_size} \
-        {params.params} {params.chrm} {params.mapq} > {log} 2>&1
+        snaptools snap-pre --input-file={input.bams} --output-snap={output} --genome-name={wildcards.assembly} \
+        --genome-size={input.genome_size} {params.params} {params.chrm} {params.mapq} > {log} 2>&1
         """
 
 rule create_bins_SNAP_object:
