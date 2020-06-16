@@ -7,6 +7,8 @@ import shutil
 import subprocess
 import time
 import copy
+import json
+import requests
 
 import norns
 import numpy as np
@@ -408,9 +410,42 @@ else:
     workflow.global_resources = {**{'mem_gb': np.clip(workflow.global_resources.get('mem_gb', 9999), 0, convert_size(mem.total, 3)[0])},
                                  **workflow.global_resources}
 
-dryrun=True
+# record which assembly trackhubs are found on UCSC
+if config.get("create_trackhub"):
+    hubfile = os.path.expanduser('~/.config/snakemake/ucsc_trackhubs.p')
+    hubfile_lock = os.path.expanduser('~/.config/snakemake/ucsc_trackhubs.p.lock')
+
+    # sometimes two jobs start in parallel and try to delete at the same time
+    try:
+        # ignore locks that are older than 10 seconds
+        if os.path.exists(hubfile_lock) and \
+                time.time() - os.stat(hubfile_lock).st_mtime > 10:
+            os.unlink(hubfile_lock)
+    except FileNotFoundError:
+         pass
+
+    with FileLock(hubfile_lock):
+        if not os.path.exists(hubfile):
+            # check for response of ucsc
+            response = requests.get(f"https://genome.ucsc.edu/cgi-bin/hgGateway",
+                                    allow_redirects=True)
+            assert response.ok, "Make sure you are connected to the internet"
+
+            with urllib.request.urlopen("https://api.genome.ucsc.edu/list/ucscGenomes") as url:
+                data = json.loads(url.read().decode())['ucscGenomes']
+
+            # generate a dict ucsc assemblies
+            ucsc_assemblies = dict()
+            for key, values in data.items():
+                ucsc_assemblies[key.lower()] = [key, values.get("description", "")]
+
+            # save to file
+            pickle.dump(ucsc_assemblies, open(hubfile, "wb"))
+
+        # read hubfile
+        ucsc_assemblies = pickle.load(open(hubfile, "rb"))
+
 onstart:
-    dryrun=False
     # save a copy of the latest samples and config file(s) in the log_dir
     # skip this step on Jenkins, as it runs in parallel
     if os.getcwd() != config['log_dir'] and not os.getcwd().startswith('/var/lib/jenkins'):
