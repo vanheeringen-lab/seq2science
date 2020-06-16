@@ -415,39 +415,35 @@ if config.get("create_trackhub"):
     hubfile = os.path.expanduser('~/.config/snakemake/ucsc_trackhubs.p')
     hubfile_lock = os.path.expanduser('~/.config/snakemake/ucsc_trackhubs.p.lock')
 
-    while os.path.exists(hubfile_lock):
-        if time.time() - os.stat(layout_cachefile_lock).st_mtime > 5:
+    # sometimes two jobs start in parallel and try to delete at the same time
+    try:
+        # ignore locks that are older than 10 seconds
+        if os.path.exists(hubfile_lock) and \
+                time.time() - os.stat(hubfile_lock).st_mtime > 10:
             os.unlink(hubfile_lock)
-        time.sleep(1)
+    except FileNotFoundError:
+         pass
 
-    if not os.path.exists(hubfile):
-        # create a lock while we download the data (should take <5 seconds)
-        with open(hubfile_lock, 'a') as lock:
-            lock.write("!")
+    with FileLock(hubfile_lock):
+        if not os.path.exists(hubfile):
+            # check for response of ucsc
+            response = requests.get(f"https://genome.ucsc.edu/cgi-bin/hgGateway",
+                                    allow_redirects=True)
+            assert response.ok, "Make sure you are connected to the internet"
 
-        # check for response of ucsc
-        response = requests.get(f"https://genome.ucsc.edu/cgi-bin/hgGateway",
-                                allow_redirects=True)
-        assert response.ok, "Make sure you are connected to the internet"
+            with urllib.request.urlopen("https://api.genome.ucsc.edu/list/ucscGenomes") as url:
+                data = json.loads(url.read().decode())['ucscGenomes']
 
-        with urllib.request.urlopen("https://api.genome.ucsc.edu/list/ucscGenomes") as url:
-            data = json.loads(url.read().decode())['ucscGenomes']
+            # generate a dict ucsc assemblies
+            ucsc_assemblies = dict()
+            for key, values in data.items():
+                ucsc_assemblies[key.lower()] = [key, values.get("description", "")]
 
-        # generate a dict ucsc assemblies
-        ucsc_assemblies = dict()
-        for key, values in data.items():
-            ucsc_assemblies[key.lower()] = [key, values.get("description", "")]
+            # save to file
+            pickle.dump(ucsc_assemblies, open(hubfile, "wb"))
 
-        # save to file
-        pickle.dump(ucsc_assemblies, open(hubfile, "wb"))
-
-    # create a lock while we read the data
-    with open(hubfile_lock, 'a') as lock:
-        lock.write("!")
-    # read hubfile
-    ucsc_assemblies = pickle.load(open(hubfile, "rb"))
-    # remove the lock
-    os.unlink(hubfile_lock)
+        # read hubfile
+        ucsc_assemblies = pickle.load(open(hubfile, "rb"))
 
 onstart:
     # save a copy of the latest samples and config file(s) in the log_dir
