@@ -1,9 +1,8 @@
 name: macs2
 channels:
-  - bioconda
   - conda-forge
+  - bioconda
   - defaults
 dependencies:
   - bioconda::macs2=2.2.7
   - bioconda::khmer=2.0
-  - pkgs/main::setuptools=47.1.1  # missing dependency of macs2's unique-kmers.py

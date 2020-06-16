@@ -39,8 +39,8 @@ def get_featureCounts_peak(wildcards):
 
 rule featureCounts:
     """
-    Use featureCounts to generate the fraction reads in peaks score (frips/assigned reads).
-    https://www.biostars.org/p/337872/
+    Use featureCounts to generate the fraction reads in peaks score 
+    (frips/assigned reads). See: https://www.biostars.org/p/337872/ and
     https://www.biostars.org/p/228636/
     """
     input:
@@ -58,7 +58,8 @@ rule featureCounts:
     shell:
         """
         # Make a custom "SAF" file which featureCounts needs:
-        awk 'BEGIN{{FS=OFS="\t"; print "GeneID\tChr\tStart\tEnd\tStrand"}}{{print $4, $1, $2+1, $3, "."}}' {input.peak} 1> {output.tmp_saf} 2> {log}
+        awk 'BEGIN{{FS=OFS="\t"; print "GeneID\tChr\tStart\tEnd\tStrand"}}{{print $4, $1, $2+1, $3, "."}}' \
+        {input.peak} 1> {output.tmp_saf} 2> {log}
 
         # run featureCounts
         featureCounts -T {threads} -p -a {output.tmp_saf} -F SAF -o {output.real_out} {input.bam} > {log} 2>&1
@@ -97,12 +98,15 @@ rule fastqc:
         "../envs/qc.yaml"
     priority: -10
     shell:
-        "fastqc {input} -O {params} > {log} 2>&1"
+        """
+        fastqc {input} -O {params} > {log} 2>&1
+        """
 
 
-rule InsertSizeMetrics:
+rule insert_size_metrics:
     """
-    Get the insert size metrics from a (paired-end) bam.
+    Get insert size metrics from a (paired-end) bam. This score is then used by
+    MultiQC in the report.
     """
     input:
         expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config)
@@ -115,7 +119,8 @@ rule InsertSizeMetrics:
         "../envs/picard.yaml"
     shell:
         """
-        picard CollectInsertSizeMetrics INPUT={input} OUTPUT={output.tsv} H={output.pdf} > {log} 2>&1
+        picard CollectInsertSizeMetrics INPUT={input} \
+        OUTPUT={output.tsv} H={output.pdf} > {log} 2>&1
         """
 
 def get_chrM_name(wildcards, input):
@@ -126,9 +131,14 @@ def get_chrM_name(wildcards, input):
     return "no_chrm_found"
 
 
-rule MTNucRatioCalculator:
+rule mt_nuc_ratio_calculator:
     """
-    Calculate the ratio mitochondrial dna in your sample.
+    Estimate the amount of nuclear and mitochondrial reads in a sample. This metric
+    is especially important in ATAC-seq experiments where mitochondrial DNA can
+    be overrepresented. Reads are classified as mitochondrial reads if they map
+    against either "chrM" or "MT".
+    
+    These values are aggregated and displayed in the MultiQC report.
     """
     input:
         bam=expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-unsieved.bam", **config),
@@ -140,10 +150,10 @@ rule MTNucRatioCalculator:
     conda:
         "../envs/mtnucratio.yaml"
     params:
-        lambda wildcards, input: get_chrM_name(wildcards, input)
+        mitochondria=lambda wildcards, input: get_chrM_name(wildcards, input)
     shell:
         """
-        mtnucratio {input.bam} {params}
+        mtnucratio {input.bam} {params.mitochondria}
         """
 
 
@@ -236,7 +246,8 @@ rule computeMatrix:
         annotation=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config)  # TODO: move genomepy to checkpoint and this as input
     shell:
         """
-        computeMatrix scale-regions -S {input.bw} {params.labels} -R {params.annotation} -p {threads} -b 2000 -a 500 -o {output} > {log} 2>&1
+        computeMatrix scale-regions -S {input.bw} {params.labels} -R {params.annotation} \
+        -p {threads} -b 2000 -a 500 -o {output} > {log} 2>&1
         """
 
 
@@ -408,6 +419,7 @@ rule multiqc_samplesconfig:
 
 rule multiqc_schema:
     """
+    Generate a multiqc config schema. Used for the ordering of modules.
     """
     output:
         temp(expand('{qc_dir}/schema.yaml', **config))

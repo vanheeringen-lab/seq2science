@@ -69,6 +69,7 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
                     'Running "seq2science init {workflow}" initialises a default '
                     "configuration and samples file for the specific workflow."
     )
+    global run
     run = subparsers.add_parser(
         "run",
         help="Run a complete workflow.",
@@ -109,10 +110,13 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         metavar="FILE",
         help="The path to the config file.",
     )
-    run.add_argument(
+    global core_arg
+    core_arg = run.add_argument(
         "-j", "--cores",
         metavar="N",
-        help="Use at most N cores in parallel. Requires at least 12 cores.",
+        type=int,
+        required=True,
+        help="Use at most N cores in parallel. Must be at least 2.",
     )
     run.add_argument(
         "-n", "--dryrun",
@@ -202,7 +206,8 @@ def _run(args, base_dir, workflows_dir, config_path):
                    "dryrun": args.dryrun,
                    "keepgoing": args.keep_going,
                    "unlock": args.unlock,
-                   "force_incomplete": args.rerun_incomplete}
+                   "force_incomplete": args.rerun_incomplete,
+                   "overwrite_threads": core_parser(args.cores)}
 
     # get the additional snakemake options
     snakemake_options = args.snakemakeOptions if args.snakemakeOptions is not None else dict()
@@ -218,12 +223,11 @@ def _run(args, base_dir, workflows_dir, config_path):
         profile = yaml.safe_load(open(profile_file).read())
         if "cores" in profile and parsed_args["cores"] is None:
             parsed_args["cores"] = profile["cores"]
+    if "overwrite_threads" in snakemake_options:
+        parsed_args["overwrite_threads"].update(snakemake_options["overwrite_threads"])
 
     parsed_args.update(snakemake_options)
 
-    # make sure some cores are used
-    if "cores" not in parsed_args or parsed_args["cores"] is None or int(parsed_args["cores"]) < 12:
-        raise ValueError("Please specify at least 12 cores.")
     parsed_args["cores"] = int(parsed_args["cores"])
 
     # run snakemake
@@ -290,6 +294,41 @@ class _StoreDictKeyPair(argparse.Action):
                     my_dict[k].update(v)
 
         setattr(namespace, self.dest, my_dict)
+
+
+def core_parser(cores):
+    """
+    Alignment uses a pipe, and snakemake does not handle scaling that, so
+    we do it for snakemake.
+    """
+    cores = int(cores)
+    sorters = ["samtools_presort"]
+    aligners = ["bwa_mem", "bowtie2_align", "hisat2_align", "star_align"]
+
+    d_sorters_threads = 2
+    d_aligner_threads = 10
+    desired_threads = d_sorters_threads + d_aligner_threads
+    if cores <= 1:
+        run.print_help()
+        try:
+            raise argparse.ArgumentError(core_arg, "specify at least two cores.")
+        except argparse.ArgumentError as e:
+            print()  # empty line
+            print(e)
+            sys.exit(1)
+
+    elif cores < desired_threads:
+        # scale the threads accordingly
+        d_aligner_threads = round(d_aligner_threads / desired_threads * cores)
+        d_sorters_threads = round(d_sorters_threads / desired_threads * cores)
+
+    overwrite_threads = dict()
+    for aligner in aligners:
+        overwrite_threads[aligner] = d_aligner_threads
+    for sorter in sorters:
+        overwrite_threads[sorter] = d_sorters_threads
+
+    return overwrite_threads
 
 
 if __name__ == "__main__":
