@@ -299,7 +299,7 @@ rule samtools_presort:
         memory=lambda wildcards, input, output, threads: f"-m {round(config['bam_sort_mem']/threads, 2)}G"
     threads: 2
     resources:
-        mem_mb=2500
+        mem_gb=config['bam_sort_mem']
     conda:
         "../envs/samtools.yaml"
     shell:
