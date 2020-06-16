@@ -296,7 +296,7 @@ rule samtools_presort:
     params:
         threads=lambda wildcards, input, output, threads: max([1, threads - 1]),
         out_dir=f"{config['result_dir']}/{config['aligner']}",
-        memory=lambda wildcards, input, output, threads: f"-m {round(config['bam_sort_mem']/threads, 2)}G"
+        memory=lambda wildcards, input, output, threads: f"-m {int(1000 * round(config['bam_sort_mem']/threads, 3))}M"
     threads: 2
     resources:
         mem_gb=config['bam_sort_mem']
