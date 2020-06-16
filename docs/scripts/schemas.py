@@ -24,6 +24,7 @@ order = {"general": "general",
          "alignment workflow specific": "alignment_specific",
          "peak calling (ChIP & ATAC)": "peakcalling",
          "gene expression (RNA-seq)": "gene_expression",
+         "single-cell ATAC": "scatac",
          "trackhub": "trackhub"}
 
 # we add 4 indentation as a start

@@ -28,7 +28,7 @@ def get_dirty_docstrings(string):
     return docstrings
 
 
-def cleanup(dirty):
+def cleanup_docstring(dirty):
     clean = {}
     for rule, docstring in dirty.items():
         firstline = docstring.split("\n")[1]
@@ -42,11 +42,25 @@ def cleanup(dirty):
     return clean
 
 
+def cleanup_shell(dirty):
+    clean = {}
+    for rule, shell in dirty.items():
+        firstline = shell.split("\n")[1]
+
+        indentation = len(firstline) - len(firstline.lstrip())
+        docstring = "\n".join([shell_line.replace(" " * indentation, "", 1) for shell_line in shell.split("\n")])
+        docstring = docstring.strip("\n")
+        clean[rule] = docstring
+
+    return clean
+
+
 def get_dirty_shell(string):
     splitter = re.compile("rule (.*):[\s\S]*?shell:[\s\S]*?\"\"\"[\s\S]([\s\S]*?)\"\"\"", re.MULTILINE)
     shell_cmds = {}
-    for match in splitter.finditer(string):
-        shell_cmds[match.group(1)] = match.group(2)
+    for substring in string.split("\n\n\n"):
+        for match in splitter.finditer(substring):
+            shell_cmds[match.group(1)] = match.group(2)
     return shell_cmds
 
 
@@ -55,10 +69,10 @@ all_rules_shell = {}
 for rules_file in os.listdir(path):
     with open(path + rules_file, 'r') as file:
         text = file.read()
-    shell_cmd = cleanup(get_dirty_shell(text))
+    shell_cmd = cleanup_shell(get_dirty_shell(text))
     all_rules_shell.update(shell_cmd)
 
-    docstrings = cleanup(get_dirty_docstrings(text))
+    docstrings = cleanup_docstring(get_dirty_docstrings(text))
     all_rules_doc.update(docstrings)
 
 for rule in sorted(all_rules_doc.keys()):
