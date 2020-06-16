@@ -121,7 +121,7 @@ rule sambamba_sort:
         expand("{benchmark_dir}/sambamba_sort/{{assembly}}-{{sample}}-{{sorting}}{{sieve}}.benchmark.txt", **config)[0]
     params:
         sort_order=lambda wildcards: "-n" if 'queryname' in wildcards.sorting else '',
-        memory=f"-m {round(config['bam_sort_mem']}G"
+        memory=f"-m {config['bam_sort_mem']}G"
     threads: 2
     conda:
         "../envs/sambamba.yaml"
