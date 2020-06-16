@@ -32,6 +32,7 @@ pipeline {
     environment {
         PATH = "$WORKSPACE/miniconda/bin:$PATH"
         CORES = "28"
+        MAMBA = "0.3.6"
     }
 
     stages {
@@ -50,12 +51,12 @@ pipeline {
                 # conda config --set channel_priority strict
 
                 # speed up installation
-                # conda install mamba -c conda-forge
-                conda install conda-forge::mamba=0.3.3  # doesn't seem to work
+                conda install conda-forge::mamba=$MAMBA
 
                 # create main env
                 printf "\ninstalling seq2science environment\n"
                 mamba env create -f requirements.yaml
+                mamba install -n s2s conda-forge::mamba=$MAMBA
 
                 # install seq2science
                 source $WORKSPACE/miniconda/etc/profile.d/conda.sh
