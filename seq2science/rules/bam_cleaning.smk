@@ -120,7 +120,8 @@ rule sambamba_sort:
     benchmark:
         expand("{benchmark_dir}/sambamba_sort/{{assembly}}-{{sample}}-{{sorting}}{{sieve}}.benchmark.txt", **config)[0]
     params:
-        lambda wildcards: "-n" if 'queryname' in wildcards.sorting else '',
+        sort_order=lambda wildcards: "-n" if 'queryname' in wildcards.sorting else '',
+        memory=f"-m {round(config['bam_sort_mem']}G"
     threads: 2
     conda:
         "../envs/sambamba.yaml"
@@ -146,7 +147,8 @@ rule samtools_sort:
     params:
         sort_order=lambda wildcards: "-n" if wildcards.sorting == 'queryname' else '',
         threads=lambda wildcards, input, output, threads: max([1, threads - 1]),
-        out_dir=f"{config['result_dir']}/{config['aligner']}"
+        out_dir=f"{config['result_dir']}/{config['aligner']}",
+        memory=lambda wildcards, input, output, threads: f"-m {round(config['bam_sort_mem']/threads, 2)}G"
     threads: 2
     resources:
         mem_mb=2500
@@ -158,7 +160,7 @@ rule samtools_sort:
         trap "rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
         rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2> {log}
         
-        samtools sort {params.sort_order} -@ {params.threads} {input} -o {output} \
+        samtools sort {params.sort_order} -@ {params.threads} {params.memory} {input} -o {output} \
         -T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
         """
 
