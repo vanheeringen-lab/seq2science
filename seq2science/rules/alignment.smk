@@ -306,6 +306,7 @@ rule samtools_presort:
         """
         # we set this trap to remove temp files when prematurely ending the rule
         trap "rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
+        rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2> {log}
         
         samtools sort {params.sort_order} -@ {params.threads} {input} -o {output} \
         -T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
