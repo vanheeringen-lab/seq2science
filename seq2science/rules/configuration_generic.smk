@@ -22,7 +22,7 @@ from snakemake.utils import min_version
 
 
 logger.info(
-"""\
+"""\n
                ____  ____   __              
               / ___)(  __) /  \             
               \___ \ ) _) (  O )            
