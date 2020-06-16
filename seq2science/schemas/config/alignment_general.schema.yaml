@@ -133,4 +133,4 @@ properties:
   bam_sort_mem:
     description: The max memory used in gigabytes by samtools/sambamba when sorting bams
     default: 2
-    type: int
+    type: integer
