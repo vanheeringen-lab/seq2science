@@ -229,6 +229,13 @@ create_qc_report:
     default: True
     type: boolean
 ```
+#####bam_sort_mem
+```
+bam_sort_mem:
+    description: The max memory used in gigabytes by samtools/sambamba when sorting bams
+    default: 2
+    type: integer
+```
 
 ## alignment workflow specific
 #####bam_sorter

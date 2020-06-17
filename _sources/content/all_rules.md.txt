@@ -121,9 +121,8 @@ Create a snapobject for each BAM file.
 
 These snapobjects can be merged later using snaptools in R.
 ```
-snaptools snap-pre --input-file={input.bams} --output-snap={output} \
---genome-name={wildcards.assembly} --genome-size={input.genome_size} \
-{params.params} {params.chrm} {params.mapq} > {log} 2>&1
+snaptools snap-pre --input-file={input.bams} --output-snap={output} --genome-name={wildcards.assembly} \
+--genome-size={input.genome_size} {params.params} {params.chrm} {params.mapq} > {log} 2>&1
 ```
 
 #### create_bins_SNAP_object
@@ -507,7 +506,7 @@ samtools index {input} {output} > {log} 2>&1
 trap "rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
 rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2> {log}
 
-samtools sort {params.sort_order} -@ {params.threads} {input} -o {output} \
+samtools sort -@ {params.threads} {params.memory} {input} -o {output} \
 -T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
 ```
 
@@ -518,7 +517,7 @@ Sort the result of sieving with the samtools sorter.
 trap "rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
 rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2> {log}
 
-samtools sort {params.sort_order} -@ {params.threads} {input} -o {output} \
+samtools sort {params.sort_order} -@ {params.threads} {params.memory} {input} -o {output} \
 -T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
 ```
 
