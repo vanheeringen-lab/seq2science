@@ -1,7 +1,7 @@
 name: ucsc
 channels:
-  - bioconda
   - conda-forge
+  - bioconda
   - defaults
 dependencies:
   - bioconda::ucsc-bedsort=377

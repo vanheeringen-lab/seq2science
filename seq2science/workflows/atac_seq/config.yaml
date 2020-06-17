@@ -20,8 +20,8 @@ peak_caller:
 #      ""
 
 # how to handle replicates
-biological_replicates: fisher  # change to keep to not combine them
-technical_replicates: merge    # change to keep to not combine them
+biological_replicates: fisher  # change to "keep" to not combine them
+technical_replicates: merge    # change to "keep" to not combine them
 
 # filtering after alignment
 remove_blacklist: True

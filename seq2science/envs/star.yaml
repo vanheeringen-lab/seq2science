@@ -1,7 +1,7 @@
 name: star
 channels:
-  - bioconda
   - conda-forge
+  - bioconda
   - defaults
 dependencies:
   - bioconda::star=2.7.*

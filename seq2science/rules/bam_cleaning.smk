@@ -43,7 +43,8 @@ rule setup_blacklist:
 
 rule complement_blacklist:
     """
-    Take the complement of the blacklist.
+    Take the complement of the blacklist. We need this complement to tell samtools
+    to only keep reads that are in the complement of the blacklist.
     """
     input:
         blacklist=rules.setup_blacklist.output,
@@ -92,7 +93,11 @@ rule sieve_bam:
         "../envs/samtools.yaml"
     threads: 2
     shell:
-        "samtools view -h {params.prim_align} {params.minqual} {params.blacklist} {input.bam} {params.atacshift} | samtools view -b > {output} 2> {log}"
+        """
+        samtools view -h {params.prim_align} {params.minqual} {params.blacklist} \
+        {input.bam} {params.atacshift} | 
+        samtools view -b > {output} 2> {log}
+        """
 
 def get_sambamba_sort_bam(wildcards):
     if sieve_bam(config):
@@ -115,10 +120,13 @@ rule sambamba_sort:
     benchmark:
         expand("{benchmark_dir}/sambamba_sort/{{assembly}}-{{sample}}-{{sorting}}{{sieve}}.benchmark.txt", **config)[0]
     params:
-        lambda wildcards: "-n" if 'queryname' in wildcards.sorting else '',
+        sort_order=lambda wildcards: "-n" if 'queryname' in wildcards.sorting else '',
+        memory=f"-m {config['bam_sort_mem']}G"
     threads: 2
     conda:
         "../envs/sambamba.yaml"
+    resources:
+        mem_gb=config['bam_sort_mem']
     shell:
         """
         sambamba view --nthreads {threads} -f bam  {input} -o /dev/stdout  2> {log} |
@@ -141,16 +149,21 @@ rule samtools_sort:
     params:
         sort_order=lambda wildcards: "-n" if wildcards.sorting == 'queryname' else '',
         threads=lambda wildcards, input, output, threads: max([1, threads - 1]),
-        out_dir=f"{config['result_dir']}/{config['aligner']}"
+        out_dir=f"{config['result_dir']}/{config['aligner']}",
+        memory=lambda wildcards, input, output, threads: f"-m {int(1000 * round(config['bam_sort_mem']/threads, 3))}M"
     threads: 2
     resources:
-        mem_mb=2500
+        mem_gb=config['bam_sort_mem']
     conda:
         "../envs/samtools.yaml"
     shell:
         """
+        # we set this trap to remove temp files when prematurely ending the rule
         trap "rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
-        samtools sort {params.sort_order} -@ {params.threads} {input} -o {output} -T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
+        rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2> {log}
+        
+        samtools sort {params.sort_order} -@ {params.threads} {params.memory} {input} -o {output} \
+        -T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
         """
 
 
@@ -189,8 +202,10 @@ rule mark_duplicates:
     conda:
         "../envs/picard.yaml"
     shell:
-        "picard MarkDuplicates {params} INPUT={input} "
-        "OUTPUT={output.bam} METRICS_FILE={output.metrics} > {log} 2>&1"
+        """
+        picard MarkDuplicates {params} INPUT={input} \
+        OUTPUT={output.bam} METRICS_FILE={output.metrics} > {log} 2>&1
+        """
 
 
 rule samtools_index:
@@ -213,7 +228,7 @@ rule samtools_index:
 
 rule bam2cram:
     """
-    Convert bam to the more compressed cram format
+    Convert a bam file to the more compressed cram format.
     """
     input:
          bam=rules.mark_duplicates.output.bam,
@@ -230,7 +245,9 @@ rule bam2cram:
     conda:
         "../envs/samtools.yaml"
     shell:
-        "samtools view -@ {threads} -T {input.assembly} -C {input.bam} > {output} 2> {log}"
+        """
+        samtools view -T {input.assembly} -C {input.bam} -@ {threads} > {output} 2> {log}
+        """
 
 
 rule samtools_index_cram:
@@ -248,4 +265,6 @@ rule samtools_index_cram:
     conda:
         "../envs/samtools.yaml"
     shell:
-        "samtools index {input} {output} > {log} 2>&1"
+        """
+        samtools index {input} {output} > {log} 2>&1
+        """

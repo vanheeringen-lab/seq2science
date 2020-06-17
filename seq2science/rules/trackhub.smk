@@ -1,6 +1,4 @@
 import os.path
-import json
-import requests
 from Bio import SeqIO
 from multiprocessing import Pool
 
@@ -74,9 +72,12 @@ rule cytoband:
         "../envs/ucsc.yaml"
     shell:
         """
-        cat {input.sizes} | bedSort /dev/stdin /dev/stdout | awk '{{print $1,0,$2,$1,"gneg"}}' > {output.cytoband_bd}
+        cat {input.sizes} | 
+        bedSort /dev/stdin /dev/stdout | 
+        awk '{{print $1,0,$2,$1,"gneg"}}' > {output.cytoband_bd}
 
-        bedToBigBed -type=bed4 {output.cytoband_bd} -as={params.schema} {input.sizes} {output.cytoband_bb} >> {log} 2>&1
+        bedToBigBed -type=bed4 {output.cytoband_bd} -as={params.schema} \
+        {input.sizes} {output.cytoband_bb} >> {log} 2>&1
         """
 
 
@@ -213,34 +214,23 @@ def get_bigwig_strand(sample):
             return ['.fwd', '.rev']
     return ['']
 
-
 def get_ucsc_name(assembly):
     """
     Returns as first value (bool) whether or not the assembly was found to be in the
     ucsc genome browser, and as second value the name of the assembly according to ucsc
     "convention".
     """
-    if dryrun:
-        return False, assembly
-
-    with urllib.request.urlopen("https://api.genome.ucsc.edu/list/ucscGenomes") as url:
-        data = json.loads(url.read().decode())['ucscGenomes']
-
     # patches are not relevant for which assembly it belongs to
     # (at least not human and mouse)
     assembly_np = \
         [split for split in re.split(r"(.+)(?=\.p\d)", assembly) if split != ''][0].lower()
 
-    # first check if our assembly already has the ucsc convention
-    # this is ugly, because we need to be case insensitive
-    ucsc_assemblies = [key.lower() for key in data.keys()]
+    # check if the assembly matches a ucsc assembly name
     if assembly_np in ucsc_assemblies:
-        idx = ucsc_assemblies.index(assembly_np)
-        return True, list(data.keys())[idx]
+        return True, ucsc_assemblies[assembly_np][0]
 
-    # else check if it is in any of the other names
-    for ucsc_assembly, values in data.items():
-        desc = values['description']
+    # else check if it is part of the description
+    for ucsc_assembly, desc in ucsc_assemblies.values():
         assemblies = desc[desc.find("(")+1:desc.find(")")].split("/")
         assemblies = [val.lower() for val in assemblies]
         if assembly_np in assemblies:
@@ -269,12 +259,6 @@ def get_trackhub_files(wildcards):
         # f = os.path.splitext(checkpoints.get_genome.get(assembly=assembly).output[0])[0]
         # gtf = any([os.path.isfile(f+".annotation.gtf"), os.path.isfile(f+".gtf")])
         gtf = True if get_workflow() == 'rna_seq' else False
-
-        # check for response of ucsc
-        if not dryrun:
-            response = requests.get(f"https://genome.ucsc.edu/cgi-bin/hgTracks?db={assembly}",
-                                    allow_redirects=True)
-            assert response.ok, "Make sure you are connected to the internet"
 
         # see if the title of the page mentions our assembly
         if not get_ucsc_name(assembly)[0]:

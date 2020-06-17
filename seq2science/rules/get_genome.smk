@@ -30,7 +30,7 @@ rule get_genome:
     params:
         dir=config['genome_dir'],
         provider=config.get('provider', None),
-        gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf.gz", **config),
+        gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
         temp=expand("{genome_dir}/{{assembly}}/{{assembly}}.{genomepy_temp}", **config)
     conda:
         "../envs/get_genome.yaml"
@@ -42,7 +42,7 @@ rule get_genome:
         genomepy plugin disable {{blacklist,bowtie2,bwa,star,gmap,hisat2,minimap2}} >> {log} 2>&1
         genomepy plugin enable {{blacklist,}} >> {log} 2>&1
         
-        # download the genome and attempt to download the annotation
+        # download the genome and attempt to download the annotation and blacklist
         if [[ ! {params.provider} = None  ]]; then
             genomepy install --genomes_dir {params.dir} {wildcards.assembly} {params.provider} --annotation >> {log} 2>&1
         else
@@ -51,12 +51,20 @@ rule get_genome:
             genomepy install --genomes_dir {params.dir} {wildcards.assembly} NCBI    --annotation >> {log} 2>&1
         fi
         
-        # unzip annotation if downloaded, warn if required but empty
-        if [ -f {params.gtf} ]; then
-            gunzip {params.gtf} >> {log} 2>&1
-        elif echo {output} | grep -q annotation.gtf; then
-            echo '\nAnnotation for {wildcards.assembly} contains no genes. Select a different assembly or provide an annotation file manually.\n\n' > {log}
-            exit 1
+        # unzip annotation if downloaded and gzipped
+        if [ -f {params.gtf}.gz ]; then
+            gunzip -f {params.gtf}.gz >> {log} 2>&1
+        fi
+        
+        # if assembly has no annotation, or annotation has no genes, throw an warning
+        if [ ! -f {params.gtf} ] || $(grep -q "No genes found" {log}); then
+            echo '\nEmpty or no annotation found for {wildcards.assembly}.\n' | tee -a {log}
+            
+            # if an annotation is required, make it an error and exit.
+            if $(echo {output} | grep -q annotation.gtf); then
+                echo'\nSelect a different assembly or provide an annotation file manually.\n\n' | tee -a {log}
+                exit 1
+            fi
         fi
         """
 

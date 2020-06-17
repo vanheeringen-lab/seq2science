@@ -1,7 +1,8 @@
 # seq2science
-[![Build Status](http://ocimum.science.ru.nl/jenkins/buildStatus/icon?job=seq2science%2Fmaster)](http://ocimum.science.ru.nl/jenkins/job/seq2science/job/master/lastBuild/display/redirect/)
+[![bioconda-badge](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io)
+[![nr downloads](https://anaconda.org/bioconda/seq2science/badges/downloads.svg)](https://anaconda.org/bioconda/seq2science/badges/downloads.svg)
 [![star this repo](https://img.shields.io/github/stars/vanheeringen-lab/seq2science?style=flat&color=brightgreen)](https://github.com/vanheeringen-lab/seq2science/stargazers)
-[![fork this repo](https://img.shields.io/github/forks/vanheeringen-lab/seq2science?style=flat&color=brightgreen)](https://github.com/vanheeringen-lab/seq2science/fork)
+[![Build Status](http://ocimum.science.ru.nl/jenkins/buildStatus/icon?job=seq2science%2Fmaster)](http://ocimum.science.ru.nl/jenkins/job/seq2science/job/master/lastBuild/display/redirect/)
 [![docs](https://github.com/vanheeringen-lab/seq2science/workflows/docs/badge.svg)](https://vanheeringen-lab.github.io/seq2science)
 
 Seq2science is the attempt of the *van heeringen lab* to generate a collection of generic pipelines/workflows which can be used by complete beginners to bioinformatics and experienced bioinformaticians alike. Please take a look at our [docs](https://vanheeringen-lab.github.io/seq2science/) for help with installation, how to run it, and best practices.

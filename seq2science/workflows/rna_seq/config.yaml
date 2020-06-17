@@ -15,7 +15,7 @@ email: yourmail@here.com
 create_trackhub: False
 
 # how to handle replicates
-technical_replicates: merge    # change to keep to not combine them
+technical_replicates: merge    # change to "keep" to not combine them
 
 
 
