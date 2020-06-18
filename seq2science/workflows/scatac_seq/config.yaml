@@ -9,6 +9,9 @@ genome_dir: ./genomes  # where to look for or download the genomes
 # contact info for multiqc report and trackhub
 email: yourmail@here.com
 
+# produce a UCSC trackhub?
+create_trackhub: True
+
 # how to handle plates ("technical replicates")
 technical_replicates: merge
 
