@@ -31,18 +31,14 @@ rule narrowpeak_summit:
     input:
         get_peakfile_for_summit
     output:
-        tmpbed = temp(expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}_summits.bed.tmp", **config)),
-        bed = expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}_summits.bed", **config)
+        expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}_summits.bed", **config)
     log:
         expand("{log_dir}/bedtools_slop/{{sample}}-{{assembly}}-{{peak_caller}}.log", **config)
     benchmark:
         expand("{benchmark_dir}/bedtools_slop/{{sample}}-{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     shell:
         """
-        awk 'BEGIN {{OFS="\t"}} {{ print $1,$2+$10,$2+$10+1,$4,$9; }}' {input} > {output.tmpbed} 2> {log}
-        # now rename the columns to sensible names
-        awk 'BEGIN {{ FS = "@" }} NR==2{{gsub("{wildcards.assembly}-|.samtools-coordinate","",$0)}}; \
-        {{print $0}}' {output.tmpbed} > {output.bed}
+        awk 'BEGIN {{OFS="\t"}} {{ print $1,$2+$10,$2+$10+1,$4,$9; }}' {input} > {output} 2> {log}
         """
 
 
@@ -119,7 +115,9 @@ rule coverage_table:
     shell:
         """
         echo "# The number of reads under each peak" > {output} 
-        coverage_table -p {input.peaks} -d {input.replicates} 2> {log} | grep -vE "^#" >> {output} 2>> {log}
+        coverage_table -p {input.peaks} -d {input.replicates} 2> {log} | grep -vE "^#" 2>> {log} |  
+        awk 'BEGIN {{ FS = "@" }} NR==1{{gsub("{wildcards.assembly}-|.samtools-coordinate","",$0)}}; \
+        {{print $0}}' >> {output}
         """
 
 
