@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 All changed fall under either one of these types: `added`, `changed`, `deprecated`, `removed`, `fixed`, `security`.
 
 ## [Unreleased]
+### Fixed
+- samtools using the correct nr of threads after update to v1.10
 
 ## v0.0.1 - 2020-06-17
 Many minor bug- and quality of life fixes.
