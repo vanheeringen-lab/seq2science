@@ -20,3 +20,8 @@ properties:
     description: which method to use to combine replicates (idr or fisher)
     default: false
     type: boolean
+
+  slop:
+    description: how much the summits should be expanded by (on both sides) for making a peak count table
+    default: 100
+    type: integer
