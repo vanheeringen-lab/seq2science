@@ -8,11 +8,12 @@ def count_table_output():
     if ftype != "narrowPeak":
         return []
 
-    return expand(["{result_dir}/count_table/{peak_caller}/count_table_{assemblies}_{normalizes}.samtools-coordinate.tsv"],
+    return expand(["{result_dir}/count_table/{peak_caller}/{assemblies}_{normalizes}.samtools-coordinate.tsv"],
                   **{**config,
                      **{'assemblies': set(samples['assembly']),
                         'peak_caller': config['peak_caller'].keys(),
-                        'normalizes': ['raw']}})
+                        'normalizes': ['raw', 'log1p_2', 'log1p_e', 'log1p_10', "quantilenorm_2", "quantilenorm_e",
+                                       "quantilenorm_10"]}})
 
 
 def get_peakfile_for_summit(wildcards):
@@ -30,14 +31,18 @@ rule narrowpeak_summit:
     input:
         get_peakfile_for_summit
     output:
-        expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}_summits.bed", **config)
+        tmpbed = temp(expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}_summits.bed.tmp", **config)),
+        bed = expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}_summits.bed", **config)
     log:
         expand("{log_dir}/bedtools_slop/{{sample}}-{{assembly}}-{{peak_caller}}.log", **config)
     benchmark:
         expand("{benchmark_dir}/bedtools_slop/{{sample}}-{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     shell:
         """
-        awk 'BEGIN {{OFS="\t"}} {{ print $1,$2+$10,$2+$10+1,$4,$9; }}' {input} > {output} 2> {log}
+        awk 'BEGIN {{OFS="\t"}} {{ print $1,$2+$10,$2+$10+1,$4,$9; }}' {input} > {output.tmpbed} 2> {log}
+        # now rename the columns to sensible names
+        awk 'BEGIN {{ FS = "@" }} NR==2{{gsub("{wildcards.assembly}-|.samtools-coordinate","",$0)}}; \
+        {{print $0}}' {output.tmpbed} > {output.bed}
         """
 
 
@@ -104,7 +109,7 @@ rule coverage_table:
         replicates=get_coverage_table_replicates('bam'),
         replicate_bai=get_coverage_table_replicates('bam.bai')
     output:
-        expand("{result_dir}/count_table/{{peak_caller}}/count_table_{{assembly}}_raw.{{sorter}}-{{sorting}}.tsv", **config)
+        expand("{result_dir}/count_table/{{peak_caller}}/{{assembly}}_raw.{{sorter}}-{{sorting}}.tsv", **config)
     log:
         expand("{log_dir}/multicov/{{assembly}}-{{peak_caller}}-{{sorter}}-{{sorting}}.log", **config)
     benchmark:
@@ -125,46 +130,63 @@ rule log_normalization:
     input:
         rules.coverage_table.output
     output:
-        expand("{result_dir}/count_table/{{peak_caller}}/count_table_{{assembly}}_lognorm.{{sorter}}-{{sorting}}.txt", **config)
+        expand("{result_dir}/count_table/{{peak_caller}}/{{assembly}}_log1p_{{base}}.{{sorter}}-{{sorting}}.tsv", **config)
     run:
         import pandas as pd
         import numpy as np
 
-        species = pd.read_csv(str(input), comment='#', index_col=0, sep="\t")
-        species_qN = np.log(species)
-        species_qN.to_csv(str(output), index = True, index_label = str, header=True, sep="\t")
+        # read the coverage table as input
+        cov_table = pd.read_csv(str(input), comment='#', index_col=0, sep="\t")
 
-# rule quantile_normalization:
-#     """
-#
-#     """
-#     input:
-#         rules.coverage_table.output
-#     output:
-#         expand("{result_dir}/count_table/{{peak_caller}}/count_table_{{assembly}}_quantilenorm.{{sorter}}-{{sorting}}.txt", **config)
-#     run:
-#         import pandas as pd
-#         import numpy as np
-#
-#         def quantileNormalize(df_input):
-#
-#             df = df_input.copy()
-#
-#             # ranking the values and sort median on axis=1
-#             dic = {}
-#             for col in df:
-#                 dic.update({col : sorted(df[col])})
-#             sorted_df = pd.DataFrame(dic)
-#             rank = sorted_df.median(axis = 1).tolist()
-#
-#             # sort
-#             for col in df:
-#                 t = np.searchsorted(np.sort(df[col]), df[col])
-#                 df[col] = [rank[i] for i in t]
-#
-#             print(df)
-#             return df
-#
-#         species = pd.read_csv(str(input), comment='#', index_col=0, sep="\t")
-#         species_qN = quantileNormalize(species)
-#         species_qN.to_csv(str(output), index = True, index_label = str, header=True, sep="\t")
+        # get our base
+        if wildcards.base == "e":
+            base = np.e
+        else:
+            base = float(wildcards.base)
+
+        # take log1p
+        species_log1p = np.log(cov_table + 1) / np.log(base)
+
+        # save the df
+        species_log1p.to_csv(str(output), index=True, index_label=str, header=True, sep="\t")
+
+        # prepend a comment with how we normalized
+        open(str(output), "w").write(
+            f"# The number of reads under each peak, log1p normalized with base {wildcards.base}\n" +
+            open(str(output)).read()
+        )
+
+
+rule quantile_normalization:
+    """
+
+    """
+    input:
+        rules.log_normalization.output
+    output:
+        expand("{result_dir}/count_table/{{peak_caller}}/{{assembly}}_quantilenorm_{{base}}.{{sorter}}-{{sorting}}.tsv", **config)
+    run:
+        import pandas as pd
+        import numpy as np
+
+        def quantileNormalize(df_input):
+
+            df = df_input.copy()
+
+            # ranking the values and sort median on axis=1
+            dic = {}
+            for col in df:
+                dic.update({col : sorted(df[col])})
+            sorted_df = pd.DataFrame(dic)
+            rank = sorted_df.median(axis = 1).tolist()
+
+            # sort
+            for col in df:
+                t = np.searchsorted(np.sort(df[col]), df[col])
+                df[col] = [rank[i] for i in t]
+
+            return df
+
+        species = pd.read_csv(str(input), comment='#', index_col=0, sep="\t")
+        species_qN = quantileNormalize(species)
+        species_qN.to_csv(str(output), index = True, index_label = str, header=True, sep="\t")
