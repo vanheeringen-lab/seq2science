@@ -148,7 +148,6 @@ rule samtools_sort:
         expand("{benchmark_dir}/samtools_sort/{{assembly}}-{{sample}}-{{sorting}}.benchmark.txt", **config)[0]
     params:
         sort_order=lambda wildcards: "-n" if wildcards.sorting == 'queryname' else '',
-        threads=lambda wildcards, input, output, threads: max([1, threads - 1]),
         out_dir=f"{config['result_dir']}/{config['aligner']}",
         memory=lambda wildcards, input, output, threads: f"-m {int(1000 * round(config['bam_sort_mem']/threads, 3))}M"
     threads: 2
@@ -162,7 +161,7 @@ rule samtools_sort:
         trap "rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
         rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2> {log}
         
-        samtools sort {params.sort_order} -@ {params.threads} {params.memory} {input} -o {output} \
+        samtools sort {params.sort_order} -@ {threads} {params.memory} {input} -o {output} \
         -T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
         """
 
