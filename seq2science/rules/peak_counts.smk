@@ -177,8 +177,8 @@ rule quantile_normalization:
         df = pd.read_csv(str(input), comment='#', index_col=0, sep="\t")
         df_qn = quantileNormalize_cpm(df)
         open(str(output), "w").write(
-            f"# The number of reads under each peak, quantile normalized\n" +
-            df_qn.to_csv(str(output), index_label="loc", index=True, header=True, sep="\t").to_csv(index=True, header=True, sep="\t")
+            "# The number of reads under each peak, quantile normalized\n" +
+            df_qn.to_csv(index_label="loc", index=True, header=True, sep="\t")
         )
 
 
@@ -202,11 +202,11 @@ rule edgeR_normalization:
     benchmark:
         expand("{benchmark_dir}/edgeR_normalization/{{assembly}}-{{peak_caller}}-{{normalisation}}.benchmark.txt", **config)[0]
     conda:
-        "../envs/deseq2.yaml"
+        "../envs/edger.yaml"
     resources:
         R_scripts=1  # conda's R can have issues when starting multiple times
     script:
-        f"{config['rule_dir']}/../scripts/deseq2_normalisation.R"
+        f"{config['rule_dir']}/../scripts/edger_norm.R"
 
 
 rule log_normalization:
@@ -258,6 +258,6 @@ rule mean_center:
 
         # prepend a comment with how we normalized
         open(str(output), "w").write(
-            f"# The number of reads under each peak, mean centered after log1p {wildcards.base} and {wildcards.method} normalization\n" +
+            f"# The number of reads under each peak, mean centered after log1p {wildcards.base} and {wildcards.normalisation} normalization\n" +
             cov_mc.to_csv(index=True, header=True, sep="\t")
         )
