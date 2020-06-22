@@ -1,8 +1,7 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
@@ -12,12 +11,18 @@
   
 
   
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
   
   
   
 
   
-  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -29,10 +34,6 @@
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="prev" title="seq2science scATAC postprocessing" href="scATAC_postprocessing.html" /> 
@@ -49,7 +50,7 @@
           
 
           
-            <a href="../index.html" class="icon icon-home"> seq2science
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> seq2science
           
 
           
@@ -72,6 +73,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -96,6 +98,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -134,7 +137,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../index.html">Docs</a> &raquo;</li>
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
         
       <li>Frequently Asked Questions (FAQ)</li>
     
@@ -163,7 +166,7 @@
 <h2>The pipeline starts creating conda environments and crashes (CreateCondaEnvironmentException)<a class="headerlink" href="#the-pipeline-starts-creating-conda-environments-and-crashes-createcondaenvironmentexception" title="Permalink to this headline">¶</a></h2>
 <p>The first thing the pipeline does is making separate conda environments for the rules that will be run. One thing that causes this error is that there isn’t enough space available on the device to install these environments. Sometimes, even when there is enough space on the device, the installation still fails, and we haven’t been able to pinpoint exactly what is causing this. What usually seems to work is just to remove the installed environemnts (<code class="docutils literal notranslate"><span class="pre">seq2science</span> <span class="pre">clean</span></code>) and try again.</p>
 <p>A different type of CreateCondaEnvironmentException occurs when you have conda configured to strict, and this will give a UnsatisfiableError. We haven’t been able to solve all problems with this, and recommend to try again with conda set to flexible instead of strict:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">user@comp:~$</span> conda config --set channel_priority strict
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">user@comp:~$</span> conda config --set channel_priority flexible
 </pre></div>
 </div>
 </div>
@@ -197,11 +200,19 @@ Seq2science (actually Snakemake) has a “lazy” policy regarding the generatio
 
   <div role="contentinfo">
     <p>
+        
         &copy; Copyright Maarten van der Sande, Siebren Frölich, Jos Smits, &amp; Simon van Heeringen.
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -212,7 +223,6 @@ Seq2science (actually Snakemake) has a “lazy” policy regarding the generatio
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

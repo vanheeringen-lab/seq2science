@@ -1,8 +1,7 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
@@ -12,12 +11,18 @@
   
 
   
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
   
   
   
 
   
-  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -29,10 +34,6 @@
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Per rule explanation" href="all_rules.html" />
@@ -50,7 +51,7 @@
           
 
           
-            <a href="../index.html" class="icon icon-home"> seq2science
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> seq2science
           
 
           
@@ -73,6 +74,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -112,6 +114,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -150,7 +153,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../index.html">Docs</a> &raquo;</li>
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
         
           <li><a href="extensive_docs.html">Extensive docs</a> &raquo;</li>
         
@@ -182,14 +185,14 @@
 <p><p>Each workflow requires a configuration and samples file to run. Running “seq2science init {workflow}” initialises a default configuration and samples file for the specific workflow.</p>
 </p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">seq2science</span> <span class="n">init</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="nb">dir</span> <span class="n">PATH</span><span class="p">]</span>
-                        <span class="p">{</span><span class="n">atac_seq</span><span class="p">,</span><span class="n">chip_seq</span><span class="p">,</span><span class="n">download_fastq</span><span class="p">,</span><span class="n">scatac_seq</span><span class="p">,</span><span class="n">alignment</span><span class="p">,</span><span class="n">rna_seq</span><span class="p">}</span>
+                        <span class="p">{</span><span class="n">rna_seq</span><span class="p">,</span><span class="n">download_fastq</span><span class="p">,</span><span class="n">alignment</span><span class="p">,</span><span class="n">scatac_seq</span><span class="p">,</span><span class="n">atac_seq</span><span class="p">,</span><span class="n">chip_seq</span><span class="p">}</span>
 </pre></div>
 </div>
 <div class="section" id="Positional Arguments">
 <h3>Positional Arguments<a class="headerlink" href="#Positional Arguments" title="Permalink to this headline">¶</a></h3>
 <dl class="option-list">
 <dt><kbd>workflow</kbd></dt>
-<dd><p>Possible choices: atac_seq, chip_seq, download_fastq, scatac_seq, alignment, rna_seq</p>
+<dd><p>Possible choices: rna_seq, download_fastq, alignment, scatac_seq, atac_seq, chip_seq</p>
 </dd>
 </dl>
 </div>
@@ -211,14 +214,14 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">seq2science</span> <span class="n">run</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">c</span> <span class="n">FILE</span><span class="p">]</span> <span class="o">-</span><span class="n">j</span> <span class="n">N</span> <span class="p">[</span><span class="o">-</span><span class="n">n</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">unlock</span><span class="p">]</span>
                        <span class="p">[</span><span class="o">--</span><span class="n">snakemakeOptions</span> <span class="n">KEY</span><span class="o">=</span><span class="n">VAL</span> <span class="p">[</span><span class="n">KEY</span><span class="o">=</span><span class="n">VAL</span> <span class="o">...</span><span class="p">]]</span>
                        <span class="p">[</span><span class="o">--</span><span class="n">profile</span> <span class="n">PROFILE</span> <span class="n">NAME</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">k</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">rerun</span><span class="o">-</span><span class="n">incomplete</span><span class="p">]</span>
-                       <span class="p">{</span><span class="n">atac_seq</span><span class="p">,</span><span class="n">chip_seq</span><span class="p">,</span><span class="n">download_fastq</span><span class="p">,</span><span class="n">scatac_seq</span><span class="p">,</span><span class="n">alignment</span><span class="p">,</span><span class="n">rna_seq</span><span class="p">}</span>
+                       <span class="p">{</span><span class="n">rna_seq</span><span class="p">,</span><span class="n">download_fastq</span><span class="p">,</span><span class="n">alignment</span><span class="p">,</span><span class="n">scatac_seq</span><span class="p">,</span><span class="n">atac_seq</span><span class="p">,</span><span class="n">chip_seq</span><span class="p">}</span>
 </pre></div>
 </div>
 <div class="section" id="Positional Arguments">
 <h3>Positional Arguments<a class="headerlink" href="#Positional Arguments" title="Permalink to this headline">¶</a></h3>
 <dl class="option-list">
 <dt><kbd>workflow</kbd></dt>
-<dd><p>Possible choices: atac_seq, chip_seq, download_fastq, scatac_seq, alignment, rna_seq</p>
+<dd><p>Possible choices: rna_seq, download_fastq, alignment, scatac_seq, atac_seq, chip_seq</p>
 </dd>
 </dl>
 </div>
@@ -298,11 +301,19 @@ seq2science clean will clean up these files for you.</p>
 
   <div role="contentinfo">
     <p>
+        
         &copy; Copyright Maarten van der Sande, Siebren Frölich, Jos Smits, &amp; Simon van Heeringen.
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -313,7 +324,6 @@ seq2science clean will clean up these files for you.</p>
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {
