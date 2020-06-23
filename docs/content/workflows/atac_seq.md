@@ -41,7 +41,7 @@ For the calculation of peaks MACS2 requires that an "effective" genome size is b
 It is always a good idea to check the quality of your samples. Along the way different quality control steps are taken, and are outputted in a single [multiqc report](https://multiqc.info/) in the `qc` folder. Make sure to always check the report, and take a look at [interpreting the multiqc report](../results.html#multiqc-quality-report)!
 
 #### Count table
-A useful result the pipeline outputs is the count table, located at {result_dir}/count_table/{peak_caller}/. Of each narrowpeak file (across all samples) its summit is taken, and all other summits within range `peak_windowsize` (default 100) are taken together, and the summit with the highest q-value is taken as the "true" peak. The remaining peaks are extended by `slop` on each side and for each sample the number of reads are counted under this peak. This file is stored as {assembly}_raw.tsv, and looks something like this:
+A useful result the pipeline outputs is the count table, located at {result_dir}/count_table/{peak_caller}/. For each narrowpeak (across all samples) its summit is taken, and all other summits within range `peak_windowsize` (default 100) are taken together, and the summit with the highest q-value is taken as the "true" peak. The remaining peaks are extended by `slop` on each side and for each sample the number of reads are counted under this peak. This file is stored as {assembly}_raw.tsv, and looks something like this:
 
 ```
                 sample1		sample2

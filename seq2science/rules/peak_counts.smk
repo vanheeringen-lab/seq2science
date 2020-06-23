@@ -9,6 +9,17 @@ def count_table_output():
     if ftype != "narrowPeak":
         return []
 
+    print(expand(["{result_dir}/count_table/{peak_caller}/{assemblies}_{normalization}.tsv"],
+                  **{**config,
+                     **{'assemblies': set(samples['assembly']),
+                        'peak_caller': config['peak_caller'].keys(),
+                        'normalization': ['raw',
+                                          f"meancenter_log{config['logbase']}_quantilenorm",
+                                          f"meancenter_log{config['logbase']}_TMM",
+                                          f"meancenter_log{config['logbase']}_RLE",
+                                          f"meancenter_log{config['logbase']}_upperquartile"],
+                        'mc': ["", "meancenter_"]}}))
+
     return expand(["{result_dir}/count_table/{peak_caller}/{assemblies}_{normalization}.tsv"],
                   **{**config,
                      **{'assemblies': set(samples['assembly']),
@@ -68,10 +79,11 @@ rule combine_peaks:
         expand("{benchmark_dir}/bedtools_slop/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     conda:
         "../envs/gimme.yaml"
+    params: 2 * config["peak_windowsize"]
     shell:
         """
         combine_peaks -i {input.summitfiles} -g {input.sizes} \
-        --window {2 * config[peak_windowsize]} > {output} 2> {log}
+        --window {params} > {output} 2> {log}
         """
 
 
@@ -253,7 +265,7 @@ rule log_normalization:
 
 rule mean_center:
     """
-    Mean centering 
+    Mean centering of a count table.
     """
     input:
         expand("{result_dir}/count_table/{{peak_caller}}/{{assembly}}_log{{base}}_{{normalisation}}.tsv", **config)
