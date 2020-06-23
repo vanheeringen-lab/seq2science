@@ -1,9 +1,6 @@
 ruleorder: macs2_callpeak > narrowpeak_summit
 
 
-# TODO: config
-config['logbase'] = 2
-
 def count_table_output():
     """
     get all the count table outputs.
@@ -73,7 +70,8 @@ rule combine_peaks:
         "../envs/gimme.yaml"
     shell:
         """
-        combine_peaks -i {input.summitfiles} -g {input.sizes} > {output} 2> {log}
+        combine_peaks -i {input.summitfiles} -g {input.sizes} \
+        --window {2 * config[peak_windowsize]} > {output} 2> {log}
         """
 
 
@@ -157,27 +155,42 @@ rule quantile_normalization:
     run:
         import pandas as pd
 
-        def quantileNormalize_cpm(df_input):
-            df = df_input.copy()
+        def quantileNormalize_cpm(df):
+            """
+            solution adapted from:
+            https://stackoverflow.com/questions/37935920/quantile-normalization-on-pandas-dataframe/41078786#41078786
 
-            # ranking the values and sort median on axis=1
-            dic = {}
-            for col in df:
-                dic.update({col : sorted(df[col])})
-            sorted_df = pd.DataFrame(dic)
-            rank = sorted_df.median(axis=1).tolist()
+            Changes:
+            - takes the mean of ties within a sample instead of ignoring it (as per wiki example)
+            - as a last step we do counts per million normalisation (cpm)
 
-            # sort
-            for col in df:
-                t = np.searchsorted(np.sort(df[col]), df[col])
-                df[col] = [rank[i] for i in t]
+            Note: naive implementation, might get slow with large dataframes
+            """
+            # get all the ranks, where ties share a spot
+            rank_ties = df.rank(method='min').astype(int)
 
-            return df
+            # calculate the median per rank
+            rank_means = df.stack().groupby(df.rank(method='first').stack().astype(int)).mean()
+
+            # quantile normalize and ignore ties
+            qn_df = df.rank(method='min').stack().astype(int).map(rank_means).unstack()
+
+            # now fix our ties by taking their mean
+            for column in qn_df.columns:
+                for idx, count in zip(*np.unique(qn_df[column].rank(method='min').astype(int), return_counts=True)):
+                    if count > 1:
+                        wrong_idxs = np.where(rank_ties[column] == idx)[0]
+                        qn_df[column].iloc[wrong_idxs] = np.mean(rank_means[idx-1:idx-1+count])
+
+            # finally count per million normalisation
+            qn_df *= 1_000_000 / qn_df.sum(axis=0)
+
+            return qn_df
 
         df = pd.read_csv(str(input), comment='#', index_col=0, sep="\t")
         df_qn = quantileNormalize_cpm(df)
         open(str(output), "w").write(
-            "# The number of reads under each peak, quantile normalized\n" +
+            "# The number of reads under each peak, cpm quantile normalized\n" +
             df_qn.to_csv(index_label="loc", index=True, header=True, sep="\t")
         )
 

@@ -17,11 +17,9 @@ sink(log, type="message")
 counts <- read.delim(counts_tsv, sep = "\t", na.strings = "", comment.char = "#", stringsAsFactors = F, , row.names=1)
 
 # normalize
-print(counts)
-print(DGEList(counts))
 dgelist <- calcNormFactors(DGEList(counts), method=method)
 norm_counts <- cpm(dgelist)
 
 # and save
-cat("# Something something about normalisation\n",file=norm_counts_tsv)
+cat(paste("# The number of reads under each peak, cpm", method, "normalized\n", sep=" "), file=norm_counts_tsv)
 write.table(norm_counts, file=norm_counts_tsv, quote=FALSE, sep='\t', col.names=NA, append=TRUE)
