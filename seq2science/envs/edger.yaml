@@ -1,4 +1,4 @@
-name: deseq2
+name: edger
 channels:
   - bioconda
   - r
