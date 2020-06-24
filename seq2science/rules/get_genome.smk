@@ -1,9 +1,18 @@
+import os
+from functools import lru_cache
+import contextlib
+
+import genomepy
+
+
 # the filetypes genomepy will download
 config['genome_types'] = ['fa', 'fa.fai', "fa.sizes", "gaps.bed"]
 config['genomepy_temp'] = ["annotation.bed.gz", "annotation.gff.gz"]
+
 # add annotation to the expected output if it is required
 if 'rna_seq' in get_workflow() or config['aligner'] == 'star':
     config['genome_types'].append("annotation.gtf")
+
 
 # TODO: return to checkpoint get_genome when checkpoints are stable
 #  1) does the trackhub input update? 2) does ruleorder work?
@@ -118,3 +127,31 @@ rule decoy_transcripts:
     shell:
          ("cpulimit --include-children -l {threads}00 -- " if config.get("cpulimit", True) else " ") +
          "sh {params.script} -j {threads} -g {input.genome} -a {input.gtf} -t {input.transcripts} -o $(dirname {output}) > {log} 2>&1"
+
+
+@lru_cache(maxsize=None)
+def has_annotation(assembly):
+    """
+    returns True/False on whether or not the assembly has an annotation.
+    """
+    # check if genome providd by user or already downloaded, if so check if the annotation came along
+    if all(os.path.exists(f"{config['genome_dir']}/{assembly}.{extension}") for extension in config["genome_types"]):
+        return os.path.exists(f"{config['genome_dir']}/{assembly}.annotation.gtf")
+
+    if "provider" in config:
+        providers = config["provider"]
+    else:
+        providers = ["Ensembl", "UCSC", "NCBI"]
+
+    # check if we expect an annotation
+    # we do not want genomepy outputting to us that it is downloading stuff
+    with open(os.devnull, 'w') as null:
+        with contextlib.redirect_stdout(null), contextlib.redirect_stderr(null):
+            for provider in providers:
+                p = genomepy.ProviderBase.create(provider)
+                if assembly in p.genomes and \
+                    p.get_genome_download_link(assembly) is not None:
+                    return p.get_annotation_download_link(assembly) is not None
+
+    # no download link found for assembly
+    return False

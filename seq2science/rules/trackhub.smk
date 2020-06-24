@@ -258,7 +258,6 @@ def get_trackhub_files(wildcards):
         #  1) does the trackhub input update? 2) does ruleorder work?
         # f = os.path.splitext(checkpoints.get_genome.get(assembly=assembly).output[0])[0]
         # gtf = any([os.path.isfile(f+".annotation.gtf"), os.path.isfile(f+".gtf")])
-        gtf = True if get_workflow() == 'rna_seq' else False
 
         # see if the title of the page mentions our assembly
         if not get_ucsc_name(assembly)[0]:
@@ -268,7 +267,7 @@ def get_trackhub_files(wildcards):
             trackfiles['RMsoft'].append(f"{config['genome_dir']}/{assembly}/{assembly}_softmasking.bb")
 
             # add gtf-dependent file(s) only if the gtf has been found
-            if gtf:
+            if has_annotation(assembly):
                 trackfiles['annotations'].append(f"{config['genome_dir']}/{assembly}/{assembly}.bb")
 
     # Get the ATAC or RNA seq files
