@@ -166,8 +166,10 @@ rule trackhub_index:
     source: https://genome.ucsc.edu/goldenPath/help/hubQuickStartSearch.html
     """
     input:
-        sizes = expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
-        gtf   = expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
+        sizes = expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config)
+    # TODO: add gtf back to input once checkpoints are fixed
+    params:
+        gtf   = expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config)
     output:
         genePred =       temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.gp",  **config)),
         genePredbed =    temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.gp.bed", **config)),
@@ -185,7 +187,7 @@ rule trackhub_index:
     shell:
         """
         # generate annotation files
-        gtfToGenePred -geneNameAsName2 -genePredExt {input.gtf} {output.genePred} -infoOut={output.info} >> {log} 2>&1
+        gtfToGenePred -geneNameAsName2 -genePredExt {params.gtf} {output.genePred} -infoOut={output.info} >> {log} 2>&1
 
         genePredToBed {output.genePred} {output.genePredbed} >> {log} 2>&1
         
