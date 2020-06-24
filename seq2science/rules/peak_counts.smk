@@ -156,37 +156,35 @@ rule quantile_normalization:
     run:
         import pandas as pd
 
-        def quantileNormalize_cpm(df):
-            """
-            solution adapted from:
-            https://stackoverflow.com/questions/37935920/quantile-normalization-on-pandas-dataframe/41078786#41078786
+def quantileNormalize_cpm(df):
+    """
+    solution adapted from:
+    https://stackoverflow.com/questions/37935920/quantile-normalization-on-pandas-dataframe/41078786#41078786
 
-            Changes:
-            - takes the mean of ties within a sample instead of ignoring it (as per wiki example)
-            - as a last step we do counts per million normalisation (cpm)
+    Changes:
+    - takes the mean of ties within a sample instead of ignoring it (as per wiki example)
+    - normalize on counts per million (cpm)
 
-            Note: naive implementation, might get slow with large dataframes
-            """
-            # get all the ranks, where ties share a spot
-            rank_ties = df.rank(method='min').astype(int)
+    Note: naive implementation, might get slow with large dataframes
+    """
+    # get all the ranks, where ties share a spot
+    rank_ties = df.rank(method='min').astype(int)
 
-            # calculate the median per rank
-            rank_means = df.stack().groupby(df.rank(method='first').stack().astype(int)).mean()
+    # calculate the median per rank
+    rank_means = (df * 1_000_000 / df.sum(axis=0)).stack().groupby(df.rank(method='first').stack().astype(int)).mean()
 
-            # quantile normalize and ignore ties
-            qn_df = df.rank(method='min').stack().astype(int).map(rank_means).unstack()
+    # quantile normalize and ignore ties
+    qn_df = df.rank(method='min').stack().astype(int).map(rank_means).unstack()
 
-            # now fix our ties by taking their mean
-            for column in qn_df.columns:
-                for idx, count in zip(*np.unique(qn_df[column].rank(method='min').astype(int), return_counts=True)):
-                    if count > 1:
-                        wrong_idxs = np.where(rank_ties[column] == idx)[0]
-                        qn_df[column].iloc[wrong_idxs] = np.mean(rank_means[idx-1:idx-1+count])
+    # now fix our ties by taking their mean
+    for column in qn_df.columns:
+        for idx, count in zip(*np.unique(qn_df[column].rank(method='min').astype(int), return_counts=True)):
+            if count > 1:
+                wrong_idxs = np.where(rank_ties[column] == idx)[0]
+                qn_df[column].iloc[wrong_idxs] = np.mean(rank_means[idx-1:idx-1+count])
 
-            # finally count per million normalisation
-            qn_df *= 1_000_000 / qn_df.sum(axis=0)
+    return qn_df
 
-            return qn_df
 
         df = pd.read_csv(str(input), comment='#', index_col=0, sep="\t")
         df_qn = quantileNormalize_cpm(df)
