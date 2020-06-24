@@ -186,14 +186,6 @@ def quantileNormalize_cpm(df):
     return qn_df
 
 
-        df = pd.read_csv(str(input), comment='#', index_col=0, sep="\t")
-        df_qn = quantileNormalize_cpm(df)
-        open(str(output), "w").write(
-            "# The number of reads under each peak, cpm quantile normalized\n" +
-            df_qn.to_csv(index_label="loc", index=True, header=True, sep="\t")
-        )
-
-
 rule edgeR_normalization:
     """
     edgeR supports three different types of normalization: TMM, RLE, and upperquartile.
