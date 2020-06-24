@@ -9,17 +9,6 @@ def count_table_output():
     if ftype != "narrowPeak":
         return []
 
-    print(expand(["{result_dir}/count_table/{peak_caller}/{assemblies}_{normalization}.tsv"],
-                  **{**config,
-                     **{'assemblies': set(samples['assembly']),
-                        'peak_caller': config['peak_caller'].keys(),
-                        'normalization': ['raw',
-                                          f"meancenter_log{config['logbase']}_quantilenorm",
-                                          f"meancenter_log{config['logbase']}_TMM",
-                                          f"meancenter_log{config['logbase']}_RLE",
-                                          f"meancenter_log{config['logbase']}_upperquartile"],
-                        'mc': ["", "meancenter_"]}}))
-
     return expand(["{result_dir}/count_table/{peak_caller}/{assemblies}_{normalization}.tsv"],
                   **{**config,
                      **{'assemblies': set(samples['assembly']),
