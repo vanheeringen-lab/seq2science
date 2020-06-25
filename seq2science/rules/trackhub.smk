@@ -166,8 +166,10 @@ rule trackhub_index:
     source: https://genome.ucsc.edu/goldenPath/help/hubQuickStartSearch.html
     """
     input:
-        sizes = expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
-        gtf   = expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
+        sizes = expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config)
+    # TODO: add gtf back to input once checkpoints are fixed
+    params:
+        gtf   = expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config)
     output:
         genePred =       temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.gp",  **config)),
         genePredbed =    temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.gp.bed", **config)),
@@ -185,7 +187,7 @@ rule trackhub_index:
     shell:
         """
         # generate annotation files
-        gtfToGenePred -geneNameAsName2 -genePredExt {input.gtf} {output.genePred} -infoOut={output.info} >> {log} 2>&1
+        gtfToGenePred -geneNameAsName2 -genePredExt {params.gtf} {output.genePred} -infoOut={output.info} >> {log} 2>&1
 
         genePredToBed {output.genePred} {output.genePredbed} >> {log} 2>&1
         
@@ -258,7 +260,6 @@ def get_trackhub_files(wildcards):
         #  1) does the trackhub input update? 2) does ruleorder work?
         # f = os.path.splitext(checkpoints.get_genome.get(assembly=assembly).output[0])[0]
         # gtf = any([os.path.isfile(f+".annotation.gtf"), os.path.isfile(f+".gtf")])
-        gtf = True if get_workflow() == 'rna_seq' else False
 
         # see if the title of the page mentions our assembly
         if not get_ucsc_name(assembly)[0]:
@@ -268,7 +269,7 @@ def get_trackhub_files(wildcards):
             trackfiles['RMsoft'].append(f"{config['genome_dir']}/{assembly}/{assembly}_softmasking.bb")
 
             # add gtf-dependent file(s) only if the gtf has been found
-            if gtf:
+            if has_annotation(assembly):
                 trackfiles['annotations'].append(f"{config['genome_dir']}/{assembly}/{assembly}.bb")
 
     # Get the ATAC or RNA seq files
