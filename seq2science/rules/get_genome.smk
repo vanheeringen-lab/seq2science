@@ -149,8 +149,7 @@ def has_annotation(assembly):
         with contextlib.redirect_stdout(null), contextlib.redirect_stderr(null):
             for provider in providers:
                 p = genomepy.ProviderBase.create(provider)
-                if assembly in p.genomes and \
-                    p.get_genome_download_link(assembly) is not None:
+                if assembly in p.genomes:
                     return p.get_annotation_download_link(assembly) is not None
 
     # no download link found for assembly
