@@ -1,4 +1,5 @@
 import os
+import time
 from functools import lru_cache
 import contextlib
 
@@ -150,7 +151,14 @@ def has_annotation(assembly):
             for provider in providers:
                 p = genomepy.ProviderBase.create(provider)
                 if assembly in p.genomes:
-                    return p.get_annotation_download_link(assembly) is not None
+                    if p.get_annotation_download_link(assembly) is None:
+                        logger.info(f"No annotation for assembly {assembly} can be downloaded. Another provider (and "
+                                    f"thus another assembly name) might have gene annotations.\n"
+                                    f"Find alternative assemblies with `genomepy search {assembly}`")
+                        time.sleep(2)
+                        return False
+                    else:
+                        return True
 
     # no download link found for assembly
     return False
