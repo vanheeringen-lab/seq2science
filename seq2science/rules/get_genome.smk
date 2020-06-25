@@ -139,7 +139,7 @@ def has_annotation(assembly):
         return os.path.exists(f"{config['genome_dir']}/{assembly}.annotation.gtf")
 
     if "provider" in config:
-        providers = config["provider"]
+        providers = [config["provider"]]
     else:
         providers = ["Ensembl", "UCSC", "NCBI"]
 
