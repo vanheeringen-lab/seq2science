@@ -88,11 +88,10 @@ if "replicate" in samples:
             expand("{benchmark_dir}/merge_replicates/{{replicate}}{{fqext}}.benchmark.txt", **config)[0]
         run:
             if len(input.reps) == 1:
-                shell(f"mv {input.reps} {output} 2> {log}")
+                shell("mv {input.reps} {output} 2> {log}")
             else:
                 for rep in input.reps:
                     rep_name = re.findall("\/([^\/_]+)_", rep)[-1]
-                    # please never ask me to explain the curly braces, it's a mess to escape those
                     shell(
-                        f"""zcat {rep} | awk '{{{{if (NR%4==1) {{{{gsub(/^@/, "@{rep_name}:"); print}}}} else {{{{print}}}}}}}}' | gzip >> {output}"""
+                        """zcat {rep} | awk '{{if (NR%4==1) {{gsub(/^@/, "@{rep_name}:"); print}} else {{print}}}}' | gzip >> {output}"""
                     )
