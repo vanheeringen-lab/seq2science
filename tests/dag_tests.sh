@@ -192,6 +192,10 @@ if [ $1 = "atac-seq" ]; then
   printf "\nmultiple peak callers - multiqc report\n"
   seq2science run atac_seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={create_qc_report:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 featureCounts 2
+  assert_rulecount $1 coverage_table 2
+  assert_rulecount $1 quantile_normalization 2
+  assert_rulecount $1 edgeR_normalization 6
+  assert_rulecount $1 mean_center 8
 
   printf "\nmultiple peak callers & multiple assemblies\n"
   seq2science run atac_seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/alignment/assemblies.tsv} | tee tests/local_test_results/${1}_dag
