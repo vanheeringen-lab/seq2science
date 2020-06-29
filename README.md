@@ -4,6 +4,7 @@
 [![star this repo](https://img.shields.io/github/stars/vanheeringen-lab/seq2science?style=flat&color=brightgreen)](https://github.com/vanheeringen-lab/seq2science/stargazers)
 [![Test Status](http://ocimum.science.ru.nl/jenkins/buildStatus/icon?job=seq2science%2Fmaster&subject=tests)](http://ocimum.science.ru.nl/jenkins/job/seq2science/job/master/lastBuild/display/redirect/)
 [![docs](https://github.com/vanheeringen-lab/seq2science/workflows/docs/badge.svg)](https://vanheeringen-lab.github.io/seq2science)
+[![DOI](https://zenodo.org/badge/196379320.svg)](https://zenodo.org/badge/latestdoi/196379320)
 
 Seq2science is the attempt of the *van heeringen lab* to generate a collection of generic pipelines/workflows which can be used by complete beginners to bioinformatics and experienced bioinformaticians alike. Please take a look at our [docs](https://vanheeringen-lab.github.io/seq2science/) for help with installation, how to run it, and best practices.
 
