@@ -94,20 +94,24 @@
 <li class="toctree-l3"><a class="reference internal" href="#bam-stranded-bigwig">bam_stranded_bigwig</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#bedgraph-bigwig">bedgraph_bigwig</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#bedgraphish-to-bedgraph">bedgraphish_to_bedgraph</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#bedtools-slop">bedtools_slop</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#blind-clustering">blind_clustering</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#bowtie2-align">bowtie2_align</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#bowtie2-index">bowtie2_index</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#bwa-index">bwa_index</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#bwa-mem">bwa_mem</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#call-peak-genrich">call_peak_genrich</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#combine-peaks">combine_peaks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#complement-blacklist">complement_blacklist</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#computematrix">computeMatrix</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#counts-matrix">counts_matrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#coverage-table">coverage_table</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#create-snap-object">create_SNAP_object</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#create-bins-snap-object">create_bins_SNAP_object</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#cytoband">cytoband</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#decoy-transcripts">decoy_transcripts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#deseq2">deseq2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#edger-normalization">edgeR_normalization</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#fastqc">fastqc</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#featurecounts">featureCounts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#gcpercent">gcPercent</a></li>
@@ -123,10 +127,12 @@
 <li class="toctree-l3"><a class="reference internal" href="#insert-size-metrics">insert_size_metrics</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#keep-mates">keep_mates</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#linked-txome">linked_txome</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#log-normalization">log_normalization</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#macs2-callpeak">macs2_callpeak</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#macs-bdgcmp">macs_bdgcmp</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#macs-cmbreps">macs_cmbreps</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#mark-duplicates">mark_duplicates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mean-center">mean_center</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#merge-replicates">merge_replicates</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#mt-nuc-ratio-calculator">mt_nuc_ratio_calculator</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multibamsummary">multiBamSummary</a></li>
@@ -136,12 +142,13 @@
 <li class="toctree-l3"><a class="reference internal" href="#multiqc-rename-buttons">multiqc_rename_buttons</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multiqc-samplesconfig">multiqc_samplesconfig</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multiqc-schema">multiqc_schema</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#narrowpeak-summit">narrowpeak_summit</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#peak-bigpeak">peak_bigpeak</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#peak-union">peak_union</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#plotcorrelation">plotCorrelation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#plotfingerprint">plotFingerprint</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#plotpca">plotPCA</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#plotprofile">plotProfile</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#quantile-normalization">quantile_normalization</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#renamefastq-pe">renamefastq_PE</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#salmon-decoy-aware-index">salmon_decoy_aware_index</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#salmon-index">salmon_index</a></li>
@@ -316,6 +323,14 @@ done
 </pre></div>
 </div>
 </div>
+<div class="section" id="bedtools-slop">
+<h2>bedtools_slop<a class="headerlink" href="#bedtools-slop" title="Permalink to this headline">¶</a></h2>
+<p>After combine_peaks we end up with just a bed file of summits. We extend all peaks
+to a total width of 200, for a fair comparison between peaks.</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>bedtools slop -i {input.bedfile} -g {input.sizes} -b {config[slop]} &gt; {output} 2&gt; {log}
+</pre></div>
+</div>
+</div>
 <div class="section" id="blind-clustering">
 <h2>blind_clustering<a class="headerlink" href="#blind-clustering" title="Permalink to this headline">¶</a></h2>
 <p>Create a sample distance matrix plot per assembly</p>
@@ -355,10 +370,23 @@ done
 </pre></div>
 </div>
 </div>
+<div class="section" id="combine-peaks">
+<h2>combine_peaks<a class="headerlink" href="#combine-peaks" title="Permalink to this headline">¶</a></h2>
+<p>Uses gimmemotifs’ combine_peaks to “combine” peaks. This finds all peaks close
+together and takes the most significant one as the true peak.</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>combine_peaks -i {input.summitfiles} -g {input.sizes} \
+--window {params} &gt; {output} 2&gt; {log}
+</pre></div>
+</div>
+</div>
 <div class="section" id="complement-blacklist">
 <h2>complement_blacklist<a class="headerlink" href="#complement-blacklist" title="Permalink to this headline">¶</a></h2>
 <p>Take the complement of the blacklist. We need this complement to tell samtools
 to only keep reads that are in the complement of the blacklist.</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>sortBed -faidx {input.sizes} -i {input.blacklist} |
+complementBed -i stdin -g {input.sizes} &gt; {output} 2&gt; {log}
+</pre></div>
+</div>
 </div>
 <div class="section" id="computematrix">
 <h2>computeMatrix<a class="headerlink" href="#computematrix" title="Permalink to this headline">¶</a></h2>
@@ -372,6 +400,17 @@ to only keep reads that are in the complement of the blacklist.</p>
 <h2>counts_matrix<a class="headerlink" href="#counts-matrix" title="Permalink to this headline">¶</a></h2>
 <p>Merge gene counts per assembly</p>
 <p>From <a class="reference external" href="https://github.com/snakemake-workflows/rna-seq-star-deseq2">https://github.com/snakemake-workflows/rna-seq-star-deseq2</a></p>
+</div>
+<div class="section" id="coverage-table">
+<h2>coverage_table<a class="headerlink" href="#coverage-table" title="Permalink to this headline">¶</a></h2>
+<p>Use gimmemotif’s coverage_table to generate a cpunt table with the nr of reads
+under each peak per sample.</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>echo &quot;# The number of reads under each peak&quot; &gt; {output}
+coverage_table -p {input.peaks} -d {input.replicates} 2&gt; {log} | grep -vE &quot;^#&quot; 2&gt;&gt; {log} |
+awk &#39;BEGIN {{ FS = &quot;@&quot; }} NR==1{{gsub(&quot;{wildcards.assembly}-|.samtools-coordinate&quot;,&quot;&quot;,$0)}}; \
+{{print $0}}&#39; &gt;&gt; {output}
+</pre></div>
+</div>
 </div>
 <div class="section" id="create-snap-object">
 <h2>create_SNAP_object<a class="headerlink" href="#create-snap-object" title="Permalink to this headline">¶</a></h2>
@@ -388,7 +427,7 @@ to only keep reads that are in the complement of the blacklist.</p>
 to the Snapfiles folder for downstream analysis in R using Snaptools</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>snaptools snap-add-bmat --snap-file={input} {params} &gt; {log} 2&gt;&amp;1
 echo &quot;bmat added, moving file&quot; &gt;&gt; {log} 2&gt;&amp;1
-mv {input} {output} &gt;&gt; {log} 2&gt;&amp;1
+mv {input} {output}    &gt;&gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
 </div>
@@ -413,6 +452,17 @@ bedToBigBed -type=bed4 {output.cytoband_bd} -as={params.schema} \
 <div class="section" id="deseq2">
 <h2>deseq2<a class="headerlink" href="#deseq2" title="Permalink to this headline">¶</a></h2>
 <p>Differential gene expression analysis with DESeq2.</p>
+</div>
+<div class="section" id="edger-normalization">
+<h2>edgeR_normalization<a class="headerlink" href="#edger-normalization" title="Permalink to this headline">¶</a></h2>
+<p>edgeR supports three different types of normalization: TMM, RLE, and upperquartile.</p>
+<p>TMM: is the weighted trimmed mean of M-values proposed by Robinson and Oshlack (2010).
+RLE: is the scaling factor method proposed by Anders and Huber (2010). DEseq2 normalisation</p>
+<blockquote>
+<div><p>is based on this.</p>
+</div></blockquote>
+<p>upperquartile: is the upper-quartile normalization method of Bullard et al (2010).</p>
+<p>In addition to</p>
 </div>
 <div class="section" id="fastqc">
 <h2>fastqc<a class="headerlink" href="#fastqc" title="Permalink to this headline">¶</a></h2>
@@ -576,20 +626,24 @@ macs2 in this case only keeps the first in pair.</p>
 <p>Also creates a symlink to the gtf in an Ensembl format (required by tximeta)</p>
 <p>Required to converting salmon output (estimated transcript abundances) to gene counts</p>
 </div>
+<div class="section" id="log-normalization">
+<h2>log_normalization<a class="headerlink" href="#log-normalization" title="Permalink to this headline">¶</a></h2>
+<p>Log1p normalization of a count table.</p>
+</div>
 <div class="section" id="macs2-callpeak">
 <h2>macs2_callpeak<a class="headerlink" href="#macs2-callpeak" title="Permalink to this headline">¶</a></h2>
 <p>Call peaks using macs2.
 Macs2 requires a genome size, which we estimate from the amount of unique kmers of the average read length.</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span># extract the kmer size, and get the effective genome size from it
-kmer_size=$(unzip -p {{input.fastqc}} {{params.name}}_trimmed_fastqc/fastqc_data.txt  | grep -P -o &#39;(?&lt;=Sequence length\\t).*&#39; | grep -P -o &#39;\d+$&#39;);
+kmer_size=$(unzip -p {input.fastqc} {params.name}_trimmed_fastqc/fastqc_data.txt  | grep -P -o &#39;(?&lt;=Sequence length\\t).*&#39; | grep -P -o &#39;\d+$&#39;)
 
-echo &quot;preparing to run unique-kmers.py with -k $kmer_size&quot; &gt;&gt; {{log}}
-GENSIZE=$(unique-kmers.py {{params.genome}} -k $kmer_size --quiet 2&gt;&amp;1 | grep -P -o &#39;(?&lt;=\.fa: ).*&#39;);
-echo &quot;kmer size: $kmer_size, and effective genome size: $GENSIZE&quot; &gt;&gt; {{log}}
+echo &quot;preparing to run unique-kmers.py with -k $kmer_size&quot; &gt;&gt; {log}
+GENSIZE=$(unique-kmers.py {params.genome} -k $kmer_size --quiet 2&gt;&amp;1 | grep -P -o &#39;(?&lt;=\.fa: ).*&#39;)
+echo &quot;kmer size: $kmer_size, and effective genome size: $GENSIZE&quot; &gt;&gt; {log}
 
 # call peaks
-macs2 callpeak --bdg -t {{input.bam}} {{params.control}} --outdir {config[&#39;result_dir&#39;]}/macs2/ -n {{wildcards.assembly}}-{{wildcards.sample}} \
-{{params.macs_params}} -g $GENSIZE -f {{params.format}} &gt;&gt; {{log}} 2&gt;&amp;1
+macs2 callpeak --bdg -t {input.bam} {params.control} --outdir {config[result_dir]}/macs2/ -n {wildcards.assembly}-{wildcards.sample} \
+{params.macs_params} -g $GENSIZE -f {params.format} &gt;&gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
 </div>
@@ -622,6 +676,10 @@ cat {output.tmppeaks} | tail -n +2 &gt; {output.peaks}
 OUTPUT={output.bam} METRICS_FILE={output.metrics} &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
+</div>
+<div class="section" id="mean-center">
+<h2>mean_center<a class="headerlink" href="#mean-center" title="Permalink to this headline">¶</a></h2>
+<p>Mean centering of a count table.</p>
 </div>
 <div class="section" id="merge-replicates">
 <h2>merge_replicates<a class="headerlink" href="#merge-replicates" title="Permalink to this headline">¶</a></h2>
@@ -683,6 +741,13 @@ against either “chrM” or “MT”.</p>
 <h2>multiqc_schema<a class="headerlink" href="#multiqc-schema" title="Permalink to this headline">¶</a></h2>
 <p>Generate a multiqc config schema. Used for the ordering of modules.</p>
 </div>
+<div class="section" id="narrowpeak-summit">
+<h2>narrowpeak_summit<a class="headerlink" href="#narrowpeak-summit" title="Permalink to this headline">¶</a></h2>
+<p>Convert a narrowpeak file to a “macs2 summits” file.</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>awk &#39;BEGIN {{OFS=&quot;\t&quot;}} {{ print $1,$2+$10,$2+$10+1,$4,$9; }}&#39; {input} &gt; {output} 2&gt; {log}
+</pre></div>
+</div>
+</div>
 <div class="section" id="peak-bigpeak">
 <h2>peak_bigpeak<a class="headerlink" href="#peak-bigpeak" title="Permalink to this headline">¶</a></h2>
 <p>Convert a narrowpeak file into a bignarrowpeak file.
@@ -696,10 +761,6 @@ bedToBigBed -type={params.type} -as={params.schema} {output.tmp} \
 {input.genome_size} {output.out} &gt;&gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
-</div>
-<div class="section" id="peak-union">
-<h2>peak_union<a class="headerlink" href="#peak-union" title="Permalink to this headline">¶</a></h2>
-<p>TODO improve + explain</p>
 </div>
 <div class="section" id="plotcorrelation">
 <h2>plotCorrelation<a class="headerlink" href="#plotcorrelation" title="Permalink to this headline">¶</a></h2>
@@ -728,6 +789,16 @@ bedToBigBed -type={params.type} -as={params.schema} {output.tmp} \
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>plotProfile -m {input} --outFileName {output.img} --outFileNameData {output.file} &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
+</div>
+<div class="section" id="quantile-normalization">
+<h2>quantile_normalization<a class="headerlink" href="#quantile-normalization" title="Permalink to this headline">¶</a></h2>
+<p>Quantile normalization is a type of normalization that makes the distribution
+between samples identical. This means that the actual count distribution
+within a sample changes. After quantile normalization, samples are CPM
+normalized (which has no effect between and within samples), for a fair
+comparison between normalisation techniques.</p>
+<p>See wikipedia:
+<a class="reference external" href="https://en.wikipedia.org/wiki/Quantile_normalization">https://en.wikipedia.org/wiki/Quantile_normalization</a></p>
 </div>
 <div class="section" id="renamefastq-pe">
 <h2>renamefastq_PE<a class="headerlink" href="#renamefastq-pe" title="Permalink to this headline">¶</a></h2>
@@ -791,7 +862,7 @@ sambamba sort --nthreads {threads} {params} /dev/stdin -o {output}  2&gt; {log}
 trap &quot;rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam&quot; INT;
 rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2&gt; {log}
 
-samtools sort -@ {params.threads} {params.memory} {input} -o {output} \
+samtools sort -@ {threads} {params.memory} {input} -o {output} \
 -T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2&gt; {log}
 </pre></div>
 </div>
@@ -803,7 +874,7 @@ samtools sort -@ {params.threads} {params.memory} {input} -o {output} \
 trap &quot;rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam&quot; INT;
 rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2&gt; {log}
 
-samtools sort {params.sort_order} -@ {params.threads} {params.memory} {input} -o {output} \
+samtools sort {params.sort_order} -@ {threads} {params.memory} {input} -o {output} \
 -T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2&gt; {log}
 </pre></div>
 </div>
@@ -815,10 +886,6 @@ samtools sort {params.sort_order} -@ {params.threads} {params.memory} {input} -o
 <div class="section" id="setup-blacklist">
 <h2>setup_blacklist<a class="headerlink" href="#setup-blacklist" title="Permalink to this headline">¶</a></h2>
 <p>Combine the encode blacklist with mitochrondrial dna depending on config.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>sortBed -faidx {input.sizes} -i {input.blacklist} |
-complementBed -i stdin -g {input.sizes} &gt; {output} 2&gt; {log}
-</pre></div>
-</div>
 </div>
 <div class="section" id="sieve-bam">
 <h2>sieve_bam<a class="headerlink" href="#sieve-bam" title="Permalink to this headline">¶</a></h2>
@@ -857,19 +924,19 @@ bedToBigBed -type=bed3 {output.maskbed} {input.sizes} {output.mask} &gt;&gt; {lo
 <p>Downloaded (raw) SRAs are converted to paired-end fastq files.
 Forward and reverse samples will be switched if forward/reverse names are not lexicographically ordered.</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span># setup tmp dir
-tmpdir={config[&#39;sra_dir&#39;]}/tmp/{{wildcards.sample}}
+tmpdir={config[sra_dir]}/tmp/{wildcards.sample}
 mkdir -p $tmpdir; trap &quot;rm -rf $tmpdir&quot; EXIT
 
 # dump to tmp dir
-parallel-fastq-dump -s {{input}}/* -O $tmpdir {config[&#39;split&#39;]} \
---threads {{threads}} --gzip &gt;&gt; {{log}} 2&gt;&amp;1
+parallel-fastq-dump -s {input}/* -O $tmpdir {config[split]} \
+--threads {threads} --gzip &gt;&gt; {log} 2&gt;&amp;1
 
 # rename files and move to output dir
 for f in $(ls -1q $tmpdir | grep -oP &quot;^[^_]+&quot; | uniq); do
-    dst_1={config[&#39;fastq_dir&#39;]}/{{wildcards.sample}}_{config[&#39;fqext1&#39;]}.{config[&#39;fqsuffix&#39;]}.gz
-    dst_2={config[&#39;fastq_dir&#39;]}/{{wildcards.sample}}_{config[&#39;fqext2&#39;]}.{config[&#39;fqsuffix&#39;]}.gz
-    cat &quot;${{{{tmpdir}}}}/${{{{f}}}}_pass_1.fastq.gz&quot; &gt;&gt; $dst_1
-    cat &quot;${{{{tmpdir}}}}/${{{{f}}}}_pass_2.fastq.gz&quot; &gt;&gt; $dst_2
+    dst_1={config[fastq_dir]}/{wildcards.sample}_{config[fqext1]}.{config[fqsuffix]}.gz
+    dst_2={config[fastq_dir]}/{wildcards.sample}_{config[fqext2]}.{config[fqsuffix]}.gz
+    cat &quot;${{tmpdir}}/${{f}}_pass_1.fastq.gz&quot; &gt;&gt; $dst_1
+    cat &quot;${{tmpdir}}/${{f}}_pass_2.fastq.gz&quot; &gt;&gt; $dst_2
 done
 </pre></div>
 </div>
@@ -878,17 +945,17 @@ done
 <h2>sra2fastq_SE<a class="headerlink" href="#sra2fastq-se" title="Permalink to this headline">¶</a></h2>
 <p>Downloaded (raw) SRAs are converted to single-end fastq files.</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span># setup tmp dir
-tmpdir={config[&#39;sra_dir&#39;]}/tmp/{{wildcards.sample}}
+tmpdir={config[sra_dir]}/tmp/{wildcards.sample}
 mkdir -p $tmpdir; trap &quot;rm -rf $tmpdir&quot; EXIT
 
 # dump to tmp dir
-parallel-fastq-dump -s {{input}}/* -O $tmpdir {config[&#39;splot&#39;]} \
---threads {{threads}} --gzip &gt;&gt; {{log}} 2&gt;&amp;1
+parallel-fastq-dump -s {input}/* -O $tmpdir {config[splot]} \
+--threads {threads} --gzip &gt;&gt; {log} 2&gt;&amp;1
 
 # rename file and move to output dir
 for f in $(ls -1q $tmpdir | grep -oP &quot;^[^_]+&quot; | uniq); do
-    dst={config[&#39;fastq_dir&#39;]}/{{wildcards.sample}}.{config[&#39;fqsuffix&#39;]}.gz
-    cat &quot;${{{{tmpdir}}}}/${{{{f}}}}_pass.fastq.gz&quot; &gt;&gt; $dst
+    dst={config[fastq_dir]}/{wildcards.sample}.{config[fqsuffix]}.gz
+    cat &quot;${{tmpdir}}/${{f}}_pass.fastq.gz&quot; &gt;&gt; $dst
 done
 </pre></div>
 </div>
@@ -985,7 +1052,7 @@ but can then be viewed through the UCSC genome browser.</p>
 <p>Generate a searchable annotation &amp; index for each assembly</p>
 <p>source: <a class="reference external" href="https://genome.ucsc.edu/goldenPath/help/hubQuickStartSearch.html">https://genome.ucsc.edu/goldenPath/help/hubQuickStartSearch.html</a></p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span># generate annotation files
-gtfToGenePred -geneNameAsName2 -genePredExt {input.gtf} {output.genePred} -infoOut={output.info} &gt;&gt; {log} 2&gt;&amp;1
+gtfToGenePred -geneNameAsName2 -genePredExt {params.gtf} {output.genePred} -infoOut={output.info} &gt;&gt; {log} 2&gt;&amp;1
 
 genePredToBed {output.genePred} {output.genePredbed} &gt;&gt; {log} 2&gt;&amp;1
 

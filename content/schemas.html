@@ -131,6 +131,9 @@
 <li class="toctree-l3"><a class="reference internal" href="#peak-calling-chip-atac">peak calling (ChIP &amp; ATAC)</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#peak-caller">peak_caller</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#macs2-keep-mates">macs2_keep_mates</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#peak-windowsize">peak_windowsize</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#slop">slop</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#logbase">logbase</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#gene-expression-rna-seq">gene expression (RNA-seq)</a><ul>
@@ -574,6 +577,33 @@
 <span class="c">    description: which method to use to combine replicates (idr or fisher)</span>
 <span class="c">    default: False</span>
 <span class="c">    type: boolean</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="peak-windowsize">
+<h3>peak_windowsize<a class="headerlink" href="#peak-windowsize" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">peak_windowsize:</span>
+<span class="c">    description: when combining narrowpeaks, how much each summit should be extended by when considering overlapping peaks. A summit is expanded by the windowsize on each side, so the total width is twice the peak_windowsize.</span>
+<span class="c">    default: 100</span>
+<span class="c">    type: integer</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="slop">
+<h3>slop<a class="headerlink" href="#slop" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">slop:</span>
+<span class="c">    description: how much the summits should be extended by (on each side) for making a peak count table. When for instance a slop of 100 is chosen, the final peak&#39;s width is 200.</span>
+<span class="c">    default: 100</span>
+<span class="c">    type: integer</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="logbase">
+<h3>logbase<a class="headerlink" href="#logbase" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">logbase:</span>
+<span class="c">    description: The log base of the number of reads under peak count tables</span>
+<span class="c">    default: 2</span>
+<span class="c">    type: number</span>
 </pre></div>
 </div>
 </div>

@@ -26,7 +26,7 @@ if [ {params.strandedness} == 'reverse' ]; then
     direction1=reverse
     direction2=forward
 fi
-            
+
 bamCoverage --bam {input.bam} --outFileName {output.forwards} --filterRNAstrand $direction1 \
 --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1 &&        
 bamCoverage --bam {input.bam} --outFileName {output.reverses} --filterRNAstrand $direction2 \
@@ -67,6 +67,13 @@ do
 done
 ```
 
+#### bedtools_slop
+After combine_peaks we end up with just a bed file of summits. We extend all peaks
+to a total width of 200, for a fair comparison between peaks.
+```
+bedtools slop -i {input.bedfile} -g {input.sizes} -b {config[slop]} > {output} 2> {log}
+```
+
 #### blind_clustering
 Create a sample distance matrix plot per assembly
 
@@ -100,9 +107,21 @@ Call peaks with genrich based on the pileup.
 Genrich -P -f {input.log} -o {output.narrowpeak} {params} -v > {log} 2>&1
 ```
 
+#### combine_peaks
+Uses gimmemotifs' combine_peaks to "combine" peaks. This finds all peaks close
+together and takes the most significant one as the true peak.
+```
+combine_peaks -i {input.summitfiles} -g {input.sizes} \
+--window {params} > {output} 2> {log}
+```
+
 #### complement_blacklist
 Take the complement of the blacklist. We need this complement to tell samtools
 to only keep reads that are in the complement of the blacklist.
+```
+sortBed -faidx {input.sizes} -i {input.blacklist} |
+complementBed -i stdin -g {input.sizes} > {output} 2> {log}
+```
 
 #### computeMatrix
 Pre-compute correlations between bams using deeptools.
@@ -115,6 +134,16 @@ computeMatrix scale-regions -S {input.bw} {params.labels} -R {params.annotation}
 Merge gene counts per assembly
 
 From https://github.com/snakemake-workflows/rna-seq-star-deseq2
+
+#### coverage_table
+Use gimmemotif's coverage_table to generate a cpunt table with the nr of reads
+under each peak per sample.
+```
+echo "# The number of reads under each peak" > {output} 
+coverage_table -p {input.peaks} -d {input.replicates} 2> {log} | grep -vE "^#" 2>> {log} |  
+awk 'BEGIN {{ FS = "@" }} NR==1{{gsub("{wildcards.assembly}-|.samtools-coordinate","",$0)}}; \
+{{print $0}}' >> {output}
+```
 
 #### create_SNAP_object
 Create a snapobject for each BAM file. 
@@ -131,7 +160,7 @@ to the Snapfiles folder for downstream analysis in R using Snaptools
 ```
 snaptools snap-add-bmat --snap-file={input} {params} > {log} 2>&1
 echo "bmat added, moving file" >> {log} 2>&1
-mv {input} {output}	>> {log} 2>&1
+mv {input} {output}    >> {log} 2>&1
 ```
 
 #### cytoband
@@ -154,6 +183,16 @@ script source: https://github.com/COMBINE-lab/SalmonTools
 
 #### deseq2
 Differential gene expression analysis with DESeq2.
+
+#### edgeR_normalization
+edgeR supports three different types of normalization: TMM, RLE, and upperquartile.
+
+TMM: is the weighted trimmed mean of M-values proposed by Robinson and Oshlack (2010).
+RLE: is the scaling factor method proposed by Anders and Huber (2010). DEseq2 normalisation
+ is based on this.
+upperquartile: is the upper-quartile normalization method of Bullard et al (2010).
+
+In addition to 
 
 #### fastqc
 Generate quality control report for fastq files.
@@ -184,7 +223,7 @@ source: http://hgdownload.cse.ucsc.edu/goldenPath/hg19/gc5Base/
 ```
         hgGcPercent -wigOut -doGaps -file=stdout -win=5 -verbose=0 {wildcards.assembly} {input.twobit} \
 | gzip > {output.gcpcvar}
-        
+
         wigToBigWig {output.gcpcvar} {input.sizes} {output.gcpc} >> {log} 2>&1
         
 ```
@@ -231,7 +270,7 @@ fi
 # if assembly has no annotation, or annotation has no genes, throw an warning
 if [ ! -f {params.gtf} ] || $(grep -q "No genes found" {log}); then
     echo '\nEmpty or no annotation found for {wildcards.assembly}.\n' | tee -a {log}
-    
+
     # if an annotation is required, make it an error and exit.
     if $(echo {output} | grep -q annotation.gtf); then
         echo'\nSelect a different assembly or provide an annotation file manually.\n\n' | tee -a {log}
@@ -312,20 +351,23 @@ Also creates a symlink to the gtf in an Ensembl format (required by tximeta)
 
 Required to converting salmon output (estimated transcript abundances) to gene counts
 
+#### log_normalization
+Log1p normalization of a count table.
+
 #### macs2_callpeak
 Call peaks using macs2.
 Macs2 requires a genome size, which we estimate from the amount of unique kmers of the average read length.
 ```
 # extract the kmer size, and get the effective genome size from it
-kmer_size=$(unzip -p {{input.fastqc}} {{params.name}}_trimmed_fastqc/fastqc_data.txt  | grep -P -o '(?<=Sequence length\\t).*' | grep -P -o '\d+$');
+kmer_size=$(unzip -p {input.fastqc} {params.name}_trimmed_fastqc/fastqc_data.txt  | grep -P -o '(?<=Sequence length\\t).*' | grep -P -o '\d+$')
 
-echo "preparing to run unique-kmers.py with -k $kmer_size" >> {{log}}
-GENSIZE=$(unique-kmers.py {{params.genome}} -k $kmer_size --quiet 2>&1 | grep -P -o '(?<=\.fa: ).*');
-echo "kmer size: $kmer_size, and effective genome size: $GENSIZE" >> {{log}}
+echo "preparing to run unique-kmers.py with -k $kmer_size" >> {log}
+GENSIZE=$(unique-kmers.py {params.genome} -k $kmer_size --quiet 2>&1 | grep -P -o '(?<=\.fa: ).*')
+echo "kmer size: $kmer_size, and effective genome size: $GENSIZE" >> {log}
 
 # call peaks
-macs2 callpeak --bdg -t {{input.bam}} {{params.control}} --outdir {config['result_dir']}/macs2/ -n {{wildcards.assembly}}-{{wildcards.sample}} \
-{{params.macs_params}} -g $GENSIZE -f {{params.format}} >> {{log}} 2>&1
+macs2 callpeak --bdg -t {input.bam} {params.control} --outdir {config[result_dir]}/macs2/ -n {wildcards.assembly}-{wildcards.sample} \
+{params.macs_params} -g $GENSIZE -f {params.format} >> {log} 2>&1
 ```
 
 #### macs_bdgcmp
@@ -356,6 +398,9 @@ Mark all duplicate reads in a bam file with picard MarkDuplicates
 picard MarkDuplicates {params} INPUT={input} \
 OUTPUT={output.bam} METRICS_FILE={output.metrics} > {log} 2>&1
 ```
+
+#### mean_center
+Mean centering of a count table.
 
 #### merge_replicates
 Merge replicates (fastqs) simply by concatenating the files. We also change the name of the read headers to 
@@ -411,6 +456,12 @@ Add a section in the multiqc report that reports the samples.tsv and config.yaml
 #### multiqc_schema
 Generate a multiqc config schema. Used for the ordering of modules.
 
+#### narrowpeak_summit
+Convert a narrowpeak file to a "macs2 summits" file.
+```
+awk 'BEGIN {{OFS="\t"}} {{ print $1,$2+$10,$2+$10+1,$4,$9; }}' {input} > {output} 2> {log}
+```
+
 #### peak_bigpeak
 Convert a narrowpeak file into a bignarrowpeak file.
 https://genome-source.gi.ucsc.edu/gitlist/kent.git/tree/master/src/hg/lib/
@@ -423,9 +474,6 @@ bedSort /dev/stdin {output.tmp} > {log} 2>&1
 bedToBigBed -type={params.type} -as={params.schema} {output.tmp} \
 {input.genome_size} {output.out} >> {log} 2>&1
 ```
-
-#### peak_union
-TODO improve + explain
 
 #### plotCorrelation
 Calculate the correlation between bams with deeptools.
@@ -450,6 +498,16 @@ Plot the so-called profile using deeptools.
 ```
 plotProfile -m {input} --outFileName {output.img} --outFileNameData {output.file} > {log} 2>&1
 ```
+
+#### quantile_normalization
+Quantile normalization is a type of normalization that makes the distribution 
+between samples identical. This means that the actual count distribution 
+within a sample changes. After quantile normalization, samples are CPM 
+normalized (which has no effect between and within samples), for a fair
+comparison between normalisation techniques.
+
+See wikipedia:
+https://en.wikipedia.org/wiki/Quantile_normalization
 
 #### renamefastq_PE
 Create symlinks to fastqs with incorrect fqexts (default R1/R2).
@@ -506,7 +564,7 @@ samtools index {input} {output} > {log} 2>&1
 trap "rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
 rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2> {log}
 
-samtools sort -@ {params.threads} {params.memory} {input} -o {output} \
+samtools sort -@ {threads} {params.memory} {input} -o {output} \
 -T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
 ```
 
@@ -517,7 +575,7 @@ Sort the result of sieving with the samtools sorter.
 trap "rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
 rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2> {log}
 
-samtools sort {params.sort_order} -@ {params.threads} {params.memory} {input} -o {output} \
+samtools sort {params.sort_order} -@ {threads} {params.memory} {input} -o {output} \
 -T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
 ```
 
@@ -526,10 +584,6 @@ Get general stats from bam files like percentage mapped.
 
 #### setup_blacklist
 Combine the encode blacklist with mitochrondrial dna depending on config.
-```
-sortBed -faidx {input.sizes} -i {input.blacklist} |
-complementBed -i stdin -g {input.sizes} > {output} 2> {log}
-```
 
 #### sieve_bam
 "Sieve" a bam.
@@ -555,9 +609,10 @@ Generate a track of all softmasked regions
 
 source: https://github.com/Gaius-Augustus/MakeHub/blob/master/make_hub.py
 ```
-bedSort {input.mask_unsorted} {output.maskbed} >> {log} 2>&1
+        bedSort {input.mask_unsorted} {output.maskbed} >> {log} 2>&1
 
-bedToBigBed -type=bed3 {output.maskbed} {input.sizes} {output.mask} >> {log} 2>&1
+        bedToBigBed -type=bed3 {output.maskbed} {input.sizes} {output.mask} >> {log} 2>&1
+        
 ```
 
 #### sra2fastq_PE
@@ -565,19 +620,19 @@ Downloaded (raw) SRAs are converted to paired-end fastq files.
 Forward and reverse samples will be switched if forward/reverse names are not lexicographically ordered.
 ```
 # setup tmp dir
-tmpdir={config['sra_dir']}/tmp/{{wildcards.sample}}
+tmpdir={config[sra_dir]}/tmp/{wildcards.sample}
 mkdir -p $tmpdir; trap "rm -rf $tmpdir" EXIT
 
 # dump to tmp dir
-parallel-fastq-dump -s {{input}}/* -O $tmpdir {config['split']} \
---threads {{threads}} --gzip >> {{log}} 2>&1
+parallel-fastq-dump -s {input}/* -O $tmpdir {config[split]} \
+--threads {threads} --gzip >> {log} 2>&1
 
 # rename files and move to output dir
 for f in $(ls -1q $tmpdir | grep -oP "^[^_]+" | uniq); do
-    dst_1={config['fastq_dir']}/{{wildcards.sample}}_{config['fqext1']}.{config['fqsuffix']}.gz
-    dst_2={config['fastq_dir']}/{{wildcards.sample}}_{config['fqext2']}.{config['fqsuffix']}.gz
-    cat "${{{{tmpdir}}}}/${{{{f}}}}_pass_1.fastq.gz" >> $dst_1
-    cat "${{{{tmpdir}}}}/${{{{f}}}}_pass_2.fastq.gz" >> $dst_2
+    dst_1={config[fastq_dir]}/{wildcards.sample}_{config[fqext1]}.{config[fqsuffix]}.gz
+    dst_2={config[fastq_dir]}/{wildcards.sample}_{config[fqext2]}.{config[fqsuffix]}.gz
+    cat "${{tmpdir}}/${{f}}_pass_1.fastq.gz" >> $dst_1
+    cat "${{tmpdir}}/${{f}}_pass_2.fastq.gz" >> $dst_2
 done
 ```
 
@@ -585,17 +640,17 @@ done
 Downloaded (raw) SRAs are converted to single-end fastq files.
 ```
 # setup tmp dir
-tmpdir={config['sra_dir']}/tmp/{{wildcards.sample}}
+tmpdir={config[sra_dir]}/tmp/{wildcards.sample}
 mkdir -p $tmpdir; trap "rm -rf $tmpdir" EXIT
 
 # dump to tmp dir
-parallel-fastq-dump -s {{input}}/* -O $tmpdir {config['splot']} \
---threads {{threads}} --gzip >> {{log}} 2>&1
+parallel-fastq-dump -s {input}/* -O $tmpdir {config[splot]} \
+--threads {threads} --gzip >> {log} 2>&1
 
 # rename file and move to output dir
 for f in $(ls -1q $tmpdir | grep -oP "^[^_]+" | uniq); do
-    dst={config['fastq_dir']}/{{wildcards.sample}}.{config['fqsuffix']}.gz
-    cat "${{{{tmpdir}}}}/${{{{f}}}}_pass.fastq.gz" >> $dst
+    dst={config[fastq_dir]}/{wildcards.sample}.{config[fqsuffix]}.gz
+    cat "${{tmpdir}}/${{f}}_pass.fastq.gz" >> $dst
 done
 ```
 
@@ -691,7 +746,7 @@ Generate a searchable annotation & index for each assembly
 source: https://genome.ucsc.edu/goldenPath/help/hubQuickStartSearch.html
 ```
 # generate annotation files
-gtfToGenePred -geneNameAsName2 -genePredExt {input.gtf} {output.genePred} -infoOut={output.info} >> {log} 2>&1
+gtfToGenePred -geneNameAsName2 -genePredExt {params.gtf} {output.genePred} -infoOut={output.info} >> {log} 2>&1
 
 genePredToBed {output.genePred} {output.genePredbed} >> {log} 2>&1
 
