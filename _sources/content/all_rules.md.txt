@@ -691,7 +691,7 @@ for (( y=$1-1 ; $y > 0; y >>= 1 )) ; do
 done
 echo $x
             }}
-            
+
             # set genome dependent variables
             NBits=""
             NBases=""
@@ -704,16 +704,16 @@ echo $x
                 NBits="--genomeChrBinNbits $(($LpR<18 ? $LpR : 18))"
                 printf "NBits: $NBits\n\n" >> {log} 2>&1
             fi
-            
+
             if [ $GenomeLength -lt 268435456 ]; then
                 # for small genomes, --genomeSAindexNbases must be scaled down to min(14, log2(GenomeLength)/2-1)
                 logG=$(( $(log2 $GenomeLength) / 2 - 1 ))
                 NBases="--genomeSAindexNbases $(( $logG<14 ? $logG : 14 ))"
                 printf "NBases: $NBases\n\n" >> {log} 2>&1
             fi
-            
+
             mkdir -p {output}
-            
+
             STAR --runMode genomeGenerate --genomeFastaFiles {input.genome} --sjdbGTFfile {input.gtf} \
             --genomeDir {output} --outFileNamePrefix {output}/ \
             --runThreadN {threads} $NBits $NBases {params} >> {log} 2>&1

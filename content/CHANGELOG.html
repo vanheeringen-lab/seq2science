@@ -91,7 +91,8 @@
 <li class="toctree-l2"><a class="reference internal" href="all_rules.html">Per rule explanation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="schemas.html">All configurable options</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Changelog</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#unreleased">[Unreleased]</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#unreleased">[Unreleased]</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#v0-0-2-2020-06-29">v0.0.2 - 2020-06-29</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#fixed">Fixed</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#changed">Changed</a></li>
 </ul>
@@ -180,6 +181,9 @@
 <p>All changed fall under either one of these types: <code class="docutils literal notranslate"><span class="pre">added</span></code>, <code class="docutils literal notranslate"><span class="pre">changed</span></code>, <code class="docutils literal notranslate"><span class="pre">deprecated</span></code>, <code class="docutils literal notranslate"><span class="pre">removed</span></code>, <code class="docutils literal notranslate"><span class="pre">fixed</span></code>, <code class="docutils literal notranslate"><span class="pre">security</span></code>.</p>
 <div class="section" id="unreleased">
 <h2>[Unreleased]<a class="headerlink" href="#unreleased" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="v0-0-2-2020-06-29">
+<h2>v0.0.2 - 2020-06-29<a class="headerlink" href="#v0-0-2-2020-06-29" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="fixed">
 <h3>Fixed<a class="headerlink" href="#fixed" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
@@ -190,6 +194,7 @@
 <h3>Changed<a class="headerlink" href="#changed" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>The count table for ATAC/ChIP-seq peaks is now made from finding all peaks within a range of 200 bp, and taking the most significant one (gimmemotifs’ combine_peaks) and extending the remaining peaks 200 bp. On this count table quantile normalisation, TMM, RLE and upperquartile normalisation with CPM is done. Downstream steps log transform these and mean center them. This however means that for broadpeaks no count_table is generated.</p></li>
+<li><p>Snakefmt -l 121 applied</p></li>
 </ul>
 </div>
 </div>
