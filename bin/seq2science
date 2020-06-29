@@ -319,8 +319,8 @@ def core_parser(cores):
 
     elif cores < desired_threads:
         # scale the threads accordingly
-        d_aligner_threads = round(d_aligner_threads / desired_threads * cores)
-        d_sorters_threads = round(d_sorters_threads / desired_threads * cores)
+        d_sorters_threads = max([1, round(d_sorters_threads / desired_threads * cores)])
+        d_aligner_threads = cores - d_sorters_threads
 
     overwrite_threads = dict()
     for aligner in aligners:
