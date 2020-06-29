@@ -282,13 +282,12 @@ with FileLock(layout_cachefile_lock):
                 all_samples.append(control)
 
     for sample in all_samples:
-        config['layout'][sample] = eutils_tp.apply_async(get_layout_eutils, (sample,))
         if os.path.exists(expand(f'{{fastq_dir}}/{sample}.{{fqsuffix}}.gz', **config)[0]):
             config['layout'][sample] ='SINGLE'
         elif all(os.path.exists(path) for path in expand(f'{{fastq_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz', **config)):
             config['layout'][sample] ='PAIRED'
         elif sample.startswith(('GSM', 'SRR', 'ERR', 'DRR')):
-            # config['layout'][sample] = eutils_tp.apply_async(get_layout_eutils, (sample,))
+            config['layout'][sample] = eutils_tp.apply_async(get_layout_eutils, (sample,))
             trace_layout[sample] = trace_tp.apply_async(get_layout_trace, (sample,))
 
             # sleep 1.25 times the minimum required sleep time so eutils don't complain
