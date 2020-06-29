@@ -144,17 +144,17 @@ rule macs2_callpeak:
     conda:
         "../envs/macs2.yaml"
     shell:
-        f"""
+        """
         # extract the kmer size, and get the effective genome size from it
-        kmer_size=$(unzip -p {{input.fastqc}} {{params.name}}_trimmed_fastqc/fastqc_data.txt  | grep -P -o '(?<=Sequence length\\t).*' | grep -P -o '\d+$');
+        kmer_size=$(unzip -p {input.fastqc} {params.name}_trimmed_fastqc/fastqc_data.txt  | grep -P -o '(?<=Sequence length\\t).*' | grep -P -o '\d+$')
         
-        echo "preparing to run unique-kmers.py with -k $kmer_size" >> {{log}}
-        GENSIZE=$(unique-kmers.py {{params.genome}} -k $kmer_size --quiet 2>&1 | grep -P -o '(?<=\.fa: ).*');
-        echo "kmer size: $kmer_size, and effective genome size: $GENSIZE" >> {{log}}
+        echo "preparing to run unique-kmers.py with -k $kmer_size" >> {log}
+        GENSIZE=$(unique-kmers.py {params.genome} -k $kmer_size --quiet 2>&1 | grep -P -o '(?<=\.fa: ).*')
+        echo "kmer size: $kmer_size, and effective genome size: $GENSIZE" >> {log}
 
         # call peaks
-        macs2 callpeak --bdg -t {{input.bam}} {{params.control}} --outdir {config['result_dir']}/macs2/ -n {{wildcards.assembly}}-{{wildcards.sample}} \
-        {{params.macs_params}} -g $GENSIZE -f {{params.format}} >> {{log}} 2>&1
+        macs2 callpeak --bdg -t {input.bam} {params.control} --outdir {config[result_dir]}/macs2/ -n {wildcards.assembly}-{wildcards.sample} \
+        {params.macs_params} -g $GENSIZE -f {params.format} >> {log} 2>&1
         """
 
 
