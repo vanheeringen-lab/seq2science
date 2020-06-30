@@ -7,7 +7,11 @@ All changed fall under either one of these types: `added`, `changed`, `deprecate
 
 ## [Unreleased]
 
+### Fixed
+- seq2science cache on sensible location + seq2science clean fixed
+
 ## v0.0.2 - 2020-06-29
+
 ### Fixed
 - samtools using the correct nr of threads after update to v1.10
 
