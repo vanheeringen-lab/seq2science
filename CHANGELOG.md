@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 All changed fall under either one of these types: `added`, `changed`, `deprecated`, `removed`, `fixed`, `security`.
 
 ## [Unreleased]
+### Fixed
+- bug when specifying 2 cores, which rounded down to zero cores for samtools sorting and crash
 
 ### Fixed
 - seq2science cache on sensible location + seq2science clean fixed
@@ -13,6 +15,7 @@ All changed fall under either one of these types: `added`, `changed`, `deprecate
 ## v0.0.2 - 2020-06-29
 
 ### Fixed
+
 - samtools using the correct nr of threads after update to v1.10
 
 ### Changed
