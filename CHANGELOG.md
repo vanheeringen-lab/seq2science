@@ -6,11 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 All changed fall under either one of these types: `added`, `changed`, `deprecated`, `removed`, `fixed`, `security`.
 
 ## [Unreleased]
-### Fixed
-- bug when specifying 2 cores, which rounded down to zero cores for samtools sorting and crash
 
 ### Fixed
 - seq2science cache on sensible location + seq2science clean fixed
+- bug when specifying 2 cores, which rounded down to zero cores for samtools sorting and crash
+- only lookup sample layout when not local, opens up for slightly better tests in bioconda recipe
 
 ## v0.0.2 - 2020-06-29
 
