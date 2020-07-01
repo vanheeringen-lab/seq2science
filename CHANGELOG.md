@@ -8,6 +8,7 @@ All changed fall under either one of these types: `added`, `changed`, `deprecate
 ## [Unreleased]
 ### Fixed
 - bug when specifying 2 cores, which rounded down to zero cores for samtools sorting and crash
+- edger environment was incompatible
 
 ### Fixed
 - seq2science cache on sensible location + seq2science clean fixed
