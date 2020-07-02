@@ -49,7 +49,7 @@ chr1:5649-5849	75.00000	0.00000
 chr1:7399-7599	47.00000	1.00000
 ```
 
-Seq2science currently supports four different normalisation methods: quantile normalisation, TMM, RLE, and upperquartile normalisation, and does count-per-million (CPM) normalisation on each afterwards.
+Seq2science currently supports four different normalisation methods: quantile normalisation, TMM, RLE, and upperquartile normalisation, and does count-per-million (counts under peaks) normalisation on each before normalisation.
 
 - **[Quantile normalization](https://en.wikipedia.org/wiki/Quantile_normalization)** is a type of normalization that makes the distribution between samples identical. This means that the actual count distribution within a sample changes. This normalisation is especially powerful when comparing results from different labs/experiments/experimental methods.
 - **TMM** is the weighted trimmed mean of M-values proposed by Robinson and Oshlack (2010).

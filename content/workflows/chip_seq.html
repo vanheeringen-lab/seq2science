@@ -249,7 +249,7 @@ chr1:7399-7599  47.00000    1.00000
 </pre></div>
 </div>
 <p><strong>Note</strong>: since peaks are combined on their summit, NO count table is outputted for broad peaks.</p>
-<p>Seq2science currently supports four different normalisation methods: quantile normalisation, TMM, RLE, and upperquartile normalisation, and does count-per-million (CPM) normalisation on each afterwards.</p>
+<p>Seq2science currently supports four different normalisation methods: quantile normalisation, TMM, RLE, and upperquartile normalisation, and does count-per-million (counts under peaks) normalisation on each before normalisation.</p>
 <ul class="simple">
 <li><p><a href="#id4"><span class="problematic" id="id5">**</span></a><a class="reference external" href="https://en.wikipedia.org/wiki/Quantile_normalization">Quantile normalization</a>** is a type of normalization that makes the distribution between samples identical. This means that the actual count distribution within a sample changes. This normalisation is especially powerful when comparing results from different labs/experiments/experimental methods.</p></li>
 <li><p><strong>TMM</strong> is the weighted trimmed mean of M-values proposed by Robinson and Oshlack (2010).</p></li>
