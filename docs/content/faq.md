@@ -6,7 +6,7 @@ The first thing the pipeline does is making separate conda environments for the 
 A different type of CreateCondaEnvironmentException occurs when you have conda configured to strict, and this will give a UnsatisfiableError. We haven't been able to solve all problems with this, and recommend to try again with conda set to flexible instead of strict:
 
 ```console
-user@comp:~$ conda config --set channel_priority strict
+user@comp:~$ conda config --set channel_priority flexible
 ```
 
 ## I changed the config/samples file but seq2science does not rerun

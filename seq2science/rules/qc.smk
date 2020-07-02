@@ -180,10 +180,13 @@ def get_descriptive_names(wildcards, input):
         # extract trep name from filepath (between assembly- and .sorter)
         trep = file[file.rfind(f"{wildcards.assembly}-"):].replace(f"{wildcards.assembly}-", "")
 
-        # string magic, either .sam... or .bw. If we do not find .sam, we cut off last letter,
-        # so we continue cutting of the .b part of ,bw
-        trep = trep[:trep.find(".sam")]
-        trep = trep[:trep.find(".b")]
+        # get the sample name
+        if trep.find(".sam") != -1:
+            trep = trep[:trep.find(".sam")]
+        elif trep.find(".bw") != -1:
+            trep = trep[:trep.find(".bw")]
+        else:
+            raise ValueError
 
         if "control" in treps and trep not in treps.index:
             labels += f"control_{trep} "

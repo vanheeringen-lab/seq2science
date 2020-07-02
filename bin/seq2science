@@ -27,7 +27,7 @@ except ImportError:
     conda_frontend = "conda"
 
 
-__version__ = "0.0.1"
+__version__ = "0.0.3"
 
 
 def main():
@@ -243,8 +243,7 @@ def _clean(base_dir):
     shutil.rmtree(os.path.join(base_dir, ".snakemake"), ignore_errors=True)
 
     # remove seq2science caches
-    for file in ["layouts.p", "layouts.p.lock", "hubfile.p", "hubfile.p.lock"]:
-        shutil.rmtree(os.path.expanduser(f'~/.config/snakemake/{file}'), ignore_errors=True)
+    shutil.rmtree(os.path.expanduser(f'~/.config/seq2science'), ignore_errors=True)
 
     print("All cleaned up!")
 
@@ -319,8 +318,8 @@ def core_parser(cores):
 
     elif cores < desired_threads:
         # scale the threads accordingly
-        d_aligner_threads = round(d_aligner_threads / desired_threads * cores)
-        d_sorters_threads = round(d_sorters_threads / desired_threads * cores)
+        d_sorters_threads = max([1, round(d_sorters_threads / desired_threads * cores)])
+        d_aligner_threads = cores - d_sorters_threads
 
     overwrite_threads = dict()
     for aligner in aligners:

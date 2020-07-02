@@ -184,8 +184,8 @@ samples.index = samples.index.map(str)
 # sample layouts
 # check if a sample is single-end or paired end, and store it
 logger.info("Checking if samples are single-end or paired-end...")
-layout_cachefile = os.path.expanduser('~/.config/snakemake/layouts.p')
-layout_cachefile_lock = os.path.expanduser('~/.config/snakemake/layouts.p.lock')
+layout_cachefile = os.path.expanduser('~/.config/seq2science/layouts.p')
+layout_cachefile_lock = os.path.expanduser('~/.config/seq2science/layouts.p.lock')
 
 def get_layout_eutils(sample):
     """
@@ -412,8 +412,8 @@ else:
 
 # record which assembly trackhubs are found on UCSC
 if config.get("create_trackhub"):
-    hubfile = os.path.expanduser('~/.config/snakemake/ucsc_trackhubs.p')
-    hubfile_lock = os.path.expanduser('~/.config/snakemake/ucsc_trackhubs.p.lock')
+    hubfile = os.path.expanduser('~/.config/seq2science/ucsc_trackhubs.p')
+    hubfile_lock = os.path.expanduser('~/.config/seq2science/ucsc_trackhubs.p.lock')
 
     # sometimes two jobs start in parallel and try to delete at the same time
     try:
