@@ -10,7 +10,8 @@ def count_table_output():
         return []
 
     return expand(
-        ["{result_dir}/count_table/{peak_caller}/{assemblies}_{normalization}.tsv"],
+        ["{result_dir}/count_table/{peak_caller}/{assemblies}_{normalization}.tsv", 
+         "{result_dir}/{peak_caller}/{assemblies}_consensus.tsv"],
         **{
             **config,
             **{
@@ -304,8 +305,8 @@ rule mean_center:
 
 
 def get_all_narrowpeaks(wildcards):
-    return expand(["{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}_peaks.narrowPeak"
-        for replicate in breps[breps['assembly'] == wildcards.assembly].index], **config)
+    return [f"{config['result_dir']}/{{peak_caller}}/{{assembly}}-{replicate}_peaks.narrowPeak"
+        for replicate in breps[breps['assembly'] == wildcards.assembly].index]
 
 
 rule differentialish_peaks:
@@ -316,24 +317,24 @@ rule differentialish_peaks:
         narrowpeaks=get_all_narrowpeaks,
         combinedpeaks=rules.combine_peaks.output
     output:
-        expand("{result_dir}/{{peak_caller}}/{{assembly}}_consensus.tsv", **config),
-        temp(expand("{result_dir}/{{peak_caller}}/{{assembly}}_consensus.tsv.tmp", **config))
+        real=expand("{result_dir}/{{peak_caller}}/{{assembly}}_consensus.tsv", **config),
+        tmp=temp(expand("{result_dir}/{{peak_caller}}/{{assembly}}_consensus.tsv.tmp", **config))
     conda:
         "../envs/bedtools.yaml"
     params:
-        count=lambda wildcards, input: len(input)
+        peak_count=lambda wildcards, input: len(input.narrowpeaks)
     shell:
         """
-        awk '{{print $1":"$2"-"$3}}' {input.combinedpeaks} > {output}
+        awk '{{print $1":"$2"-"$3}}' {input.combinedpeaks} > {output.real}
 
         for brep in {input.narrowpeaks}
         do
             bedtools sort -i $brep |
             bedtools intersect -a {input.combinedpeaks} -b stdin -c |
             awk '{{print $4}}' |
-            paste {output.something} - > {output.tmp}
-            mv {output.tmp} {output.something}
+            paste {output.real} - > {output.tmp}
+            mv {output.tmp} {output.real}
         done
         
-        echo -e "# some explanation of my file :)\n$(cat $outfile)" > $outfile
+        echo -e "# some explanation of my file :)\\n$(cat {output.real})" > {output.tmp} && cp {output.tmp} {output.real}
         """
