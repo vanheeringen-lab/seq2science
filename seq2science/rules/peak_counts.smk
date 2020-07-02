@@ -38,9 +38,9 @@ rule narrowpeak_summit:
     output:
         expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}_summits.bed", **config)
     log:
-        expand("{log_dir}/bedtools_slop/{{sample}}-{{assembly}}-{{peak_caller}}.log", **config)
+        expand("{log_dir}/narrowpeak_summit/{{sample}}-{{assembly}}-{{peak_caller}}.log", **config)
     benchmark:
-        expand("{benchmark_dir}/bedtools_slop/{{sample}}-{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/narrowpeak_summit/{{sample}}-{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     shell:
         """
         awk 'BEGIN {{OFS="\t"}} {{ print $1,$2+$10,$2+$10+1,$4,$9; }}' {input} > {output} 2> {log}
@@ -272,3 +272,39 @@ rule mean_center:
             f"# The number of reads under each peak, mean centered after log1p {wildcards.base} and {wildcards.normalisation} normalization\n" +
             cov_mc.to_csv(index=True, header=True, sep="\t")
         )
+
+
+def get_all_narrowpeaks(wildcards):
+    return expand(["{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}_peaks.narrowPeak"
+        for replicate in breps[breps['assembly'] == wildcards.assembly].index], **config)
+
+
+rule differentialish_peaks:
+    """
+    
+    """
+    input:
+        narrowpeaks=get_all_narrowpeaks,
+        combinedpeaks=rules.combine_peaks.output
+    output:
+        expand("{result_dir}/{{peak_caller}}/{{assembly}}_consensus.tsv", **config),
+        temp(expand("{result_dir}/{{peak_caller}}/{{assembly}}_consensus.tsv.tmp", **config))
+    conda:
+        "../envs/bedtools.yaml"
+    params:
+        count=lambda wildcards, input: len(input)
+    shell:
+        """
+        awk '{{print $1":"$2"-"$3}}' {input.combinedpeaks} > {output}
+
+        for brep in {input.narrowpeaks}
+        do
+            bedtools sort -i $brep |
+            bedtools intersect -a {input.combinedpeaks} -b stdin -c |
+            awk '{{print $4}}' |
+            paste {output.something} - > {output.tmp}
+            mv {output.tmp} {output.something}
+        done
+        
+        echo -e "# some explanation of my file :)\n$(cat $outfile)" > $outfile
+        """
