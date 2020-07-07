@@ -316,7 +316,7 @@ with FileLock(layout_cachefile_lock):
 config['layout'] = {**{key: value for key, value in config['layout'].items() if key in samples.index},
                     **{key: value for key, value in config['layout'].items() if "control" in samples and key in samples["control"].values}}
 
-for sample in samples:
+for sample in samples.index:
     if sample not in config["layout"]:
         raise ValueError(f"The command to lookup sample {sample} online failed!\n"
                          f"Are you sure this sample exists..? Downloading samples with restricted "
