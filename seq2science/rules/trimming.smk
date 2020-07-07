@@ -12,6 +12,10 @@ rule trim_galore_SE:
         qc=expand("{qc_dir}/trimming/{{sample}}.{fqsuffix}.gz_trimming_report.txt", **config),
     conda:
         "../envs/trimgalore.yaml"
+    # version:
+    #     """
+    #     Reads trimmed trimgalore Single
+    #     """
     threads: 6
     log:
         expand("{log_dir}/trim_galore_SE/{{sample}}.log", **config),
@@ -50,6 +54,10 @@ rule trim_galore_PE:
     conda:
         "../envs/trimgalore.yaml"
     threads: 6
+    # version:
+    #     """
+    #     Reads trimmed trimgalore Paired
+    #     """
     log:
         expand("{log_dir}/trim_galore_PE/{{sample}}.log", **config),
     benchmark:

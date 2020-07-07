@@ -141,6 +141,10 @@ rule macs2_callpeak:
         expand("{log_dir}/macs2_callpeak/{{assembly}}-{{sample}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/macs2_callpeak/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
+    # version:
+    #     """
+    #     Peaks called with macs2.
+    #     """
     params:
         name=(
             lambda wildcards, input: wildcards.sample

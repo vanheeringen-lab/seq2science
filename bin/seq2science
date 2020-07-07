@@ -45,6 +45,9 @@ def main():
     elif args.command == "run":
         config_path = args.configfile if os.path.isabs(args.configfile) else os.path.join(os.getcwd(), args.configfile)
         _run(args, base_dir, workflows_dir, config_path)
+    elif args.command == "explain":
+        config_path = args.configfile if os.path.isabs(args.configfile) else os.path.join(os.getcwd(), args.configfile)
+        _explain(args, base_dir, workflows_dir, config_path)
     elif args.command == "clean":
         _clean(base_dir)
     elif args.command == "docs":
@@ -76,6 +79,11 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         description="Run a complete workflow. This requires that a config and samples file "
         "are either present in the current directory, or passed as an argument."
     )
+    explain = subparsers.add_parser(
+        "explain",
+        help="TODO",
+        description="TODO"
+    )
     clean = subparsers.add_parser(
         "clean",
         help="Remove all cached sample layouts and conda environments.",
@@ -92,7 +100,7 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
     )
 
     # both init and run can use all workflows
-    for subparser in [init, run]:
+    for subparser in [init, run, explain]:
         subparser.add_argument("workflow", choices=os.listdir(workflows_dir))
 
     # setup init arguments
@@ -153,6 +161,14 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         "--rerun-incomplete",
         help="Re-run all jobs the output of which is recognized as incomplete.",
         action='store_true'
+    )
+
+    explain.add_argument(
+        "-c",
+        "--configfile",
+        default="./config.yaml",
+        metavar="FILE",
+        help="The path to the config file.",
     )
 
     return parser
@@ -232,6 +248,72 @@ def _run(args, base_dir, workflows_dir, config_path):
 
     # run snakemake
     exit_code = snakemake.snakemake(**parsed_args)
+    sys.exit(0) if exit_code else sys.exit(1)
+
+
+def _explain(args, base_dir, workflows_dir, config_path):
+    """
+    Run a complete workflow.
+    """
+    if not os.path.exists(config_path):
+        sys.stdout.write(
+            f"The config file: {config_path} does not exist.\nProvide a path to the config file with "
+            f"--config or if you do not have a config file run:\n"
+            f"seq2science init {args.workflow}\n"
+        )
+        sys.exit(1)
+
+    # parse the args
+    # snakemake_options.setdefault("config", {}).update({"rule_dir": os.path.join(base_dir, "rules")})
+    parsed_args = {"snakefile": os.path.join(workflows_dir, args.workflow, "Snakefile"),
+                   "cores": 999,
+                   "dryrun": True,
+                   "quiet": False,
+                   "config": {"rule_dir": os.path.join(base_dir, "rules")},
+                   "configfiles": [config_path]}
+
+    rules_used = list()
+    def log_handler(log):
+        if log["level"] == "job_info" and log["name"] not in rules_used:
+            rules_used.append(log["name"])
+
+    parsed_args["log_handler"] = [log_handler]
+
+    # run snakemake
+    exit_code = snakemake.snakemake(**parsed_args)
+
+    def get_version_string(string):
+        splitter = re.compile("rule (.*):[\s\S]*?version:[\s\S]*?\"\"\"[\s\S]([\s\S]*?)\"\"\"", re.MULTILINE)
+        shell_cmds = {}
+        for substring in string.split("\n\n\n"):
+            for match in splitter.finditer(substring):
+                shell_cmds[match.group(1)] = match.group(2)
+        return shell_cmds
+
+    path = f"{base_dir}/rules/"
+
+    for rules_file in os.listdir(path):
+        # print(rules_file)
+        with open(path + rules_file, 'r') as file:
+            text = file.read()
+        version_string = get_version_string(text)
+        print(version_string)
+    #     all_rules_shell.update(shell_cmd)
+    #
+    #     docstrings = cleanup_docstring(get_dirty_docstrings(text))
+    #     all_rules_doc.update(docstrings)
+    #
+    # for rule in sorted(all_rules_doc.keys()):
+    #     docstring = all_rules_doc[rule]
+    #
+    #     final_md += f"#### {rule}\n"
+    #     final_md += f"{docstring}\n"
+    #     if rule in all_rules_shell:
+    #         final_md += "```\n"
+    #         final_md += f"{all_rules_shell[rule]}\n"
+    #         final_md += "```\n"
+    #     final_md += f"\n"
+
     sys.exit(0) if exit_code else sys.exit(1)
 
 

@@ -37,6 +37,12 @@ rule get_genome:
     resources:
         parallel_downloads=1,
     priority: 1
+    message:
+        ""
+    # version:
+    #     """
+    #     Genome downloaded with genomepy.
+    #     """
     params:
         dir=config["genome_dir"],
         provider=config.get("provider", None),
