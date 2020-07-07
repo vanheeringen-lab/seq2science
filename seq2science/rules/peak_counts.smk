@@ -217,7 +217,7 @@ rule quantile_normalization:
         df = pd.read_csv(str(input), comment="#", index_col=0, sep="\t")
         df_qn = quantileNormalize_cpm(df)
         open(str(output), "w").write(
-            "# The number of reads under each peak, cpm quantile normalized\n"
+            "# The number of reads under each peak, cpm quantile normalized\n" +
             df_qn.to_csv(str(output), index_label="loc", index=True, header=True, sep="\t")
         )
 
@@ -273,7 +273,7 @@ rule log_normalization:
 
         # prepend a comment with how we normalized
         open(str(output), "w").write(
-            f"# The number of reads under each peak, log1p normalized with base {wildcards.base} after " +
+            f"# The number of reads under each peak, log1p normalized with base {wildcards.base} after "
             f"{wildcards.normalisation} normalisation\n" + species_log.to_csv(index=True, header=True, sep="\t")
         )
 
