@@ -186,15 +186,15 @@ rule quantile_normalization:
 
         def quantileNormalize_cpm(df):
             """
-        solution adapted from:
-        https://stackoverflow.com/questions/37935920/quantile-normalization-on-pandas-dataframe/41078786#41078786
+            solution adapted from:
+            https://stackoverflow.com/questions/37935920/quantile-normalization-on-pandas-dataframe/41078786#41078786
 
-        Changes:
-        - takes the mean of ties within a sample instead of ignoring it (as per wiki example)
-        - normalize on counts per million (cpm)
+            Changes:
+            - takes the mean of ties within a sample instead of ignoring it (as per wiki example)
+            - normalize on counts per million (cpm)
 
-        Note: naive implementation, might get slow with large dataframes
-        """
+            Note: naive implementation, might get slow with large dataframes
+            """
             # get all the ranks, where ties share a spot
             rank_ties = df.rank(method="min").astype(int)
 
@@ -218,7 +218,7 @@ rule quantile_normalization:
         df_qn = quantileNormalize_cpm(df)
         open(str(output), "w").write(
             "# The number of reads under each peak, cpm quantile normalized\n"
-            + df_qn.to_csv(index_label="loc", index=True, header=True, sep="\t")
+            df_qn.to_csv(str(output), index_label="loc", index=True, header=True, sep="\t")
         )
 
 
