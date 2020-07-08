@@ -181,9 +181,9 @@ rule quantile_normalization:
     output:
         expand("{result_dir}/count_table/{{peak_caller}}/{{assembly}}_quantilenorm.tsv", **config),
     log:
-        expand("{log_dir}/quantile_normalization/{{assembly}}-{{peak_caller}}-{{normalisation}}.log", **config),
+        expand("{log_dir}/quantile_normalization/{{assembly}}-{{peak_caller}}-quantilenorm.log", **config),
     benchmark:
-        expand("{benchmark_dir}/quantile_normalization/{{assembly}}-{{peak_caller}}-{{normalisation}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/quantile_normalization/{{assembly}}-{{peak_caller}}-quantilenorm.benchmark.txt", **config)[0]
     conda:
         "../envs/qnorm.yaml"
     script:
