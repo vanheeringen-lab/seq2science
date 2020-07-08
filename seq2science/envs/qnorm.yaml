@@ -1,0 +1,7 @@
+name: qnorm
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - conda-forge::qnorm=0.1.1
