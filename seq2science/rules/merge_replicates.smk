@@ -80,7 +80,7 @@ if "replicate" in samples:
         output:
             temp(sorted(expand("{trimmed_dir}/merged/{{replicate}}{{fqext}}_trimmed.{fqsuffix}.gz", **config))),
         wildcard_constraints:
-            replicate=any_given("replicate"),
+            replicate=any_given("replicate", "condition"),
             fqext=f"_{config['fqext1']}|_{config['fqext2']}|", # nothing (SE), or fqext with an underscore (PE)
         log:
             expand("{log_dir}/merge_replicates/{{replicate}}{{fqext}}.log", **config),
