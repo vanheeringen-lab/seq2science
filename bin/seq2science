@@ -93,7 +93,7 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
 
     # both init and run can use all workflows
     for subparser in [init, run]:
-        subparser.add_argument("workflow", choices=os.listdir(workflows_dir))
+        subparser.add_argument("workflow", choices=[dir.replace("_", "-") for dir in os.listdir(workflows_dir)])
 
     # setup init arguments
     init.add_argument(
