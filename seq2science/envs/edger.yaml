@@ -5,5 +5,5 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - r::r-base=4.0.1
-  - bioconda::bioconductor-edger=3.30.0
+  - r::r-base=3.6.1
+  - bioconda::bioconductor-edger=3.28.0

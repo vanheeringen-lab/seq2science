@@ -7,7 +7,11 @@ All changed fall under either one of these types: `added`, `changed`, `deprecate
 
 ## [Unreleased]
 
+## v0.0.3 - 2020-07-01
+
 ### Fixed
+- bug when specifying 2 cores, which rounded down to zero cores for samtools sorting and crash
+- edger environment was incompatible
 - seq2science cache on sensible location + seq2science clean fixed
 - bug when specifying 2 cores, which rounded down to zero cores for samtools sorting and crash
 - only lookup sample layout when not local, opens up for slightly better tests in bioconda recipe
