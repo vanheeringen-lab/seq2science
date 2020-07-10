@@ -60,12 +60,12 @@ chr1:7399-7599	47.00000	1.00000
 
 Seq2science currently supports four different normalisation methods: quantile normalisation, TMM, RLE, and upperquartile normalisation, and does count-per-million (counts under peaks) normalisation on each before normalisation.
 
-- **[Quantile normalization](https://en.wikipedia.org/wiki/Quantile_normalization)** is a type of normalization that makes the distribution between samples identical. This means that the actual count distribution within a sample changes. This normalisation is especially powerful when comparing results from different labs/experiments/experimental methods.
+- [**Quantile normalization**](https://en.wikipedia.org/wiki/Quantile_normalization) is a type of normalization that makes the distribution between samples identical. This means that the actual count distribution within a sample changes. This normalisation is especially powerful when comparing results from different labs/experiments/experimental methods.
 - **TMM** is the weighted trimmed mean of M-values proposed by Robinson and Oshlack (2010).
 - **RLE** is the scaling factor method proposed by Anders and Huber (2010). DEseq2's standard normalisation is based on this.
 - **Upper quartile** is the upper-quartile normalization method of Bullard et al (2010).
 
-After these normalisations the counts are log normalised, and the base can be set with `logbase` and defaults to 2. As a final step the count tables are mean-centered. This final count table can be used for tools like [gimme maelstrom](https://gimmemotifs.readthedocs.io/en/master/reference.html#command-gimme-maelstrom) to scan for enriched transcription factor motifs.
+After these normalisations the counts are log normalised, and the base can be set with `logbase` and defaults to 2. As a final step the count tables are mean-centered. This final count table can be used for tools like [gimme maelstrom](https://gimmemotifs.readthedocs.io/en/master/reference.html#command-gimme-maelstrom) to scan for enriched transcription factor motifs. Note that this table contains **all** peaks, and no selection on differential peaks has been made. This is something that might be supported in the future, but for now you have to do this yourself.
 
 #### Trackhub ###
 A UCSC compatible trackhub is be generated for this workflow. See the [trackhub page](../results.html#trackhub) for more information!
