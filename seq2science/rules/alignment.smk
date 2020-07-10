@@ -123,6 +123,61 @@ elif config["aligner"] == "bwa-mem":
             bwa mem {params.params} -t {threads} {params.index_dir} {input.reads} 2> {log} | tee {output} 1> /dev/null 2>> {log}
             """
 
+elif config["aligner"] == "bwa-mem2":
+
+    rule bwa_index:
+        """
+        Make a genome index for bwa (mem). This index is required for alignment.
+        """
+        input:
+            expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+        output:
+            directory(expand("{genome_dir}/{{assembly}}/index/bwa/", **config)),
+        log:
+            expand("{log_dir}/bwa_index/{{assembly}}.log", **config),
+        benchmark:
+            expand("{benchmark_dir}/bwa_index/{{assembly}}.benchmark.txt", **config)[0]
+        params:
+            prefix="{genome_dir}/{{assembly}}/index/bwa/{{assembly}}".format(**config),
+            params=config["index"],
+        priority: 1
+        resources:
+            mem_gb=5,
+        conda:
+            "../envs/bwa.yaml"
+        shell:
+            """
+            bwa index -p {params.prefix} {params.params} {input} > {log} 2>&1
+            """
+
+    rule bwa_mem:
+        """
+        Align reads against a genome (index) with bwa-mem, and pipe the output to the required sorter(s).
+        """
+        input:
+            reads=get_reads,
+            index=expand("{genome_dir}/{{assembly}}/index/bwa/", **config),
+        output:
+            pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0]),
+        log:
+            expand("{log_dir}/bwa_mem/{{assembly}}-{{sample}}.log", **config),
+        group:
+            "alignment"
+        benchmark:
+            expand("{benchmark_dir}/bwa_mem/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
+        params:
+            index_dir=expand("{genome_dir}/{{assembly}}/index/bwa/{{assembly}}", **config),
+            params=config["align"],
+        resources:
+            mem_gb=13,
+        threads: 10
+        conda:
+            "../envs/bwa.yaml"
+        shell:
+            """
+            bwa mem {params.params} -t {threads} {params.index_dir} {input.reads} 2> {log} | tee {output} 1> /dev/null 2>> {log}
+            """
+
 
 elif config["aligner"] == "hisat2":
 
