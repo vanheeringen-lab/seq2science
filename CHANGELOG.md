@@ -7,6 +7,9 @@ All changed fall under either one of these types: `added`, `changed`, `deprecate
 
 ## [Unreleased]
 
+### Fixed
+- Bug when merging replicates and having controls
+
 ## v0.0.3 - 2020-07-01
 
 ### Fixed
