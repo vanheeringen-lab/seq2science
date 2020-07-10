@@ -2,7 +2,9 @@
 A description of the problem that is being solved, or which new feature is implemented. Please link to other relevant issues/pr if relevant
 
 **What did change**
-Explain clearly and concisely what you changed. Why did you take certain design decisions? What did you try? What didn't work?
+Explain clearly and concisely what you changed. Why did you take certain design decisions?
 
-**Does this need additional test(s)?**
-If implementing new features let us know, so we can generate appropriate tests.
+**Checklist**
+- [ ] If applicable: I updated the docs
+- [ ] I updated the CHANGELOG
+- [ ] These changes are covered by the tests
