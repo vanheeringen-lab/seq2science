@@ -5,6 +5,7 @@ A description of the problem that is being solved, or which new feature is imple
 Explain clearly and concisely what you changed. Why did you take certain design decisions?
 
 **Checklist**
+- [ ] I made a PR to develop (not master)
 - [ ] If applicable: I updated the docs
 - [ ] I updated the CHANGELOG
 - [ ] These changes are covered by the tests
