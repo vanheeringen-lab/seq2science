@@ -366,7 +366,7 @@ if [ $1 = "rna-seq" ]; then
   seq2science run rna-seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:star,technical_replicates:keep} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 merge_replicates 0
   assert_rulecount $1 star_quant 10
-  seq2science run scatac-seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:star,technical_replicates:merge} | tee tests/local_test_results/${1}_dag
+  seq2science run rna-seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:star,technical_replicates:merge} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 star_quant 8
 
   printf "\nmultiple replicates with DEA - trackhubs\n"
