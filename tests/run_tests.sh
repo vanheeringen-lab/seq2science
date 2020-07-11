@@ -91,7 +91,7 @@ fi
 
 if [ $1 = "bwa-mem2" ]; then
 
-  ALIGNER=bwa-mem
+  ALIGNER=bwa-mem2
   WF=alignment
   RESULTS_DIR=tests/local_test_results/${ALIGNER}
   mkdir -p $RESULTS_DIR
