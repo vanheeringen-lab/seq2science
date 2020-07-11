@@ -174,7 +174,7 @@ elif config["aligner"] == "bwa-mem2":
             "../envs/bwamem2.yaml"
         shell:
             """
-            bwa-mem2 {params.params} -t {threads} {params.index_dir} {input.reads} 2> {log} | tee {output} 1> /dev/null 2>> {log}
+            bwa-mem2 mem {params.params} -t {threads} {params.index_dir} {input.reads} 2> {log} | tee {output} 1> /dev/null 2>> {log}
             """
 
 
