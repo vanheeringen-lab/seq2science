@@ -132,7 +132,7 @@ elif config["aligner"] == "bwa-mem2":
         input:
             expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
         output:
-            directory(expand("{genome_dir}/{{assembly}}/index/bwa/", **config)),
+            directory(expand("{genome_dir}/{{assembly}}/index/bwa_mem2/", **config)),
         log:
             expand("{log_dir}/bwa_mem2_index/{{assembly}}.log", **config),
         benchmark:
@@ -155,7 +155,7 @@ elif config["aligner"] == "bwa-mem2":
         """
         input:
             reads=get_reads,
-            index=expand("{genome_dir}/{{assembly}}/index/bwa/", **config),
+            index=expand("{genome_dir}/{{assembly}}/index/bwa_mem2/", **config),
         output:
             pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0]),
         log:
