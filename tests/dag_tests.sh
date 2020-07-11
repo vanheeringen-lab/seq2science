@@ -236,6 +236,10 @@ if [ $1 = "atac-seq" ]; then
   seq2science run atac_seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/atac_seq/complex_samples.tsv,create_qc_report:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 featureCounts 16
 
+  printf "\control and merging of tecnical replicates\n"
+  seq2science run atac_seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/atac_seq/control.tsv,create_qc_report:True} | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 bwa_mem 7
+
   test_ran=1
 fi
 

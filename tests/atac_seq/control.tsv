@@ -1,0 +1,8 @@
+sample	assembly	replicate	descriptive_name	control
+SRR4011697	xt10.0	st8_Foxh1	st8_Foxh1_rep1	GSM2263598
+SRR4011696	xt10.0	st8_Foxh1	st8_Foxh1_rep2	GSM2263598
+SRR4011699	xt10.0	st9_Foxh1	st9_Foxh1_rep1	GSM2263600
+SRR4011698	xt10.0	st9_Foxh1	st9_Foxh1_rep2	GSM2263600
+SRR4011709	xt10.0	st10.25_Foxh1	st10.25_Foxh1_rep1	GSM1298094
+GSM1298090	xt10.0	st10.5_Foxh1	st10.5_Foxh1_rep1	GSM1298094
+GSM1298091	xt10.0	st10.5_Foxh1	st10.5_Foxh1_rep2	GSM1298094
