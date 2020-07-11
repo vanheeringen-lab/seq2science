@@ -138,7 +138,7 @@ elif config["aligner"] == "bwa-mem2":
         benchmark:
             expand("{benchmark_dir}/bwa_mem2_index/{{assembly}}.benchmark.txt", **config)[0]
         params:
-            prefix="{genome_dir}/{{assembly}}/index/bwa/{{assembly}}".format(**config)
+            prefix="{genome_dir}/{{assembly}}/index/bwa_mem2/{{assembly}}".format(**config)
         priority: 1
         resources:
             mem_gb=100,
@@ -165,7 +165,7 @@ elif config["aligner"] == "bwa-mem2":
         benchmark:
             expand("{benchmark_dir}/bwa_mem2/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
         params:
-            index_dir=expand("{genome_dir}/{{assembly}}/index/bwamem2/{{assembly}}", **config),
+            index_dir=expand("{genome_dir}/{{assembly}}/index/bwa_mem2/{{assembly}}", **config),
             params=config["align"],
         resources:
             mem_gb=13,
