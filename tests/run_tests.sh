@@ -38,7 +38,7 @@ if [ $1 = "download" ]; then
 
   # test basic downloading 1 PE and 1 SE
   printf "\ndownload SE and PE fastqs\n"
-  seq2science run download_fastq --cores $CORES --configfile tests/$WF/default_config.yaml
+  seq2science run download-fastq --cores $CORES --configfile tests/$WF/default_config.yaml
 
   WF=alignment
 
@@ -132,13 +132,13 @@ if [ $1 = "atac-seq" ]; then
 
 #  printf "\natac-seq default\n"
 #  skipped because the whole workflow needs to run again for multiqc
-#  seq2science run atac_seq --cores $CORES --configfile tests/alignment/remote_genome_n_sample.yaml --snakemakeOptions config={aligner:bowtie2}
+#  seq2science run atac-seq --cores $CORES --configfile tests/alignment/remote_genome_n_sample.yaml --snakemakeOptions config={aligner:bowtie2}
 
   printf "\natac-seq - multiqc report\n"
-  seq2science run atac_seq --cores $CORES --configfile tests/alignment/remote_genome_n_sample.yaml --snakemakeOptions config={aligner:bowtie2,create_qc_report:True}
+  seq2science run atac-seq --cores $CORES --configfile tests/alignment/remote_genome_n_sample.yaml --snakemakeOptions config={aligner:bowtie2,create_qc_report:True}
 
   printf "\natac-seq - trackhub\n"
-  seq2science run atac_seq --cores $CORES --configfile tests/alignment/remote_genome_n_sample.yaml --snakemakeOptions config={aligner:bowtie2,create_trackhub:True}
+  seq2science run atac-seq --cores $CORES --configfile tests/alignment/remote_genome_n_sample.yaml --snakemakeOptions config={aligner:bowtie2,create_trackhub:True}
 
   test_ran=1
 fi
@@ -161,23 +161,23 @@ if [ $1 = "rna-seq" ]; then
 # TODO: test samples are too similar for blind clustering and deseq2
   printf "\nrna-seq default - salmon\n"
   # TODO: currently omits blind clustering
-  seq2science run rna_seq --cores $CORES --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions config={counts_dir:tests/local_test_results/salmon_counts} until=[txi_count_matrix]
+  seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions config={counts_dir:tests/local_test_results/salmon_counts} until=[txi_count_matrix]
 
 #  printf "\nrna-seq default - salmon deseq2\n"
-#  seq2science run rna_seq --cores $CORES --configfile tests/rna_seq/deseq2_config.yaml --snakemakeOptions config={counts_dir:tests/local_test_results/salmon_counts}
+#  seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/deseq2_config.yaml --snakemakeOptions config={counts_dir:tests/local_test_results/salmon_counts}
 
   # test STAR
   printf "\nrna-seq default - star\n"
-  seq2science run rna_seq --cores $CORES --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions config={quantifier:star}
+  seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions config={quantifier:star}
 
   printf "\nrna-seq default - star deseq2\n"
-  seq2science run rna_seq --cores $CORES --configfile tests/rna_seq/deseq2_config.yaml --snakemakeOptions config={quantifier:star}
+  seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/deseq2_config.yaml --snakemakeOptions config={quantifier:star}
 
   printf "\nrna-seq default - trackhub\n"
-  seq2science run rna_seq --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions config={quantifier:star,samples:tests/alignment/local_sample.tsv,genome_dir:tests,fastq_dir:../tinyfastq,create_trackhub:True}
+  seq2science run rna-seq --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions config={quantifier:star,samples:tests/alignment/local_sample.tsv,genome_dir:tests,fastq_dir:../tinyfastq,create_trackhub:True}
 
   printf "\nrna-seq default - multiqc report\n"
-  seq2science run rna_seq --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions config={quantifier:star,samples:tests/alignment/local_sample.tsv,genome_dir:tests,fastq_dir:../tinyfastq,create_qc_report:True}
+  seq2science run rna-seq --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions config={quantifier:star,samples:tests/alignment/local_sample.tsv,genome_dir:tests,fastq_dir:../tinyfastq,create_qc_report:True}
 
   test_ran=1
 fi
