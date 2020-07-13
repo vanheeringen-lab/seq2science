@@ -1,7 +1,7 @@
 name: samtools
 channels:
-  - bioconda
   - conda-forge
+  - bioconda
   - defaults
 dependencies:
-  - bioconda::samtools=1.9
+  - bioconda::samtools=1.10

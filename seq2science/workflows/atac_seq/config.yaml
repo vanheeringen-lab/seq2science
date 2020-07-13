@@ -10,6 +10,9 @@ genome_dir: ./genomes  # where to look for or download the genomes
 # contact info for multiqc report and trackhub
 email: yourmail@here.com
 
+# produce a UCSC trackhub?
+create_trackhub: True
+
 # peak callers (supported peak callers are macs2, and genrich, and hmmratac is not fully supported yet)
 peak_caller:
   macs2:
@@ -20,8 +23,8 @@ peak_caller:
 #      ""
 
 # how to handle replicates
-biological_replicates: fisher  # change to keep to not combine them
-technical_replicates: merge    # change to keep to not combine them
+biological_replicates: fisher  # change to "keep" to not combine them
+technical_replicates: merge    # change to "keep" to not combine them
 
 # filtering after alignment
 remove_blacklist: True

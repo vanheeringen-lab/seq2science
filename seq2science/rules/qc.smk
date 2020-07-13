@@ -1,5 +1,10 @@
-import os
 import re
+
+
+def samtools_stats_input(wildcards):
+    if wildcards.directory == config["aligner"]:
+        return expand("{result_dir}/{{directory}}/{{assembly}}-{{sample}}.samtools-coordinate-unsieved.bam", **config)
+    return expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config)
 
 
 rule samtools_stats:
@@ -7,11 +12,11 @@ rule samtools_stats:
     Get general stats from bam files like percentage mapped.
     """
     input:
-        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-unsieved.bam", **config)
+        samtools_stats_input
     output:
-        expand("{qc_dir}/samtools_stats/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.samtools_stats.txt", **config)
+        expand("{qc_dir}/samtools_stats/{{directory}}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.samtools_stats.txt", **config)
     log:
-        expand("{log_dir}/samtools_stats/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config)
+        expand("{log_dir}/samtools_stats/{{directory}}/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config)
     conda:
         "../envs/samtools.yaml"
     shell:
@@ -22,8 +27,8 @@ rule samtools_stats:
 #  I added this as it was sufficient for rule idr
 def get_featureCounts_bam(wildcards):
     if wildcards.peak_caller in ['macs2','hmmratac']:
-        return expand("{dedup_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config)
-    return expand("{dedup_dir}/{{assembly}}-{{sample}}.sambamba-queryname.bam", **config)
+        return expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config)
+    return expand("{final_bam_dir}/{{assembly}}-{{sample}}.sambamba-queryname.bam", **config)
 
 # TODO: featurecounts was not set up to accept hmmratac's gappedPeaks,
 #  I added this as it was sufficient for rule idr
@@ -34,8 +39,8 @@ def get_featureCounts_peak(wildcards):
 
 rule featureCounts:
     """
-    Use featureCounts to generate the fraction reads in peaks score (frips/assigned reads).
-    https://www.biostars.org/p/337872/
+    Use featureCounts to generate the fraction reads in peaks score 
+    (frips/assigned reads). See: https://www.biostars.org/p/337872/ and
     https://www.biostars.org/p/228636/
     """
     input:
@@ -53,7 +58,8 @@ rule featureCounts:
     shell:
         """
         # Make a custom "SAF" file which featureCounts needs:
-        awk 'BEGIN{{FS=OFS="\t"; print "GeneID\tChr\tStart\tEnd\tStrand"}}{{print $4, $1, $2+1, $3, "."}}' {input.peak} 1> {output.tmp_saf} 2> {log}
+        awk 'BEGIN{{FS=OFS="\t"; print "GeneID\tChr\tStart\tEnd\tStrand"}}{{print $4, $1, $2+1, $3, "."}}' \
+        {input.peak} 1> {output.tmp_saf} 2> {log}
 
         # run featureCounts
         featureCounts -T {threads} -p -a {output.tmp_saf} -F SAF -o {output.real_out} {input.bam} > {log} 2>&1
@@ -65,7 +71,7 @@ rule featureCounts:
 
 def get_fastqc_input(wildcards):
     if '_trimmed' in wildcards.fname:
-        if 'replicate' in samples and config.get('technical_replicates', '') == 'merge' and all(sample not in wildcards.fname for sample in samples.index):
+        if 'replicate' in samples and all(sample not in wildcards.fname for sample in samples.index):
             fqc_input = "{trimmed_dir}/merged/{{fname}}.{fqsuffix}.gz"
         else:
             fqc_input = "{trimmed_dir}/{{fname}}.{fqsuffix}.gz"
@@ -92,15 +98,18 @@ rule fastqc:
         "../envs/qc.yaml"
     priority: -10
     shell:
-        "fastqc {input} -O {params} > {log} 2>&1"
+        """
+        fastqc {input} -O {params} > {log} 2>&1
+        """
 
 
-rule InsertSizeMetrics:
+rule insert_size_metrics:
     """
-    Get the insert size metrics from a (paired-end) bam.
+    Get insert size metrics from a (paired-end) bam. This score is then used by
+    MultiQC in the report.
     """
     input:
-        expand("{dedup_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config)
+        expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config)
     output:
         tsv=expand("{qc_dir}/InsertSizeMetrics/{{assembly}}-{{sample}}.tsv", **config),
         pdf=expand("{qc_dir}/InsertSizeMetrics/{{assembly}}-{{sample}}.pdf", **config)
@@ -110,7 +119,8 @@ rule InsertSizeMetrics:
         "../envs/picard.yaml"
     shell:
         """
-        picard CollectInsertSizeMetrics INPUT={input} OUTPUT={output.tsv} H={output.pdf} > {log} 2>&1
+        picard CollectInsertSizeMetrics INPUT={input} \
+        OUTPUT={output.tsv} H={output.pdf} > {log} 2>&1
         """
 
 def get_chrM_name(wildcards, input):
@@ -121,9 +131,14 @@ def get_chrM_name(wildcards, input):
     return "no_chrm_found"
 
 
-rule MTNucRatioCalculator:
+rule mt_nuc_ratio_calculator:
     """
-    Calculate the ratio mitochondrial dna in your sample.
+    Estimate the amount of nuclear and mitochondrial reads in a sample. This metric
+    is especially important in ATAC-seq experiments where mitochondrial DNA can
+    be overrepresented. Reads are classified as mitochondrial reads if they map
+    against either "chrM" or "MT".
+    
+    These values are aggregated and displayed in the MultiQC report.
     """
     input:
         bam=expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-unsieved.bam", **config),
@@ -135,10 +150,10 @@ rule MTNucRatioCalculator:
     conda:
         "../envs/mtnucratio.yaml"
     params:
-        lambda wildcards, input: get_chrM_name(wildcards, input)
+        mitochondria=lambda wildcards, input: get_chrM_name(wildcards, input)
     shell:
         """
-        mtnucratio {input.bam} {params}
+        mtnucratio {input.bam} {params.mitochondria}
         """
 
 
@@ -146,12 +161,12 @@ def fingerprint_multiBamSummary_input(wildcards):
     output = {"bams": set(), "bais": set()}
 
     for trep in set(treps[treps['assembly'] == wildcards.assembly].index):
-        output["bams"].update(expand(f"{{dedup_dir}}/{wildcards.assembly}-{trep}.samtools-coordinate.bam", **config))
-        output["bais"].update(expand(f"{{dedup_dir}}/{wildcards.assembly}-{trep}.samtools-coordinate.bam.bai", **config))
+        output["bams"].update(expand(f"{{final_bam_dir}}/{wildcards.assembly}-{trep}.samtools-coordinate.bam", **config))
+        output["bais"].update(expand(f"{{final_bam_dir}}/{wildcards.assembly}-{trep}.samtools-coordinate.bam.bai", **config))
         if "control" in treps and isinstance(treps.loc[trep, "control"], str):
             control = treps.loc[trep, "control"]
-            output["bams"].update(expand(f"{{dedup_dir}}/{wildcards.assembly}-{control}.samtools-coordinate.bam", **config))
-            output["bais"].update(expand(f"{{dedup_dir}}/{wildcards.assembly}-{control}.samtools-coordinate.bam.bai", **config))
+            output["bams"].update(expand(f"{{final_bam_dir}}/{wildcards.assembly}-{control}.samtools-coordinate.bam", **config))
+            output["bais"].update(expand(f"{{final_bam_dir}}/{wildcards.assembly}-{control}.samtools-coordinate.bam.bai", **config))
 
     return output
 
@@ -164,13 +179,21 @@ def get_descriptive_names(wildcards, input):
     for file in input:
         # extract trep name from filepath (between assembly- and .sorter)
         trep = file[file.rfind(f"{wildcards.assembly}-"):].replace(f"{wildcards.assembly}-", "")
-        trep = trep[:trep.find(".sam")]
+
+        # get the sample name
+        if trep.find(".sam") != -1:
+            trep = trep[:trep.find(".sam")]
+        elif trep.find(".bw") != -1:
+            trep = trep[:trep.find(".bw")]
+        else:
+            raise ValueError
+
         if "control" in treps and trep not in treps.index:
             labels += f"control_{trep} "
         elif trep in samples.index:
             labels += samples.loc[trep, "descriptive_name"] + " "
         else:
-            labels += trep
+            labels += trep + " "
 
     return labels
 
@@ -231,7 +254,8 @@ rule computeMatrix:
         annotation=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config)  # TODO: move genomepy to checkpoint and this as input
     shell:
         """
-        computeMatrix scale-regions -S {input.bw} {params.labels} -R {params.annotation} -p {threads} -b 2000 -a 500 -o {output} > {log} 2>&1
+        computeMatrix scale-regions -S {input.bw} {params.labels} -R {params.annotation} \
+        -p {threads} -b 2000 -a 500 -o {output} > {log} 2>&1
         """
 
 
@@ -401,6 +425,26 @@ rule multiqc_samplesconfig:
             out_file.write(outstring)
 
 
+rule multiqc_schema:
+    """
+    Generate a multiqc config schema. Used for the ordering of modules.
+    """
+    output:
+        temp(expand('{qc_dir}/schema.yaml', **config))
+    run:
+        with open(f'{config["rule_dir"]}/../schemas/multiqc_config.yaml') as cookie_schema:
+            cookie = cookie_schema.read()
+        
+        while len(list(re.finditer("{{.*}}", cookie))):
+            match_obj = next(re.finditer("{{.*}}", cookie))
+            span = match_obj.span()
+            match = eval(match_obj.group(0)[2:-2])  # without the curly braces
+            cookie = cookie[:span[0]] + match + cookie[span[1]:]
+
+        with open(output[0], "w") as out_file:
+            out_file.write(cookie)
+
+
 def get_qc_files(wildcards):
     assert 'quality_control' in globals(), "When trying to generate multiqc output, make sure that the "\
                                            "variable 'quality_control' exists and contains all the "\
@@ -408,8 +452,8 @@ def get_qc_files(wildcards):
     qc = dict()
     qc['header'] = expand('{qc_dir}/header_info.yaml', **config)[0]
     qc['sample_names'] = expand('{qc_dir}/sample_names_{{assembly}}.tsv', **config)[0]
-    if any([config['layout'][trep] == "PAIRED" for trep in treps[treps['assembly'] == wildcards.assembly].index]):
-        qc['filter_buttons'] = expand('{qc_dir}/sample_filters_{{assembly}}.tsv', **config)[0]
+    qc['schema'] = expand('{qc_dir}/schema.yaml', **config)[0]
+    qc['filter_buttons'] = expand('{qc_dir}/sample_filters_{{assembly}}.tsv', **config)[0]
     qc['files'] = set([expand('{qc_dir}/samplesconfig_mqc.html', **config)[0]])
 
     # trimming qc on individual samples
@@ -456,7 +500,7 @@ rule multiqc:
     shell:
         """
         multiqc {input.files} -o {params.dir} -n multiqc_{wildcards.assembly}.html \
-        --config {config[rule_dir]}/../schemas/multiqc_config.yaml                 \
+        --config {input.schema}                                                    \
         --config {input.header}                                                    \
         --sample-names {input.sample_names}                                        \
         --sample-filters {input.filter_buttons}                                    \
@@ -489,18 +533,19 @@ def get_alignment_qc(sample):
     output = []
 
     # add samtools stats
-    output.append(f"{{qc_dir}}/dedup/{{{{assembly}}}}-{sample}.samtools-coordinate.metrics.txt")
-    output.append(f"{{qc_dir}}/samtools_stats/{{{{assembly}}}}-{sample}.samtools-coordinate.samtools_stats.txt")
+    output.append(f"{{qc_dir}}/markdup/{{{{assembly}}}}-{sample}.samtools-coordinate.metrics.txt")
+    output.append(f"{{qc_dir}}/samtools_stats/{{aligner}}/{{{{assembly}}}}-{sample}.samtools-coordinate.samtools_stats.txt")
+    if sieve_bam(config):
+        output.append(f"{{qc_dir}}/samtools_stats/{os.path.basename(config['final_bam_dir'])}/{{{{assembly}}}}-{sample}.samtools-coordinate.samtools_stats.txt")
 
-    if "atac_seq" in get_workflow():
-        # add insert size metrics
-        if config['layout'][sample] == "PAIRED":
-            output.append(f"{{qc_dir}}/InsertSizeMetrics/{{{{assembly}}}}-{sample}.tsv")
+    # add insert size metrics
+    if config['layout'][sample] == "PAIRED":
+        output.append(f"{{qc_dir}}/InsertSizeMetrics/{{{{assembly}}}}-{sample}.tsv")
 
     # get the ratio mitochondrial dna
     output.append(f"{{result_dir}}/{config['aligner']}/{{{{assembly}}}}-{sample}.samtools-coordinate-unsieved.bam.mtnucratiomtnuc.json")
 
-    if get_workflow() in ["alignment", "chip_seq", "atac_seq"]:
+    if get_workflow() in ["alignment", "chip_seq", "atac_seq", "scatac_seq"]:
         output.append("{qc_dir}/plotFingerprint/{{assembly}}.tsv")
     if len(breps[breps["assembly"] == treps.loc[sample, "assembly"]].index) > 1:
         output.append("{qc_dir}/plotCorrelation/{{assembly}}.tsv")
@@ -522,9 +567,7 @@ def get_peak_calling_qc(sample):
     # deeptools profile
     assembly = treps.loc[sample, "assembly"]
     # TODO: replace with genomepy checkpoint in the future
-    if str(assembly).lower() in ["ce10", "ce11", "dm3", "dm6", "hg19", "hg38", "mm9", "mm10", "danrer11",
-                                 "asm318616v1", "xentro9", "orylat2", "asm20922v1", "grcg6a", "astyanax_mexicanus-2.0", "KH"]:
+    if has_annotation(assembly):
         output.extend(expand("{qc_dir}/plotProfile/{{assembly}}-{peak_caller}.tsv", **config))
 
     return output
-

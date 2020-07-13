@@ -3,7 +3,7 @@ name = "seq2science"
 packages = ["seq2science"]
 package_data = "{'seq2science':['envs/*', 'rules/*', 'schemas/*', 'schemas/*/*', 'scripts/*', 'workflows/*/*']}"
 include_package_data = true
-version = "0.0.0"
+version = "0.0.3"
 description = "seq2science: easy pre-processing of ngs data."
 author = [
     "Maarten van der Sande <M.vanderSande@science.ru.nl>"]

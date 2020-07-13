@@ -12,9 +12,9 @@ properties:
     description: directory where to store the workflow quality controls (defaults inside the result dir)
     default: qc
     type: string
-  dedup_dir:
-    description: directory where to store the workflow deduplicated alignment (defaults inside the result dir)
-    default: dedup
+  final_bam_dir:
+    description: directory where to store the workflow's final deduplicated & sieved bams (defaults inside the result dir)
+    default: final_bam
     type: string
 
 
@@ -129,3 +129,8 @@ properties:
     description: whether or not to generate a multiqc report
     default: True
     type: boolean
+
+  bam_sort_mem:
+    description: The max memory used in gigabytes by samtools/sambamba when sorting bams
+    default: 2
+    type: integer

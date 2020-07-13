@@ -7,6 +7,8 @@ import shutil
 import subprocess
 import time
 import copy
+import json
+import requests
 
 import norns
 import numpy as np
@@ -21,6 +23,31 @@ from snakemake.utils import validate
 from snakemake.utils import min_version
 
 
+logger.info(
+"""\
+               ____  ____   __              
+              / ___)(  __) /  \             
+              \___ \ ) _) (  O )            
+              (____/(____) \__\)            
+                     ____                   
+                    (___ \                  
+                     / __/                  
+                    (____)                  
+   ____   ___   __   ____  __ _   ___  ____ 
+  / ___) / __) (  ) (  __)(  ( \ / __)(  __)
+  \___ \( (__   )(   ) _) /    /( (__  ) _) 
+  (____/ \___) (__) (____)\_)__) \___)(____)
+
+docs: https://vanheeringen-lab.github.io/seq2science
+"""
+)
+
+if workflow.conda_frontend == "conda":
+    logger.info("NOTE: seq2science is using the conda frontend, for faster environment creation install mamba.")
+# give people a second to appreciate this beautiful ascii art
+time.sleep(1)
+
+
 # config.yaml(s)
 
 
@@ -29,9 +56,13 @@ for key, value in config.items():
     if '_dir' in key:
         assert value not in [None, '', ' '], f"\n{key} cannot be empty. For current directory, set '{key}: .'\n"
         # allow tilde as the first character, \w = all letters and numbers
-        assert re.match('^[~\w_./-]*$', value[0]) and re.match('^[\w_./-]*$', value[1:]), \
-            (f"\nIn the config.yaml you set '{key}' to '{value}'. Please use file paths that only contain letters, " +
-            "numbers and any of the following symbols: underscores (_), periods (.), and minuses (-). The first character may also be a tilde (~).\n")
+        # ignore on Jenkins. it puts @ in the path
+        assert (re.match('^[~\w_./-]*$', value[0]) and re.match('^[\w_./-]*$', value[1:])) \
+               or os.getcwd().startswith('/var/lib/jenkins'), \
+            (f"\nIn the config.yaml you set '{key}' to '{value}'. " +
+              "Please use file paths that only contain letters, " +
+              "numbers and any of the following symbols: underscores (_), periods (.), " +
+              "and minuses (-). The first character may also be a tilde (~).\n")
         config[key] = os.path.expanduser(value)
 
 # make sure that difficult data-types (yaml objects) are in correct data format
@@ -41,7 +72,7 @@ for kw in ['aligner', 'quantifier', 'bam_sorter']:
 
 # validate and complement the config dict
 for schema in config_schemas:
-    validate(config, schema=f"../schemas/config/{schema}.schema.yaml")
+    validate(config, schema=f"{config['rule_dir']}/../schemas/config/{schema}.schema.yaml")
 
 # check if paired-end filename suffixes are lexicographically ordered
 config['fqext'] = [config['fqext1'], config['fqext2']]
@@ -113,6 +144,10 @@ if 'descriptive_name' in samples:
     if ('replicate' in samples and samples['descriptive_name'].to_list() == samples['replicate'].to_list()) or \
         samples['descriptive_name'].to_list() == samples['sample'].to_list():
         samples = samples.drop(columns=['descriptive_name'])
+if 'strandedness' in samples:
+    samples['strandedness'] = samples['strandedness'].mask(pd.isnull, 'nan')
+    if config['filter_bam_by_strand'] is False or not any([field in list(samples['strandedness']) for field in ['forward', 'yes', 'reverse']]):
+        samples = samples.drop(columns=['strandedness'])
 
 if 'replicate' in samples:
     # check if replicate names are unique between assemblies
@@ -138,19 +173,19 @@ if "condition" in samples and "replicate" in samples:
 
 # validate samples file
 for schema in sample_schemas:
-    validate(samples, schema=f"../schemas/samples/{schema}.schema.yaml")
-samples = samples.set_index('sample')
-samples.index = samples.index.map(str)
+    validate(samples, schema=f"{config['rule_dir']}/../schemas/samples/{schema}.schema.yaml")
 
 sanitized_samples = copy.copy(samples)
 
+samples = samples.set_index('sample')
+samples.index = samples.index.map(str)
+
+
 # sample layouts
-
-
 # check if a sample is single-end or paired end, and store it
 logger.info("Checking if samples are single-end or paired-end...")
-layout_cachefile = os.path.expanduser('~/.config/snakemake/layouts.p')
-layout_cachefile_lock = os.path.expanduser('~/.config/snakemake/layouts.p.lock')
+layout_cachefile = os.path.expanduser('~/.config/seq2science/layouts.p')
+layout_cachefile_lock = os.path.expanduser('~/.config/seq2science/layouts.p.lock')
 
 def get_layout_eutils(sample):
     """
@@ -216,14 +251,14 @@ def get_layout_trace(sample):
 if not os.path.exists(os.path.dirname(layout_cachefile_lock)):
     os.makedirs(os.path.dirname(layout_cachefile_lock))
 
-# let's ignore locks that are older than 5 minutes
-if os.path.exists(layout_cachefile_lock) and \
-        time.time() - os.stat(layout_cachefile_lock).st_mtime > 5 * 60:
-    # sometimes two jobs start in parallel and try to delete at the same time
-    try:
-        os.remove(layout_cachefile_lock)
-    except FileNotFoundError:
-         pass
+# sometimes two jobs start in parallel and try to delete at the same time
+try:
+    # let's ignore locks that are older than 5 minutes
+    if os.path.exists(layout_cachefile_lock) and \
+             time.time() - os.stat(layout_cachefile_lock).st_mtime > 5 * 60:
+            os.remove(layout_cachefile_lock)
+except FileNotFoundError:
+     pass
 
 with FileLock(layout_cachefile_lock):
     # try to load the layout cache, otherwise defaults to empty dictionary
@@ -285,16 +320,10 @@ config['layout'] = {**{key: value for key, value in config['layout'].items() if 
 logger.info("Done!\n\n")
 
 # if samples are merged add the layout of the technical replicate to the config
-if 'replicate' in samples and config.get('technical_replicates') == 'merge':
+if 'replicate' in samples:
     for sample in samples.index:
         replicate = samples.loc[sample, 'replicate']
         config['layout'][replicate] = config['layout'][sample]
-
-# after all is done, log (print) the configuration
-logger.info("CONFIGURATION VARIABLES:")
-for key, value in config.items():
-     logger.info(f"{key: <23}: {value}")
-logger.info("\n\n")
 
 
 # workflow
@@ -381,6 +410,40 @@ else:
     workflow.global_resources = {**{'mem_gb': np.clip(workflow.global_resources.get('mem_gb', 9999), 0, convert_size(mem.total, 3)[0])},
                                  **workflow.global_resources}
 
+# record which assembly trackhubs are found on UCSC
+if config.get("create_trackhub"):
+    hubfile = os.path.expanduser('~/.config/seq2science/ucsc_trackhubs.p')
+    hubfile_lock = os.path.expanduser('~/.config/seq2science/ucsc_trackhubs.p.lock')
+
+    # sometimes two jobs start in parallel and try to delete at the same time
+    try:
+        # ignore locks that are older than 10 seconds
+        if os.path.exists(hubfile_lock) and \
+                time.time() - os.stat(hubfile_lock).st_mtime > 10:
+            os.unlink(hubfile_lock)
+    except FileNotFoundError:
+         pass
+
+    with FileLock(hubfile_lock):
+        if not os.path.exists(hubfile):
+            # check for response of ucsc
+            response = requests.get(f"https://genome.ucsc.edu/cgi-bin/hgGateway",
+                                    allow_redirects=True)
+            assert response.ok, "Make sure you are connected to the internet"
+
+            with urllib.request.urlopen("https://api.genome.ucsc.edu/list/ucscGenomes") as url:
+                data = json.loads(url.read().decode())['ucscGenomes']
+
+            # generate a dict ucsc assemblies
+            ucsc_assemblies = dict()
+            for key, values in data.items():
+                ucsc_assemblies[key.lower()] = [key, values.get("description", "")]
+
+            # save to file
+            pickle.dump(ucsc_assemblies, open(hubfile, "wb"))
+
+        # read hubfile
+        ucsc_assemblies = pickle.load(open(hubfile, "rb"))
 
 onstart:
     # save a copy of the latest samples and config file(s) in the log_dir

@@ -17,7 +17,16 @@ module_order:
         path_filters:
             - '*_trimmed_fastqc.zip'
     - picard
-    - samtools
+    - samtools:
+        name: 'SamTools pre-sieve'
+        extra: 'The pre-sieve statistics are quality metrics measured before applying (optional) minimum mapping quality, blacklist removal, mitochondrial read removal, and tn5 shift.'
+        path_filters_exclude:
+            - '*{{os.path.basename(config["final_bam_dir"])}}*.samtools_stats.txt'
+    - samtools:
+        name: 'SamTools post-sieve'
+        extra: 'The post-sieve statistics are quality metrics measured after applying (optional) minimum mapping quality, blacklist removal, mitochondrial read removal, and tn5 shift.'
+        path_filters_exclude:
+            - '*{{config["aligner"]}}*.samtools_stats.txt'
     - deeptools
     - MACS2
     - featureCounts:
@@ -57,11 +66,22 @@ table_columns_visible:
         summed_median: True
         summed_mean: False
         PERCENT_DUPLICATION: True
-    Samtools Stats:
-        error_rate: True
+    SamTools pre-sieve:
+        error_rate: False
         non-primary_alignments: False
+        reads_mapped: False
+        reads_mapped_percent: True
+        reads_properly_paired_percent: False
+        reads_MQ0_percent: False
         raw_total_sequences: True
-        reads_mapped: True
+    SamTools post-sieve:
+        error_rate: False
+        non-primary_alignments: False
+        reads_mapped: False
+        reads_mapped_percent: False
+        reads_properly_paired_percent: True
+        reads_MQ0_percent: False
+        raw_total_sequences: True
     MACS2:
         treatment_redundant_rate: True
         d: False
