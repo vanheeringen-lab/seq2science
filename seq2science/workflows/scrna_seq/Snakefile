@@ -7,7 +7,6 @@ include: "../../rules/configuration_workflows.smk"
 
 # load all the relevant rules
 include: f"{config['rule_dir']}/alignment.smk"
-include: f"{config['rule_dir']}/bam_cleaning.smk"
 include: f"{config['rule_dir']}/bigfiles.smk"
 include: f"{config['rule_dir']}/get_fastq.smk"
 include: f"{config['rule_dir']}/get_genome.smk"
@@ -15,6 +14,7 @@ include: f"{config['rule_dir']}/merge_replicates.smk"
 include: f"{config['rule_dir']}/qc.smk"
 include: f"{config['rule_dir']}/trackhub.smk"
 include: f"{config['rule_dir']}/trimming.smk"
+include: f"{config['rule_dir']}/quantification.smk"
 
 
 # set the quality_control functions
@@ -26,8 +26,6 @@ rule scRNA_seq_all:
     TODO: Skeleton scRNA_seq all function
     """
     input:
-        expand((["{result_dir}/trackhub"] if config['create_trackhub'] else []) +
-               (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []) +
-                [f"{{dedup_dir}}/{treps.loc[trep, 'assembly']}-{trep}.samtools-coordinate.bam" for trep in treps.index],
+        expand([f"{{result_dir}}/{{quantifier}}/{treps.loc[trep, 'assembly']}-{trep}" for trep in treps.index],
                **{**config,
                   **{'assemblies': set(samples['assembly'])}})

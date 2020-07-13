@@ -120,3 +120,63 @@ elif config["quantifier"] == "salmon":
             salmon quant -i {input.index} -l A {params.input} {params.params} -o {output.dir} \
             --threads {threads} > {log} 2>&1
             """
+
+
+elif config["quantifier"] == "kallistobus":
+
+    rule kallistobus_ref:
+        """
+        Make a genome index for kallistobus. This index is required for counting.
+        """
+        input:
+            fa=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+            gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
+        output:
+            directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/", **config)),
+        log:
+            expand("{log_dir}/kallistobus_index/{{assembly}}.log", **config),
+        benchmark:
+            expand("{benchmark_dir}/kallistobus_index/{{assembly}}.benchmark.txt", **config)[0]
+        priority: 1
+        conda:
+            "../envs/kallistobus.yaml"
+        params:
+            basename=lambda wildcards, output: f"{output[0]}{wildcards.assembly}"
+        shell:
+            """
+            kb ref \
+            {input.fa} {input.gtf} \
+            -i {params.basename}.idx -g {params.basename}_t2g.txt -f1 {params.basename}_cdna.fa
+            -f2 {params.basename}_intron.fa \
+            -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt
+            --lamanno 2> {log}
+            """
+
+    rule kallistobus_count:
+        """
+        Align reads against a transcriptome (index) with kallistobus and output a quantification file per sample.
+        """
+        input:
+             barcodefile=config["barcodefile"],
+             basedir=rules.kallistobus_ref.output,
+             reads=get_reads,
+        output:
+            dir=directory(expand("{result_dir}/{quantifier}/{{assembly}}-{{sample}}", **config)),
+        log:
+            expand("{log_dir}/kallistobus_count/{{assembly}}-{{sample}}.log", **config),
+        benchmark:
+            expand("{benchmark_dir}/kallistobus_count/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
+        priority: 1
+        conda:
+            "../envs/kallistobus.yaml"
+        threads: 8
+        params:
+            basename=lambda wildcards, input: f"{input.basedir[0]}/{wildcards.assembly}"
+        shell:
+            """
+            kb count \
+            -i {params.basename}.idx -x 0,8,16:0,0,8:1,0,0 -w {input.barcodefile} \
+            -t {threads} -g {params.basename}_t2g.txt --verbose --lamanno \
+            -o ${output} -c1 ${params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
+            {input.reads} 2> {log}
+            """
