@@ -47,7 +47,7 @@ if [ $1 = "alignment" ]; then
   WF=download_fastq
 
   printf "\ndownload default\n"
-  seq2science run download_fastq -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True | tee tests/local_test_results/${1}_dag
+  seq2science run download-fastq -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 sra2fastq_PE 1
   assert_rulecount $1 sra2fastq_SE 1
 
@@ -162,35 +162,35 @@ if [ $1 = "atac-seq" ]; then
   WF=atac_seq
 
   printf "\natac-seq default\n"
-  seq2science run atac_seq -n --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions dryrun=True quiet=True | tee tests/local_test_results/${1}_dag
+  seq2science run atac-seq -n --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions dryrun=True quiet=True | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 macs2_callpeak 1
 
   printf "\npeak callers\n"
-  # seq2science run atac_seq -n --cores $CORES --configfile tests/$WF/macs2.yaml --snakemakeOptions dryrun=True quiet=True | tee tests/local_test_results/${1}_dag
+  # seq2science run atac-seq -n --cores $CORES --configfile tests/$WF/macs2.yaml --snakemakeOptions dryrun=True quiet=True | tee tests/local_test_results/${1}_dag
   # assert_rulecount $1 macs2_callpeak 1
-  seq2science run atac_seq -n --cores $CORES --configfile tests/$WF/genrich.yaml --snakemakeOptions dryrun=True quiet=True | tee tests/local_test_results/${1}_dag
+  seq2science run atac-seq -n --cores $CORES --configfile tests/$WF/genrich.yaml --snakemakeOptions dryrun=True quiet=True | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 call_peak_genrich 1
 
   printf "\ntrackhub\n"
-  seq2science run atac_seq -n --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={create_trackhub:True} | tee tests/local_test_results/${1}_dag
+  seq2science run atac-seq -n --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={create_trackhub:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bedgraph_bigwig 1
 
   printf "\nmultiqc report\n"
-  seq2science run atac_seq -n --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={create_qc_report:True} | tee tests/local_test_results/${1}_dag
+  seq2science run atac-seq -n --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={create_qc_report:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 fastqc 4
 
   printf "\nmultiple peak callers\n"
-  seq2science run atac_seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True | tee tests/local_test_results/${1}_dag
+  seq2science run atac-seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 macs2_callpeak 1
   assert_rulecount $1 call_peak_genrich 1
 
   printf "\nmultiple peak callers - trackhub\n"
-  seq2science run atac_seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={create_trackhub:True} | tee tests/local_test_results/${1}_dag
+  seq2science run atac-seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={create_trackhub:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bedgraph_bigwig 2
   assert_rulecount $1 bedgraphish_to_bedgraph 1
 
   printf "\nmultiple peak callers - multiqc report\n"
-  seq2science run atac_seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={create_qc_report:True} | tee tests/local_test_results/${1}_dag
+  seq2science run atac-seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={create_qc_report:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 featureCounts 2
   assert_rulecount $1 coverage_table 2
   assert_rulecount $1 quantile_normalization 2
@@ -198,44 +198,44 @@ if [ $1 = "atac-seq" ]; then
   assert_rulecount $1 mean_center 8
 
   printf "\nmultiple peak callers & multiple assemblies\n"
-  seq2science run atac_seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/alignment/assemblies.tsv} | tee tests/local_test_results/${1}_dag
+  seq2science run atac-seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/alignment/assemblies.tsv} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 coverage_table 4
 
   printf "\nmultiple peak callers & multiple assemblies - trackhub\n"
-  seq2science run atac_seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/alignment/assemblies.tsv,create_trackhub:True} | tee tests/local_test_results/${1}_dag
+  seq2science run atac-seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/alignment/assemblies.tsv,create_trackhub:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bedgraph_bigwig 4
 
   printf "\nmultiple peak callers & multiple assemblies - multiqc report\n"
-  seq2science run atac_seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/alignment/assemblies.tsv,create_qc_report:True} | tee tests/local_test_results/${1}_dag
+  seq2science run atac-seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/alignment/assemblies.tsv,create_qc_report:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 featureCounts 4
 
   printf "\nmultiple peak callers & multiple replicates\n"
-  seq2science run atac_seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/alignment/replicates.tsv} | tee tests/local_test_results/${1}_dag
+  seq2science run atac-seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/alignment/replicates.tsv} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bwa_mem 1
 
   printf "\nmultiple peak callers & multiple replicates - trackhub\n"
-  seq2science run atac_seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/alignment/replicates.tsv,create_trackhub:True} | tee tests/local_test_results/${1}_dag
+  seq2science run atac-seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/alignment/replicates.tsv,create_trackhub:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bedgraph_bigwig 2
 
   printf "\nmultiple peak callers & multiple replicates - multiqc report\n"
-  seq2science run atac_seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/alignment/replicates.tsv,create_qc_report:True} | tee tests/local_test_results/${1}_dag
+  seq2science run atac-seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/alignment/replicates.tsv,create_qc_report:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 featureCounts 2
 
   printf "\nmultiple peak callers, assemblies and replicates\n"
-  seq2science run atac_seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/atac_seq/complex_samples.tsv} | tee tests/local_test_results/${1}_dag
+  seq2science run atac-seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/atac_seq/complex_samples.tsv} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bwa_mem 8
   assert_rulecount $1 coverage_table 4
 
   printf "\nmultiple peak callers, assemblies and replicates - trackhub\n"
-  seq2science run atac_seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/atac_seq/complex_samples.tsv,create_trackhub:True} | tee tests/local_test_results/${1}_dag
+  seq2science run atac-seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/atac_seq/complex_samples.tsv,create_trackhub:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bedgraph_bigwig 16
 
   printf "\nmultiple peak callers, assemblies and replicates - multiqc report\n"
-  seq2science run atac_seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/atac_seq/complex_samples.tsv,create_qc_report:True} | tee tests/local_test_results/${1}_dag
+  seq2science run atac-seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/atac_seq/complex_samples.tsv,create_qc_report:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 featureCounts 16
 
   printf "\control and merging of tecnical replicates\n"
-  seq2science run atac_seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/atac_seq/control.tsv,create_qc_report:True} | tee tests/local_test_results/${1}_dag
+  seq2science run atac-seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/atac_seq/control.tsv,create_qc_report:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bwa_mem 7
 
   test_ran=1
@@ -247,65 +247,65 @@ if [ $1 = "scatac-seq" ]; then
   WF=scatac_seq
 
   printf "\nscatac-seq default\n"
-  seq2science run scatac_seq -n --cores $CORES --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/scatac_seq/samples.tsv} | tee tests/local_test_results/${1}_dag
+  seq2science run scatac-seq -n --cores $CORES --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/scatac_seq/samples.tsv} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 create_SNAP_object 1
 
   printf "\ntrackhub\n"
-  seq2science run scatac_seq -n --cores $CORES --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/scatac_seq/samples.tsv,create_trackhub:True} | tee tests/local_test_results/${1}_dag
+  seq2science run scatac-seq -n --cores $CORES --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/scatac_seq/samples.tsv,create_trackhub:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 trackhub 1
 
   printf "\nqc multiqc report\n"
-  seq2science run scatac_seq -n --cores $CORES --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/scatac_seq/samples.tsv,create_qc_report:True} | tee tests/local_test_results/${1}_dag
+  seq2science run scatac-seq -n --cores $CORES --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/scatac_seq/samples.tsv,create_qc_report:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 fastqc 4  # twice for sample and twice for trep
 
   printf "\nmultiple assemblies\n"
-  seq2science run scatac_seq -n --cores $CORES --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/scatac_seq/assemblies.tsv} | tee tests/local_test_results/${1}_dag
+  seq2science run scatac-seq -n --cores $CORES --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/scatac_seq/assemblies.tsv} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bwa_index 2
   assert_rulecount $1 create_SNAP_object 2
 
   printf "\nmultiple assemblies - trackhubs\n"
-  seq2science run scatac_seq -n --cores $CORES --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/scatac_seq/assemblies.tsv,create_trackhub:True} | tee tests/local_test_results/${1}_dag
+  seq2science run scatac-seq -n --cores $CORES --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/scatac_seq/assemblies.tsv,create_trackhub:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 twobit 2
 
   printf "\nmultiple assemblies - multiqc\n"
-  seq2science run scatac_seq -n --cores $CORES --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/scatac_seq/assemblies.tsv,create_qc_report:True} | tee tests/local_test_results/${1}_dag
+  seq2science run scatac-seq -n --cores $CORES --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/scatac_seq/assemblies.tsv,create_qc_report:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 fastqc 8  # twice for sample and twice for trep
 
   printf "\nmultiple replicates\n"
-  seq2science run scatac_seq -n --cores $CORES --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/alignment/dag_sample.tsv,technical_replicates:merge} | tee tests/local_test_results/${1}_dag  # nothing to merge
+  seq2science run scatac-seq -n --cores $CORES --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/alignment/dag_sample.tsv,technical_replicates:merge} | tee tests/local_test_results/${1}_dag  # nothing to merge
   assert_rulecount $1 merge_replicates 0
-  seq2science run scatac_seq -n --cores $CORES --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/scatac_seq/replicates.tsv,technical_replicates:keep} | tee tests/local_test_results/${1}_dag
+  seq2science run scatac-seq -n --cores $CORES --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/scatac_seq/replicates.tsv,technical_replicates:keep} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 merge_replicates 0
   assert_rulecount $1 bwa_mem 2
-  seq2science run scatac_seq -n --cores $CORES --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/scatac_seq/replicates.tsv,technical_replicates:merge} | tee tests/local_test_results/${1}_dag
+  seq2science run scatac-seq -n --cores $CORES --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/scatac_seq/replicates.tsv,technical_replicates:merge} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 merge_replicates 2
   assert_rulecount $1 bwa_mem 1
 
   printf "\nmultiple replicates - trackhub\n"
-  seq2science run scatac_seq -n --cores $CORES --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/scatac_seq/replicates.tsv,technical_replicates:merge,create_trackhub:True} | tee tests/local_test_results/${1}_dag
+  seq2science run scatac-seq -n --cores $CORES --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/scatac_seq/replicates.tsv,technical_replicates:merge,create_trackhub:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 twobit 1
 
   printf "\nmultiple replicates - multiqc report\n"
-  seq2science run scatac_seq -n --cores $CORES --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/scatac_seq/replicates.tsv,technical_replicates:merge,create_qc_report:True} | tee tests/local_test_results/${1}_dag
+  seq2science run scatac-seq -n --cores $CORES --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/scatac_seq/replicates.tsv,technical_replicates:merge,create_qc_report:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 fastqc 8  # twice for sample and twice for trep
 
   printf "\nmultiple assemblies and replicates\n"
-  seq2science run scatac_seq -n --cores $CORES --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/alignment/dag_sample.tsv,technical_replicates:keep} | tee tests/local_test_results/${1}_dag
+  seq2science run scatac-seq -n --cores $CORES --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/alignment/dag_sample.tsv,technical_replicates:keep} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 merge_replicates 0
   assert_rulecount $1 bwa_mem 1
-  seq2science run scatac_seq -n --cores $CORES --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/scatac_seq/complex_samples.tsv,technical_replicates:keep} | tee tests/local_test_results/${1}_dag
+  seq2science run scatac-seq -n --cores $CORES --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/scatac_seq/complex_samples.tsv,technical_replicates:keep} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 merge_replicates 0
   assert_rulecount $1 bwa_mem 4
-  seq2science run scatac_seq -n --cores $CORES --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/scatac_seq/complex_samples.tsv,technical_replicates:merge} | tee tests/local_test_results/${1}_dag
+  seq2science run scatac-seq -n --cores $CORES --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/scatac_seq/complex_samples.tsv,technical_replicates:merge} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 merge_replicates 3
   assert_rulecount $1 bwa_mem 2
 
   printf "\nmultiple assemblies and replicates - trackhub\n"
-  seq2science run scatac_seq -n --cores $CORES --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/scatac_seq/complex_samples.tsv,technical_replicates:merge,create_trackhub:True} | tee tests/local_test_results/${1}_dag
+  seq2science run scatac-seq -n --cores $CORES --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/scatac_seq/complex_samples.tsv,technical_replicates:merge,create_trackhub:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 twobit 2
 
   printf "\nmultiple assemblies and replicates - multiqc report\n"
-  seq2science run scatac_seq -n --cores $CORES --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/scatac_seq/complex_samples.tsv,technical_replicates:merge,create_qc_report:True} | tee tests/local_test_results/${1}_dag
+  seq2science run scatac-seq -n --cores $CORES --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/scatac_seq/complex_samples.tsv,technical_replicates:merge,create_qc_report:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 fastqc 12  # twice for sample and twice for trep
 
   test_ran=1
@@ -317,88 +317,88 @@ if [ $1 = "rna-seq" ]; then
   WF=rna_seq
 
   printf "\nrna-seq default\n"
-  seq2science run rna_seq -n --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:star} | tee tests/local_test_results/${1}_dag
+  seq2science run rna-seq -n --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:star} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 star_quant 1
 
   printf "\nquantifiers\n"
-  # seq2science run rna_seq -n --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:star} | tee tests/local_test_results/${1}_dag  # default
+  # seq2science run rna-seq -n --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:star} | tee tests/local_test_results/${1}_dag  # default
   # assert_rulecount $1 star_quant 1
-  seq2science run rna_seq -n --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:salmon} | tee tests/local_test_results/${1}_dag
+  seq2science run rna-seq -n --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:salmon} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 salmon_quant 1
 
   printf "\ndecoy aware salmon index\n"
-  seq2science run rna_seq -n --cores $CORES --configfile tests/$WF/salmon_config.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/alignment/dag_sample.tsv,fastq_dir:tests/local_test_results/fastq} | tee tests/local_test_results/${1}_dag
+  seq2science run rna-seq -n --cores $CORES --configfile tests/$WF/salmon_config.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/alignment/dag_sample.tsv,fastq_dir:tests/local_test_results/fastq} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 decoy_transcripts 1
 
   printf "\ntrackhub\n"
-  seq2science run rna_seq -n --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:star,create_trackhub:True} | tee tests/local_test_results/${1}_dag
+  seq2science run rna-seq -n --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:star,create_trackhub:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 salmon_quant 0
   assert_rulecount $1 star_quant 0
   assert_rulecount $1 star_align 1
   assert_rulecount $1 bam_bigwig 1
-  seq2science run rna_seq -n --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:salmon,create_trackhub:True} | tee tests/local_test_results/${1}_dag
+  seq2science run rna-seq -n --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:salmon,create_trackhub:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 salmon_quant 1
   assert_rulecount $1 star_quant 0
   assert_rulecount $1 star_align 1
   assert_rulecount $1 bam_bigwig 1
 
   printf "\nmultiqc report\n"
-  seq2science run rna_seq -n --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:star,create_qc_report:True} | tee tests/local_test_results/${1}_dag
+  seq2science run rna-seq -n --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:star,create_qc_report:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 fastqc 4
 
   printf "\ndifferential expression analysis\n"
-  seq2science run rna_seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:star,technical_replicates:keep} | tee tests/local_test_results/${1}_dag
+  seq2science run rna-seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:star,technical_replicates:keep} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 star_quant 10
-  seq2science run rna_seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:salmon,technical_replicates:keep} | tee tests/local_test_results/${1}_dag
+  seq2science run rna-seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:salmon,technical_replicates:keep} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 salmon_quant 10
 
   printf "\nmultiple assemblies with DEA\n"
-  seq2science run rna_seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:star,technical_replicates:keep,samples:tests/rna_seq/complex_samples.tsv} | tee tests/local_test_results/${1}_dag
+  seq2science run rna-seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:star,technical_replicates:keep,samples:tests/rna_seq/complex_samples.tsv} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 star_index 2
   assert_rulecount $1 star_quant 10
 
   printf "\nmultiple assemblies with DEA - trackhubs\n"
-  seq2science run rna_seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:star,technical_replicates:keep,samples:tests/rna_seq/complex_samples.tsv,create_trackhub:True} | tee tests/local_test_results/${1}_dag
+  seq2science run rna-seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:star,technical_replicates:keep,samples:tests/rna_seq/complex_samples.tsv,create_trackhub:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bam_bigwig 10
 
   printf "\nmultiple assemblies with DEA - multiqc\n"
-  seq2science run rna_seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:star,technical_replicates:keep,samples:tests/rna_seq/complex_samples.tsv,create_qc_report:True} | tee tests/local_test_results/${1}_dag
+  seq2science run rna-seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:star,technical_replicates:keep,samples:tests/rna_seq/complex_samples.tsv,create_qc_report:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 fastqc 24
   assert_rulecount $1 multiqc 2
 
   printf "\nmultiple replicates with DEA \n"
-  seq2science run rna_seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:star,technical_replicates:keep} | tee tests/local_test_results/${1}_dag
+  seq2science run rna-seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:star,technical_replicates:keep} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 merge_replicates 0
   assert_rulecount $1 star_quant 10
-  seq2science run rna_seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:star,technical_replicates:merge} | tee tests/local_test_results/${1}_dag
+  seq2science run rna-seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:star,technical_replicates:merge} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 star_quant 8
 
   printf "\nmultiple replicates with DEA - trackhubs\n"
-  seq2science run rna_seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:star,technical_replicates:merge,create_trackhub:True} | tee tests/local_test_results/${1}_dag
+  seq2science run rna-seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:star,technical_replicates:merge,create_trackhub:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bam_bigwig 8
 
   printf "\nmultiple replicates with DEA - multiqc\n"
-  seq2science run rna_seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:star,technical_replicates:merge,create_qc_report:True} | tee tests/local_test_results/${1}_dag
+  seq2science run rna-seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:star,technical_replicates:merge,create_qc_report:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 fastqc 24
   assert_rulecount $1 star_quant 8
 
   printf "\nmultiple assemblies and replicates with DEA \n"
-  seq2science run rna_seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:star,technical_replicates:keep,samples:tests/rna_seq/complex_samples.tsv} | tee tests/local_test_results/${1}_dag
+  seq2science run rna-seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:star,technical_replicates:keep,samples:tests/rna_seq/complex_samples.tsv} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 merge_replicates 0
   assert_rulecount $1 star_quant 10
-  seq2science run rna_seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:star,technical_replicates:merge,samples:tests/rna_seq/complex_samples.tsv} | tee tests/local_test_results/${1}_dag
+  seq2science run rna-seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:star,technical_replicates:merge,samples:tests/rna_seq/complex_samples.tsv} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 star_quant 8
-  seq2science run rna_seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:salmon,technical_replicates:merge,samples:tests/rna_seq/complex_samples.tsv} | tee tests/local_test_results/${1}_dag
+  seq2science run rna-seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:salmon,technical_replicates:merge,samples:tests/rna_seq/complex_samples.tsv} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 salmon_quant 8
 
   printf "\nmultiple assemblies and replicates with DEA - trackhub\n"
-  seq2science run rna_seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:salmon,technical_replicates:merge,samples:tests/rna_seq/complex_samples.tsv,create_trackhub:True} | tee tests/local_test_results/${1}_dag
+  seq2science run rna-seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:salmon,technical_replicates:merge,samples:tests/rna_seq/complex_samples.tsv,create_trackhub:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 salmon_quant 8
   assert_rulecount $1 star_align 8
   assert_rulecount $1 bam_bigwig 8
 
   printf "\nmultiple assemblies and replicates with DEA - multiqc report\n"
-  seq2science run rna_seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:star,technical_replicates:merge,samples:tests/rna_seq/complex_samples.tsv,create_qc_report:True} | tee tests/local_test_results/${1}_dag
+  seq2science run rna-seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:star,technical_replicates:merge,samples:tests/rna_seq/complex_samples.tsv,create_qc_report:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 fastqc  24
 
   test_ran=1
