@@ -5,7 +5,8 @@ import yaml
 
 def explain_rule(string):
     """
-    Parse
+    Parse a message. Depending on whether explain_rule is true, we do nothing
+    or we parse.
     """
     if config.get("explain_rule") != True:
         return None
