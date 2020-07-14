@@ -9,7 +9,12 @@ All changed fall under either one of these types: `added`, `changed`, `deprecate
 ### Changed
 - change the workflow names, and let the names more accepable. (download_fastq to download-fastq, chip_seq to chip-seq, atac_seq to atac-seq, scatac_seq to scatac-seq, and rna_seq to rna-seq)
 
+### Added
+
+- bwa-mem2 as aligner
+
 ### Fixed
+
 - Bug when merging replicates and having controls
 
 ## v0.0.3 - 2020-07-01

@@ -21,7 +21,7 @@ technical_replicates: merge    # change to "keep" to not combine them
 
 ##### if create_trackhub == False #####
 
-# use 'our' default parameters
+# which aligner to use
 quantifier: star
 
 # or specify which quantifier to use with the option to specify own parameters
