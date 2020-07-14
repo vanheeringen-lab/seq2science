@@ -10,6 +10,8 @@ import webbrowser
 import re
 import inspect
 import yaml
+import contextlib
+
 
 # we need to be able to get the parser from the file without a valid seq2science installation
 try:
@@ -79,8 +81,9 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
     )
     explain = subparsers.add_parser(
         "explain",
-        help="TODO",
-        description="TODO"
+        help="Write a materials & methods section.",
+        description="Explains what has/will be done for the workflow. This prints a string which can serve"
+                    " as a skeleton for your material & methods section."
     )
     clean = subparsers.add_parser(
         "clean",
@@ -266,6 +269,7 @@ def _explain(args, base_dir, workflows_dir, config_path):
     parsed_args = {"snakefile": os.path.join(workflows_dir, args.workflow, "Snakefile"),
                    "cores": 999,
                    "dryrun": True,
+                   "forceall": True,
                    "quiet": False,
                    "config": {"rule_dir": os.path.join(base_dir, "rules"),
                               "explain_rule": True},
@@ -279,8 +283,10 @@ def _explain(args, base_dir, workflows_dir, config_path):
 
     parsed_args["log_handler"] = [log_handler]
 
-    # run snakemake
-    exit_code = snakemake.snakemake(**parsed_args)
+    # run snakemake (silently)
+    with open(os.devnull, "w") as null:
+        with contextlib.redirect_stdout(null), contextlib.redirect_stderr(null):
+            exit_code = snakemake.snakemake(**parsed_args)
 
     print(" ".join(rules_used.values()))
     sys.exit(0) if exit_code else sys.exit(1)
