@@ -1,7 +1,5 @@
 ---
 title: "Seq2science SnapATAC"
-author: "Jsmits"
-date: "May 28, 2020"
 output: html_document
 ---
 
