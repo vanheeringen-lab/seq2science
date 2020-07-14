@@ -36,6 +36,17 @@ clean
 ------------
 
 ****
+explain
+****
+.. argparse::
+   :filename: seq2science/cli.py
+   :func: seq2science_parser
+   :prog: seq2science
+   :path: explain
+
+------------
+
+****
 docs
 ****
 .. argparse::
