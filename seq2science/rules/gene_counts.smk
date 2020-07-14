@@ -38,9 +38,9 @@ if config["quantifier"] == "salmon":
         resources:
             R_scripts=1, # conda's R can have issues when starting multiple times
         script:
-            f"{config['rule_dir']}/../scripts/linked_txome.R"
+            f"{config['rule_dir']}/../scripts/generate_linked_txome.R"
 
-    rule txi_count_matrix:
+    rule count_matrix:
         """
         Convert estimated transcript abundances to gene count estimations and merge 
         gene counts per assembly.
@@ -63,7 +63,7 @@ if config["quantifier"] == "salmon":
         resources:
             R_scripts=1, # conda's R can have issues when starting multiple times
         script:
-            f"{config['rule_dir']}/../scripts/txi.R"
+            f"{config['rule_dir']}/../scripts/quant_to_counts.R"
 
 
 elif config["quantifier"] == "star":
