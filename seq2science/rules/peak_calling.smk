@@ -88,6 +88,10 @@ rule call_peak_genrich:
         expand("{log_dir}/call_peak_genrich/{{fname}}_peak.log", **config),
     benchmark:
         expand("{benchmark_dir}/call_peak_genrich/{{fname}}.benchmark.txt", **config)[0]
+    message: explain_rule("""
+        Peaks were called with genrich v@genrich[genrich] 
+        (https://github.com/jsh58/Genrich) with options '{config[peak_caller][genrich]}'.
+        """)
     conda:
         "../envs/genrich.yaml"
     params:
@@ -141,10 +145,9 @@ rule macs2_callpeak:
         expand("{log_dir}/macs2_callpeak/{{assembly}}-{{sample}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/macs2_callpeak/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
-    # version:
-    #     """
-    #     Peaks called with macs2.
-    #     """
+    message: explain_rule("""
+        Peaks were called with macs2 v@macs2[macs2] with options '{config[peak_caller][macs2]}' in {params.format} mode.
+        """)
     params:
         name=(
             lambda wildcards, input: wildcards.sample
@@ -188,6 +191,10 @@ rule keep_mates:
         expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config),
     output:
         expand("{final_bam_dir}/{{sample}}-mates-{{assembly}}.samtools-coordinate.bam", **config),
+    message: explain_rule("""
+        After alignment we removed paired-end info from reads with seq2science to utilize
+        both mates in the paired-end reads.
+        """)
     log:
         expand("{log_dir}/keep_mates/{{assembly}}-{{sample}}.log", **config),
     benchmark:
@@ -295,6 +302,9 @@ if "condition" in samples:
                 get_idr_replicates,
             output:
                 expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{condition}}_peaks.{{ftype}}", **config),
+            message: explain_rule("""
+                Narrowpeak files of replicates belonging to the same condition were merged with the irreproducible discovery rate v@idr[idr].
+                """)
             log:
                 expand("{log_dir}/idr/{{assembly}}-{{condition}}-{{peak_caller}}-{{ftype}}.log", **config),
             benchmark:
@@ -375,6 +385,9 @@ if "condition" in samples:
                     tmpbdg=temp(expand("{result_dir}/macs2/{{assembly,.+(?<!_qvalues)}}-{{condition}}-{{ftype}}.bdg", **config)),
                     tmppeaks=temp(expand("{result_dir}/macs2/{{assembly}}-{{condition}}_peaks.temp.{{ftype}}", **config)),
                     peaks=expand("{result_dir}/macs2/{{assembly}}-{{condition}}_peaks.{{ftype}}", **config),
+                message: explain_rule("""
+                    Narrowpeak files of replicates belonging to the same condition were merged with fisher's method in macs2 v@macs2[macs2].
+                    """)
                 log:
                     expand("{log_dir}/macs_cmbreps/{{assembly}}-{{condition}}-{{ftype}}.log", **config),
                 benchmark:

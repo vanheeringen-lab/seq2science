@@ -269,51 +269,22 @@ def _explain(args, base_dir, workflows_dir, config_path):
                    "cores": 999,
                    "dryrun": True,
                    "quiet": False,
-                   "config": {"rule_dir": os.path.join(base_dir, "rules")},
+                   "config": {"rule_dir": os.path.join(base_dir, "rules"),
+                              "explain_rule": True},
                    "configfiles": [config_path]}
 
-    rules_used = list()
+    rules_used = {"start": f"Preprocessing of the reads was done automatically with workflow tool "
+                           f"seq2science v{__version__} (https://doi.org/10.5281/zenodo.3921913)."}
     def log_handler(log):
-        if log["level"] == "job_info" and log["name"] not in rules_used:
-            rules_used.append(log["name"])
+        if log["level"] == "job_info" and "msg" in log and log["msg"] is not None and log["name"] not in rules_used:
+            rules_used[log["name"]] = log["msg"]
 
     parsed_args["log_handler"] = [log_handler]
 
     # run snakemake
     exit_code = snakemake.snakemake(**parsed_args)
 
-    def get_version_string(string):
-        splitter = re.compile("rule (.*):[\s\S]*?version:[\s\S]*?\"\"\"[\s\S]([\s\S]*?)\"\"\"", re.MULTILINE)
-        shell_cmds = {}
-        for substring in string.split("\n\n\n"):
-            for match in splitter.finditer(substring):
-                shell_cmds[match.group(1)] = match.group(2)
-        return shell_cmds
-
-    path = f"{base_dir}/rules/"
-
-    for rules_file in os.listdir(path):
-        # print(rules_file)
-        with open(path + rules_file, 'r') as file:
-            text = file.read()
-        version_string = get_version_string(text)
-        print(version_string)
-    #     all_rules_shell.update(shell_cmd)
-    #
-    #     docstrings = cleanup_docstring(get_dirty_docstrings(text))
-    #     all_rules_doc.update(docstrings)
-    #
-    # for rule in sorted(all_rules_doc.keys()):
-    #     docstring = all_rules_doc[rule]
-    #
-    #     final_md += f"#### {rule}\n"
-    #     final_md += f"{docstring}\n"
-    #     if rule in all_rules_shell:
-    #         final_md += "```\n"
-    #         final_md += f"{all_rules_shell[rule]}\n"
-    #         final_md += "```\n"
-    #     final_md += f"\n"
-
+    print(" ".join(rules_used.values()))
     sys.exit(0) if exit_code else sys.exit(1)
 
 

@@ -12,11 +12,12 @@ rule trim_galore_SE:
         qc=expand("{qc_dir}/trimming/{{sample}}.{fqsuffix}.gz_trimming_report.txt", **config),
     conda:
         "../envs/trimgalore.yaml"
-    # version:
-    #     """
-    #     Reads trimmed trimgalore Single
-    #     """
     threads: 6
+    message: explain_rule("""
+    We trimmed single-end reads with trim galore! v@trimgalore[trim-galore] 
+    (http://www.bioinformatics.babraham.ac.uk/projects/trim_galore/) with options '{config[trim_galore]}'
+    and cutadapt (https://doi.org/10.14806/ej.17.1.200).
+    """)
     log:
         expand("{log_dir}/trim_galore_SE/{{sample}}.log", **config),
     benchmark:
@@ -54,10 +55,11 @@ rule trim_galore_PE:
     conda:
         "../envs/trimgalore.yaml"
     threads: 6
-    # version:
-    #     """
-    #     Reads trimmed trimgalore Paired
-    #     """
+    message: explain_rule("""
+    We trimmed paired-end reads with trim galore! v@trimgalore[trim-galore] 
+    (http://www.bioinformatics.babraham.ac.uk/projects/trim_galore/) with options '{config[trim_galore]}'
+    and cutadapt (https://doi.org/10.14806/ej.17.1.200).
+    """)
     log:
         expand("{log_dir}/trim_galore_PE/{{sample}}.log", **config),
     benchmark:

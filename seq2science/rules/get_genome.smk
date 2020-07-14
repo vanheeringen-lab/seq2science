@@ -34,15 +34,13 @@ rule get_genome:
         expand("{log_dir}/get_genome/{{assembly}}.genome.log", **config),
     benchmark:
         expand("{benchmark_dir}/get_genome/{{assembly}}.genome.benchmark.txt", **config)[0]
+    message: explain_rule("""
+    Genomic assembly {wildcards.assembly} was downloaded with GenomePy v@get_genome[genomepy] 
+    (https://doi.org/10.21105/joss.00320).
+    """)
     resources:
         parallel_downloads=1,
     priority: 1
-    message:
-        ""
-    # version:
-    #     """
-    #     Genome downloaded with genomepy.
-    #     """
     params:
         dir=config["genome_dir"],
         provider=config.get("provider", None),
