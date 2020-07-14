@@ -27,8 +27,6 @@ except ImportError:
     conda_frontend = "conda"
 
 
-from seq2science import __version__
-
 
 def main():
     # set helpful paths
@@ -61,7 +59,7 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
     # setup the parser
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-v", "--version", action="version", version=f"seq2science: v{__version__}"
+        "-v", "--version", action="version", version=f"seq2science: v{seq2science.__version__}"
     )
     subparsers = parser.add_subparsers(dest="command")
     subparsers.required = True
@@ -274,7 +272,7 @@ def _explain(args, base_dir, workflows_dir, config_path):
                    "configfiles": [config_path]}
 
     rules_used = {"start": f"Preprocessing of the reads was done automatically with workflow tool "
-                           f"seq2science v{__version__} (https://doi.org/10.5281/zenodo.3921913)."}
+                           f"seq2science v{seq2science.__version__} (https://doi.org/10.5281/zenodo.3921913)."}
     def log_handler(log):
         if log["level"] == "job_info" and "msg" in log and log["msg"] is not None and log["name"] not in rules_used:
             rules_used[log["name"]] = log["msg"]
