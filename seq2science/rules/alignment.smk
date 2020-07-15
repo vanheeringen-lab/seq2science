@@ -335,7 +335,7 @@ elif config["aligner"] == "star" or config.get("quantifier", "") == "star":
             mkdir -p {output.dir}                
 
             STAR --genomeDir {input.index} --readFilesIn {params.input} --readFilesCommand gunzip -c \
-            --quantMode GeneCounts --outSAMtype BAM Unsorted --outStd BAM_Unsorted \
+            --outSAMtype BAM Unsorted --outStd BAM_Unsorted \
             --outFileNamePrefix {log}/ --outTmpDir {output.dir}/STARtmp \
             --runThreadN {threads} {params.params} > {output.pipe} 2> {log}/Log.stderr.out
 
