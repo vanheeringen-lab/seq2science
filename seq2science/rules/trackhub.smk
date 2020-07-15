@@ -320,6 +320,11 @@ rule trackhub:
         unpack(get_trackhub_files),
     output:
         directory(f"{config['result_dir']}/trackhub"),
+    message:
+        explain_rule("""
+        We used the UCSC genome browser (http://www.genome.org/cgi/doi/10.1101/gr.229102)
+        to visualize and inspect alignment. 
+        """)
     log:
         expand("{log_dir}/trackhub/trackhub.log", **config),
     benchmark:

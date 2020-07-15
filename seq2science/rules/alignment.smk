@@ -48,8 +48,9 @@ if config["aligner"] == "bowtie2":
             pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0]),
         log:
             expand("{log_dir}/bowtie2_align/{{assembly}}-{{sample}}.log", **config),
-        group:
-            "alignment"
+        message: explain_rule("""
+        Reads were aligned with bowtie2 v@bowtie2[bowtie2] (https://dx.doi.org/10.1038%2Fnmeth.1923) with options '{config[align]}'.
+        """)
         benchmark:
             expand("{benchmark_dir}/bowtie2_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
         params:
@@ -106,8 +107,9 @@ elif config["aligner"] == "bwa-mem":
             pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0]),
         log:
             expand("{log_dir}/bwa_mem/{{assembly}}-{{sample}}.log", **config),
-        group:
-            "alignment"
+        message: explain_rule("""
+        Reads were aligned with bwa-mem v@bwa[bwa] (http://arxiv.org/abs/1303.3997) with options '{config[align]}'.
+        """)
         benchmark:
             expand("{benchmark_dir}/bwa_mem/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
         params:
@@ -214,8 +216,9 @@ elif config["aligner"] == "hisat2":
             pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0]),
         log:
             expand("{log_dir}/hisat2_align/{{assembly}}-{{sample}}.log", **config),
-        group:
-            "alignment"
+        message: explain_rule("""
+        Reads were aligned with hisat2 v@hisat2[hisat2] (https://doi.org/10.1038/s41587-019-0201-4) with options '{config[align]}'.
+        """)
         benchmark:
             expand("{benchmark_dir}/hisat2_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
         params:

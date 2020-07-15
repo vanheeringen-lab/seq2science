@@ -74,6 +74,16 @@ And finally run the workflow. Note that the first time you run a workflow it wil
 (seq2science) user@comp:~.my_project$ seq2science run {workflow} --cores 24
 ```
 
+## Getting an explanation of what seq2science did
+
+Seq2science has a function to write an explanation of what has/will be done with the configuration file for a workflow: 
+
+```console
+(seq2science) user@comp:~.my_project$ seq2science explain {workflow}
+```
+
+This will print an extensive (quite technical) explanation that can also serve as a starting point for a material and methods section. This is not a replacement for the documentation, which we definitely recommend you to always read!  
+
 ## Where does seq2science store results and looks for 'starting points'?
 
 We recommend that for a typical run of seq2science you use a folder structure like this: 
