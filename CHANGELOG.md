@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 All changed fall under either one of these types: `added`, `changed`, `deprecated`, `removed`, `fixed`, `security`.
 
 ## [Unreleased]
+### Changed
+- change the workflow names, and let the names more accepable. (download_fastq to download-fastq, chip_seq to chip-seq, atac_seq to atac-seq, scatac_seq to scatac-seq, and rna_seq to rna-seq)
+
+### Added
+
+- bwa-mem2 as aligner
+
+### Fixed
+
+- Bug when merging replicates and having controls
 
 ## v0.0.3 - 2020-07-01
 
@@ -13,6 +23,7 @@ All changed fall under either one of these types: `added`, `changed`, `deprecate
 - bug when specifying 2 cores, which rounded down to zero cores for samtools sorting and crash
 - edger environment was incompatible
 - seq2science cache on sensible location + seq2science clean fixed
+- only lookup sample layout when not local, opens up for slightly better tests in bioconda recipe
 
 ## v0.0.2 - 2020-06-29
 
