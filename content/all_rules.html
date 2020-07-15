@@ -100,6 +100,8 @@
 <li class="toctree-l3"><a class="reference internal" href="#bowtie2-index">bowtie2_index</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#bwa-index">bwa_index</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#bwa-mem">bwa_mem</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#bwa-mem2">bwa_mem2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#bwa-mem2-index">bwa_mem2_index</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#call-peak-genrich">call_peak_genrich</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#combine-peaks">combine_peaks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#complement-blacklist">complement_blacklist</a></li>
@@ -360,6 +362,20 @@ to a total width of 200, for a fair comparison between peaks.</p>
 <h2>bwa_mem<a class="headerlink" href="#bwa-mem" title="Permalink to this headline">¶</a></h2>
 <p>Align reads against a genome (index) with bwa-mem, and pipe the output to the required sorter(s).</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>bwa mem {params.params} -t {threads} {params.index_dir} {input.reads} 2&gt; {log} | tee {output} 1&gt; /dev/null 2&gt;&gt; {log}
+</pre></div>
+</div>
+</div>
+<div class="section" id="bwa-mem2">
+<h2>bwa_mem2<a class="headerlink" href="#bwa-mem2" title="Permalink to this headline">¶</a></h2>
+<p>Align reads against a genome (index) with bwa-mem2, and pipe the output to the required sorter(s).</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>bwa-mem2 mem {params.params} -t {threads} {params.index_dir} {input.reads} 2&gt; {log} | tee {output} 1&gt; /dev/null 2&gt;&gt; {log}
+</pre></div>
+</div>
+</div>
+<div class="section" id="bwa-mem2-index">
+<h2>bwa_mem2_index<a class="headerlink" href="#bwa-mem2-index" title="Permalink to this headline">¶</a></h2>
+<p>Make a genome index for bwa-mem2. This index is required for alignment.</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>bwa-mem2 index -p {params.prefix} {input} &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
 </div>

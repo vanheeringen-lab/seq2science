@@ -101,6 +101,18 @@ Align reads against a genome (index) with bwa-mem, and pipe the output to the re
 bwa mem {params.params} -t {threads} {params.index_dir} {input.reads} 2> {log} | tee {output} 1> /dev/null 2>> {log}
 ```
 
+#### bwa_mem2
+Align reads against a genome (index) with bwa-mem2, and pipe the output to the required sorter(s).
+```
+bwa-mem2 mem {params.params} -t {threads} {params.index_dir} {input.reads} 2> {log} | tee {output} 1> /dev/null 2>> {log}
+```
+
+#### bwa_mem2_index
+Make a genome index for bwa-mem2. This index is required for alignment.
+```
+bwa-mem2 index -p {params.prefix} {input} > {log} 2>&1
+```
+
 #### call_peak_genrich
 Call peaks with genrich based on the pileup.
 ```
