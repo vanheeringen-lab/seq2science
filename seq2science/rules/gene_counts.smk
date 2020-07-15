@@ -85,7 +85,6 @@ else:
             expand("{log_dir}/counts_matrix/{{assembly}}-counts_matrix.log", **config),
         run:
             import pandas as pd
-            #import os.path
             import sys
 
             with open(log[0], "w") as log_file:

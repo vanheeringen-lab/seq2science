@@ -4,6 +4,7 @@ config_schemas = ['general', 'download', 'alignment_general', 'alignment_specifi
 include: "../../rules/configuration_generic.smk"
 include: "../../rules/configuration_workflows.smk"
 
+assert config["aligner"] in ["star", "hisat2"], f"\nPlease select a splice aware aligner for the RNA-seq (STAR or HISAT2)\n"
 
 # load the remaining relevant rules
 include: f"{config['rule_dir']}/alignment.smk"

@@ -182,6 +182,37 @@ elif config["aligner"] == "bwa-mem2":
 
 elif config["aligner"] == "hisat2":
 
+    rule hisat2_splice_aware_index:
+        """
+        Make a splice aware index for hisat2. This index is required for alignment of RNA-seq data.
+        """
+        input:
+            fasta=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+            gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
+        output:
+            directory(expand("{genome_dir}/{{assembly}}/index/hisat2_splice_aware", **config)),
+        log:
+            expand("{log_dir}/hisat2_index/{{assembly}}.log", **config),
+        benchmark:
+            expand("{benchmark_dir}/hisat2_index/{{assembly}}.benchmark.txt", **config)[0]
+        priority: 1
+        threads: 4
+        conda:
+            "../envs/hisat2.yaml"
+        params:
+            config["index"],
+        shell:
+            """
+            mkdir -p {output}
+            
+            hp=$(which hisat2)
+            python3 ${{hp}}_extract_splice_sites.py {input.gtf} > {output}/splice_sites.tsv
+            python3 ${{hp}}_extract_exons.py {input.gtf} > {output}/exons.tsv
+            
+            hisat2-build {params} -p {threads} --ss {output}/splice_sites.tsv --exon {output}/exons.tsv \
+            {input.fasta} {output}/{wildcards.assembly} > {log} 2>&1
+            """
+
     rule hisat2_index:
         """
         Make a genome index for hisat2. This index is required for alignment.
@@ -189,7 +220,7 @@ elif config["aligner"] == "hisat2":
         input:
             expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
         output:
-            directory(expand("{genome_dir}/{{assembly}}/index/hisat2/", **config)),
+            directory(expand("{genome_dir}/{{assembly}}/index/hisat2", **config)),
         log:
             expand("{log_dir}/hisat2_index/{{assembly}}.log", **config),
         benchmark:
@@ -205,13 +236,19 @@ elif config["aligner"] == "hisat2":
             hisat2-build {params} -p {threads} {input} {output}/{wildcards.assembly} > {log} 2>&1
             """
 
+    def get_hisat_index(wildcards):
+        index = f"{{genome_dir}}/{wildcards.assembly}/index/hisat2"
+        if get_workflow() == "rna_seq":
+            index += "_splice_aware"
+        return expand(index, **config)
+
     rule hisat2_align:
         """
         Align reads against a genome (index) with hisat2, and pipe the output to the required sorter(s).
         """
         input:
             reads=get_reads,
-            index=expand("{genome_dir}/{{assembly}}/index/hisat2/", **config),
+            index=get_hisat_index,
         output:
             pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0]),
         log:
@@ -233,7 +270,7 @@ elif config["aligner"] == "hisat2":
             "../envs/hisat2.yaml"
         shell:
             """
-            hisat2 {params.params} --threads {threads} -x {input.index}{wildcards.assembly} {params.input} 2> {log} | tee {output} 1> /dev/null 2>> {log}
+            hisat2 {params.params} --threads {threads} -x {input.index}/{wildcards.assembly} {params.input} 2> {log} | tee {output} 1> /dev/null 2>> {log}
             """
 
 
