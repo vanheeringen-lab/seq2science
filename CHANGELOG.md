@@ -6,30 +6,36 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 All changed fall under either one of these types: `added`, `changed`, `deprecated`, `removed`, `fixed`, `security`.
 
 ## [Unreleased]
-### Changed
-
-- change the workflow names, and let the names more accepable. (download_fastq to download-fastq, chip_seq to chip-seq, atac_seq to atac-seq, scatac_seq to scatac-seq, and rna_seq to rna-seq)
 
 ### Added
 
-- bwa-mem2 as aligner
-- new command-line option `explain`, which explains what has been done, and writes your material & methods section for you!
 - HISAT2 as aligner for RNA-seq
 - splice-aware HISAT2 indexing for RNA-seq
 - quantifier HTSeq for RNA-seq
 - quantifier featurecounts for RNA-seq
 
-### Fixed
-
-- Bug when merging replicates and having controls
-
 ### Changed
 
-- changed the way seq2science is called. Moved all the logic from bin/seq2science to seq2science/cli.py
 - rules and scriptnames in RNA-seq. ex: `txi.R` is now `quant_to_counts.R` to better reflect its function
 - `quant_to_counts.R` now converts salmon transcript abundances to gene counts identically to DESeq2
 - STAR no longer outputs counts, and is no longer found under `quantifiers`
 - gene counts are generated from (filtered) bams when using either STAR or HISAT2 as aligner and HTSeq or featureCounts are quantifier
+
+## v0.1.0 - 2020-07-15
+
+### Added
+
+- bwa-mem2 as aligner
+- new command-line option `explain`, which explains what has been done, and writes your material & methods section for you!
+
+### Changed
+
+- change the workflow names, replaced _ by -. (download_fastq to download-fastq, chip_seq to chip-seq, atac_seq to atac-seq, scatac_seq to scatac-seq, and rna_seq to rna-seq)
+- changed the way seq2science is called. Moved all the logic from bin/seq2science to seq2science/cli.py
+
+### Fixed
+
+- Bug when merging replicates and having controls
 
 ## v0.0.3 - 2020-07-01
 
