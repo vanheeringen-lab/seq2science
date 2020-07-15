@@ -1,7 +1,11 @@
 def get_counts(wildcards):
     quant_dirs = []
-    for sample in treps[treps["assembly"] == wildcards.assembly].index:
-        quant_dirs.append(f"{{result_dir}}/{{quantifier}}/{wildcards.assembly}-{sample}")
+    if config["quantifier"] in ["salmon", "star"]:
+        for sample in treps[treps["assembly"] == wildcards.assembly].index:
+            quant_dirs.append(f"{{result_dir}}/{{quantifier}}/{wildcards.assembly}-{sample}")
+    else:
+        for sample in treps[treps["assembly"] == wildcards.assembly].index:
+            quant_dirs.append(f"{{final_bam_dir}}/{wildcards.assembly}-{sample}.samtools-coordinate.bam")
     return expand(quant_dirs, **config)
 
 
@@ -131,3 +135,28 @@ elif config["quantifier"] == "star":
 
                 counts.index.name = "gene"
                 counts.to_csv(output[0], sep="\t")
+
+
+elif config["quantifier"] == "htseq":
+
+    rule counts_matrix:
+        input:
+            cts=get_counts,
+            gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.gtf", **config),
+        output:
+            expand("{counts_dir}/{{assembly}}-counts.tsv", **config),
+        params:
+            strandedness=lambda wildcards: "no" if "strandedness" not in samples else
+            ("yes" if all([x in ["yes", "forward"] for x in samples[samples["assembly"] == wildcards.assembly].strandedness]) else
+             ("reverse" if all([x == "reverse" for x in samples[samples["assembly"] == wildcards.assembly].strandedness]) else "no"))
+        log:
+            expand("{log_dir}/counts_matrix/{{assembly}}-counts_matrix.log", **config),
+        threads: 1
+        conda:
+            "../envs/gene_counts.yaml"
+        shell:
+             """
+             htseq-count {input.cts} {input.gtf} -r pos -s {params.strandedness} -n {threads} -c {output} > {log} 2>&1
+             """
+        # htseq-count -r pos -s no -c test_counts2.txt -n 10 /bank/experiments/2019-12/synthetic_data/AB1.bam /bank/experiments/2019-12/synthetic_data/GRCh38.p12.annotation.gtf
+
