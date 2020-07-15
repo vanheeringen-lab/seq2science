@@ -17,6 +17,14 @@ All changed fall under either one of these types: `added`, `changed`, `deprecate
 
 - Bug when merging replicates and having controls
 
+### Changed
+
+- changed the way seq2science is called. Moved all the logic from bin/seq2science to seq2science/cli.py
+
+### Added
+
+- new command-line option `explain`, which explains what has been done, and writes your material & methods section for you!
+
 ## v0.0.3 - 2020-07-01
 
 ### Fixed

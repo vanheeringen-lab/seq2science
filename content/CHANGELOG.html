@@ -95,15 +95,17 @@
 <li class="toctree-l4"><a class="reference internal" href="#changed">Changed</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#added">Added</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#fixed">Fixed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id1">Changed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id2">Added</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#v0-0-3-2020-07-01">v0.0.3 - 2020-07-01</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id1">Fixed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id3">Fixed</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#v0-0-2-2020-06-29">v0.0.2 - 2020-06-29</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id2">Fixed</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id3">Changed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id4">Fixed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id5">Changed</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#v0-0-1-2020-06-17">v0.0.1 - 2020-06-17</a></li>
@@ -208,11 +210,23 @@
 <li><p>Bug when merging replicates and having controls</p></li>
 </ul>
 </div>
+<div class="section" id="id1">
+<h3>Changed<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>changed the way seq2science is called. Moved all the logic from bin/seq2science to seq2science/cli.py</p></li>
+</ul>
+</div>
+<div class="section" id="id2">
+<h3>Added<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>new command-line option <code class="docutils literal notranslate"><span class="pre">explain</span></code>, which explains what has been done, and writes your material &amp; methods section for you!</p></li>
+</ul>
+</div>
 </div>
 <div class="section" id="v0-0-3-2020-07-01">
 <h2>v0.0.3 - 2020-07-01<a class="headerlink" href="#v0-0-3-2020-07-01" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id1">
-<h3>Fixed<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id3">
+<h3>Fixed<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>bug when specifying 2 cores, which rounded down to zero cores for samtools sorting and crash</p></li>
 <li><p>edger environment was incompatible</p></li>
@@ -223,14 +237,14 @@
 </div>
 <div class="section" id="v0-0-2-2020-06-29">
 <h2>v0.0.2 - 2020-06-29<a class="headerlink" href="#v0-0-2-2020-06-29" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id2">
-<h3>Fixed<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id4">
+<h3>Fixed<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>samtools using the correct nr of threads after update to v1.10</p></li>
 </ul>
 </div>
-<div class="section" id="id3">
-<h3>Changed<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id5">
+<h3>Changed<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>The count table for ATAC/ChIP-seq peaks is now made from finding all peaks within a range of 200 bp, and taking the most significant one (gimmemotifs’ combine_peaks) and extending the remaining peaks 200 bp. On this count table quantile normalisation, TMM, RLE and upperquartile normalisation with CPM is done. Downstream steps log transform these and mean center them. This however means that for broadpeaks no count_table is generated.</p></li>
 <li><p>Snakefmt -l 121 applied</p></li>

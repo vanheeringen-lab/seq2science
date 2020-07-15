@@ -92,6 +92,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#running-a-workflow">Running a workflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#getting-an-explanation-of-what-seq2science-did">Getting an explanation of what seq2science did</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#where-does-seq2science-store-results-and-looks-for-starting-points">Where does seq2science store results and looks for ‘starting points’?</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#what-is-snakemake">What is Snakemake?</a></li>
 </ul>
@@ -231,6 +232,14 @@
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(seq2science)</span> <span class="gp">user@comp:~.my_project$</span> seq2science run <span class="o">{</span>workflow<span class="o">}</span> --cores <span class="m">24</span>
 </pre></div>
 </div>
+</div>
+<div class="section" id="getting-an-explanation-of-what-seq2science-did">
+<h2>Getting an explanation of what seq2science did<a class="headerlink" href="#getting-an-explanation-of-what-seq2science-did" title="Permalink to this headline">¶</a></h2>
+<p>Seq2science has a function to write an explanation of what has/will be done with the configuration file for a workflow:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(seq2science)</span> <span class="gp">user@comp:~.my_project$</span> seq2science explain <span class="o">{</span>workflow<span class="o">}</span>
+</pre></div>
+</div>
+<p>This will print an extensive (quite technical) explanation that can also serve as a starting point for a material and methods section. This is not a replacement for the documentation, which we definitely recommend you to always read!</p>
 </div>
 <div class="section" id="where-does-seq2science-store-results-and-looks-for-starting-points">
 <h2>Where does seq2science store results and looks for ‘starting points’?<a class="headerlink" href="#where-does-seq2science-store-results-and-looks-for-starting-points" title="Permalink to this headline">¶</a></h2>
