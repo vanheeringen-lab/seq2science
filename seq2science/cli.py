@@ -180,7 +180,7 @@ def _init(args, workflows_dir, config_path):
     Initialise a config.yaml and samples.tsv from the relevant workflow.
     """
     for file in ["samples.tsv", "config.yaml"]:
-        src = os.path.join(workflows_dir, args.workflow, file)
+        src = os.path.join(workflows_dir, args.workflow.replace("-", "_"), file)
         dest = os.path.join(os.path.dirname(config_path), file)
 
         copy_file = True
@@ -215,7 +215,7 @@ def _run(args, base_dir, workflows_dir, config_path):
         sys.exit(1)
 
     # parse the args
-    parsed_args = {"snakefile": os.path.join(workflows_dir, args.workflow.replace("-", "_"), "Snakefile"),
+    parsed_args = {"snakefile": os.path.join(workflows_dir, args.workflow.replace("-", "_")f, "Snakefile"),
                    "cores": args.cores,
                    "use_conda": True,
                    "conda_frontend": conda_frontend,
