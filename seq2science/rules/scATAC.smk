@@ -42,6 +42,10 @@ rule create_bins_SNAP_object:
         expand("{benchmark_dir}/create_SNAP_object/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
     conda:
         "../envs/snaptools.yaml"
+    message: explain_rule("""
+        We used snaptools v@snaptools[snaptools] to create a snapobject with options config[snaptools_opt] and added
+        a binned genome matrix with options {config[bin_opt]}.
+        """)
     params:
         config["bin_opt"],
     shell:

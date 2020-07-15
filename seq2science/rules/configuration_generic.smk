@@ -42,6 +42,9 @@ docs: https://vanheeringen-lab.github.io/seq2science
 """
 )
 
+include: f"{config['rule_dir']}/explain.smk"
+
+
 if workflow.conda_frontend == "conda":
     logger.info("NOTE: seq2science is using the conda frontend, for faster environment creation install mamba.")
 # give people a second to appreciate this beautiful ascii art
