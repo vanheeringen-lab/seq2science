@@ -190,7 +190,7 @@ elif config["aligner"] == "hisat2":
             fasta=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
             gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
         output:
-            directory(expand("{genome_dir}/{{assembly}}/index/hisat2_splice_aware", **config)),
+            directory(expand("{genome_dir}/{{assembly}}/index/hisat2_splice_aware/", **config)),
         log:
             expand("{log_dir}/hisat2_index/{{assembly}}.log", **config),
         benchmark:
@@ -203,8 +203,6 @@ elif config["aligner"] == "hisat2":
             config["index"],
         shell:
             """
-            mkdir -p {output}
-            
             hp=$(which hisat2)
             python3 ${{hp}}_extract_splice_sites.py {input.gtf} > {output}/splice_sites.tsv
             python3 ${{hp}}_extract_exons.py {input.gtf} > {output}/exons.tsv
@@ -220,7 +218,7 @@ elif config["aligner"] == "hisat2":
         input:
             expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
         output:
-            directory(expand("{genome_dir}/{{assembly}}/index/hisat2", **config)),
+            directory(expand("{genome_dir}/{{assembly}}/index/hisat2/", **config)),
         log:
             expand("{log_dir}/hisat2_index/{{assembly}}.log", **config),
         benchmark:
@@ -237,9 +235,9 @@ elif config["aligner"] == "hisat2":
             """
 
     def get_hisat_index(wildcards):
-        index = f"{{genome_dir}}/{wildcards.assembly}/index/hisat2"
+        index = f"{{genome_dir}}/{wildcards.assembly}/index/hisat2/"
         if get_workflow() == "rna_seq":
-            index += "_splice_aware"
+            index = index[:-1] + "_splice_aware/"
         return expand(index, **config)
 
     rule hisat2_align:
