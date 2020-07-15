@@ -215,7 +215,7 @@ def _run(args, base_dir, workflows_dir, config_path):
         sys.exit(1)
 
     # parse the args
-    parsed_args = {"snakefile": os.path.join(workflows_dir, args.workflow.replace("-", "_")f, "Snakefile"),
+    parsed_args = {"snakefile": os.path.join(workflows_dir, args.workflow.replace("-", "_"), "Snakefile"),
                    "cores": args.cores,
                    "use_conda": True,
                    "conda_frontend": conda_frontend,
