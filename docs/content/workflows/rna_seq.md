@@ -17,7 +17,7 @@ The pipeline starts by trimming the reads with [trim galore!](https://github.com
 
 #### Quantification & gene count matrices
 Gene counts can be obtained by two distinct methods: either by directly quantifying transcript abundances using `Salmon`, or by summarizing counts from bam files.
-For the latter approach, fastqs are aligned by splice-aware aligners `STAR` or `HISAT2`. Next, the bam files are filtered according to configurable specification (which does not happen for Salmon), and counts are quantified by either `HTSeq-count` or `featureCounts`
+For the latter approach, fastqs are aligned by splice-aware aligners `STAR` or `HISAT2`. Next, the bam files are filtered according to configurable specification (which does not happen for Salmon), and counts are quantified by either `HTSeq-count` or `featureCounts`.
 
 Gene counts are aggregated per assembly into a count matrix. Additionally, `salmon` generates a SingleCellExperiment object which can be opened in *R*, containing the transcript- and gene-level summaries. 
 
@@ -43,7 +43,14 @@ Differential expression analysis can automatically be performed using [DESeq2](h
 Note: (additional) design contrasts can be added at any time. After completing the workflow, rerunning Snakemake with new contrasts will only perform these analyses.
 
 ##### DESeq2
-DESeq2 automatically performs library bias correction when loading your data. Batch correction is performed if included in the design. After calculating differentially expressed genes, a multiple testing procedure is applied. This is either the Benjamini-Hochberg procedure (the default) or Independent Hypothesis Weighing. Expression counts are log transformed (by default using the apeglm method). These defaults can be changed in the `config.yaml`. Finally, a list of all genes is saved to file, with analysis results for expressed genes.
+DESeq2 automatically performs library bias correction when loading your data. Batch correction is performed if included in the design. 
+After calculating differentially expressed genes, a multiple testing procedure is applied. This is either the Benjamini-Hochberg procedure (the default) or Independent Hypothesis Weighing. 
+Expression counts are log transformed (by default using the apeglm method). These defaults can be changed in the `config.yaml`. 
+Finally, the list of all genes is saved to file, with analysis results for expressed genes.
+
+In addition, MA and PCA plots are generated for each contrast design. If the design includes a batch effect, several PCA plots are generated to visualize the effect of the batch correction.
+
+DESeq2 models the batch effect in their package, but downstream methods may not. For this reason, seq2science will produce a batch-corrected counts matrix (and a batch corrected TPM matrix if quantified with Salmon). 
 
 ***
 ### Filling out the samples.tsv
