@@ -14,6 +14,8 @@ mtp             <- snakemake@config$DE_params$multiple_testing_procedure
 fdr             <- snakemake@config$DE_params$alpha_value
 se              <- snakemake@config$DE_params$shrinkage_estimator
 assembly        <- snakemake@wildcards$assembly
+salmon          <- snakemake@config$quantifier == "salmon"
+counts_dir      <- snakemake@config$counts_dir
 output          <- snakemake@output[[1]]
 
 # log all console output
@@ -33,6 +35,8 @@ cat('mtp          <- "', mtp,          '"\n', sep = "")
 cat('fdr          <-',   fdr, '\n')
 cat('se           <- "', se,           '"\n', sep = "")
 cat('assembly     <- "', assembly,     '"\n', sep = "")
+cat('salmon       <- "', salmon,       '"\n', sep = "")
+cat('counts_dir   <- "', counts_dir,   '"\n', sep = "")
 cat('output       <- "', output,       '"\n', sep = "")
 cat('\n')
 
@@ -230,4 +234,25 @@ if (is.na(batch)){
   output_batch_corr_counts <- sub(".diffexp.tsv", ".batch_corr_counts.tsv", output)
   write.table(batch_corr_counts, file=output_batch_corr_counts, quote = F, sep = '\t', col.names=NA)
   cat('-batch corrected counts saved\n')
+
+  # if quantified with salmon, generate the batch corrected TPMs as well
+  if(salmon){
+    RDS_path <- file.path(counts_dir, paste0(assembly, "-se.rds"))
+    se <- readRDS(RDS_path)
+    sg <- se$sg
+    gene_lengths <- assay(sg, "length")
+
+    counts_to_tpm <- function(mat.counts, mat.gene_lengths) {
+      #' snippet from https://support.bioconductor.org/p/91218/ to convert counts to TPM
+
+      x <- mat.counts / mat.gene_lengths
+      mat.tpm <- t( t(x) * 1e6 / colSums(x) )
+      return(mat.tpm)
+    }
+    batch_corr_tpm <- counts_to_tpm(batch_corr_counts, gene_lengths)
+
+    output_batch_corr_tpm <- sub(".diffexp.tsv", ".batch_corr_tpm.tsv", output)
+    write.table(batch_corr_tpm, file=output_batch_corr_tpm, quote = F, sep = '\t', col.names=NA)
+    cat('-batch corrected TPMs saved\n')
+  }
 }
