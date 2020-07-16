@@ -21,6 +21,55 @@ def get_strandedness(wildcards):
 
 if config["quantifier"] == "salmon":
 
+    rule get_transcripts:
+        """
+        Generate transcripts.fasta using gffread.
+    
+        Requires genome.fa and annotation.gtf (with matching chromosome/scaffold names)
+        """
+        input:
+            fa=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+            gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
+        output:
+            expand("{genome_dir}/{{assembly}}/{{assembly}}.transcripts.fa", **config),
+        log:
+            expand("{log_dir}/get_genome/{{assembly}}.transcripts.log", **config),
+        benchmark:
+            expand("{benchmark_dir}/get_genome/{{assembly}}.transcripts.benchmark.txt", **config)[0]
+        conda:
+            "../envs/salmon.yaml"
+        priority: 1
+        shell:
+            "gffread -w {output} -g {input.fa} {input.gtf} >> {log} 2>&1"
+
+    rule decoy_transcripts:
+        """
+        Generate decoy_transcripts.txt for Salmon indexing  
+    
+        script source: https://github.com/COMBINE-lab/SalmonTools
+        """
+        input:
+            genome=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+            gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
+            transcripts=expand("{genome_dir}/{{assembly}}/{{assembly}}.transcripts.fa", **config),
+        output:
+            expand("{genome_dir}/{{assembly}}/decoy_transcripts/decoys.txt", **config),
+        params:
+            script=f"{config['rule_dir']}/../scripts/generateDecoyTranscriptome.sh",
+        log:
+            expand("{log_dir}/get_genome/{{assembly}}.decoy_transcripts.log", **config),
+        message: explain_rule("decoy_transcripts")
+        benchmark:
+            expand("{benchmark_dir}/get_genome/{{assembly}}.decoy_transcripts.benchmark.txt", **config)[0]
+        threads: 40
+        resources:
+            mem_gb=65,
+        conda:
+            "../envs/decoy.yaml"
+        priority: 1
+        shell:
+            ("cpulimit --include-children -l {threads}00 -- " if config. get("cpulimit", True) else" ")+
+            "sh {params.script} -j {threads} -g {input.genome} -a {input.gtf} -t {input.transcripts} -o $(dirname {output}) > {log} 2>&1"
 
     rule salmon_decoy_aware_index:
         """
@@ -79,6 +128,7 @@ if config["quantifier"] == "salmon":
             dir=directory(expand("{result_dir}/{quantifier}/{{assembly}}-{{sample}}", **config)),
         log:
             expand("{log_dir}/{quantifier}_quant/{{assembly}}-{{sample}}.log", **config),
+        message: explain_rule("salmon_quant")
         benchmark:
             expand("{benchmark_dir}/{quantifier}_quant/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
         params:
@@ -116,6 +166,7 @@ elif config["quantifier"] == "htseq":
             user_flags=config["htseq_flags"]
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-{{sample}}.counts.log", **config),
+        message: explain_rule("htseq_count")
         threads: 1
         conda:
             "../envs/gene_counts.yaml"
@@ -142,6 +193,7 @@ elif config["quantifier"] == "featurecounts":
             user_flags=config["featurecounts_flags"],
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-{{sample}}.counts.log", **config),
+        message: explain_rule("featurecounts_rna")
         threads: 1
         conda:
             "../envs/gene_counts.yaml"

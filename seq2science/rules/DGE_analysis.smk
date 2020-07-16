@@ -53,6 +53,7 @@ rule deseq2:
         "../envs/deseq2.yaml"
     log:
         expand("{log_dir}/deseq2/{{assembly}}-{{contrast}}.diffexp.log", **config),
+    message: explain_rule("deseq2")
     benchmark:
         expand("{benchmark_dir}/deseq2/{{assembly}}-{{contrast}}.diffexp.benchmark.txt", **config)[0]
     threads: 4
@@ -77,6 +78,7 @@ rule blind_clustering:
         "../envs/deseq2.yaml"
     log:
         expand("{log_dir}/deseq2/{{assembly}}-clustering.log", **config),
+    message: explain_rule("blind_clustering")
     benchmark:
         expand("{benchmark_dir}/deseq2/{{assembly}}-clustering.benchmark.txt", **config)[0]
     threads: 4
