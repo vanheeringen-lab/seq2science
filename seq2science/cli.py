@@ -11,7 +11,6 @@ import re
 import inspect
 import yaml
 import contextlib
-from collections import OrderedDict
 
 
 # we need to be able to get the parser from the file without a valid seq2science installation
@@ -278,7 +277,6 @@ def _explain(args, base_dir, workflows_dir, config_path):
 
     rules_used = {"start": f"\nPreprocessing of reads was done automatically with workflow tool "
                            f"seq2science v{seq2science.__version__} (https://doi.org/10.5281/zenodo.3921913)."}
-    rules_used = OrderedDict(rules_used)
 
     def log_handler(log):
         if log["level"] == "job_info" and "msg" in log and log["msg"] is not None and log["name"] not in rules_used:
