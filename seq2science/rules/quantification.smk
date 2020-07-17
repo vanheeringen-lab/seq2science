@@ -1,52 +1,30 @@
-if config["quantifier"] == "star":
-    # star_align also generates bams, required for the trackhub
-    if config["create_trackhub"]:
-        ruleorder: star_align > star_quant
+def get_strandedness(wildcards):
+    out = {
+        "htseq": ["no", "yes", "reverse"],
+        "featurecounts": ["0", "1", "2"]
+    }
+
+    if "strandedness" not in samples:
+        n = 0
     else:
-        ruleorder: star_quant > star_align
+        col = "replicate" if "replicate" in samples else "sample"
+        s = samples[samples[col] == wildcards.sample].strandedness[0]
 
-    rule star_quant:
-        """
-        Quantify reads against a genome and transcriptome (index) with STAR and output a counts table per sample.
-        """
-        input:
-            reads=get_reads,
-            index=expand("{genome_dir}/{{assembly}}/index/{quantifier}", **config),
-        output:
-            dir=directory(expand("{result_dir}/{quantifier}/{{assembly}}-{{sample}}", **config)),
-        log:
-            directory(expand("{log_dir}/{quantifier}_quant/{{assembly}}-{{sample}}", **config)),
-        benchmark:
-            expand("{benchmark_dir}/{quantifier}_quant/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
-        params:
-            input=lambda wildcards, input: input.reads if config["layout"][wildcards.sample] == "SINGLE" else input.reads[0:2],
-            params=config["quantify"],
-        threads: 8
-        resources:
-            mem_gb=30,
-        conda:
-            "../envs/star.yaml"
-        shell:
-            """
-            trap "find {log} -type f ! -name Log* -exec rm {{}} \;" EXIT
-            mkdir -p {log}
-            mkdir -p {output.dir}                
-
-            STAR --genomeDir {input.index} --readFilesIn {params.input} --readFilesCommand gunzip -c \
-            --quantMode GeneCounts --outSAMtype None \
-            --outFileNamePrefix {log}/ --outTmpDir {output.dir}/STARtmp \
-            --runThreadN {threads} {params.params} > {log}/Log.std_stderr.out 2>&1
-
-            # move all non-log files to output directory (this way the log files are kept on error)
-            find {log} -type f ! -name Log* -exec mv {{}} {output.dir} \;
-            """
+        if s in ["yes", "forward"]:
+            n=1
+        elif s == "reverse":
+            n=2
+        else:
+            n=0
+    return out[config["quantifier"]][n]
 
 
-elif config["quantifier"] == "salmon":
+if config["quantifier"] == "salmon":
+
 
     rule salmon_decoy_aware_index:
         """
-        Make a decoy aware transcript index for Salmon.
+        Generate a decoy aware transcriptome index for Salmon.
         """
         input:
             transcripts=expand("{genome_dir}/{{assembly}}/{{assembly}}.transcripts.fa", **config),
@@ -70,7 +48,7 @@ elif config["quantifier"] == "salmon":
 
     rule salmon_index:
         """
-        Make a transcriptomic index for Salmon.
+        Generate a transcriptome index for Salmon.
         """
         input:
             expand("{genome_dir}/{{assembly}}/{{assembly}}.transcripts.fa", **config),
@@ -119,4 +97,55 @@ elif config["quantifier"] == "salmon":
             """
             salmon quant -i {input.index} -l A {params.input} {params.params} -o {output.dir} \
             --threads {threads} > {log} 2>&1
+            """
+
+
+elif config["quantifier"] == "htseq":
+
+    rule htseq_count:
+        """
+        summarize reads to gene level. Outputs a counts table per bam file.
+        """
+        input:
+            bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config),
+            gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
+        output:
+            expand("{counts_dir}/{{assembly}}-{{sample}}.counts.tsv", **config),
+        params:
+            strandedness=get_strandedness,
+            user_flags=config["htseq_flags"]
+        log:
+            expand("{log_dir}/counts_matrix/{{assembly}}-{{sample}}.counts.log", **config),
+        threads: 1
+        conda:
+            "../envs/gene_counts.yaml"
+        shell:
+             """
+             htseq-count {input.bam} {input.gtf} -r pos -s {params.strandedness} {params.user_flags} -n {threads} -c {output} > {log} 2>&1
+             """
+
+
+elif config["quantifier"] == "featurecounts":
+
+    rule featurecounts:
+        """
+        summarize reads to gene level. Outputs a counts table per bam file.
+        """
+        input:
+            bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config),
+            gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
+        output:
+            expand("{counts_dir}/{{assembly}}-{{sample}}.counts.tsv", **config),
+        params:
+            strandedness=get_strandedness,
+            endedness=lambda wildcards: "" if config['layout'][wildcards.sample] == 'SINGLE' else "-p",
+            user_flags=config["featurecounts_flags"],
+        log:
+            expand("{log_dir}/counts_matrix/{{assembly}}-{{sample}}.counts.log", **config),
+        threads: 1
+        conda:
+            "../envs/gene_counts.yaml"
+        shell:
+            """
+            featureCounts -a {input.gtf} {input.bam} {params.endedness} -s {params.strandedness} {params.user_flags} -T {threads} -o {output} > {log} 2>&1
             """
