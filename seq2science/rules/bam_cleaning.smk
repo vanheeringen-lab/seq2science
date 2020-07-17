@@ -151,7 +151,6 @@ rule samtools_sort:
         temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-{{sorting}}-sievsort.bam", **config)),
     log:
         expand("{log_dir}/samtools_sort/{{assembly}}-{{sample}}-samtools_{{sorting}}.log", **config),
-    message: explain_rule("samtools_sort")
     benchmark:
         expand("{benchmark_dir}/samtools_sort/{{assembly}}-{{sample}}-{{sorting}}.benchmark.txt", **config)[0]
     params:
