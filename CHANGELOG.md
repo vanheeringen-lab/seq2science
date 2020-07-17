@@ -7,6 +7,10 @@ All changed fall under either one of these types: `added`, `changed`, `deprecate
 
 ## [Unreleased]
 
+### Fixed
+
+- Removed an overly cautious brep check
+
 ## v0.1.0 - 2020-07-15
 
 ### Added
