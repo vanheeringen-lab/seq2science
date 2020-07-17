@@ -1,0 +1,32 @@
+{
+    "description": "Automated preprocessing of Next-Generation-Sequencing data, including full ATAC-seq, ChIP-seq, and RNA-seq workflows.",
+    "title": "seq2science",
+    "upload_type": "software",
+    "creators": [
+        {
+            "affiliation": "Radboud University",
+            "name": "Maarten-vd-Sande",
+            "orcid": "0000-0001-7803-1526"
+        },
+        {
+            "affiliation": "Radboud University",
+            "name": "Siebren Fr\u00f6lich",
+            "orcid": "0000-0001-6925-8446"
+        },
+        {
+            "affiliation": "Radboud University",
+            "name": "Simon van Heeringen",
+            "orcid": "https://orcid.org/0000-0002-0411-3219"
+        }
+    ],
+    "keywords": [
+    "snakemake",
+    "bioinformatics",
+    "bioinformatics-pipeline",
+    "atac-seq",
+    "rna-seq",
+    "chip-seq",
+    "reproducible-research",
+    "ngs"
+    ]
+}
