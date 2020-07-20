@@ -193,7 +193,9 @@ elif config["aligner"] == "hisat2":
         benchmark:
             expand("{benchmark_dir}/hisat2_index/{{assembly}}.benchmark.txt", **config)[0]
         priority: 1
-        threads: 4
+        threads: 8
+        resources:
+            mem_gb=200,  # yes really
         conda:
             "../envs/hisat2.yaml"
         params:
@@ -222,6 +224,8 @@ elif config["aligner"] == "hisat2":
             expand("{benchmark_dir}/hisat2_index/{{assembly}}.benchmark.txt", **config)[0]
         priority: 1
         threads: 4
+        resources:
+            mem_gb=8,
         conda:
             "../envs/hisat2.yaml"
         params:
