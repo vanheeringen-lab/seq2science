@@ -205,7 +205,7 @@ elif config["aligner"] == "hisat2":
             config["index"],
         shell:
             """
-            hp=$(which hisat2); hp=${{hp::-1}}
+            hp=$(which hisat2)
             python3 ${{hp}}_extract_splice_sites.py {input.gtf} > {output}/splice_sites.tsv
             python3 ${{hp}}_extract_exons.py {input.gtf} > {output}/exons.tsv
             
