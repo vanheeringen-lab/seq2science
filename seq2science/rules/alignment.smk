@@ -196,14 +196,16 @@ elif config["aligner"] == "hisat2":
         benchmark:
             expand("{benchmark_dir}/hisat2_index/{{assembly}}.benchmark.txt", **config)[0]
         priority: 1
-        threads: 4
+        threads: 8
+        resources:
+            mem_gb=200,  # yes really
         conda:
             "../envs/hisat2.yaml"
         params:
             config["index"],
         shell:
             """
-            hp=$(which hisat2)
+            hp=$(which hisat2); hp=${{hp::-1}}
             python3 ${{hp}}_extract_splice_sites.py {input.gtf} > {output}/splice_sites.tsv
             python3 ${{hp}}_extract_exons.py {input.gtf} > {output}/exons.tsv
             
@@ -225,6 +227,8 @@ elif config["aligner"] == "hisat2":
             expand("{benchmark_dir}/hisat2_index/{{assembly}}.benchmark.txt", **config)[0]
         priority: 1
         threads: 4
+        resources:
+            mem_gb=8,
         conda:
             "../envs/hisat2.yaml"
         params:
