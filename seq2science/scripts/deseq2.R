@@ -1,6 +1,7 @@
 suppressMessages({
   library(DESeq2)
   library(IHW)
+  library(ggplot2)
 })
 
 # snakemake variables
