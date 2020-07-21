@@ -68,7 +68,7 @@ properties:
           DE_params:
             default:
               multiple_testing_procedure: BH #alternative: IHW
-              alpha_value: 0.05
+              alpha_value: 0.1
               shrinkage_estimator: apeglm
           contrasts:
             default: ''

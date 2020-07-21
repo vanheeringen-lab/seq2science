@@ -84,14 +84,7 @@ rule sieve_bam:
         expand("{log_dir}/sieve_bam/{{assembly}}-{{sample}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/sieve_bam/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
-    message:
-        explain_rule(
-        "Mapped reads were removed if they " +
-        ", ".join(["did not have a minimum mapping quality of {config[min_mapping_quality]}" if config["min_mapping_quality"] > 0 else "",
-        "were a (secondary) multimapper" if config["only_primary_align"] else "",
-        "aligned inside the ENCODE blacklist (https://doi.org/10.1038/s41598-019-45839-z)" if config["remove_blacklist"] else "",
-        "and finally were tn5 bias shifted by seq2science" if config["tn5_shift"] > 0 else ""]
-        ) + ".")
+    message: explain_rule("sieve_bam")
     params:
         minqual=f"-q {config['min_mapping_quality']}",
         atacshift=(
@@ -130,6 +123,7 @@ rule sambamba_sort:
         sieve="|-sievsort",
     log:
         expand("{log_dir}/sambamba_sort/{{assembly}}-{{sample}}-sambamba_{{sorting}}{{sieve}}.log", **config),
+    message: explain_rule("sambamba_sort")
     benchmark:
         expand("{benchmark_dir}/sambamba_sort/{{assembly}}-{{sample}}-{{sorting}}{{sieve}}.benchmark.txt", **config)[0]
     params:
@@ -206,9 +200,7 @@ rule mark_duplicates:
         expand("{log_dir}/mark_duplicates/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/mark_duplicates/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.benchmark.txt", **config)[0]
-    message: explain_rule("""
-        Afterwards duplicate reads were marked with picard MarkDuplicates v@picard[picard].
-        """)
+    message: explain_rule("mark_duplicates")
     params:
         config["markduplicates"],
     resources:
@@ -249,9 +241,7 @@ rule bam2cram:
         assembly=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
     output:
         expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.cram", **config),
-    message: explain_rule("""
-        Bam files were converted to cram format with samtools v@samtools[samtools].
-        """)
+    message: explain_rule("bam2cram")
     log:
         expand("{log_dir}/bam2cram/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config),
     benchmark:
