@@ -1,5 +1,5 @@
 {
-    "description": "Automated preprocessing of Next-Generation-Sequencing data, including full ATAC-seq, ChIP-seq, and RNA-seq workflows.",
+    "description": "Automated preprocessing of Next-Generation Sequencing data, including full (sc)ATAC-seq, ChIP-seq, and RNA-seq workflows.",
     "title": "seq2science",
     "upload_type": "software",
     "creators": [
@@ -15,12 +15,29 @@
         },
         {
             "affiliation": "Radboud University",
-            "name": "Jos Smits"
+            "name": "Jos Smits",
+            "orcid": "0000-0001-5858-3905"
+        },
+        {
+            "affiliation": "Radboud University",
+            "name": "Quan Xu",
+            "orcid": "0000-0002-7659-1658"
+        },
+        {
+            "affiliation": "Radboud University",
+            "name": "Marlien Kolmus"
         },
         {
             "affiliation": "Radboud University",
             "name": "Simon van Heeringen",
-            "orcid": "https://orcid.org/0000-0002-0411-3219"
+            "orcid": "0000-0002-0411-3219"
+        }
+    ],
+    "related_identifiers": [
+        {
+            "scheme": "doi", 
+            "identifier": "10.5281/zenodo.3921913", 
+            "relation": "isVersionOf"
         }
     ],
     "keywords": [
