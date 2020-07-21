@@ -171,6 +171,24 @@ def sieve_bam(configdict):
 
 # after all is done, log (print) the configuration
 logger.info("CONFIGURATION VARIABLES:")
-for key, value in config.items():
-    logger.info(f"{key: <23}: {value}")
+
+# sort config: samples.tsv & directories first, alphabetized second
+keys = sorted(config.keys())
+dir_keys = []
+other_keys = []
+for key in keys:
+    if "_dir" in key:
+        dir_keys.append(key)
+    else:
+        other_keys.append(key)
+keys = dir_keys + other_keys
+keys.remove("samples")
+keys = ["samples"] + keys
+keys.remove("fqext1")  # "fqext" shows these sorted
+keys.remove("fqext2")
+if get_workflow() == "rna_seq" and config.get("quantifier") is not "salmon":
+    keys.remove("tximeta")
+for key in keys:
+    if config[key] not in ["", False, 0, "None", "none@provided.com"]:
+        logger.info(f"{key: <23}: {config[key]}")
 logger.info("\n\n")

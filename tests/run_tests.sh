@@ -1,6 +1,6 @@
 # to run these tests locally:
 #   python setup.py develop
-#   bash ./tests/dag_tests.sh TEST
+#   bash ./tests/run_tests.sh TEST
 
 # check if an argument was passed
 if [ -z "$1" ]; then

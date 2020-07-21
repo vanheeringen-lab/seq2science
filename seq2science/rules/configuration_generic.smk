@@ -190,6 +190,23 @@ logger.info("Checking if samples are single-end or paired-end...")
 layout_cachefile = os.path.expanduser('~/.config/seq2science/layouts.p')
 layout_cachefile_lock = os.path.expanduser('~/.config/seq2science/layouts.p.lock')
 
+def prep_filelock(lock_file, max_age=10):
+    """
+    create the directory for the lock_file if needed
+    and remove locks older than the max_age (in seconds)
+    """
+    os.makedirs(os.path.dirname(lock_file), exist_ok=True)
+
+    # sometimes two jobs start in parallel and try to delete at the same time
+    try:
+        # ignore locks that are older than the max_age
+        if os.path.exists(lock_file) and \
+                time.time() - os.stat(lock_file).st_mtime > max_age:
+            os.unlink(lock_file)
+    except FileNotFoundError:
+         pass
+
+
 def get_layout_eutils(sample):
     """
     Sends a request to ncbi checking whether a sample is single-end or paired-end.
@@ -248,17 +265,7 @@ def get_layout_trace(sample):
 
 # do this locked to avoid parallel ncbi requests with the same key, and to avoid
 # multiple writes/reads at the same time to layouts.p
-if not os.path.exists(os.path.dirname(layout_cachefile_lock)):
-    os.makedirs(os.path.dirname(layout_cachefile_lock))
-
-# sometimes two jobs start in parallel and try to delete at the same time
-try:
-    # let's ignore locks that are older than 5 minutes
-    if os.path.exists(layout_cachefile_lock) and \
-             time.time() - os.stat(layout_cachefile_lock).st_mtime > 5 * 60:
-            os.remove(layout_cachefile_lock)
-except FileNotFoundError:
-     pass
+prep_filelock(layout_cachefile_lock, 5*60)
 
 with FileLock(layout_cachefile_lock):
     # try to load the layout cache, otherwise defaults to empty dictionary
@@ -424,15 +431,7 @@ else:
 if config.get("create_trackhub"):
     hubfile = os.path.expanduser('~/.config/seq2science/ucsc_trackhubs.p')
     hubfile_lock = os.path.expanduser('~/.config/seq2science/ucsc_trackhubs.p.lock')
-
-    # sometimes two jobs start in parallel and try to delete at the same time
-    try:
-        # ignore locks that are older than 10 seconds
-        if os.path.exists(hubfile_lock) and \
-                time.time() - os.stat(hubfile_lock).st_mtime > 10:
-            os.unlink(hubfile_lock)
-    except FileNotFoundError:
-         pass
+    prep_filelock(hubfile_lock)
 
     with FileLock(hubfile_lock):
         if not os.path.exists(hubfile):
@@ -470,3 +469,5 @@ onsuccess:
 onerror:
     if config["email"] not in ["none@provided.com", "yourmail@here.com"]:
         os.system(f"""echo "Unsuccessful pipeline run! :(" | mail -s "The seq2science pipeline finished prematurely..." {config["email"]} 2> /dev/null """)
+
+include: "../rules/configuration_workflows.smk"
