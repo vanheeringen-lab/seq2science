@@ -1,9 +1,9 @@
 import os
 import time
-from functools import lru_cache
 import contextlib
-
 import genomepy
+from filelock import FileLock
+from functools import lru_cache
 
 
 # the filetypes genomepy will download
@@ -97,8 +97,19 @@ def has_annotation(assembly):
     # check if we expect an annotation
     # we do not want genomepy outputting to us that it is downloading stuff
     with open(os.devnull, "w") as null:
-        with contextlib.redirect_stdout(null), contextlib.redirect_stderr(null):
-            for provider in providers:
+        # with contextlib.redirect_stdout(null), contextlib.redirect_stderr(null):
+        for provider in providers:
+            lockfile = os.path.expanduser(f'~/.config/seq2science/genomepy_{provider}_annotations.lock')
+            # sometimes two jobs start in parallel and try to delete at the same time
+            try:
+                # ignore locks that are old
+                if os.path.exists(lockfile) and \
+                        time.time() - os.stat(lockfile).st_mtime > 20:
+                    os.unlink(lockfile)
+            except FileNotFoundError:
+                 pass
+
+            with FileLock(lockfile):
                 p = genomepy.ProviderBase.create(provider)
                 if assembly in p.genomes:
                     if p.get_annotation_download_link(assembly) is None:
