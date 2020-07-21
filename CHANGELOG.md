@@ -13,6 +13,7 @@ All changed fall under either one of these types: `added`, `changed`, `deprecate
 - splice-aware HISAT2 indexing for RNA-seq
 - quantifier HTSeq for RNA-seq
 - quantifier featurecounts for RNA-seq
+- added/expanded `seq2science explain` info (now covers RNA- and scATAC-seq too)
 
 ### Changed
 
@@ -23,6 +24,7 @@ All changed fall under either one of these types: `added`, `changed`, `deprecate
 - batch corrected gene counts are generated if a DESeq2 design contrast inclused a batch
 - batch corrected TPM are generated if a DESeq2 design contrast inclused a batch, and quantification was performed using Salmon
   - for us in ANANSE, for instance
+- `seq2science explain` now retrieves messages from `explain.smk`.
 
 ## v0.1.0 - 2020-07-15
 

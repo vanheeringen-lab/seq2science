@@ -18,7 +18,7 @@ rule samtools_stats:
     log:
         expand("{log_dir}/samtools_stats/{{directory}}/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config)
     message:
-        explain_rule("General alignment statistics were collected by samtools stats v@samtools[samtools].")
+        explain_rule("samtools_stats")
     conda:
         "../envs/samtools.yaml"
     shell:
@@ -52,9 +52,7 @@ rule featureCounts:
         tmp_saf=temp(expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}.saf", **config)),
         real_out=expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}_featureCounts.txt", **config),
         summary=expand("{qc_dir}/{{peak_caller}}/{{assembly}}-{{sample}}_featureCounts.txt.summary", **config)
-    message:
-        explain_rule("The fraction reads in peak score (frips) was calculated by featurecounts v@subread[subread] "
-                     "(https://doi.org/10.1093/bioinformatics/btt656).")
+    message: explain_rule("featureCounts_qc")
     log:
         expand("{log_dir}/featureCounts/{{assembly}}-{{sample}}-{{peak_caller}}.log", **config)
     threads: 4
@@ -95,8 +93,7 @@ rule fastqc:
     output:
         f"{config['qc_dir']}/fastqc/{{fname}}_fastqc.html",
         f"{config['qc_dir']}/fastqc/{{fname}}_fastqc.zip"
-    message:
-        explain_rule("Fastq quality was measured by FastQC v@qc[fastqc].")
+    message:explain_rule("fastqc")
     log:
         f"{config['log_dir']}/fastqc/{{fname}}.log"
     params:
@@ -248,9 +245,7 @@ rule computeMatrix:
         expand("{qc_dir}/computeMatrix/{{assembly}}-{{peak_caller}}.mat.gz", **config)
     log:
         expand("{log_dir}/computeMatrix/{{assembly}}-{{peak_caller}}.log", **config)
-    message:
-        explain_rule("Deeptools v@deeptools[deeptools] (https://doi.org/10.1093/nar/gkw257) was used for the fingerprint, "
-                     "profile, correlation and heatmap plots.")
+    message: explain_rule("computeMatrix")
     benchmark:
         expand("{benchmark_dir}/computeMatrix/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     conda:
@@ -500,8 +495,7 @@ rule multiqc:
     output:
         expand("{qc_dir}/multiqc_{{assembly}}.html", **config),
         directory(expand("{qc_dir}/multiqc_{{assembly}}_data", **config))
-    message:
-        explain_rule("Quality control metrics were aggregated by MultiQC v@qc[multiqc].")
+    message: explain_rule("multiqc")
     params:
         dir = "{qc_dir}/".format(**config),
         fqext1 = '_' + config['fqext1'],

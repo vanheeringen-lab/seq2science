@@ -48,6 +48,6 @@ only_primary_align: True
 #      alpha_value: 0.05
 #      shrinkage_estimator: apeglm
 #    contrasts:
-#      - 'disease_control_disease'
+##      - 'disease_control_disease'
 #      - 'stage_2_1'
 #      - 'stage_all_1'
