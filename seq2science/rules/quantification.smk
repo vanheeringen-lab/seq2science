@@ -7,8 +7,8 @@ def get_strandedness(wildcards):
     if "strandedness" not in samples:
         n = 0
     else:
-        col = "replicate" if "replicate" in samples else "sample"
-        s = samples[samples[col] == wildcards.sample].strandedness[0]
+        col = samples.replicate if "replicate" in samples else samples.index
+        s = samples[col == wildcards.sample].strandedness[0]
 
         if s in ["yes", "forward"]:
             n=1
@@ -137,7 +137,7 @@ if config["quantifier"] == "salmon":
                 if config["layout"][wildcards.sample] == "SINGLE"
                 else ["-1", input.reads[0], "-2", input.reads[1]]
             ),
-            params=config["quantify"],
+            params=config["quantifier_flags"],
         threads: 20
         resources:
             mem_gb=8,
