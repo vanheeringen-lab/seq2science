@@ -4,10 +4,6 @@ description: seq2science gene expression configuration
 
 properties:
   # paths to store results
-  bigwig_dir:
-    description: directory where to store the bigwigs used by the trackhub (defaults inside the result dir)
-    default: bigwigs
-    type: string
   counts_dir:
     description: directory where to store the gene counts for DGE analysis (defaults inside the result dir)
     default: gene_counts

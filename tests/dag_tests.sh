@@ -60,15 +60,15 @@ if [ $1 = "alignment" ]; then
   assert_rulecount $1 mark_duplicates 1
 
   printf "\naligners\n"
-  seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={aligner:bowtie2,samples:tests/alignment/stranded_sample.tsv} | tee tests/local_test_results/${1}_dag
+  seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={aligner:bowtie2,samples:tests/alignment/stranded_sample.tsv,fastq_dir:../tinyfastq} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bowtie2_index 1
-  seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={aligner:bwa-mem,samples:tests/alignment/stranded_sample.tsv} | tee tests/local_test_results/${1}_dag
+  seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={aligner:bwa-mem,samples:tests/alignment/stranded_sample.tsv,fastq_dir:../tinyfastq} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bwa_index 1
-  seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={aligner:bwa-mem2,samples:tests/alignment/stranded_sample.tsv} | tee tests/local_test_results/${1}_dag
+  seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={aligner:bwa-mem2,samples:tests/alignment/stranded_sample.tsv,fastq_dir:../tinyfastq} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bwa_mem2_index 1
-  seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={aligner:hisat2,samples:tests/alignment/stranded_sample.tsv} | tee tests/local_test_results/${1}_dag
+  seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={aligner:hisat2,samples:tests/alignment/stranded_sample.tsv,fastq_dir:../tinyfastq} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 hisat2_index 1
-  seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={aligner:star,samples:tests/alignment/stranded_sample.tsv} | tee tests/local_test_results/${1}_dag
+  seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={aligner:star,samples:tests/alignment/stranded_sample.tsv,fastq_dir:../tinyfastq} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 star_index 1
 
   printf "\nalignmentsieve\n"
@@ -102,7 +102,7 @@ if [ $1 = "alignment" ]; then
   assert_rulecount $1 twobit 1
 
   printf "\ntrackhub - stranded bams\n"
-  seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={create_trackhub:True,samples:tests/alignment/stranded_sample.tsv} | tee tests/local_test_results/${1}_dag
+  seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={create_trackhub:True,samples:tests/alignment/stranded_sample.tsv,fastq_dir:../tinyfastq} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bam_bigwig 2
 
   printf "\nmultiqc report\n"

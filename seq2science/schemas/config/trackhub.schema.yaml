@@ -9,6 +9,11 @@ properties:
     default: True
     enum: [True, False]
 
+  bigwig_dir:
+    description: directory where to store the bigwigs used by the trackhub (defaults inside the result dir)
+    default: bigwigs
+    type: string
+
   deeptools_flags:
     description: flags for bam to bigwig conversions with deeptools bamCoverage
     default: --samFlagExclude 1024 # exclude duplicates marked by Picard
