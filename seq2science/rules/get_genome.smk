@@ -97,24 +97,24 @@ def has_annotation(assembly):
     # check if we expect an annotation
     # we do not want genomepy outputting to us that it is downloading stuff
     with open(os.devnull, "w") as null:
-        # with contextlib.redirect_stdout(null), contextlib.redirect_stderr(null):
-        for provider in providers:
-            annotation_lock = os.path.expanduser(f'~/.config/seq2science/genomepy_{provider}_annotations.lock')
-            prep_filelock(annotation_lock, 20)
+        with contextlib.redirect_stdout(null), contextlib.redirect_stderr(null):
+            for provider in providers:
+                annotation_lock = os.path.expanduser(f'~/.config/seq2science/genomepy_{provider}_annotations.lock')
+                prep_filelock(annotation_lock, 20)
 
-            with FileLock(annotation_lock):
-                p = genomepy.ProviderBase.create(provider)
-                if assembly in p.genomes:
-                    if p.get_annotation_download_link(assembly) is None:
-                        logger.info(
-                            f"No annotation for assembly {assembly} can be downloaded. Another provider (and "
-                            f"thus another assembly name) might have gene annotations.\n"
-                            f"Find alternative assemblies with `genomepy search {assembly}`"
-                        )
-                        time.sleep(2)
-                        return False
-                    else:
-                        return True
+                with FileLock(annotation_lock):
+                    p = genomepy.ProviderBase.create(provider)
+                    if assembly in p.genomes:
+                        if p.get_annotation_download_link(assembly) is None:
+                            logger.info(
+                                f"No annotation for assembly {assembly} can be downloaded. Another provider (and "
+                                f"thus another assembly name) might have gene annotations.\n"
+                                f"Find alternative assemblies with `genomepy search {assembly}`"
+                            )
+                            time.sleep(2)
+                            return False
+                        else:
+                            return True
 
     # no download link found for assembly
     return False

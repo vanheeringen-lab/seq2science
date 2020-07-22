@@ -181,7 +181,8 @@ elif config["aligner"] == "hisat2":
 
     rule hisat2_splice_aware_index:
         """
-        Make a splice aware index for hisat2. This index is required for alignment of RNA-seq data.
+        Make an exon-junction and splice aware index for hisat2. 
+        This index is required for alignment and quantification of RNA-seq data.
         """
         input:
             fasta=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
@@ -190,6 +191,7 @@ elif config["aligner"] == "hisat2":
             directory(expand("{genome_dir}/{{assembly}}/index/hisat2_splice_aware/", **config)),
         log:
             expand("{log_dir}/hisat2_index/{{assembly}}.log", **config),
+        message: explain_rule("hisat_splice_aware")
         benchmark:
             expand("{benchmark_dir}/hisat2_index/{{assembly}}.benchmark.txt", **config)[0]
         priority: 1
@@ -253,9 +255,6 @@ elif config["aligner"] == "hisat2":
         log:
             expand("{log_dir}/hisat2_align/{{assembly}}-{{sample}}.log", **config),
         message: explain_rule("hisat2_align")
-        # explain_rule("""
-        # Reads were aligned with hisat2 v@hisat2[hisat2] (https://doi.org/10.1038/s41587-019-0201-4) with options '{config[align]}'.
-        # """)
         benchmark:
             expand("{benchmark_dir}/hisat2_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
         params:

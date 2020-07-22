@@ -169,6 +169,19 @@ def sieve_bam(configdict):
     )
 
 
+def rmkeys(del_list, target_list):
+    """
+    remove all elements in del_list from target_list
+    each element may be a tuple with an added condition
+    """
+    for element in del_list:
+        if isinstance(element, str) and element in target_list:
+            target_list.remove(element)
+        elif element[1] and element[0] in target_list:
+            target_list.remove(element[0])
+    return target_list
+
+
 # after all is done, log (print) the configuration
 logger.info("CONFIGURATION VARIABLES:")
 
@@ -177,17 +190,22 @@ keys = sorted(config.keys())
 dir_keys = []
 other_keys = []
 for key in keys:
-    if "_dir" in key:
+    if key.endswith("_dir"):
         dir_keys.append(key)
     else:
         other_keys.append(key)
 keys = dir_keys + other_keys
-keys.remove("samples")
-keys = ["samples"] + keys
-keys.remove("fqext1")  # "fqext" shows these sorted
-keys.remove("fqext2")
-if get_workflow() == "rna_seq" and config.get("quantifier") is not "salmon":
-    keys.remove("tximeta")
+
+# remove superfluous keys
+keys_to_remove = ["samples", "layout", "fqext1", "fqext2", "macs2_types",
+                  "cpulimit", "genome_types", "genomepy_temp", "bam_sort_mem",
+                  ("biological_replicates", "condition" not in samples),
+                  ("filter_bam_by_strand", "strandedness" not in samples),
+                  ("technical_replicates", "replicates" not in samples),
+                  ("tximeta", config.get("quantifier") is not "salmon")]
+keys = rmkeys(keys_to_remove, keys)
+keys = ["samples"] + keys + ["layout"]
+
 for key in keys:
     if config[key] not in ["", False, 0, "None", "none@provided.com"]:
         logger.info(f"{key: <23}: {config[key]}")
