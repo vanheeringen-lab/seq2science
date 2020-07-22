@@ -20,17 +20,19 @@
         },
         {
             "affiliation": "Radboud University",
+            "name": "Simon van Heeringen",
+            "orcid": "0000-0002-0411-3219"
+        }
+    ],
+    "contributors": [
+        {
+            "affiliation": "Radboud University",
             "name": "Quan Xu",
             "orcid": "0000-0002-7659-1658"
         },
         {
             "affiliation": "Radboud University",
             "name": "Marlien Kolmus"
-        },
-        {
-            "affiliation": "Radboud University",
-            "name": "Simon van Heeringen",
-            "orcid": "0000-0002-0411-3219"
         }
     ],
     "related_identifiers": [
