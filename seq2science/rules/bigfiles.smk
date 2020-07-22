@@ -110,7 +110,7 @@ rule peak_bigpeak:
         narrowpeak=expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}_peaks.{{peak}}", **config),
         genome_size=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
     output:
-        out=temp(expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}.big{{peak}}", **config)),
+        out=expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}.big{{peak}}", **config),
         tmp=temp(expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}.tmp.{{peak}}", **config)),
     log:
         expand("{log_dir}/narrowpeak_bignarrowpeak/{{peak_caller}}/{{assembly}}-{{sample}}-{{peak}}.log", **config),
@@ -134,73 +134,42 @@ rule peak_bigpeak:
         """
 
 
-def get_strandedness(wildcards):
-    sample = f"{wildcards.sample}"
-    s2 = samples
-    if "replicate" in samples:
-        s2 = samples.reset_index()[["replicate", "strandedness"]].drop_duplicates().set_index("replicate")
-    strandedness = s2["strandedness"].loc[sample]
-    return strandedness
+def strand_direction(wildcards):
+    out = {
+        ".fwd": ["forward", "reverse"],
+        ".rev": ["reverse", "forward"]
+    }
 
+    col = samples.replicate if "replicate" in samples else samples.index
+    s = samples[col == wildcards.sample].strandedness[0]
 
-rule bam_stranded_bigwig:
-    """
-    Convert a bam file into two bigwig files, one for each strand.
-    TODO: split this rule into two or better: forward & backward logic
-    """
-    input:
-        bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config),
-        bai=expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam.bai", **config),
-    output:
-        forwards=temp(expand("{result_dir}/bigwigs/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.fwd.bw", **config)),
-        reverses=temp(expand("{result_dir}/bigwigs/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.rev.bw", **config)),
-    params:
-        flags=config["deeptools"],
-        strandedness=get_strandedness,
-    wildcard_constraints:
-        sorting=config["bam_sort_order"] if config.get("bam_sort_order", False) else "",
-    log:
-        expand("{log_dir}/bam_bigwig/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.log", **config),
-    benchmark:
-        expand("{benchmark_dir}/bam_bigwig/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.benchmark.txt", **config)[0]
-    conda:
-        "../envs/deeptools.yaml"
-    threads: 16
-    resources:
-        deeptools_limit=lambda wildcards, threads: threads,
-    shell:
-        """       
-        direction1=forward
-        direction2=reverse
-        if [ {params.strandedness} == 'reverse' ]; then
-            direction1=reverse
-            direction2=forward
-        fi
+    n = 0
+    if s == "reverse":
+        n = 1
 
-        bamCoverage --bam {input.bam} --outFileName {output.forwards} --filterRNAstrand $direction1 \
-        --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1 &&        
-        bamCoverage --bam {input.bam} --outFileName {output.reverses} --filterRNAstrand $direction2 \
-        --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1
-        """
+    return out[wildcards.strand][n]
 
 
 rule bam_bigwig:
     """
-    Convert a bam file into a bigwig file
+    Convert a bam file into a bigwig file.
+    Can output strand specific bam
     """
     input:
         bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config),
         bai=expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam.bai", **config),
     output:
-        temp(expand("{result_dir}/bigwigs/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bw", **config)),
+        expand("{bigwig_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}{{strand}}.bw", **config),
     params:
-        config["deeptools"],
+        flags=config["deeptools_flags"],
+        strand=lambda wildcards: f"--filterRNAstrand {strand_direction(wildcards)}" if wildcards.strand else "",
     wildcard_constraints:
         sorting=config["bam_sort_order"] if config.get("bam_sort_order") else "",
+        strand='|.fwd|.rev',
     log:
-        expand("{log_dir}/bam_bigwig/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.log", **config),
+        expand("{log_dir}/bam_bigwig/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}{{strand}}.log", **config),
     benchmark:
-        expand("{benchmark_dir}/bam_bigwig/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/bam_bigwig/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}{{strand}}.benchmark.txt", **config)[0]
     conda:
         "../envs/deeptools.yaml"
     threads: 16
@@ -208,6 +177,5 @@ rule bam_bigwig:
         deeptools_limit=lambda wildcards, threads: threads,
     shell:
         """
-        bamCoverage --bam {input.bam} --outFileName {output} --numberOfProcessors {threads} \
-        {params} --verbose > {log} 2>&1
+        bamCoverage --bam {input.bam} --outFileName {output} {params.strand} --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1
         """

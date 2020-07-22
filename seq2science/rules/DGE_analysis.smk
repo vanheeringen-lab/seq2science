@@ -53,6 +53,7 @@ rule deseq2:
         "../envs/deseq2.yaml"
     log:
         expand("{log_dir}/deseq2/{{assembly}}-{{contrast}}.diffexp.log", **config),
+    message: explain_rule("deseq2")
     benchmark:
         expand("{benchmark_dir}/deseq2/{{assembly}}-{{contrast}}.diffexp.benchmark.txt", **config)[0]
     threads: 4

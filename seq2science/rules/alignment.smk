@@ -48,9 +48,7 @@ if config["aligner"] == "bowtie2":
             pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0]),
         log:
             expand("{log_dir}/bowtie2_align/{{assembly}}-{{sample}}.log", **config),
-        message: explain_rule("""
-        Reads were aligned with bowtie2 v@bowtie2[bowtie2] (https://dx.doi.org/10.1038%2Fnmeth.1923) with options '{config[align]}'.
-        """)
+        message: explain_rule("bowtie2_align")
         benchmark:
             expand("{benchmark_dir}/bowtie2_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
         params:
@@ -107,9 +105,7 @@ elif config["aligner"] == "bwa-mem":
             pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0]),
         log:
             expand("{log_dir}/bwa_mem/{{assembly}}-{{sample}}.log", **config),
-        message: explain_rule("""
-        Reads were aligned with bwa-mem v@bwa[bwa] (http://arxiv.org/abs/1303.3997) with options '{config[align]}'.
-        """)
+        message: explain_rule("bwa_mem")
         benchmark:
             expand("{benchmark_dir}/bwa_mem/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
         params:
@@ -162,6 +158,7 @@ elif config["aligner"] == "bwa-mem2":
             pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0]),
         log:
             expand("{log_dir}/bwa_mem2/{{assembly}}-{{sample}}.log", **config),
+        message: explain_rule("bwa_mem2")
         group:
             "alignment"
         benchmark:
@@ -184,7 +181,8 @@ elif config["aligner"] == "hisat2":
 
     rule hisat2_splice_aware_index:
         """
-        Make a splice aware index for hisat2. This index is required for alignment of RNA-seq data.
+        Make an exon-junction and splice aware index for hisat2. 
+        This index is required for alignment and quantification of RNA-seq data.
         """
         input:
             fasta=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
@@ -193,10 +191,13 @@ elif config["aligner"] == "hisat2":
             directory(expand("{genome_dir}/{{assembly}}/index/hisat2_splice_aware/", **config)),
         log:
             expand("{log_dir}/hisat2_index/{{assembly}}.log", **config),
+        message: explain_rule("hisat_splice_aware")
         benchmark:
             expand("{benchmark_dir}/hisat2_index/{{assembly}}.benchmark.txt", **config)[0]
         priority: 1
-        threads: 4
+        threads: 8
+        resources:
+            mem_gb=200,  # yes really
         conda:
             "../envs/hisat2.yaml"
         params:
@@ -225,6 +226,8 @@ elif config["aligner"] == "hisat2":
             expand("{benchmark_dir}/hisat2_index/{{assembly}}.benchmark.txt", **config)[0]
         priority: 1
         threads: 4
+        resources:
+            mem_gb=8,
         conda:
             "../envs/hisat2.yaml"
         params:
@@ -251,9 +254,7 @@ elif config["aligner"] == "hisat2":
             pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0]),
         log:
             expand("{log_dir}/hisat2_align/{{assembly}}-{{sample}}.log", **config),
-        message: explain_rule("""
-        Reads were aligned with hisat2 v@hisat2[hisat2] (https://doi.org/10.1038/s41587-019-0201-4) with options '{config[align]}'.
-        """)
+        message: explain_rule("hisat2_align")
         benchmark:
             expand("{benchmark_dir}/hisat2_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
         params:
@@ -356,6 +357,7 @@ elif config["aligner"] == "star" or config.get("quantifier", "") == "star":
             pipe=pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0]),
         log:
             directory(expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}", **config)),
+        message: explain_rule("star_align")
         benchmark:
             expand("{benchmark_dir}/{aligner}_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
         params:

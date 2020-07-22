@@ -1,6 +1,6 @@
 # to run these tests locally:
 #   python setup.py develop
-#   bash ./tests/dag_tests.sh TEST
+#   bash ./tests/run_tests.sh TEST
 
 # check if an argument was passed
 if [ -z "$1" ]; then
@@ -186,7 +186,7 @@ if [ $1 = "rna-seq" ]; then
   --snakemakeOptions omit_from=[blind_clustering,deseq2]  # <- remove when fixed
 
   printf "\nrna-seq default - trackhub\n"
-  seq2science run rna-seq --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions config={samples:tests/alignment/local_sample.tsv,genome_dir:tests,fastq_dir:../tinyfastq,aligner:star,create_trackhub:True}
+  seq2science run rna-seq --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions config={samples:tests/alignment/stranded_sample.tsv,genome_dir:tests,fastq_dir:../tinyfastq,aligner:star,create_trackhub:True}
 
   printf "\nrna-seq default - multiqc report\n"
   seq2science run rna-seq --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions config={samples:tests/alignment/local_sample.tsv,genome_dir:tests,fastq_dir:../tinyfastq,aligner:star,create_qc_report:True}

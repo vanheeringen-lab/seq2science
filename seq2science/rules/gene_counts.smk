@@ -58,6 +58,7 @@ if config["quantifier"] == "salmon":
             SCE=expand("{counts_dir}/{{assembly}}-se.rds", **config),
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-txi_counts_matrix.log", **config),
+        message: explain_rule("count_matrix_txi")
         conda:
             "../envs/tximeta.yaml"
         resources:
