@@ -4,6 +4,10 @@ description: seq2science gene expression configuration
 
 properties:
   # paths to store results
+  bigwig_dir:
+    description: directory where to store the bigwigs used by the trackhub (defaults inside the result dir)
+    default: bigwigs
+    type: string
   counts_dir:
     description: directory where to store the gene counts for DGE analysis (defaults inside the result dir)
     default: gene_counts
@@ -20,13 +24,13 @@ properties:
         properties:
           quantifier_index:
             default: '-k 31' # minimmum length. Reduce if mapping rate is too low.
-          quantify:
+          quantifier_flags:
             default: '--seqBias --gcBias --validateMappings --recoverOrphans' # --posBias experimental flag
           decoy_aware_index:
             default: False
         default:
           quantifier_index: '-k 31'
-          quantify: '--seqBias --gcBias --validateMappings --recoverOrphans'
+          quantifier_flags: '--seqBias --gcBias --validateMappings --recoverOrphans'
           decoy_aware_index: False
       htseq:
         properties:

@@ -103,7 +103,7 @@ if [ $1 = "alignment" ]; then
 
   printf "\ntrackhub - stranded bams\n"
   seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={create_trackhub:True,samples:tests/alignment/stranded_sample.tsv} | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 bam_stranded_bigwig 1
+  assert_rulecount $1 bam_bigwig 2
 
   printf "\nmultiqc report\n"
   seq2science run alignment -n --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={create_qc_report:True} | tee tests/local_test_results/${1}_dag

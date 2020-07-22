@@ -87,18 +87,16 @@ assert sorted(config['fqext'])[0] == config['fqext1'], \
 # read the config.yaml (not the profile)
 user_config = norns.config(config_file=workflow.overwrite_configfiles[0])
 
-# make absolute paths, cut off trailing slashes
+# make absolute paths, nest default dirs in result_dir and cut off trailing slashes
+config['result_dir'] = re.split("\/$", os.path.abspath(config['result_dir']))[0]
+config['samples'] = os.path.abspath(config['samples'])
 for key, value in config.items():
-    if '_dir' in key:
+    if key.endswith("_dir"):
         if key in ['result_dir', 'genome_dir', 'rule_dir'] or key in user_config:
             value = os.path.abspath(value)
+        else:
+            value = os.path.abspath(os.path.join(config['result_dir'], value))
         config[key] = re.split("\/$", value)[0]
-
-# nest default directories in result_dir
-for key, value in config.items():
-    if '_dir' in key:
-        if key not in ['result_dir', 'genome_dir', 'rule_dir'] and key not in user_config:
-            config[key] = os.path.join(config['result_dir'], config[key])
 
 
 # samples.tsv
@@ -464,10 +462,10 @@ onstart:
             dst = os.path.join(config['log_dir'], os.path.basename(file) if n<2 else "profile.yaml")
             shutil.copy(src, dst)
 onsuccess:
-    if config["email"] not in ["none@provided.com", "yourmail@here.com"]:
+    if config.get("email") not in ["none@provided.com", "yourmail@here.com", None]:
         os.system(f"""echo "Succesful pipeline run! :)" | mail -s "The seq2science pipeline finished succesfully." {config["email"]} 2> /dev/null""")
 onerror:
-    if config["email"] not in ["none@provided.com", "yourmail@here.com"]:
+    if config.get("email") not in ["none@provided.com", "yourmail@here.com", None]:
         os.system(f"""echo "Unsuccessful pipeline run! :(" | mail -s "The seq2science pipeline finished prematurely..." {config["email"]} 2> /dev/null """)
 
 include: "../rules/configuration_workflows.smk"
