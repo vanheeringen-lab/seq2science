@@ -1,127 +1,3 @@
-def get_strandedness(wildcards):
-    out = {
-        "htseq": ["no", "yes", "reverse"],
-        "featurecounts": ["0", "1", "2"]
-    }
-    strandedness = pd.read_csv(get_strand_table(wildcards), sep='\t', dtype='str', index_col=0)
-
-    s = strandedness[strandedness.index == wildcards.sample].strandedness[0]
-    if s in ["yes", "forward"]:
-        n=1
-    elif s == "reverse":
-        n=2
-    else:
-        n=0
-    # if "strandedness" not in samples:
-    #     n = 0
-    # else:
-    #     col = samples.replicate if "replicate" in samples else samples.index
-    #     s = samples[col == wildcards.sample].strandedness[0]
-    #
-    #     if s in ["yes", "forward"]:
-    #         n=1
-    #     elif s == "reverse":
-    #         n=2
-    #     else:
-    #         n=0
-    return out[config["quantifier"]][n]
-
-rule infer_sample_strandedness:
-    """
-    use RSeqQC infer_experiment.py to determine strandedness if none was provided in the sample.tsv
-    """
-    input:
-        bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config),
-        bed=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.bed", **config)
-    output:
-        temp(expand("{counts_dir}/{{assembly}}-{{sample}}.strandedness.txt", **config))
-    log:
-        expand("{log_dir}/counts_matrix/{{assembly}}-{{sample}}.strandedness.log", **config),
-    params:
-        config["min_mapping_quality"]
-    conda:
-        "../envs/gene_counts.yaml"
-    shell:
-        """
-        infer_experiment.py -i {input.bam} -r {input.bed} -q {params} 1> {output} 2> {log}
-        """
-
-# infer_experiment.py \
-# -i /bank/experiments/2020-07/colin/final_bam/hg19-external-CL-RNA10-P4-plusTA-18410.samtools-coordinate.bam \
-# -r /home/siebrenf/.local/share/genomes/hg19/hg19.annotation.bed \
-# -q 44
-
-def strandedness_reports(wildcards):
-    """
-    list all samples for which strandedness must be inferred
-    """
-    col = samples.replicate if "replicate" in samples else samples.index
-
-    if "strandedness" not in samples:
-        files = [f"{{counts_dir}}/{samples[col == sample].assembly[0]}-{sample}.strandedness.txt" for sample in col]
-    else:
-        files = []
-        for sample in samples:
-            if samples[col == sample].strandedness not in ["yes", "forward", "reverse", "no"]:
-                files.append(f"{{counts_dir}}/{samples[col == sample].assembly[0]}-{sample}.strandedness.txt")
-    return expand(files, **config)
-
-
-checkpoint infer_strandedness:
-    input:
-        strandedness_reports
-    output:
-        expand("{counts_dir}/inferred_strandedness.tsv", **config)
-    run:
-        import pandas as pd
-
-        # samples = pd.read_csv("/bank/experiments/2020-07/colin/samples.tsv", sep='\t', dtype='str', comment='#')
-        # samples = samples.set_index('sample')
-
-        # populate the table with the samples.tsv
-        col = samples.replicate if "replicate" in samples else samples.index
-        strandedness = pd.DataFrame({"sample": list(col), "strandedness": samples.strandedness if "strandedness" in samples else "nan", "obtained": "from_samples.tsv"}, dtype=str)
-        strandedness.set_index('sample', inplace=True)
-
-        if "nan" in list(strandedness.strandedness):
-            def get_strand(sample):
-                report_file = [f for f in input if f.endswith(f"-{sample}.strandedness.txt")][0]
-                with open(report_file) as report:
-                    fail_val = fwd_val = 0
-                    for line in report:
-                        if line.startswith("Fraction of reads failed"):
-                            fail_val = float(line.strip().split(": ")[1])
-                        elif line.startswith("""Fraction of reads explained by "1++"""):
-                            fwd_val = float(line.strip().split(": ")[1])
-                        elif line.startswith("""Fraction of reads explained by "++"""):
-                            fwd_val = float(line.strip().split(": ")[1])
-
-                if fwd_val > 0.6:
-                    return "forward"
-                elif 1 - (fwd_val + fail_val) > 0.6:
-                    return "reverse"
-                else:
-                    return "no"
-
-            strands = []
-            inf = []
-            for sample in strandedness.index:
-                s = strandedness[strandedness.index == sample].strandedness[0]
-                i = "from_samples.tsv"
-                if s == "nan":
-                    s = get_strand(sample)
-                    i = "inferred"
-                strands.append(s)
-                inf.append(i)
-
-            strandedness = pd.DataFrame({"sample": list(col), "strandedness": strands, "obtained": inf}, dtype=str)
-            strandedness.set_index('sample', inplace=True)
-
-        strandedness.to_csv(output[0], sep="\t")
-
-def get_strand_table(wildcards):
-    return checkpoints.infer_strandedness.rule.output[0]
-
 if config["quantifier"] == "salmon":
 
     rule get_transcripts:
@@ -262,11 +138,11 @@ elif config["quantifier"] == "htseq":
         input:
             bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config),
             gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
-            test=get_strand_table,
+            required=_strandedness_report,
         output:
             expand("{counts_dir}/{{assembly}}-{{sample}}.counts.tsv", **config),
         params:
-            strandedness=get_strandedness,
+            strandedness=strandedness_to_quant,
             user_flags=config["htseq_flags"]
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-{{sample}}.counts.log", **config),
@@ -289,11 +165,11 @@ elif config["quantifier"] == "featurecounts":
         input:
             bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config),
             gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
-            test=get_strand_table,
+            required=_strandedness_report,
         output:
             expand("{counts_dir}/{{assembly}}-{{sample}}.counts.tsv", **config),
         params:
-            strandedness=get_strandedness,
+            strandedness=strandedness_to_quant,
             endedness=lambda wildcards: "" if config['layout'][wildcards.sample] == 'SINGLE' else "-p",
             user_flags=config["featurecounts_flags"],
         log:
