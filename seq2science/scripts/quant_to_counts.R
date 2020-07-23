@@ -49,16 +49,13 @@ sg <- summarizeToGene(st)
 
 
 ## This section deviates from the source script
-## It outputs a unnormalized counts matrix
-## (for consistency between quantifiers)
+## It outputs a un-normalized counts matrix
 
 ## Extract a count table
 counts <- assay(sg, "counts")
 
-## Convert float to int
-for(i in 1:ncol(counts)){
-  class(counts[, i]) = "integer"
-}
+## Convert to int
+mode(counts) <- "integer"
 
 ## Save gene counts matrix
 counts <- data.frame(counts, stringsAsFactors = F, check.names = F) %>% rownames_to_column("gene")

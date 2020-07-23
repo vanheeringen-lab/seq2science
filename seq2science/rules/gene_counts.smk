@@ -1,11 +1,11 @@
-def get_counts(wildcards):
-    quant_dirs = []
-    for sample in treps[treps["assembly"] == wildcards.assembly].index:
-        quant_dirs.append(f"{{result_dir}}/{{quantifier}}/{wildcards.assembly}-{sample}")
-    return expand(quant_dirs, **config)
-
-
 if config["quantifier"] == "salmon":
+
+    def get_counts(wildcards):
+        quant_dirs = []
+        if config["quantifier"] in ["salmon", "star"]:
+            for sample in treps[treps["assembly"] == wildcards.assembly].index:
+                quant_dirs.append(f"{{result_dir}}/{{quantifier}}/{wildcards.assembly}-{sample}")
+        return expand(quant_dirs, **config)
 
     def get_index(wildcards):
         index = f"{{genome_dir}}/{wildcards.assembly}/index/{{quantifier}}"
@@ -34,15 +34,15 @@ if config["quantifier"] == "salmon":
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-linked_txome.log", **config),
         conda:
-            "../envs/gene_counts.yaml"
+            "../envs/tximeta.yaml"
         resources:
             R_scripts=1, # conda's R can have issues when starting multiple times
         script:
-            f"{config['rule_dir']}/../scripts/linked_txome.R"
+            f"{config['rule_dir']}/../scripts/generate_linked_txome.R"
 
-    rule txi_count_matrix:
+    rule count_matrix:
         """
-        Convert estimated transcript abundances to gene count estimations and merge 
+        Convert transcript abundance estimations to gene count estimations and merge 
         gene counts per assembly.
 
         Also outputs a single cell experiment object similar to ARMOR 
@@ -58,74 +58,51 @@ if config["quantifier"] == "salmon":
             SCE=expand("{counts_dir}/{{assembly}}-se.rds", **config),
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-txi_counts_matrix.log", **config),
+        message: explain_rule("count_matrix_txi")
         conda:
-            "../envs/gene_counts.yaml"
+            "../envs/tximeta.yaml"
         resources:
             R_scripts=1, # conda's R can have issues when starting multiple times
         script:
-            f"{config['rule_dir']}/../scripts/txi.R"
+            f"{config['rule_dir']}/../scripts/quant_to_counts.R"
 
+else:
 
-elif config["quantifier"] == "star":
+    def get_counts(wildcards):
+        count_tables = []
+        for sample in treps[treps["assembly"] == wildcards.assembly].index:
+            count_tables.append(f"{{counts_dir}}/{wildcards.assembly}-{sample}.counts.tsv")
+        return expand(count_tables, **config)
 
-    rule counts_matrix:
+    rule count_matrix:
         """
-        Merge gene counts per assembly
-
-        From https://github.com/snakemake-workflows/rna-seq-star-deseq2
+        Combine count tables into one count matrix per assembly
         """
         input:
-            cts=get_counts,
+            cts=get_counts
         output:
             expand("{counts_dir}/{{assembly}}-counts.tsv", **config),
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-counts_matrix.log", **config),
         run:
             import pandas as pd
-            import os.path
             import sys
 
             with open(log[0], "w") as log_file:
                 sys.stderr = sys.stdout = log_file
 
-                # check if samples.tsv has at least one sample with strandedness
-                if "strandedness" in samples.columns:
-
-                    def get_column(strandedness):
-                        if pd.isnull(strandedness) or strandedness in ["no", "NaN"]:
-                            return 1  # non stranded protocol
-                        elif strandedness in ["forward", "yes"]:
-                            return 2  # 3rd column
-                        elif strandedness == "reverse":
-                            return 3  # 4th column, usually for Illumina truseq
-                        else:
-                            raise ValueError(
-                                "'strandedness' column should be empty or have the "
-                                "value 'none', 'yes', 'forward' (same as yes) or 'reverse', instead has the "
-                                f"value {repr(strandedness)}"
-                            )
-
-                    # strandedness per sample/replicate
-                    s2 = samples["strandedness"]
-                    if "replicate" in samples:
-                        s2 = samples.reset_index()[["replicate", "strandedness"]].drop_duplicates().set_index("replicate")
-
                 counts = pd.DataFrame()
                 for sample in input.cts:
-                    sample_name = os.path.basename(sample).replace(wildcards.assembly + "-", "", 1)
-                    strand_dependent_column = 1
-                    if "strandedness" in samples:
-                        strandedness = s2["strandedness"].loc[sample_name]
-                        strand_dependent_column = get_column(strandedness)
-
                     col = pd.read_csv(
-                        sample + "/ReadsPerGene.out.tab",
+                        sample,
                         sep="\t",
                         index_col=0,
-                        usecols=[0, strand_dependent_column],
                         header=None,
-                        skiprows=4,
+                        skiprows=2 if config["quantifier"] == "featurecounts" else 0,
+                        usecols=[0,6] if config["quantifier"] == "featurecounts" else [0,1],
+                        skipfooter=5 if config["quantifier"] == "htseq" else 0,
                     )
+                    sample_name = sample.split(wildcards.assembly + "-")[1].split(".counts.tsv")[0]
                     col.columns = [sample_name]
                     counts = pd.concat([counts, col], axis=1)
 

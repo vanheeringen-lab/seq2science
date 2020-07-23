@@ -7,6 +7,25 @@ All changed fall under either one of these types: `added`, `changed`, `deprecate
 
 ## [Unreleased]
 
+### Added
+
+- HISAT2 as aligner for RNA-seq
+- splice-aware HISAT2 indexing for RNA-seq
+- quantifier HTSeq for RNA-seq
+- quantifier featurecounts for RNA-seq
+- added/expanded `seq2science explain` info (now covers RNA- and scATAC-seq too)
+
+### Changed
+
+- rules and scriptnames in RNA-seq. ex: `txi.R` is now `quant_to_counts.R` to better reflect its function
+- `quant_to_counts.R` now converts salmon transcript abundances to gene counts identically to DESeq2
+- STAR no longer outputs counts, and is no longer found under `quantifiers`
+- gene counts are generated from (filtered) bams when using either STAR or HISAT2 as aligner and HTSeq or featureCounts are quantifier
+- batch corrected gene counts are generated if a DESeq2 design contrast inclused a batch
+- batch corrected TPM are generated if a DESeq2 design contrast inclused a batch, and quantification was performed using Salmon
+  - for us in ANANSE, for instance
+- `seq2science explain` now retrieves messages from `explain.smk`.
+
 ## v0.1.0 - 2020-07-15
 
 ### Added
@@ -22,7 +41,6 @@ All changed fall under either one of these types: `added`, `changed`, `deprecate
 ### Fixed
 
 - Bug when merging replicates and having controls
-
 
 ## v0.0.3 - 2020-07-01
 

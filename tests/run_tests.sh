@@ -1,6 +1,6 @@
 # to run these tests locally:
 #   python setup.py develop
-#   bash ./tests/dag_tests.sh TEST
+#   bash ./tests/run_tests.sh TEST
 
 # check if an argument was passed
 if [ -z "$1" ]; then
@@ -164,26 +164,32 @@ if [ $1 = "rna-seq" ]; then
   # RNA-seq workflow
   WF=rna_seq
 
-# TODO: test samples are too similar for blind clustering and deseq2
-  printf "\nrna-seq default - salmon\n"
-  # TODO: currently omits blind clustering
-  seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions config={counts_dir:tests/local_test_results/salmon_counts} until=[txi_count_matrix]
+  # TODO: test samples are too similar for blind clustering and deseq2
+  printf "\nrna-seq default - quantification\n"
+  seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions config={counts_dir:salmon_counts} \
+  omit_from=[blind_clustering]  # <- remove when fixed
 
-#  printf "\nrna-seq default - salmon deseq2\n"
-#  seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/deseq2_config.yaml --snakemakeOptions config={counts_dir:tests/local_test_results/salmon_counts}
+  printf "\nrna-seq default - quantification deseq2\n"
+  seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/deseq2_config.yaml --snakemakeOptions config={counts_dir:salmon_counts} \
+  omit_from=[blind_clustering,deseq2]  # <- remove when fixed
 
-  # test STAR
-  printf "\nrna-seq default - star\n"
-  seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions config={quantifier:star}
+  printf "\nrna-seq default - counting\n"
+  seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions config={quantifier:htseq} \
+  omit_from=[blind_clustering]  # <- remove when fixed
+  seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions config={quantifier:featurecounts,counts_dir:fc_counts} \
+  omit_from=[blind_clustering]  # <- remove when fixed
+  seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions config={aligner:hisat2,quantifier:htseq,final_bam_dir:hisat2_final_bam,counts_dir:hisat2_counts} \
+  omit_from=[blind_clustering]  # <- remove when fixed
 
-  printf "\nrna-seq default - star deseq2\n"
-  seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/deseq2_config.yaml --snakemakeOptions config={quantifier:star}
+  printf "\nrna-seq default - counting deseq2\n"
+  seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/deseq2_config.yaml \
+  --snakemakeOptions omit_from=[blind_clustering,deseq2]  # <- remove when fixed
 
   printf "\nrna-seq default - trackhub\n"
-  seq2science run rna-seq --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions config={quantifier:star,samples:tests/alignment/local_sample.tsv,genome_dir:tests,fastq_dir:../tinyfastq,create_trackhub:True}
+  seq2science run rna-seq --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions config={samples:tests/alignment/stranded_sample.tsv,genome_dir:tests,fastq_dir:../tinyfastq,aligner:star,create_trackhub:True}
 
   printf "\nrna-seq default - multiqc report\n"
-  seq2science run rna-seq --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions config={quantifier:star,samples:tests/alignment/local_sample.tsv,genome_dir:tests,fastq_dir:../tinyfastq,create_qc_report:True}
+  seq2science run rna-seq --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions config={samples:tests/alignment/local_sample.tsv,genome_dir:tests,fastq_dir:../tinyfastq,aligner:star,create_qc_report:True}
 
   test_ran=1
 fi

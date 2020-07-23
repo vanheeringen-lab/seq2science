@@ -4,7 +4,8 @@ samples: samples.tsv
 # pipeline file locations
 result_dir: ./results  # where to store results
 genome_dir: ./genomes  # where to look for or download the genomes
-# fastq_dir: (default is inside result_dir) # where to look for or download the fastqs
+# fastq_dir: ./results/fastq  # where to look for or download the fastqs
+
 
 # contact info for multiqc report and trackhub
 email: yourmail@here.com
@@ -24,18 +25,6 @@ only_primary_align: True
 
 # use 'our' default parameters
 aligner: bwa-mem
-
-# or specify which aligner to use with the option to specify own parameters
-# aligner:
-#   bwa-mem:
-#     index:  # parameters for indexing
-#       '-a bwtsw'
-#     align:  # parameters for alignment
-#       ''
-
-
-# produce bams, bigwigs and QC statistics?
-create_trackhub: False
 
 # snaptools options
 # min-mapq & keep-chrm set by config options above
