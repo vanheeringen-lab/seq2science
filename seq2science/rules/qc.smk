@@ -17,8 +17,7 @@ rule samtools_stats:
         expand("{qc_dir}/samtools_stats/{{directory}}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.samtools_stats.txt", **config)
     log:
         expand("{log_dir}/samtools_stats/{{directory}}/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config)
-    message:
-        explain_rule("samtools_stats")
+    message: explain_rule("samtools_stats")
     conda:
         "../envs/samtools.yaml"
     shell:
@@ -483,6 +482,10 @@ def get_qc_files(wildcards):
         for trep in treps[treps['assembly'] == wildcards.assembly].index:
             qc['files'].update(get_peak_calling_qc(trep))
 
+    if get_rna_qc in quality_control and not config.get("ignore_strandedness"):
+        for trep in treps[treps['assembly'] == wildcards.assembly].index:
+            qc['files'].update(get_rna_qc(trep))
+
     return qc
 
 
@@ -558,6 +561,17 @@ def get_alignment_qc(sample):
         output.append("{qc_dir}/plotPCA/{{assembly}}.tsv")
 
     return expand(output, **config)
+
+
+def get_rna_qc(sample):
+    output = []
+
+    # add infer experiment reports
+    col = samples.replicate if "replicate" in samples else samples.index
+    if "strandedness" not in samples or samples[col == sample].strandedness[0] == "nan":
+        output = expand(f"{{qc_dir}}/strandedness/{samples[col == sample].assembly[0]}-{sample}.strandedness.txt", **config)
+
+    return output
 
 
 def get_peak_calling_qc(sample):

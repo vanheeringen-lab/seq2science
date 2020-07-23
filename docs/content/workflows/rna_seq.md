@@ -34,7 +34,9 @@ The pipeline will check if the assembly you specified is present in the *genome_
 After aligning the bam you can choose to remove unmapped reads, low quality mappings, duplicates, and multimappers.
 
 #### Strandedness
-Most sequencing protocols at present are strand-specific. This specificity can be used to help identify pseudogenes originating from antisense DNA, or genes with overlapping regions on opposite strands. In order for seq2science to use this feature, the fastq must be aligned with STAR, and the samples.tsv requires the additional column `strandedness`. This column may contain identifiers `forward` or `reverse`. If strandedness is unknown, fields may be left blank or filled with `no`.
+Most sequencing protocols at present are strand-specific. This specificity can be used to help identify pseudogenes originating from antisense DNA, or genes with overlapping regions on opposite strands without ambiguity. Note that this only applies to aligners (not Salmon). 
+Strandedness is inferred automatically for all RNA-seq samples, and can be seen in the MultiQC. Inference can be overwritten by column `strandedness` in the samples.tsv. This column may contain identifiers `no`, `forward` or `reverse`. If strandedness is unknown (for some samples), fields may be left blank or filled with `nan`.
+Finally, strandedness can be ignored (resulting in gene counting to assume all reads are unstranded) by setting `ignore_strandedness` in the config.yaml.
 
 ***
 ### Optional: Differential gene expression analysis

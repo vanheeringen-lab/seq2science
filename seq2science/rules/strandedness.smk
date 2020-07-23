@@ -7,16 +7,17 @@ if get_workflow() == "rna_seq":
             bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config),
             bed=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.bed", **config)
         output:
-            temp(expand("{counts_dir}/{{assembly}}-{{sample}}.strandedness.txt", **config))
+            expand("{qc_dir}/strandedness/{{assembly}}-{{sample}}.strandedness.txt", **config)
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-{{sample}}.strandedness.log", **config),
+        message: explain_rule("infer_strandedness")
         params:
             config["min_mapping_quality"]
         conda:
             "../envs/gene_counts.yaml"
         shell:
             """
-            infer_experiment.py -i {input.bam} -r {input.bed} -q {params} 1> {output} 2> {log}
+            infer_experiment.py -i {input.bam} -r {input.bed} -q {params} | awk NF 1> {output} 2> {log}
             """
 
 
@@ -25,17 +26,16 @@ if get_workflow() == "rna_seq":
         list all samples for which strandedness must be inferred
         """
         col = samples.replicate if "replicate" in samples else samples.index
-
         if config['ignore_strandedness'] or \
                 ("strandedness" in samples and "nan" not in set(samples.strandedness)):
             files = []
         elif "strandedness" not in samples:
-            files = [f"{{counts_dir}}/{samples[col == sample].assembly[0]}-{sample}.strandedness.txt" for sample in col]
+            files = [f"{{qc_dir}}/strandedness/{samples[col == sample].assembly[0]}-{sample}.strandedness.txt" for sample in set(col)]
         else:
             files = []
             for sample in set(col):
                 if samples[col == sample].strandedness not in ["yes", "forward", "reverse", "no"]:
-                    files.append(f"{{counts_dir}}/{samples[col == sample].assembly[0]}-{sample}.strandedness.txt")
+                    files.append(f"{{qc_dir}}/strandedness/{samples[col == sample].assembly[0]}-{sample}.strandedness.txt")
         return expand(files, **config)
 
 
@@ -46,7 +46,7 @@ if get_workflow() == "rna_seq":
         input:
             samples_to_infer
         output:
-            expand("{counts_dir}/inferred_strandedness.tsv", **config)
+            expand("{qc_dir}/strandedness/inferred_strandedness.tsv", **config)
         run:
             import pandas as pd
 
@@ -83,7 +83,7 @@ if get_workflow() == "rna_seq":
                 strands.append(s)
                 method.append(m)
 
-            strandedness = pd.DataFrame({"sample": list(col), "strandedness": strands, "determined_by": method}, dtype='str')
+            strandedness = pd.DataFrame({"sample": list(set(col)), "strandedness": strands, "determined_by": method}, dtype='str')
             strandedness.set_index('sample', inplace=True)
             strandedness.to_csv(output[0], sep="\t")
 

@@ -102,6 +102,7 @@ else:
         "htseq_count": "Read counting and summarizing to gene-level was performed on filtered bam using HTSeq-count v@gene_counts[htseq] (https://doi.org/10.1093/bioinformatics/btu638).",
         "featurecounts_rna": "Read counting and summarizing to gene-level was performed on filtered bam using featureCounts v@gene_counts[subread] (https://doi.org/10.1093/bioinformatics/btt656).",
         "create_bins_SNAP_object": "We used snaptools v@snaptools[snaptools] (https://doi.org/10.1101/615179) to create a snapobject with options '{config[snaptools_opt]}' and added a binned genome matrix with options '{config[bin_opt]}'.",
+        "infer_strandedness": "Sample sequencing strandedness was inferred using RSeQC v@gene_counts[rseqc] https://doi.org/10.1093/bioinformatics/bts356 in order to improve quantification accuracy.",
         "trackhub": "We used the UCSC genome browser (http://www.genome.org/cgi/doi/10.1101/gr.229102) to visualize and inspect alignment.",
         "trim_galore_SE": "We trimmed single-end reads with trim galore! v@trimgalore[trim-galore] (http://www.bioinformatics.babraham.ac.uk/projects/trim_galore/) with options '{config[trim_galore]}' and cutadapt (https://doi.org/10.14806/ej.17.1.200).",
         "trim_galore_PE": "We trimmed paired-end reads with trim galore! v@trimgalore[trim-galore] (http://www.bioinformatics.babraham.ac.uk/projects/trim_galore/) with options '{config[trim_galore]}' and cutadapt (https://doi.org/10.14806/ej.17.1.200).",

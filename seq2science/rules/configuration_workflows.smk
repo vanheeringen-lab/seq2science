@@ -71,7 +71,7 @@ for conf_dict in ["aligner", "quantifier", "diffexp"]:
 # ...for rna-seq
 if get_workflow() == "rna-seq":
     # delete the old strandedness report if samples.tsv was updated
-    strandedness_report = f"{config['counts_dir']}/inferred_strandedness.tsv"
+    strandedness_report = f"{config['qc_dir']}/strandedness/inferred_strandedness.tsv"
     if os.path.exists(strandedness_report) and not config['ignore_strandedness']:
         strandedness = pd.read_csv(strandedness_report, sep='\t', dtype='str', index_col=0)
         col = samples.replicate if "replicate" in samples else samples.index
