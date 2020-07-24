@@ -69,7 +69,7 @@ for conf_dict in ["aligner", "quantifier", "diffexp"]:
 
 
 # ...for rna-seq
-if get_workflow() == "rna-seq":
+if get_workflow() == "rna_seq":
     # delete the old strandedness report if samples.tsv was updated
     strandedness_report = f"{config['qc_dir']}/strandedness/inferred_strandedness.tsv"
     if os.path.exists(strandedness_report) and not config['ignore_strandedness']:
