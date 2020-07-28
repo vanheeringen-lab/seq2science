@@ -19,10 +19,9 @@ jobs:
 
     - name: Get Changelog Entry
       id: changelog_reader
-      uses: mindsers/changelog-reader-action@latest
+      uses: mindsers/changelog-reader-action@v1.3.1
       with:
         version: ${{ github.ref }}
-        path: ./CHANGELOG.md
 
     - name: Create Release
       uses: actions/create-release@latest
@@ -34,6 +33,6 @@ jobs:
         body: |
           Automated preprocessing of Next-Generation Sequencing data, including full (sc)ATAC-seq, ChIP-seq, and RNA-seq workflows.
 
-          ${{ steps.changelog_reader.outputs.log_entry }}  # This pulls from the GET CHANGELOG ENTRY step above, referencing it's ID to get its outputs object, which include a `log_entry`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          ${{ steps.changelog_reader.outputs.log_entry }}
         draft: false
         prerelease: false
