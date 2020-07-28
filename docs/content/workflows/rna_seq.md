@@ -7,7 +7,7 @@ Running an RNA-seq analysis has never been easier!
 </p>
 
 #### Downloading of sample(s)
-Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples. Take a look at the [downloading_fastq](download_fastq.md) workflow for extensive documentation about downloading of public samples. 
+Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples. Take a look at the [downloading_fastq](https://vanheeringen-lab.github.io/seq2science/content/workflows/download_fastq.html) workflow for extensive documentation about downloading of public samples. 
 
 #### Downloading and indexing of assembly(s)
 Depending on whether the assembly and its index you align your samples against already exist seq2science will start with downloading of the assembly through [genomepy](https://github.com/vanheeringen-lab/genomepy).
@@ -17,7 +17,8 @@ The pipeline starts by trimming the reads with [trim galore!](https://github.com
 
 #### Quantification & gene count matrices
 Gene counts can be obtained by two distinct methods: either by directly quantifying transcript abundances using `Salmon`, or by summarizing counts from bam files.
-For the latter approach, fastqs are aligned by splice-aware aligners `STAR` or `HISAT2`. Next, the bam files are filtered according to configurable specification (which does not happen for Salmon), and counts are quantified by either `HTSeq-count` or `featureCounts`.
+Using Salmon, gene counts are generated from the transcript abundances using tximeta.
+For the latter approach, fastqs are aligned by splice-aware aligners `STAR` or `HISAT2`. Next, the bam files are filtered according to configurable specification and counts are quantified by either `HTSeq-count` or `featureCounts`.
 
 Gene counts are aggregated per assembly into a count matrix. Additionally, `salmon` generates a SingleCellExperiment object which can be opened in *R*, containing the transcript- and gene-level summaries. 
 
@@ -34,9 +35,10 @@ The pipeline will check if the assembly you specified is present in the *genome_
 After aligning the bam you can choose to remove unmapped reads, low quality mappings, duplicates, and multimappers.
 
 #### Strandedness
-Most sequencing protocols at present are strand-specific. This specificity can be used to help identify pseudogenes originating from antisense DNA, or genes with overlapping regions on opposite strands without ambiguity. Note that this only applies to aligners (not Salmon). 
-Strandedness is inferred automatically for all RNA-seq samples, and can be seen in the MultiQC. Inference can be overwritten by column `strandedness` in the samples.tsv. This column may contain identifiers `no`, `forward` or `reverse`. If strandedness is unknown (for some samples), fields may be left blank or filled with `nan`.
-Finally, strandedness can be ignored (resulting in gene counting to assume all reads are unstranded) by setting `ignore_strandedness` in the config.yaml.
+Most sequencing protocols at present are strand-specific. This specificity can be used to help identify pseudogenes originating from antisense DNA, or genes with overlapping regions on opposite strands without ambiguity. 
+Strandedness is inferred automatically for all RNA-seq samples. This functionality is built-in for Salmon. For aligners it is inferred by RSeQC, the results of which can be reviewed in the MultiQC. 
+RSeQC inference can be overwritten by column `strandedness` in the samples.tsv. This column may contain identifiers `no`, `forward` or `reverse`. If strandedness is unknown (for some samples), fields may be left blank or filled with `nan`.
+Setting `ignore_strandedness` in the config.yaml will resulting in gene counting to assume all reads are unstranded.
 
 ***
 ### Optional: Differential gene expression analysis
