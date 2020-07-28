@@ -27,18 +27,13 @@
         {
             "affiliation": "Radboud University",
             "name": "Quan Xu",
-            "orcid": "0000-0002-7659-1658"
+            "orcid": "0000-0002-7659-1658",
+            "type": "ProjectMember"
         },
         {
             "affiliation": "Radboud University",
-            "name": "Marlien Kolmus"
-        }
-    ],
-    "related_identifiers": [
-        {
-            "scheme": "doi", 
-            "identifier": "10.5281/zenodo.3921913", 
-            "relation": "isVersionOf"
+            "name": "Marlien Kolmus",
+            "type": "ProjectMember"
         }
     ],
     "keywords": [
