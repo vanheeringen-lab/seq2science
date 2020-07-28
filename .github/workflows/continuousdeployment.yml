@@ -17,6 +17,13 @@ jobs:
       with:
         python-version: 3.6
 
+    - name: Get Changelog Entry
+      id: changelog_reader
+      uses: mindsers/changelog-reader-action@latest
+      with:
+        version: ${{ github.ref }}
+        path: ./CHANGELOG.md
+
     - name: Create Release
       uses: actions/create-release@latest
       env:
@@ -25,9 +32,8 @@ jobs:
         tag_name: ${{ github.ref }}
         release_name: Release ${{ github.ref }}
         body: |
-          Changes in this Release:
-          - First Change
-          - Second Change
-          Probably link the CHANGELOG
+          Automated preprocessing of Next-Generation Sequencing data, including full (sc)ATAC-seq, ChIP-seq, and RNA-seq workflows.
+
+          ${{ steps.changelog_reader.outputs.log_entry }}  # This pulls from the GET CHANGELOG ENTRY step above, referencing it's ID to get its outputs object, which include a `log_entry`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
         draft: false
         prerelease: false

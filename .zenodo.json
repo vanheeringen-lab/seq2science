@@ -1,5 +1,4 @@
 {
-    "description": "Automated preprocessing of Next-Generation Sequencing data, including full (sc)ATAC-seq, ChIP-seq, and RNA-seq workflows.",
     "title": "seq2science",
     "upload_type": "software",
     "creators": [
