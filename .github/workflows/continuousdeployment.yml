@@ -4,7 +4,7 @@ name: continuous-deployment
 on:
   push:
     tags:
-      - 'v*' #
+      - 'v*'
 
 jobs:
   build-and-deploy:
@@ -17,11 +17,18 @@ jobs:
       with:
         python-version: 3.6
 
+    - name: Get version from tag
+      id: tag_name
+      run: |
+        echo ::set-output name=current_version::${GITHUB_REF#refs/tags/v}
+      shell: bash
+
     - name: Get Changelog Entry
       id: changelog_reader
       uses: mindsers/changelog-reader-action@v1.3.1
       with:
-        version: ${{ github.ref }}
+        version: ${{ steps.tag_name.outputs.current_version }}
+        path: ./CHANGELOG.md
 
     - name: Create Release
       uses: actions/create-release@latest
