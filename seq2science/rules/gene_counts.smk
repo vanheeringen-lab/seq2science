@@ -108,3 +108,47 @@ else:
 
                 counts.index.name = "gene"
                 counts.to_csv(output[0], sep="\t")
+
+
+if config.get("dexseq"):
+
+
+    def get_DEXSeq_counts(wildcards):
+        count_tables = []
+        for sample in treps[treps["assembly"] == wildcards.assembly].index:
+            count_tables.append(f"{{counts_dir}}/{wildcards.assembly}-{sample}.DEXSeq_counts.tsv")
+        return expand(count_tables, **config)
+
+    rule count_matrix_DEXseq:
+        """
+        Combine DEXSeq counts into one count matrix per assembly
+        for use in function `DEXSeqDataSet()`
+        """
+        input:
+            cts=get_DEXSeq_counts
+        output:
+            expand("{counts_dir}/{{assembly}}-DEXSeq_counts.tsv", **config),
+        log:
+            expand("{log_dir}/counts_matrix/{{assembly}}-DEXSeq_counts_matrix.log", **config),
+        run:
+            import pandas as pd
+            import sys
+
+            with open(log[0], "w") as log_file:
+                sys.stderr = sys.stdout = log_file
+
+                counts = pd.DataFrame()
+                for sample in input.cts:
+                    col = pd.read_csv(
+                        sample,
+                        sep="\t",
+                        index_col=0,
+                        header=None,
+                        skipfooter=5
+                    )
+                    sample_name = sample.split(wildcards.assembly + "-")[1].split(".DEXSeq_counts.tsv")[0]
+                    col.columns = [sample_name]
+                    counts = pd.concat([counts, col], axis=1)
+
+                counts.index.name = "exon"
+                counts.to_csv(output[0], sep="\t")

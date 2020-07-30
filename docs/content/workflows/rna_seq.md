@@ -41,6 +41,13 @@ RSeQC inference can be overwritten by column `strandedness` in the samples.tsv. 
 Setting `ignore_strandedness` in the config.yaml will resulting in gene counting to assume all reads are unstranded.
 
 ***
+### Optional: Differential exon usage preparation
+Differential exon analysis by [DEXseq](https://bioconductor.org/packages/release/bioc/html/DEXSeq.html) can be automatically prepared by setting `dexseq: True` in the config.yaml.
+This will tell seq2science to output a counts matrix which can be loaded directly into `DEXSeqDataSet()`.
+
+This utilizes scripts implemented by DEXseq, which are built for Ensembl genomes.
+
+***
 ### Optional: Differential gene expression analysis
 Differential expression analysis can automatically be performed using [DESeq2](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-014-0550-8). Simply add one or more contrast design(s) in the `config.yaml` file. Examples are given below. Additionally, the `config.yaml` contains a commented-out set of examples. 
 

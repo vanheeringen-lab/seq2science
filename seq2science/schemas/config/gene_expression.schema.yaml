@@ -63,6 +63,11 @@ properties:
       organism: tximeta_file
       release: 42
 
+  dexseq:
+    description: output a counts matrix for use in DEXSeq.
+    default: False
+    type: boolean
+
   # optional: differential expression analysis
   diffexp:
     description: which differential expression analysis to use (DESeq2 or None, default is None). Will not run without a contrast.

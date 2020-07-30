@@ -91,19 +91,20 @@ if get_workflow() == "rna_seq":
     def _strandedness_report(wildcards):
         return checkpoints.strandedness_report.get().output[0]
 
-    def strandedness_to_quant(wildcards):
+    def strandedness_to_quant(wildcards, tool):
         """
         translate strandedness to quantifiers nomenclature
         """
         out = {
             "htseq": ["no", "yes", "reverse"],
-            "featurecounts": ["0", "1", "2"]
+            "featurecounts": ["0", "1", "2"],
+            "dexseq": ["no", "yes", "reverse"],
         }
 
         strandedness = pd.read_csv(_strandedness_report(wildcards), sep='\t', dtype='str', index_col=0)
         s = strandedness[strandedness.index == wildcards.sample].strandedness[0]
         n = 1 if s in ["yes", "forward"] else (2 if s == "reverse" else 0)
-        return out[config["quantifier"]][n]
+        return out[tool][n]
 
     def strandedness_to_bambigwig(wildcards):
         """
