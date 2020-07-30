@@ -1,4 +1,4 @@
-## scATAC-seqa
+## scATAC-seq
 Running a scATAC-seq pipeline has never been easier! See our [scATAC-seq](https://github.com/vanheeringen-lab/snakemake-workflows/tree/master/workflows/scATAC_seq) workflow.
 
 Does your scATAC protocol generate single cell fastq files? And do they need to be mapped and analysed? Then this pipeline is for your! This pipeline takes single cell fastq files, performs extensive (plate based) QC steps, and generates a binned  SNAP-object that can be used for further downstream analysis following the tutorials on: https://github.com/r3fang/SnapATAC
