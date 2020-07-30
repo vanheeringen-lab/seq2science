@@ -124,12 +124,17 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         "-j", "--cores",
         metavar="N",
         type=int,
-        required=True,
+        default=2,
         help="Use at most N cores in parallel. Must be at least 2.",
     )
     run.add_argument(
         "-n", "--dryrun",
         help="Do not execute anything, and display what would be done.",
+        action='store_true'
+    )
+    run.add_argument(
+        "-r", "--reason",
+        help="Print the reason for each executed rule.",
         action='store_true'
     )
     run.add_argument(
@@ -221,6 +226,7 @@ def _run(args, base_dir, workflows_dir, config_path):
                    "conda_frontend": conda_frontend,
                    "conda_prefix": os.path.join(base_dir, ".snakemake"),
                    "dryrun": args.dryrun,
+                   "printreason": args.reason,
                    "keepgoing": args.keep_going,
                    "unlock": args.unlock,
                    "force_incomplete": args.rerun_incomplete,
