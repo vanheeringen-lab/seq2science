@@ -5,6 +5,7 @@ if get_workflow() == "rna_seq":
         """
         input:
             bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config),
+            bai=expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam.bai", **config),
             bed=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.bed", **config)
         output:
             expand("{qc_dir}/strandedness/{{assembly}}-{{sample}}.strandedness.txt", **config)
@@ -17,7 +18,7 @@ if get_workflow() == "rna_seq":
             "../envs/gene_counts.yaml"
         shell:
             """
-            infer_experiment.py -i {input.bam} -r {input.bed} -q {params} | awk NF 1> {output} 2> {log}
+            infer_experiment.py -i {input.bam} -r {input.bed} -q {params} 2> {log} | awk NF > {output} 
             """
 
 
