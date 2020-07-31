@@ -15,7 +15,8 @@ All changed fall under either one of these types: `added`, `changed`, `deprecate
 - quantifier featurecounts for RNA-seq
 - added/expanded `seq2science explain` info (now covers RNA- and scATAC-seq too)
 - sequencing strandedness may now be inferred automatically (unless specified in the config/samples.tsv)
-- strandedness results are displayed in the multiQC under "Strandedness" 
+- strandedness results are displayed in the multiQC under "Strandedness"
+- a DEXSeq counts matrixs can now be generated with `dexseq: True`
 
 ### Changed
 
