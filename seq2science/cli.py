@@ -341,20 +341,27 @@ class _StoreDictKeyPair(argparse.Action):
             k, v = kv.split("=")
 
             if ":" in v:
+                assert "}" in v if "{" in v else True, \
+                    f"\n\nThe dictionary you provided on the command line ('{k}') cannot be parsed:" \
+                    f"\n'{v}' (TIP: is there a space in there perhaps?)\n"
                 pair = list(filter(None, re.split('{|:| |}', v)))
-                assert len(pair) == 2
+                assert len(pair) == 2, \
+                    f"\n\nThe dictionary you provided on the command line ('{k}') cannot be parsed:" \
+                    f"\n'{v}' contains a broken key-value pair: '{pair}' (TIP: is there a space in there perhaps?)\n"
                 if pair[1].lower() == 'true':
                     pair[1] = True
                 v = {pair[0]: int(pair[1]) if isinstance(pair[1], str) and pair[1].isdigit() else pair[1]}
             elif "[" in v:
                 v = re.sub("\[|\]", "", v).split(",")
-            try:
-                my_dict[k] = int(v)
-            except:
-                if k not in my_dict:
-                    my_dict[k] = v
-                else:
-                    my_dict[k].update(v)
+            else:
+                assert k != "config", \
+                    f"\n\nThe dictionary you provided on the command line ('{k}') cannot be parsed:" \
+                    f"\n'{v}' should be a key-value pair (TIP: use '{v}:True' perhaps?)\n"
+
+            if k in my_dict:
+                my_dict[k].update(v)
+            else:
+                my_dict[k] = int(v) if isinstance(v, str) and v.isdigit() else v
 
         setattr(namespace, self.dest, my_dict)
 
