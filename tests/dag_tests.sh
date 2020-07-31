@@ -315,22 +315,28 @@ if [ $1 = "rna-seq" ]; then
   WF=rna_seq
 
   printf "\nrna-seq default\n"
-  seq2science run rna-seq -n --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={aligner:star} | tee tests/local_test_results/${1}_dag
+  seq2science run rna-seq -n --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={aligner:star,dexseq:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 htseq_count 1
+  assert_rulecount $1 dexseq_count 1
 
   printf "\naligners\n"
-#  seq2science run rna-seq -n --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={aligner:star} | tee tests/local_test_results/${1}_dag  # default
+#  seq2science run rna-seq -n --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={aligner:star,dexseq:True} | tee tests/local_test_results/${1}_dag  # default
 #  assert_rulecount $1 star_align 1
-  seq2science run rna-seq -n --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={aligner:hisat2} | tee tests/local_test_results/${1}_dag
+#  assert_rulecount $1 dexseq_count 1
+  seq2science run rna-seq -n --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={aligner:hisat2,dexseq:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 hisat2_align 1
+  assert_rulecount $1 dexseq_count 1
 
   printf "\nquantifiers\n"
-  seq2science run rna-seq -n --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={aligner:star,quantifier:salmon} | tee tests/local_test_results/${1}_dag
+  seq2science run rna-seq -n --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={aligner:star,quantifier:salmon,dexseq:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 salmon_quant 1
-  # seq2science run rna-seq -n --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={aligner:star,quantifier:htseq} | tee tests/local_test_results/${1}_dag  # default
+  assert_rulecount $1 dexseq_count 1
+  # seq2science run rna-seq -n --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions dryrun=True quiet=True config={aligner:star,quantifier:htseq,dexseq:True} | tee tests/local_test_results/${1}_dag  # default
   # assert_rulecount $1 htseq_count 1
-  seq2science run rna-seq -n --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions dryrun=True quiet=False config={aligner:star,quantifier:featurecounts} | tee tests/local_test_results/${1}_dag
+  # assert_rulecount $1 dexseq_count 1
+  seq2science run rna-seq -n --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions dryrun=True quiet=False config={aligner:star,quantifier:featurecounts,dexseq:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 featurecounts 1
+  assert_rulecount $1 dexseq_count 1
 
   printf "\ndecoy aware salmon index\n"
   seq2science run rna-seq -n --cores $CORES --configfile tests/$WF/salmon_config.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/alignment/dag_sample.tsv,fastq_dir:tests/local_test_results/fastq} | tee tests/local_test_results/${1}_dag
@@ -355,9 +361,10 @@ if [ $1 = "rna-seq" ]; then
   assert_rulecount $1 salmon_quant 10
 
   printf "\nmultiple assemblies with DEA\n"
-  seq2science run rna-seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={technical_replicates:keep,samples:tests/rna_seq/complex_samples.tsv} | tee tests/local_test_results/${1}_dag
+  seq2science run rna-seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={technical_replicates:keep,samples:tests/rna_seq/complex_samples.tsv,dexseq:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 star_index 2
   assert_rulecount $1 star_align 10
+  assert_rulecount $1 dexseq_count 10
 
   printf "\nmultiple assemblies with DEA - trackhubs\n"
   seq2science run rna-seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={technical_replicates:keep,samples:tests/rna_seq/complex_samples.tsv,create_trackhub:True} | tee tests/local_test_results/${1}_dag
@@ -372,8 +379,9 @@ if [ $1 = "rna-seq" ]; then
   seq2science run rna-seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={technical_replicates:keep} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 merge_replicates 0
   assert_rulecount $1 htseq_count 10
-  seq2science run rna-seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={technical_replicates:merge} | tee tests/local_test_results/${1}_dag
+  seq2science run rna-seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={technical_replicates:merge,dexseq:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 htseq_count 8
+  assert_rulecount $1 dexseq_count 8
 
   printf "\nmultiple replicates with DEA - trackhubs\n"
   seq2science run rna-seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={technical_replicates:merge,create_trackhub:True} | tee tests/local_test_results/${1}_dag
@@ -388,10 +396,13 @@ if [ $1 = "rna-seq" ]; then
   seq2science run rna-seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={technical_replicates:keep,samples:tests/rna_seq/complex_samples.tsv} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 merge_replicates 0
   assert_rulecount $1 htseq_count 10
-  seq2science run rna-seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={technical_replicates:merge,samples:tests/rna_seq/complex_samples.tsv} | tee tests/local_test_results/${1}_dag
+  seq2science run rna-seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={technical_replicates:merge,samples:tests/rna_seq/complex_samples.tsv,dexseq:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 htseq_count 8
+  assert_rulecount $1 dexseq_count 8
+  assert_rulecount $1 count_matrix_DEXseq 2
   seq2science run rna-seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:salmon,technical_replicates:merge,samples:tests/rna_seq/complex_samples.tsv} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 salmon_quant 8
+  assert_rulecount $1 linked_txome 2
 
   printf "\nmultiple assemblies and replicates with DEA - trackhub\n"
   seq2science run rna-seq -n --cores $CORES --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions dryrun=True quiet=True config={quantifier:salmon,technical_replicates:merge,samples:tests/rna_seq/complex_samples.tsv,create_trackhub:True} | tee tests/local_test_results/${1}_dag
