@@ -64,7 +64,7 @@ properties:
       release: 42
 
   dexseq:
-    description: output a counts matrix for use in DEXSeq.
+    description: output an exon counts matrix for use in DEXSeq.
     default: False
     type: boolean
 
