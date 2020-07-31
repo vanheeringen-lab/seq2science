@@ -3,7 +3,6 @@ sample_schemas = ['sample', 'assembly', 'replicate', 'strandedness']
 config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific', 'gene_expression', 'trackhub']
 include: "../../rules/configuration_generic.smk"
 
-assert config["aligner"] in ["star", "hisat2"], f"\nPlease select a splice aware aligner for the RNA-seq (STAR or HISAT2)\n"
 
 # load the remaining relevant rules
 include: f"{config['rule_dir']}/alignment.smk"

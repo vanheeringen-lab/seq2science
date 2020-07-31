@@ -70,6 +70,9 @@ for conf_dict in ["aligner", "quantifier", "diffexp"]:
 
 # ...for rna-seq
 if get_workflow() == "rna_seq":
+    assert config["aligner"] in ["star", "hisat2"], \
+        f"\nPlease select a splice aware aligner for the RNA-seq (STAR or HISAT2)\n"
+
     # delete the old strandedness report if samples.tsv was updated
     strandedness_report = f"{config['qc_dir']}/strandedness/inferred_strandedness.tsv"
     if os.path.exists(strandedness_report) and not config['ignore_strandedness']:
