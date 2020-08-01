@@ -14,6 +14,7 @@ All changed fall under either one of these types: `added`, `changed`, `deprecate
 - quantifier HTSeq for RNA-seq
 - quantifier featurecounts for RNA-seq
 - added/expanded `seq2science explain` info (now covers RNA- and scATAC-seq too)
+- (re)added fnwi + rimls logos to the qc reports that went missing in seq2science migration
 
 ### Changed
 
