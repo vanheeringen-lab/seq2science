@@ -252,8 +252,15 @@ def _run(args, base_dir, workflows_dir, config_path):
         if parsed_args["dryrun"]:
             parsed_args["cores"] = 999
         else:
-            raise argparse.ArgumentError(core_arg, "specify at least two cores.")
-
+            # we need to raise an exception and catch it for a subjectively prettier message 
+            try:
+                raise argparse.ArgumentError(core_arg, "specify at least two cores.")
+            except argparse.ArgumentError as e:
+                print()  # empty line
+                print(e)
+                sys.exit(1) 
+            
+            
     # scale threads if cores is too low
     overwrite_threads = core_parser(parsed_args)
     if overwrite_threads:
