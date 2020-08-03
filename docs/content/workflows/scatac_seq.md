@@ -4,7 +4,7 @@ Running a scATAC-seq pipeline has never been easier! See our [scATAC-seq](https:
 Does your scATAC protocol generate single cell fastq files? And do they need to be mapped and analysed? Then this pipeline is for your! This pipeline takes single cell fastq files, performs extensive (plate based) QC steps, and generates a binned  SNAP-object that can be used for further downstream analysis following the tutorials on: https://github.com/r3fang/SnapATAC
 
 If you have a Cellranger object instead (output 10x), it is relatively easy to directly generate a SNAPobject, look at the documentation on the SnapATAC github intead (https://github.com/r3fang/SnapATAC/wiki/FAQs#10X_snap).
-Alternatively instead you have a large FASTQ file containing a cell specific ID in the header, it might possible to run this pipeline with some alterations. The 'merge_replica' ouputs a fastq trimmed fastqfile with the cell_id after the @ in the header. E.g : '@sampleXcellY:NS500173:518:HTYVTBGXB:4:23609:2756:19401 2:N:0:ACTCGCTA+ATTAGACG'.
+Alternatively instead you have a large FASTQ file containing a cell specific ID in the header, it might possible to run this pipeline with some alterations. The 'merge_replica' ouputs a fastq trimmed fastqfile with the cell_id after the @ in the header. E.g : ```@sampleXcellY:NS500173:518:HTYVTBGXB:4:23609:2756:19401 2:N:0:ACTCGCTA+ATTAGACG```.
 
 
 ### Pipeline steps
