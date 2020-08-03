@@ -28,6 +28,11 @@ module_order:
         path_filters_exclude:
             - '*{{config["aligner"]}}*.samtools_stats.txt'
     - deeptools
+    - rseqc:
+        name: 'Strandedness'
+        extra: 'Sequencing strandedness was inferred for the following samples, and was called if 60% of the sampled reads were explained by either sense (forward) or antisense (reverse).'
+        path_filters:
+            - '*{{config["qc_dir"]}}/strandedness/*'
     - MACS2
     - featureCounts:
         name: 'macs2_frips'

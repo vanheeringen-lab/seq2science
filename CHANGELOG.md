@@ -18,12 +18,17 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - splice-aware HISAT2 indexing for RNA-seq
 - quantifier HTSeq for RNA-seq
 - quantifier featurecounts for RNA-seq
+- Salmon will output a gene-level TPM matrix as well
 - added/expanded `seq2science explain` info (now covers RNA- and scATAC-seq too)
+- sequencing strandedness may now be inferred automatically (unless specified in the config/samples.tsv)
+- strandedness results are displayed in the multiQC under "Strandedness"
+- a DEXSeq counts matrixs can now be generated with `dexseq: True`
+- seq2science CLI now has the same reason flag as snakemake (-r/--reason flag)
 - (re)added fnwi + rimls logos to the qc reports that went missing in seq2science migration
 
 ### Changed
 
-- rules and scriptnames in RNA-seq. ex: `txi.R` is now `quant_to_counts.R` to better reflect its function
+- rules and script names in RNA-seq. ex: `txi.R` is now `quant_to_counts.R` to better reflect its function
 - `quant_to_counts.R` now converts salmon transcript abundances to gene counts identically to DESeq2
 - STAR no longer outputs counts, and is no longer found under `quantifiers`
 - gene counts are generated from (filtered) bams when using either STAR or HISAT2 as aligner and HTSeq or featureCounts are quantifier
@@ -31,6 +36,13 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - batch corrected TPM are generated if a DESeq2 design contrast inclused a batch, and quantification was performed using Salmon
   - for us in ANANSE, for instance
 - `seq2science explain` now retrieves messages from `explain.smk`.
+- `seq2science explain` now used profiles and snakemakeOptions.
+
+### Fixed
+
+- the alignment workflow no longer uses strandedness
+- seq2science CLI can now be run without cores with a dryrun or profile with cores
+- Jenkins code style (now used mamba to install flake8)
 
 ## [0.1.0] - 2020-07-15
 

@@ -147,7 +147,7 @@ if 'descriptive_name' in samples:
         samples = samples.drop(columns=['descriptive_name'])
 if 'strandedness' in samples:
     samples['strandedness'] = samples['strandedness'].mask(pd.isnull, 'nan')
-    if config['filter_bam_by_strand'] is False or not any([field in list(samples['strandedness']) for field in ['forward', 'yes', 'reverse']]):
+    if config.get('ignore_strandedness', True) or not any([field in list(samples['strandedness']) for field in ['yes', 'forward', 'reverse', 'no']]):
         samples = samples.drop(columns=['strandedness'])
 
 if 'replicate' in samples:
