@@ -10,5 +10,7 @@ dependencies:
   - bioconda::bioconductor-ihw=1.14.0
   - bioconda::bioconductor-apeglm=1.8.0
   - bioconda::bioconductor-biocparallel=1.20.0
+  - bioconda::bioconductor-limma=3.42.0
   - r::r-rcolorbrewer=1.1_2
+  - r::r-ggplot2=3.1.1
   - conda-forge::r-pheatmap=1.0.12

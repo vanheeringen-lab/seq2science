@@ -1,7 +1,7 @@
 name: hmmratac
 channels:
-  - bioconda
   - conda-forge
+  - bioconda
   - defaults
 dependencies:
   - bioconda::hmmratac=1.2.5
