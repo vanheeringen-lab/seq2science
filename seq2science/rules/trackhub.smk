@@ -187,7 +187,7 @@ rule trackhub_index:
     shell:
         """
         # generate annotation files
-        gtfToGenePred -geneNameAsName2 -genePredExt {params.gtf} {output.genePred} -infoOut={output.info} >> {log} 2>&1
+        gtfToGenePred -allErrors -geneNameAsName2 -genePredExt {params.gtf} {output.genePred} -infoOut={output.info} >> {log} 2>&1
 
         genePredToBed {output.genePred} {output.genePredbed} >> {log} 2>&1
 
