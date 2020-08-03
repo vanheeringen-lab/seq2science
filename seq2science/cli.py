@@ -221,7 +221,6 @@ def _run(args, base_dir, workflows_dir, config_path):
 
     # parse the args
     parsed_args = {"snakefile": os.path.join(workflows_dir, args.workflow.replace("-", "_"), "Snakefile"),
-                   "cores": args.cores,
                    "use_conda": True,
                    "conda_frontend": conda_frontend,
                    "conda_prefix": os.path.join(base_dir, ".snakemake"),
@@ -247,12 +246,17 @@ def _run(args, base_dir, workflows_dir, config_path):
     parsed_args.update(snakemake_options)
 
     # cores
-    parsed_args["cores"] = 0 if parsed_args["cores"] is None else int(parsed_args["cores"])
+    if args.cores:  # CLI
+        parsed_args["cores"] = args.cores
+    elif parsed_args["cores"]:  # profile
+        parsed_args["cores"] = int(parsed_args["cores"])
+    elif parsed_args["dryrun"]:
+        parsed_args["cores"] = 999
+    else:
+        parsed_args["cores"] = 0
+
     if parsed_args["cores"] < 2:
-        if parsed_args["dryrun"]:
-            parsed_args["cores"] = 999
-        else:
-            raise argparse.ArgumentError(core_arg, "specify at least two cores.")
+        raise argparse.ArgumentError(core_arg, "specify at least two cores.")
 
     # scale threads if cores is too low
     overwrite_threads = core_parser(parsed_args)
@@ -284,7 +288,6 @@ def _explain(args, base_dir, workflows_dir, config_path):
     # parse the args
     # snakemake_options.setdefault("config", {}).update({"rule_dir": os.path.join(base_dir, "rules")})
     parsed_args = {"snakefile": os.path.join(workflows_dir, args.workflow.replace("-", "_"), "Snakefile"),
-                   "cores": 999,
                    "dryrun": True,
                    "forceall": True,
                    "quiet": False,
@@ -292,6 +295,41 @@ def _explain(args, base_dir, workflows_dir, config_path):
                               "explain_rule": True},
                    "configfiles": [config_path]}
 
+    # get the additional snakemake options
+    snakemake_options = args.snakemakeOptions if args.snakemakeOptions is not None else dict()
+    snakemake_options.setdefault("config", {}).update({"rule_dir": os.path.join(base_dir, "rules")})
+
+    # parse the profile
+    snakemake_options["configfiles"] = [config_path]
+    if args.profile is not None:
+        profile_file = snakemake.get_profile_file(args.profile, "config.yaml")
+        if profile_file is None:
+            print("Error: profile given but no config.yaml found.")
+            sys.exit(1)
+        snakemake_options["configfiles"] += [profile_file]
+
+    parsed_args.update(snakemake_options)
+
+    # cores
+    if args.cores:  # CLI
+        parsed_args["cores"] = args.cores
+    elif parsed_args["cores"]:  # profile
+        parsed_args["cores"] = int(parsed_args["cores"])
+
+    if parsed_args["cores"] < 2:
+        parsed_args["cores"] = 999
+
+    # scale threads if cores is too low
+    overwrite_threads = core_parser(parsed_args)
+    if overwrite_threads:
+        if "overwrite_threads" not in parsed_args:
+            parsed_args["overwrite_threads"] = overwrite_threads
+        else:
+            for k, v in overwrite_threads.items():
+                if k not in parsed_args["overwrite_threads"]:
+                    parsed_args["overwrite_threads"][k] = v
+
+    # starting message
     rules_used = {"start": f"\nPreprocessing of reads was done automatically with workflow tool "
                            f"seq2science v{seq2science.__version__} (https://doi.org/10.5281/zenodo.3921913)."}
 
