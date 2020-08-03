@@ -1,9 +1,9 @@
 import os
 import time
-from functools import lru_cache
 import contextlib
-
 import genomepy
+from filelock import FileLock
+from functools import lru_cache
 
 
 # the filetypes genomepy will download
@@ -34,10 +34,7 @@ rule get_genome:
         expand("{log_dir}/get_genome/{{assembly}}.genome.log", **config),
     benchmark:
         expand("{benchmark_dir}/get_genome/{{assembly}}.genome.benchmark.txt", **config)[0]
-    message: explain_rule("""
-    Genomic assembly {wildcards.assembly} was downloaded with GenomePy v@get_genome[genomepy] 
-    (https://doi.org/10.21105/joss.00320).
-    """)
+    message: explain_rule("get_genome")
     resources:
         parallel_downloads=1,
     priority: 1
@@ -83,63 +80,12 @@ rule get_genome:
         """
 
 
-rule get_transcripts:
-    """
-    Generate transcripts.fasta using gffread.
-
-    Requires genome.fa and annotation.gtf (with matching chromosome/scaffold names)
-    """
-    input:
-        fa=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
-        gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
-    output:
-        expand("{genome_dir}/{{assembly}}/{{assembly}}.transcripts.fa", **config),
-    log:
-        expand("{log_dir}/get_genome/{{assembly}}.transcripts.log", **config),
-    benchmark:
-        expand("{benchmark_dir}/get_genome/{{assembly}}.transcripts.benchmark.txt", **config)[0]
-    conda:
-        "../envs/get_genome.yaml"
-    priority: 1
-    shell:
-        "gffread -w {output} -g {input.fa} {input.gtf} >> {log} 2>&1"
-
-
-rule decoy_transcripts:
-    """
-    Generate decoy_transcripts.txt for Salmon indexing  
-
-    script source: https://github.com/COMBINE-lab/SalmonTools
-    """
-    input:
-        genome=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
-        gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
-        transcripts=expand("{genome_dir}/{{assembly}}/{{assembly}}.transcripts.fa", **config),
-    output:
-        expand("{genome_dir}/{{assembly}}/decoy_transcripts/decoys.txt", **config),
-    params:
-        script=f"{config['rule_dir']}/../scripts/generateDecoyTranscriptome.sh",
-    log:
-        expand("{log_dir}/get_genome/{{assembly}}.decoy_transcripts.log", **config),
-    benchmark:
-        expand("{benchmark_dir}/get_genome/{{assembly}}.decoy_transcripts.benchmark.txt", **config)[0]
-    threads: 40
-    resources:
-        mem_gb=65,
-    conda:
-        "../envs/decoy.yaml"
-    priority: 1
-    shell:
-        ("cpulimit --include-children -l {threads}00 -- " if config. get("cpulimit", True) else" ")+
-        "sh {params.script} -j {threads} -g {input.genome} -a {input.gtf} -t {input.transcripts} -o $(dirname {output}) > {log} 2>&1"
-
-
 @lru_cache(maxsize=None)
 def has_annotation(assembly):
     """
     returns True/False on whether or not the assembly has an annotation.
     """
-    # check if genome providd by user or already downloaded, if so check if the annotation came along
+    # check if genome is provided by user or already downloaded, if so check if the annotation came along
     if all(os.path.exists(f"{config['genome_dir']}/{assembly}.{extension}") for extension in config["genome_types"]):
         return os.path.exists(f"{config['genome_dir']}/{assembly}.annotation.gtf")
 
@@ -153,18 +99,22 @@ def has_annotation(assembly):
     with open(os.devnull, "w") as null:
         with contextlib.redirect_stdout(null), contextlib.redirect_stderr(null):
             for provider in providers:
-                p = genomepy.ProviderBase.create(provider)
-                if assembly in p.genomes:
-                    if p.get_annotation_download_link(assembly) is None:
-                        logger.info(
-                            f"No annotation for assembly {assembly} can be downloaded. Another provider (and "
-                            f"thus another assembly name) might have gene annotations.\n"
-                            f"Find alternative assemblies with `genomepy search {assembly}`"
-                        )
-                        time.sleep(2)
-                        return False
-                    else:
-                        return True
+                annotation_lock = os.path.expanduser(f'~/.config/seq2science/genomepy_{provider}_annotations.lock')
+                prep_filelock(annotation_lock, 20)
+
+                with FileLock(annotation_lock):
+                    p = genomepy.ProviderBase.create(provider)
+                    if assembly in p.genomes:
+                        if p.get_annotation_download_link(assembly) is None:
+                            logger.info(
+                                f"No annotation for assembly {assembly} can be downloaded. Another provider (and "
+                                f"thus another assembly name) might have gene annotations.\n"
+                                f"Find alternative assemblies with `genomepy search {assembly}`"
+                            )
+                            time.sleep(2)
+                            return False
+                        else:
+                            return True
 
     # no download link found for assembly
     return False

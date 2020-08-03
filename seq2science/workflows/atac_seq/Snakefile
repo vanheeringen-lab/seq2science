@@ -2,7 +2,6 @@
 sample_schemas = ['sample', 'assembly', 'replicate', 'condition', 'strandedness']
 config_schemas = ['general', 'download', 'alignment_general', 'peakcalling', 'trackhub']
 include: "../../rules/configuration_generic.smk"
-include: "../../rules/configuration_workflows.smk"
 
 
 # load all the relevant rules

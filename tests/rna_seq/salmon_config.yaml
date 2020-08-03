@@ -12,6 +12,8 @@ create_trackhub: False
 # produce MultiQC output?
 create_qc_report: False
 
+aligner: star
+
 quantifier:
   salmon:
     decoy_aware_index: True
