@@ -34,6 +34,7 @@ TODO: Make sure to take a look at: [example preprocessing](../scATAC_postprocess
 
 Before running a workflow you will have to specify which samples you want to run the workflow on. Each workflow starts with a samples.tsv as an example, and you should adapt it to your specific needs. As an example, the samples.tsv could look something like this:
 
+```
 sample	assembly	replicate
 GSM1596256	hg38	H1ESC
 GSM1596257	hg38	H1ESC
@@ -57,6 +58,7 @@ iPSC-2-KC-diff-plate2-plate2-16718m701m513	hg38	plate2
 iPSC-2-KC-diff-plate2-plate2-16718m701m515	hg38	plate2
 iPSC-2-KC-diff-plate2-plate2-16718m701m516	hg38	plate2
 iPSC-2-KC-diff-plate2-plate2-16718m701m517	hg38	plate2
+```
 
 #### Sample column
 This column is necessary for all workflows, not just the atac-seq workflow. If you use the pipeline on public data this should be the name of the accession (e.g. GSM2837484), if you use the pipeline on local data this should be the *basename* of the file without the *extension*. For instance `/home/user/myfastqs/sample1.fastq.gz` would be `sample1`. For the scATAC files, the sample name should correspond to a single cell Fastq file! If instead its a fastq file containing data from multiple cells, the pipeline will need alterations before you can use it.
