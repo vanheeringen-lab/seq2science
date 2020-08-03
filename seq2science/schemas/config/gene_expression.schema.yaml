@@ -16,27 +16,33 @@ properties:
   quantifier:
     description: which quantifier to use
     properties:
-      star:
-        properties:
-          quantify:
-            default: ''
-        default:
-          quantify: ''
       salmon:
         properties:
           quantifier_index:
             default: '-k 31' # minimmum length. Reduce if mapping rate is too low.
-          quantify:
+          quantifier_flags:
             default: '--seqBias --gcBias --validateMappings --recoverOrphans' # --posBias experimental flag
           decoy_aware_index:
             default: False
         default:
           quantifier_index: '-k 31'
-          quantify: '--seqBias --gcBias --validateMappings --recoverOrphans'
+          quantifier_flags: '--seqBias --gcBias --validateMappings --recoverOrphans'
           decoy_aware_index: False
+      htseq:
+        properties:
+          htseq_flags:
+            default: ''
+        default:
+          htseq_flags: ''
+      featurecounts:
+        properties:
+          featurecounts_flags:
+            default: ''
+        default:
+          featurecounts_flags: ''
     default:
-      star:
-        quantify: ''
+      htseq:
+        htseq_flags: ''
 
   tximeta:
     description: tximeta is used to convert salmon output (estimated transcript abundances) to a gene counts matrix. Currently, these values can be ignored.
@@ -62,7 +68,7 @@ properties:
           DE_params:
             default:
               multiple_testing_procedure: BH #alternative: IHW
-              alpha_value: 0.05
+              alpha_value: 0.1
               shrinkage_estimator: apeglm
           contrasts:
             default: ''

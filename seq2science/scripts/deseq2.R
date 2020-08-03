@@ -1,6 +1,7 @@
 suppressMessages({
   library(DESeq2)
   library(IHW)
+  library(ggplot2)
 })
 
 # snakemake variables
@@ -14,6 +15,8 @@ mtp             <- snakemake@config$DE_params$multiple_testing_procedure
 fdr             <- snakemake@config$DE_params$alpha_value
 se              <- snakemake@config$DE_params$shrinkage_estimator
 assembly        <- snakemake@wildcards$assembly
+salmon          <- snakemake@config$quantifier == "salmon"
+counts_dir      <- snakemake@config$counts_dir
 output          <- snakemake@output[[1]]
 
 # log all console output
@@ -33,6 +36,8 @@ cat('mtp          <- "', mtp,          '"\n', sep = "")
 cat('fdr          <-',   fdr, '\n')
 cat('se           <- "', se,           '"\n', sep = "")
 cat('assembly     <- "', assembly,     '"\n', sep = "")
+cat('salmon       <- "', salmon,       '"\n', sep = "")
+cat('counts_dir   <- "', counts_dir,   '"\n', sep = "")
 cat('output       <- "', output,       '"\n', sep = "")
 cat('\n')
 
@@ -136,15 +141,17 @@ write.table(all_genes, file=output, quote = F, sep = '\t', col.names=NA)
 cat('DE genes table saved\n\n')
 
 
-## determine DE genes and plot if found
+## determine DE genes
 plot_res <- resLFC[resLFC$padj <= fdr & !is.na(resLFC$padj), ]
 plot_DEGs <- length(plot_res[,1])
 if(plot_DEGs == 0){
-  cat("No differentially expressed genes found! Skipping plot generation...\n")
+  cat("No differentially expressed genes found!\n")
   quit(save = "no" , status = 0)
 } else {
-  cat(plot_DEGs, "differentially expressed genes found! Plotting MA and PCA...\n")
+  cat(plot_DEGs, "differentially expressed genes found!\n")
 }
+
+## generate additional files if DE genes are found
 
 # generate MA plot (log fold change vs mean gene counts)
 output_ma_plot <- sub(".diffexp.tsv", ".ma_plot.svg", output)
@@ -154,11 +161,99 @@ plotMA(plot_res, ylim=c(-2,2),
 invisible(dev.off())
 cat('-MA plot saved\n')
 
-# transform the data and generate a PCA plot (for outlier detection)
-log_counts <- vst(dds, blind = TRUE)
+if (is.na(batch)){
+  # generate a PCA plot (for sample outlier detection)
 
-output_pca_plot <- sub(".diffexp.tsv", ".pca_plot.svg", output)
-svg(output_pca_plot)
-plotPCA(log_counts, intgroup="condition")
-invisible(dev.off())
-cat('-PCA plot saved\n')
+  blind_vst <- varianceStabilizingTransformation(dds, blind = TRUE)
+
+  g = plotPCA(blind_vst, intgroup="condition")
+
+  output_pca_plot <- sub(".diffexp.tsv", ".pca_plot.svg", output)
+  svg(output_pca_plot)
+  plot(g + ggtitle("blind PCA") + aes(color=condition) + theme(legend.position="bottom"))
+  invisible(dev.off())
+  cat('-PCA plot saved\n')
+
+} else {
+  # generate a PCA plots before and after batch correction
+
+  blind_vst <- varianceStabilizingTransformation(dds, blind = TRUE)
+  nonblind_vst <- varianceStabilizingTransformation(dds, blind = FALSE)
+  # model the effect of batch correction in the correlation heatap. DESeq2 applies this internally as well.
+  mat <- assay(nonblind_vst)
+  mat <- limma::removeBatchEffect(mat, nonblind_vst$batch)
+  batchcorr_vst <- nonblind_vst
+  assay(batchcorr_vst) <- mat
+
+  g1 = plotPCA(blind_vst, intgroup=c("condition", "batch"))
+  g2 = plotPCA(batchcorr_vst, intgroup=c("condition", "batch"))
+
+  output_pca_plots <- sub(".diffexp.tsv", ".pca_plot_%01d.svg", output)
+  svg(output_pca_plots)
+  if(length(levels(blind_vst$batch)) < 7){
+    plot(g1 + ggtitle("blind PCA - color by condition") + aes(color=condition, shape=batch) + theme(legend.position="bottom"))
+    plot(g1 + ggtitle("blind PCA - color by batch") + aes(color=batch) + theme(legend.position="bottom"))
+
+    plot(g2 + ggtitle("batch corrected PCA - color by condition") + aes(color=condition, shape=batch) + theme(legend.position="bottom"))
+    plot(g2 + ggtitle("batch corrected PCA - color by batch") + aes(color=batch) + theme(legend.position="bottom"))
+  } else {
+    plot(g1 + ggtitle("blind PCA - color by condition") + aes(color=condition) + theme(legend.position="bottom"))
+    plot(g1 + ggtitle("blind PCA - color by batch") + aes(color=batch) + theme(legend.position="bottom"))
+
+    plot(g2 + ggtitle("batch corrected PCA - color by condition") + aes(color=condition) + theme(legend.position="bottom"))
+    plot(g2 + ggtitle("batch corrected PCA - color by batch") + aes(color=batch) + theme(legend.position="bottom"))
+  }
+  invisible(dev.off())
+  cat('-PCA plots saved\n\n')
+
+  # Generate the batch corrected counts
+  # (for downstream tools that do not model batch effects)
+  batch_corrected_counts <- function(dds) {
+    #' accepts a large DESeqDataSet, normalizes and removes the batch effects, and returns a batch corrected count matrix
+
+    nonblind_vst <- DESeq2::varianceStabilizingTransformation(dds, blind = FALSE)
+    mat <- SummarizedExperiment::assay(nonblind_vst)
+    mat <- limma::removeBatchEffect(mat, nonblind_vst$batch)
+
+    # mat contains the normalized and batch corrected variant stabilized data (mat = vst.fn(batch_corr_counts))
+    # next, we invert this function (from DESeq2::getVarianceStabilizedData) to get normalized and batch corrected counts (batch_corr_counts)
+
+    # vst.fn <- function(q) {
+    #     log((1 + coefs["extraPois"] + 2 * coefs["asymptDisp"] *
+    #         q + 2 * sqrt(coefs["asymptDisp"] * q * (1 + coefs["extraPois"] +
+    #         coefs["asymptDisp"] * q)))/(4 * coefs["asymptDisp"]))/log(2)
+    # }
+    coefs <- attr(DESeq2::dispersionFunction(dds), "coefficients")
+    x <- mat * log(2)
+    x <- exp(1)^x * (4 * coefs["asymptDisp"])
+    x <- (x - (1 + coefs["extraPois"]))/2
+    batch_corr_counts <- x^2 / (coefs["asymptDisp"] * (coefs["extraPois"] + 2 * x + 1))
+    return(batch_corr_counts)
+  }
+
+  batch_corr_counts <- batch_corrected_counts(dds)
+  output_batch_corr_counts <- sub(".diffexp.tsv", ".batch_corr_counts.tsv", output)
+  write.table(batch_corr_counts, file=output_batch_corr_counts, quote = F, sep = '\t', col.names=NA)
+  cat('-batch corrected counts saved\n')
+
+  # if quantified with salmon, generate the batch corrected TPMs as well
+  if(salmon){
+    RDS_path <- file.path(counts_dir, paste0(assembly, "-se.rds"))
+    se <- readRDS(RDS_path)
+    sg <- se$sg
+    gene_lengths <- assay(sg, "length")
+
+    counts_to_tpm <- function(mat.counts, mat.gene_lengths) {
+      #' snippet from https://support.bioconductor.org/p/91218/ to convert counts to TPM
+
+      x <- mat.counts / mat.gene_lengths
+      mat.tpm <- t( t(x) * 1e6 / colSums(x) )
+      return(mat.tpm)
+    }
+    batch_corr_tpm <- counts_to_tpm(batch_corr_counts, gene_lengths)
+
+    output_batch_corr_tpm <- sub(".diffexp.tsv", ".batch_corr_tpm.tsv", output)
+    write.table(batch_corr_tpm, file=output_batch_corr_tpm, quote = F, sep = '\t', col.names=NA)
+    cat('-batch corrected TPMs saved\n')
+  }
+}

@@ -190,13 +190,22 @@ pipeline {
                         bash ./tests/run_tests.sh bowtie2
                         '''
                     },
-                    "BWA" : {
+                    "BWA1" : {
                         sh '''#!/usr/bin/env bash
                         set -e
                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                         conda activate s2s
 
-                        bash ./tests/run_tests.sh bwa-mem
+                        bash ./tests/run_tests.sh bwa-mem1
+                        '''
+                    },
+                    "BWA2" : {
+                        sh '''#!/usr/bin/env bash
+                        set -e
+                        source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+                        conda activate s2s
+
+                        bash ./tests/run_tests.sh bwa-mem2
                         '''
                     },
                     "HISAT2" : {

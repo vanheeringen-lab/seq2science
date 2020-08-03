@@ -35,12 +35,18 @@ for (brep, _assembly), _treps in treps_from_brep.items():
     brep_from_trep.update({trep: brep for trep in _treps})
 
 
-def rep_to_descriptive(rep):
+def rep_to_descriptive(rep, brep=False):
     """
     Return the descriptive name for a replicate.
     """
-    if "descriptive_name" in samples and rep in samples.index:
-        return samples.loc[rep, "descriptive_name"]
+    if "descriptive_name" in samples:
+        if brep and "condition" in samples:
+            col = samples.condition
+        elif "replicate" in samples:
+            col = samples.replicate
+        else:
+            col = samples.index
+        rep = samples[col == rep].descriptive_name[0]
     return rep
 
 
@@ -80,7 +86,7 @@ if "replicate" in samples:
         output:
             temp(sorted(expand("{trimmed_dir}/merged/{{replicate}}{{fqext}}_trimmed.{fqsuffix}.gz", **config))),
         wildcard_constraints:
-            replicate=any_given("replicate"),
+            replicate=any_given("replicate", "control"),
             fqext=f"_{config['fqext1']}|_{config['fqext2']}|", # nothing (SE), or fqext with an underscore (PE)
         log:
             expand("{log_dir}/merge_replicates/{{replicate}}{{fqext}}.log", **config),

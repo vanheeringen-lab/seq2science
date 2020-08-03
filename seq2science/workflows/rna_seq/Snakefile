@@ -1,14 +1,9 @@
-# RNA-seq alignment is currently only compatible with STAR
-if 'star' not in config.get('aligner', ''):
-    config['aligner'] = 'star'
-
-
 # do onstart/onexit things
 sample_schemas = ['sample', 'assembly', 'replicate', 'strandedness']
 config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific', 'gene_expression', 'trackhub']
 include: "../../rules/configuration_generic.smk"
-include: "../../rules/configuration_workflows.smk"
 
+assert config["aligner"] in ["star", "hisat2"], f"\nPlease select a splice aware aligner for the RNA-seq (STAR or HISAT2)\n"
 
 # load the remaining relevant rules
 include: f"{config['rule_dir']}/alignment.smk"
@@ -26,7 +21,7 @@ include: f"{config['rule_dir']}/qc.smk"
 
 
 # load the quality control files
-quality_control = [get_trimming_qc, get_alignment_qc] if config['create_trackhub'] else [get_trimming_qc]
+quality_control = [get_trimming_qc, get_alignment_qc] if config['quantifier'] is not 'salmon' else [get_trimming_qc]
 
 # load DE analysis contrasts
 contrasts = get_contrasts()
@@ -42,6 +37,6 @@ rule count_all:
 
         [expand(f"{{dge_dir}}/{{assemblies}}-{contrast}.diffexp.tsv", **{**config, **{'assemblies': set(samples['assembly'])}}) for contrast in contrasts] if config.get('contrasts', False) else [],
 
-        [expand("{dge_dir}/{assemblies}-clustering.svg",              **{**config, **{'assemblies': set(samples['assembly'])}})] if len(treps.index) > 1 else [],
+        expand("{dge_dir}/{assemblies}-clustering.svg",               **{**config, **{'assemblies': set(samples['assembly'])}}) if len(treps.index) > 2 else [],
 
-        [expand("{result_dir}/trackhub", **config)] if config['create_trackhub'] else []
+        expand("{result_dir}/trackhub",                               **config) if config['create_trackhub'] else []

@@ -42,6 +42,9 @@ docs: https://vanheeringen-lab.github.io/seq2science
 """
 )
 
+include: f"{config['rule_dir']}/explain.smk"
+
+
 if workflow.conda_frontend == "conda":
     logger.info("NOTE: seq2science is using the conda frontend, for faster environment creation install mamba.")
 # give people a second to appreciate this beautiful ascii art
@@ -84,18 +87,16 @@ assert sorted(config['fqext'])[0] == config['fqext1'], \
 # read the config.yaml (not the profile)
 user_config = norns.config(config_file=workflow.overwrite_configfiles[0])
 
-# make absolute paths, cut off trailing slashes
+# make absolute paths, nest default dirs in result_dir and cut off trailing slashes
+config['result_dir'] = re.split("\/$", os.path.abspath(config['result_dir']))[0]
+config['samples'] = os.path.abspath(config['samples'])
 for key, value in config.items():
-    if '_dir' in key:
+    if key.endswith("_dir"):
         if key in ['result_dir', 'genome_dir', 'rule_dir'] or key in user_config:
             value = os.path.abspath(value)
+        else:
+            value = os.path.abspath(os.path.join(config['result_dir'], value))
         config[key] = re.split("\/$", value)[0]
-
-# nest default directories in result_dir
-for key, value in config.items():
-    if '_dir' in key:
-        if key not in ['result_dir', 'genome_dir', 'rule_dir'] and key not in user_config:
-            config[key] = os.path.join(config['result_dir'], config[key])
 
 
 # samples.tsv
@@ -187,6 +188,23 @@ logger.info("Checking if samples are single-end or paired-end...")
 layout_cachefile = os.path.expanduser('~/.config/seq2science/layouts.p')
 layout_cachefile_lock = os.path.expanduser('~/.config/seq2science/layouts.p.lock')
 
+def prep_filelock(lock_file, max_age=10):
+    """
+    create the directory for the lock_file if needed
+    and remove locks older than the max_age (in seconds)
+    """
+    os.makedirs(os.path.dirname(lock_file), exist_ok=True)
+
+    # sometimes two jobs start in parallel and try to delete at the same time
+    try:
+        # ignore locks that are older than the max_age
+        if os.path.exists(lock_file) and \
+                time.time() - os.stat(lock_file).st_mtime > max_age:
+            os.unlink(lock_file)
+    except FileNotFoundError:
+         pass
+
+
 def get_layout_eutils(sample):
     """
     Sends a request to ncbi checking whether a sample is single-end or paired-end.
@@ -206,10 +224,7 @@ def get_layout_eutils(sample):
                              f"acceptable library layouts are SINGLE-end and PAIRED-end.")
         return layout
     except subprocess.CalledProcessError:
-        raise ValueError(f"The command to lookup sample {sample} online failed!\n"
-                         f"Are you sure this sample exists..? Downloading samples with restricted "
-                         f"access is currently not supported. We advise you to download the sample "
-                         f"manually, and continue the pipeline from there on.")
+        return None
 
 
 def get_layout_trace(sample):
@@ -248,17 +263,7 @@ def get_layout_trace(sample):
 
 # do this locked to avoid parallel ncbi requests with the same key, and to avoid
 # multiple writes/reads at the same time to layouts.p
-if not os.path.exists(os.path.dirname(layout_cachefile_lock)):
-    os.makedirs(os.path.dirname(layout_cachefile_lock))
-
-# sometimes two jobs start in parallel and try to delete at the same time
-try:
-    # let's ignore locks that are older than 5 minutes
-    if os.path.exists(layout_cachefile_lock) and \
-             time.time() - os.stat(layout_cachefile_lock).st_mtime > 5 * 60:
-            os.remove(layout_cachefile_lock)
-except FileNotFoundError:
-     pass
+prep_filelock(layout_cachefile_lock, 5*60)
 
 with FileLock(layout_cachefile_lock):
     # try to load the layout cache, otherwise defaults to empty dictionary
@@ -272,6 +277,7 @@ with FileLock(layout_cachefile_lock):
     eutils_tp = ThreadPool(config.get('ncbi_requests', 3) // 2)
 
     trace_layout = {}
+    eutils_layout = {}
     config['layout'] = {}
 
     # now do a request for each sample that was not in the cache
@@ -282,13 +288,12 @@ with FileLock(layout_cachefile_lock):
                 all_samples.append(control)
 
     for sample in all_samples:
-        config['layout'][sample] = eutils_tp.apply_async(get_layout_eutils, (sample,))
         if os.path.exists(expand(f'{{fastq_dir}}/{sample}.{{fqsuffix}}.gz', **config)[0]):
             config['layout'][sample] ='SINGLE'
         elif all(os.path.exists(path) for path in expand(f'{{fastq_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz', **config)):
             config['layout'][sample] ='PAIRED'
         elif sample.startswith(('GSM', 'SRR', 'ERR', 'DRR')):
-            # config['layout'][sample] = eutils_tp.apply_async(get_layout_eutils, (sample,))
+            eutils_layout[sample] = eutils_tp.apply_async(get_layout_eutils, (sample,))
             trace_layout[sample] = trace_tp.apply_async(get_layout_trace, (sample,))
 
             # sleep 1.25 times the minimum required sleep time so eutils don't complain
@@ -304,7 +309,8 @@ with FileLock(layout_cachefile_lock):
 
     # now parse the output and store the cache, the local files' layout, and the ones that were fetched online
     config['layout'] = {**layout_cache,
-                        **{k: (v if isinstance(v, str) else v.get()) for k, v in config['layout'].items()},
+                        **{k: v for k, v in config['layout'].items()},
+                        **{k: v.get() for k, v in eutils_layout.items() if v.get() is not None},
                         **{k: v.get() for k, v in trace_layout.items() if v.get() is not None}}
 
     assert all(layout in ['SINGLE', 'PAIRED'] for sample, layout in config['layout'].items())
@@ -317,6 +323,15 @@ with FileLock(layout_cachefile_lock):
 # now only keep the layout of samples that are in samples.tsv
 config['layout'] = {**{key: value for key, value in config['layout'].items() if key in samples.index},
                     **{key: value for key, value in config['layout'].items() if "control" in samples and key in samples["control"].values}}
+
+for sample in samples.index:
+    if sample not in config["layout"]:
+        raise ValueError(f"The command to lookup sample {sample} online failed!\n"
+                         f"Are you sure this sample exists..? Downloading samples with restricted "
+                         f"access is currently not supported. We advise you to download the sample "
+                         f"manually, and continue the pipeline from there on.")
+
+
 logger.info("Done!\n\n")
 
 # if samples are merged add the layout of the technical replicate to the config
@@ -414,15 +429,7 @@ else:
 if config.get("create_trackhub"):
     hubfile = os.path.expanduser('~/.config/seq2science/ucsc_trackhubs.p')
     hubfile_lock = os.path.expanduser('~/.config/seq2science/ucsc_trackhubs.p.lock')
-
-    # sometimes two jobs start in parallel and try to delete at the same time
-    try:
-        # ignore locks that are older than 10 seconds
-        if os.path.exists(hubfile_lock) and \
-                time.time() - os.stat(hubfile_lock).st_mtime > 10:
-            os.unlink(hubfile_lock)
-    except FileNotFoundError:
-         pass
+    prep_filelock(hubfile_lock)
 
     with FileLock(hubfile_lock):
         if not os.path.exists(hubfile):
@@ -455,8 +462,10 @@ onstart:
             dst = os.path.join(config['log_dir'], os.path.basename(file) if n<2 else "profile.yaml")
             shutil.copy(src, dst)
 onsuccess:
-    if config["email"] not in ["none@provided.com", "yourmail@here.com"]:
+    if config.get("email") not in ["none@provided.com", "yourmail@here.com", None]:
         os.system(f"""echo "Succesful pipeline run! :)" | mail -s "The seq2science pipeline finished succesfully." {config["email"]} 2> /dev/null""")
 onerror:
-    if config["email"] not in ["none@provided.com", "yourmail@here.com"]:
+    if config.get("email") not in ["none@provided.com", "yourmail@here.com", None]:
         os.system(f"""echo "Unsuccessful pipeline run! :(" | mail -s "The seq2science pipeline finished prematurely..." {config["email"]} 2> /dev/null """)
+
+include: "../rules/configuration_workflows.smk"
