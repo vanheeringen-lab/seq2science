@@ -1,6 +1,7 @@
 suppressMessages({
   library(DESeq2)
   library(IHW)
+  library(ggplot2)
 })
 
 # snakemake variables
@@ -190,16 +191,16 @@ if (is.na(batch)){
   output_pca_plots <- sub(".diffexp.tsv", ".pca_plot_%01d.svg", output)
   svg(output_pca_plots)
   if(length(levels(blind_vst$batch)) < 7){
-    plot(g1 + ggtitle("blind PCA - color by sample") + aes(color=condition, shape=batch) + theme(legend.position="bottom"))
+    plot(g1 + ggtitle("blind PCA - color by condition") + aes(color=condition, shape=batch) + theme(legend.position="bottom"))
     plot(g1 + ggtitle("blind PCA - color by batch") + aes(color=batch) + theme(legend.position="bottom"))
 
-    plot(g2 + ggtitle("batch corrected PCA - color by sample") + aes(color=condition, shape=batch) + theme(legend.position="bottom"))
+    plot(g2 + ggtitle("batch corrected PCA - color by condition") + aes(color=condition, shape=batch) + theme(legend.position="bottom"))
     plot(g2 + ggtitle("batch corrected PCA - color by batch") + aes(color=batch) + theme(legend.position="bottom"))
   } else {
-    plot(g1 + ggtitle("blind PCA - color by sample") + aes(color=condition) + theme(legend.position="bottom"))
+    plot(g1 + ggtitle("blind PCA - color by condition") + aes(color=condition) + theme(legend.position="bottom"))
     plot(g1 + ggtitle("blind PCA - color by batch") + aes(color=batch) + theme(legend.position="bottom"))
 
-    plot(g2 + ggtitle("batch corrected PCA - color by sample") + aes(color=condition) + theme(legend.position="bottom"))
+    plot(g2 + ggtitle("batch corrected PCA - color by condition") + aes(color=condition) + theme(legend.position="bottom"))
     plot(g2 + ggtitle("batch corrected PCA - color by batch") + aes(color=batch) + theme(legend.position="bottom"))
   }
   invisible(dev.off())

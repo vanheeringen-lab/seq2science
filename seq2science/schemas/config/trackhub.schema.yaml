@@ -1,18 +1,24 @@
 $schema: "http://json-schema.org/draft-06/schema#"
 
-description: seq2science gene expression configuration
+description: seq2science trackhub configuration
 
 properties:
   # scope of analysis: create a trackhub or only align and/or quantify (and create gene counts)
   create_trackhub:
-    description: skip generation of bams (except for workflow alignment), bigwigs and a trackhub
+    description: generate a trackhub (and required files)?
     default: True
     enum: [True, False]
 
-  deeptools:
-    description: option flags for bam to bigwig conversions with deeptools bamCoverage
+  bigwig_dir:
+    description: directory where to store the bigwigs used by the trackhub (defaults inside the result dir)
+    default: bigwigs
+    type: string
+
+  deeptools_flags:
+    description: flags for bam to bigwig conversions with deeptools bamCoverage
     default: --samFlagExclude 1024 # exclude duplicates marked by Picard
+
   filter_bam_by_strand:
-    description: split bigwigs by strand?
+    description: split bigwigs by strand (requires strandedness column in samples)?
     default: True
     enum: [True, False]

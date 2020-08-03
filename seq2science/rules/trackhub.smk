@@ -202,7 +202,7 @@ rule trackhub_index:
         """
 
 
-def get_bigwig_strand(sample):
+def bigwig_strands(sample):
     """
     return a list of extensions for (un)stranded bigwigs
     """
@@ -294,9 +294,9 @@ def get_trackhub_files(wildcards):
     elif get_workflow() in ["alignment", "rna_seq"]:
         # get all the bigwigs
         for sample in treps.index:
-            for bw in get_bigwig_strand(sample):
+            for bw in bigwig_strands(sample):
                 bw = expand(
-                    f"{{result_dir}}/bigwigs/{treps.loc[sample]['assembly']}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw",
+                    f"{{bigwig_dir}}/{treps.loc[sample]['assembly']}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw",
                     **config,
                 )
                 trackfiles["bigwigs"].extend(bw)
@@ -320,11 +320,7 @@ rule trackhub:
         unpack(get_trackhub_files),
     output:
         directory(f"{config['result_dir']}/trackhub"),
-    message:
-        explain_rule("""
-        We used the UCSC genome browser (http://www.genome.org/cgi/doi/10.1101/gr.229102)
-        to visualize and inspect alignment. 
-        """)
+    message: explain_rule("trackhub")
     log:
         expand("{log_dir}/trackhub/trackhub.log", **config),
     benchmark:
@@ -436,13 +432,13 @@ rule trackhub:
                                 shell(f"ln {file_loc} {link_loc}")
 
                 # next add the data files depending on the workflow
-                # ATAC-seq trackhub
+                # ChIP-/ATAC-seq trackhub
                 if get_workflow() in ["atac_seq", "chip_seq"]:
                     for peak_caller in config["peak_caller"]:
                         for brep in set(breps[breps["assembly"] == assembly].index):
                             ftype = get_ftype(peak_caller)
                             bigpeak = f"{config['result_dir']}/{peak_caller}/{assembly}-{brep}.big{ftype}"
-                            sample_name = rep_to_descriptive(brep) + "_pk"
+                            sample_name = rep_to_descriptive(brep, brep=True) + "_pk"
                             if len(config["peak_caller"]) > 1:
                                 sample_name += f"_{peak_caller}"
                             sample_name = trackhub.helpers.sanitize(sample_name)
@@ -485,13 +481,13 @@ rule trackhub:
                                 trackdb.add_tracks(track)
                                 priority += 1
 
-                # RNA-seq trackhub
+                # Alignment/RNA-seq trackhub
                 elif get_workflow() in ["alignment", "rna_seq"]:
                     for sample in treps[treps["assembly"] == assembly].index:
-                        for bw in get_bigwig_strand(sample):
-                            bigwig = f"{config['result_dir']}/bigwigs/{assembly}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw"
+                        for bw in bigwig_strands(sample):
+                            bigwig = f"{config['bigwig_dir']}/{assembly}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw"
                             assert os.path.exists(bigwig), bigwig + " not found!"
-                            sample_name = rep_to_descriptive(sample) + "_bw"
+                            sample_name = rep_to_descriptive(sample)
                             sample_name = trackhub.helpers.sanitize(sample_name)
 
                             track = trackhub.Track(
