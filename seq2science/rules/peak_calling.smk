@@ -32,9 +32,12 @@ def get_genrich_replicates(wildcards):
         }
     else:
         if "control" in samples:
-            control_name = breps.loc[sample_condition, "control"]
-            if isinstance(control_name, str):  # ignore nan
-                control = expand(f"{{final_bam_dir}}/{assembly}-{control_name}.sambamba-queryname.bam", **config)
+            control_names = breps[breps["assembly"] == assembly].loc[sample_condition, "control"]
+            if isinstance(control_names, str):  # single control, ignore nan
+                control = expand(f"{{final_bam_dir}}/{assembly}-{control_names}.sambamba-queryname.bam", **config)
+            if isinstance(control_names, pd.Series):  # multiple controls
+                control = expand([f"{{final_bam_dir}}/{assembly}-{control_name}.sambamba-queryname.bam"
+                                  for control_name in control_names], **config)
         return {
             "control": control,
             "reps": expand(
