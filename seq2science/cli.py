@@ -139,11 +139,6 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
     )
     for subparser in [run, explain]:
         subparser.add_argument(
-            "--unlock",
-            help="Remove a lock on the working directory.",
-            action='store_true'
-        )
-        subparser.add_argument(
             "--snakemakeOptions",
             nargs="+",
             action=_StoreDictKeyPair,
@@ -168,6 +163,11 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
     run.add_argument(
         "--rerun-incomplete",
         help="Re-run all jobs the output of which is recognized as incomplete.",
+        action='store_true'
+    )
+    run.add_argument(
+        "--unlock",
+        help="Remove a lock on the working directory.",
         action='store_true'
     )
 
@@ -278,14 +278,10 @@ def _explain(args, base_dir, workflows_dir, config_path):
         sys.exit(1)
 
     # parse the args
-    # snakemake_options.setdefault("config", {}).update({"rule_dir": os.path.join(base_dir, "rules")})
     parsed_args = {"snakefile": os.path.join(workflows_dir, args.workflow.replace("-", "_"), "Snakefile"),
-                   "unlock": args.unlock,
                    "dryrun": True,
                    "forceall": True,
-                   "quiet": False,
-                   "config": {"rule_dir": os.path.join(base_dir, "rules"),
-                              "explain_rule": True}}
+                   "quiet": False}
 
     # get the additional snakemake options
     snakemake_options = args.snakemakeOptions if args.snakemakeOptions is not None else dict()
@@ -314,6 +310,7 @@ def _explain(args, base_dir, workflows_dir, config_path):
             rules_used[log["name"]] = log["msg"]
 
     parsed_args["log_handler"] = [log_handler]
+    parsed_args["config"]["explain_rule"] = True
 
     # run snakemake (silently)
     with open(os.devnull, "w") as null:
