@@ -9,7 +9,6 @@ import shutil
 import webbrowser
 import re
 import inspect
-import yaml
 import contextlib
 
 
@@ -27,7 +26,6 @@ try:
     conda_frontend = "mamba"
 except ImportError:
     conda_frontend = "conda"
-
 
 
 def main():
@@ -100,11 +98,11 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         help="Take me to the docs!",
     )
 
-    # both init and run can use all workflows
+    # init, run and explain can use all workflows
     for subparser in [init, run, explain]:
         subparser.add_argument("workflow", choices=[dir.replace("_", "-") for dir in os.listdir(workflows_dir)])
 
-    # setup init arguments
+    # init arguments
     init.add_argument(
         "--dir",
         default=".",
@@ -112,13 +110,15 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         help="The path to the directory where to initialise the config and samples files.",
     )
 
-    run.add_argument(
-        "-c",
-        "--configfile",
-        default="./config.yaml",
-        metavar="FILE",
-        help="The path to the config file.",
-    )
+    # run/explain arguments
+    for subparser in [run, explain]:
+        subparser.add_argument(
+            "-c",
+            "--configfile",
+            default="./config.yaml",
+            metavar="FILE",
+            help="The path to the config file.",
+        )
     global core_arg
     core_arg = run.add_argument(
         "-j", "--cores",
@@ -137,27 +137,29 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         help="Print the reason for each executed rule.",
         action='store_true'
     )
-    run.add_argument(
-        "--unlock",
-        help="Remove a lock on the working directory.",
-        action='store_true'
-    )
-    run.add_argument(
-        "--snakemakeOptions",
-        nargs="+",
-        action=_StoreDictKeyPair,
-        metavar="KEY=VAL",
-        help="Extra arguments to pass along to snakemake. An example could be seq2science run "
-        "alignment --cores 12 --snakemakeOptions resources={mem_gb:100} local_cores=3. Here we pass local_cores as "
-        "KEY=VALUE and additional resources can even be passed along in a dictionary. Take a look at the snakemake API "
-        "for a complete list of all possible options: "
-        "https://snakemake.readthedocs.io/en/latest/api_reference/snakemake.html",
-    )
-    run.add_argument(
-        "--profile",
-        metavar="PROFILE NAME",
-        help="Use a snakemake/seq2science profile. Profiles can be taken from: https://github.com/snakemake-profiles",
-    )
+    for subparser in [run, explain]:
+        subparser.add_argument(
+            "--unlock",
+            help="Remove a lock on the working directory.",
+            action='store_true'
+        )
+        subparser.add_argument(
+            "--snakemakeOptions",
+            nargs="+",
+            action=_StoreDictKeyPair,
+            metavar="KEY=VAL",
+            help="Extra arguments to pass along to snakemake. An example could be seq2science run "
+            "alignment --cores 12 --snakemakeOptions resources={mem_gb:100} local_cores=3. "
+            "Here we pass local_cores as KEY=VALUE and additional resources can even be passed along in a dictionary. "
+            "Take a look at the snakemake API  for a complete list of all possible options: "
+            "https://snakemake.readthedocs.io/en/latest/api_reference/snakemake.html",
+        )
+        subparser.add_argument(
+            "--profile",
+            metavar="PROFILE NAME",
+            help="Use a snakemake/seq2science profile. "
+                 "Profiles can be taken from: https://github.com/snakemake-profiles",
+        )
     run.add_argument(
         "-k", "--keep-going",
         help="Go on with independent jobs if a job fails.",
@@ -167,14 +169,6 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         "--rerun-incomplete",
         help="Re-run all jobs the output of which is recognized as incomplete.",
         action='store_true'
-    )
-
-    explain.add_argument(
-        "-c",
-        "--configfile",
-        default="./config.yaml",
-        metavar="FILE",
-        help="The path to the config file.",
     )
 
     return parser
@@ -248,7 +242,7 @@ def _run(args, base_dir, workflows_dir, config_path):
     # cores
     if args.cores:  # CLI
         parsed_args["cores"] = args.cores
-    elif parsed_args["cores"]:  # profile
+    elif parsed_args.get("cores"):  # profile
         parsed_args["cores"] = int(parsed_args["cores"])
     elif parsed_args["dryrun"]:
         parsed_args["cores"] = 999
@@ -286,6 +280,7 @@ def _explain(args, base_dir, workflows_dir, config_path):
     # parse the args
     # snakemake_options.setdefault("config", {}).update({"rule_dir": os.path.join(base_dir, "rules")})
     parsed_args = {"snakefile": os.path.join(workflows_dir, args.workflow.replace("-", "_"), "Snakefile"),
+                   "unlock": args.unlock,
                    "dryrun": True,
                    "forceall": True,
                    "quiet": False,
@@ -308,19 +303,7 @@ def _explain(args, base_dir, workflows_dir, config_path):
     parsed_args.update(snakemake_options)
 
     # cores
-    if args.cores:  # CLI
-        parsed_args["cores"] = args.cores
-    elif parsed_args["cores"]:  # profile
-        parsed_args["cores"] = int(parsed_args["cores"])
-    elif parsed_args["dryrun"]:
-        parsed_args["cores"] = 999
-    else:
-        parsed_args["cores"] = 0
-
-    if parsed_args["cores"] < 2:
-        parsed_args["cores"] = 999
-
-    core_parser(parsed_args)
+    parsed_args["cores"] = 999
 
     # starting message
     rules_used = {"start": f"\nPreprocessing of reads was done automatically with workflow tool "
