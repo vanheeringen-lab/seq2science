@@ -1,6 +1,6 @@
 subtitle: "These samples were run by <a href=\"https://vanheeringen-lab.github.io/seq2science\">seq2science</a>, a tool for easy preprocessing of NGS data."
 intro_text: "Take a look at our <a href=\"https://vanheeringen-lab.github.io/seq2science/content/results.html#multiqc-quality-report\">docs</a> for info about how to use this report to the fullest."
-custom_logo: '../../imgs/rimls.jpg'
+custom_logo: '{{config["rule_dir"]}}/../imgs/rimls.jpg'
 log_filesize_limit: 350000000  # 350 mb
 
 

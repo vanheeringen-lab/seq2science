@@ -1,11 +1,16 @@
 # Changelog
 All notable changes to `seq2science` will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-All changed fall under either one of these types: `added`, `changed`, `deprecated`, `removed`, `fixed`, `security`.
+All changed fall under either one of these types: `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed` or `Security`.
 
 ## [Unreleased]
+
+### Fixed
+
+- Allow for same condition name across different assemblies & different controls
 
 ### Added
 
@@ -19,6 +24,7 @@ All changed fall under either one of these types: `added`, `changed`, `deprecate
 - strandedness results are displayed in the multiQC under "Strandedness"
 - a DEXSeq counts matrixs can now be generated with `dexseq: True`
 - seq2science CLI now has the same reason flag as snakemake (-r/--reason flag)
+- (re)added fnwi + rimls logos to the qc reports that went missing in seq2science migration
 
 ### Changed
 
@@ -38,7 +44,7 @@ All changed fall under either one of these types: `added`, `changed`, `deprecate
 - seq2science CLI can now be run without cores with a dryrun or profile with cores
 - Jenkins code style (now used mamba to install flake8)
 
-## v0.1.0 - 2020-07-15
+## [0.1.0] - 2020-07-15
 
 ### Added
 
@@ -54,7 +60,7 @@ All changed fall under either one of these types: `added`, `changed`, `deprecate
 
 - Bug when merging replicates and having controls
 
-## v0.0.3 - 2020-07-01
+## [0.0.3] - 2020-07-01
 
 ### Fixed
 - bug when specifying 2 cores, which rounded down to zero cores for samtools sorting and crash
@@ -62,7 +68,7 @@ All changed fall under either one of these types: `added`, `changed`, `deprecate
 - seq2science cache on sensible location + seq2science clean fixed
 - only lookup sample layout when not local, opens up for slightly better tests in bioconda recipe
 
-## v0.0.2 - 2020-06-29
+## [0.0.2] - 2020-06-29
 
 ### Fixed
 
@@ -73,8 +79,15 @@ All changed fall under either one of these types: `added`, `changed`, `deprecate
 - The count table for ATAC/ChIP-seq peaks is now made from finding all peaks within a range of 200 bp, and taking the most significant one (gimmemotifs' combine_peaks) and extending the remaining peaks 200 bp. On this count table quantile normalisation, TMM, RLE and upperquartile normalisation with CPM is done. Downstream steps log transform these and mean center them. This however means that for broadpeaks no count_table is generated.
 - Snakefmt -l 121 applied
 
-## v0.0.1 - 2020-06-17
+## [0.0.1] - 2020-06-17
 Many minor bug- and quality of life fixes.
 
-## v0.0.0 - 2020-06-11
+## [0.0.0] - 2020-06-11
 First release of seq2science!
+
+[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/master...develop
+[0.1.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.0.3...v0.1.0
+[0.0.3]: https://github.com/vanheeringen-lab/seq2science/compare/v0.0.2...v0.0.3
+[0.0.2]: https://github.com/vanheeringen-lab/seq2science/compare/v0.0.1...v0.0.2
+[0.0.1]: https://github.com/vanheeringen-lab/seq2science/compare/v0.0.0...v0.0.1
+[0.0.0]: https://github.com/vanheeringen-lab/seq2science/releases/tag/v0.0.0

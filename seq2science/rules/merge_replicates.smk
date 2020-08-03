@@ -13,7 +13,6 @@ assert treps.index.is_unique, "duplicate value found in treps"
 breps = treps
 if "condition" in treps:
     breps = treps.reset_index(drop=True).drop_duplicates().set_index("condition")
-    assert breps.index.is_unique, "duplicate value found in breps"
 
 
 # make a dict that returns the treps that belong to a brep
