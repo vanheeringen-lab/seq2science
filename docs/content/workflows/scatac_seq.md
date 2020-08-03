@@ -12,7 +12,7 @@ Alternatively instead you have a large FASTQ file containing a cell specific ID 
   <img src="../../_static/scatac_seq.png">
 </p>
 
-#### WIP: (Automated) downloading of fastq
+####(Automated) downloading of fastq
 scATAC-seq can be done with local fastq files, downloaded files, or a mix of those. Make sure to take a look at our downloading fastq [best practices](https://vanheeringen-lab.github.io/seq2science/content/workflows/download_fastq.html#best-practices) when making use of the downloading functionality.
 
 #### merge cell fastq files based on processing  
