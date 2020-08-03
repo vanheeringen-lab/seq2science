@@ -256,17 +256,15 @@ def _run(args, base_dir, workflows_dir, config_path):
         parsed_args["cores"] = 0
 
     if parsed_args["cores"] < 2:
-        raise argparse.ArgumentError(core_arg, "specify at least two cores.")
+        # we need to raise an exception and catch it for a subjectively prettier message
+        try:
+            raise argparse.ArgumentError(core_arg, "specify at least two cores.")
+        except argparse.ArgumentError as e:
+            print()  # empty line
+            print(e)
+            sys.exit(1)
 
-    # scale threads if cores is too low
-    overwrite_threads = core_parser(parsed_args)
-    if overwrite_threads:
-        if "overwrite_threads" not in parsed_args:
-            parsed_args["overwrite_threads"] = overwrite_threads
-        else:
-            for k, v in overwrite_threads.items():
-                if k not in parsed_args["overwrite_threads"]:
-                    parsed_args["overwrite_threads"][k] = v
+    core_parser(parsed_args)
 
     # run snakemake
     exit_code = snakemake.snakemake(**parsed_args)
@@ -319,15 +317,7 @@ def _explain(args, base_dir, workflows_dir, config_path):
     if parsed_args["cores"] < 2:
         parsed_args["cores"] = 999
 
-    # scale threads if cores is too low
-    overwrite_threads = core_parser(parsed_args)
-    if overwrite_threads:
-        if "overwrite_threads" not in parsed_args:
-            parsed_args["overwrite_threads"] = overwrite_threads
-        else:
-            for k, v in overwrite_threads.items():
-                if k not in parsed_args["overwrite_threads"]:
-                    parsed_args["overwrite_threads"][k] = v
+    core_parser(parsed_args)
 
     # starting message
     rules_used = {"start": f"\nPreprocessing of reads was done automatically with workflow tool "
@@ -427,15 +417,20 @@ def core_parser(parsed_args):
     d_sorters_threads = 2
     d_aligner_threads = 10
     desired_threads = d_sorters_threads + d_aligner_threads
-    overwrite_threads = dict()
     if cores < desired_threads:
         # scale the threads accordingly
         d_sorters_threads = max([1, round(d_sorters_threads / desired_threads * cores)])
         d_aligner_threads = cores - d_sorters_threads
 
+        overwrite_threads = dict()
         for aligner in aligners:
             overwrite_threads[aligner] = d_aligner_threads
         for sorter in sorters:
             overwrite_threads[sorter] = d_sorters_threads
 
-    return overwrite_threads
+        if "overwrite_threads" not in parsed_args:
+            parsed_args["overwrite_threads"] = overwrite_threads
+        else:
+            for k, v in overwrite_threads.items():
+                if k not in parsed_args["overwrite_threads"]:
+                    parsed_args["overwrite_threads"][k] = v
