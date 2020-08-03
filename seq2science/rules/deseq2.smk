@@ -1,3 +1,15 @@
+def get_counts_file(wildcards):
+    if get_workflow() == "rna_seq":
+        countsfile = expand("{counts_dir}/{{assembly}}-counts.tsv", **config)
+    elif get_workflow() in ["chip_seq", "atac_seq"]:
+        # todo: strip off the / on either side
+        print(wildcards.peak_caller)
+        countsfile = expand("{result_dir}/count_table/{{peak_caller}}/{{assembly}}_raw.tsv", **config)
+    else:
+        raise NotImplementedError
+    return countsfile
+
+
 def get_contrasts():
     """
     splits contrasts that contain multiple comparisons
@@ -46,16 +58,16 @@ rule deseq2:
     Differential gene expression analysis with DESeq2.
     """
     input:
-        expand("{counts_dir}/{{assembly}}-counts.tsv", **config),
+        get_counts_file
     output:
-        expand("{dge_dir}/{{assembly}}-{{contrast}}.diffexp.tsv", **config),
+        expand("{dge_dir}/{{peak_caller,.*}}{{assembly}}-{{contrast}}.diffexp.tsv", **config),
     conda:
         "../envs/deseq2.yaml"
     log:
-        expand("{log_dir}/deseq2/{{assembly}}-{{contrast}}.diffexp.log", **config),
+        expand("{log_dir}/deseq2/{{peak_caller}}{{assembly}}-{{contrast}}.diffexp.log", **config),
     message: explain_rule("deseq2")
     benchmark:
-        expand("{benchmark_dir}/deseq2/{{assembly}}-{{contrast}}.diffexp.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/deseq2/{{peak_caller}}{{assembly}}-{{contrast}}.diffexp.benchmark.txt", **config)[0]
     threads: 4
     params:
         samples=os.path.abspath(config["samples"]),
@@ -71,7 +83,7 @@ rule blind_clustering:
     Create a sample distance matrix plot per assembly
     """
     input:
-        expand("{counts_dir}/{{assembly}}-counts.tsv", **config),
+        get_counts_file
     output:
         expand("{dge_dir}/{{assembly}}-clustering.svg", **config),
     conda:
