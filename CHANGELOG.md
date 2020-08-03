@@ -36,6 +36,7 @@ All changed fall under either one of these types: `added`, `changed`, `deprecate
 
 - the alignment workflow no longer uses strandedness
 - seq2science CLI can now be run without cores with a dryrun or profile with cores
+- Jenkins code style (now used mamba to install flake8)
 
 ## v0.1.0 - 2020-07-15
 
