@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Fixed
+
+- Allow for same condition name across different assemblies & different controls
+
 ### Added
 
 - HISAT2 as aligner for RNA-seq
