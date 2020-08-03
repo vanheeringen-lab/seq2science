@@ -282,7 +282,7 @@ elif config["aligner"] == "star" or config.get("quantifier", "") == "star":
         Troubleshooting:
         1) sufficient disk space?
         2) increase the RAM available (--limitGenomeGenerateRAM)
-        3) reduce the number of threads (snakemake -j 5)
+        3) reduce the number of threads (seq2science -j 5)
         4) reduce accuracy (--genomeSAsparseD 2)
 
         For example, in your config.yaml, set aligner/quantifier:
