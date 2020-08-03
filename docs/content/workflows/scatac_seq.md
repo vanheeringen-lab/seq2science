@@ -26,6 +26,7 @@ Make sure to take a look at our [alignment wiki](https://vanheeringen-lab.github
 
 #### Generate and bin a SNAP_Object for downstream analysis
 To find cellular heterogeneity before peak calling, SNAP-ATAC binns the genome. Using this for demensionality reduction of the data and finding cell clusters before peak calling. By default the pipeline includes bins of 5kB, but this is changable in the config.yaml file.
+After clustering peaks can be called on the aggregated cluster signals. This makes it easier to find peaks present only in a small cluster of cells. This does however mean that the pipeline doesnt perform peakcalling, this is done later in the snapATAC vignette.
 
 ### best practices
 TODO: Make sure to take a look at: [example preprocessing](../scATAC_postprocessing.html)
