@@ -30,11 +30,12 @@ All changed fall under either one of these types: `added`, `changed`, `deprecate
 - batch corrected TPM are generated if a DESeq2 design contrast inclused a batch, and quantification was performed using Salmon
   - for us in ANANSE, for instance
 - `seq2science explain` now retrieves messages from `explain.smk`.
-- seq2science CLI now has default cores set to 2 (-j/--cores flag)
+- `seq2science explain` now used profiles and snakemakeOptions.
 
 ### Fixed
 
 - the alignment workflow no longer uses strandedness
+- seq2science CLI can now be run without cores with a dryrun or profile with cores
 
 ## v0.1.0 - 2020-07-15
 

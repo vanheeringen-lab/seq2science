@@ -66,264 +66,264 @@ pipeline {
             }
         }
 
-        stage('Generate DAGs') {
-            steps {
-                parallel (
-                    "1 Download & alignment" : {
-                        sh '''#!/usr/bin/env bash
-                        set -e
-                        source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate s2s
-
-                        bash ./tests/dag_tests.sh alignment
-                        '''
-                    },
-                    "2 ATAC-seq & ChIP-seq" : {
-                        sh '''#!/usr/bin/env bash
-                        set -e
-                        source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate s2s
-
-                        bash ./tests/dag_tests.sh atac-seq
-                        '''
-                    },
-                    "3 scATAC-seq" : {
-                        sh '''#!/usr/bin/env bash
-                        set -e
-                        source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate s2s
-
-                        bash ./tests/dag_tests.sh scatac-seq
-                        '''
-                    },
-                    "4 RNA-seq" : {
-                        sh '''#!/usr/bin/env bash
-                        set -e
-                        source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate s2s
-
-                        bash ./tests/dag_tests.sh rna-seq
-                        '''
-                    },
-                    "~ setup conda environments" : {
-                        sh '''#!/usr/bin/env bash
-                        set -e
-                        source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate s2s
-
-                        bash ./tests/run_tests.sh prep_align
-                        '''
-                    }
-                )
-            }
-        }
-
-
-        stage('Download workflow') {
-//             when {
-//                 anyOf {
-//                     // always fully build develop and master
-//                     branch 'master'
-//                     branch 'develop'
+//         stage('Generate DAGs') {
+//             steps {
+//                 parallel (
+//                     "1 Download & alignment" : {
+//                         sh '''#!/usr/bin/env bash
+//                         set -e
+//                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+//                         conda activate s2s
 //
-//                     // always run when jenkins, envs or configuration is changed
-//                     changeset glob: 'Jenkins/*'
-//                     changeset glob: 'envs/*'
-//                     changeset 'rules/configuration.smk'
+//                         bash ./tests/dag_tests.sh alignment
+//                         '''
+//                     },
+//                     "2 ATAC-seq & ChIP-seq" : {
+//                         sh '''#!/usr/bin/env bash
+//                         set -e
+//                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+//                         conda activate s2s
 //
-//                     // run when relevant rules are changed
-//                     changeset glob: 'seq2science/workflows/download_fastq/*'
-//                     changeset 'rules/get_fastq.smk'
+//                         bash ./tests/dag_tests.sh atac-seq
+//                         '''
+//                     },
+//                     "3 scATAC-seq" : {
+//                         sh '''#!/usr/bin/env bash
+//                         set -e
+//                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+//                         conda activate s2s
 //
-//                     // run when last time you failed
-//                     expression {
-//                         return getFailedStages(Jenkins.instance.getItemByFullName("Snakemake-Workflows")\
-//                         .getItem("$GIT_BRANCH")._getRuns().last()).contains("Test downloading")
+//                         bash ./tests/dag_tests.sh scatac-seq
+//                         '''
+//                     },
+//                     "4 RNA-seq" : {
+//                         sh '''#!/usr/bin/env bash
+//                         set -e
+//                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+//                         conda activate s2s
+//
+//                         bash ./tests/dag_tests.sh rna-seq
+//                         '''
+//                     },
+//                     "~ setup conda environments" : {
+//                         sh '''#!/usr/bin/env bash
+//                         set -e
+//                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+//                         conda activate s2s
+//
+//                         bash ./tests/run_tests.sh prep_align
+//                         '''
 //                     }
-//                 }
+//                 )
 //             }
-            steps {
-                sh '''#!/usr/bin/env bash
-                set -e
-                source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                conda activate s2s
-
-                bash ./tests/run_tests.sh download
-                '''
-            }
-        }
-
-
-        stage('Alignment workflow') {
-//             when {
-//                 anyOf {
-//                     // always fully build develop and master
-//                     branch 'master'
-//                     branch 'develop'
+//         }
 //
-//                     // always run when jenkins, envs or configuration is changed
-//                     changeset glob: 'Jenkins/*'
-//                     changeset glob: 'envs/*'
-//                     changeset 'rules/configuration.smk'
 //
-//                     // run when relevant rules are changed
-//                     changeset glob: 'seq2science/workflows/alignment/*'
-//                     changeset 'rules/alignment.smk'
-//                     changeset 'rules/trimming.smk'
-//                     changeset 'rules/qc.smk'
+//         stage('Download workflow') {
+// //             when {
+// //                 anyOf {
+// //                     // always fully build develop and master
+// //                     branch 'master'
+// //                     branch 'develop'
+// //
+// //                     // always run when jenkins, envs or configuration is changed
+// //                     changeset glob: 'Jenkins/*'
+// //                     changeset glob: 'envs/*'
+// //                     changeset 'rules/configuration.smk'
+// //
+// //                     // run when relevant rules are changed
+// //                     changeset glob: 'seq2science/workflows/download_fastq/*'
+// //                     changeset 'rules/get_fastq.smk'
+// //
+// //                     // run when last time you failed
+// //                     expression {
+// //                         return getFailedStages(Jenkins.instance.getItemByFullName("Snakemake-Workflows")\
+// //                         .getItem("$GIT_BRANCH")._getRuns().last()).contains("Test downloading")
+// //                     }
+// //                 }
+// //             }
+//             steps {
+//                 sh '''#!/usr/bin/env bash
+//                 set -e
+//                 source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+//                 conda activate s2s
 //
-//                     // run when last time you failed
-//                     expression {
-//                         return getFailedStages(Jenkins.instance.getItemByFullName("Snakemake-Workflows")\
-//                         .getItem("$GIT_BRANCH")._getRuns().last()).contains("Test alignment")
+//                 bash ./tests/run_tests.sh download
+//                 '''
+//             }
+//         }
+//
+//
+//         stage('Alignment workflow') {
+// //             when {
+// //                 anyOf {
+// //                     // always fully build develop and master
+// //                     branch 'master'
+// //                     branch 'develop'
+// //
+// //                     // always run when jenkins, envs or configuration is changed
+// //                     changeset glob: 'Jenkins/*'
+// //                     changeset glob: 'envs/*'
+// //                     changeset 'rules/configuration.smk'
+// //
+// //                     // run when relevant rules are changed
+// //                     changeset glob: 'seq2science/workflows/alignment/*'
+// //                     changeset 'rules/alignment.smk'
+// //                     changeset 'rules/trimming.smk'
+// //                     changeset 'rules/qc.smk'
+// //
+// //                     // run when last time you failed
+// //                     expression {
+// //                         return getFailedStages(Jenkins.instance.getItemByFullName("Snakemake-Workflows")\
+// //                         .getItem("$GIT_BRANCH")._getRuns().last()).contains("Test alignment")
+// //                     }
+// //                 }
+// //             }
+//             steps {
+//                 parallel (
+//                     "Bowtie2" : {
+//                         sh '''#!/usr/bin/env bash
+//                         set -e
+//                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+//                         conda activate s2s
+//
+//                         bash ./tests/run_tests.sh bowtie2
+//                         '''
+//                     },
+//                     "BWA1" : {
+//                         sh '''#!/usr/bin/env bash
+//                         set -e
+//                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+//                         conda activate s2s
+//
+//                         bash ./tests/run_tests.sh bwa-mem1
+//                         '''
+//                     },
+//                     "BWA2" : {
+//                         sh '''#!/usr/bin/env bash
+//                         set -e
+//                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+//                         conda activate s2s
+//
+//                         bash ./tests/run_tests.sh bwa-mem2
+//                         '''
+//                     },
+//                     "HISAT2" : {
+//                         sh '''#!/usr/bin/env bash
+//                         set -e
+//                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+//                         conda activate s2s
+//
+//                         bash ./tests/run_tests.sh hisat2
+//                         '''
+//                     },
+//                     "STAR" : {
+//                         sh '''#!/usr/bin/env bash
+//                         set -e
+//                         source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+//                         conda activate s2s
+//
+//                         bash ./tests/run_tests.sh star
+//                         '''
 //                     }
-//                 }
+//                 )
 //             }
-            steps {
-                parallel (
-                    "Bowtie2" : {
-                        sh '''#!/usr/bin/env bash
-                        set -e
-                        source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate s2s
-
-                        bash ./tests/run_tests.sh bowtie2
-                        '''
-                    },
-                    "BWA1" : {
-                        sh '''#!/usr/bin/env bash
-                        set -e
-                        source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate s2s
-
-                        bash ./tests/run_tests.sh bwa-mem1
-                        '''
-                    },
-                    "BWA2" : {
-                        sh '''#!/usr/bin/env bash
-                        set -e
-                        source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate s2s
-
-                        bash ./tests/run_tests.sh bwa-mem2
-                        '''
-                    },
-                    "HISAT2" : {
-                        sh '''#!/usr/bin/env bash
-                        set -e
-                        source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate s2s
-
-                        bash ./tests/run_tests.sh hisat2
-                        '''
-                    },
-                    "STAR" : {
-                        sh '''#!/usr/bin/env bash
-                        set -e
-                        source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                        conda activate s2s
-
-                        bash ./tests/run_tests.sh star
-                        '''
-                    }
-                )
-            }
-        }
-
-
-        stage('ATAC-seq workflow') {
-//             when {
-//                 anyOf {
-//                     // always fully build develop and master
-//                     branch 'master'
-//                     branch 'develop'
+//         }
 //
-//                     // always run when jenkins, envs or configuration is changed
-//                     changeset glob: 'Jenkins/*'
-//                     changeset glob: 'envs/*'
-//                     changeset 'rules/configuration.smk'
 //
-//                     // run when relevant rules are changed
-//                     changeset glob: 'seq2science/workflows/atac_seq/*'
-//                     changeset 'rules/alignment.smk'
-//                     changeset 'rules/trimming.smk'
-//                     changeset 'rules/qc.smk'
-//                     changeset 'rules/merge_replicates.smk'
-//                     changeset 'rules/trackhub.smk'
-//                     changeset 'rules/call_peak.smk'
-//                     changeset 'rules/get_genome.smk'
+//         stage('ATAC-seq workflow') {
+// //             when {
+// //                 anyOf {
+// //                     // always fully build develop and master
+// //                     branch 'master'
+// //                     branch 'develop'
+// //
+// //                     // always run when jenkins, envs or configuration is changed
+// //                     changeset glob: 'Jenkins/*'
+// //                     changeset glob: 'envs/*'
+// //                     changeset 'rules/configuration.smk'
+// //
+// //                     // run when relevant rules are changed
+// //                     changeset glob: 'seq2science/workflows/atac_seq/*'
+// //                     changeset 'rules/alignment.smk'
+// //                     changeset 'rules/trimming.smk'
+// //                     changeset 'rules/qc.smk'
+// //                     changeset 'rules/merge_replicates.smk'
+// //                     changeset 'rules/trackhub.smk'
+// //                     changeset 'rules/call_peak.smk'
+// //                     changeset 'rules/get_genome.smk'
+// //
+// //                     // run when last time you failed
+// //                     expression {
+// //                         return getFailedStages(Jenkins.instance.getItemByFullName("Snakemake-Workflows")\
+// //                         .getItem("$GIT_BRANCH")._getRuns().last()).contains("Test atac-seq")
+// //                     }
+// //                 }
+// //             }
+//             steps {
+//                 sh '''#!/usr/bin/env bash
+//                 set -e
+//                 source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+//                 conda activate s2s
 //
-//                     // run when last time you failed
-//                     expression {
-//                         return getFailedStages(Jenkins.instance.getItemByFullName("Snakemake-Workflows")\
-//                         .getItem("$GIT_BRANCH")._getRuns().last()).contains("Test atac-seq")
-//                     }
-//                 }
+//                 bash ./tests/run_tests.sh atac-seq
+//                 '''
 //             }
-            steps {
-                sh '''#!/usr/bin/env bash
-                set -e
-                source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                conda activate s2s
-
-                bash ./tests/run_tests.sh atac-seq
-                '''
-            }
-        }
-
-        stage('scATAC-seq workflow') {
-            steps {
-                sh '''#!/usr/bin/env bash
-                set -e
-                source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                conda activate s2s
-
-                bash ./tests/run_tests.sh scatac-seq
-                '''
-            }
-        }
-
-
-        stage('RNA-seq workflow') {
-//             when {
-//                 anyOf {
-//                     // always fully build develop and master
-//                     branch 'master'
-//                     branch 'develop'
+//         }
 //
-//                     // always run when jenkins, envs or configuration is changed
-//                     changeset glob: 'Jenkins/*'
-//                     changeset glob: 'envs/*'
-//                     changeset 'rules/configuration.smk'
+//         stage('scATAC-seq workflow') {
+//             steps {
+//                 sh '''#!/usr/bin/env bash
+//                 set -e
+//                 source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+//                 conda activate s2s
 //
-//                     // run when relevant rules are changed
-//                     changeset glob: 'seq2science/workflows/rna_seq/*'
-//                     changeset 'rules/get_genome.smk'
-//                     changeset 'rules/trimming.smk'
-//                     changeset 'rules/alignment.smk'
-//                     changeset 'rules/quantification.smk'
-//                     changeset 'rules/gene_counts.smk'
-//                     changeset 'rules/DGE_analysis.smk'
-//                     changeset 'rules/qc.smk'
-//                     changeset 'rules/trackhub.smk'
-//
-//                     // run when last time you failed
-//                     expression {
-//                         return getFailedStages(Jenkins.instance.getItemByFullName("Snakemake-Workflows")\
-//                         .getItem("$GIT_BRANCH")._getRuns().last()).contains("Test rna-seq")
-//                     }
-//                 }
+//                 bash ./tests/run_tests.sh scatac-seq
+//                 '''
 //             }
-            steps {
-                sh '''#!/usr/bin/env bash
-                set -e
-                source $WORKSPACE/miniconda/etc/profile.d/conda.sh
-                conda activate s2s
-
-                bash ./tests/run_tests.sh rna-seq
-                '''
-            }
-        }
+//         }
+//
+//
+//         stage('RNA-seq workflow') {
+// //             when {
+// //                 anyOf {
+// //                     // always fully build develop and master
+// //                     branch 'master'
+// //                     branch 'develop'
+// //
+// //                     // always run when jenkins, envs or configuration is changed
+// //                     changeset glob: 'Jenkins/*'
+// //                     changeset glob: 'envs/*'
+// //                     changeset 'rules/configuration.smk'
+// //
+// //                     // run when relevant rules are changed
+// //                     changeset glob: 'seq2science/workflows/rna_seq/*'
+// //                     changeset 'rules/get_genome.smk'
+// //                     changeset 'rules/trimming.smk'
+// //                     changeset 'rules/alignment.smk'
+// //                     changeset 'rules/quantification.smk'
+// //                     changeset 'rules/gene_counts.smk'
+// //                     changeset 'rules/DGE_analysis.smk'
+// //                     changeset 'rules/qc.smk'
+// //                     changeset 'rules/trackhub.smk'
+// //
+// //                     // run when last time you failed
+// //                     expression {
+// //                         return getFailedStages(Jenkins.instance.getItemByFullName("Snakemake-Workflows")\
+// //                         .getItem("$GIT_BRANCH")._getRuns().last()).contains("Test rna-seq")
+// //                     }
+// //                 }
+// //             }
+//             steps {
+//                 sh '''#!/usr/bin/env bash
+//                 set -e
+//                 source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+//                 conda activate s2s
+//
+//                 bash ./tests/run_tests.sh rna-seq
+//                 '''
+//             }
+//         }
 
         stage('Code Style') {
             steps {
@@ -332,7 +332,7 @@ pipeline {
                     set -e
                     source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                     conda activate s2s
-                    conda install -q --yes flake8
+                    mamba install -q --yes flake8
 
                     # flake8
                     printf "\nflake8\n\n"
