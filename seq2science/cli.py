@@ -124,7 +124,7 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         "-j", "--cores",
         metavar="N",
         type=int,
-        default=2,
+        # required=True,  # --dryruns and --profile can overwrite None
         help="Use at most N cores in parallel. Must be at least 2.",
     )
     run.add_argument(
@@ -229,12 +229,12 @@ def _run(args, base_dir, workflows_dir, config_path):
                    "printreason": args.reason,
                    "keepgoing": args.keep_going,
                    "unlock": args.unlock,
-                   "force_incomplete": args.rerun_incomplete,
-                   "overwrite_threads": core_parser(args.cores)}
+                   "force_incomplete": args.rerun_incomplete}
 
     # get the additional snakemake options
     snakemake_options = args.snakemakeOptions if args.snakemakeOptions is not None else dict()
     snakemake_options.setdefault("config", {}).update({"rule_dir": os.path.join(base_dir, "rules")})
+
     # parse the profile
     snakemake_options["configfiles"] = [config_path]
     if args.profile is not None:
@@ -243,15 +243,26 @@ def _run(args, base_dir, workflows_dir, config_path):
             print("Error: profile given but no config.yaml found.")
             sys.exit(1)
         snakemake_options["configfiles"] += [profile_file]
-        profile = yaml.safe_load(open(profile_file).read())
-        if "cores" in profile and parsed_args["cores"] is None:
-            parsed_args["cores"] = profile["cores"]
-    if "overwrite_threads" in snakemake_options:
-        parsed_args["overwrite_threads"].update(snakemake_options["overwrite_threads"])
 
     parsed_args.update(snakemake_options)
 
-    parsed_args["cores"] = int(parsed_args["cores"])
+    # cores
+    parsed_args["cores"] = 0 if parsed_args["cores"] is None else int(parsed_args["cores"])
+    if parsed_args["cores"] < 2:
+        if parsed_args["dryrun"]:
+            parsed_args["cores"] = 999
+        else:
+            raise argparse.ArgumentError(core_arg, "specify at least two cores.")
+
+    # scale threads if cores is too low
+    overwrite_threads = core_parser(parsed_args)
+    if overwrite_threads:
+        if "overwrite_threads" not in parsed_args:
+            parsed_args["overwrite_threads"] = overwrite_threads
+        else:
+            for k, v in overwrite_threads.items():
+                if k not in parsed_args["overwrite_threads"]:
+                    parsed_args["overwrite_threads"][k] = v
 
     # run snakemake
     exit_code = snakemake.snakemake(**parsed_args)
@@ -366,36 +377,27 @@ class _StoreDictKeyPair(argparse.Action):
         setattr(namespace, self.dest, my_dict)
 
 
-def core_parser(cores):
+def core_parser(parsed_args):
     """
     Alignment uses a pipe, and snakemake does not handle scaling that, so
     we do it for snakemake.
     """
-    cores = int(cores)
+    cores = parsed_args["cores"]
     sorters = ["samtools_presort"]
     aligners = ["bwa_mem", "bowtie2_align", "hisat2_align", "star_align"]
 
     d_sorters_threads = 2
     d_aligner_threads = 10
     desired_threads = d_sorters_threads + d_aligner_threads
-    if cores <= 1:
-        run.print_help()
-        try:
-            raise argparse.ArgumentError(core_arg, "specify at least two cores.")
-        except argparse.ArgumentError as e:
-            print()  # empty line
-            print(e)
-            sys.exit(1)
-
-    elif cores < desired_threads:
+    overwrite_threads = dict()
+    if cores < desired_threads:
         # scale the threads accordingly
         d_sorters_threads = max([1, round(d_sorters_threads / desired_threads * cores)])
         d_aligner_threads = cores - d_sorters_threads
 
-    overwrite_threads = dict()
-    for aligner in aligners:
-        overwrite_threads[aligner] = d_aligner_threads
-    for sorter in sorters:
-        overwrite_threads[sorter] = d_sorters_threads
+        for aligner in aligners:
+            overwrite_threads[aligner] = d_aligner_threads
+        for sorter in sorters:
+            overwrite_threads[sorter] = d_sorters_threads
 
     return overwrite_threads
