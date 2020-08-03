@@ -290,8 +290,7 @@ def _explain(args, base_dir, workflows_dir, config_path):
                    "forceall": True,
                    "quiet": False,
                    "config": {"rule_dir": os.path.join(base_dir, "rules"),
-                              "explain_rule": True},
-                   "configfiles": [config_path]}
+                              "explain_rule": True}}
 
     # get the additional snakemake options
     snakemake_options = args.snakemakeOptions if args.snakemakeOptions is not None else dict()
@@ -313,6 +312,10 @@ def _explain(args, base_dir, workflows_dir, config_path):
         parsed_args["cores"] = args.cores
     elif parsed_args["cores"]:  # profile
         parsed_args["cores"] = int(parsed_args["cores"])
+    elif parsed_args["dryrun"]:
+        parsed_args["cores"] = 999
+    else:
+        parsed_args["cores"] = 0
 
     if parsed_args["cores"] < 2:
         parsed_args["cores"] = 999
