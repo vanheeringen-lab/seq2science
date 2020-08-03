@@ -5,7 +5,8 @@ package_data = "{'seq2science':['envs/*', 'rules/*', 'schemas/*', 'schemas/*/*',
 include_package_data = true
 description = "seq2science: easy pre-processing of ngs data."
 author = [
-    "Maarten van der Sande <M.vanderSande@science.ru.nl>"]
+    "Maarten van der Sande <M.vanderSande@science.ru.nl>",
+    "Siebren Frölich <siebrenf@science.ru.nl>"]
 license = "MIT"
 license_file = "LICENSE"
 url = "https://vanheeringen-lab.github.io/seq2science"
