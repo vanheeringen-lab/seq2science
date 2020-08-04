@@ -2,8 +2,13 @@
 ## MultiQC quality report
 All pipelines (except from the `download_fastq` pipeline) output a [multiQC](https://multiqc.info/) report. The report is located under `{qc_dir}/multiqc_{assembly}.html` and we highly recommend always checking out the report after a pipeline run. What is reported inside the report differs per pipeline and input.
 
+### Rename & hide buttons
+Seq2science reports quality control metrics for all your samples. However sample names on the SRA or from your own files aren't always as easy to read as you'd like. The report automatically allows for renaming of samples by the big blue buttons at the start of the report. We recommend adding a `descriptive_name` column to the samples.tsv file, where you put a human-readable sample name for each sample. This column is then automatically used by other tools as well (e.g. trackhub). 
+
+When dealing with technical replicates and paired-end data you might find that multiqc reports way too many samples and info to properly check the report. The report also automatically generates "hide" buttons, which gives you more control over which samples are shown/hidden.   
+
 ### General statistics
-The general statistics table shows a quick summary of your data. The table is interactive and you can sort it, add or remove columns (there are many hidden columns!).
+The general statistics table shows a quick summary of your data. The table is interactive and you can sort it, add or remove columns (there are many hidden columns!) by clicking on the `configure columns` button.
 
 ### Metrics & Tools
 * **FastQC** (raw):
@@ -23,10 +28,18 @@ The general statistics table shows a quick summary of your data. The table is in
 * **mtnucratio**:
   * In some experiments there can be a lot of contamination from mitochondrial reads and it is good to be aware of this. The `M MT/Genome reads` values give the number of reads (in millions) that are mapped to the mitochondria or genome, calculated by [MTNucRatioCalculator](https://github.com/apeltzer/MTNucRatioCalculator). You can remove mitochondrial reads with the `remove_mito` flag in the `config.yaml`.
 
-## Trackhub ##
+## Trackhub
 It is often good to 'eyeball' the data, and check if e.g. peak calling went alright. One of the features of the pipeline is that it can generate a trackhub, including all required support files. You can host the trackhub yourself on a web accessible location, and visualize on the [UCSC genome browser](https://genome.ucsc.edu/cgi-bin/hgHubConnect). Alternatively, you can visualize the files locally in [IGV](https://software.broadinstitute.org/software/igv/).
 
 Generation of the trackhub files is optional for all workflows, and is turned off by default. Remove `create_trackhub: False` from the config, or set the parameter to True to start generating.
+
+### UCSC genome browser
+If you move the *trackhub* folder to a web-accessible location, you can upload the URL to the `hub.txt` file on the [UCSC genome browser](https://genome-euro.ucsc.edu/cgi-bin/hgHubConnect#unlistedHubs) to gain access to your personalized hub!
+
+If you don't have access to a web-accessible location, the bigwig files can be manually uploaded on a UCSC trackhub, as long as the assembly used is recognized by UCSC. 
+
+### Integrative Genomics Viewer
+[IGV](https://software.broadinstitute.org/software/igv/) is a locally run genome browser with baseline functionalities for read and sequence inspection. It is an excellent alternative for quick jobs or if you do not have access to a (large enough) web-accessible location.
 
 ### BigWigs ###
 Bigwigs visualize the sequencing depth per base and form the core of the trackhub. Bigwigs are stored in workflow-dependent locations, and linked in the *trackhub* folder.
@@ -48,11 +61,3 @@ Additionally, the *genome.2bit* is indexed to allow you to search your assembly 
 
 ### Supporting tracks ###
 Track depicting the GC-percentage and the softmasked regions of the genome are generated, similarly to [MakeHub](https://github.com/Gaius-Augustus/MakeHub).
-
-## UCSC genome browser ##
-If you move the *trackhub* folder to a web-accessible location, you can upload the URL to the `hub.txt` file on the [UCSC genome browser](https://genome-euro.ucsc.edu/cgi-bin/hgHubConnect#unlistedHubs) to gain access to your personalized hub!
-
-If you don't have access to a web-accessible location, the bigwig files can be manually uploaded on a UCSC trackhub, as long as the assembly used is recognized by UCSC. 
-
-## Integrative Genomics Viewer ##
-[IGV](https://software.broadinstitute.org/software/igv/) is a locally run genome browser with baseline functionalities for read and sequence inspection. It is an excellent alternative for quick jobs or if you do not have access to a (large enough) web-accessible location.
