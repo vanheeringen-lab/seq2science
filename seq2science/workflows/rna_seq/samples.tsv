@@ -1,6 +1,6 @@
 # for help with filling out the samples.tsv:
 # https://vanheeringen-lab.github.io/seq2science/content/workflows/rna_seq.html#filling-out-the-samples-tsv
 # also make sure that you use tab as a delimiter
-sample	assembly	stages	descriptive_name
+sample	assembly	stage	descriptive_name
 GSM1483769	GRCz11	1	1360_mpf
 GSM1483770	GRCz11	2	1400_mpf

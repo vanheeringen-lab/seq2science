@@ -4,25 +4,20 @@ samples: samples.tsv
 # pipeline file locations
 result_dir: ./results  # where to store results
 genome_dir: ./genomes  # where to look for or download the genomes
-# fastq_dir: (default is inside result_dir) # where to look for or download the fastqs
-
+# fastq_dir: ./results/fastq  # where to look for or download the fastqs
 
 
 # contact info for multiqc report and trackhub
 email: yourmail@here.com
 
-# produce bams, bigwigs and QC statistics?
-create_trackhub: False
+# produce a UCSC trackhub?
+create_trackhub: True
 
 # how to handle replicates
 technical_replicates: merge    # change to "keep" to not combine them
 
-
-
-##### if create_trackhub == False #####
-
-# which aligner to use
-quantifier: star
+# which quantifier to use
+quantifier: htseq
 
 # or specify which quantifier to use with the option to specify own parameters
 #quantifier:
@@ -32,24 +27,15 @@ quantifier: star
 #    decoy_aware_index: False  # salmon only. Requires ~65 GB RAM for GRCh38
 
 
+##### aligner and filter options are not used for the gene counts matrix if the quantifier is Salmon
 
-##### if create_trackhub == True #####
-
-# use 'our' default parameters
+# which aligner to use
 aligner: star
-
-# or specify which aligner to use with the option to specify own parameters
-# aligner:
-#   star:
-#     index:  # parameters for indexing
-#       ''
-#     align:  # parameters for alignment
-#       ''
 
 # filtering after alignment
 remove_blacklist: True
 min_mapping_quality: 255  # (only keep uniquely mapped reads from STAR alignments)
-
+only_primary_align: True
 
 
 ##### differential gene expression analysis (optional) #####
@@ -62,6 +48,6 @@ min_mapping_quality: 255  # (only keep uniquely mapped reads from STAR alignment
 #      alpha_value: 0.05
 #      shrinkage_estimator: apeglm
 #    contrasts:
-#      - 'disease_control_disease'
+##      - 'disease_control_disease'
 #      - 'stage_2_1'
 #      - 'stage_all_1'

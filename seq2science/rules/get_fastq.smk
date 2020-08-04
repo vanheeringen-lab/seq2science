@@ -17,10 +17,7 @@ rule id2sra:
         expand("{log_dir}/id2sra/{{sample}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/id2sra/{{sample}}.benchmark.txt", **config)[0]
-    message: explain_rule("""
-    Public samples were downloaded from the Sequence Read Archive (https://doi.org/10.1093/nar/gkq1019) 
-    with help of the ncbi e-utilities.
-    """)
+    message: explain_rule("id2sra")
     resources:
         parallel_downloads=1,
     wildcard_constraints:
@@ -172,9 +169,8 @@ def get_wrong_fqext(wildcards):
     fastqs = [f for f in fastqs if not re.match(r1 + "|" + r2, f)]
     if len(fastqs) == 0:
         fastqs.append(
-            "If you can read this, seq2science is looking for non-existing files or in the wrong location. "
-            f"Wildcards: {wildcards}"
-            "Tip: Try removing the seq2science cache: 'seq2science clean'"
+            f"If you can read this, seq2science is looking for non-existing files (for sample {wildcards}) or in the wrong location. "
+            "Tip: Try removing the seq2science cache with 'seq2science clean'"
         )
     return sorted(fastqs)
 

@@ -53,5 +53,4 @@ properties:
   # email
   email:
     description: email to reach you after pipeline finished, required for trackhub and multiqc report
-    default: 'none@provided.com'
     type: string

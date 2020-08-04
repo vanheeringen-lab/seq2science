@@ -9,7 +9,6 @@ import shutil
 import webbrowser
 import re
 import inspect
-import yaml
 import contextlib
 
 
@@ -27,7 +26,6 @@ try:
     conda_frontend = "mamba"
 except ImportError:
     conda_frontend = "conda"
-
 
 
 def main():
@@ -100,11 +98,11 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         help="Take me to the docs!",
     )
 
-    # both init and run can use all workflows
+    # init, run and explain can use all workflows
     for subparser in [init, run, explain]:
         subparser.add_argument("workflow", choices=[dir.replace("_", "-") for dir in os.listdir(workflows_dir)])
 
-    # setup init arguments
+    # init arguments
     init.add_argument(
         "--dir",
         default=".",
@@ -112,19 +110,21 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         help="The path to the directory where to initialise the config and samples files.",
     )
 
-    run.add_argument(
-        "-c",
-        "--configfile",
-        default="./config.yaml",
-        metavar="FILE",
-        help="The path to the config file.",
-    )
+    # run/explain arguments
+    for subparser in [run, explain]:
+        subparser.add_argument(
+            "-c",
+            "--configfile",
+            default="./config.yaml",
+            metavar="FILE",
+            help="The path to the config file.",
+        )
     global core_arg
     core_arg = run.add_argument(
         "-j", "--cores",
         metavar="N",
         type=int,
-        required=True,
+        # required=True,  # --dryruns and --profile can overwrite None
         help="Use at most N cores in parallel. Must be at least 2.",
     )
     run.add_argument(
@@ -133,26 +133,28 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         action='store_true'
     )
     run.add_argument(
-        "--unlock",
-        help="Remove a lock on the working directory.",
+        "-r", "--reason",
+        help="Print the reason for each executed rule.",
         action='store_true'
     )
-    run.add_argument(
-        "--snakemakeOptions",
-        nargs="+",
-        action=_StoreDictKeyPair,
-        metavar="KEY=VAL",
-        help="Extra arguments to pass along to snakemake. An example could be seq2science run "
-        "alignment --cores 12 --snakemakeOptions resources={mem_gb:100} local_cores=3. Here we pass local_cores as "
-        "KEY=VALUE and additional resources can even be passed along in a dictionary. Take a look at the snakemake API "
-        "for a complete list of all possible options: "
-        "https://snakemake.readthedocs.io/en/latest/api_reference/snakemake.html",
-    )
-    run.add_argument(
-        "--profile",
-        metavar="PROFILE NAME",
-        help="Use a snakemake/seq2science profile. Profiles can be taken from: https://github.com/snakemake-profiles",
-    )
+    for subparser in [run, explain]:
+        subparser.add_argument(
+            "--snakemakeOptions",
+            nargs="+",
+            action=_StoreDictKeyPair,
+            metavar="KEY=VAL",
+            help="Extra arguments to pass along to snakemake. An example could be seq2science run "
+            "alignment --cores 12 --snakemakeOptions resources={mem_gb:100} local_cores=3. "
+            "Here we pass local_cores as KEY=VALUE and additional resources can even be passed along in a dictionary. "
+            "Take a look at the snakemake API  for a complete list of all possible options: "
+            "https://snakemake.readthedocs.io/en/latest/api_reference/snakemake.html",
+        )
+        subparser.add_argument(
+            "--profile",
+            metavar="PROFILE NAME",
+            help="Use a snakemake/seq2science profile. "
+                 "Profiles can be taken from: https://github.com/snakemake-profiles",
+        )
     run.add_argument(
         "-k", "--keep-going",
         help="Go on with independent jobs if a job fails.",
@@ -163,13 +165,10 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         help="Re-run all jobs the output of which is recognized as incomplete.",
         action='store_true'
     )
-
-    explain.add_argument(
-        "-c",
-        "--configfile",
-        default="./config.yaml",
-        metavar="FILE",
-        help="The path to the config file.",
+    run.add_argument(
+        "--unlock",
+        help="Remove a lock on the working directory.",
+        action='store_true'
     )
 
     return parser
@@ -216,19 +215,19 @@ def _run(args, base_dir, workflows_dir, config_path):
 
     # parse the args
     parsed_args = {"snakefile": os.path.join(workflows_dir, args.workflow.replace("-", "_"), "Snakefile"),
-                   "cores": args.cores,
                    "use_conda": True,
                    "conda_frontend": conda_frontend,
                    "conda_prefix": os.path.join(base_dir, ".snakemake"),
                    "dryrun": args.dryrun,
+                   "printreason": args.reason,
                    "keepgoing": args.keep_going,
                    "unlock": args.unlock,
-                   "force_incomplete": args.rerun_incomplete,
-                   "overwrite_threads": core_parser(args.cores)}
+                   "force_incomplete": args.rerun_incomplete}
 
     # get the additional snakemake options
     snakemake_options = args.snakemakeOptions if args.snakemakeOptions is not None else dict()
     snakemake_options.setdefault("config", {}).update({"rule_dir": os.path.join(base_dir, "rules")})
+
     # parse the profile
     snakemake_options["configfiles"] = [config_path]
     if args.profile is not None:
@@ -237,15 +236,29 @@ def _run(args, base_dir, workflows_dir, config_path):
             print("Error: profile given but no config.yaml found.")
             sys.exit(1)
         snakemake_options["configfiles"] += [profile_file]
-        profile = yaml.safe_load(open(profile_file).read())
-        if "cores" in profile and parsed_args["cores"] is None:
-            parsed_args["cores"] = profile["cores"]
-    if "overwrite_threads" in snakemake_options:
-        parsed_args["overwrite_threads"].update(snakemake_options["overwrite_threads"])
 
     parsed_args.update(snakemake_options)
 
-    parsed_args["cores"] = int(parsed_args["cores"])
+    # cores
+    if args.cores:  # CLI
+        parsed_args["cores"] = args.cores
+    elif parsed_args.get("cores"):  # profile
+        parsed_args["cores"] = int(parsed_args["cores"])
+    elif parsed_args["dryrun"]:
+        parsed_args["cores"] = 999
+    else:
+        parsed_args["cores"] = 0
+
+    if parsed_args["cores"] < 2:
+        # we need to raise an exception and catch it for a subjectively prettier message
+        try:
+            raise argparse.ArgumentError(core_arg, "specify at least two cores.")
+        except argparse.ArgumentError as e:
+            print()  # empty line
+            print(e)
+            sys.exit(1)
+
+    core_parser(parsed_args)
 
     # run snakemake
     exit_code = snakemake.snakemake(**parsed_args)
@@ -254,7 +267,7 @@ def _run(args, base_dir, workflows_dir, config_path):
 
 def _explain(args, base_dir, workflows_dir, config_path):
     """
-    Run a complete workflow.
+    Run a complete dryrun workflow, then return the explanations of each rule used.
     """
     if not os.path.exists(config_path):
         sys.stdout.write(
@@ -265,23 +278,39 @@ def _explain(args, base_dir, workflows_dir, config_path):
         sys.exit(1)
 
     # parse the args
-    # snakemake_options.setdefault("config", {}).update({"rule_dir": os.path.join(base_dir, "rules")})
     parsed_args = {"snakefile": os.path.join(workflows_dir, args.workflow.replace("-", "_"), "Snakefile"),
-                   "cores": 999,
                    "dryrun": True,
                    "forceall": True,
-                   "quiet": False,
-                   "config": {"rule_dir": os.path.join(base_dir, "rules"),
-                              "explain_rule": True},
-                   "configfiles": [config_path]}
+                   "quiet": False}
 
+    # get the additional snakemake options
+    snakemake_options = args.snakemakeOptions if args.snakemakeOptions is not None else dict()
+    snakemake_options.setdefault("config", {}).update({"rule_dir": os.path.join(base_dir, "rules")})
+
+    # parse the profile
+    snakemake_options["configfiles"] = [config_path]
+    if args.profile is not None:
+        profile_file = snakemake.get_profile_file(args.profile, "config.yaml")
+        if profile_file is None:
+            print("Error: profile given but no config.yaml found.")
+            sys.exit(1)
+        snakemake_options["configfiles"] += [profile_file]
+
+    parsed_args.update(snakemake_options)
+
+    # cores
+    parsed_args["cores"] = 999
+
+    # starting message
     rules_used = {"start": f"\nPreprocessing of reads was done automatically with workflow tool "
                            f"seq2science v{seq2science.__version__} (https://doi.org/10.5281/zenodo.3921913)."}
+
     def log_handler(log):
         if log["level"] == "job_info" and "msg" in log and log["msg"] is not None and log["name"] not in rules_used:
             rules_used[log["name"]] = log["msg"]
 
     parsed_args["log_handler"] = [log_handler]
+    parsed_args["config"]["explain_rule"] = True
 
     # run snakemake (silently)
     with open(os.devnull, "w") as null:
@@ -334,54 +363,57 @@ class _StoreDictKeyPair(argparse.Action):
             k, v = kv.split("=")
 
             if ":" in v:
+                assert "}" in v if "{" in v else True, \
+                    f"\n\nThe dictionary you provided on the command line ('{k}') cannot be parsed:" \
+                    f"\n'{v}' (TIP: is there a space in there perhaps?)\n"
                 pair = list(filter(None, re.split('{|:| |}', v)))
-                assert len(pair) == 2
+                assert len(pair) == 2, \
+                    f"\n\nThe dictionary you provided on the command line ('{k}') cannot be parsed:" \
+                    f"\n'{v}' contains a broken key-value pair: '{pair}' (TIP: is there a space in there perhaps?)\n"
                 if pair[1].lower() == 'true':
                     pair[1] = True
                 v = {pair[0]: int(pair[1]) if isinstance(pair[1], str) and pair[1].isdigit() else pair[1]}
             elif "[" in v:
                 v = re.sub("\[|\]", "", v).split(",")
-            try:
-                my_dict[k] = int(v)
-            except:
-                if k not in my_dict:
-                    my_dict[k] = v
-                else:
-                    my_dict[k].update(v)
+            else:
+                assert k != "config", \
+                    f"\n\nThe dictionary you provided on the command line ('{k}') cannot be parsed:" \
+                    f"\n'{v}' should be a key-value pair (TIP: use '{v}:True' perhaps?)\n"
+
+            if k in my_dict:
+                my_dict[k].update(v)
+            else:
+                my_dict[k] = int(v) if isinstance(v, str) and v.isdigit() else v
 
         setattr(namespace, self.dest, my_dict)
 
 
-def core_parser(cores):
+def core_parser(parsed_args):
     """
     Alignment uses a pipe, and snakemake does not handle scaling that, so
     we do it for snakemake.
     """
-    cores = int(cores)
+    cores = parsed_args["cores"]
     sorters = ["samtools_presort"]
     aligners = ["bwa_mem", "bowtie2_align", "hisat2_align", "star_align"]
 
     d_sorters_threads = 2
     d_aligner_threads = 10
     desired_threads = d_sorters_threads + d_aligner_threads
-    if cores <= 1:
-        run.print_help()
-        try:
-            raise argparse.ArgumentError(core_arg, "specify at least two cores.")
-        except argparse.ArgumentError as e:
-            print()  # empty line
-            print(e)
-            sys.exit(1)
-
-    elif cores < desired_threads:
+    if cores < desired_threads:
         # scale the threads accordingly
         d_sorters_threads = max([1, round(d_sorters_threads / desired_threads * cores)])
         d_aligner_threads = cores - d_sorters_threads
 
-    overwrite_threads = dict()
-    for aligner in aligners:
-        overwrite_threads[aligner] = d_aligner_threads
-    for sorter in sorters:
-        overwrite_threads[sorter] = d_sorters_threads
+        overwrite_threads = dict()
+        for aligner in aligners:
+            overwrite_threads[aligner] = d_aligner_threads
+        for sorter in sorters:
+            overwrite_threads[sorter] = d_sorters_threads
 
-    return overwrite_threads
+        if "overwrite_threads" not in parsed_args:
+            parsed_args["overwrite_threads"] = overwrite_threads
+        else:
+            for k, v in overwrite_threads.items():
+                if k not in parsed_args["overwrite_threads"]:
+                    parsed_args["overwrite_threads"][k] = v
