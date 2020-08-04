@@ -13,7 +13,6 @@ assert treps.index.is_unique, "duplicate value found in treps"
 breps = treps
 if "condition" in treps:
     breps = treps.reset_index(drop=True).drop_duplicates().set_index("condition")
-    assert breps.index.is_unique, "duplicate value found in breps"
 
 
 # make a dict that returns the treps that belong to a brep
@@ -35,12 +34,18 @@ for (brep, _assembly), _treps in treps_from_brep.items():
     brep_from_trep.update({trep: brep for trep in _treps})
 
 
-def rep_to_descriptive(rep):
+def rep_to_descriptive(rep, brep=False):
     """
     Return the descriptive name for a replicate.
     """
-    if "descriptive_name" in samples and rep in samples.index:
-        return samples.loc[rep, "descriptive_name"]
+    if "descriptive_name" in samples:
+        if brep and "condition" in samples:
+            col = samples.condition
+        elif "replicate" in samples:
+            col = samples.replicate
+        else:
+            col = samples.index
+        rep = samples[col == rep].descriptive_name[0]
     return rep
 
 

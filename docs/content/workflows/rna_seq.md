@@ -7,7 +7,7 @@ Running an RNA-seq analysis has never been easier!
 </p>
 
 #### Downloading of sample(s)
-Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples. Take a look at the [downloading_fastq](download_fastq.md) workflow for extensive documentation about downloading of public samples. 
+Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples. Take a look at the [downloading_fastq](https://vanheeringen-lab.github.io/seq2science/content/workflows/download_fastq.html) workflow for extensive documentation about downloading of public samples. 
 
 #### Downloading and indexing of assembly(s)
 Depending on whether the assembly and its index you align your samples against already exist seq2science will start with downloading of the assembly through [genomepy](https://github.com/vanheeringen-lab/genomepy).
@@ -15,34 +15,69 @@ Depending on whether the assembly and its index you align your samples against a
 #### Read trimming
 The pipeline starts by trimming the reads with [trim galore!](https://github.com/FelixKrueger/TrimGalore/blob/master/Docs/Trim_Galore_User_Guide.md). Trim galore automatically first trims the low quality 3' ends of reads, and removes short reads. After the quality trimming trim galore automatically detects which adapter was used, and trims it. The parameters of trim galore! for the pipeline can be set in the configuration by variable *trim_galore*. 
 
-#### Quantification & gene count matrices
-After trimming, gene quantification is performed by `star` (the default) or `salmon`. The choice of quantifier can be changed with the *quantifier* option in the `config.yaml`. Sensible defaults have been set for every quantifier, but can be overwritten for either (or both) the indexing and quantification by specifying them in the `config.yaml`.
+#### Gene counting (with HTSeq/featureCounts)
+RNA-seq can be performed using gene counting methods or gene quantification methods. The following section described the former (and default) method as implemented in seq2science.
 
-Gene counts are aggregated per assembly into a count matrix. Additionally, `salmon` generates a SingleCellExperiment object which can be opened in *R*. 
+##### Alignment
+Reads are aligned using `STAR` or `HISAT2` (default `STAR`). Sensible defaults have been set, but can be overwritten for either (or both) the indexing and alignment by specifying them in the `config.yaml`.
+
+The pipeline will check if the assembly you specified is present in the *genome_dir*, and otherwise will download it for you through [genomepy](https://github.com/vanheeringen-lab/genomepy). All these aligners require an index to be formed first for each assembly, but don't worry, the pipeline does this for you.
+
+##### Bam sieving
+After aligning the bam you can choose to remove unmapped reads, low quality mappings, duplicates, and multimappers. Again, sensible defaults have been set, but can be overwritten.
+
+##### Strandedness
+Most sequencing protocols at present are strand-specific. This specificity can be used to help identify pseudogenes originating from antisense DNA, or genes with overlapping regions on opposite strands without ambiguity.
+Strandedness is inferred automatically for all RNA-seq samples. For aligners it is inferred by RSeQC, the results of which can be reviewed in the MultiQC.
+RSeQC inference can be overwritten by column `strandedness` in the samples.tsv. This column may contain identifiers `no`, `forward` or `reverse`. If strandedness is unknown (for some samples), fields may be left blank or filled with `nan`.
+Setting `ignore_strandedness` in the config.yaml will resulting in gene counting to assume all reads are unstranded.
+
+##### Gene counts
+Gene counts are obtained from the filtered bam files using either `HTSeq` or `featureCounts` (default `HTSeq`). These counts are then combined into a count matrix per assembly for use in downstream analyses.
+
+#### Gene quantification (with Salmon)
+RNA-seq can be performed using gene counting methods or gene quantification methods. The following section described the latter method as implemented in seq2science.
+
+#### Gene abundances
+Gene abundances can be estimated using `Salmon`. Reads are aligned against the transcriptome to obtain transcript abundances (sequence strandedness is inferred automatically by Salmon), then summarized to gene-level using tximeta.
+Additionally, `Salmon` generates a gene-level TPM matrix and a SingleCellExperiment object which can be opened in *R*, containing the transcript- and gene-level summaries.
 
 ***
-### Optional: Trackhub
-A UCSC compatible trackhub can be generated for this workflow. See the [trackhub page](../results.html#trackhub) for more information!
-
-#### Alignment
-To generate a trackhub the trimmed reads are aligned against an assembly using `star`. Selecting `star` as both aligner and quantifier does both things together, saving you time. Sensible defaults have been set, but can be overwritten for either (or both) the indexing and alignment by specifying them in the `config.yaml`.
-
-The pipeline will check if the assembly you specified is present in the *genome_dir*, and otherwise will download it for you through [genomepy](https://github.com/vanheeringen-lab/genomepy). All these aligners require an index to be formed first for each assembly, but don't worry, the pipeline does this for you. 
-
-#### Bam sieving
-After aligning the bam you can choose to remove unmapped reads, low quality mappings, duplicates, and multimappers.
-
-#### Strandedness
-Most sequencing protocols at present are strand-specific. This specificity can be used to help identify pseudogenes originating from antisense DNA, or genes with overlapping regions on opposite strands. In order for seq2science to use this feature, the fastq must be aligned with STAR, and the samples.tsv requires the additional column `strandedness`. This column may contain identifiers `forward` or `reverse`. If strandedness is unknown, fields may be left blank or filled with `no`.
-
-***
-### Optional: Differential gene expression analysis
-Differential expression analysis can automatically be performed using [DESeq2](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-014-0550-8). Simply add one or more contrast design(s) in the `config.yaml` file. Examples are given below. Additionally, the `config.yaml` contains a commented-out set of examples. 
+#### Differential gene expression analysis
+Seq2science outputs gene counts matrices for each assembly. Additionally, it can also perform differential expression analysis with [DESeq2](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-014-0550-8).
+To do so, add one or more contrast design(s) in the `config.yaml` file, with matching identifiers in the `samples.tsv` file. Examples are given below, and the RNA-seq `config.yaml` contains a commented-out set of examples.
 
 Note: (additional) design contrasts can be added at any time. After completing the workflow, rerunning Snakemake with new contrasts will only perform these analyses.
 
-##### DESeq2
-DESeq2 automatically performs library bias correction when loading your data. Batch correction is performed if included in the design. After calculating differentially expressed genes, a multiple testing procedure is applied. This is either the Benjamini-Hochberg procedure (the default) or Independent Hypothesis Weighing. Expression counts are log transformed (by default using the apeglm method). These defaults can be changed in the `config.yaml`. Finally, a list of all genes is saved to file, with analysis results for expressed genes.
+##### DESeq2 method
+DESeq2 automatically performs library bias correction when loading your data. Batch correction is performed if included in the design.
+After calculating differentially expressed genes, a multiple testing procedure is applied. This is either the Benjamini-Hochberg procedure (the default) or Independent Hypothesis Weighing.
+Expression counts are log transformed (by default using the apeglm method). These defaults can be changed in the `config.yaml`.
+
+##### DESeq2 output
+For each contrast design, the list of *all genes* is saved to file, with analysis results for expressed genes. Briefly, these include:
+- The column `padj` contains the adjusted p-values after multiple testing. These should be used to identify DE genes.
+- The column `log2FoldChange` contains the fold change of each gene between the two conditions. The reference condition is the one _last mentioned_ in the contrast design, so use `conditions_treatment_control`. If you use `conditions_control_treatment` the fold change is _inverted_.
+- Several other columns were kept for sake of completion, such as column `pvalue`, which contains _non-adjusted_ p-values.
+
+In addition, MA and PCA plots are generated for each contrast design.
+
+If the design includes a batch effect, several PCA plots are generated to visualize the effect of the batch correction.
+
+DESeq2 models the batch effect in their package, but downstream methods may not. For this reason, seq2science will produce a batch-corrected counts matrix (and a batch corrected TPM matrix if quantified with Salmon).
+
+#### Differential transcript usage
+Quantifying with `Salmon`, the transcript-level summaries in the SingleCellExperiment object *should* be usable for differential transcript analysis with `DEXseq`, as described [here](http://www.bioconductor.org/packages/devel/workflows/vignettes/rnaseqDTU/inst/doc/rnaseqDTU.html#dexseq).
+
+#### Differential exon usage
+Differential exon analysis by [`DEXseq`](https://bioconductor.org/packages/release/bioc/html/DEXSeq.html) can be automatically prepared by setting `dexseq: True` in the config.yaml.
+This will let seq2science to output an exon counts matrix per assembly, which can be loaded directly into `DEXSeqDataSet()`.
+
+Note: this utilizes scripts implemented by DEXseq, which are [built for Ensembl genomes](https://bioconductor.org/packages/devel/bioc/vignettes/DEXSeq/inst/doc/DEXSeq.html#24_Preparing_the_annotation).
+
+***
+### Optional: Trackhub
+A UCSC compatible trackhub can be generated for this workflow. See the [trackhub page](../results.html#trackhub)<!-- @IGNORE PREVIOUS: link --> for more information!
 
 ***
 ### Filling out the samples.tsv
@@ -83,15 +118,11 @@ If you are working with multiple assemblies in one workflow, replicate names hav
 
 Replicate merging is turned on by default. It can be turned off by setting `technical_replicates` in the `config.yaml` to `keep`.
 
-#### Strandedness ####
-To split bigwigs by strand, the samples.tsv requires the column `strandedness`. This column may contain identifiers `forward` or `reverse`. If strandedness is unknown, fields may be left blank or filled with `no`.
-
-
 ***
-### Contrast designs
-The following section will guide you through the process of creating a DESeq2 contrast using only samples.tsv and the config.yaml. 
+### DESeq2 contrast designs
+The following section will guide you through the process of creating a DESeq2 contrast using only the samples.tsv and the config.yaml.
 
-A contrast contains a condition, which is the variable you wish to analyse, and which contains 2 or more states. Optionally, a contrast can contain a batch effect, which you want to correct for.
+A contrast contains a **condition**, which is the variable you wish to analyse, and which contains 2 or more states. Optionally, a contrast can contain a **batch** effect, which you want to correct for.
 
 #### Conditions
 In samples.tsv, add a column for every property of your samples.
@@ -102,7 +133,7 @@ Examples:
 
 Next, in the `config.yaml` add one or more contrasts.
 
-In order to compare two groups from a list (e.a. stage 1 vs stage 3), the contrast condition is the column name, followed by the groups (`stages_3_1`). Note that the second group (stage 1 in this example) is the reference group. 
+In order to compare two groups from a list (e.a. stage 1 vs stage 3), the contrast condition is the column name, followed by the groups (`stages_3_1`). Note that the *last* group (stage 1 in this example) is the reference group.
 
 To compare all groups against a reference (e.a. control vs both treatments A and B), the contrast condition is the column name, followed by the reference group (`condition_control`). Alternatively, group ‘all’ may also be added (`condition_all_control`).
 
@@ -119,22 +150,12 @@ Similar to conditions, add a column to samples.tsv and note the batch of each sa
 |sample_4|feb|treatment|
 
 
-In this case, the sequencing_month may have caused a batch effect. Since the (potential) batch effect is spread over the test conditions (control vs treatment) it can be taken into account during DE analysis. The contrast design to do this would be `sequencing_month + conditions_treatment_control` 
+In this example, the sequencing_month may have caused a batch effect. Since the (potential) batch effect is spread over the test conditions (control vs treatment) it can be taken into account during DE analysis. The contrast design to do this would be `sequencing_month + conditions_treatment_control`
 
 ##### More design contrast examples
 
-The example design `sequencing_month + conditions_treatment_control` may also be written as `sequencing_month + conditions_all_control`, `sequencing_month + conditions_control_all` or `sequencing_month + conditions_control`. In each case, seq2science will understand "control" is the reference group, and compare it agains the other groups in the "conditions" columns. 
+The example design `sequencing_month + conditions_treatment_control` may also be written as `sequencing_month + conditions_all_control`, `sequencing_month + conditions_control_all` or `sequencing_month + conditions_control`. In each case, seq2science will understand "control" is the reference group, and compare it against the other groups in the "conditions" columns.
 
 For consistency with regular DESeq2 contrast designs, designs may start with `~`, example: `~ sequencing_month + conditions_treatment_control`.
 
 Our gremlins will carefully unpack all of your input and pass the unique designs to DESeq2. 
-
-***
-### Differential gene expression analysis output
-Each contrast will return a table with all genes found during alignment. 
-
-- The column `padj` contains the adjusted p-values after multiple testing. These should be used extract DE genes.
-- The column `log2FoldChange` shows the fold change of each gene between the two conditions. The reference condition is the one _last mentioned_ in the contrast design, so use `conditions_treatment_control`. If you use `conditions_control_treatment` the fold change is _inverted_.
-- Several other columns were kept for sake of completion, such as column `pvalue`, which contains non-adjusted p-values.
-
-Additional outputs include a blind clustering (which may reveal switched sample names), and per contrast an MA plot and a PCA plot (to accompany the differentially expressed genes table).

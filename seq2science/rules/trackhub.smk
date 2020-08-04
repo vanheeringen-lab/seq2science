@@ -187,7 +187,7 @@ rule trackhub_index:
     shell:
         """
         # generate annotation files
-        gtfToGenePred -geneNameAsName2 -genePredExt {params.gtf} {output.genePred} -infoOut={output.info} >> {log} 2>&1
+        gtfToGenePred -allErrors -geneNameAsName2 -genePredExt {params.gtf} {output.genePred} -infoOut={output.info} >> {log} 2>&1
 
         genePredToBed {output.genePred} {output.genePredbed} >> {log} 2>&1
 
@@ -200,21 +200,6 @@ rule trackhub_index:
 
         ixIxx {output.indexinfo} {output.ix} {output.ixx} >> {log} 2>&1
         """
-
-
-def get_bigwig_strand(sample):
-    """
-    return a list of extensions for (un)stranded bigwigs
-    """
-    if "strandedness" in samples:
-        s2 = samples
-        if "replicate" in samples:
-            s2 = samples.reset_index()[["replicate", "strandedness"]].drop_duplicates().set_index("replicate")
-
-        strandedness = s2["strandedness"].loc[sample]
-        if strandedness in ["forward", "yes", "reverse"]:
-            return [".fwd", ".rev"]
-    return [""]
 
 
 def get_ucsc_name(assembly):
@@ -274,7 +259,7 @@ def get_trackhub_files(wildcards):
             if has_annotation(assembly):
                 trackfiles["annotations"].append(f"{config['genome_dir']}/{assembly}/{assembly}.bb")
 
-    # Get the ATAC or RNA seq files
+    # workflow specific files
     if get_workflow() in ["atac_seq", "chip_seq"]:
         # get all the peak files
         for sample, brep in breps.iterrows():
@@ -291,15 +276,26 @@ def get_trackhub_files(wildcards):
                 expand(f"{{result_dir}}/{{peak_caller}}/{trep['assembly']}-{sample}.bw", **config)
             )
 
-    elif get_workflow() in ["alignment", "rna_seq"]:
+    elif get_workflow() == "rna_seq":
+        trackfiles["required"]=_strandedness_report(wildcards),
+
         # get all the bigwigs
         for sample in treps.index:
-            for bw in get_bigwig_strand(sample):
+            for bw in strandedness_to_trackhub(sample):
                 bw = expand(
-                    f"{{result_dir}}/bigwigs/{treps.loc[sample]['assembly']}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw",
+                    f"{{bigwig_dir}}/{treps.loc[sample]['assembly']}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw",
                     **config,
                 )
                 trackfiles["bigwigs"].extend(bw)
+
+    elif get_workflow() == "alignment":
+        # get all the bigwigs
+        for sample in treps.index:
+            bw = expand(
+                f"{{bigwig_dir}}/{treps.loc[sample]['assembly']}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}.bw",
+                **config,
+            )
+            trackfiles["bigwigs"].extend(bw)
 
     return trackfiles
 
@@ -320,6 +316,7 @@ rule trackhub:
         unpack(get_trackhub_files),
     output:
         directory(f"{config['result_dir']}/trackhub"),
+    message: explain_rule("trackhub")
     log:
         expand("{log_dir}/trackhub/trackhub.log", **config),
     benchmark:
@@ -431,13 +428,13 @@ rule trackhub:
                                 shell(f"ln {file_loc} {link_loc}")
 
                 # next add the data files depending on the workflow
-                # ATAC-seq trackhub
+                # ChIP-/ATAC-seq trackhub
                 if get_workflow() in ["atac_seq", "chip_seq"]:
                     for peak_caller in config["peak_caller"]:
                         for brep in set(breps[breps["assembly"] == assembly].index):
                             ftype = get_ftype(peak_caller)
                             bigpeak = f"{config['result_dir']}/{peak_caller}/{assembly}-{brep}.big{ftype}"
-                            sample_name = rep_to_descriptive(brep) + "_pk"
+                            sample_name = rep_to_descriptive(brep, brep=True) + "_pk"
                             if len(config["peak_caller"]) > 1:
                                 sample_name += f"_{peak_caller}"
                             sample_name = trackhub.helpers.sanitize(sample_name)
@@ -481,12 +478,12 @@ rule trackhub:
                                 priority += 1
 
                 # RNA-seq trackhub
-                elif get_workflow() in ["alignment", "rna_seq"]:
+                elif get_workflow() == "rna_seq":
                     for sample in treps[treps["assembly"] == assembly].index:
-                        for bw in get_bigwig_strand(sample):
-                            bigwig = f"{config['result_dir']}/bigwigs/{assembly}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw"
+                        for bw in strandedness_to_trackhub(sample):
+                            bigwig = f"{config['bigwig_dir']}/{assembly}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw"
                             assert os.path.exists(bigwig), bigwig + " not found!"
-                            sample_name = rep_to_descriptive(sample) + "_bw"
+                            sample_name = rep_to_descriptive(sample)
                             sample_name = trackhub.helpers.sanitize(sample_name)
 
                             track = trackhub.Track(
@@ -503,6 +500,29 @@ rule trackhub:
                             # each track is added to the trackdb
                             trackdb.add_tracks(track)
                             priority += 1
+
+                # Alignment trackhub
+                elif get_workflow() == "alignment":
+                    for sample in treps[treps["assembly"] == assembly].index:
+                        bigwig = f"{config['bigwig_dir']}/{assembly}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}.bw"
+                        assert os.path.exists(bigwig), bigwig + " not found!"
+                        sample_name = rep_to_descriptive(sample)
+                        sample_name = trackhub.helpers.sanitize(sample_name)
+
+                        track = trackhub.Track(
+                            name=sample_name,  # track names can't have any spaces or special chars.
+                            source=bigwig,  # filename to build this track from
+                            visibility="full",  # shows the full signal
+                            color="0,0,0",  # black
+                            autoScale="on",  # allow the track to autoscale
+                            tracktype="bigWig",  # required when making a track
+                            priority=priority,
+                            maxHeightPixels="100:32:8",
+                        )
+
+                        # each track is added to the trackdb
+                        trackdb.add_tracks(track)
+                        priority += 1
 
             # now finish by storing the result
             trackhub.upload.upload_hub(hub=hub, host="localhost", remote_dir=output[0])

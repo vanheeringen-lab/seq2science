@@ -42,25 +42,23 @@ samplenames <- gsub(paste0(assembly, '-'), '', basename(samples))
 coldata <- data.frame(names = samplenames, files = file.path(samples, 'quant.sf'), stringsAsFactors = F, check.names = F)
 
 ## import annotated abundances in transcript level
-st <- tximeta::tximeta(coldata)
+st <- tximeta::tximeta(coldata, cleanDuplicateTxps = TRUE)
 
 ## Summarize to gene level
 sg <- summarizeToGene(st)
 
 
 ## This section deviates from the source script
-## It outputs a unnormalized counts matrix
-## (for consistency between quantifiers)
+## It outputs non-normalized matrixes
 
-## Extract a count table
-counts <- assay(sg, "counts")
-
-## Convert float to int
-for(i in 1:ncol(counts)){
-  class(counts[, i]) = "integer"
-}
+## Save TPM matrix
+TPM <- data.frame(assay(sg, "abundance"), stringsAsFactors = F, check.names = F) %>% rownames_to_column("gene")
+out_TPM_matrix <- sub("-counts.tsv", "-TPM.tsv", out_matrix)
+write.table(TPM, file=out_TPM_matrix, quote = F, sep = '\t', row.names = F)
 
 ## Save gene counts matrix
+counts <- assay(sg, "counts")
+mode(counts) <- "integer"
 counts <- data.frame(counts, stringsAsFactors = F, check.names = F) %>% rownames_to_column("gene")
 write.table(counts, file=out_matrix, quote = F, sep = '\t', row.names = F)
 

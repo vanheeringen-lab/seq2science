@@ -7,7 +7,7 @@ Running a ChIP-seq analysis has never been easier!
 </p>
 
 #### Downloading of sample(s)
-Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples. Take a look at the [downloading_fastq](download_fastq.md) workflow for extensive documentation about downloading of public samples. 
+Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples. Take a look at the [downloading_fastq](https://vanheeringen-lab.github.io/seq2science/content/workflows/download_fastq.html) workflow for extensive documentation about downloading of public samples. 
 
 #### Downloading and indexing of assembly(s)
 Depending on whether the assembly and its index you align your samples against already exist seq2science will start with downloading of the assembly through [genomepy](https://github.com/vanheeringen-lab/genomepy).
@@ -30,6 +30,16 @@ Currently we support two peak callers for the ChIP-seq workflow, MACS2 and genri
 [MACS2](https://github.com/taoliu/MACS) is the successor of MACS, created by [taoliu](https://github.com/taoliu) (also one of the co-authors of hmmratac). MACS2 generates a '*pileup*' of all the reads. You can imagine this pileup as laying all reads on top of each other on the genome, and counting how high your pile gets for each basepair. MACS2 then models '*background*' values, based on the total length of all your reads and the genome length, to a [Poisson distribution](https://en.wikipedia.org/wiki/Poisson_distribution) and decides whether your experimental pileup is significant compared to the poisson distribution. MACS2 is one of the, if not the, most used peak caller.
 
 For the calculation of peaks MACS2 requires that an "effective" genome size is being passed as one of its arguments. For the more common assemblies (e.g. mm10 and human) these numbers can be found online. However we found googling these numbers quite the hassle, and for lesser studied species these numbers can't be found online. Therefore the pipeline automatically estimates the effective genome size, we calculate this as **the number of unique kmers of the average read length**.
+
+###### Broad peaks
+
+The MACS2 peak caller also supports broad peak calling, and so does seq2science. To let MACS2 call broad peaks you have to add `--broad` to the macs2 command, e.g.:
+
+```
+peak_caller:
+  macs2:
+      --keep-dup 1 --broad
+```
 
 ##### Genrich
 [Genrich](https://github.com/jsh58/Genrich) is a spiritual successor of MACS2, created by [John M. Gaspar](https://github.com/jsh58). Just like MACS2 is generates a '*pileup'*. However the author of genrich realized that the distribution of pileup never follows a poisson distribution. Genrich then uses a [log-normal distribution](https://en.wikipedia.org/wiki/Log-normal_distribution) to model the background. 

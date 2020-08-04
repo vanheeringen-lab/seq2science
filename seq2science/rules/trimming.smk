@@ -13,6 +13,7 @@ rule trim_galore_SE:
     conda:
         "../envs/trimgalore.yaml"
     threads: 6
+    message: explain_rule("trim_galore_SE")
     log:
         expand("{log_dir}/trim_galore_SE/{{sample}}.log", **config),
     benchmark:
@@ -50,6 +51,7 @@ rule trim_galore_PE:
     conda:
         "../envs/trimgalore.yaml"
     threads: 6
+    message: explain_rule("trim_galore_PE")
     log:
         expand("{log_dir}/trim_galore_PE/{{sample}}.log", **config),
     benchmark:

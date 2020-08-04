@@ -67,6 +67,21 @@ for conf_dict in ["aligner", "quantifier", "diffexp"]:
             config[k] = v
         config[conf_dict] = dict_key
 
+
+# ...for rna-seq
+if get_workflow() == "rna_seq":
+    assert config["aligner"] in ["star", "hisat2"], \
+        f"\nPlease select a splice aware aligner for the RNA-seq (STAR or HISAT2)\n"
+
+    # delete the old strandedness report if samples.tsv was updated
+    strandedness_report = f"{config['qc_dir']}/strandedness/inferred_strandedness.tsv"
+    if os.path.exists(strandedness_report) and not config['ignore_strandedness']:
+        strandedness = pd.read_csv(strandedness_report, sep='\t', dtype='str', index_col=0)
+        col = samples.replicate if "replicate" in samples else samples.index
+        if len(strandedness.index) != len(set(col)) or not all(s in set(col) for s in strandedness.index):
+            os.unlink(strandedness_report)
+
+
 # ...for alignment
 if config.get("bam_sorter", False):
     config["bam_sort_order"] = list(config["bam_sorter"].values())[0]
@@ -169,8 +184,44 @@ def sieve_bam(configdict):
     )
 
 
+def rmkeys(del_list, target_list):
+    """
+    remove all elements in del_list from target_list
+    each element may be a tuple with an added condition
+    """
+    for element in del_list:
+        if isinstance(element, str) and element in target_list:
+            target_list.remove(element)
+        elif element[1] and element[0] in target_list:
+            target_list.remove(element[0])
+    return target_list
+
+
 # after all is done, log (print) the configuration
 logger.info("CONFIGURATION VARIABLES:")
-for key, value in config.items():
-    logger.info(f"{key: <23}: {value}")
+
+# sort config: samples.tsv & directories first, alphabetized second
+keys = sorted(config.keys())
+dir_keys = []
+other_keys = []
+for key in keys:
+    if key.endswith("_dir"):
+        dir_keys.append(key)
+    else:
+        other_keys.append(key)
+keys = dir_keys + other_keys
+
+# remove superfluous keys
+keys_to_remove = ["samples", "layout", "fqext1", "fqext2", "macs2_types",
+                  "cpulimit", "genome_types", "genomepy_temp", "bam_sort_mem",
+                  ("biological_replicates", "condition" not in samples),
+                  ("filter_bam_by_strand", "strandedness" not in samples),
+                  ("technical_replicates", "replicates" not in samples),
+                  ("tximeta", config.get("quantifier") is not "salmon")]
+keys = rmkeys(keys_to_remove, keys)
+keys = ["samples"] + keys + ["layout"]
+
+for key in keys:
+    if config[key] not in ["", False, 0, "None", "none@provided.com"]:
+        logger.info(f"{key: <23}: {config[key]}")
 logger.info("\n\n")
