@@ -153,11 +153,23 @@ elif config["quantifier"] == "kallistobus":
             """
             kb ref \
             {input.fa} {input.gtf} \
-            -i {params.basename}.idx -g {params.basename}_t2g.txt -f1 {params.basename}_cdna.fa
+            -i {params.basename}.idx -g {params.basename}_t2g.txt -f1 {params.basename}_cdna.fa \
             -f2 {params.basename}_intron.fa \
             -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt
             --lamanno 2> {log}
             """
+
+    def get_kallistobus_reads(wildcards):
+        reads = []
+        sample = wildcards.sample
+        if config.get("protocol") == "celseq":
+            assert config["layout"][sample] == "PAIRED"
+            reads += expand("{fastq_dir}/{{sample}}_R1.{fqsuffix}.gz", **config)
+            reads += expand("{trimmed_dir}/{{sample}}_trimmed.{fqsuffix}.gz", **config)
+        else:
+            raise NotImplementedError
+
+        return reads
 
     rule kallistobus_count:
         """
@@ -184,7 +196,7 @@ elif config["quantifier"] == "kallistobus":
             kb count \
             -i {params.basename}.idx -x 0,8,16:0,0,8:1,0,0 -w {input.barcodefile} \
             -t {threads} -g {params.basename}_t2g.txt --verbose --lamanno \
-            -o ${output} -c1 ${params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
+            -o {output} -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
             {input.reads} 2> {log}
             """
 

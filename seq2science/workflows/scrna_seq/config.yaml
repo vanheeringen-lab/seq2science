@@ -24,3 +24,4 @@ technical_replicates: merge
 # use 'our' default parameters
 quantifier: kallistobus
 barcodefile: "barcodes.txt"
+protocol: celseq
