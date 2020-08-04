@@ -8,11 +8,11 @@ from functools import lru_cache
 
 # the filetypes genomepy will download
 config["genome_types"] = ["fa", "fa.fai", "fa.sizes", "gaps.bed"]
-config["genomepy_temp"] = ["annotation.bed.gz", "annotation.gff.gz"]
+config["genomepy_temp"] = ["annotation.gff.gz"]
 
 # add annotation to the expected output if it is required
 if "rna_seq" in get_workflow() or config["aligner"] == "star":
-    config["genome_types"].append("annotation.gtf")
+    config["genome_types"].extend(["annotation.gtf", "annotation.bed"])
 
 
 # TODO: return to checkpoint get_genome when checkpoints are stable
@@ -42,6 +42,7 @@ rule get_genome:
         dir=config["genome_dir"],
         provider=config.get("provider", None),
         gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
+        bed=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.bed", **config),
         temp=expand("{genome_dir}/{{assembly}}/{{assembly}}.{genomepy_temp}", **config),
     conda:
         "../envs/get_genome.yaml"
@@ -65,6 +66,9 @@ rule get_genome:
         # unzip annotation if downloaded and gzipped
         if [ -f {params.gtf}.gz ]; then
             gunzip -f {params.gtf}.gz >> {log} 2>&1
+        fi
+        if [ -f {params.bed}.gz ]; then
+            gunzip -f {params.bed}.gz >> {log} 2>&1
         fi
 
         # if assembly has no annotation, or annotation has no genes, throw an warning
