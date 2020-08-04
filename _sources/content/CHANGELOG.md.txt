@@ -8,6 +8,8 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+## [0.2.0] - 2020-08-04
+
 ### Fixed
 
 - Allow for same condition name across different assemblies & different controls
