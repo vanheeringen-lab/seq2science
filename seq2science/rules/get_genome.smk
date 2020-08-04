@@ -11,7 +11,7 @@ config["genome_types"] = ["fa", "fa.fai", "fa.sizes", "gaps.bed"]
 config["genomepy_temp"] = ["annotation.gff.gz"]
 
 # add annotation to the expected output if it is required
-if "rna_seq" in get_workflow() or config["aligner"] == "star" or \
+if "rna_seq" == get_workflow() or config["aligner"] == "star" or \
         "scrna_seq" == get_workflow():
     config["genome_types"].extend(["annotation.gtf", "annotation.bed"])
 
