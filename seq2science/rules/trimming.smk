@@ -1,4 +1,7 @@
-ruleorder: trim_galore_PE > trim_galore_SE
+if "scrna_seq" == get_workflow():
+    ruleorder: trim_galore_SE > trim_galore_PE
+else:
+    ruleorder: trim_galore_PE > trim_galore_SE
 
 
 rule trim_galore_SE:
@@ -6,18 +9,18 @@ rule trim_galore_SE:
     Automated adapter detection, adapter trimming, and quality trimming through trim galore (single-end).
     """
     input:
-        expand("{fastq_dir}/{{sample}}.{fqsuffix}.gz", **config),
+        expand("{fastq_dir}/{{_sample}}.{fqsuffix}.gz", **config),
     output:
-        se=temp(expand("{trimmed_dir}/{{sample}}_trimmed.{fqsuffix}.gz", **config)),
-        qc=expand("{qc_dir}/trimming/{{sample}}.{fqsuffix}.gz_trimming_report.txt", **config),
+        se=temp(expand("{trimmed_dir}/{{_sample}}_trimmed.{fqsuffix}.gz", **config)),
+        qc=expand("{qc_dir}/trimming/{{_sample}}.{fqsuffix}.gz_trimming_report.txt", **config),
     conda:
         "../envs/trimgalore.yaml"
     threads: 6
     message: explain_rule("trim_galore_SE")
     log:
-        expand("{log_dir}/trim_galore_SE/{{sample}}.log", **config),
+        expand("{log_dir}/trim_galore_SE/{{_sample}}.log", **config),
     benchmark:
-        expand("{benchmark_dir}/trim_galore_SE/{{sample}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/trim_galore_SE/{{_sample}}.benchmark.txt", **config)[0]
     params:
         config=config["trim_galore"],
         fqsuffix=config["fqsuffix"],
@@ -28,11 +31,11 @@ rule trim_galore_SE:
 
         # now rename to proper output
         if [ "{params.fqsuffix}" != "fq" ]; then
-          mv "$(dirname {output.se})/{wildcards.sample}_trimmed.fq.gz" {output.se}
+          mv "$(dirname {output.se})/{wildcards._sample}_trimmed.fq.gz" {output.se}
         fi 
 
         # move the trimming report to qc directory
-        report=$(dirname {output.se})/{wildcards.sample}.{params.fqsuffix}.gz_trimming_report.txt
+        report=$(dirname {output.se})/{wildcards._sample}.{params.fqsuffix}.gz_trimming_report.txt
         mv $report {output.qc}
         """
 

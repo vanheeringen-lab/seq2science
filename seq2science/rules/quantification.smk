@@ -155,7 +155,7 @@ elif config["quantifier"] == "kallistobus":
             {input.fa} {input.gtf} \
             -i {params.basename}.idx -g {params.basename}_t2g.txt -f1 {params.basename}_cdna.fa \
             -f2 {params.basename}_intron.fa \
-            -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt
+            -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
             --lamanno 2> {log}
             """
 
@@ -165,7 +165,7 @@ elif config["quantifier"] == "kallistobus":
         if config.get("protocol") == "celseq":
             assert config["layout"][sample] == "PAIRED"
             reads += expand("{fastq_dir}/{{sample}}_R1.{fqsuffix}.gz", **config)
-            reads += expand("{trimmed_dir}/{{sample}}_trimmed.{fqsuffix}.gz", **config)
+            reads += expand(f"{{trimmed_dir}}/{sample}_R2_trimmed.{{fqsuffix}}.gz", **config)
         else:
             raise NotImplementedError
 
@@ -178,7 +178,7 @@ elif config["quantifier"] == "kallistobus":
         input:
              barcodefile=config["barcodefile"],
              basedir=rules.kallistobus_ref.output,
-             reads=get_reads,
+             reads=get_kallistobus_reads,
         output:
             dir=directory(expand("{result_dir}/{quantifier}/{{assembly}}-{{sample}}", **config)),
         log:
