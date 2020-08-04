@@ -1,6 +1,6 @@
 subtitle: "These samples were run by <a href=\"https://vanheeringen-lab.github.io/seq2science\">seq2science</a>, a tool for easy preprocessing of NGS data."
 intro_text: "Take a look at our <a href=\"https://vanheeringen-lab.github.io/seq2science/content/results.html#multiqc-quality-report\">docs</a> for info about how to use this report to the fullest."
-custom_logo: '../../imgs/rimls.jpg'
+custom_logo: '{{config["rule_dir"]}}/../imgs/rimls.jpg'
 log_filesize_limit: 350000000  # 350 mb
 
 
@@ -28,6 +28,11 @@ module_order:
         path_filters_exclude:
             - '*{{config["aligner"]}}*.samtools_stats.txt'
     - deeptools
+    - rseqc:
+        name: 'Strandedness'
+        extra: 'Sequencing strandedness was inferred for the following samples, and was called if 60% of the sampled reads were explained by either sense (forward) or antisense (reverse).'
+        path_filters:
+            - '*{{config["qc_dir"]}}/strandedness/*'
     - MACS2
     - featureCounts:
         name: 'macs2_frips'

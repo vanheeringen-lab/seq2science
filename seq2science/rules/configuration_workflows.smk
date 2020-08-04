@@ -67,6 +67,21 @@ for conf_dict in ["aligner", "quantifier", "diffexp"]:
             config[k] = v
         config[conf_dict] = dict_key
 
+
+# ...for rna-seq
+if get_workflow() == "rna_seq":
+    assert config["aligner"] in ["star", "hisat2"], \
+        f"\nPlease select a splice aware aligner for the RNA-seq (STAR or HISAT2)\n"
+
+    # delete the old strandedness report if samples.tsv was updated
+    strandedness_report = f"{config['qc_dir']}/strandedness/inferred_strandedness.tsv"
+    if os.path.exists(strandedness_report) and not config['ignore_strandedness']:
+        strandedness = pd.read_csv(strandedness_report, sep='\t', dtype='str', index_col=0)
+        col = samples.replicate if "replicate" in samples else samples.index
+        if len(strandedness.index) != len(set(col)) or not all(s in set(col) for s in strandedness.index):
+            os.unlink(strandedness_report)
+
+
 # ...for alignment
 if config.get("bam_sorter", False):
     config["bam_sort_order"] = list(config["bam_sorter"].values())[0]

@@ -332,7 +332,7 @@ pipeline {
                     set -e
                     source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                     conda activate s2s
-                    conda install -q --yes flake8
+                    mamba install -q --yes flake8
 
                     # flake8
                     printf "\nflake8\n\n"
