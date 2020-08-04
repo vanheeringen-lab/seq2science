@@ -9,28 +9,10 @@ samtools view -T {input.assembly} -C {input.bam} -@ {threads} > {output} 2> {log
 ```
 
 #### bam_bigwig
-Convert a bam file into a bigwig file
+Convert a bam file into a bigwig file.
+Can output strand specific bam
 ```
-bamCoverage --bam {input.bam} --outFileName {output} --numberOfProcessors {threads} \
-{params} --verbose > {log} 2>&1
-```
-
-#### bam_stranded_bigwig
-Convert a bam file into two bigwig files, one for each strand.
-TODO: split this rule into two or better: forward & backward logic
-```
-      
-direction1=forward
-direction2=reverse
-if [ {params.strandedness} == 'reverse' ]; then
-    direction1=reverse
-    direction2=forward
-fi
-
-bamCoverage --bam {input.bam} --outFileName {output.forwards} --filterRNAstrand $direction1 \
---numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1 &&        
-bamCoverage --bam {input.bam} --outFileName {output.reverses} --filterRNAstrand $direction2 \
---numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1
+bamCoverage --bam {input.bam} --outFileName {output} {params.strandedness} --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1
 ```
 
 #### bedgraph_bigwig
@@ -142,10 +124,12 @@ computeMatrix scale-regions -S {input.bw} {params.labels} -R {params.annotation}
 -p {threads} -b 2000 -a 500 -o {output} > {log} 2>&1
 ```
 
-#### counts_matrix
-Merge gene counts per assembly
+#### count_matrix
+Combine count tables into one count matrix per assembly
 
-From https://github.com/snakemake-workflows/rna-seq-star-deseq2
+#### count_matrix_DEXseq
+Combine DEXSeq counts into one count matrix per assembly
+for use in function `DEXSeqDataSet()`
 
 #### coverage_table
 Use gimmemotif's coverage_table to generate a cpunt table with the nr of reads
@@ -196,6 +180,15 @@ script source: https://github.com/COMBINE-lab/SalmonTools
 #### deseq2
 Differential gene expression analysis with DESeq2.
 
+#### dexseq_count
+count exon usage
+```
+current_conda_env=$(conda env list | grep \* | cut -d "*" -f2-)
+DEXseq_path=${{current_conda_env}}/lib/R/library/DEXSeq/python_scripts
+
+python ${{DEXseq_path}}/dexseq_count.py -f bam -r pos {params.endedness} -s {params.strandedness} {input.gff} {input.bam} {output} > {log} 2>&1
+```
+
 #### edgeR_normalization
 edgeR supports three different types of normalization: TMM, RLE, and upperquartile.
 
@@ -226,6 +219,12 @@ featureCounts -T {threads} -p -a {output.tmp_saf} -F SAF -o {output.real_out} {i
 
 # move the summary to qc directory
 mv $(dirname {output.real_out})/$(basename {output.summary}) {output.summary}
+```
+
+#### featurecounts
+summarize reads to gene level. Outputs a counts table per bam file.
+```
+featureCounts -a {input.gtf} {input.bam} {params.endedness} -s {params.strandedness} {params.user_flags} -T {threads} -o {output} > {log} 2>&1
 ```
 
 #### gcPercent
@@ -278,6 +277,9 @@ fi
 if [ -f {params.gtf}.gz ]; then
     gunzip -f {params.gtf}.gz >> {log} 2>&1
 fi
+if [ -f {params.bed}.gz ]; then
+    gunzip -f {params.bed}.gz >> {log} 2>&1
+fi
 
 # if assembly has no annotation, or annotation has no genes, throw an warning
 if [ ! -f {params.gtf} ] || $(grep -q "No genes found" {log}); then
@@ -295,17 +297,35 @@ fi
 Generate transcripts.fasta using gffread.
 
 Requires genome.fa and annotation.gtf (with matching chromosome/scaffold names)
+```
+    Generate decoy_transcripts.txt for Salmon indexing  
+
+    script source: https://github.com/COMBINE-lab/SalmonTools
+    
+```
 
 #### hisat2_align
 Align reads against a genome (index) with hisat2, and pipe the output to the required sorter(s).
 ```
-hisat2 {params.params} --threads {threads} -x {input.index}{wildcards.assembly} {params.input} 2> {log} | tee {output} 1> /dev/null 2>> {log}
+hisat2 {params.params} --threads {threads} -x {input.index}/{wildcards.assembly} {params.input} 2> {log} | tee {output} 1> /dev/null 2>> {log}
 ```
 
 #### hisat2_index
 Make a genome index for hisat2. This index is required for alignment.
 ```
 hisat2-build {params} -p {threads} {input} {output}/{wildcards.assembly} > {log} 2>&1
+```
+
+#### hisat2_splice_aware_index
+Make an exon-junction and splice aware index for hisat2. 
+This index is required for alignment and quantification of RNA-seq data.
+```
+hp=$(which hisat2)
+python3 ${{hp}}_extract_splice_sites.py {input.gtf} > {output}/splice_sites.tsv
+python3 ${{hp}}_extract_exons.py {input.gtf} > {output}/exons.tsv
+
+hisat2-build {params} -p {threads} --ss {output}/splice_sites.tsv --exon {output}/exons.tsv \
+{input.fasta} {output}/{wildcards.assembly} > {log} 2>&1
 ```
 
 #### hmmratac
@@ -325,6 +345,12 @@ samtools view -H {input} 2>> {log} | grep SQ 2>> {log} | cut -f 2-3 2>> {log} | 
 paste {output.tmp1} {output.tmp2} > {output.out} 2> {log}
 ```
 
+#### htseq_count
+summarize reads to gene level. Outputs a counts table per bam file.
+```
+htseq-count {input.bam} {input.gtf} -r pos -s {params.strandedness} {params.user_flags} -n {threads} -c {output} > {log} 2>&1
+```
+
 #### id2sra
 Download the SRA of a sample by its unique identifier.
 
@@ -341,6 +367,12 @@ cp {input} {output}
 idr --samples {input} {params.rank} --output-file {output} > {log} 2>&1
                 fi
                 
+```
+
+#### infer_strandedness
+use RSeqQC's infer_experiment.py to determine strandedness af a sample
+```
+infer_experiment.py -i {input.bam} -r {input.bed} -q {params} 2> {log} | awk NF > {output} 
 ```
 
 #### insert_size_metrics
@@ -511,6 +543,15 @@ Plot the so-called profile using deeptools.
 plotProfile -m {input} --outFileName {output.img} --outFileNameData {output.file} > {log} 2>&1
 ```
 
+#### prepare_DEXseq_annotation
+generate a DEXseq annotation.gff from the annotation.gtf
+```
+current_conda_env=$(conda env list | grep \* | cut -d "*" -f2-)
+DEXseq_path=${{current_conda_env}}/lib/R/library/DEXSeq/python_scripts
+
+python ${{DEXseq_path}}/dexseq_prepare_annotation.py {input} {output} > {log} 2>&1
+```
+
 #### quantile_normalization
 Quantile normalization is a type of normalization that makes the distribution 
 between samples identical. This means that the actual count distribution 
@@ -531,14 +572,14 @@ ln {input[1]} {output[1]}
 ```
 
 #### salmon_decoy_aware_index
-Make a decoy aware transcript index for Salmon.
+Generate a decoy aware transcriptome index for Salmon.
 ```
 salmon index -t {input.transcripts} --decoys {input.decoy_transcripts} -i {output} {params} \
 --threads {threads} > {log} 2>&1
 ```
 
 #### salmon_index
-Make a transcriptomic index for Salmon.
+Generate a transcriptome index for Salmon.
 ```
 salmon index -t {input} -i {output} {params} --threads {threads} > {log} 2>&1
 ```
@@ -674,7 +715,7 @@ mkdir -p {log}
 mkdir -p {output.dir}                
 
 STAR --genomeDir {input.index} --readFilesIn {params.input} --readFilesCommand gunzip -c \
---quantMode GeneCounts --outSAMtype BAM Unsorted --outStd BAM_Unsorted \
+--outSAMtype BAM Unsorted --outStd BAM_Unsorted \
 --outFileNamePrefix {log}/ --outTmpDir {output.dir}/STARtmp \
 --runThreadN {threads} {params.params} > {output.pipe} 2> {log}/Log.stderr.out
 
@@ -688,7 +729,7 @@ Make a genome index for STAR.
 Troubleshooting:
 1) sufficient disk space?
 2) increase the RAM available (--limitGenomeGenerateRAM)
-3) reduce the number of threads (snakemake -j 5)
+3) reduce the number of threads (seq2science -j 5)
 4) reduce accuracy (--genomeSAsparseD 2)
 
 For example, in your config.yaml, set aligner/quantifier:
@@ -732,22 +773,6 @@ echo $x
             
 ```
 
-#### star_quant
-Quantify reads against a genome and transcriptome (index) with STAR and output a counts table per sample.
-```
-trap "find {log} -type f ! -name Log* -exec rm {{}} \;" EXIT
-mkdir -p {log}
-mkdir -p {output.dir}                
-
-STAR --genomeDir {input.index} --readFilesIn {params.input} --readFilesCommand gunzip -c \
---quantMode GeneCounts --outSAMtype None \
---outFileNamePrefix {log}/ --outTmpDir {output.dir}/STARtmp \
---runThreadN {threads} {params.params} > {log}/Log.std_stderr.out 2>&1
-
-# move all non-log files to output directory (this way the log files are kept on error)
-find {log} -type f ! -name Log* -exec mv {{}} {output.dir} \;
-```
-
 #### trackhub
 Generate a trackhub which has to be hosted on an web accessible location, 
 but can then be viewed through the UCSC genome browser.
@@ -758,7 +783,7 @@ Generate a searchable annotation & index for each assembly
 source: https://genome.ucsc.edu/goldenPath/help/hubQuickStartSearch.html
 ```
 # generate annotation files
-gtfToGenePred -geneNameAsName2 -genePredExt {params.gtf} {output.genePred} -infoOut={output.info} >> {log} 2>&1
+gtfToGenePred -allErrors -geneNameAsName2 -genePredExt {params.gtf} {output.genePred} -infoOut={output.info} >> {log} 2>&1
 
 genePredToBed {output.genePred} {output.genePredbed} >> {log} 2>&1
 
@@ -805,13 +830,4 @@ mv $report {output.qc}
 
 #### twobit
 Generate a 2bit file for each assembly
-
-#### txi_count_matrix
-Convert estimated transcript abundances to gene count estimations and merge 
-gene counts per assembly.
-
-Also outputs a single cell experiment object similar to ARMOR 
-(https://github.com/csoneson/ARMOR).
-
-Only works with Ensembl assemblies.
 

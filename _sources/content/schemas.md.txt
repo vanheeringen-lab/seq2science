@@ -79,7 +79,6 @@ cpulimit:
 ```
 email:
     description: email to reach you after pipeline finished, required for trackhub and multiqc report
-    default: none@provided.com
     type: string
 ```
 
@@ -334,27 +333,40 @@ dge_dir:
 quantifier:
     description: which quantifier to use
     properties:
-        star:
-            properties:
-                quantify:
-                    default: 
-            default:
-                quantify: 
         salmon:
             properties:
                 quantifier_index:
                     default: -k 31
-                quantify:
+                quantifier_flags:
                     default: --seqBias --gcBias --validateMappings --recoverOrphans
                 decoy_aware_index:
                     default: False
             default:
                 quantifier_index: -k 31
-                quantify: --seqBias --gcBias --validateMappings --recoverOrphans
+                quantifier_flags: --seqBias --gcBias --validateMappings --recoverOrphans
                 decoy_aware_index: False
+        htseq:
+            properties:
+                htseq_flags:
+                    default: 
+            default:
+                htseq_flags: 
+        featurecounts:
+            properties:
+                featurecounts_flags:
+                    default: 
+            default:
+                featurecounts_flags: 
     default:
-        star:
-            quantify: 
+        htseq:
+            htseq_flags: 
+```
+#####ignore_strandedness
+```
+ignore_strandedness:
+    description: ignore/dont infer strand-specificity?
+    default: False
+    type: boolean
 ```
 #####tximeta
 ```
@@ -372,6 +384,13 @@ tximeta:
         organism: tximeta_file
         release: 42
 ```
+#####dexseq
+```
+dexseq:
+    description: output an exon counts matrix for use in DEXSeq.
+    default: False
+    type: boolean
+```
 #####diffexp
 ```
 diffexp:
@@ -383,7 +402,7 @@ diffexp:
                 DE_params:
                     default:
                         multiple_testing_procedure: BH
-                        alpha_value: 0.05
+                        alpha_value: 0.1
                         shrinkage_estimator: apeglm
                 contrasts:
                     default: 
@@ -412,21 +431,21 @@ bin_opt:
 #####create_trackhub
 ```
 create_trackhub:
-    description: skip generation of bams (except for workflow alignment), bigwigs and a trackhub
+    description: generate a trackhub (and required files)?
     default: True
-    enum: [True, False]
+    type: boolean
 ```
-#####deeptools
+#####bigwig_dir
 ```
-deeptools:
-    description: option flags for bam to bigwig conversions with deeptools bamCoverage
+bigwig_dir:
+    description: directory where to store the bigwigs used by the trackhub (defaults inside the result dir)
+    default: bigwigs
+    type: string
+```
+#####deeptools_flags
+```
+deeptools_flags:
+    description: flags for bam to bigwig conversions with deeptools bamCoverage
     default: --samFlagExclude 1024
-```
-#####filter_bam_by_strand
-```
-filter_bam_by_strand:
-    description: split bigwigs by strand?
-    default: True
-    enum: [True, False]
 ```
 

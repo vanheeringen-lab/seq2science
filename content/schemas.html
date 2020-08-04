@@ -140,7 +140,9 @@
 <li class="toctree-l4"><a class="reference internal" href="#counts-dir">counts_dir</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#dge-dir">dge_dir</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#quantifier">quantifier</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ignore-strandedness">ignore_strandedness</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#tximeta">tximeta</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dexseq">dexseq</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#diffexp">diffexp</a></li>
 </ul>
 </li>
@@ -151,8 +153,8 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#trackhub">trackhub</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#create-trackhub">create_trackhub</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#deeptools">deeptools</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#filter-bam-by-strand">filter_bam_by_strand</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bigwig-dir">bigwig_dir</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#deeptools-flags">deeptools_flags</a></li>
 </ul>
 </li>
 </ul>
@@ -331,7 +333,6 @@
 <h3>email<a class="headerlink" href="#email" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">email:</span>
 <span class="c">    description: email to reach you after pipeline finished, required for trackhub and multiqc report</span>
-<span class="c">    default: none@provided.com</span>
 <span class="c">    type: string</span>
 </pre></div>
 </div>
@@ -642,27 +643,42 @@
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">quantifier:</span>
 <span class="c">    description: which quantifier to use</span>
 <span class="c">    properties:</span>
-<span class="c">        star:</span>
-<span class="c">            properties:</span>
-<span class="c">                quantify:</span>
-<span class="c">                    default:</span>
-<span class="c">            default:</span>
-<span class="c">                quantify:</span>
 <span class="c">        salmon:</span>
 <span class="c">            properties:</span>
 <span class="c">                quantifier_index:</span>
 <span class="c">                    default: -k 31</span>
-<span class="c">                quantify:</span>
+<span class="c">                quantifier_flags:</span>
 <span class="c">                    default: --seqBias --gcBias --validateMappings --recoverOrphans</span>
 <span class="c">                decoy_aware_index:</span>
 <span class="c">                    default: False</span>
 <span class="c">            default:</span>
 <span class="c">                quantifier_index: -k 31</span>
-<span class="c">                quantify: --seqBias --gcBias --validateMappings --recoverOrphans</span>
+<span class="c">                quantifier_flags: --seqBias --gcBias --validateMappings --recoverOrphans</span>
 <span class="c">                decoy_aware_index: False</span>
+<span class="c">        htseq:</span>
+<span class="c">            properties:</span>
+<span class="c">                htseq_flags:</span>
+<span class="c">                    default:</span>
+<span class="c">            default:</span>
+<span class="c">                htseq_flags:</span>
+<span class="c">        featurecounts:</span>
+<span class="c">            properties:</span>
+<span class="c">                featurecounts_flags:</span>
+<span class="c">                    default:</span>
+<span class="c">            default:</span>
+<span class="c">                featurecounts_flags:</span>
 <span class="c">    default:</span>
-<span class="c">        star:</span>
-<span class="c">            quantify:</span>
+<span class="c">        htseq:</span>
+<span class="c">            htseq_flags:</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="ignore-strandedness">
+<h3>ignore_strandedness<a class="headerlink" href="#ignore-strandedness" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">ignore_strandedness:</span>
+<span class="c">    description: ignore/dont infer strand-specificity?</span>
+<span class="c">    default: False</span>
+<span class="c">    type: boolean</span>
 </pre></div>
 </div>
 </div>
@@ -684,6 +700,15 @@
 </pre></div>
 </div>
 </div>
+<div class="section" id="dexseq">
+<h3>dexseq<a class="headerlink" href="#dexseq" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">dexseq:</span>
+<span class="c">    description: output an exon counts matrix for use in DEXSeq.</span>
+<span class="c">    default: False</span>
+<span class="c">    type: boolean</span>
+</pre></div>
+</div>
+</div>
 <div class="section" id="diffexp">
 <h3>diffexp<a class="headerlink" href="#diffexp" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">diffexp:</span>
@@ -695,7 +720,7 @@
 <span class="c">                DE_params:</span>
 <span class="c">                    default:</span>
 <span class="c">                        multiple_testing_procedure: BH</span>
-<span class="c">                        alpha_value: 0.05</span>
+<span class="c">                        alpha_value: 0.1</span>
 <span class="c">                        shrinkage_estimator: apeglm</span>
 <span class="c">                contrasts:</span>
 <span class="c">                    default:</span>
@@ -732,26 +757,26 @@
 <div class="section" id="create-trackhub">
 <h3>create_trackhub<a class="headerlink" href="#create-trackhub" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">create_trackhub:</span>
-<span class="c">    description: skip generation of bams (except for workflow alignment), bigwigs and a trackhub</span>
+<span class="c">    description: generate a trackhub (and required files)?</span>
 <span class="c">    default: True</span>
-<span class="c">    enum: [True, False]</span>
+<span class="c">    type: boolean</span>
 </pre></div>
 </div>
 </div>
-<div class="section" id="deeptools">
-<h3>deeptools<a class="headerlink" href="#deeptools" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">deeptools:</span>
-<span class="c">    description: option flags for bam to bigwig conversions with deeptools bamCoverage</span>
+<div class="section" id="bigwig-dir">
+<h3>bigwig_dir<a class="headerlink" href="#bigwig-dir" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">bigwig_dir:</span>
+<span class="c">    description: directory where to store the bigwigs used by the trackhub (defaults inside the result dir)</span>
+<span class="c">    default: bigwigs</span>
+<span class="c">    type: string</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="deeptools-flags">
+<h3>deeptools_flags<a class="headerlink" href="#deeptools-flags" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">deeptools_flags:</span>
+<span class="c">    description: flags for bam to bigwig conversions with deeptools bamCoverage</span>
 <span class="c">    default: --samFlagExclude 1024</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="filter-bam-by-strand">
-<h3>filter_bam_by_strand<a class="headerlink" href="#filter-bam-by-strand" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">filter_bam_by_strand:</span>
-<span class="c">    description: split bigwigs by strand?</span>
-<span class="c">    default: True</span>
-<span class="c">    enum: [True, False]</span>
 </pre></div>
 </div>
 </div>

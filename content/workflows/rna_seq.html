@@ -93,30 +93,27 @@
 <li class="toctree-l4"><a class="reference internal" href="#downloading-of-sample-s">Downloading of sample(s)</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#downloading-and-indexing-of-assembly-s">Downloading and indexing of assembly(s)</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#read-trimming">Read trimming</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#quantification-gene-count-matrices">Quantification &amp; gene count matrices</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gene-counting-with-htseq-featurecounts">Gene counting (with HTSeq/featureCounts)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gene-quantification-with-salmon">Gene quantification (with Salmon)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gene-abundances">Gene abundances</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#differential-gene-expression-analysis">Differential gene expression analysis</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#differential-transcript-usage">Differential transcript usage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#differential-exon-usage">Differential exon usage</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#optional-trackhub">Optional: Trackhub</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#alignment">Alignment</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#bam-sieving">Bam sieving</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#strandedness">Strandedness</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#optional-differential-gene-expression-analysis">Optional: Differential gene expression analysis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#optional-trackhub">Optional: Trackhub</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#filling-out-the-samples-tsv">Filling out the samples.tsv</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#sample-column">Sample column</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#assembly-column">Assembly column</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#descriptive-name-column">Descriptive_name column</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#technical-replicates">Technical replicates</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id2">Strandedness</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#contrast-designs">Contrast designs</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#deseq2-contrast-designs">DESeq2 contrast designs</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#conditions">Conditions</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#batches">Batches</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#differential-gene-expression-analysis-output">Differential gene expression analysis output</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="chip_seq.html">ChIP-seq</a></li>
@@ -205,7 +202,7 @@
   <img src="../../_static/rna_seq.png">
 </p><div class="section" id="downloading-of-sample-s">
 <h3>Downloading of sample(s)<a class="headerlink" href="#downloading-of-sample-s" title="Permalink to this headline">¶</a></h3>
-<p>Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples. Take a look at the <a class="reference external" href="download_fastq.md">downloading_fastq</a> workflow for extensive documentation about downloading of public samples.</p>
+<p>Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples. Take a look at the <a class="reference external" href="https://vanheeringen-lab.github.io/seq2science/content/workflows/download_fastq.html">downloading_fastq</a> workflow for extensive documentation about downloading of public samples.</p>
 </div>
 <div class="section" id="downloading-and-indexing-of-assembly-s">
 <h3>Downloading and indexing of assembly(s)<a class="headerlink" href="#downloading-and-indexing-of-assembly-s" title="Permalink to this headline">¶</a></h3>
@@ -215,36 +212,79 @@
 <h3>Read trimming<a class="headerlink" href="#read-trimming" title="Permalink to this headline">¶</a></h3>
 <p>The pipeline starts by trimming the reads with <a class="reference external" href="https://github.com/FelixKrueger/TrimGalore/blob/master/Docs/Trim_Galore_User_Guide.md">trim galore!</a>. Trim galore automatically first trims the low quality 3’ ends of reads, and removes short reads. After the quality trimming trim galore automatically detects which adapter was used, and trims it. The parameters of trim galore! for the pipeline can be set in the configuration by variable <em>trim_galore</em>.</p>
 </div>
-<div class="section" id="quantification-gene-count-matrices">
-<h3>Quantification &amp; gene count matrices<a class="headerlink" href="#quantification-gene-count-matrices" title="Permalink to this headline">¶</a></h3>
-<p>After trimming, gene quantification is performed by <code class="docutils literal notranslate"><span class="pre">star</span></code> (the default) or <code class="docutils literal notranslate"><span class="pre">salmon</span></code>. The choice of quantifier can be changed with the <em>quantifier</em> option in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>. Sensible defaults have been set for every quantifier, but can be overwritten for either (or both) the indexing and quantification by specifying them in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>.</p>
-<p>Gene counts are aggregated per assembly into a count matrix. Additionally, <code class="docutils literal notranslate"><span class="pre">salmon</span></code> generates a SingleCellExperiment object which can be opened in <em>R</em>.</p>
+<div class="section" id="gene-counting-with-htseq-featurecounts">
+<h3>Gene counting (with HTSeq/featureCounts)<a class="headerlink" href="#gene-counting-with-htseq-featurecounts" title="Permalink to this headline">¶</a></h3>
+<p>RNA-seq can be performed using gene counting methods or gene quantification methods. The following section described the former (and default) method as implemented in seq2science.</p>
+<div class="section" id="alignment">
+<h4>Alignment<a class="headerlink" href="#alignment" title="Permalink to this headline">¶</a></h4>
+<p>Reads are aligned using <code class="docutils literal notranslate"><span class="pre">STAR</span></code> or <code class="docutils literal notranslate"><span class="pre">HISAT2</span></code> (default <code class="docutils literal notranslate"><span class="pre">STAR</span></code>). Sensible defaults have been set, but can be overwritten for either (or both) the indexing and alignment by specifying them in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>.</p>
+<p>The pipeline will check if the assembly you specified is present in the <em>genome_dir</em>, and otherwise will download it for you through <a class="reference external" href="https://github.com/vanheeringen-lab/genomepy">genomepy</a>. All these aligners require an index to be formed first for each assembly, but don’t worry, the pipeline does this for you.</p>
+</div>
+<div class="section" id="bam-sieving">
+<h4>Bam sieving<a class="headerlink" href="#bam-sieving" title="Permalink to this headline">¶</a></h4>
+<p>After aligning the bam you can choose to remove unmapped reads, low quality mappings, duplicates, and multimappers. Again, sensible defaults have been set, but can be overwritten.</p>
+</div>
+<div class="section" id="strandedness">
+<h4>Strandedness<a class="headerlink" href="#strandedness" title="Permalink to this headline">¶</a></h4>
+<p>Most sequencing protocols at present are strand-specific. This specificity can be used to help identify pseudogenes originating from antisense DNA, or genes with overlapping regions on opposite strands without ambiguity.
+Strandedness is inferred automatically for all RNA-seq samples. For aligners it is inferred by RSeQC, the results of which can be reviewed in the MultiQC.
+RSeQC inference can be overwritten by column <code class="docutils literal notranslate"><span class="pre">strandedness</span></code> in the samples.tsv. This column may contain identifiers <code class="docutils literal notranslate"><span class="pre">no</span></code>, <code class="docutils literal notranslate"><span class="pre">forward</span></code> or <code class="docutils literal notranslate"><span class="pre">reverse</span></code>. If strandedness is unknown (for some samples), fields may be left blank or filled with <code class="docutils literal notranslate"><span class="pre">nan</span></code>.
+Setting <code class="docutils literal notranslate"><span class="pre">ignore_strandedness</span></code> in the config.yaml will resulting in gene counting to assume all reads are unstranded.</p>
+</div>
+<div class="section" id="gene-counts">
+<h4>Gene counts<a class="headerlink" href="#gene-counts" title="Permalink to this headline">¶</a></h4>
+<p>Gene counts are obtained from the filtered bam files using either <code class="docutils literal notranslate"><span class="pre">HTSeq</span></code> or <code class="docutils literal notranslate"><span class="pre">featureCounts</span></code> (default <code class="docutils literal notranslate"><span class="pre">HTSeq</span></code>). These counts are then combined into a count matrix per assembly for use in downstream analyses.</p>
+</div>
+</div>
+<div class="section" id="gene-quantification-with-salmon">
+<h3>Gene quantification (with Salmon)<a class="headerlink" href="#gene-quantification-with-salmon" title="Permalink to this headline">¶</a></h3>
+<p>RNA-seq can be performed using gene counting methods or gene quantification methods. The following section described the latter method as implemented in seq2science.</p>
+</div>
+<div class="section" id="gene-abundances">
+<h3>Gene abundances<a class="headerlink" href="#gene-abundances" title="Permalink to this headline">¶</a></h3>
+<p>Gene abundances can be estimated using <code class="docutils literal notranslate"><span class="pre">Salmon</span></code>. Reads are aligned against the transcriptome to obtain transcript abundances (sequence strandedness is inferred automatically by Salmon), then summarized to gene-level using tximeta.
+Additionally, <code class="docutils literal notranslate"><span class="pre">Salmon</span></code> generates a gene-level TPM matrix and a SingleCellExperiment object which can be opened in <em>R</em>, containing the transcript- and gene-level summaries.</p>
+</div>
+<hr class="docutils" />
+<div class="section" id="differential-gene-expression-analysis">
+<h3>Differential gene expression analysis<a class="headerlink" href="#differential-gene-expression-analysis" title="Permalink to this headline">¶</a></h3>
+<p>Seq2science outputs gene counts matrices for each assembly. Additionally, it can also perform differential expression analysis with <a class="reference external" href="https://genomebiology.biomedcentral.com/articles/10.1186/s13059-014-0550-8">DESeq2</a>.
+To do so, add one or more contrast design(s) in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file, with matching identifiers in the <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> file. Examples are given below, and the RNA-seq <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> contains a commented-out set of examples.</p>
+<p>Note: (additional) design contrasts can be added at any time. After completing the workflow, rerunning Snakemake with new contrasts will only perform these analyses.</p>
+<div class="section" id="deseq2-method">
+<h4>DESeq2 method<a class="headerlink" href="#deseq2-method" title="Permalink to this headline">¶</a></h4>
+<p>DESeq2 automatically performs library bias correction when loading your data. Batch correction is performed if included in the design.
+After calculating differentially expressed genes, a multiple testing procedure is applied. This is either the Benjamini-Hochberg procedure (the default) or Independent Hypothesis Weighing.
+Expression counts are log transformed (by default using the apeglm method). These defaults can be changed in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>.</p>
+</div>
+<div class="section" id="deseq2-output">
+<h4>DESeq2 output<a class="headerlink" href="#deseq2-output" title="Permalink to this headline">¶</a></h4>
+<p>For each contrast design, the list of <em>all genes</em> is saved to file, with analysis results for expressed genes. Briefly, these include:</p>
+<ul class="simple">
+<li><p>The column <code class="docutils literal notranslate"><span class="pre">padj</span></code> contains the adjusted p-values after multiple testing. These should be used to identify DE genes.</p></li>
+<li><p>The column <code class="docutils literal notranslate"><span class="pre">log2FoldChange</span></code> contains the fold change of each gene between the two conditions. The reference condition is the one <em>last mentioned</em> in the contrast design, so use <code class="docutils literal notranslate"><span class="pre">conditions_treatment_control</span></code>. If you use <code class="docutils literal notranslate"><span class="pre">conditions_control_treatment</span></code> the fold change is <em>inverted</em>.</p></li>
+<li><p>Several other columns were kept for sake of completion, such as column <code class="docutils literal notranslate"><span class="pre">pvalue</span></code>, which contains <em>non-adjusted</em> p-values.</p></li>
+</ul>
+<p>In addition, MA and PCA plots are generated for each contrast design.</p>
+<p>If the design includes a batch effect, several PCA plots are generated to visualize the effect of the batch correction.</p>
+<p>DESeq2 models the batch effect in their package, but downstream methods may not. For this reason, seq2science will produce a batch-corrected counts matrix (and a batch corrected TPM matrix if quantified with Salmon).</p>
+</div>
+</div>
+<div class="section" id="differential-transcript-usage">
+<h3>Differential transcript usage<a class="headerlink" href="#differential-transcript-usage" title="Permalink to this headline">¶</a></h3>
+<p>Quantifying with <code class="docutils literal notranslate"><span class="pre">Salmon</span></code>, the transcript-level summaries in the SingleCellExperiment object <em>should</em> be usable for differential transcript analysis with <code class="docutils literal notranslate"><span class="pre">DEXseq</span></code>, as described <a class="reference external" href="http://www.bioconductor.org/packages/devel/workflows/vignettes/rnaseqDTU/inst/doc/rnaseqDTU.html#dexseq">here</a>.</p>
+</div>
+<div class="section" id="differential-exon-usage">
+<h3>Differential exon usage<a class="headerlink" href="#differential-exon-usage" title="Permalink to this headline">¶</a></h3>
+<p>Differential exon analysis by <cite>``DEXseq`</cite> &lt;<a class="reference external" href="https://bioconductor.org/packages/release/bioc/html/DEXSeq.html">https://bioconductor.org/packages/release/bioc/html/DEXSeq.html</a>&gt;`_ can be automatically prepared by setting <code class="docutils literal notranslate"><span class="pre">dexseq:</span> <span class="pre">True</span></code> in the config.yaml.
+This will let seq2science to output an exon counts matrix per assembly, which can be loaded directly into <code class="docutils literal notranslate"><span class="pre">DEXSeqDataSet()</span></code>.</p>
+<p>Note: this utilizes scripts implemented by DEXseq, which are <a class="reference external" href="https://bioconductor.org/packages/devel/bioc/vignettes/DEXSeq/inst/doc/DEXSeq.html#24_Preparing_the_annotation">built for Ensembl genomes</a>.</p>
 </div>
 </div>
 <hr class="docutils" />
 <div class="section" id="optional-trackhub">
 <h2>Optional: Trackhub<a class="headerlink" href="#optional-trackhub" title="Permalink to this headline">¶</a></h2>
-<p>A UCSC compatible trackhub can be generated for this workflow. See the <a class="reference external" href="../results.html#trackhub">trackhub page</a> for more information!</p>
-<div class="section" id="alignment">
-<h3>Alignment<a class="headerlink" href="#alignment" title="Permalink to this headline">¶</a></h3>
-<p>To generate a trackhub the trimmed reads are aligned against an assembly using <code class="docutils literal notranslate"><span class="pre">star</span></code>. Selecting <code class="docutils literal notranslate"><span class="pre">star</span></code> as both aligner and quantifier does both things together, saving you time. Sensible defaults have been set, but can be overwritten for either (or both) the indexing and alignment by specifying them in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>.</p>
-<p>The pipeline will check if the assembly you specified is present in the <em>genome_dir</em>, and otherwise will download it for you through <a class="reference external" href="https://github.com/vanheeringen-lab/genomepy">genomepy</a>. All these aligners require an index to be formed first for each assembly, but don’t worry, the pipeline does this for you.</p>
-</div>
-<div class="section" id="bam-sieving">
-<h3>Bam sieving<a class="headerlink" href="#bam-sieving" title="Permalink to this headline">¶</a></h3>
-<p>After aligning the bam you can choose to remove unmapped reads, low quality mappings, duplicates, and multimappers.</p>
-</div>
-<div class="section" id="strandedness">
-<h3>Strandedness<a class="headerlink" href="#strandedness" title="Permalink to this headline">¶</a></h3>
-<p>Most sequencing protocols at present are strand-specific. This specificity can be used to help identify pseudogenes originating from antisense DNA, or genes with overlapping regions on opposite strands. In order for seq2science to use this feature, the fastq must be aligned with STAR, and the samples.tsv requires the additional column <code class="docutils literal notranslate"><span class="pre">strandedness</span></code>. This column may contain identifiers <code class="docutils literal notranslate"><span class="pre">forward</span></code> or <code class="docutils literal notranslate"><span class="pre">reverse</span></code>. If strandedness is unknown, fields may be left blank or filled with <code class="docutils literal notranslate"><span class="pre">no</span></code>.</p>
-</div>
-</div>
-<hr class="docutils" />
-<div class="section" id="optional-differential-gene-expression-analysis">
-<h2>Optional: Differential gene expression analysis<a class="headerlink" href="#optional-differential-gene-expression-analysis" title="Permalink to this headline">¶</a></h2>
-<p>Differential expression analysis can automatically be performed using <a class="reference external" href="https://genomebiology.biomedcentral.com/articles/10.1186/s13059-014-0550-8">DESeq2</a>. Simply add one or more contrast design(s) in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file. Examples are given below. Additionally, the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> contains a commented-out set of examples.</p>
-<p>Note: (additional) design contrasts can be added at any time. After completing the workflow, rerunning Snakemake with new contrasts will only perform these analyses.</p>
-<p>DESeq2 automatically performs library bias correction when loading your data. Batch correction is performed if included in the design. After calculating differentially expressed genes, a multiple testing procedure is applied. This is either the Benjamini-Hochberg procedure (the default) or Independent Hypothesis Weighing. Expression counts are log transformed (by default using the apeglm method). These defaults can be changed in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>. Finally, a list of all genes is saved to file, with analysis results for expressed genes.</p>
+<p>A UCSC compatible trackhub can be generated for this workflow. See the <a class="reference external" href="../results.html#trackhub">trackhub page</a><span class="raw-html-m2r"><!-- @IGNORE PREVIOUS: link --></span> for more information!</p>
 </div>
 <hr class="docutils" />
 <div class="section" id="filling-out-the-samples-tsv">
@@ -286,16 +326,12 @@ GSM890    danRer11
 If you are working with multiple assemblies in one workflow, replicate names have to be unique between assemblies (you will receive a warning if names overlap).</p>
 <p>Replicate merging is turned on by default. It can be turned off by setting <code class="docutils literal notranslate"><span class="pre">technical_replicates</span></code> in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> to <code class="docutils literal notranslate"><span class="pre">keep</span></code>.</p>
 </div>
-<div class="section" id="id2">
-<h3>Strandedness<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
-<p>To split bigwigs by strand, the samples.tsv requires the column <code class="docutils literal notranslate"><span class="pre">strandedness</span></code>. This column may contain identifiers <code class="docutils literal notranslate"><span class="pre">forward</span></code> or <code class="docutils literal notranslate"><span class="pre">reverse</span></code>. If strandedness is unknown, fields may be left blank or filled with <code class="docutils literal notranslate"><span class="pre">no</span></code>.</p>
-</div>
 </div>
 <hr class="docutils" />
-<div class="section" id="contrast-designs">
-<h2>Contrast designs<a class="headerlink" href="#contrast-designs" title="Permalink to this headline">¶</a></h2>
-<p>The following section will guide you through the process of creating a DESeq2 contrast using only samples.tsv and the config.yaml.</p>
-<p>A contrast contains a condition, which is the variable you wish to analyse, and which contains 2 or more states. Optionally, a contrast can contain a batch effect, which you want to correct for.</p>
+<div class="section" id="deseq2-contrast-designs">
+<h2>DESeq2 contrast designs<a class="headerlink" href="#deseq2-contrast-designs" title="Permalink to this headline">¶</a></h2>
+<p>The following section will guide you through the process of creating a DESeq2 contrast using only the samples.tsv and the config.yaml.</p>
+<p>A contrast contains a <strong>condition</strong>, which is the variable you wish to analyse, and which contains 2 or more states. Optionally, a contrast can contain a <strong>batch</strong> effect, which you want to correct for.</p>
 <div class="section" id="conditions">
 <h3>Conditions<a class="headerlink" href="#conditions" title="Permalink to this headline">¶</a></h3>
 <p>In samples.tsv, add a column for every property of your samples.
@@ -306,7 +342,7 @@ Examples:</p>
 <li><p>a column named ‘stages’ with values 1, 2 and 3.</p></li>
 </ul>
 <p>Next, in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> add one or more contrasts.</p>
-<p>In order to compare two groups from a list (e.a. stage 1 vs stage 3), the contrast condition is the column name, followed by the groups (<code class="docutils literal notranslate"><span class="pre">stages_3_1</span></code>). Note that the second group (stage 1 in this example) is the reference group.</p>
+<p>In order to compare two groups from a list (e.a. stage 1 vs stage 3), the contrast condition is the column name, followed by the groups (<code class="docutils literal notranslate"><span class="pre">stages_3_1</span></code>). Note that the <em>last</em> group (stage 1 in this example) is the reference group.</p>
 <p>To compare all groups against a reference (e.a. control vs both treatments A and B), the contrast condition is the column name, followed by the reference group (<code class="docutils literal notranslate"><span class="pre">condition_control</span></code>). Alternatively, group ‘all’ may also be added (<code class="docutils literal notranslate"><span class="pre">condition_all_control</span></code>).</p>
 </div>
 <div class="section" id="batches">
@@ -344,25 +380,14 @@ Examples:</p>
 </tr>
 </tbody>
 </table>
-<p>In this case, the sequencing_month may have caused a batch effect. Since the (potential) batch effect is spread over the test conditions (control vs treatment) it can be taken into account during DE analysis. The contrast design to do this would be <code class="docutils literal notranslate"><span class="pre">sequencing_month</span> <span class="pre">+</span> <span class="pre">conditions_treatment_control</span></code></p>
+<p>In this example, the sequencing_month may have caused a batch effect. Since the (potential) batch effect is spread over the test conditions (control vs treatment) it can be taken into account during DE analysis. The contrast design to do this would be <code class="docutils literal notranslate"><span class="pre">sequencing_month</span> <span class="pre">+</span> <span class="pre">conditions_treatment_control</span></code></p>
 <div class="section" id="more-design-contrast-examples">
 <h4>More design contrast examples<a class="headerlink" href="#more-design-contrast-examples" title="Permalink to this headline">¶</a></h4>
-<p>The example design <code class="docutils literal notranslate"><span class="pre">sequencing_month</span> <span class="pre">+</span> <span class="pre">conditions_treatment_control</span></code> may also be written as <code class="docutils literal notranslate"><span class="pre">sequencing_month</span> <span class="pre">+</span> <span class="pre">conditions_all_control</span></code>, <code class="docutils literal notranslate"><span class="pre">sequencing_month</span> <span class="pre">+</span> <span class="pre">conditions_control_all</span></code> or <code class="docutils literal notranslate"><span class="pre">sequencing_month</span> <span class="pre">+</span> <span class="pre">conditions_control</span></code>. In each case, seq2science will understand “control” is the reference group, and compare it agains the other groups in the “conditions” columns.</p>
+<p>The example design <code class="docutils literal notranslate"><span class="pre">sequencing_month</span> <span class="pre">+</span> <span class="pre">conditions_treatment_control</span></code> may also be written as <code class="docutils literal notranslate"><span class="pre">sequencing_month</span> <span class="pre">+</span> <span class="pre">conditions_all_control</span></code>, <code class="docutils literal notranslate"><span class="pre">sequencing_month</span> <span class="pre">+</span> <span class="pre">conditions_control_all</span></code> or <code class="docutils literal notranslate"><span class="pre">sequencing_month</span> <span class="pre">+</span> <span class="pre">conditions_control</span></code>. In each case, seq2science will understand “control” is the reference group, and compare it against the other groups in the “conditions” columns.</p>
 <p>For consistency with regular DESeq2 contrast designs, designs may start with <code class="docutils literal notranslate"><span class="pre">~</span></code>, example: <code class="docutils literal notranslate"><span class="pre">~</span> <span class="pre">sequencing_month</span> <span class="pre">+</span> <span class="pre">conditions_treatment_control</span></code>.</p>
 <p>Our gremlins will carefully unpack all of your input and pass the unique designs to DESeq2.</p>
 </div>
 </div>
-</div>
-<hr class="docutils" />
-<div class="section" id="differential-gene-expression-analysis-output">
-<h2>Differential gene expression analysis output<a class="headerlink" href="#differential-gene-expression-analysis-output" title="Permalink to this headline">¶</a></h2>
-<p>Each contrast will return a table with all genes found during alignment.</p>
-<ul class="simple">
-<li><p>The column <code class="docutils literal notranslate"><span class="pre">padj</span></code> contains the adjusted p-values after multiple testing. These should be used extract DE genes.</p></li>
-<li><p>The column <code class="docutils literal notranslate"><span class="pre">log2FoldChange</span></code> shows the fold change of each gene between the two conditions. The reference condition is the one <em>last mentioned</em> in the contrast design, so use <code class="docutils literal notranslate"><span class="pre">conditions_treatment_control</span></code>. If you use <code class="docutils literal notranslate"><span class="pre">conditions_control_treatment</span></code> the fold change is <em>inverted</em>.</p></li>
-<li><p>Several other columns were kept for sake of completion, such as column <code class="docutils literal notranslate"><span class="pre">pvalue</span></code>, which contains non-adjusted p-values.</p></li>
-</ul>
-<p>Additional outputs include a blind clustering (which may reveal switched sample names), and per contrast an MA plot and a PCA plot (to accompany the differentially expressed genes table).</p>
 </div>
 </div>
 

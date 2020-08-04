@@ -92,18 +92,20 @@
 <li class="toctree-l2"><a class="reference internal" href="chip_seq.html">ChIP-seq</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">scATAC-seq</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#pipeline-steps">Pipeline steps</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#wip-automated-downloading-of-fastq">WIP: (Automated) downloading of fastq</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#automated-downloading-of-fastq">(Automated) downloading of fastq</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#merge-cell-fastq-files-based-on-processing">merge cell fastq files based on processing</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#alignment">Alignment</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#generate-and-bin-a-snap-object-for-downstream-analysis">Generate and bin a SNAP_Object for downstream analysis</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#id2">best practices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#how-to-get-the-pipeline-started">How to get the pipeline started?</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#filling-out-the-samples-tsv">2.6.1 Filling out the samples.tsv</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#filling-out-the-config-yaml">2.6.2 Filling out the config.yaml</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#filling-out-the-samples-tsv">2.6.1 Filling out the samples.tsv</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#sample-column">Sample column</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#assembly-column">Assembly column</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#replicate-column">replicate column</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#filling-out-the-config-yaml">2.6.2 Filling out the config.yaml</a></li>
 </ul>
 </li>
 </ul>
@@ -185,14 +187,15 @@
 <h1>scATAC-seq<a class="headerlink" href="#scatac-seq" title="Permalink to this headline">¶</a></h1>
 <p>Running a scATAC-seq pipeline has never been easier! See our <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/tree/master/workflows/scATAC_seq">scATAC-seq</a> workflow.</p>
 <p>Does your scATAC protocol generate single cell fastq files? And do they need to be mapped and analysed? Then this pipeline is for your! This pipeline takes single cell fastq files, performs extensive (plate based) QC steps, and generates a binned  SNAP-object that can be used for further downstream analysis following the tutorials on: <a class="reference external" href="https://github.com/r3fang/SnapATAC">https://github.com/r3fang/SnapATAC</a></p>
-<p>If instead you have a large FASTQ file containing a cell specific ID in the header, it might possible to run this pipeline with some alterations. If you have instead a Cellranger object, it is relatively easy to directly generate a SNAPobject, look at the documentation on the SnapATAC github intead.</p>
+<p>If you have a Cellranger object instead (output 10x), it is relatively easy to directly generate a SNAPobject, look at the documentation on the SnapATAC github intead (<a class="reference external" href="https://github.com/r3fang/SnapATAC/wiki/FAQs#10X_snap">https://github.com/r3fang/SnapATAC/wiki/FAQs#10X_snap</a>).
+Alternatively instead you have a large FASTQ file containing a cell specific ID in the header, it might possible to run this pipeline with some alterations. The ‘merge_replica’ ouputs a fastq trimmed fastqfile with the cell_id after the &#64; in the header. E.g : <code class="docutils literal notranslate"><span class="pre">&#64;sampleXcellY:NS500173:518:HTYVTBGXB:4:23609:2756:19401</span> <span class="pre">2:N:0:ACTCGCTA+ATTAGACG</span></code>.</p>
 <div class="section" id="pipeline-steps">
 <h2>Pipeline steps<a class="headerlink" href="#pipeline-steps" title="Permalink to this headline">¶</a></h2>
 <p align="center">
   <img src="../../_static/scatac_seq.png">
-</p><div class="section" id="wip-automated-downloading-of-fastq">
-<h3>WIP: (Automated) downloading of fastq<a class="headerlink" href="#wip-automated-downloading-of-fastq" title="Permalink to this headline">¶</a></h3>
-<p>scATAC-seq can be done with local fastq files, downloaded files, or a mix of those. Make sure to take a look at our downloading fastq <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/wiki/2.-Downloading-samples">best practices</a> when making use of the downloading functionality.</p>
+</p><div class="section" id="automated-downloading-of-fastq">
+<h3>(Automated) downloading of fastq<a class="headerlink" href="#automated-downloading-of-fastq" title="Permalink to this headline">¶</a></h3>
+<p>scATAC-seq can be done with local fastq files, downloaded files, or a mix of those. Make sure to take a look at our downloading fastq <a class="reference external" href="https://vanheeringen-lab.github.io/seq2science/content/workflows/download_fastq.html#best-practices">best practices</a> when making use of the downloading functionality.</p>
 </div>
 <div class="section" id="merge-cell-fastq-files-based-on-processing">
 <h3>merge cell fastq files based on processing<a class="headerlink" href="#merge-cell-fastq-files-based-on-processing" title="Permalink to this headline">¶</a></h3>
@@ -203,25 +206,63 @@ See <a class="reference external" href="https://github.com/vanheeringen-lab/snak
 </div>
 <div class="section" id="alignment">
 <h3>Alignment<a class="headerlink" href="#alignment" title="Permalink to this headline">¶</a></h3>
-<p>Make sure to take a look at our <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/wiki/3.-Alignment">alignment wiki</a>.</p>
+<p>Make sure to take a look at our <a class="reference external" href="https://vanheeringen-lab.github.io/seq2science/content/workflows/alignment.html">alignment wiki</a>.</p>
 </div>
 <div class="section" id="generate-and-bin-a-snap-object-for-downstream-analysis">
 <h3>Generate and bin a SNAP_Object for downstream analysis<a class="headerlink" href="#generate-and-bin-a-snap-object-for-downstream-analysis" title="Permalink to this headline">¶</a></h3>
-<p>To find cellular heterogeneity before peak calling, SNAP-ATAC binns the genome. Using this for demensionality reduction of the data and finding cell clusters before peak calling. By default the pipeline includes bins of 5kB, but this is changable in the config.yaml file.</p>
+<p>To find cellular heterogeneity before peak calling, SNAP-ATAC binns the genome. Using this for demensionality reduction of the data and finding cell clusters before peak calling. By default the pipeline includes bins of 5kB, but this is changable in the config.yaml file.
+After clustering peaks can be called on the aggregated cluster signals. This makes it easier to find peaks present only in a small cluster of cells. This does however mean that the pipeline doesnt perform peakcalling, this is done later in the snapATAC vignette.</p>
 </div>
 </div>
 <div class="section" id="id2">
 <h2>best practices<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
 <p>TODO: Make sure to take a look at: <a class="reference external" href="../scATAC_postprocessing.html">example preprocessing</a></p>
 </div>
-<div class="section" id="how-to-get-the-pipeline-started">
-<h2>How to get the pipeline started?<a class="headerlink" href="#how-to-get-the-pipeline-started" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="filling-out-the-samples-tsv">
-<h3>2.6.1 Filling out the samples.tsv<a class="headerlink" href="#filling-out-the-samples-tsv" title="Permalink to this headline">¶</a></h3>
+<h2>2.6.1 Filling out the samples.tsv<a class="headerlink" href="#filling-out-the-samples-tsv" title="Permalink to this headline">¶</a></h2>
+<p>Before running a workflow you will have to specify which samples you want to run the workflow on. Each workflow starts with a samples.tsv as an example, and you should adapt it to your specific needs. As an example, the samples.tsv could look something like this:</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>sample  assembly    replicate
+GSM1596256  hg38    H1ESC
+GSM1596257  hg38    H1ESC
+GSM1596258  hg38    H1ESC
+GSM1596259  hg38    H1ESC
+GSM1596260  hg38    H1ESC
+GSM1596261  hg38    H1ESC
+GSM1596262  hg38    H1ESC
+GSM1596263  hg38    H1ESC
+GSM1596351  hg38    GM
+GSM1596352  hg38    GM
+GSM1596353  hg38    GM
+GSM1596354  hg38    GM
+GSM1596355  hg38    GM
+GSM1596356  hg38    GM
+GSM1596357  hg38    GM
+GSM1596358  hg38    GM
+GSM1596359  hg38    GM
+iPSC-2-KC-diff-plate2-16718m701m511 hg38    plate2
+iPSC-2-KC-diff-plate2-plate2-16718m701m513  hg38    plate2
+iPSC-2-KC-diff-plate2-plate2-16718m701m515  hg38    plate2
+iPSC-2-KC-diff-plate2-plate2-16718m701m516  hg38    plate2
+iPSC-2-KC-diff-plate2-plate2-16718m701m517  hg38    plate2
+</pre></div>
+</div>
+<div class="section" id="sample-column">
+<h3>Sample column<a class="headerlink" href="#sample-column" title="Permalink to this headline">¶</a></h3>
+<p>This column is necessary for all workflows, not just the atac-seq workflow. If you use the pipeline on public data this should be the name of the accession (e.g. GSM2837484), if you use the pipeline on local data this should be the <em>basename</em> of the file without the <em>extension</em>. For instance <code class="docutils literal notranslate"><span class="pre">/home/user/myfastqs/sample1.fastq.gz</span></code> would be <code class="docutils literal notranslate"><span class="pre">sample1</span></code>. For the scATAC files, the sample name should correspond to a single cell Fastq file! If instead its a fastq file containing data from multiple cells, the pipeline will need alterations before you can use it.</p>
+</div>
+<div class="section" id="assembly-column">
+<h3>Assembly column<a class="headerlink" href="#assembly-column" title="Permalink to this headline">¶</a></h3>
+<p>This column is necessary for all workflows, except the <em>downloading samples</em> workflow. Here you simply add the name of the assembly you want your samples aligned against and the workflow will download it for you.</p>
+</div>
+<div class="section" id="replicate-column">
+<h3>replicate column<a class="headerlink" href="#replicate-column" title="Permalink to this headline">¶</a></h3>
+<p>Here you put to which technical replica each cell correspons. E.g. the plate from which the cells were sequenced. Per technical replica QC will be generated. For public data you can put all cells under the same technical replica name.</p>
+</div>
 </div>
 <div class="section" id="filling-out-the-config-yaml">
-<h3>2.6.2 Filling out the config.yaml<a class="headerlink" href="#filling-out-the-config-yaml" title="Permalink to this headline">¶</a></h3>
-</div>
+<h2>2.6.2 Filling out the config.yaml<a class="headerlink" href="#filling-out-the-config-yaml" title="Permalink to this headline">¶</a></h2>
+<p>Every workflow has many configurable options, and can be set in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file. In each <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> we highlighted a couple options that we think are relevant for that specific workflow, and set (we think) <strong>reasonable default</strong> values.</p>
+<p>When a workflow starts it prints the complete configuration, and (almost) all these values can be added in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> and changed to your liking. You can see the complete set of configurable options in the <a class="reference external" href="../schemas.html">extensive docs</a>.</p>
 </div>
 </div>
 

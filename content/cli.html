@@ -216,9 +216,10 @@
 <h2>run<a class="headerlink" href="#run" title="Permalink to this headline">¶</a></h2>
 <p><p>Run a complete workflow. This requires that a config and samples file are either present in the current directory, or passed as an argument.</p>
 </p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">seq2science</span> <span class="n">run</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">c</span> <span class="n">FILE</span><span class="p">]</span> <span class="o">-</span><span class="n">j</span> <span class="n">N</span> <span class="p">[</span><span class="o">-</span><span class="n">n</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">unlock</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">seq2science</span> <span class="n">run</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">c</span> <span class="n">FILE</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">j</span> <span class="n">N</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">n</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">r</span><span class="p">]</span>
                        <span class="p">[</span><span class="o">--</span><span class="n">snakemakeOptions</span> <span class="n">KEY</span><span class="o">=</span><span class="n">VAL</span> <span class="p">[</span><span class="n">KEY</span><span class="o">=</span><span class="n">VAL</span> <span class="o">...</span><span class="p">]]</span>
                        <span class="p">[</span><span class="o">--</span><span class="n">profile</span> <span class="n">PROFILE</span> <span class="n">NAME</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">k</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">rerun</span><span class="o">-</span><span class="n">incomplete</span><span class="p">]</span>
+                       <span class="p">[</span><span class="o">--</span><span class="n">unlock</span><span class="p">]</span>
                        <span class="p">{</span><span class="n">download</span><span class="o">-</span><span class="n">fastq</span><span class="p">,</span><span class="n">alignment</span><span class="p">,</span><span class="n">atac</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">scatac</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">rna</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">chip</span><span class="o">-</span><span class="n">seq</span><span class="p">}</span>
 </pre></div>
 </div>
@@ -244,12 +245,12 @@
 <dd><p>Do not execute anything, and display what would be done.</p>
 <p>Default: False</p>
 </dd>
-<dt><kbd>--unlock</kbd></dt>
-<dd><p>Remove a lock on the working directory.</p>
+<dt><kbd>-r, --reason</kbd></dt>
+<dd><p>Print the reason for each executed rule.</p>
 <p>Default: False</p>
 </dd>
 <dt><kbd>--snakemakeOptions</kbd></dt>
-<dd><p>Extra arguments to pass along to snakemake. An example could be seq2science run alignment –cores 12 –snakemakeOptions resources={mem_gb:100} local_cores=3. Here we pass local_cores as KEY=VALUE and additional resources can even be passed along in a dictionary. Take a look at the snakemake API for a complete list of all possible options: <a class="reference external" href="https://snakemake.readthedocs.io/en/latest/api_reference/snakemake.html">https://snakemake.readthedocs.io/en/latest/api_reference/snakemake.html</a></p>
+<dd><p>Extra arguments to pass along to snakemake. An example could be seq2science run alignment –cores 12 –snakemakeOptions resources={mem_gb:100} local_cores=3. Here we pass local_cores as KEY=VALUE and additional resources can even be passed along in a dictionary. Take a look at the snakemake API  for a complete list of all possible options: <a class="reference external" href="https://snakemake.readthedocs.io/en/latest/api_reference/snakemake.html">https://snakemake.readthedocs.io/en/latest/api_reference/snakemake.html</a></p>
 </dd>
 <dt><kbd>--profile</kbd></dt>
 <dd><p>Use a snakemake/seq2science profile. Profiles can be taken from: <a class="reference external" href="https://github.com/snakemake-profiles">https://github.com/snakemake-profiles</a></p>
@@ -260,6 +261,10 @@
 </dd>
 <dt><kbd>--rerun-incomplete</kbd></dt>
 <dd><p>Re-run all jobs the output of which is recognized as incomplete.</p>
+<p>Default: False</p>
+</dd>
+<dt><kbd>--unlock</kbd></dt>
+<dd><p>Remove a lock on the working directory.</p>
 <p>Default: False</p>
 </dd>
 </dl>
@@ -281,6 +286,8 @@ seq2science clean will clean up these files for you.</p>
 <p><p>Explains what has/will be done for the workflow. This prints a string which can serve as a skeleton for your material &amp; methods section.</p>
 </p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">seq2science</span> <span class="n">explain</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">c</span> <span class="n">FILE</span><span class="p">]</span>
+                           <span class="p">[</span><span class="o">--</span><span class="n">snakemakeOptions</span> <span class="n">KEY</span><span class="o">=</span><span class="n">VAL</span> <span class="p">[</span><span class="n">KEY</span><span class="o">=</span><span class="n">VAL</span> <span class="o">...</span><span class="p">]]</span>
+                           <span class="p">[</span><span class="o">--</span><span class="n">profile</span> <span class="n">PROFILE</span> <span class="n">NAME</span><span class="p">]</span>
                            <span class="p">{</span><span class="n">download</span><span class="o">-</span><span class="n">fastq</span><span class="p">,</span><span class="n">alignment</span><span class="p">,</span><span class="n">atac</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">scatac</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">rna</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">chip</span><span class="o">-</span><span class="n">seq</span><span class="p">}</span>
 </pre></div>
 </div>
@@ -298,6 +305,12 @@ seq2science clean will clean up these files for you.</p>
 <dt><kbd>-c, --configfile</kbd></dt>
 <dd><p>The path to the config file.</p>
 <p>Default: “./config.yaml”</p>
+</dd>
+<dt><kbd>--snakemakeOptions</kbd></dt>
+<dd><p>Extra arguments to pass along to snakemake. An example could be seq2science run alignment –cores 12 –snakemakeOptions resources={mem_gb:100} local_cores=3. Here we pass local_cores as KEY=VALUE and additional resources can even be passed along in a dictionary. Take a look at the snakemake API  for a complete list of all possible options: <a class="reference external" href="https://snakemake.readthedocs.io/en/latest/api_reference/snakemake.html">https://snakemake.readthedocs.io/en/latest/api_reference/snakemake.html</a></p>
+</dd>
+<dt><kbd>--profile</kbd></dt>
+<dd><p>Use a snakemake/seq2science profile. Profiles can be taken from: <a class="reference external" href="https://github.com/snakemake-profiles">https://github.com/snakemake-profiles</a></p>
 </dd>
 </dl>
 </div>
