@@ -47,23 +47,25 @@ rule id2sra:
     run:
         sample = wildcards.sample
         eutils_compatible = True
-        try:
-            layout = subprocess.check_output(
-                f'''esearch {api_key} -db sra -query {sample} | efetch {api_key} | grep -Po "(?<=<LIBRARY_LAYOUT><)[^ /><]*"''',
-                shell=True).decode('ascii').rstrip()
-        except (subprocess.CalledProcessError, ValueError):
-            sample = gsm2srr(sample)
-
         with FileLock(layout_cachefile_lock):
+            try:
+                layout = subprocess.check_output(
+                    f'''esearch -db sra -query {sample} | efetch | grep -Po "(?<=<LIBRARY_LAYOUT><)[^ /><]*"''',
+                    shell=True).decode('ascii').rstrip()
+            except (subprocess.CalledProcessError, ValueError):
+                sample = gsm2srr(sample)
+
+            time.sleep(2)
+
             shell(
         """
         echo "starting lookup of the sample in the sra database:" >> {log}
-        if [[ {wildcards.sample} =~ GSM ]]; then
-            IDS=$(esearch -db sra -query {wildcards.sample} | efetch --format runinfo | cut -d ',' -f 1 | grep SRR);
+        if [[ {sample} =~ GSM || {sample} =~ SRX ]]; then
+            IDS=$(esearch -db sra -query {sample} | efetch --format runinfo | cut -d ',' -f 1 | grep SRR);
             TYPE_U=SRR;
         else
-            IDS={wildcards.sample};
-            TYPE_U=$(echo {wildcards.sample} | grep 'SRR|ERR|DRR' -E -o);
+            IDS={sample};
+            TYPE_U=$(echo {sample} | grep 'SRR|ERR|DRR' -E -o);
         fi;
         TYPE_L=$(echo $TYPE_U | tr '[:upper:]' '[:lower:]');
         echo "ids: $IDS, type (uppercase): $TYPE_U, type (lowercase): $TYPE_L" >> {log}
