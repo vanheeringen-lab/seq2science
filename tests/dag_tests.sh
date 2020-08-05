@@ -289,7 +289,7 @@ if [ $1 = "scatac-seq" ]; then
 
   printf "\nmultiple replicates - multiqc report\n"
   seq2science run scatac-seq -n --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/scatac_seq/replicates.tsv,technical_replicates:merge,create_qc_report:True} | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 fastqc 4  # none for sample and twice for trep
+  assert_rulecount $1 fastqc 2  # none for sample and twice for trep
 
   printf "\nmultiple assemblies and replicates\n"
   seq2science run scatac-seq -n --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/alignment/dag_sample.tsv,technical_replicates:keep} | tee tests/local_test_results/${1}_dag
