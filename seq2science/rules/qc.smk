@@ -462,8 +462,10 @@ def get_qc_files(wildcards):
 
     # trimming qc on individual samples
     if get_trimming_qc in quality_control:
-        for sample in samples[samples['assembly'] == wildcards.assembly].index:
-            qc['files'].update(get_trimming_qc(sample))
+        # scatac seq only on treps, not on single samples
+        if get_workflow() != "scatac_seq":
+            for sample in samples[samples['assembly'] == wildcards.assembly].index:
+                qc['files'].update(get_trimming_qc(sample))
 
     # qc on merged technical replicates/samples
     if get_alignment_qc in quality_control:
@@ -471,6 +473,7 @@ def get_qc_files(wildcards):
             for function in [func for func in quality_control if
                              func.__name__ not in ['get_peak_calling_qc', 'get_trimming_qc']]:
                 qc['files'].update(function(replicate))
+            # scatac seq only on treps, not on single samples
             if get_workflow() == "scatac_seq" and get_trimming_qc in quality_control:
                 qc['files'].update(get_trimming_qc(replicate))
 
