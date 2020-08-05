@@ -240,7 +240,7 @@ def get_layout_trace1(sample):
         conn = urllib.request.urlopen(url)
         html = conn.read()
 
-        soup = BeautifulSoup(html, features="html5lib")
+        soup = BeautifulSoup(html, features="html.parser")
         links = soup.find_all('a')
 
         for tag in links:
