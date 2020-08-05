@@ -530,10 +530,10 @@ def get_trimming_qc(sample):
         # therefore we can not just always start trimming paired-end even though
         # the samples are paired-end (ish)
         if config.get("protocol") == "celseq":
-            return expand([f"{{qc_dir}}/fastqc/{sample}_fastqc.zip",
-                           f"{{qc_dir}}/fastqc/{sample}_trimmed_fastqc.zip",
-                           f"{{qc_dir}}/trimming/{sample}.{{fqsuffix}}.gz_trimming_report.txt"],
-                           **config)
+            return expand([f"{{qc_dir}}/fastqc/{sample}_R2_fastqc.zip",
+                           f"{{qc_dir}}/fastqc/{sample}_R2_trimmed_fastqc.zip",
+                           f"{{qc_dir}}/trimming/{sample}_R2.{{fqsuffix}}.gz_trimming_report.txt"],
+                          **config)
         else:
             raise NotImplementedError
     else:
