@@ -5,7 +5,7 @@ import time
 import subprocess
 
 
-def gsm2srr(gsm):
+def gsm2srx(gsm):
     url = f"https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={gsm}"
 
     conn = urllib.request.urlopen(url)
@@ -17,8 +17,8 @@ def gsm2srr(gsm):
     for tag in links:
         link = tag.get('href', None)
         if link is not None and 'SRX' in link:
-            SRR = link[link.find("SRX"):]
-            return SRR
+            SRX = link[link.find("SRX"):]
+            return SRX
     raise ValueError(f"Sample {gsm} has been put in wrongly in the SRA and "
                      f"seq2science is not capable of downloading it...")
 
@@ -53,7 +53,7 @@ rule id2sra:
                     f'''esearch -db sra -query {sample} | efetch | grep -Po "(?<=<LIBRARY_LAYOUT><)[^ /><]*"''',
                     shell=True).decode('ascii').rstrip()
             except (subprocess.CalledProcessError, ValueError):
-                sample = gsm2srr(sample)
+                sample = gsm2srx(sample)
 
             time.sleep(2)
 

@@ -278,8 +278,8 @@ def get_layout_trace2(sample):
         for tag in links:
             link = tag.get('href', None)
             if link is not None and 'SRX' in link:
-                SRR = link[link.find("SRX"):]
-                return get_layout_trace1(SRR)
+                SRX = link[link.find("SRX"):]
+                return get_layout_trace1(SRX)
     except:
         pass
     return None
