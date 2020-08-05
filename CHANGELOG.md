@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed issue with some samples not being findable/downloadable with s2s
+
 ## [0.2.0] - 2020-08-04
 
 ### Fixed
