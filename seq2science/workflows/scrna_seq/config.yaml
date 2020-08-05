@@ -14,14 +14,9 @@ email: yourmail@here.com
 # how to handle replicates
 technical_replicates: merge
 
-## filtering after alignment
-#remove_blacklist: True
-#remove_mito: True
-#tn5_shift: True
-#min_mapping_quality: 30
-#only_primary_align: True
-
-# use 'our' default parameters
+# scRNA options
 quantifier: kallistobus
 barcodefile: "barcodes.txt"
+# currently only supported protocol is celseq, please make issue on github
+# if you want another supported: https://github.com/vanheeringen-lab/seq2science
 protocol: celseq

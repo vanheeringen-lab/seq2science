@@ -18,7 +18,7 @@ include: f"{config['rule_dir']}/quantification.smk"
 
 
 # set the quality_control functions
-quality_control = [get_trimming_qc, get_alignment_qc]
+quality_control = [get_trimming_qc]
 
 
 rule scRNA_seq_all:
@@ -26,6 +26,7 @@ rule scRNA_seq_all:
     TODO: Skeleton scRNA_seq all function
     """
     input:
-        expand([f"{{result_dir}}/{{quantifier}}/{treps.loc[trep, 'assembly']}-{trep}" for trep in treps.index],
+        expand([f"{{result_dir}}/{{quantifier}}/{treps.loc[trep, 'assembly']}-{trep}" for trep in treps.index] +
+               (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []),
                **{**config,
                   **{'assemblies': set(samples['assembly'])}})
