@@ -1,5 +1,6 @@
 # seq2science
 [![bioconda-badge](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io/recipes/seq2science/README.html)
+[![anaconda-version](https://anaconda.org/bioconda/seq2science/badges/version.svg)](https://anaconda.org/bioconda/seq2science/badges/version.svg)
 [![nr downloads](https://anaconda.org/bioconda/seq2science/badges/downloads.svg)](http://bioconda.github.io/recipes/seq2science/README.html)
 [![star this repo](https://img.shields.io/github/stars/vanheeringen-lab/seq2science?style=flat&color=brightgreen)](https://github.com/vanheeringen-lab/seq2science/stargazers)
 [![Test Status](http://ocimum.science.ru.nl/jenkins/buildStatus/icon?job=seq2science%2Fmaster&subject=tests)](http://ocimum.science.ru.nl/jenkins/job/seq2science/job/master/lastBuild/display/redirect/)
