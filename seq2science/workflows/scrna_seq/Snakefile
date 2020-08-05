@@ -1,6 +1,6 @@
 # do onstart/onexit things
 sample_schemas = ['sample', 'assembly']
-config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific', 'trackhub']
+config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific', 'scrna']
 include: "../../rules/configuration_generic.smk"
 
 
@@ -23,7 +23,7 @@ quality_control = [get_trimming_qc]
 
 rule scRNA_seq_all:
     """
-    TODO: Skeleton scRNA_seq all function
+    Make a QC report and map
     """
     input:
         expand([f"{{result_dir}}/{{quantifier}}/{treps.loc[trep, 'assembly']}-{trep}" for trep in treps.index] +

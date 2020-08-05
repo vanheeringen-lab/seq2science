@@ -148,7 +148,8 @@ elif config["quantifier"] == "kallistobus":
         conda:
             "../envs/kallistobus.yaml"
         params:
-            basename=lambda wildcards, output: f"{output[0]}{wildcards.assembly}"
+            basename=lambda wildcards, output: f"{output[0]}{wildcards.assembly}",
+            options=config.get("quantifier")["ref"]
         shell:
             """
             kb ref \
@@ -156,7 +157,7 @@ elif config["quantifier"] == "kallistobus":
             -i {params.basename}.idx -g {params.basename}_t2g.txt -f1 {params.basename}_cdna.fa \
             -f2 {params.basename}_intron.fa \
             -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
-            --lamanno 2> {log}
+            {params.options} > {log} 2>&1
             """
 
     def get_kallistobus_reads(wildcards):
@@ -189,15 +190,17 @@ elif config["quantifier"] == "kallistobus":
         conda:
             "../envs/kallistobus.yaml"
         threads: 8
+        message: explain_rule("kallistobus-count")
         params:
-            basename=lambda wildcards, input: f"{input.basedir[0]}/{wildcards.assembly}"
+            basename=lambda wildcards, input: f"{input.basedir[0]}/{wildcards.assembly}",
+            options=config.get("quantifier")["count"]
         shell:
             """
             kb count \
-            -i {params.basename}.idx -x 0,8,16:0,0,8:1,0,0 -w {input.barcodefile} \
-            -t {threads} -g {params.basename}_t2g.txt --verbose --lamanno \
+            -i {params.basename}.idx -w {input.barcodefile} \
+            -t {threads} -g {params.basename}_t2g.txt \
             -o {output} -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
-            {input.reads} 2> {log}
+            {params.options} {input.reads} > {log} 2>&1
             """
 
             

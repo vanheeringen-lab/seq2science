@@ -462,7 +462,7 @@ def get_qc_files(wildcards):
 
     # trimming qc on individual samples
     if get_trimming_qc in quality_control:
-        if get_workflow() == "scATAC_seq":
+        if get_workflow() == "scatac_seq":
             # scATAC special case to only want fastqc of trimmed merged reps
             for trep in treps[treps['assembly'] == wildcards.assembly].index:
                 qc['files'].update(get_trimming_qc(trep))
