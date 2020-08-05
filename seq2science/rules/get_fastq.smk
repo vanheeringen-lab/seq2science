@@ -2,6 +2,25 @@ import glob
 import os
 import re
 import time
+import subprocess
+
+
+def gsm2srr(gsm):
+    url = f"https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={gsm}"
+
+    conn = urllib.request.urlopen(url)
+    html = conn.read()
+
+    soup = BeautifulSoup(html, features="html.parser")
+    links = soup.find_all('a')
+
+    for tag in links:
+        link = tag.get('href', None)
+        if link is not None and 'SRX' in link:
+            SRR = link[link.find("SRX"):]
+            return SRR
+    raise ValueError(f"Sample {gsm} has been put in wrongly in the SRA and "
+                     f"seq2science is not capable of downloading it...")
 
 
 rule id2sra:
@@ -26,10 +45,19 @@ rule id2sra:
         ascp_path=config.get("ascp_path", "NO_ASCP_PATH_PROVIDED"),
         ascp_key=config.get("ascp_key", "NO_ASCP_key_PROVIDED"),
     run:
+        sample = wildcards.sample
+        eutils_compatible = True
+        try:
+            layout = subprocess.check_output(
+                f'''esearch {api_key} -db sra -query {sample} | efetch {api_key} | grep -Po "(?<=<LIBRARY_LAYOUT><)[^ /><]*"''',
+                shell=True).decode('ascii').rstrip()
+        except (subprocess.CalledProcessError, ValueError):
+            sample = gsm2srr(sample)
+
         with FileLock(layout_cachefile_lock):
             shell(
-                """
-        echo "starting lookup of the sample in the sra database:" > {log}
+        """
+        echo "starting lookup of the sample in the sra database:" >> {log}
         if [[ {wildcards.sample} =~ GSM ]]; then
             IDS=$(esearch -db sra -query {wildcards.sample} | efetch --format runinfo | cut -d ',' -f 1 | grep SRR);
             TYPE_U=SRR;
@@ -58,7 +86,7 @@ rule id2sra:
             time.sleep(2)
 
         shell(
-            """
+        """
         read TYPE_L < {output}/type_l
         read TYPE_U < {output}/type_u
         readarray -t IDS < {output}/ids
