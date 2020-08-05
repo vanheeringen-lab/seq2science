@@ -114,7 +114,7 @@ if [ $1 = "alignment" ]; then
 
   printf "\nmultiple assemblies - multiqc report\n"
   seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/alignment/assemblies.tsv,create_qc_report:True} | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 samtools_stats 2
+  assert_rulecount $1 samtools_stats 3
 
   printf "\nmultiple replicates\n"
   seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={technical_replicates:merge} | tee tests/local_test_results/${1}_dag
