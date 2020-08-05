@@ -114,7 +114,7 @@ if [ $1 = "alignment" ]; then
 
   printf "\nmultiple assemblies - multiqc report\n"
   seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/alignment/assemblies.tsv,create_qc_report:True} | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 samtools_stats 4
+  assert_rulecount $1 samtools_stats 2
 
   printf "\nmultiple replicates\n"
   seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={technical_replicates:merge} | tee tests/local_test_results/${1}_dag
@@ -271,7 +271,7 @@ if [ $1 = "scatac-seq" ]; then
 
   printf "\nmultiple assemblies - multiqc\n"
   seq2science run scatac-seq -n --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/scatac_seq/assemblies.tsv,create_qc_report:True} | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 fastqc 3  # none for sample and twice for trep
+  assert_rulecount $1 fastqc 4  # none for sample and twice for trep
 
   printf "\nmultiple replicates\n"
   seq2science run scatac-seq -n --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/alignment/dag_sample.tsv,technical_replicates:merge} | tee tests/local_test_results/${1}_dag  # nothing to merge
