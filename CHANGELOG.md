@@ -11,6 +11,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Fixed
 
 - Fixed issue with some samples not being findable/downloadable with s2s
+- Fixed has_annotation always looking for annotation even if local files present
 
 ## [0.2.0] - 2020-08-04
 
