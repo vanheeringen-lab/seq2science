@@ -374,6 +374,8 @@ rule chipseeker:
         img2=expand("{qc_dir}/chipseeker/{{assembly}}-{{peak_caller}}_img2_mqc.png", **config),
     params:
         gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config)
+    log:
+        expand("{log_dir}/chipseeker/{{assembly}}-{{peak_caller}}.log", **config)
     conda:
         "../envs/chipseeker.yaml"
     resources:
@@ -613,10 +615,8 @@ def get_peak_calling_qc(sample):
     # deeptools profile
     assembly = treps.loc[sample, "assembly"]
     # TODO: replace with genomepy checkpoint in the future
-    print(has_annotation(assembly))
     if has_annotation(assembly):
         output.extend(expand("{qc_dir}/plotProfile/{{assembly}}-{peak_caller}.tsv", **config))
-        print(get_ftype(list(config["peak_caller"].keys())[0]))
         if get_ftype(list(config["peak_caller"].keys())[0]) == "narrowPeak":
             output.extend(expand("{qc_dir}/chipseeker/{{assembly}}-{peak_caller}_img1_mqc.png", **config))
             output.extend(expand("{qc_dir}/chipseeker/{{assembly}}-{peak_caller}_img2_mqc.png", **config))
