@@ -90,7 +90,7 @@ def has_annotation(assembly):
     returns True/False on whether or not the assembly has an annotation.
     """
     # check if genome is provided by user or already downloaded, if so check if the annotation came along
-    if all(os.path.exists(f"{config['genome_dir']}/{assembly}.{extension}") for extension in config["genome_types"]):
+    if all(os.path.exists(f"{config['genome_dir']}/{assembly}/{assembly}.{extension}") for extension in config["genome_types"]):
         return os.path.exists(f"{config['genome_dir']}/{assembly}.annotation.gtf")
 
     if "provider" in config:
