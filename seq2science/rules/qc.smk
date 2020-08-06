@@ -355,6 +355,32 @@ rule plotPCA:
         plotPCA --corData {input} --outFileNameData {output} > {log} 2>&1
         """
 
+def get_narrowpeaks(wildcards):
+    return expand(
+        [
+            f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{replicate}_summits.bed"
+            for replicate in breps[breps["assembly"] == wildcards.assembly].index
+        ],
+        **config,
+    )
+
+
+
+rule chipseeker:
+    input:
+        narrowpeaks=get_narrowpeaks
+    output:
+        img1=expand("{qc_dir}/chipseeker/{{assembly}}-{{peak_caller}}_img1_mqc.png", **config),
+        img2=expand("{qc_dir}/chipseeker/{{assembly}}-{{peak_caller}}_img2_mqc.png", **config),
+    params:
+        gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config)
+    conda:
+        "../envs/chipseeker.yaml"
+    resources:
+        R_scripts=1, # conda's R can have issues when starting multiple times
+    script:
+        f"{config['rule_dir']}/../scripts/chipseeker.R"
+
 
 rule multiqc_header_info:
     """
@@ -587,24 +613,12 @@ def get_peak_calling_qc(sample):
     # deeptools profile
     assembly = treps.loc[sample, "assembly"]
     # TODO: replace with genomepy checkpoint in the future
+    print(has_annotation(assembly))
     if has_annotation(assembly):
         output.extend(expand("{qc_dir}/plotProfile/{{assembly}}-{peak_caller}.tsv", **config))
+        print(get_ftype(list(config["peak_caller"].keys())[0]))
+        if get_ftype(list(config["peak_caller"].keys())[0]) == "narrowPeak":
+            output.extend(expand("{qc_dir}/chipseeker/{{assembly}}-{peak_caller}_img1_mqc.png", **config))
+            output.extend(expand("{qc_dir}/chipseeker/{{assembly}}-{peak_caller}_img2_mqc.png", **config))
 
     return output
-
-def get_narrowpeaks(wildcards):
-    """all narrowpeak files in the macs2 folder, except the input files"""
-    
-rule chip_qc:
-    input:
-        gtf= link_here_2_the_GTF_file,
-        narrowpeaks=get_narrowpeaks
-    output:
-        picture_1=asdasd,
-        picture_2=asdasd,
-    conda:
-        "../envs/ChIPseeker.yaml"
-    resources:
-        R_scripts=1, # conda's R can have issues when starting multiple times
-    script:
-        f"{config['rule_dir']}/../scripts/ChIPseeker.R"
