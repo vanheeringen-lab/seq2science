@@ -1,6 +1,0 @@
-# for help with filling out the samples.tsv:
-# https://github.com/vanheeringen-lab/snakemake-workflows/wiki/1.1-Filling-out-the-samples.tsv
-# also make sure that you use tab as a delimiter
-sample	assembly	descriptive_name
-d10-820-16955	hg38	day_10
-d11-821-16960	hg38	day_11
