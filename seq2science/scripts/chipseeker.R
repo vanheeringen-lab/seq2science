@@ -6,6 +6,7 @@ sink(log, type="message")
 cat('# variables used for this analysis:\n')
 cat('narrowpeaks      <-',   snakemake@input$narrowpeaks, '\n')
 cat('gtf              <-',   snakemake@params$gtf[[1]],   '\n')
+cat('descriptive name <-',   snakemake@params$names,      '\n')
 cat('\n')
 
 

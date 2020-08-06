@@ -188,6 +188,8 @@ def get_descriptive_names(wildcards, input):
             trep = trep[:trep.find(".sam")]
         elif trep.find(".bw") != -1:
             trep = trep[:trep.find(".bw")]
+        if trep.find("_summits.bed") != -1:
+            trep = trep[:trep.find("_summits.bed")]
         else:
             raise ValueError
 
@@ -355,7 +357,7 @@ rule plotPCA:
         plotPCA --corData {input} --outFileNameData {output} > {log} 2>&1
         """
 
-def get_narrowpeaks(wildcards):
+def get_summits_bed(wildcards):
     return expand(
         [
             f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{replicate}_summits.bed"
@@ -365,15 +367,15 @@ def get_narrowpeaks(wildcards):
     )
 
 
-
 rule chipseeker:
     input:
-        narrowpeaks=get_narrowpeaks
+        narrowpeaks=get_summits_bed
     output:
         img1=expand("{qc_dir}/chipseeker/{{assembly}}-{{peak_caller}}_img1_mqc.png", **config),
         img2=expand("{qc_dir}/chipseeker/{{assembly}}-{{peak_caller}}_img2_mqc.png", **config),
     params:
-        gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config)
+        gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
+        names=get_descriptive_names
     log:
         expand("{log_dir}/chipseeker/{{assembly}}-{{peak_caller}}.log", **config)
     conda:
