@@ -30,12 +30,12 @@ peak_anno_list <- lapply(peaks_list, annotatePeak, TxDb=txdb_from_gtf,
                          tssRegion=c(-3000, 3000), verbose=FALSE)
 
 
-fig_height = 2 + 2 * length(Narrow_peak_files)
+fig_height = 2 + 2 * length(snakemake@input$narrowpeaks)
 
-png(filename=output_file_1, units = 'cm', width = 20, height = fig_height, res = 300)
-plotAnnoBar(peakAnnoList)
+png(filename=snakemake@output$img1[[1]], units = 'cm', width = 20, height = fig_height, res = 300)
+plotAnnoBar(peak_anno_list, title="")
 dev.off()
 
-png(filename=output_file_2,  units = 'cm', width = 20, height = fig_height, res = 300)
-plotDistToTSS(peakAnnoList)
+png(filename=snakemake@output$img2[[1]],  units = 'cm', width = 20, height = fig_height, res = 300)
+plotDistToTSS(peak_anno_list, title="")
 dev.off()

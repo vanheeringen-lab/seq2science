@@ -161,7 +161,6 @@ rule mt_nuc_ratio_calculator:
 
 
 def fingerprint_multiBamSummary_input(wildcards):
-    print("lets go mr")
     output = {"bams": set(), "bais": set()}
 
     for trep in set(treps[treps['assembly'] == wildcards.assembly].index):
@@ -201,7 +200,6 @@ def get_descriptive_names(wildcards, input):
         else:
             labels += trep + " "
 
-    print("descriptive name done")
     return labels
 
 
