@@ -161,6 +161,7 @@ rule mt_nuc_ratio_calculator:
 
 
 def fingerprint_multiBamSummary_input(wildcards):
+    print("lets go mr")
     output = {"bams": set(), "bais": set()}
 
     for trep in set(treps[treps['assembly'] == wildcards.assembly].index):
@@ -188,7 +189,7 @@ def get_descriptive_names(wildcards, input):
             trep = trep[:trep.find(".sam")]
         elif trep.find(".bw") != -1:
             trep = trep[:trep.find(".bw")]
-        if trep.find("_summits.bed") != -1:
+        elif trep.find("_summits.bed") != -1:
             trep = trep[:trep.find("_summits.bed")]
         else:
             raise ValueError
@@ -200,6 +201,7 @@ def get_descriptive_names(wildcards, input):
         else:
             labels += trep + " "
 
+    print("descriptive name done")
     return labels
 
 
@@ -375,7 +377,7 @@ rule chipseeker:
         img2=expand("{qc_dir}/chipseeker/{{assembly}}-{{peak_caller}}_img2_mqc.png", **config),
     params:
         gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
-        names=get_descriptive_names
+        names=lambda wildcards, input: get_descriptive_names(wildcards, input)
     log:
         expand("{log_dir}/chipseeker/{{assembly}}-{{peak_caller}}.log", **config)
     conda:
