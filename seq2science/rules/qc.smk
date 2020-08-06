@@ -525,17 +525,6 @@ def get_trimming_qc(sample):
         # we (at least for now) do not was fastqc for each single cell before and after trimming.
         # still something to think about to add later, since that might be a good quality check though.
         return expand(f"{{qc_dir}}/fastqc/{sample}_{{fqext}}_trimmed_fastqc.zip", **config)
-    elif get_workflow() == "scrna_seq":
-        # single-cell RNA seq does weird things with barcodes in the fastq file
-        # therefore we can not just always start trimming paired-end even though
-        # the samples are paired-end (ish)
-        if config.get("protocol") == "celseq":
-            return expand([f"{{qc_dir}}/fastqc/{sample}_R2_fastqc.zip",
-                           f"{{qc_dir}}/fastqc/{sample}_R2_trimmed_fastqc.zip",
-                           f"{{qc_dir}}/trimming/{sample}_R2.{{fqsuffix}}.gz_trimming_report.txt"],
-                          **config)
-        else:
-            raise NotImplementedError
     else:
         if config['layout'][sample] == 'SINGLE':
             return expand([f"{{qc_dir}}/fastqc/{sample}_fastqc.zip",
