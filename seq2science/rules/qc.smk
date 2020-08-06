@@ -380,6 +380,7 @@ rule chipseeker:
         expand("{log_dir}/chipseeker/{{assembly}}-{{peak_caller}}.log", **config)
     conda:
         "../envs/chipseeker.yaml"
+    message: explain_rule("chipseeker")
     resources:
         R_scripts=1, # conda's R can have issues when starting multiple times
     script:
