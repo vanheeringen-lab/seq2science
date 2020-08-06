@@ -1,7 +1,4 @@
-if "scrna_seq" == get_workflow():
-    ruleorder: trim_galore_SE > trim_galore_PE
-else:
-    ruleorder: trim_galore_PE > trim_galore_SE
+ruleorder: trim_galore_PE > trim_galore_SE
 
 
 rule trim_galore_SE:
