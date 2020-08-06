@@ -15,23 +15,27 @@ suppressMessages({
     library("GenomicFeatures")
 })
 
+descriptive_names <- strsplit(snakemake@params$names, "\\s+")[[1]]
+
 # load the gtf file and make it a txdb
 txdb_from_gtf <- makeTxDbFromGFF(snakemake@params$gtf[[1]])
 
 peaks_list = list()
-for (narrow_peak_file in snakemake@input$narrowpeaks){
-    sample_name = basename(narrow_peak_file)
-    peaks_list[[sample_name]] = readPeakFile(narrow_peak_file)
+for (i in seq_along(snakemake@input$narrowpeaks)) {
+    sample_name = descriptive_names[[i]]
+    peaks_list[[sample_name]] = readPeakFile(snakemake@input$narrowpeaks[[i]])
 }
 
 peak_anno_list <- lapply(peaks_list, annotatePeak, TxDb=txdb_from_gtf,
                          tssRegion=c(-3000, 3000), verbose=FALSE)
 
 
-png(filename=snakemake@output$img1[[1]], units = 'cm', width = 20, height = 10, res = 300)
-plotAnnoBar(peak_anno_list)
+fig_height = 2 + 2 * length(Narrow_peak_files)
+
+png(filename=output_file_1, units = 'cm', width = 20, height = fig_height, res = 300)
+plotAnnoBar(peakAnnoList)
 dev.off()
 
-png(filename=snakemake@output$img2[[1]],  units = 'cm', width = 20, height = 10, res = 300)
-plotDistToTSS(peak_anno_list)
+png(filename=output_file_2,  units = 'cm', width = 20, height = fig_height, res = 300)
+plotDistToTSS(peakAnnoList)
 dev.off()
