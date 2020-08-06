@@ -602,3 +602,20 @@ def get_peak_calling_qc(sample):
         output.extend(expand("{qc_dir}/plotProfile/{{assembly}}-{peak_caller}.tsv", **config))
 
     return output
+
+def get_narrowpeaks(wildcards):
+    """all narrowpeak files in the macs2 folder, except the input files"""
+    
+rule chip_qc:
+    input:
+        gtf= link_here_2_the_GTF_file,
+        narrowpeaks=get_narrowpeaks
+    output:
+        picture_1=asdasd,
+        picture_2=asdasd,
+    conda:
+        "../envs/ChIPseeker.yaml"
+    resources:
+        R_scripts=1, # conda's R can have issues when starting multiple times
+    script:
+        f"{config['rule_dir']}/../scripts/ChIPseeker.R"
