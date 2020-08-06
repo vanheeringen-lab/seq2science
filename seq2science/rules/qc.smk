@@ -193,7 +193,9 @@ def get_descriptive_names(wildcards, input):
         else:
             raise ValueError
 
-        if "control" in treps and trep not in treps.index:
+        if trep in breps.index:
+            labels += trep + " "
+        elif "control" in treps and trep not in treps.index:
             labels += f"control_{trep} "
         elif trep in samples.index:
             labels += samples.loc[trep, "descriptive_name"] + " "
