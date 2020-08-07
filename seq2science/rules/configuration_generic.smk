@@ -435,9 +435,6 @@ for sample in samples.index:
             else:
                 raise NotImplementedError
 
-print(ena_single_end_urls)
-print(ena_paired_end_urls)
-
 logger.info("Done!\n\n")
 
 # if samples are merged add the layout of the technical replicate to the config
