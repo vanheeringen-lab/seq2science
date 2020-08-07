@@ -8,10 +8,15 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- Chipseeker images in MultiQC report
+
 ### Fixed
 
 - Fixed issue with some samples not being findable/downloadable with s2s
 - Fixed has_annotation always looking for annotation even if local files present
+- Fixed bug where scatac-seq workflow was making fastqc reports per sample 
 
 ## [0.2.0] - 2020-08-04
 
