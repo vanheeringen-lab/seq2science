@@ -9,6 +9,7 @@ import time
 import copy
 import json
 import requests
+from functools import lru_cache
 
 import norns
 import numpy as np
@@ -188,6 +189,7 @@ samples.index = samples.index.map(str)
 # sample layouts
 # check if a sample is single-end or paired end, and store it
 logger.info("Checking if samples are single-end or paired-end...")
+logger.info("This can take some time.")
 layout_cachefile = os.path.expanduser('~/.config/seq2science/layouts.p')
 layout_cachefile_lock = os.path.expanduser('~/.config/seq2science/layouts.p.lock')
 
@@ -230,6 +232,7 @@ def get_layout_eutils(sample):
         return None
 
 
+@lru_cache(maxsize=None)
 def get_layout_trace1(sample):
     """
     Parse the ncbi trace website to check if a read has 1, 2, or 3 spots.
@@ -246,9 +249,11 @@ def get_layout_trace1(sample):
         soup = BeautifulSoup(html, features="html.parser")
         links = soup.find_all('a')
 
+        vals = []
         for tag in links:
             link = tag.get('href', None)
             if link is not None and 'SRR' in link:
+                SRR = link[link.find("SRR"):]
                 trace_conn = urllib.request.urlopen("https:" + link)
                 trace_html = trace_conn.read()
                 x = re.search("This run has (\d) read", str(trace_html))
@@ -257,14 +262,16 @@ def get_layout_trace1(sample):
                 if len(re.findall(", average length: 0", str(trace_html))) > 0:
                     break
                 elif x.group(1) == '1':
-                    return 'SINGLE'
+                    vals.append(('SINGLE', SRR))
                 elif x.group(1) == '2':
-                    return 'PAIRED'
+                    vals.append(('PAIRED', SRR))
+        return vals
     except:
         pass
     return None
 
 
+@lru_cache(maxsize=None)
 def get_layout_trace2(sample):
     """
     Yet another sample lookup fallback.
@@ -300,7 +307,7 @@ with FileLock(layout_cachefile_lock):
         layout_cache = {}
 
 
-    trace_tp = ThreadPool(20)
+    trace_tp = ThreadPool(40)
     eutils_tp = ThreadPool(config.get('ncbi_requests', 3) // 2)
 
     trace_layout1 = {}
@@ -340,8 +347,8 @@ with FileLock(layout_cachefile_lock):
     config['layout'] = {**layout_cache,
                         **{k: v for k, v in config['layout'].items()},
                         **{k: v.get() for k, v in eutils_layout.items() if v.get() is not None},
-                        **{k: v.get() for k, v in trace_layout1.items() if v.get() is not None},
-                        **{k: v.get() for k, v in trace_layout2.items() if v.get() is not None}}
+                        **{k: v.get()[0][0] for k, v in trace_layout1.items() if v.get() is not None},
+                        **{k: v.get()[0][0] for k, v in trace_layout2.items() if v.get() is not None}}
 
     assert all(layout in ['SINGLE', 'PAIRED'] for sample, layout in config['layout'].items())
 
@@ -361,6 +368,67 @@ for sample in samples.index:
                          f"access is currently not supported. We advise you to download the sample "
                          f"manually, and continue the pipeline from there on.")
 
+trace_tp.close()
+eutils_tp.close()
+
+def url_is_alive(url):
+    """
+    Checks that a given URL is reachable.
+    https://gist.github.com/dehowell/884204
+    :param url: A URL
+    :rtype: bool
+    """
+    request = urllib.request.Request(url)
+    request.get_method = lambda: 'HEAD'
+
+    try:
+        urllib.request.urlopen(request)
+        return True
+    except:
+        return False
+
+logger.info("Done!\n\n")
+logger.info("Now checking if the sample are on the ENA database..\n\n")
+logger.info("This can also take some time!\n\n")
+
+ena_single_end_urls = dict()
+ena_paired_end_urls = dict()
+
+# now check if we can simply download the fastq from ENA
+for sample in samples.index:
+    # do not check if the file already exists
+    if os.path.exists(expand(f'{{fastq_dir}}/{sample}.{{fqsuffix}}.gz', **config)[0]) or \
+       all(os.path.exists(path) for path in expand(f'{{fastq_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz', **config)):
+        continue
+
+    srrs = get_layout_trace1(sample)
+    if srrs is None:
+        srrs = get_layout_trace2(sample)
+
+    if srrs is not None:
+        layout = [srr[0] for srr in srrs]
+        if len(set(layout)) != 1:
+            raise ValueError("I can not deal with mixes of samples!")
+        layout = layout[0]
+
+        for srr in [srr[1] for srr in srrs]:
+            prefix = srr[:6]
+            suffix = f"/{int(srr[9:]):03}" if len(srr) >= 10 else ""
+
+            if layout == "SINGLE":
+                url = f"ftp://ftp.sra.ebi.ac.uk/vol1/fastq/{prefix}{suffix}/{srr}/{srr}.fastq.gz"
+                if url_is_alive(url):
+                    ena_single_end_urls.setdefault(sample, []).append((srr, url))
+            elif layout == "PAIRED":
+                urls = [f"ftp://ftp.sra.ebi.ac.uk/vol1/fastq/{prefix}{suffix}/{srr}/{srr}_1.fastq.gz",
+                        f"ftp://ftp.sra.ebi.ac.uk/vol1/fastq/{prefix}{suffix}/{srr}/{srr}_2.fastq.gz"]
+                if all(url_is_alive(url) for url in urls):
+                    ena_paired_end_urls.setdefault(sample, []).append((srr, urls))
+            else:
+                raise NotImplementedError
+
+print(ena_single_end_urls)
+print(ena_paired_end_urls)
 
 logger.info("Done!\n\n")
 

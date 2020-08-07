@@ -220,3 +220,52 @@ rule renamefastq_PE:
         ln {input[0]} {output[0]}
         ln {input[1]} {output[1]}
         """
+
+
+ruleorder: ena2fastq_SE > sra2fastq_SE
+ruleorder: ena2fastq_PE > sra2fastq_PE
+ruleorder: ena2fastq_PE > ena2fastq_SE
+
+
+rule ena2fastq_SE:
+    """
+    Downloaded (raw) SRAs are converted to single-end fastq files.
+    """
+    output:
+        expand("{fastq_dir}/{{sample}}.{fqsuffix}.gz", **config),
+    log:
+        expand("{log_dir}/ena2fastq_SE/{{sample}}.log", **config),
+    benchmark:
+        expand("{benchmark_dir}/ena2fastq_SE/{{sample}}.benchmark.txt", **config)[0]
+    wildcard_constraints:
+        sample="|".join(ena_single_end_urls.keys())
+    run:
+        shell("mkdir -p {config[fastq_dir]} >> {log} 2>&1")
+        for srr, url in ena_single_end_urls[wildcards.sample]:
+            shell("wget {url} -O {config[fastq_dir]}/{srr}.{config[fqsuffix]}.gz >> {log} 2>&1")
+            shell("cat {config[fastq_dir]}/{srr}.{config[fqsuffix]}.gz >> {output} >> {log} 2>&1")
+            shell("rm {config[fastq_dir]}/{srr}.{config[fqsuffix]}.gz >> {log} 2>&1")
+
+
+rule ena2fastq_PE:
+    """
+    Downloaded (raw) SRAs are converted to paired-end fastq files.
+    Forward and reverse samples will be switched if forward/reverse names are not lexicographically ordered.
+    """
+    output:
+        expand("{fastq_dir}/{{sample}}_{fqext}.{fqsuffix}.gz", **config),
+    log:
+        expand("{log_dir}/ena2fastq_PE/{{sample}}.log", **config),
+    benchmark:
+        expand("{benchmark_dir}/ena2fastq_PE/{{sample}}.benchmark.txt", **config)[0]
+    wildcard_constraints:
+        sample="|".join(ena_paired_end_urls.keys())
+    run:
+        shell("mkdir -p {config[fastq_dir]} >> {log} 2>&1")
+        for srr, urls in ena_paired_end_urls[wildcards.sample]:
+            shell("wget {urls[0]} -O {config[fastq_dir]}/{srr}_{config[fqext1]}.{config[fqsuffix]}.gz >> {log} 2>&1")
+            shell("wget {urls[1]} -O {config[fastq_dir]}/{srr}_{config[fqext2]}.{config[fqsuffix]}.gz >> {log} 2>&1")
+            shell("cat {config[fastq_dir]}/{srr}_{config[fqext1]}.{config[fqsuffix]}.gz >> {output[0]} >> {log} 2>&1")
+            shell("cat {config[fastq_dir]}/{srr}_{config[fqext2]}.{config[fqsuffix]}.gz >> {output[1]} >> {log} 2>&1")
+            shell("rm {config[fastq_dir]}/{srr}_{config[fqext1]}.{config[fqsuffix]}.gz >> {log} 2>&1")
+            shell("rm {config[fastq_dir]}/{srr}_{config[fqext2]}.{config[fqsuffix]}.gz >> {log} 2>&1")
