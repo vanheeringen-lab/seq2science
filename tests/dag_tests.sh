@@ -47,8 +47,8 @@ if [ $1 = "alignment" ]; then
 
   printf "\ndownload default\n"
   seq2science run download-fastq -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 sra2fastq_PE 1
-  assert_rulecount $1 sra2fastq_SE 1
+  assert_rulecount $1 ena2fastq_PE 1
+  assert_rulecount $1 ena2fastq_SE 1
 
   # alignment workflow
   WF=alignment
