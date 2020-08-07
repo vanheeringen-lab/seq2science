@@ -7,7 +7,7 @@ Downloading public data in bulk from the NCBI, ENA, and DDBJ databases has never
 </p>
 
 #### Download SRA file
-Most databases do not store the actual fastqs, but they do all store the raw data (as a sra file). For this reason for each sample submitted the sra is downloaded. To convert this data to a fastq it has to be *dumped*. 
+Most databases do not store the actual fastqs, but they do all store the raw data (as a sra file). For this reason for each sample will first be checked if it can be downloaded from the European Nucleotide Archive (ENA). Samples on the ENA are stored as fastq. Otherwise we will download the samples in its raw format. To convert this data to a fastq it has to be *dumped*. 
 
 #### "Dump" the SRA file to a fastq file
 The second step is translating (dumping) the sra file to a fastq file.
