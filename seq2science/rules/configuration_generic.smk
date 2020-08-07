@@ -267,7 +267,8 @@ def get_layout_trace1(sample):
                     vals.append(('SINGLE', SRR))
                 elif x.group(1) == '2':
                     vals.append(('PAIRED', SRR))
-        return vals
+        if len(vals) > 0:
+            return vals
     except:
         pass
     return None
