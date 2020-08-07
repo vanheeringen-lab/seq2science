@@ -14,6 +14,7 @@ if get_workflow() == "rna_seq":
         message: explain_rule("infer_strandedness")
         params:
             config["min_mapping_quality"]
+        priority: 0
         conda:
             "../envs/gene_counts.yaml"
         shell:
@@ -48,6 +49,7 @@ if get_workflow() == "rna_seq":
             samples_to_infer
         output:
             expand("{qc_dir}/strandedness/inferred_strandedness.tsv", **config)
+        priority: 0
         run:
             import pandas as pd
 

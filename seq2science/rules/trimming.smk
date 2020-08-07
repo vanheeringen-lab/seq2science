@@ -12,6 +12,7 @@ rule trim_galore_SE:
         qc=expand("{qc_dir}/trimming/{{sample}}.{fqsuffix}.gz_trimming_report.txt", **config),
     conda:
         "../envs/trimgalore.yaml"
+    priority: 0
     threads: 6
     message: explain_rule("trim_galore_SE")
     log:
@@ -50,6 +51,7 @@ rule trim_galore_PE:
         qc=expand("{qc_dir}/trimming/{{sample}}_{fqext}.{fqsuffix}.gz_trimming_report.txt", **config),
     conda:
         "../envs/trimgalore.yaml"
+    priority: 0
     threads: 6
     message: explain_rule("trim_galore_PE")
     log:

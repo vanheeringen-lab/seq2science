@@ -18,6 +18,7 @@ rule samtools_stats:
     log:
         expand("{log_dir}/samtools_stats/{{directory}}/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config)
     message: explain_rule("samtools_stats")
+    priority: 0
     conda:
         "../envs/samtools.yaml"
     shell:
@@ -54,6 +55,7 @@ rule featureCounts:
     message: explain_rule("featureCounts_qc")
     log:
         expand("{log_dir}/featureCounts/{{assembly}}-{{sample}}-{{peak_caller}}.log", **config)
+    priority: 0
     threads: 4
     conda:
         "../envs/subread.yaml"
@@ -118,6 +120,7 @@ rule insert_size_metrics:
         pdf=expand("{qc_dir}/InsertSizeMetrics/{{assembly}}-{{sample}}.pdf", **config)
     log:
         f"{config['log_dir']}/InsertSizeMetrics/{{assembly}}-{{sample}}.log"
+    priority: 0
     conda:
         "../envs/picard.yaml"
     shell:
@@ -150,6 +153,7 @@ rule mt_nuc_ratio_calculator:
         expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-unsieved.bam.mtnucratiomtnuc.json", **config)
     log:
         f"{config['log_dir']}/MTNucRatioCalculator/{{assembly}}-{{sample}}.log"
+    priority: 0
     conda:
         "../envs/mtnucratio.yaml"
     params:
@@ -215,6 +219,7 @@ rule plotFingerprint:
         expand("{benchmark_dir}/plotFingerprint/{{{{assembly}}}}.benchmark.txt", **config)[0]
     conda:
         "../envs/deeptools.yaml"
+    priority: 0
     threads: 16
     params:
         lambda wildcards, input: "--labels " + get_descriptive_names(wildcards, input.bams) if
@@ -249,6 +254,7 @@ rule computeMatrix:
         expand("{benchmark_dir}/computeMatrix/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     conda:
         "../envs/deeptools.yaml"
+    priority: 0
     threads: 16
     resources:
         deeptools_limit=lambda wildcards, threads: threads
@@ -276,6 +282,7 @@ rule plotProfile:
         expand("{log_dir}/plotProfile/{{assembly}}-{{peak_caller}}.log", **config)
     benchmark:
         expand("{benchmark_dir}/plotProfile/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
+    priority: 0
     conda:
         "../envs/deeptools.yaml"
     resources:
@@ -298,6 +305,7 @@ rule multiBamSummary:
         expand("{log_dir}/multiBamSummary/{{assembly}}.log", **config)
     benchmark:
         expand("{benchmark_dir}/multiBamSummary/{{assembly}}.benchmark.txt", **config)[0]
+    priority: 0
     threads: 16
     params:
         lambda wildcards, input: "--labels " + get_descriptive_names(wildcards, input.bams) if
@@ -324,6 +332,7 @@ rule plotCorrelation:
         expand("{log_dir}/plotCorrelation/{{assembly}}.log", **config)
     benchmark:
         expand("{benchmark_dir}/plotCorrelation/{{assembly}}.benchmark.txt", **config)[0]
+    priority: 0
     conda:
         "../envs/deeptools.yaml"
     resources:
@@ -346,6 +355,7 @@ rule plotPCA:
         expand("{log_dir}/plotPCA/{{assembly}}.log", **config)
     benchmark:
         expand("{benchmark_dir}/plotPCA/{{assembly}}.benchmark.txt", **config)[0]
+    priority: 0
     conda:
         "../envs/deeptools.yaml"
     resources:
@@ -362,6 +372,7 @@ rule multiqc_header_info:
     """
     output:
         temp(expand('{qc_dir}/header_info.yaml', **config))
+    priority: 0
     run:
         import os
         from datetime import date
@@ -383,6 +394,7 @@ rule multiqc_rename_buttons:
     """
     output:
         temp(expand('{qc_dir}/sample_names_{{assembly}}.tsv', **config))
+    priority: 0
     run:
         newsamples = samples[samples["assembly"] == wildcards.assembly].reset_index(level=0, inplace=False)
         newsamples = newsamples.drop(["assembly"], axis=1)
@@ -395,6 +407,7 @@ rule multiqc_filter_buttons:
     """
     output:
         temp(expand('{qc_dir}/sample_filters_{{assembly}}.tsv', **config))
+    priority: 0
     run:
         with open(output[0], "w") as f:
             f.write("Read Group 1 & Alignment\thide\t_R2\n"
@@ -407,6 +420,7 @@ rule multiqc_samplesconfig:
     """
     output:
         temp(expand('{qc_dir}/samplesconfig_mqc.html', **config))
+    priority: 0
     run:
         outstring = \
             "<!--\n" \
@@ -435,6 +449,7 @@ rule multiqc_schema:
     """
     output:
         temp(expand('{qc_dir}/schema.yaml', **config))
+    priority: 0
     run:
         with open(f'{config["rule_dir"]}/../schemas/multiqc_config.yaml') as cookie_schema:
             cookie = cookie_schema.read()
@@ -504,6 +519,7 @@ rule multiqc:
         fqext1 = '_' + config['fqext1'],
     log:
         expand("{log_dir}/multiqc_{{assembly}}.log", **config)
+    priority: 0
     conda:
         "../envs/qc.yaml"
     shell:

@@ -37,6 +37,7 @@ rule id2sra:
     benchmark:
         expand("{benchmark_dir}/id2sra/{{sample}}.benchmark.txt", **config)[0]
     message: explain_rule("id2sra")
+    priority: 0
     resources:
         parallel_downloads=1,
     wildcard_constraints:
@@ -130,6 +131,7 @@ rule sra2fastq_SE:
         expand("{log_dir}/sra2fastq_SE/{{sample}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/sra2fastq_SE/{{sample}}.benchmark.txt", **config)[0]
+    priority: 0
     threads: 8
     conda:
         "../envs/get_fastq.yaml"
@@ -167,6 +169,7 @@ rule sra2fastq_PE:
         expand("{log_dir}/sra2fastq_PE/{{sample}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/sra2fastq_PE/{{sample}}.benchmark.txt", **config)[0]
+    priority: 0
     threads: 8
     conda:
         "../envs/get_fastq.yaml"
@@ -215,6 +218,7 @@ rule renamefastq_PE:
         get_wrong_fqext,
     output:
         temp(expand("{fastq_dir}/{{sample}}_{fqext}.{fqsuffix}.gz", **config)),
+    priority: 0
     shell:
         """
         ln {input[0]} {output[0]}

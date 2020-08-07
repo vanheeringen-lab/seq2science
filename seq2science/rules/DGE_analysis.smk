@@ -56,6 +56,7 @@ rule deseq2:
     message: explain_rule("deseq2")
     benchmark:
         expand("{benchmark_dir}/deseq2/{{assembly}}-{{contrast}}.diffexp.benchmark.txt", **config)[0]
+    priority: 0
     threads: 4
     params:
         samples=os.path.abspath(config["samples"]),
@@ -80,6 +81,7 @@ rule blind_clustering:
         expand("{log_dir}/deseq2/{{assembly}}-clustering.log", **config),
     benchmark:
         expand("{benchmark_dir}/deseq2/{{assembly}}-clustering.benchmark.txt", **config)[0]
+    priority: 0
     threads: 4
     params:
         samples=os.path.abspath(config["samples"]),

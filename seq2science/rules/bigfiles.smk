@@ -10,6 +10,7 @@ rule bedgraphish_to_bedgraph:
         expand("{log_dir}/bedgraphish_to_bedgraph/{{assembly}}-{{sample}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/bedgraphish_to_bedgraph/{{assembly}}-{{sample}}.log", **config)[0]
+    priority: 0
     shell:
         """
         splits=$(grep -Pno "([^\/]*)(?=\.bam)" {input})
@@ -61,6 +62,7 @@ rule bedgraph_bigwig:
         expand("{log_dir}/bedgraph_bigwig/{{peak_caller}}/{{assembly}}-{{sample}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/bedgraphish_to_bedgraph/{{assembly}}-{{sample}}-{{peak_caller}}.log", **config)[0]
+    priority: 0
     conda:
         "../envs/ucsc.yaml"
     shell:
@@ -116,6 +118,7 @@ rule peak_bigpeak:
         expand("{log_dir}/narrowpeak_bignarrowpeak/{{peak_caller}}/{{assembly}}-{{sample}}-{{peak}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/bedgraphish_to_bedgraph/{{assembly}}-{{sample}}-{{peak_caller}}-{{peak}}.log", **config)[0]
+    priority: 0
     conda:
         "../envs/ucsc.yaml"
     params:
@@ -157,6 +160,7 @@ rule bam_bigwig:
         expand("{benchmark_dir}/bam_bigwig/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}{{strand}}.benchmark.txt", **config)[0]
     conda:
         "../envs/deeptools.yaml"
+    priority: 0
     threads: 16
     resources:
         deeptools_limit=lambda wildcards, threads: threads,

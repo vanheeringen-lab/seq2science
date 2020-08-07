@@ -51,6 +51,7 @@ rule narrowpeak_summit:
         expand("{log_dir}/bedtools_slop/{{sample}}-{{assembly}}-{{peak_caller}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/bedtools_slop/{{sample}}-{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
+    priority: 0
     shell:
         """
         awk 'BEGIN {{OFS="\t"}} {{ print $1,$2+$10,$2+$10+1,$4,$9; }}' {input} > {output} 2> {log}
@@ -81,6 +82,7 @@ rule combine_peaks:
         expand("{log_dir}/bedtools_slop/{{assembly}}-{{peak_caller}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/bedtools_slop/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
+    priority: 0
     conda:
         "../envs/gimme.yaml"
     params:
@@ -106,6 +108,7 @@ rule bedtools_slop:
         expand("{log_dir}/bedtools_slop/{{assembly}}-{{peak_caller}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/bedtools_slop/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
+    priority: 0
     conda:
         "../envs/bedtools.yaml"
     shell:
@@ -153,6 +156,7 @@ rule coverage_table:
         expand("{log_dir}/multicov/{{assembly}}-{{peak_caller}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/multicov/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
+    priority: 0
     conda:
         "../envs/gimme.yaml"
     shell:
@@ -179,6 +183,7 @@ rule quantile_normalization:
         rules.coverage_table.output,
     output:
         expand("{result_dir}/count_table/{{peak_caller}}/{{assembly}}_quantilenorm.tsv", **config),
+    priority: 0
     run:
         import pandas as pd
 
@@ -241,6 +246,7 @@ rule edgeR_normalization:
         expand("{log_dir}/edgeR_normalization/{{assembly}}-{{peak_caller}}-{{normalisation}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/edgeR_normalization/{{assembly}}-{{peak_caller}}-{{normalisation}}.benchmark.txt", **config)[0]
+    priority: 0
     conda:
         "../envs/edger.yaml"
     resources:
@@ -257,6 +263,7 @@ rule log_normalization:
         expand("{result_dir}/count_table/{{peak_caller}}/{{assembly}}_{{normalisation}}.tsv", **config),
     output:
         expand("{result_dir}/count_table/{{peak_caller}}/{{assembly}}_log{{base}}_{{normalisation}}.tsv", **config),
+    priority: 0
     run:
         import pandas as pd
         import numpy as np
@@ -286,6 +293,7 @@ rule mean_center:
         expand("{result_dir}/count_table/{{peak_caller}}/{{assembly}}_log{{base}}_{{normalisation}}.tsv", **config),
     output:
         expand("{result_dir}/count_table/{{peak_caller}}/{{assembly}}_meancenter_log{{base}}_{{normalisation}}.tsv", **config),
+    priority: 0
     run:
         import pandas as pd
         import numpy as np

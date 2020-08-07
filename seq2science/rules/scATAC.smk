@@ -13,6 +13,7 @@ rule create_SNAP_object:
         expand("{log_dir}/create_SNAP_object/{{sample}}-{{assembly}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/create_SNAP_object/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
+    priority: 0
     threads: 4
     conda:
         "../envs/snaptools.yaml"
@@ -40,6 +41,7 @@ rule create_bins_SNAP_object:
         expand("{log_dir}/create_bins_SNAP_object/{{sample}}-{{assembly}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/create_SNAP_object/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
+    priority: 0
     conda:
         "../envs/snaptools.yaml"
     message: explain_rule("create_bins_SNAP_object")

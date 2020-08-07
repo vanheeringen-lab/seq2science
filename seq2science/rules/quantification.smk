@@ -65,6 +65,7 @@ if config["quantifier"] == "salmon":
             expand("{benchmark_dir}/{quantifier}_index/{{assembly}}.benchmark.txt", **config)[0]
         params:
             config["quantifier_index"],
+        priority: 1
         threads: 40
         conda:
             "../envs/salmon.yaml"
@@ -88,6 +89,7 @@ if config["quantifier"] == "salmon":
             expand("{benchmark_dir}/{quantifier}_index/{{assembly}}.benchmark.txt", **config)[0]
         params:
             config["quantifier_index"],
+        priority: 1
         threads: 40
         conda:
             "../envs/salmon.yaml"
@@ -117,6 +119,7 @@ if config["quantifier"] == "salmon":
                 else ["-1", input.reads[0], "-2", input.reads[1]]
             ),
             params=config["quantifier_flags"],
+        priority: 0
         threads: 20
         resources:
             mem_gb=8,
@@ -147,6 +150,7 @@ elif config["quantifier"] == "htseq":
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-{{sample}}.counts.log", **config),
         message: explain_rule("htseq_count")
+        priority: 0
         threads: 1
         conda:
             "../envs/gene_counts.yaml"
@@ -175,6 +179,7 @@ elif config["quantifier"] == "featurecounts":
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-{{sample}}.counts.log", **config),
         message: explain_rule("featurecounts_rna")
+        priority: 0
         threads: 1
         conda:
             "../envs/gene_counts.yaml"
@@ -196,6 +201,7 @@ if config.get("dexseq"):
              expand("{genome_dir}/{{assembly}}/{{assembly}}.DEXseq_annotation.gff", **config),
         log:
              expand("{log_dir}/counts_matrix/{{assembly}}.prepare_DEXseq_annotation.log", **config),
+        priority: 0
         conda:
              "../envs/dexseq.yaml"
         shell:
@@ -223,6 +229,7 @@ if config.get("dexseq"):
         params:
             strandedness=lambda wildcards: strandedness_to_quant(wildcards, "dexseq"),
             endedness=lambda wildcards: "" if config['layout'][wildcards.sample] == 'SINGLE' else "-p yes",
+        priority: 0
         conda:
              "../envs/dexseq.yaml"
         shell:

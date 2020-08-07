@@ -71,6 +71,7 @@ rule genrich_pileup:
         control=lambda wildcards, input: f"-c {input.control}" if "control" in input else "",
     resources:
         mem_gb=8,
+    priority: 0
     shell:
         """
         input=$(echo {input.reps} | tr ' ' ',')
@@ -92,6 +93,7 @@ rule call_peak_genrich:
     benchmark:
         expand("{benchmark_dir}/call_peak_genrich/{{fname}}.benchmark.txt", **config)[0]
     message: explain_rule("call_peak_genrich")
+    priority: 0
     conda:
         "../envs/genrich.yaml"
     params:
@@ -162,6 +164,7 @@ rule macs2_callpeak:
         control=lambda wildcards, input: f"-c {input.control}" if "control" in input else "",
     resources:
         mem_gb=4,
+    priority: 0
     conda:
         "../envs/macs2.yaml"
     shell:
@@ -194,6 +197,7 @@ rule keep_mates:
         expand("{log_dir}/keep_mates/{{assembly}}-{{sample}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/keep_mates/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
+    priority: 0
     run:
         from contextlib import redirect_stdout
         import pysam
@@ -236,6 +240,7 @@ rule hmmratac_genome_info:
         expand("{log_dir}/hmmratac_genome_info/{{assembly}}-{{sample}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/hmmratac_genome_info/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
+    priority: 0
     conda:
         "../envs/samtools.yaml"
     shell:
@@ -266,6 +271,7 @@ rule hmmratac:
     params:
         basename=lambda wildcards: expand(f"{{result_dir}}/hmmratac/{wildcards.assembly}-{wildcards.sample}", **config),
         hmmratac_params=config["peak_caller"].get("hmmratac", ""),
+    priority: 0
     conda:
         "../envs/hmmratac.yaml"
     shell:
@@ -305,6 +311,7 @@ if "condition" in samples:
             params:
                 rank=lambda wildcards: "--rank 13" if wildcards.peak_caller == "hmmratac" else "",
                 nr_reps=lambda wildcards, input: len(input),
+            priority: 0
             conda:
                 "../envs/idr.yaml"
             shell:
@@ -336,6 +343,7 @@ if "condition" in samples:
                     expand("{benchmark_dir}/macs_bdgcmp/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
                 resources:
                     mem_gb=4,
+                priority: 0
                 conda:
                     "../envs/macs2.yaml"
                 shell:
@@ -383,6 +391,7 @@ if "condition" in samples:
                     expand("{log_dir}/macs_cmbreps/{{assembly}}-{{condition}}-{{ftype}}.log", **config),
                 benchmark:
                     expand("{benchmark_dir}/macs_cmbreps/{{assembly}}-{{condition}}-{{ftype}}.benchmark.txt", **config)[0]
+                priority: 0
                 conda:
                     "../envs/macs2.yaml"
                 params:

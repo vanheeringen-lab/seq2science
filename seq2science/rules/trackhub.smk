@@ -15,6 +15,7 @@ rule twobit:
         expand("{log_dir}/trackhub/{{assembly}}.2bit.log", **config),
     benchmark:
         expand("{benchmark_dir}/trackhub/{{assembly}}.2bit.benchmark.txt", **config)[0]
+    priority: 0
     conda:
         "../envs/ucsc.yaml"
     shell:
@@ -39,6 +40,7 @@ rule gcPercent:
         expand("{benchmark_dir}/trackhub/{{assembly}}.gc5Base.benchmark.txt", **config)[0]
     resources:
         mem_gb=5,
+    priority: 0
     conda:
         "../envs/ucsc.yaml"
     shell:
@@ -68,6 +70,7 @@ rule cytoband:
         expand("{log_dir}/trackhub/{{assembly}}.cytoband.log", **config),
     benchmark:
         expand("{log_dir}/trackhub/{{assembly}}.cytoband.benchmark.txt", **config)[0]
+    priority: 0
     conda:
         "../envs/ucsc.yaml"
     shell:
@@ -120,6 +123,7 @@ rule softmask_track_1:
         expand("{log_dir}/trackhub/{{assembly}}.softmask1.log", **config),
     benchmark:
         expand("{benchmark_dir}/trackhub/{{assembly}}.softmask1.benchmark.txt", **config)[0]
+    priority: 0
     threads: 4
     resources:
         mem_gb=2,
@@ -150,6 +154,7 @@ rule softmask_track_2:
         expand("{log_dir}/trackhub/{{assembly}}.softmask2.log", **config),
     benchmark:
         expand("{benchmark_dir}/trackhub/{{assembly}}.softmask2.benchmark.txt", **config)[0]
+    priority: 0
     conda:
         "../envs/ucsc.yaml"
     shell:
@@ -182,6 +187,7 @@ rule trackhub_index:
         expand("{log_dir}/trackhub/{{assembly}}.index.log", **config),
     benchmark:
         expand("{benchmark_dir}/trackhub/{{assembly}}.index.benchmark.txt", **config)[0]
+    priority: 0
     conda:
         "../envs/ucsc.yaml"
     shell:
@@ -321,6 +327,7 @@ rule trackhub:
         expand("{log_dir}/trackhub/trackhub.log", **config),
     benchmark:
         expand("{benchmark_dir}/trackhub/trackhub.benchmark.txt", **config)[0]
+    priority: 0
     run:
         import re
         import sys

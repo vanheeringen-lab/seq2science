@@ -91,6 +91,7 @@ if "replicate" in samples:
             expand("{log_dir}/merge_replicates/{{replicate}}{{fqext}}.log", **config),
         benchmark:
             expand("{benchmark_dir}/merge_replicates/{{replicate}}{{fqext}}.benchmark.txt", **config)[0]
+        priority: 0
         run:
             if len(input.reps) == 1:
                 shell("mv {input.reps} {output} 2> {log}")

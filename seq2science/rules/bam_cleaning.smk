@@ -22,6 +22,7 @@ rule setup_blacklist:
         unpack(get_blacklist_files),
     output:
         temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.customblacklist.bed", **config)),
+    priority: 0
     run:
         newblacklist = ""
         if config.get("remove_blacklist") and wildcards.assembly.lower() in ["ce10", "dm3", "hg38", "hg19", "mm9", "mm10"]:
@@ -55,6 +56,7 @@ rule complement_blacklist:
         expand("{log_dir}/complement_blacklist/{{assembly}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/complement_blacklist/{{assembly}}.benchmark.txt", **config)[0]
+    priority: 0
     conda:
         "../envs/bedtools.yaml"
     shell:
@@ -96,6 +98,7 @@ rule sieve_bam:
         prim_align=f"-F 256" if config["only_primary_align"] else "",
     conda:
         "../envs/samtools.yaml"
+    priority: 0
     threads: 2
     shell:
         """
@@ -129,6 +132,7 @@ rule sambamba_sort:
     params:
         sort_order=lambda wildcards: "-n" if "queryname" in wildcards.sorting else "",
         memory=f"-m {config['bam_sort_mem']}G",
+    priority: 0
     threads: 2
     conda:
         "../envs/sambamba.yaml"
@@ -157,6 +161,7 @@ rule samtools_sort:
         sort_order=lambda wildcards: "-n" if wildcards.sorting == "queryname" else "",
         out_dir=f"{config['result_dir']}/{config['aligner']}",
         memory=lambda wildcards, input, output, threads: f"-m {int(1000 * round(config['bam_sort_mem']/threads, 3))}M",
+    priority: 0
     threads: 2
     resources:
         mem_gb=config["bam_sort_mem"],
@@ -205,6 +210,7 @@ rule mark_duplicates:
         config["markduplicates"],
     resources:
         mem_gb=5,
+    priority: 0
     conda:
         "../envs/picard.yaml"
     shell:
@@ -224,6 +230,7 @@ rule samtools_index:
         temp("{filepath}.bam.bai") if config.get("cram_no_bam", False) else "{filepath}.bam.bai",
     params:
         config["samtools_index"],
+    priority: 0
     conda:
         "../envs/samtools.yaml"
     shell:
@@ -248,6 +255,7 @@ rule bam2cram:
         expand("{benchmark_dir}/bam2cram/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.benchmark.txt", **config)[0]
     params:
         threads=lambda wildcards, input, output, threads: threads - 1,
+    priority: 0
     threads: 4
     conda:
         "../envs/samtools.yaml"
@@ -269,6 +277,7 @@ rule samtools_index_cram:
         expand("{log_dir}/samtools_index_cram/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/samtools_index_cram/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.benchmark.txt", **config)[0]
+    priority: 0
     conda:
         "../envs/samtools.yaml"
     shell:

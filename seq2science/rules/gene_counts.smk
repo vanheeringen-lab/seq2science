@@ -33,6 +33,7 @@ if config["quantifier"] == "salmon":
             release=config["tximeta"]["release"],
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-linked_txome.log", **config),
+        priority: 0
         conda:
             "../envs/tximeta.yaml"
         resources:
@@ -59,6 +60,7 @@ if config["quantifier"] == "salmon":
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-txi_counts_matrix.log", **config),
         message: explain_rule("count_matrix_txi")
+        priority: 0
         conda:
             "../envs/tximeta.yaml"
         resources:
@@ -84,6 +86,7 @@ else:
             expand("{counts_dir}/{{assembly}}-counts.tsv", **config),
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-counts_matrix.log", **config),
+        priority: 0
         run:
             import pandas as pd
             import sys
@@ -130,6 +133,7 @@ if config.get("dexseq"):
             expand("{counts_dir}/{{assembly}}-DEXSeq_counts.tsv", **config),
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-DEXSeq_counts_matrix.log", **config),
+        priority: 0
         run:
             import pandas as pd
             import sys
