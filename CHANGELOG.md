@@ -12,6 +12,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 - Fixed issue with some samples not being findable/downloadable with s2s
 
+### Changed
+
+- will try to UCSC gene annotations in Ensembl format (which uses gene IDs for the gene_id field, contrary to the UCSC format that uses transcript IDs. Wild huh?)
+
 ## [0.2.0] - 2020-08-04
 
 ### Fixed
