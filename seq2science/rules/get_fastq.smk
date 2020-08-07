@@ -272,7 +272,7 @@ rule ena2fastq_PE:
         sample="|".join(ena_paired_end_urls.keys()) if len(ena_paired_end_urls) else "$a"
     run:
         try:
-            shell("mkdir -p {config[fastq_dir]}{wildcards.sample}/ >> {log} 2>&1")
+            shell("mkdir -p {config[fastq_dir]}/{wildcards.sample}/ >> {log} 2>&1")
             for srr, urls in ena_paired_end_urls[wildcards.sample]:
                 if config.get('ascp_path') and config.get('ascp_key'):
                     shell("{config[ascp_path]} -QT -l 300m -P33001 -i {config[ascp_key]} {urls[0]} {config[fastq_dir]}/{wildcards.sample}/{srr}_{config[fqext1]}.{config[fqsuffix]}.gz >> {log} 2>&1")
