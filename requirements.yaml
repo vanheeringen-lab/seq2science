@@ -5,7 +5,7 @@ channels:
   - defaults
 dependencies:
   - pkgs/main::python=3.6
-  - bioconda::snakemake>=5.18
+  - bioconda::snakemake>=5.20.1
   - bioconda::sra-tools=2.9.1
   - bioconda::genomepy=0.8.3
   - bioconda::entrez-direct=11.0
