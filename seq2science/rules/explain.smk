@@ -107,4 +107,5 @@ else:
         "trackhub": "We used the UCSC genome browser (http://www.genome.org/cgi/doi/10.1101/gr.229102) to visualize and inspect alignment.",
         "trim_galore_SE": "We trimmed single-end reads with trim galore! v@trimgalore[trim-galore] (http://www.bioinformatics.babraham.ac.uk/projects/trim_galore/) with options '{config[trim_galore]}' and cutadapt (https://doi.org/10.14806/ej.17.1.200).",
         "trim_galore_PE": "We trimmed paired-end reads with trim galore! v@trimgalore[trim-galore] (http://www.bioinformatics.babraham.ac.uk/projects/trim_galore/) with options '{config[trim_galore]}' and cutadapt (https://doi.org/10.14806/ej.17.1.200).",
+        "chipseeker": "A peak feature distribution plot and peak localization plot relative to TSS were made with chipseeker v@chipseeker[chipseeker] (https://doi.org/doi:10.18129/B9.bioc.ChIPseeker).",
     }
