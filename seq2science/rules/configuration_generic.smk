@@ -403,8 +403,8 @@ def url_is_alive(url):
         return False
 
 logger.info("Done!\n\n")
-logger.info("Now checking if the sample are on the ENA database..\n")
-logger.info("This can also take some time!\n")
+logger.info("Now checking if the sample are on the ENA database..")
+logger.info("This can also take some time!")
 
 ena_single_end_urls = dict()
 ena_paired_end_urls = dict()
