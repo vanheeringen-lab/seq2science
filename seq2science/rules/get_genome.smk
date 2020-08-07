@@ -58,9 +58,18 @@ rule get_genome:
         if [[ ! {params.provider} = None  ]]; then
             genomepy install --genomes_dir {params.dir} {wildcards.assembly} {params.provider} --annotation >> {log} 2>&1
         else
+            # try Ensembl
             genomepy install --genomes_dir {params.dir} {wildcards.assembly} Ensembl --annotation >> {log} 2>&1 ||
-            genomepy install --genomes_dir {params.dir} {wildcards.assembly} UCSC    --annotation >> {log} 2>&1 ||
-            genomepy install --genomes_dir {params.dir} {wildcards.assembly} NCBI    --annotation >> {log} 2>&1
+            
+            # try UCSC (with Ensembl format annotation)
+            genomepy install -g {params.dir} {wildcards.assembly} UCSC -o --ucsc-annotation Ensembl >> {log} 2>&1 &&
+                genomepy install -g {params.dir} {wildcards.assembly} UCSC >> {log} 2>&1 ||
+            
+            # try UCSC
+            genomepy install --genomes_dir {params.dir} {wildcards.assembly} UCSC --annotation >> {log} 2>&1 ||
+            
+            # try NCBI
+            genomepy install --genomes_dir {params.dir} {wildcards.assembly} NCBI --annotation >> {log} 2>&1
         fi
 
         # unzip annotation if downloaded and gzipped
