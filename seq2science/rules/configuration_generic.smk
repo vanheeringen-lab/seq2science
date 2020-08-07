@@ -240,7 +240,7 @@ def get_layout_trace1(sample):
     try:
         url = f"https://www.ncbi.nlm.nih.gov/sra/?term={sample}"
 
-        conn = urllib.request.urlopen(url)
+        conn = urllib.request.urlopen(url, timeout=30)
         html = conn.read()
 
         soup = BeautifulSoup(html, features="html.parser")
@@ -276,7 +276,7 @@ def get_layout_trace2(sample):
     try:
         url = f"https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={sample}"
 
-        conn = urllib.request.urlopen(url)
+        conn = urllib.request.urlopen(url, timeout=30)
         html = conn.read()
 
         soup = BeautifulSoup(html, features="html.parser")
@@ -372,8 +372,6 @@ def url_is_alive(url):
     """
     Checks that a given URL is reachable.
     https://gist.github.com/dehowell/884204
-    :param url: A URL
-    :rtype: bool
     """
     request = urllib.request.Request(url)
     request.get_method = lambda: 'HEAD'
@@ -404,8 +402,10 @@ for sample in samples.index:
 
     if srrs is not None:
         layout = [srr[0] for srr in srrs]
-        if len(set(layout)) != 1:
+        if len(set(layout)) > 1:
             raise ValueError("I can not deal with mixes of samples!")
+        if len(set(layout)) == 0:
+            continue
         layout = layout[0]
 
         for srr in [srr[1] for srr in srrs]:

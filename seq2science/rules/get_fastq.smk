@@ -233,6 +233,8 @@ rule ena2fastq_SE:
     """
     output:
         expand("{fastq_dir}/{{sample}}.{fqsuffix}.gz", **config),
+    resources:
+        parallel_downloads=1,
     log:
         expand("{log_dir}/ena2fastq_SE/{{sample}}.log", **config),
     benchmark:
@@ -254,6 +256,8 @@ rule ena2fastq_PE:
     """
     output:
         expand("{fastq_dir}/{{sample}}_{fqext}.{fqsuffix}.gz", **config),
+    resources:
+        parallel_downloads=1,
     log:
         expand("{log_dir}/ena2fastq_PE/{{sample}}.log", **config),
     benchmark:
