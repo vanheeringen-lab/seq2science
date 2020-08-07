@@ -192,8 +192,9 @@ logger.info("Checking if samples are single-end or paired-end...")
 logger.info("This can take some time.")
 layout_cachefile = os.path.expanduser('~/.config/seq2science/layouts.p')
 layout_cachefile_lock = os.path.expanduser('~/.config/seq2science/layouts.p.lock')
-sample_to_srr_cachefile = os.path.expanduser('~/.config/seq2science/ena.p')
-sample_to_srr_cachefile_lock = os.path.expanduser('~/.config/seq2science/ena.p.lock')
+sample_to_ena_single_url = os.path.expanduser('~/.config/seq2science/ena_single.p')
+sample_to_ena_paired_url = os.path.expanduser('~/.config/seq2science/ena_paired.p')
+sample_to_ena_url_lock = os.path.expanduser('~/.config/seq2science/ena.p.lock')
 
 def prep_filelock(lock_file, max_age=10):
     """
@@ -371,19 +372,8 @@ for sample in samples.index:
                          f"access is currently not supported. We advise you to download the sample "
                          f"manually, and continue the pipeline from there on.")
 
-prep_filelock(sample_to_srr_cachefile_lock, 5*60)
-
-with FileLock(sample_to_srr_cachefile_lock):
-    # try to load the layout cache, otherwise defaults to empty dictionary
-    try:
-        sample_to_srr = pickle.load(open(sample_to_srr_cachefile, "rb"))
-    except FileNotFoundError:
-        sample_to_srr = {}
-
-    sample_to_srr.update({**{k: v.get() for k, v in trace_layout1.items() if v.get() is not None},
-                          **{k: v.get() for k, v in trace_layout2.items() if v.get() is not None}})
-    pickle.dump(sample_to_srr, open(sample_to_srr_cachefile, "wb"))
-
+sample_to_srr = {**{k: v.get() for k, v in trace_layout1.items() if v.get() is not None},
+                 **{k: v.get() for k, v in trace_layout2.items() if v.get() is not None}}
 
 trace_tp.close()
 eutils_tp.close()
@@ -412,44 +402,63 @@ ena_paired_end_urls = dict()
 # trace_tp = ThreadPool(40)
 
 # now check if we can simply download the fastq from ENA
-for sample in samples.index:
-    # do not check if the file already exists
-    if os.path.exists(expand(f'{{fastq_dir}}/{sample}.{{fqsuffix}}.gz', **config)[0]) or \
-       all(os.path.exists(path) for path in expand(f'{{fastq_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz', **config)):
-        continue
+prep_filelock(sample_to_ena_url_lock, 5*60)
 
-    srrs = sample_to_srr.get(sample, None)
-    if srrs is not None:
-        layout = [srr[0] for srr in srrs]
-        if len(set(layout)) > 1:
-            raise ValueError("I can not deal with mixes of samples!")
-        if len(set(layout)) == 0:
+with FileLock(sample_to_ena_url_lock):
+    # try to load the layout cache, otherwise defaults to empty dictionary
+    try:
+        ena_single_end_urls = pickle.load(open(sample_to_ena_single_url, "rb"))
+        ena_paired_end_urls = pickle.load(open(sample_to_ena_paired_url, "rb"))
+    except FileNotFoundError:
+        ena_single_end_urls = {}
+        ena_paired_end_urls = {}
+
+    for sample in samples.index:
+        # do not check if in cache
+        if sample in ena_single_end_urls or sample in ena_paired_end_urls:
             continue
-        layout = layout[0]
 
-        for srr in [srr[1] for srr in srrs]:
-            prefix = srr[:6]
-            suffix = f"/{int(srr[9:]):03}" if len(srr) >= 10 else ""
+        # do not check if the file already exists
+        if os.path.exists(expand(f'{{fastq_dir}}/{sample}.{{fqsuffix}}.gz', **config)[0]) or \
+           all(os.path.exists(path) for path in expand(f'{{fastq_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz', **config)):
+            continue
 
-            fasp_address = "era-fasp@fasp.sra.ebi.ac.uk:"
-            wget_address = "ftp://ftp.sra.ebi.ac.uk/"
+        srrs = sample_to_srr.get(sample, None)
+        if srrs is not None:
+            layout = [srr[0] for srr in srrs]
+            if len(set(layout)) > 1:
+                raise ValueError("I can not deal with mixes of samples!")
+            if len(set(layout)) == 0:
+                continue
+            layout = layout[0]
 
-            if layout == "SINGLE":
-                wget_url = f"{wget_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}.fastq.gz"
-                fasp_url = f"{fasp_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}.fastq.gz"
-                if url_is_alive(wget_url):
-                    url = fasp_url if config.get("ascp_path") else wget_url
-                    ena_single_end_urls.setdefault(sample, []).append((srr, url))
-            elif layout == "PAIRED":
-                wget_urls = [f"{wget_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}_1.fastq.gz",
-                             f"{wget_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}_2.fastq.gz"]
-                fasp_urls = [f"{fasp_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}_1.fastq.gz",
-                             f"{fasp_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}_2.fastq.gz"]
-                if all(url_is_alive(url) for url in wget_urls):
-                    urls = fasp_urls if config.get("ascp_path") else wget_urls
-                    ena_paired_end_urls.setdefault(sample, []).append((srr, urls))
-            else:
-                raise NotImplementedError
+            for srr in [srr[1] for srr in srrs]:
+                prefix = srr[:6]
+                suffix = f"/{int(srr[9:]):03}" if len(srr) >= 10 else ""
+
+                fasp_address = "era-fasp@fasp.sra.ebi.ac.uk:"
+                wget_address = "ftp://ftp.sra.ebi.ac.uk/"
+
+                if layout == "SINGLE":
+                    wget_url = f"{wget_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}.fastq.gz"
+                    fasp_url = f"{fasp_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}.fastq.gz"
+                    if url_is_alive(wget_url):
+                        url = fasp_url if config.get("ascp_path") else wget_url
+                        ena_single_end_urls.setdefault(sample, []).append((srr, url))
+                elif layout == "PAIRED":
+                    wget_urls = [f"{wget_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}_1.fastq.gz",
+                                 f"{wget_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}_2.fastq.gz"]
+                    fasp_urls = [f"{fasp_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}_1.fastq.gz",
+                                 f"{fasp_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}_2.fastq.gz"]
+                    if all(url_is_alive(url) for url in wget_urls):
+                        urls = fasp_urls if config.get("ascp_path") else wget_urls
+                        ena_paired_end_urls.setdefault(sample, []).append((srr, urls))
+                else:
+                    raise NotImplementedError
+
+    pickle.dump(ena_single_end_urls, open(sample_to_ena_single_url, "wb"))
+    pickle.dump(ena_paired_end_urls, open(sample_to_ena_paired_url, "wb"))
+
 
 logger.info("Done!\n\n")
 
