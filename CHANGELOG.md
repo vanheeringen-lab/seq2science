@@ -11,6 +11,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Added
 
 - Chipseeker images in MultiQC report
+- Samples that are on ENA are now directly downloaded from ENA as fastq. This means we skip the CPU instensive dumping step!
 
 ### Fixed
 
