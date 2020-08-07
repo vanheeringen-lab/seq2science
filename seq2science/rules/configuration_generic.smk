@@ -415,19 +415,22 @@ for sample in samples.index:
             prefix = srr[:6]
             suffix = f"/{int(srr[9:]):03}" if len(srr) >= 10 else ""
 
-            if config.get("ascp_path"):
-                ena_address = "era-fasp@fasp.sra.ebi.ac.uk:"
-            else:
-                ena_address = "ftp://ftp.sra.ebi.ac.uk/"
+            fasp_address = "era-fasp@fasp.sra.ebi.ac.uk:"
+            wget_address = "ftp://ftp.sra.ebi.ac.uk/"
 
             if layout == "SINGLE":
-                url = f"{ena_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}.fastq.gz"
-                if url_is_alive(url):
-                        ena_single_end_urls.setdefault(sample, []).append((srr, url))
+                wget_url = f"{wget_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}.fastq.gz"
+                fasp_url = f"{fasp_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}.fastq.gz"
+                if url_is_alive(wget_url):
+                    url = fasp_url if config.get("ascp_path") else wget_url
+                    ena_single_end_urls.setdefault(sample, []).append((srr, url))
             elif layout == "PAIRED":
-                urls = [f"{ena_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}_1.fastq.gz",
-                        f"{ena_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}_2.fastq.gz"]
-                if all(url_is_alive(url) for url in urls):
+                wget_urls = [f"{wget_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}_1.fastq.gz",
+                             f"{wget_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}_2.fastq.gz"]
+                fasp_urls = [f"{fasp_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}_1.fastq.gz",
+                             f"{fasp_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}_2.fastq.gz"]
+                if all(url_is_alive(url) for url in wget_urls):
+                    urls = fasp_urls if config.get("ascp_path") else wget_urls
                     ena_paired_end_urls.setdefault(sample, []).append((srr, urls))
             else:
                 raise NotImplementedError
