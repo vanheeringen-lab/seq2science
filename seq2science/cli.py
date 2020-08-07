@@ -10,6 +10,7 @@ import webbrowser
 import re
 import inspect
 import contextlib
+import yaml
 
 
 # we need to be able to get the parser from the file without a valid seq2science installation
@@ -149,7 +150,8 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
             "Take a look at the snakemake API  for a complete list of all possible options: "
             "https://snakemake.readthedocs.io/en/latest/api_reference/snakemake.html",
         )
-        subparser.add_argument(
+        global profile_arg
+        profile_arg = subparser.add_argument(
             "--profile",
             metavar="PROFILE NAME",
             help="Use a snakemake/seq2science profile. "
@@ -201,6 +203,38 @@ def _init(args, workflows_dir, config_path):
             shutil.copyfile(src, dest)
 
 
+def subjectively_prettier_error(arg, message):
+    """raise an exception and catch it for a subjectively prettier message"""
+    try:
+        raise argparse.ArgumentError(arg, message)
+    except argparse.ArgumentError as err:
+        print(f"\n{err}")
+        sys.exit(1)
+
+
+def add_profile_args(profile_file, parsed_args):
+    """read profile and add new arguments to parsed args"""
+    profile = yaml.safe_load(open(profile_file).read())
+
+    # parse yaml dicts
+    for k, v in profile.items():
+        if isinstance(v, list) and "=" in v[0]:
+            profile[k] = {}
+            for e in v:
+                k2, v2 = e.split("=")
+                profile[k][k2] = v2
+
+    # don't overwrite CLI arguments
+    for k, v in profile.items():
+        if k not in parsed_args:
+            parsed_args[k] = int(v) if isinstance(v, str) and v.isdigit() else v
+
+        elif k in parsed_args and isinstance(parsed_args[k], dict):
+            for k2, v2 in profile[k].items():
+                if k2 not in parsed_args[k]:
+                    parsed_args[k][k2] = int(v2) if isinstance(v2, str) and v2.isdigit() else v2
+
+
 def _run(args, base_dir, workflows_dir, config_path):
     """
     Run a complete workflow.
@@ -227,17 +261,15 @@ def _run(args, base_dir, workflows_dir, config_path):
     # get the additional snakemake options
     snakemake_options = args.snakemakeOptions if args.snakemakeOptions is not None else dict()
     snakemake_options.setdefault("config", {}).update({"rule_dir": os.path.join(base_dir, "rules")})
+    snakemake_options["configfiles"] = [config_path]
+    parsed_args.update(snakemake_options)
 
     # parse the profile
-    snakemake_options["configfiles"] = [config_path]
     if args.profile is not None:
         profile_file = snakemake.get_profile_file(args.profile, "config.yaml")
         if profile_file is None:
-            print("Error: profile given but no config.yaml found.")
-            sys.exit(1)
-        snakemake_options["configfiles"] += [profile_file]
-
-    parsed_args.update(snakemake_options)
+            subjectively_prettier_error(profile_arg, "profile given but no config.yaml found.")
+        add_profile_args(profile_file, parsed_args)
 
     # cores
     if args.cores:  # CLI
@@ -250,15 +282,10 @@ def _run(args, base_dir, workflows_dir, config_path):
         parsed_args["cores"] = 0
 
     if parsed_args["cores"] < 2:
-        # we need to raise an exception and catch it for a subjectively prettier message
-        try:
-            raise argparse.ArgumentError(core_arg, "specify at least two cores.")
-        except argparse.ArgumentError as e:
-            print()  # empty line
-            print(e)
-            sys.exit(1)
+        subjectively_prettier_error(core_arg, "specify at least two cores.")
 
     core_parser(parsed_args)
+    parsed_args["config"].update({"cores": parsed_args["cores"]})
 
     # run snakemake
     exit_code = snakemake.snakemake(**parsed_args)
@@ -286,17 +313,15 @@ def _explain(args, base_dir, workflows_dir, config_path):
     # get the additional snakemake options
     snakemake_options = args.snakemakeOptions if args.snakemakeOptions is not None else dict()
     snakemake_options.setdefault("config", {}).update({"rule_dir": os.path.join(base_dir, "rules")})
+    snakemake_options["configfiles"] = [config_path]
+    parsed_args.update(snakemake_options)
 
     # parse the profile
-    snakemake_options["configfiles"] = [config_path]
     if args.profile is not None:
         profile_file = snakemake.get_profile_file(args.profile, "config.yaml")
         if profile_file is None:
-            print("Error: profile given but no config.yaml found.")
-            sys.exit(1)
-        snakemake_options["configfiles"] += [profile_file]
-
-    parsed_args.update(snakemake_options)
+            subjectively_prettier_error(profile_arg, "profile given but no config.yaml found.")
+        add_profile_args(profile_file, parsed_args)
 
     # cores
     parsed_args["cores"] = 999
