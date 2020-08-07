@@ -321,9 +321,9 @@ with FileLock(layout_cachefile_lock):
 
     for sample in all_samples:
         if os.path.exists(expand(f'{{fastq_dir}}/{sample}.{{fqsuffix}}.gz', **config)[0]):
-            config['layout'][sample] ='SINGLE'
+            config['layout'][sample] = 'SINGLE'
         elif all(os.path.exists(path) for path in expand(f'{{fastq_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz', **config)):
-            config['layout'][sample] ='PAIRED'
+            config['layout'][sample] = 'PAIRED'
         elif sample.startswith(('GSM', 'SRR', 'ERR', 'DRR')):
             eutils_layout[sample] = eutils_tp.apply_async(get_layout_eutils, (sample,))
             trace_layout1[sample] = trace_tp.apply_async(get_layout_trace1, (sample,))
@@ -389,6 +389,8 @@ logger.info("This can also take some time!\n\n")
 ena_single_end_urls = dict()
 ena_paired_end_urls = dict()
 
+# trace_tp = ThreadPool(40)
+
 # now check if we can simply download the fastq from ENA
 for sample in samples.index:
     # do not check if the file already exists
@@ -396,6 +398,7 @@ for sample in samples.index:
        all(os.path.exists(path) for path in expand(f'{{fastq_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz', **config)):
         continue
 
+    # trace_tp.apply_async(get_layout_trace1, (sample,))
     srrs = get_layout_trace1(sample)
     if srrs is None:
         srrs = get_layout_trace2(sample)
@@ -412,13 +415,18 @@ for sample in samples.index:
             prefix = srr[:6]
             suffix = f"/{int(srr[9:]):03}" if len(srr) >= 10 else ""
 
+            if config.get("ascp_path")
+                ena_address = "era-fasp@fasp.sra.ebi.ac.uk:"
+            else:
+                ena_address = "ftp://ftp.sra.ebi.ac.uk/"
+
             if layout == "SINGLE":
-                url = f"ftp://ftp.sra.ebi.ac.uk/vol1/fastq/{prefix}{suffix}/{srr}/{srr}.fastq.gz"
+                url = f"{ena_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}.fastq.gz"
                 if url_is_alive(url):
-                    ena_single_end_urls.setdefault(sample, []).append((srr, url))
+                        ena_single_end_urls.setdefault(sample, []).append((srr, url))
             elif layout == "PAIRED":
-                urls = [f"ftp://ftp.sra.ebi.ac.uk/vol1/fastq/{prefix}{suffix}/{srr}/{srr}_1.fastq.gz",
-                        f"ftp://ftp.sra.ebi.ac.uk/vol1/fastq/{prefix}{suffix}/{srr}/{srr}_2.fastq.gz"]
+                urls = [f"{ena_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}_1.fastq.gz",
+                        f"{ena_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}_2.fastq.gz"]
                 if all(url_is_alive(url) for url in urls):
                     ena_paired_end_urls.setdefault(sample, []).append((srr, urls))
             else:
