@@ -192,6 +192,8 @@ logger.info("Checking if samples are single-end or paired-end...")
 logger.info("This can take some time.")
 layout_cachefile = os.path.expanduser('~/.config/seq2science/layouts.p')
 layout_cachefile_lock = os.path.expanduser('~/.config/seq2science/layouts.p.lock')
+sample_to_srr_cachefile = os.path.expanduser('~/.config/seq2science/ena.p')
+sample_to_srr_cachefile_lock = os.path.expanduser('~/.config/seq2science/ena.p.lock')
 
 def prep_filelock(lock_file, max_age=10):
     """
@@ -368,6 +370,20 @@ for sample in samples.index:
                          f"access is currently not supported. We advise you to download the sample "
                          f"manually, and continue the pipeline from there on.")
 
+prep_filelock(sample_to_srr_cachefile_lock, 5*60)
+
+with FileLock(sample_to_srr_cachefile_lock):
+    # try to load the layout cache, otherwise defaults to empty dictionary
+    try:
+        sample_to_srr = pickle.load(open(sample_to_srr_cachefile, "rb"))
+    except FileNotFoundError:
+        sample_to_srr = {}
+
+    sample_to_srr.update({**{k: v.get() for k, v in trace_layout1.items() if v.get() is not None},
+                          **{k: v.get() for k, v in trace_layout2.items() if v.get() is not None}})
+    pickle.dump(sample_to_srr, open(sample_to_srr_cachefile, "wb"))
+
+
 trace_tp.close()
 eutils_tp.close()
 
@@ -386,8 +402,8 @@ def url_is_alive(url):
         return False
 
 logger.info("Done!\n\n")
-logger.info("Now checking if the sample are on the ENA database..\n\n")
-logger.info("This can also take some time!\n\n")
+logger.info("Now checking if the sample are on the ENA database..\n")
+logger.info("This can also take some time!\n")
 
 ena_single_end_urls = dict()
 ena_paired_end_urls = dict()
@@ -401,11 +417,7 @@ for sample in samples.index:
        all(os.path.exists(path) for path in expand(f'{{fastq_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz', **config)):
         continue
 
-    # trace_tp.apply_async(get_layout_trace1, (sample,))
-    srrs = get_layout_trace1(sample)
-    if srrs is None:
-        srrs = get_layout_trace2(sample)
-
+    srrs = sample_to_srr.get(sample, None)
     if srrs is not None:
         layout = [srr[0] for srr in srrs]
         if len(set(layout)) > 1:
