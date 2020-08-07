@@ -24,9 +24,6 @@ from snakemake.utils import validate
 from snakemake.utils import min_version
 
 
-import seq2science
-
-
 logger.info(
 """\
                ____  ____   __              
