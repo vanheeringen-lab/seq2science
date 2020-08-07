@@ -415,7 +415,7 @@ for sample in samples.index:
             prefix = srr[:6]
             suffix = f"/{int(srr[9:]):03}" if len(srr) >= 10 else ""
 
-            if config.get("ascp_path")
+            if config.get("ascp_path"):
                 ena_address = "era-fasp@fasp.sra.ebi.ac.uk:"
             else:
                 ena_address = "ftp://ftp.sra.ebi.ac.uk/"

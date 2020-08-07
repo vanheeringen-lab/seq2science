@@ -229,7 +229,7 @@ ruleorder: ena2fastq_PE > ena2fastq_SE
 
 rule ena2fastq_SE:
     """
-    Downloaded (raw) SRAs are converted to single-end fastq files.
+    Download single-end fastq files directly from the ENA.
     """
     output:
         expand("{fastq_dir}/{{sample}}.{fqsuffix}.gz", **config),
@@ -254,8 +254,7 @@ rule ena2fastq_SE:
 
 rule ena2fastq_PE:
     """
-    Downloaded (raw) SRAs are converted to paired-end fastq files.
-    Forward and reverse samples will be switched if forward/reverse names are not lexicographically ordered.
+    Download paired-end fastq files directly from the ENA.
     """
     output:
         expand("{fastq_dir}/{{sample}}_{fqext}.{fqsuffix}.gz", **config),
