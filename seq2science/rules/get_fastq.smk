@@ -240,7 +240,7 @@ rule ena2fastq_SE:
     benchmark:
         expand("{benchmark_dir}/ena2fastq_SE/{{sample}}.benchmark.txt", **config)[0]
     wildcard_constraints:
-        sample="|".join(ena_single_end_urls.keys())
+        sample="|".join(ena_single_end_urls.keys()) if len(ena_single_end_urls) else "$a"
     run:
         shell("mkdir -p {config[fastq_dir]} >> {log} 2>&1")
         for srr, url in ena_single_end_urls[wildcards.sample]:
@@ -265,7 +265,7 @@ rule ena2fastq_PE:
     benchmark:
         expand("{benchmark_dir}/ena2fastq_PE/{{sample}}.benchmark.txt", **config)[0]
     wildcard_constraints:
-        sample="|".join(ena_paired_end_urls.keys())
+        sample="|".join(ena_paired_end_urls.keys()) if len(ena_paired_end_urls) else "$a"
     run:
         shell("mkdir -p {config[fastq_dir]} >> {log} 2>&1")
         for srr, urls in ena_paired_end_urls[wildcards.sample]:
