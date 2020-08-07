@@ -15,6 +15,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Fixed
 
 - Fixed issue with some samples not being findable/downloadable with s2s
+- Fixed has_annotation always looking for annotation even if local files present
 - Fixed bug where scatac-seq workflow was making fastqc reports per sample 
 
 ### Changed
