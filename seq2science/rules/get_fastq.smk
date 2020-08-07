@@ -249,7 +249,7 @@ rule ena2fastq_SE:
                     shell("{config[ascp_path]} -QT -l 300m -P33001 -i {config[ascp_key]} {url} {config[fastq_dir]}/{wildcards.sample}/{srr}.{config[fqsuffix]}.gz >> {log} 2>&1")
                 else:
                     shell("wget {url} -O {config[fastq_dir]}/{wildcards.sample}/{srr}.{config[fqsuffix]}.gz >> {log} 2>&1")
-                shell("cat {config[fastq_dir]}/{wildcards.sample}/{srr}.{config[fqsuffix]}.gz >> {output} >> {log} 2>&1")
+                shell("cat {config[fastq_dir]}/{wildcards.sample}/{srr}.{config[fqsuffix]}.gz >> {output} 2> {log}")
         except:
             pass
         finally:
@@ -280,8 +280,8 @@ rule ena2fastq_PE:
                 else:
                     shell("wget {urls[0]} -O {config[fastq_dir]}/{wildcards.sample}/{srr}_{config[fqext1]}.{config[fqsuffix]}.gz >> {log} 2>&1")
                     shell("wget {urls[1]} -O {config[fastq_dir]}/{wildcards.sample}/{srr}_{config[fqext2]}.{config[fqsuffix]}.gz >> {log} 2>&1")
-                shell("cat {config[fastq_dir]}/{wildcards.sample}/{srr}_{config[fqext1]}.{config[fqsuffix]}.gz >> {output[0]} >> {log} 2>&1")
-                shell("cat {config[fastq_dir]}/{wildcards.sample}/{srr}_{config[fqext2]}.{config[fqsuffix]}.gz >> {output[1]} >> {log} 2>&1")
+                shell("cat {config[fastq_dir]}/{wildcards.sample}/{srr}_{config[fqext1]}.{config[fqsuffix]}.gz >> {output[0]} 2> {log}")
+                shell("cat {config[fastq_dir]}/{wildcards.sample}/{srr}_{config[fqext2]}.{config[fqsuffix]}.gz >> {output[1]} 2> {log}")
         except:
             pass
         finally:
