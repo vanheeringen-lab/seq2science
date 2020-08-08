@@ -7,7 +7,7 @@ Downloading public data in bulk from the NCBI, ENA, and DDBJ databases has never
 </p>
 
 #### Download SRA file
-The three largest databases that store sequencing data are National Center for Biotechnology Information (NCBI), the European Nucleotide Archive (ENA) and the DNA Data Bank of Japan (DDBJ). Only the ENA stores the actual fastq files, but all three of them store the raw data (as a sra file) from which a fastq can be derived. For this reason for each sample will first be checked if it can be downloaded from ENA. Otherwise we will download the samples in its raw format. To convert this data to a fastq it has to be *dumped*. 
+The three largest databases that store sequencing data are National Center for Biotechnology Information (NCBI), the European Nucleotide Archive (ENA) and the DNA Data Bank of Japan (DDBJ). Only the ENA stores the actual fastq files, but all three of them store the raw data (as a sra file) from which a fastq can be derived. For this reason for each sample will first be checked if it can be downloaded from ENA. Otherwise we will download the samples in its raw format. To convert this data to a fastq it has to be "*dumped*". 
 
 ### Filling out the samples.tsv
 Before running a workflow you will have to specify which samples you want to run the workflow on. Each workflow starts with a `samples.tsv` as an example, and you should adapt it to your specific needs. As an example, the `samples.tsv` could look something like this:
