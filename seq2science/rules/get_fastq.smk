@@ -140,7 +140,7 @@ rule sra2fastq_SE:
         mkdir -p $tmpdir; trap "rm -rf $tmpdir" EXIT
 
         # dump to tmp dir
-        fasterq-dump -s {input}/* -O $tmpdir {config[split]} \
+        fasterq-dump -s {input}/* -O $tmpdir \
         --threads {threads} >> {log} 2>&1
 
         # rename file and move to output dir
@@ -178,7 +178,7 @@ rule sra2fastq_PE:
         mkdir -p $tmpdir; trap "rm -rf $tmpdir" EXIT
 
         # dump to tmp dir
-        fasterq-dump -s {input}/* -O $tmpdir {config[split]} \
+        fasterq-dump -s {input}/* -O $tmpdir \
         --threads {threads} >> {log} 2>&1
 
         # rename files and move to output dir
