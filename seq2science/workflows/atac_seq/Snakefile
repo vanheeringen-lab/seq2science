@@ -8,7 +8,6 @@ include: "../../rules/configuration_generic.smk"
 include: f"{config['rule_dir']}/alignment.smk"
 include: f"{config['rule_dir']}/bam_cleaning.smk"
 include: f"{config['rule_dir']}/bigfiles.smk"
-include: f"{config['rule_dir']}/deseq2.smk"
 include: f"{config['rule_dir']}/get_genome.smk"
 include: f"{config['rule_dir']}/get_fastq.smk"
 include: f"{config['rule_dir']}/merge_replicates.smk"
@@ -29,7 +28,7 @@ rule call_peaks_all:
     """
     input:
         expand((["{result_dir}/trackhub"] if config['create_trackhub'] else []) +
-                (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []),
+               (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []),
                 **{**config,
                    **{'assemblies': set(samples['assembly']), 'peak_caller': config['peak_caller'].keys()}})
         + count_table_output()
