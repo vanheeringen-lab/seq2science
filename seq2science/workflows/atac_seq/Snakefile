@@ -22,11 +22,6 @@ include: f"{config['rule_dir']}/trimming.smk"
 # set the quality_control functions
 quality_control = [get_trimming_qc, get_alignment_qc, get_peak_calling_qc]
 
-# load DE analysis contrasts
-contrasts = get_contrasts()
-
-print("hello")
-print(contrasts)
 
 rule call_peaks_all:
     """
@@ -34,8 +29,7 @@ rule call_peaks_all:
     """
     input:
         expand((["{result_dir}/trackhub"] if config['create_trackhub'] else []) +
-               (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []) +
-               ([f"{{dge_dir}}/{{peak_caller}}/{{assemblies}}-{contrast}.diffexp.tsv" for contrast in contrasts] if config.get('contrasts', False) else []),
+                (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []),
                 **{**config,
                    **{'assemblies': set(samples['assembly']), 'peak_caller': config['peak_caller'].keys()}})
         + count_table_output()
