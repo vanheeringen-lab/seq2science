@@ -23,6 +23,9 @@ from snakemake.utils import validate
 from snakemake.utils import min_version
 
 
+import seq2science
+
+
 logger.info(
 """\
                ____  ____   __              
@@ -147,7 +150,7 @@ if 'descriptive_name' in samples:
         samples = samples.drop(columns=['descriptive_name'])
 if 'strandedness' in samples:
     samples['strandedness'] = samples['strandedness'].mask(pd.isnull, 'nan')
-    if config['filter_bam_by_strand'] is False or not any([field in list(samples['strandedness']) for field in ['forward', 'yes', 'reverse']]):
+    if config.get('ignore_strandedness', True) or not any([field in list(samples['strandedness']) for field in ['yes', 'forward', 'reverse', 'no']]):
         samples = samples.drop(columns=['strandedness'])
 
 if 'replicate' in samples:
@@ -227,7 +230,7 @@ def get_layout_eutils(sample):
         return None
 
 
-def get_layout_trace(sample):
+def get_layout_trace1(sample):
     """
     Parse the ncbi trace website to check if a read has 1, 2, or 3 spots.
     Will fail if sample is not on ncbi database, however does not have the problem that uploader
@@ -240,7 +243,7 @@ def get_layout_trace(sample):
         conn = urllib.request.urlopen(url)
         html = conn.read()
 
-        soup = BeautifulSoup(html, features="html5lib")
+        soup = BeautifulSoup(html, features="html.parser")
         links = soup.find_all('a')
 
         for tag in links:
@@ -261,6 +264,30 @@ def get_layout_trace(sample):
         pass
     return None
 
+
+def get_layout_trace2(sample):
+    """
+    Yet another sample lookup fallback.
+    """
+    try:
+        url = f"https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={sample}"
+
+        conn = urllib.request.urlopen(url)
+        html = conn.read()
+
+        soup = BeautifulSoup(html, features="html.parser")
+        links = soup.find_all('a')
+
+        for tag in links:
+            link = tag.get('href', None)
+            if link is not None and 'SRX' in link:
+                SRX = link[link.find("SRX"):]
+                return get_layout_trace1(SRX)
+    except:
+        pass
+    return None
+
+
 # do this locked to avoid parallel ncbi requests with the same key, and to avoid
 # multiple writes/reads at the same time to layouts.p
 prep_filelock(layout_cachefile_lock, 5*60)
@@ -276,7 +303,8 @@ with FileLock(layout_cachefile_lock):
     trace_tp = ThreadPool(20)
     eutils_tp = ThreadPool(config.get('ncbi_requests', 3) // 2)
 
-    trace_layout = {}
+    trace_layout1 = {}
+    trace_layout2 = {}
     eutils_layout = {}
     config['layout'] = {}
 
@@ -294,7 +322,8 @@ with FileLock(layout_cachefile_lock):
             config['layout'][sample] ='PAIRED'
         elif sample.startswith(('GSM', 'SRR', 'ERR', 'DRR')):
             eutils_layout[sample] = eutils_tp.apply_async(get_layout_eutils, (sample,))
-            trace_layout[sample] = trace_tp.apply_async(get_layout_trace, (sample,))
+            trace_layout1[sample] = trace_tp.apply_async(get_layout_trace1, (sample,))
+            trace_layout2[sample] = trace_tp.apply_async(get_layout_trace2, (sample,))
 
             # sleep 1.25 times the minimum required sleep time so eutils don't complain
             time.sleep(1.25 / (config.get('ncbi_requests', 3) // 2))
@@ -311,7 +340,8 @@ with FileLock(layout_cachefile_lock):
     config['layout'] = {**layout_cache,
                         **{k: v for k, v in config['layout'].items()},
                         **{k: v.get() for k, v in eutils_layout.items() if v.get() is not None},
-                        **{k: v.get() for k, v in trace_layout.items() if v.get() is not None}}
+                        **{k: v.get() for k, v in trace_layout1.items() if v.get() is not None},
+                        **{k: v.get() for k, v in trace_layout2.items() if v.get() is not None}}
 
     assert all(layout in ['SINGLE', 'PAIRED'] for sample, layout in config['layout'].items())
 

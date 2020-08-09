@@ -44,6 +44,11 @@ properties:
       htseq:
         htseq_flags: ''
 
+  ignore_strandedness:
+    description: ignore/dont infer strand-specificity?
+    default: False
+    type: boolean
+
   tximeta:
     description: tximeta is used to convert salmon output (estimated transcript abundances) to a gene counts matrix. Currently, these values can be ignored.
     properties:
@@ -57,6 +62,11 @@ properties:
       source: Ensembl
       organism: tximeta_file
       release: 42
+
+  dexseq:
+    description: output an exon counts matrix for use in DEXSeq.
+    default: False
+    type: boolean
 
   # optional: differential expression analysis
   diffexp:

@@ -8,11 +8,11 @@ from functools import lru_cache
 
 # the filetypes genomepy will download
 config["genome_types"] = ["fa", "fa.fai", "fa.sizes", "gaps.bed"]
-config["genomepy_temp"] = ["annotation.bed.gz", "annotation.gff.gz"]
+config["genomepy_temp"] = ["annotation.gff.gz"]
 
 # add annotation to the expected output if it is required
 if "rna_seq" in get_workflow() or config["aligner"] == "star":
-    config["genome_types"].append("annotation.gtf")
+    config["genome_types"].extend(["annotation.gtf", "annotation.bed"])
 
 
 # TODO: return to checkpoint get_genome when checkpoints are stable
@@ -42,6 +42,7 @@ rule get_genome:
         dir=config["genome_dir"],
         provider=config.get("provider", None),
         gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
+        bed=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.bed", **config),
         temp=expand("{genome_dir}/{{assembly}}/{{assembly}}.{genomepy_temp}", **config),
     conda:
         "../envs/get_genome.yaml"
@@ -57,14 +58,26 @@ rule get_genome:
         if [[ ! {params.provider} = None  ]]; then
             genomepy install --genomes_dir {params.dir} {wildcards.assembly} {params.provider} --annotation >> {log} 2>&1
         else
+            # try Ensembl
             genomepy install --genomes_dir {params.dir} {wildcards.assembly} Ensembl --annotation >> {log} 2>&1 ||
-            genomepy install --genomes_dir {params.dir} {wildcards.assembly} UCSC    --annotation >> {log} 2>&1 ||
-            genomepy install --genomes_dir {params.dir} {wildcards.assembly} NCBI    --annotation >> {log} 2>&1
+            
+            # try UCSC (with Ensembl format annotation)
+            genomepy install -g {params.dir} {wildcards.assembly} UCSC -o --ucsc-annotation Ensembl >> {log} 2>&1 &&
+                genomepy install -g {params.dir} {wildcards.assembly} UCSC >> {log} 2>&1 ||
+            
+            # try UCSC
+            genomepy install --genomes_dir {params.dir} {wildcards.assembly} UCSC --annotation >> {log} 2>&1 ||
+            
+            # try NCBI
+            genomepy install --genomes_dir {params.dir} {wildcards.assembly} NCBI --annotation >> {log} 2>&1
         fi
 
         # unzip annotation if downloaded and gzipped
         if [ -f {params.gtf}.gz ]; then
             gunzip -f {params.gtf}.gz >> {log} 2>&1
+        fi
+        if [ -f {params.bed}.gz ]; then
+            gunzip -f {params.bed}.gz >> {log} 2>&1
         fi
 
         # if assembly has no annotation, or annotation has no genes, throw an warning
@@ -86,7 +99,7 @@ def has_annotation(assembly):
     returns True/False on whether or not the assembly has an annotation.
     """
     # check if genome is provided by user or already downloaded, if so check if the annotation came along
-    if all(os.path.exists(f"{config['genome_dir']}/{assembly}.{extension}") for extension in config["genome_types"]):
+    if all(os.path.exists(f"{config['genome_dir']}/{assembly}/{assembly}.{extension}") for extension in config["genome_types"]):
         return os.path.exists(f"{config['genome_dir']}/{assembly}.annotation.gtf")
 
     if "provider" in config:

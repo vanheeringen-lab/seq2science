@@ -17,8 +17,7 @@ rule samtools_stats:
         expand("{qc_dir}/samtools_stats/{{directory}}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.samtools_stats.txt", **config)
     log:
         expand("{log_dir}/samtools_stats/{{directory}}/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config)
-    message:
-        explain_rule("samtools_stats")
+    message: explain_rule("samtools_stats")
     conda:
         "../envs/samtools.yaml"
     shell:
@@ -189,10 +188,14 @@ def get_descriptive_names(wildcards, input):
             trep = trep[:trep.find(".sam")]
         elif trep.find(".bw") != -1:
             trep = trep[:trep.find(".bw")]
+        elif trep.find("_summits.bed") != -1:
+            trep = trep[:trep.find("_summits.bed")]
         else:
             raise ValueError
 
-        if "control" in treps and trep not in treps.index:
+        if trep in breps.index:
+            labels += trep + " "
+        elif "control" in treps and trep not in treps.index:
             labels += f"control_{trep} "
         elif trep in samples.index:
             labels += samples.loc[trep, "descriptive_name"] + " "
@@ -356,6 +359,35 @@ rule plotPCA:
         plotPCA --corData {input} --outFileNameData {output} > {log} 2>&1
         """
 
+def get_summits_bed(wildcards):
+    return expand(
+        [
+            f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{replicate}_summits.bed"
+            for replicate in breps[breps["assembly"] == wildcards.assembly].index
+        ],
+        **config,
+    )
+
+
+rule chipseeker:
+    input:
+        narrowpeaks=get_summits_bed
+    output:
+        img1=expand("{qc_dir}/chipseeker/{{assembly}}-{{peak_caller}}_img1_mqc.png", **config),
+        img2=expand("{qc_dir}/chipseeker/{{assembly}}-{{peak_caller}}_img2_mqc.png", **config),
+    params:
+        gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
+        names=lambda wildcards, input: get_descriptive_names(wildcards, input)
+    log:
+        expand("{log_dir}/chipseeker/{{assembly}}-{{peak_caller}}.log", **config)
+    conda:
+        "../envs/chipseeker.yaml"
+    message: explain_rule("chipseeker")
+    resources:
+        R_scripts=1, # conda's R can have issues when starting multiple times
+    script:
+        f"{config['rule_dir']}/../scripts/chipseeker.R"
+
 
 rule multiqc_header_info:
     """
@@ -463,11 +495,8 @@ def get_qc_files(wildcards):
 
     # trimming qc on individual samples
     if get_trimming_qc in quality_control:
-        if get_workflow() == "scATAC_seq":
-            # scATAC special case to only want fastqc of trimmed merged reps
-            for trep in treps[treps['assembly'] == wildcards.assembly].index:
-                qc['files'].update(get_trimming_qc(trep))
-        else:
+        # scatac seq only on treps, not on single samples
+        if get_workflow() != "scatac_seq":
             for sample in samples[samples['assembly'] == wildcards.assembly].index:
                 qc['files'].update(get_trimming_qc(sample))
 
@@ -477,11 +506,18 @@ def get_qc_files(wildcards):
             for function in [func for func in quality_control if
                              func.__name__ not in ['get_peak_calling_qc', 'get_trimming_qc']]:
                 qc['files'].update(function(replicate))
+            # scatac seq only on treps, not on single samples
+            if get_workflow() == "scatac_seq" and get_trimming_qc in quality_control:
+                qc['files'].update(get_trimming_qc(replicate))
 
     # qc on combined biological replicates/samples
     if get_peak_calling_qc in quality_control:
         for trep in treps[treps['assembly'] == wildcards.assembly].index:
             qc['files'].update(get_peak_calling_qc(trep))
+
+    if get_rna_qc in quality_control and not config.get("ignore_strandedness"):
+        for trep in treps[treps['assembly'] == wildcards.assembly].index:
+            qc['files'].update(get_rna_qc(trep))
 
     return qc
 
@@ -518,7 +554,7 @@ rule multiqc:
 
 
 def get_trimming_qc(sample):
-    if get_workflow() == "scATAC_seq":
+    if get_workflow() == "scatac_seq":
         # we (at least for now) do not was fastqc for each single cell before and after trimming.
         # still something to think about to add later, since that might be a good quality check though.
         return expand(f"{{qc_dir}}/fastqc/{sample}_{{fqext}}_trimmed_fastqc.zip", **config)
@@ -560,6 +596,17 @@ def get_alignment_qc(sample):
     return expand(output, **config)
 
 
+def get_rna_qc(sample):
+    output = []
+
+    # add infer experiment reports
+    col = samples.replicate if "replicate" in samples else samples.index
+    if "strandedness" not in samples or samples[col == sample].strandedness[0] == "nan":
+        output = expand(f"{{qc_dir}}/strandedness/{samples[col == sample].assembly[0]}-{sample}.strandedness.txt", **config)
+
+    return output
+
+
 def get_peak_calling_qc(sample):
     output = []
 
@@ -575,5 +622,8 @@ def get_peak_calling_qc(sample):
     # TODO: replace with genomepy checkpoint in the future
     if has_annotation(assembly):
         output.extend(expand("{qc_dir}/plotProfile/{{assembly}}-{peak_caller}.tsv", **config))
+        if get_ftype(list(config["peak_caller"].keys())[0]) == "narrowPeak":
+            output.extend(expand("{qc_dir}/chipseeker/{{assembly}}-{peak_caller}_img1_mqc.png", **config))
+            output.extend(expand("{qc_dir}/chipseeker/{{assembly}}-{peak_caller}_img2_mqc.png", **config))
 
     return output

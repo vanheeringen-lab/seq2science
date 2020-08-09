@@ -13,7 +13,6 @@ assert treps.index.is_unique, "duplicate value found in treps"
 breps = treps
 if "condition" in treps:
     breps = treps.reset_index(drop=True).drop_duplicates().set_index("condition")
-    assert breps.index.is_unique, "duplicate value found in breps"
 
 
 # make a dict that returns the treps that belong to a brep
@@ -62,7 +61,7 @@ if "replicate" in samples:
             **config,
         )
         # make sure we make the fastqc report before moving our file
-        if get_workflow() != "scATAC_seq" and len(input_files["reps"]) == 1 and config["create_qc_report"]:
+        if get_workflow() != "scatac_seq" and len(input_files["reps"]) == 1 and config["create_qc_report"]:
             input_files["qc"] = expand(
                 [
                     f"{{qc_dir}}/fastqc/{sample}{wildcards.fqext}_trimmed_fastqc.zip"
