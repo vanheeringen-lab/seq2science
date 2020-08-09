@@ -1,9 +1,10 @@
-name: gene_counts
+name: dexseq
 channels:
   - conda-forge
   - bioconda
   - defaults
 dependencies:
+  - bioconda::bioconductor-dexseq=1.32.0
+  - bioconda::pysam=0.16.0.1
   - bioconda::htseq=0.12.4
-  - bioconda::subread=2.0.1
-  - bioconda::rseqc=3.0.1
+  
