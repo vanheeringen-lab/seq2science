@@ -33,17 +33,3 @@ peak_caller:
       --shift -100 --extsize 200 --nomodel --keep-dup 1 --buffer-size 10000
 #  genrich:
 #      -y -j -r
-
-
-#### differential gene expression analysis (optional) #####
-
-# specify contrasts to perform analysis
-diffexp:
-  deseq2:
-    DE_params:
-      multiple_testing_procedure: BH  # options: BH/IHW
-      alpha_value: 0.05
-      shrinkage_estimator: apeglm
-    contrasts:
-      - 'stage_2_1'
-      - 'stage_all_1'
