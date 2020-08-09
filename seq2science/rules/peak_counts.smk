@@ -11,7 +11,7 @@ def count_table_output():
 
     return expand(
         ["{result_dir}/count_table/{peak_caller}/{assemblies}_{normalization}.tsv", 
-         "{result_dir}/{peak_caller}/{assemblies}_consensus.tsv"],
+         "{result_dir}/{peak_caller}/{assemblies}_onehotpeaks.tsv"],
         **{
             **config,
             **{
