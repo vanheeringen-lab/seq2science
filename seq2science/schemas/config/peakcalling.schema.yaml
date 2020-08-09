@@ -3,11 +3,6 @@ $schema: "http://json-schema.org/draft-06/schema#"
 description: seq2science peak calling configuration
 
 properties:
-  dge_dir:
-    description: directory where to store the workflow differential peak analysis output (defaults inside the result dir)
-    default: deseq2
-    type: string
-
   # peak caller algorithms
   peak_caller:
     type: object
