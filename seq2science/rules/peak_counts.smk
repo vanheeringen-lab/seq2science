@@ -79,9 +79,9 @@ rule combine_peaks:
     output:
         temp(expand("{result_dir}/{{peak_caller}}/{{assembly}}_combinedsummits.bed", **config)),
     log:
-        expand("{log_dir}/bedtools_slop/{{assembly}}-{{peak_caller}}.log", **config),
+        expand("{log_dir}/combine_peaks/{{assembly}}-{{peak_caller}}.log", **config),
     benchmark:
-        expand("{benchmark_dir}/bedtools_slop/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/combine_peaks/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     conda:
         "../envs/gimme.yaml"
     params:
@@ -151,9 +151,9 @@ rule coverage_table:
     output:
         expand("{result_dir}/count_table/{{peak_caller}}/{{assembly}}_raw.tsv", **config),
     log:
-        expand("{log_dir}/multicov/{{assembly}}-{{peak_caller}}.log", **config),
+        expand("{log_dir}/coverage_table/{{assembly}}-{{peak_caller}}.log", **config),
     benchmark:
-        expand("{benchmark_dir}/multicov/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/coverage_table/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     conda:
         "../envs/gimme.yaml"
     shell:
@@ -245,7 +245,6 @@ rule log_normalization:
         )
 
 
-
 rule mean_center:
     """
     Mean centering of a count table.
@@ -276,32 +275,36 @@ def get_all_narrowpeaks(wildcards):
         for replicate in breps[breps['assembly'] == wildcards.assembly].index]
 
 
-rule differentialish_peaks:
+rule onehot_peaks:
     """
-    
+    Get onehot encodings of which peaks are found in which samples
     """
     input:
         narrowpeaks=get_all_narrowpeaks,
         combinedpeaks=rules.combine_peaks.output
     output:
-        real=expand("{result_dir}/{{peak_caller}}/{{assembly}}_consensus.tsv", **config),
-        tmp=temp(expand("{result_dir}/{{peak_caller}}/{{assembly}}_consensus.tsv.tmp", **config))
+        real=expand("{result_dir}/{{peak_caller}}/{{assembly}}_onehotpeaks.tsv", **config),
+        tmp=temp(expand("{result_dir}/{{peak_caller}}/{{assembly}}_onehotpeaks.tsv.tmp", **config))
     conda:
         "../envs/bedtools.yaml"
+    log:
+        expand("{log_dir}/onehot_peaks/{{assembly}}-{{peak_caller}}.log", **config),
+    benchmark:
+        expand("{benchmark_dir}/onehot_peaks/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     params:
         peak_count=lambda wildcards, input: len(input.narrowpeaks)
     shell:
         """
-        awk '{{print $1":"$2"-"$3}}' {input.combinedpeaks} > {output.real}
+        awk '{{print $1":"$2"-"$3}}' {input.combinedpeaks} > {output.real} 2> {log}
 
         for brep in {input.narrowpeaks}
         do
-            bedtools sort -i $brep |
-            bedtools intersect -a {input.combinedpeaks} -b stdin -c |
-            awk '{{print $4}}' |
+            bedtools sort -i $brep 2> {log} |
+            bedtools intersect -a {input.combinedpeaks} -b stdin -c 2> {log} |
+            awk '{{print $4}}' 2> {log} |
             paste {output.real} - > {output.tmp}
             mv {output.tmp} {output.real}
         done
         
-        echo -e "# some explanation of my file :)\\n$(cat {output.real})" > {output.tmp} && cp {output.tmp} {output.real}
+        echo -e "# onehot encoding of which condition contains which peaks\\n$(cat {output.real})" > {output.tmp} && cp {output.tmp} {output.real}
         """
