@@ -5,3 +5,4 @@ channels:
   - defaults
 dependencies:
   - pkgs/main::pigz=2.4
+  - bioconda::sra-tools=2.10.8

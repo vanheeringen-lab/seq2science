@@ -137,16 +137,16 @@ rule sra2fastq_SE:
         """
         # setup tmp dir
         tmpdir={config[sra_dir]}/tmp/{wildcards.sample}
-        mkdir -p $tmpdir; trap "rm -rf $tmpdir" EXIT
+        mkdir -p $tmpdir; # trap "rm -rf $tmpdir" EXIT
 
         # dump to tmp dir
         fasterq-dump -s {input}/* -O $tmpdir \
-        --threads {threads} >> {log} 2>&1
+        --threads {threads} --split-spot >> {log} 2>&1
 
         # rename file and move to output dir
         for f in $(ls -1q $tmpdir | grep -oP "^[^_]+" | uniq); do
             dst={config[fastq_dir]}/{wildcards.sample}.{config[fqsuffix]}
-            cat "${{tmpdir}}/${{f}}.fastq" >> $dst
+            cat "${{tmpdir}}/${{f}}" >> $dst
         done
         pigz -p {threads} {config[fastq_dir]}/{wildcards.sample}.{config[fqsuffix]}
         """
@@ -175,18 +175,18 @@ rule sra2fastq_PE:
         """
         # setup tmp dir
         tmpdir={config[sra_dir]}/tmp/{wildcards.sample}
-        mkdir -p $tmpdir; trap "rm -rf $tmpdir" EXIT
+        mkdir -p $tmpdir; # trap "rm -rf $tmpdir" EXIT
 
         # dump to tmp dir
         fasterq-dump -s {input}/* -O $tmpdir \
-        --threads {threads} >> {log} 2>&1
+        --threads {threads} --split-3 >> {log} 2>&1
 
         # rename files and move to output dir
         for f in $(ls -1q $tmpdir | grep -oP "^[^_]+" | uniq); do
             dst_1={config[fastq_dir]}/{wildcards.sample}_{config[fqext1]}.{config[fqsuffix]}
             dst_2={config[fastq_dir]}/{wildcards.sample}_{config[fqext2]}.{config[fqsuffix]}
-            cat "${{tmpdir}}/${{f}}_1.fastq.gz" >> $dst_1
-            cat "${{tmpdir}}/${{f}}_2.fastq.gz" >> $dst_2
+            cat "${{tmpdir}}/${{f}}_1.fastq" >> $dst_1
+            cat "${{tmpdir}}/${{f}}_2.fastq" >> $dst_2
         done
         pigz -p {threads} {config[fastq_dir]}/{wildcards.sample}_{config[fqext1]}.{config[fqsuffix]}
         pigz -p {threads} {config[fastq_dir]}/{wildcards.sample}_{config[fqext2]}.{config[fqsuffix]}
