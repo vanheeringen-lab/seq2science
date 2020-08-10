@@ -235,67 +235,67 @@ def get_layout_eutils(sample):
         return None
 
 
-@lru_cache(maxsize=None)
-def get_layout_trace1(sample):
+def get_layout_trace1(sample, timeout=10, max_tries=1):
     """
     Parse the ncbi trace website to check if a read has 1, 2, or 3 spots.
     Will fail if sample is not on ncbi database, however does not have the problem that uploader
     filled out the form wrongly.
     Complementary method of get_layout_eutils
     """
-    try:
-        url = f"https://www.ncbi.nlm.nih.gov/sra/?term={sample}"
+    for i in range(max_tries):
+        try:
+            url = f"https://www.ncbi.nlm.nih.gov/sra/?term={sample}"
 
-        conn = urllib.request.urlopen(url, timeout=30)
-        html = conn.read()
+            conn = urllib.request.urlopen(url, timeout=timeout)
+            html = conn.read()
 
-        soup = BeautifulSoup(html, features="html.parser")
-        links = soup.find_all('a')
+            soup = BeautifulSoup(html, features="html.parser")
+            links = soup.find_all('a')
 
-        vals = []
-        for tag in links:
-            link = tag.get('href', None)
-            if link is not None and 'SRR' in link:
-                SRR = link[link.find("SRR"):]
-                trace_conn = urllib.request.urlopen("https:" + link)
-                trace_html = trace_conn.read()
-                x = re.search("This run has (\d) read", str(trace_html))
+            vals = []
+            for tag in links:
+                link = tag.get('href', None)
+                if link is not None and 'SRR' in link:
+                    SRR = link[link.find("SRR"):]
+                    trace_conn = urllib.request.urlopen("https:" + link, timeout=timeout)
+                    trace_html = trace_conn.read()
+                    x = re.search("This run has (\d) read", str(trace_html))
 
-                # if there are spots without info, then just ignore this sample
-                if len(re.findall(", average length: 0", str(trace_html))) > 0:
-                    break
-                elif x.group(1) == '1':
-                    vals.append(('SINGLE', SRR))
-                elif x.group(1) == '2':
-                    vals.append(('PAIRED', SRR))
-        if len(vals) > 0:
-            return vals
-    except:
-        pass
+                    # if there are spots without info, then just ignore this sample
+                    if len(re.findall(", average length: 0", str(trace_html))) > 0:
+                        break
+                    elif x.group(1) == '1':
+                        vals.append(('SINGLE', SRR))
+                    elif x.group(1) == '2':
+                        vals.append(('PAIRED', SRR))
+            if len(vals) > 0:
+                return vals
+        except:
+            pass
     return None
 
 
-@lru_cache(maxsize=None)
-def get_layout_trace2(sample):
+def get_layout_trace2(sample, timeout=10, max_tries=1):
     """
     Yet another sample lookup fallback.
     """
-    try:
-        url = f"https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={sample}"
+    for i in range(max_tries):
+        try:
+            url = f"https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={sample}"
 
-        conn = urllib.request.urlopen(url, timeout=30)
-        html = conn.read()
+            conn = urllib.request.urlopen(url, timeout=timeout)
+            html = conn.read()
 
-        soup = BeautifulSoup(html, features="html.parser")
-        links = soup.find_all('a')
+            soup = BeautifulSoup(html, features="html.parser")
+            links = soup.find_all('a')
 
-        for tag in links:
-            link = tag.get('href', None)
-            if link is not None and 'SRX' in link:
-                SRX = link[link.find("SRX"):]
-                return get_layout_trace1(SRX)
-    except:
-        pass
+            for tag in links:
+                link = tag.get('href', None)
+                if link is not None and 'SRX' in link:
+                    SRX = link[link.find("SRX"):]
+                    return get_layout_trace1(SRX, timeout)
+        except:
+            pass
     return None
 
 
@@ -333,8 +333,8 @@ with FileLock(layout_cachefile_lock):
             config['layout'][sample] = 'PAIRED'
         elif sample.startswith(('GSM', 'SRR', 'ERR', 'DRR')):
             eutils_layout[sample] = eutils_tp.apply_async(get_layout_eutils, (sample,))
-            trace_layout1[sample] = trace_tp.apply_async(get_layout_trace1, (sample,))
-            trace_layout2[sample] = trace_tp.apply_async(get_layout_trace2, (sample,))
+            trace_layout1[sample] = trace_tp.apply_async(get_layout_trace1, (sample, 10, 3))
+            trace_layout2[sample] = trace_tp.apply_async(get_layout_trace2, (sample, 10, 3))
 
             # sleep 1.25 times the minimum required sleep time so eutils don't complain
             time.sleep(1.25 / (config.get('ncbi_requests', 3) // 2))
@@ -386,11 +386,13 @@ def url_is_alive(url):
     request = urllib.request.Request(url)
     request.get_method = lambda: 'HEAD'
 
-    try:
-        urllib.request.urlopen(request)
-        return True
-    except:
-        return False
+    for i in range(3):
+        try:
+            urllib.request.urlopen(request, timeout=5)
+            return True
+        except:
+            continue
+    return False
 
 logger.info("Done!\n\n")
 logger.info("Now checking if the sample are on the ENA database..")
