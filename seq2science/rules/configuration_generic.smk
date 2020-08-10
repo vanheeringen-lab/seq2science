@@ -383,11 +383,11 @@ def url_is_alive(url):
     Checks that a given URL is reachable.
     https://gist.github.com/dehowell/884204
     """
-    request = urllib.request.Request(url)
-    request.get_method = lambda: 'HEAD'
-
     for i in range(3):
         try:
+            request = urllib.request.Request(url)
+            request.get_method = lambda: 'HEAD'
+
             urllib.request.urlopen(request, timeout=5)
             return True
         except:
