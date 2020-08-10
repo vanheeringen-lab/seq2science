@@ -102,6 +102,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#bwa-mem2">bwa_mem2</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#bwa-mem2-index">bwa_mem2_index</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#call-peak-genrich">call_peak_genrich</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#chipseeker">chipseeker</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#combine-peaks">combine_peaks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#complement-blacklist">complement_blacklist</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#computematrix">computeMatrix</a></li>
@@ -145,7 +146,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#multibamsummary">multiBamSummary</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multiqc">multiqc</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multiqc-filter-buttons">multiqc_filter_buttons</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#multiqc-header-info">multiqc_header_info</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multiqc-rename-buttons">multiqc_rename_buttons</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multiqc-samplesconfig">multiqc_samplesconfig</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multiqc-schema">multiqc_schema</a></li>
@@ -372,6 +372,10 @@ to a total width of 200, for a fair comparison between peaks.</p>
 </pre></div>
 </div>
 </div>
+<div class="section" id="chipseeker">
+<h2>chipseeker<a class="headerlink" href="#chipseeker" title="Permalink to this headline">¶</a></h2>
+<p>Generate a multiqc header file with contact info and date of multiqc generation.</p>
+</div>
 <div class="section" id="combine-peaks">
 <h2>combine_peaks<a class="headerlink" href="#combine-peaks" title="Permalink to this headline">¶</a></h2>
 <p>Uses gimmemotifs’ combine_peaks to “combine” peaks. This finds all peaks close
@@ -550,9 +554,18 @@ genomepy plugin enable {{blacklist,}} &gt;&gt; {log} 2&gt;&amp;1
 if [[ ! {params.provider} = None  ]]; then
     genomepy install --genomes_dir {params.dir} {wildcards.assembly} {params.provider} --annotation &gt;&gt; {log} 2&gt;&amp;1
 else
+    # try Ensembl
     genomepy install --genomes_dir {params.dir} {wildcards.assembly} Ensembl --annotation &gt;&gt; {log} 2&gt;&amp;1 ||
-    genomepy install --genomes_dir {params.dir} {wildcards.assembly} UCSC    --annotation &gt;&gt; {log} 2&gt;&amp;1 ||
-    genomepy install --genomes_dir {params.dir} {wildcards.assembly} NCBI    --annotation &gt;&gt; {log} 2&gt;&amp;1
+
+    # try UCSC (with Ensembl format annotation)
+    genomepy install -g {params.dir} {wildcards.assembly} UCSC -o --ucsc-annotation Ensembl &gt;&gt; {log} 2&gt;&amp;1 &amp;&amp;
+        genomepy install -g {params.dir} {wildcards.assembly} UCSC &gt;&gt; {log} 2&gt;&amp;1 ||
+
+    # try UCSC
+    genomepy install --genomes_dir {params.dir} {wildcards.assembly} UCSC --annotation &gt;&gt; {log} 2&gt;&amp;1 ||
+
+    # try NCBI
+    genomepy install --genomes_dir {params.dir} {wildcards.assembly} NCBI --annotation &gt;&gt; {log} 2&gt;&amp;1
 fi
 
 # unzip annotation if downloaded and gzipped
@@ -782,10 +795,6 @@ against either “chrM” or “MT”.</p>
 <div class="section" id="multiqc-filter-buttons">
 <h2>multiqc_filter_buttons<a class="headerlink" href="#multiqc-filter-buttons" title="Permalink to this headline">¶</a></h2>
 <p>Generate filter buttons.</p>
-</div>
-<div class="section" id="multiqc-header-info">
-<h2>multiqc_header_info<a class="headerlink" href="#multiqc-header-info" title="Permalink to this headline">¶</a></h2>
-<p>Generate a multiqc header file with contact info and date of multiqc generation.</p>
 </div>
 <div class="section" id="multiqc-rename-buttons">
 <h2>multiqc_rename_buttons<a class="headerlink" href="#multiqc-rename-buttons" title="Permalink to this headline">¶</a></h2>
