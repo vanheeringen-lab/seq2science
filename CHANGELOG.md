@@ -8,6 +8,8 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+## [0.2.1] - 2020-08-10
+
 ### Added
 
 - Chipseeker images in MultiQC report
