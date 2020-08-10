@@ -108,9 +108,9 @@ rule id2sra:
             echo "trying to download $ID from, respectively: \n$URL_ENA1 \n$URL_ENA2 \n$URL_NCBI \n$WGET_URL" >> {log}
             # first try the ENA (which has at least two different filing systems), if not successful, try NCBI
             # if none of the ascp servers work, or ascp is not defined in the config, then simply wget
-            {params.ascp_path} -i {params.ascp_key} -P33001 -T -d -k 0 -Q -l 2G -m 250M $URL_ENA1 {output[0]} >> {log} 2>&1 ||
-            {params.ascp_path} -i {params.ascp_key} -P33001 -T -d -k 0 -Q -l 2G -m 250M $URL_ENA2 {output[0]} >> {log} 2>&1 ||
-            {params.ascp_path} -i {params.ascp_key}         -T -d -k 0 -Q -l 2G -m 250M $URL_NCBI {output[0]} >> {log} 2>&1 ||
+            {params.ascp_path} -i {params.ascp_key} -P33001 -T -d -k 0 -Q -l 1G $URL_ENA1 {output[0]} >> {log} 2>&1 ||
+            {params.ascp_path} -i {params.ascp_key} -P33001 -T -d -k 0 -Q -l 1G $URL_ENA2 {output[0]} >> {log} 2>&1 ||
+            {params.ascp_path} -i {params.ascp_key}         -T -d -k 0 -Q -l 1G $URL_NCBI {output[0]} >> {log} 2>&1 ||
             (mkdir -p {output[0]} >> {log} 2>&1 && wget -O {output[0]}/$ID -a {log} -nv $WGET_URL >> {log} 2>&1)
         done;
         """
@@ -246,7 +246,7 @@ rule ena2fastq_SE:
             shell("mkdir -p {config[fastq_dir]}/{wildcards.sample} >> {log} 2>&1")
             for srr, url in ena_single_end_urls[wildcards.sample]:
                 if config.get('ascp_path') and config.get('ascp_key'):
-                    shell("{config[ascp_path]} -QT -l 300m -P33001 -i {config[ascp_key]} {url} {config[fastq_dir]}/{wildcards.sample}/{srr}.{config[fqsuffix]}.gz >> {log} 2>&1")
+                    shell("{config[ascp_path]} -QT -l 1G -P33001 -i {config[ascp_key]} {url} {config[fastq_dir]}/{wildcards.sample}/{srr}.{config[fqsuffix]}.gz >> {log} 2>&1")
                 else:
                     shell("wget {url} -O {config[fastq_dir]}/{wildcards.sample}/{srr}.{config[fqsuffix]}.gz >> {log} 2>&1")
                 shell("cat {config[fastq_dir]}/{wildcards.sample}/{srr}.{config[fqsuffix]}.gz >> {output} 2> {log}")
@@ -275,8 +275,8 @@ rule ena2fastq_PE:
             shell("mkdir -p {config[fastq_dir]}/{wildcards.sample}/ >> {log} 2>&1")
             for srr, urls in ena_paired_end_urls[wildcards.sample]:
                 if config.get('ascp_path') and config.get('ascp_key'):
-                    shell("{config[ascp_path]} -QT -l 300m -P33001 -i {config[ascp_key]} {urls[0]} {config[fastq_dir]}/{wildcards.sample}/{srr}_{config[fqext1]}.{config[fqsuffix]}.gz >> {log} 2>&1")
-                    shell("{config[ascp_path]} -QT -l 300m -P33001 -i {config[ascp_key]} {urls[1]} {config[fastq_dir]}/{wildcards.sample}/{srr}_{config[fqext2]}.{config[fqsuffix]}.gz >> {log} 2>&1")
+                    shell("{config[ascp_path]} -QT -l 1G -P33001 -i {config[ascp_key]} {urls[0]} {config[fastq_dir]}/{wildcards.sample}/{srr}_{config[fqext1]}.{config[fqsuffix]}.gz >> {log} 2>&1")
+                    shell("{config[ascp_path]} -QT -l 1G -P33001 -i {config[ascp_key]} {urls[1]} {config[fastq_dir]}/{wildcards.sample}/{srr}_{config[fqext2]}.{config[fqsuffix]}.gz >> {log} 2>&1")
                 else:
                     shell("wget {urls[0]} -O {config[fastq_dir]}/{wildcards.sample}/{srr}_{config[fqext1]}.{config[fqsuffix]}.gz >> {log} 2>&1")
                     shell("wget {urls[1]} -O {config[fastq_dir]}/{wildcards.sample}/{srr}_{config[fqext2]}.{config[fqsuffix]}.gz >> {log} 2>&1")
