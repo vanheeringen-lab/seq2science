@@ -92,6 +92,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#the-pipeline-starts-creating-conda-environments-and-crashes-createcondaenvironmentexception">The pipeline starts creating conda environments and crashes (CreateCondaEnvironmentException)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#i-changed-the-config-samples-file-but-seq2science-does-not-rerun">I changed the config/samples file but seq2science does not rerun</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#failed-to-call-external-services">Failed to call external services.</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#storage-exhausted-no-space-left-on-device">storage exhausted / No Space Left on Device</a></li>
 </ul>
 </li>
 </ul>
@@ -183,7 +184,17 @@ Seq2science (actually Snakemake) has a “lazy” policy regarding the generatio
 </div>
 <div class="section" id="failed-to-call-external-services">
 <h2>Failed to call external services.<a class="headerlink" href="#failed-to-call-external-services" title="Permalink to this headline">¶</a></h2>
-<p>TODO explain that downloading can fail on server side. Retry later</p>
+<p>When downloading samples / looking up their layout online, seq2science makes use of online resources. Sometimes it can happen that those services are not online at the moment of running seq2science, you do not have internet, or you lose connection with the service. Usually just re-running seq2science solves these issues, either directly or a couple hours later.</p>
+</div>
+<div class="section" id="storage-exhausted-no-space-left-on-device">
+<h2>storage exhausted / No Space Left on Device<a class="headerlink" href="#storage-exhausted-no-space-left-on-device" title="Permalink to this headline">¶</a></h2>
+<p>Some rules in seq2science make a lot of temporary intermediate files. Generally your operating system stores these temporary files on the location of variable <code class="docutils literal notranslate"><span class="pre">$TMPDIR</span></code> which usually is on <code class="docutils literal notranslate"><span class="pre">/tmp</span></code>. Some servers/computers have a small <code class="docutils literal notranslate"><span class="pre">$TMPDIR</span></code> and seq2science does not handle those cases well! You can manually set the tmpdir to another location with commands:</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>mkdir -p /scratch/${USER}/tmp
+export TMPDIR=/scratch/${USER}/tmp
+</pre></div>
+</div>
+<p>These commands make a folder tmp on the scratch disc (assuming this disc exists), and set the <code class="docutils literal notranslate"><span class="pre">$TMPDIR</span></code> to there.</p>
+<p>Another, more simple reason why these errors can happen is that there simply is no more space/storage left on the server. This can simply be resolved by deleting unused/old files you no longer need.</p>
 </div>
 </div>
 
