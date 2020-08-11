@@ -1,3 +1,4 @@
+import sys
 import math
 import os.path
 import psutil
@@ -9,6 +10,7 @@ import time
 import copy
 import json
 import requests
+from collections import defaultdict
 
 import norns
 import numpy as np
@@ -17,11 +19,17 @@ import urllib.request
 from bs4 import BeautifulSoup
 from multiprocessing.pool import ThreadPool
 from filelock import FileLock
+from pandas_schema import Column, Schema
+from pandas_schema.validation import \
+    LeadingWhitespaceValidation, \
+    TrailingWhitespaceValidation, \
+    MatchesPatternValidation, \
+    IsDistinctValidation
 
 from snakemake.logging import logger
 from snakemake.utils import validate
 from snakemake.utils import min_version
-
+from snakemake.exceptions import TerminatedException
 
 import seq2science
 
@@ -107,27 +115,35 @@ for key, value in config.items():
 
 # read the samples.tsv file as all text, drop comment lines
 samples = pd.read_csv(config["samples"], sep='\t', dtype='str', comment='#')
-samples.columns = samples.columns.str.strip()
 
-# check that the columns are named
 assert all([col[0:7] not in ["Unnamed", ''] for col in samples]), \
     (f"\nEncountered unnamed column in {config['samples']}.\n" +
      f"Column names: {str(', '.join(samples.columns))}.\n")
 
-# check that the columns contains no irregular characters
-assert not any(samples.columns.str.contains('[^A-Za-z0-9_.\-%]+', regex=True)), \
-    (f"\n{config['samples']} may only contain letters, numbers and " +
-    "percentage signs (%), underscores (_), periods (.), or minuses (-).\n")
+column_schema = dict()
+allowed_pattern = r'[A-Za-z0-9_.\-%]+'
+column_schema["sample"] = [LeadingWhitespaceValidation(),
+                           TrailingWhitespaceValidation(),
+                           IsDistinctValidation(),
+                           MatchesPatternValidation(allowed_pattern)]
 
-# check that the file contains no irregular characters
-assert not any([any(samples[col].str.contains('[^A-Za-z0-9_.\-%]+', regex=True, na=False)) for col in samples if col != "control"]), \
-    (f"\n{config['samples']} may only contain letters, numbers and " +
-    "percentage signs (%), underscores (_), periods (.), or minuses (-).\n")
+column_schema["descriptive_name"] = [LeadingWhitespaceValidation(),
+                                     TrailingWhitespaceValidation(),
+                                     IsDistinctValidation(),
+                                     MatchesPatternValidation(allowed_pattern)]
 
-# check that sample names are unique
-assert len(samples["sample"]) == len(set(samples["sample"])), \
-    (f"\nDuplicate samples found in {config['samples']}:\n" +
-     f"{samples[samples.duplicated(['sample'], keep=False)].to_string()}\n")
+schema = Schema([Column(col_name, column_schema.setdefault(col_name,
+                                                           [LeadingWhitespaceValidation(),
+                                                            TrailingWhitespaceValidation(),
+                                                            MatchesPatternValidation(allowed_pattern)])) for col_name in samples.columns])
+errors = schema.validate(samples)
+
+if len(errors):
+    logger.error("\nThere are some issues with parsing the samples file:")
+    for error in errors:
+        logger.error(error)
+    logger.error("")  # empty line
+    raise TerminatedException
 
 # for each column, if found in samples.tsv:
 # 1) if it is incomplete, fill the blanks with replicate/sample names
@@ -354,12 +370,13 @@ with FileLock(layout_cachefile_lock):
 config['layout'] = {**{key: value for key, value in config['layout'].items() if key in samples.index},
                     **{key: value for key, value in config['layout'].items() if "control" in samples and key in samples["control"].values}}
 
-for sample in samples.index:
-    if sample not in config["layout"]:
-        raise ValueError(f"The command to lookup sample {sample} online failed!\n"
-                         f"Are you sure this sample exists..? Downloading samples with restricted "
-                         f"access is currently not supported. We advise you to download the sample "
-                         f"manually, and continue the pipeline from there on.")
+bad_samples = [sample for sample in samples.index if sample not in config["layout"]]
+if len(bad_samples) > 0:
+    logger.error(f"\nThe instructions to lookup sample(s) {' '.join(bad_samples)} online failed!\n"
+                 f"Are you sure these sample(s) exists..? Downloading samples with restricted "
+                 f"access is currently not supported. We advise you to download the sample "
+                 f"manually, and continue the pipeline from there on.\n")
+    raise TerminatedException
 
 
 logger.info("Done!\n\n")
