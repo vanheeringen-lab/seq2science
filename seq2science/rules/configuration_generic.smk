@@ -10,7 +10,6 @@ import time
 import copy
 import json
 import requests
-from collections import defaultdict
 
 import norns
 import numpy as np
