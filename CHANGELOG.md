@@ -8,6 +8,11 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Changed
+
+- Checking for validity of samples.tsv now happens with pandasschema
+
+
 ## [0.2.1] - 2020-08-10
 
 ### Added
