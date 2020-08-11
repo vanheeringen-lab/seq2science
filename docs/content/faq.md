@@ -19,4 +19,16 @@ Seq2science (actually Snakemake) has a "lazy" policy regarding the generation of
 To push seq2science to do this anyway, you need to remove one or two downstream files. We suggest deleting the MultiQC file, and a fastqc file of the samples that need to rerun.
 
 ## Failed to call external services.
-TODO explain that downloading can fail on server side. Retry later
+When downloading samples / looking up their layout online, seq2science makes use of online resources. Sometimes it can happen that those services are not online at the moment of running seq2science, you do not have internet, or you lose connection with the service. Usually just re-running seq2science solves these issues, either directly or a couple hours later.
+
+## storage exhausted / No Space Left on Device
+Some rules in seq2science make a lot of temporary intermediate files. Generally your operating system stores these temporary files on the location of variable `$TMPDIR` which usually is on `/tmp`. Some servers/computers have a small `$TMPDIR` and seq2science does not handle those cases well! You can manually set the tmpdir to another location with commands:
+
+```
+mkdir -p /scratch/${USER}/tmp
+export TMPDIR=/scratch/${USER}/tmp
+```
+
+These commands make a folder tmp on the scratch disc (assuming this disc exists), and set the `$TMPDIR` to there. 
+
+Another, more simple reason why these errors can happen is that there simply is no more space/storage left on the server. This can simply be resolved by deleting unused/old files you no longer need.
