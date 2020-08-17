@@ -140,9 +140,12 @@ rule sra2fastq_SE:
         tmpdir={config[sra_dir]}/tmp/{wildcards.sample}
         mkdir -p $tmpdir; trap "rm -rf $tmpdir" EXIT
 
-        # dump to tmp dir
-        fasterq-dump -s {input}/* -O $tmpdir \
-        --threads {threads} --split-spot >> {log} 2>&1
+        # acquire a lock
+        (
+            flock --timeout 30 200 || exit 1
+            # dump to tmp dir
+            fasterq-dump -s {input}/* -O $tmpdir --threads {threads} --split-spot >> {log} 2>&1
+        ) 200>{layout_cachefile_lock}
 
         # rename file and move to output dir
         for f in $(ls -1q $tmpdir | grep -oP "^[^_]+" | uniq); do
@@ -178,11 +181,14 @@ rule sra2fastq_PE:
         tmpdir={config[sra_dir]}/tmp/{wildcards.sample}
         mkdir -p $tmpdir; trap "rm -rf $tmpdir" EXIT
 
-        # dump to tmp dir
-        fasterq-dump -s {input}/* -O $tmpdir \
-        --threads {threads} --split-3 >> {log} 2>&1
+        # acquire a lock
+        (
+            flock --timeout 30 200 || exit 1
+            # dump to tmp dir
+            fasterq-dump -s {input}/* -O $tmpdir --threads {threads} --split-3 >> {log} 2>&1
+        ) 200>{layout_cachefile_lock}
 
-        # rename files and move to output dir
+        # rename files an   d move to output dir
         for f in $(ls -1q $tmpdir | grep -oP "^[^_]+" | uniq); do
             dst_1={config[fastq_dir]}/{wildcards.sample}_{config[fqext1]}.{config[fqsuffix]}
             dst_2={config[fastq_dir]}/{wildcards.sample}_{config[fqext2]}.{config[fqsuffix]}
