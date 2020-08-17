@@ -6,30 +6,62 @@ from filelock import FileLock
 from functools import lru_cache
 
 
-# the filetypes genomepy will download
-config["genome_types"] = ["fa", "fa.fai", "fa.sizes", "gaps.bed"]
-config["genomepy_temp"] = ["annotation.gff.gz"]
+rule get_genome_provider:
+    """
+    Determine which provider to download the assembly from.
+    
+    Uses the provider used before, or else the provider specified in the config (example: provider: NCBI).
+    If neither is found, each provider will be tried.
+    """
+    output:
+        temp(expand("{genome_dir}/{{assembly}}/provider.txt", **config)),
+    resources:
+        parallel_downloads=1,
+    priority: 2
+    run:
+        readme_file = os.path.join(os.path.dirname(output[0]), "README.txt")
+        readme_provider = None
+        if os.path.exists(readme_file):
+            metadata, _ = genomepy.utils.read_readme(readme_file)
+            readme_provider = metadata.get("provider", "").lower()
 
-# add annotation to the expected output if it is required
-if "rna_seq" in get_workflow() or config["aligner"] == "star":
-    config["genome_types"].extend(["annotation.gtf", "annotation.bed"])
+        if readme_provider in ["ensembl", "ucsc", "ncbi"]:
+            providers = [readme_provider]
+        elif config.get("provider"):
+            providers = [config["provider"].lower()]
+        else:
+            providers = list(genomepy.functions.list_available_providers())
+            providers = providers[:-1]  # remove "url"
+
+        annotion_required = "rna_seq" in get_workflow() or config["aligner"] == "star"
+        for provider in providers:
+            p = genomepy.ProviderBase.create(provider)
+            if wildcards.assembly in p.genomes:
+                annotation_found = p.get_annotation_download_link(wildcards.assembly)
+                genome_found = p.get_genome_download_link(wildcards.assembly)
+                if genome_found and annotation_found:
+                    break
+                elif genome_found and not annotion_required:
+                    print("warning")
+                    break
+        else:
+            print("error")
+            exit(1)
+
+        with open(output[0], "w") as out:
+            out.write(provider)
 
 
-# TODO: return to checkpoint get_genome when checkpoints are stable
-#  1) does the trackhub input update? 2) does ruleorder work?
 rule get_genome:
     """
     Download a genome through genomepy.
-    Additionally downloads the gene annotation if required downstream.
-
-    If assemblies with the same name can be downloaded from multiple providers, 
-    a provider may be specified in the config (example: provider: NCBI). Otherwise,
-    each provider will be tried in turn, stopping at the first success.
-
-    Automatically turns on/off plugins.
+    
+    Also download a blacklist if it exists
     """
+    input:
+        rules.get_genome_provider.output
     output:
-        expand("{genome_dir}/{{assembly}}/{{assembly}}.{genome_types}", **config),
+        expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
     log:
         expand("{log_dir}/get_genome/{{assembly}}.genome.log", **config),
     benchmark:
@@ -38,59 +70,107 @@ rule get_genome:
     resources:
         parallel_downloads=1,
     priority: 1
-    params:
-        dir=config["genome_dir"],
-        provider=config.get("provider", None),
+    run:
+        provider = open(input[0]).read()
+        p = genomepy.ProviderBase.create(provider)
+        p.download_genome(wildcards.assembly, config["genome_dir"])
+
+        # try to download the blacklist
+        genome = genomepy.Genome(wildcards.assembly, config["genome_dir"])
+        plugins = genomepy.plugin.init_plugins()
+        plugins["blacklist"].after_genome_download(genome)
+
+
+rule get_annotation:
+    """
+    Download a gene annotation through genomepy.
+    """
+    input:
+        rules.get_genome_provider.output,
+        rules.get_genome.output,  # required for sanitizing
+    output:
+        gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf.gz", **config),
+        bed=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.bed.gz", **config),
+    log:
+        expand("{log_dir}/get_annotation/{{assembly}}.genome.log", **config),
+    benchmark:
+        expand("{benchmark_dir}/get_annotation/{{assembly}}.genome.benchmark.txt", **config)[0]
+    resources:
+        parallel_downloads=1,
+    priority: 1
+    run:
+        provider = open(input[0]).read()
+        p = genomepy.ProviderBase.create(provider)
+
+        kwargs = dict()
+        if provider == "ucsc" and p.get_annotation_download_link(
+                name=wildcards.assembly, kwargs={"ucsc_annotation_type": "ensembl"}):
+            kwargs = {"ucsc_annotation_type": "ensembl"}
+
+        p.download_annotation(
+            name=wildcards.assembly,
+            genomes_dir=config["genome_dir"],
+            localname=wildcards.assembly,
+            kwargs=kwargs)
+
+        # try to sanitize the annotations
+        genome = genomepy.Genome(wildcards.assembly, config["genome_dir"])
+        genomepy.utils.sanitize_annotation(genome)
+
+
+rule get_genome_support_files:
+    """
+    Generate supporting files for a genome.
+    """
+    input:
+        rules.get_genome.output
+    output:
+        expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.fai", **config),
+        expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
+        expand("{genome_dir}/{{assembly}}/{{assembly}}.gaps.bed", **config),
+    run:
+        genomepy.Genome(wildcards.assembly, genomes_dir=config["genome_dir"])
+
+
+rule add_spike_ins:
+    """
+    
+    """
+    input:
+        genome=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
         gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
-        bed=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.bed", **config),
-        temp=expand("{genome_dir}/{{assembly}}/{{assembly}}.{genomepy_temp}", **config),
-    conda:
-        "../envs/get_genome.yaml"
-    shell:
-        """
-        # turn off plugins and reset on exit. delete temp files on exit.
-        active_plugins=$(genomepy config show | grep -Po '(?<=- ).*' | paste -s -d, -) || echo ""
-        trap "genomepy plugin enable {{$active_plugins,}} >> {log} 2>&1; rm -f {params.temp}" EXIT
-        genomepy plugin disable {{blacklist,bowtie2,bwa,star,gmap,hisat2,minimap2}} >> {log} 2>&1
-        genomepy plugin enable {{blacklist,}} >> {log} 2>&1
+        spike_ins=config.get("spike_ins")
+    output:
+        genome=expand("{genome_dir}/{{assembly}}_SI/{{assembly}}_SI.fa", **config),
+        gtf=expand("{genome_dir}/{{assembly}}_SI/{{assembly}}_SI.annotation.gtf", **config),
+        bed=expand("{genome_dir}/{{assembly}}_SI/{{assembly}}_SI.annotation.bed", **config),
+        gp=temp(expand("{genome_dir}/{{assembly}}_SI/{{assembly}}_SI.annotation.gp", **config)),
+    run:
+        # add spike ins to the genome.fa
+        # TODO check
+        with open(input.genome, "r").read() as infile, open(input.spike_ins, "r").read() as spike_in_file, open(output.genome, "w") as outfile:
+            outfile.write(infile)
+            outfile.write(spike_in_file)
 
-        # download the genome and attempt to download the annotation and blacklist
-        if [[ ! {params.provider} = None  ]]; then
-            genomepy install --genomes_dir {params.dir} {wildcards.assembly} {params.provider} --annotation >> {log} 2>&1
-        else
-            # try Ensembl
-            genomepy install --genomes_dir {params.dir} {wildcards.assembly} Ensembl --annotation >> {log} 2>&1 ||
-            
-            # try UCSC (with Ensembl format annotation)
-            genomepy install -g {params.dir} {wildcards.assembly} UCSC -o --ucsc-annotation Ensembl >> {log} 2>&1 &&
-                genomepy install -g {params.dir} {wildcards.assembly} UCSC >> {log} 2>&1 ||
-            
-            # try UCSC
-            genomepy install --genomes_dir {params.dir} {wildcards.assembly} UCSC --annotation >> {log} 2>&1 ||
-            
-            # try NCBI
-            genomepy install --genomes_dir {params.dir} {wildcards.assembly} NCBI --annotation >> {log} 2>&1
-        fi
+        # TODO: add spike in gtf
 
-        # unzip annotation if downloaded and gzipped
-        if [ -f {params.gtf}.gz ]; then
-            gunzip -f {params.gtf}.gz >> {log} 2>&1
-        fi
-        if [ -f {params.bed}.gz ]; then
-            gunzip -f {params.bed}.gz >> {log} 2>&1
-        fi
+        # generate a new bed file from gtf
+        shell("gtfToGenePred {output.gtf} {output.gp}")
+        shell("genePredToBed {output.gp} {output.bed}")
 
-        # if assembly has no annotation, or annotation has no genes, throw an warning
-        if [ ! -f {params.gtf} ] || $(grep -q "No genes found" {log}); then
-            echo '\nEmpty or no annotation found for {wildcards.assembly}.\n' | tee -a {log}
 
-            # if an annotation is required, make it an error and exit.
-            if $(echo {output} | grep -q annotation.gtf); then
-                echo'\nSelect a different assembly or provide an annotation file manually.\n\n' | tee -a {log}
-                exit 1
-            fi
-        fi
-        """
+rule unzip_file:
+    """
+    unzip gzipped or bgzipped files
+    
+    (doesnt crash if the file was unzipped before executing)
+    """
+    input:
+        expand("{{filepath}}.gz")
+    output:
+        expand("{{filepath}}")
+    run:
+        genomepy.utils.gunzip_and_name(input[0])
 
 
 @lru_cache(maxsize=None)
