@@ -58,6 +58,7 @@ if config["aligner"] == "bowtie2":
                 else ["-1", input.reads[0], "-2", input.reads[1]]
             ),
             params=config["align"],
+        priority: 0
         threads: 9
         conda:
             "../envs/bowtie2.yaml"
@@ -113,6 +114,7 @@ elif config["aligner"] == "bwa-mem":
             params=config["align"],
         resources:
             mem_gb=13,
+        priority: 0
         threads: 10
         conda:
             "../envs/bwa.yaml"
@@ -168,6 +170,7 @@ elif config["aligner"] == "bwa-mem2":
             params=config["align"],
         resources:
             mem_gb=13,
+        priority: 0
         threads: 10
         conda:
             "../envs/bwamem2.yaml"
@@ -264,6 +267,7 @@ elif config["aligner"] == "hisat2":
                 else ["-1", input.reads[0], "-2", input.reads[1]]
             ),
             params=config["align"],
+        priority: 0
         threads: 9
         conda:
             "../envs/hisat2.yaml"
@@ -363,6 +367,7 @@ elif config["aligner"] == "star" or config.get("quantifier", "") == "star":
         params:
             input=lambda wildcards, input: input.reads if config["layout"][wildcards.sample] == "SINGLE" else input.reads[0:2],
             params=config["align"],
+        priority: 0
         threads: 8
         resources:
             mem_gb=30,
@@ -401,6 +406,7 @@ rule samtools_presort:
     params:
         out_dir=f"{config['result_dir']}/{config['aligner']}",
         memory=lambda wildcards, input, output, threads: f"-m {int(1000 * round(config['bam_sort_mem']/threads, 3))}M",
+    priority: 0
     threads: 2
     resources:
         mem_gb=config["bam_sort_mem"],
