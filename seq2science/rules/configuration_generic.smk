@@ -123,7 +123,7 @@ if "descriptive_name" in samples.columns:
 
 distinct_schema = Schema(
     [Column(col, [MatchesPatternValidation(allowed_pattern),
-                  IsDistinctValidation(ignore_nan=True)] if col in distinct_columns else [MatchesPatternValidation(allowed_pattern)], allow_empty=True) for col in
+                  IsDistinctValidation()] if col in distinct_columns else [MatchesPatternValidation(allowed_pattern)], allow_empty=True) for col in
      samples.columns])
 
 errors = distinct_schema.validate(samples)
