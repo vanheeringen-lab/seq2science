@@ -19,11 +19,7 @@ from bs4 import BeautifulSoup
 from multiprocessing.pool import ThreadPool
 from filelock import FileLock
 from pandas_schema import Column, Schema
-from pandas_schema.validation import \
-    LeadingWhitespaceValidation, \
-    TrailingWhitespaceValidation, \
-    MatchesPatternValidation, \
-    IsDistinctValidation
+from pandas_schema.validation import MatchesPatternValidation, IsDistinctValidation
 
 from snakemake.logging import logger
 from snakemake.utils import validate
@@ -127,7 +123,7 @@ if "descriptive_name" in samples.columns:
 
 distinct_schema = Schema(
     [Column(col, [MatchesPatternValidation(allowed_pattern),
-                  IsDistinctValidation(ignore_nan=True)] if col in distinct_columns else [MatchesPatternValidation(allowed_pattern)]) for col in
+                  IsDistinctValidation(ignore_nan=True)] if col in distinct_columns else [MatchesPatternValidation(allowed_pattern)], allow_empty=True) for col in
      samples.columns])
 
 errors = distinct_schema.validate(samples)
