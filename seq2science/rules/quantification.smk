@@ -65,7 +65,8 @@ if config["quantifier"] == "salmon":
             expand("{benchmark_dir}/{quantifier}_index/{{assembly}}.benchmark.txt", **config)[0]
         params:
             config["quantifier_index"],
-        threads: 40
+        priority: 1
+        threads: 10
         conda:
             "../envs/salmon.yaml"
         shell:
@@ -88,7 +89,8 @@ if config["quantifier"] == "salmon":
             expand("{benchmark_dir}/{quantifier}_index/{{assembly}}.benchmark.txt", **config)[0]
         params:
             config["quantifier_index"],
-        threads: 40
+        priority: 1
+        threads: 10
         conda:
             "../envs/salmon.yaml"
         shell:
