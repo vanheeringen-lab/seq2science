@@ -311,7 +311,7 @@ with FileLock(layout_cachefile_lock):
         layout_cache = {}
 
 
-    trace_tp = ThreadPool(40)
+    trace_tp = ThreadPool(20)
     eutils_tp = ThreadPool(config.get('ncbi_requests', 3) // 2)
 
     trace_layout1 = {}
