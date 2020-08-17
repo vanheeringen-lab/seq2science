@@ -48,6 +48,7 @@ rule id2sra:
         sample = wildcards.sample
         eutils_compatible = True
         with FileLock(layout_cachefile_lock):
+            time.sleep(2)
             try:
                 layout = subprocess.check_output(
                     f'''esearch -db sra -query {sample} | efetch | grep -Po "(?<=<LIBRARY_LAYOUT><)[^ /><]*"''',
