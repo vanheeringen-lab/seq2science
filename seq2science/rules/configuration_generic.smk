@@ -108,34 +108,29 @@ for key, value in config.items():
             value = os.path.abspath(os.path.join(config['result_dir'], value))
         config[key] = re.split("\/$", value)[0]
 
-
 # samples.tsv
 
 
 # read the samples.tsv file as all text, drop comment lines
 samples = pd.read_csv(config["samples"], sep='\t', dtype='str', comment='#')
+samples.columns = samples.columns.str.strip()
 
 assert all([col[0:7] not in ["Unnamed", ''] for col in samples]), \
     (f"\nEncountered unnamed column in {config['samples']}.\n" +
      f"Column names: {str(', '.join(samples.columns))}.\n")
 
-column_schema = dict()
+# use pandasschema for checking if samples file is filed out correctly
 allowed_pattern = r'[A-Za-z0-9_.\-%]+'
-column_schema["sample"] = [LeadingWhitespaceValidation(),
-                           TrailingWhitespaceValidation(),
-                           IsDistinctValidation(),
-                           MatchesPatternValidation(allowed_pattern)]
+distinct_columns = ["sample"]
+if "descriptive_name" in samples.columns:
+    distinct_columns.append("descriptive_name")
 
-column_schema["descriptive_name"] = [LeadingWhitespaceValidation(),
-                                     TrailingWhitespaceValidation(),
-                                     IsDistinctValidation(),
-                                     MatchesPatternValidation(allowed_pattern)]
+distinct_schema = Schema(
+    [Column(col, [MatchesPatternValidation(allowed_pattern),
+                  IsDistinctValidation(ignore_nan=True)] if col in distinct_columns else [MatchesPatternValidation(allowed_pattern)]) for col in
+     samples.columns])
 
-schema = Schema([Column(col_name, column_schema.setdefault(col_name,
-                                                           [LeadingWhitespaceValidation(),
-                                                            TrailingWhitespaceValidation(),
-                                                            MatchesPatternValidation(allowed_pattern)])) for col_name in samples.columns])
-errors = schema.validate(samples)
+errors = distinct_schema.validate(samples)
 
 if len(errors):
     logger.error("\nThere are some issues with parsing the samples file:")
