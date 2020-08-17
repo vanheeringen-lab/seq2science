@@ -10,7 +10,8 @@ def count_table_output():
         return []
 
     return expand(
-        ["{result_dir}/count_table/{peak_caller}/{assemblies}_{normalization}.tsv"],
+        ["{result_dir}/count_table/{peak_caller}/{assemblies}_{normalization}.tsv", 
+         "{result_dir}/{peak_caller}/{assemblies}_onehotpeaks.tsv"],
         **{
             **config,
             **{
@@ -48,9 +49,9 @@ rule narrowpeak_summit:
     output:
         expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}_summits.bed", **config),
     log:
-        expand("{log_dir}/bedtools_slop/{{sample}}-{{assembly}}-{{peak_caller}}.log", **config),
+        expand("{log_dir}/narrowpeak_summit/{{sample}}-{{assembly}}-{{peak_caller}}.log", **config),
     benchmark:
-        expand("{benchmark_dir}/bedtools_slop/{{sample}}-{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/narrowpeak_summit/{{sample}}-{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     shell:
         """
         awk 'BEGIN {{OFS="\t"}} {{ print $1,$2+$10,$2+$10+1,$4,$9; }}' {input} > {output} 2> {log}
@@ -78,9 +79,9 @@ rule combine_peaks:
     output:
         temp(expand("{result_dir}/{{peak_caller}}/{{assembly}}_combinedsummits.bed", **config)),
     log:
-        expand("{log_dir}/bedtools_slop/{{assembly}}-{{peak_caller}}.log", **config),
+        expand("{log_dir}/combine_peaks/{{assembly}}-{{peak_caller}}.log", **config),
     benchmark:
-        expand("{benchmark_dir}/bedtools_slop/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/combine_peaks/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     conda:
         "../envs/gimme.yaml"
     params:
@@ -150,9 +151,9 @@ rule coverage_table:
     output:
         expand("{result_dir}/count_table/{{peak_caller}}/{{assembly}}_raw.tsv", **config),
     log:
-        expand("{log_dir}/multicov/{{assembly}}-{{peak_caller}}.log", **config),
+        expand("{log_dir}/coverage_table/{{assembly}}-{{peak_caller}}.log", **config),
     benchmark:
-        expand("{benchmark_dir}/multicov/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/coverage_table/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     conda:
         "../envs/gimme.yaml"
     shell:
@@ -179,47 +180,14 @@ rule quantile_normalization:
         rules.coverage_table.output,
     output:
         expand("{result_dir}/count_table/{{peak_caller}}/{{assembly}}_quantilenorm.tsv", **config),
-    run:
-        import pandas as pd
-
-
-        def quantileNormalize_cpm(df):
-            """
-        solution adapted from:
-        https://stackoverflow.com/questions/37935920/quantile-normalization-on-pandas-dataframe/41078786#41078786
-
-        Changes:
-        - takes the mean of ties within a sample instead of ignoring it (as per wiki example)
-        - normalize on counts per million (cpm)
-
-        Note: naive implementation, might get slow with large dataframes
-        """
-            # get all the ranks, where ties share a spot
-            rank_ties = df.rank(method="min").astype(int)
-
-            # calculate the median per rank
-            rank_means = (df * 1_000_000 / df.sum(axis=0)).stack().groupby(df.rank(method="first").stack().astype(int)).mean()
-
-            # quantile normalize and ignore ties
-            qn_df = df.rank(method="min").stack().astype(int).map(rank_means).unstack()
-
-            # now fix our ties by taking their mean
-            for column in qn_df.columns:
-                for idx, count in zip(*np.unique(qn_df[column].rank(method="min").astype(int), return_counts=True)):
-                    if count > 1:
-                        wrong_idxs = np.where(rank_ties[column] == idx)[0]
-                        qn_df[column].iloc[wrong_idxs] = np.mean(rank_means[idx - 1 : idx - 1 + count])
-
-            return qn_df
-
-
-        df = pd.read_csv(str(input), comment="#", index_col=0, sep="\t")
-        df_qn = quantileNormalize_cpm(df)
-        open(str(output), "w").write(
-            "# The number of reads under each peak, cpm quantile normalized\n"
-            + df_qn.to_csv(index_label="loc", index=True, header=True, sep="\t")
-        )
-
+    log:
+        expand("{log_dir}/quantile_normalization/{{assembly}}-{{peak_caller}}-quantilenorm.log", **config),
+    benchmark:
+        expand("{benchmark_dir}/quantile_normalization/{{assembly}}-{{peak_caller}}-quantilenorm.benchmark.txt", **config)[0]
+    conda:
+        "../envs/qnorm.yaml"
+    script:
+        f"{config['rule_dir']}/../scripts/qnorm.py"
 
 
 rule edgeR_normalization:
@@ -277,7 +245,6 @@ rule log_normalization:
         )
 
 
-
 rule mean_center:
     """
     Mean centering of a count table.
@@ -301,3 +268,43 @@ rule mean_center:
             f"# The number of reads under each peak, mean centered after log1p {wildcards.base} and {wildcards.normalisation} normalization\n"
             + cov_mc.to_csv(index=True, header=True, sep="\t")
         )
+
+
+def get_all_narrowpeaks(wildcards):
+    return [f"{config['result_dir']}/{{peak_caller}}/{{assembly}}-{replicate}_peaks.narrowPeak"
+        for replicate in breps[breps['assembly'] == wildcards.assembly].index]
+
+
+rule onehot_peaks:
+    """
+    Get onehot encodings of which peaks are found in which samples
+    """
+    input:
+        narrowpeaks=get_all_narrowpeaks,
+        combinedpeaks=rules.combine_peaks.output
+    output:
+        real=expand("{result_dir}/{{peak_caller}}/{{assembly}}_onehotpeaks.tsv", **config),
+        tmp=temp(expand("{result_dir}/{{peak_caller}}/{{assembly}}_onehotpeaks.tsv.tmp", **config))
+    conda:
+        "../envs/bedtools.yaml"
+    log:
+        expand("{log_dir}/onehot_peaks/{{assembly}}-{{peak_caller}}.log", **config),
+    benchmark:
+        expand("{benchmark_dir}/onehot_peaks/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
+    params:
+        peak_count=lambda wildcards, input: len(input.narrowpeaks)
+    shell:
+        """
+        awk '{{print $1":"$2"-"$3}}' {input.combinedpeaks} > {output.real} 2> {log}
+
+        for brep in {input.narrowpeaks}
+        do
+            bedtools sort -i $brep 2> {log} |
+            bedtools intersect -a {input.combinedpeaks} -b stdin -c 2> {log} |
+            awk '{{print $4}}' 2> {log} |
+            paste {output.real} - > {output.tmp}
+            mv {output.tmp} {output.real}
+        done
+        
+        echo -e "# onehot encoding of which condition contains which peaks\\n$(cat {output.real})" > {output.tmp} && cp {output.tmp} {output.real}
+        """
