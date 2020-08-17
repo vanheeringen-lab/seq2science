@@ -137,7 +137,7 @@ rule sra2fastq_SE:
         """
         # setup tmp dir
         tmpdir={config[sra_dir]}/tmp/{wildcards.sample}
-        mkdir -p $tmpdir; # trap "rm -rf $tmpdir" EXIT
+        mkdir -p $tmpdir; trap "rm -rf $tmpdir" EXIT
 
         # dump to tmp dir
         fasterq-dump -s {input}/* -O $tmpdir \
@@ -175,7 +175,7 @@ rule sra2fastq_PE:
         """
         # setup tmp dir
         tmpdir={config[sra_dir]}/tmp/{wildcards.sample}
-        mkdir -p $tmpdir; # trap "rm -rf $tmpdir" EXIT
+        mkdir -p $tmpdir; trap "rm -rf $tmpdir" EXIT
 
         # dump to tmp dir
         fasterq-dump -s {input}/* -O $tmpdir \
