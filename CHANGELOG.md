@@ -8,6 +8,14 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Changed
+
+- Profiles are now parsed by the s2s wrapper
+
+### Fixed
+
+- Profiles no longer overwrite command line arguments
+
 ### Added
 
 - Chipseeker images in MultiQC report

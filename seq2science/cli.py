@@ -152,10 +152,9 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         )
         global profile_arg
         profile_arg = subparser.add_argument(
-            "--profile",
+            "-p", "--profile",
             metavar="PROFILE NAME",
-            help="Use a snakemake/seq2science profile. "
-                 "Profiles can be taken from: https://github.com/snakemake-profiles",
+            help="Use a seq2science profile. Profiles can be taken from: https://github.com/s2s-profiles",
         )
     run.add_argument(
         "-k", "--keep-going",
@@ -215,14 +214,6 @@ def subjectively_prettier_error(arg, message):
 def add_profile_args(profile_file, parsed_args):
     """read profile and add new arguments to parsed args"""
     profile = yaml.safe_load(open(profile_file).read())
-
-    # parse yaml dicts
-    for k, v in profile.items():
-        if isinstance(v, list) and "=" in v[0]:
-            profile[k] = {}
-            for e in v:
-                k2, v2 = e.split("=")
-                profile[k][k2] = v2
 
     # don't overwrite CLI arguments
     for k, v in profile.items():
