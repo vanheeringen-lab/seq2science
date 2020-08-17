@@ -10,10 +10,15 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Changed
 
+- Profiles are now parsed by the s2s wrapper
 - Checking for validity of samples.tsv now happens with pandasschema
 - Explicit priority arguments to all group jobs (aligner + samtools_presort)
 - Snakemake version (5.22.1)
 - Reduced threads on salmon indexing (matching aligners)
+
+### Fixed
+
+- Profiles no longer overwrite command line arguments
 
 ## [0.2.1] - 2020-08-10
 

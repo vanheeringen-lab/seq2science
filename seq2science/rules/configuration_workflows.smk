@@ -212,16 +212,16 @@ for key in keys:
 keys = dir_keys + other_keys
 
 # remove superfluous keys
-keys_to_remove = ["samples", "layout", "fqext1", "fqext2", "macs2_types",
-                  "cpulimit", "genome_types", "genomepy_temp", "bam_sort_mem",
+keys_to_remove = ["fqext1", "fqext2", "macs2_types", "cpulimit",
+                  "genome_types", "genomepy_temp", "bam_sort_mem",
                   ("biological_replicates", "condition" not in samples),
                   ("filter_bam_by_strand", "strandedness" not in samples),
                   ("technical_replicates", "replicates" not in samples),
                   ("tximeta", config.get("quantifier") is not "salmon")]
-keys = rmkeys(keys_to_remove, keys)
+keys = rmkeys(["samples", "layout"] + keys_to_remove, keys)
 keys = ["samples"] + keys + ["layout"]
 
 for key in keys:
-    if config[key] not in ["", False, 0, "None", "none@provided.com"]:
+    if config[key] not in ["", False, 0, "None", "none@provided.com", "yourmail@here.com"]:
         logger.info(f"{key: <23}: {config[key]}")
 logger.info("\n\n")
