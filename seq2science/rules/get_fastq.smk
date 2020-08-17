@@ -48,7 +48,7 @@ rule id2sra:
         sample = wildcards.sample
         eutils_compatible = True
         with FileLock(layout_cachefile_lock):
-            time.sleep(2)
+            time.sleep(1)
             try:
                 layout = subprocess.check_output(
                     f'''esearch -db sra -query {sample} | efetch | grep -Po "(?<=<LIBRARY_LAYOUT><)[^ /><]*"''',
@@ -56,7 +56,7 @@ rule id2sra:
             except (subprocess.CalledProcessError, ValueError):
                 sample = gsm2srx(sample)
 
-            time.sleep(2)
+            time.sleep(1)
 
             shell(
         """
@@ -143,8 +143,10 @@ rule sra2fastq_SE:
         # acquire a lock
         (
             flock --timeout 30 200 || exit 1
+            sleep 1
             # dump to tmp dir
             fasterq-dump -s {input}/* -O $tmpdir --threads {threads} --split-spot >> {log} 2>&1
+            sleep 1
         ) 200>{layout_cachefile_lock}
 
         # rename file and move to output dir
@@ -184,8 +186,10 @@ rule sra2fastq_PE:
         # acquire a lock
         (
             flock --timeout 30 200 || exit 1
+            sleep 1
             # dump to tmp dir
             fasterq-dump -s {input}/* -O $tmpdir --threads {threads} --split-3 >> {log} 2>&1
+            sleep 1
         ) 200>{layout_cachefile_lock}
 
         # rename files an   d move to output dir
