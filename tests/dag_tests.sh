@@ -237,7 +237,7 @@ if [ $1 = "atac-seq" ]; then
   assert_rulecount $1 bwa_mem 7
 
   printf "\ninput control different across same condition\n"
-  seq2science run atac-seq -n --cores $CORES --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/atac_seq/complex_samples2.tsv,create_qc_report:True} | tee tests/local_test_results/${1}_dag
+  seq2science run atac-seq -n --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions dryrun=True quiet=True config={samples:tests/atac_seq/complex_samples2.tsv,create_qc_report:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 genrich_pileup 4
   assert_rulecount $1 macs2_callpeak 4
 
