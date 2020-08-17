@@ -9,6 +9,7 @@ import time
 import copy
 import json
 import requests
+from functools import lru_cache
 
 import norns
 import numpy as np
@@ -188,8 +189,12 @@ samples.index = samples.index.map(str)
 # sample layouts
 # check if a sample is single-end or paired end, and store it
 logger.info("Checking if samples are single-end or paired-end...")
+logger.info("This can take some time.")
 layout_cachefile = os.path.expanduser('~/.config/seq2science/layouts.p')
 layout_cachefile_lock = os.path.expanduser('~/.config/seq2science/layouts.p.lock')
+sample_to_ena_single_url = os.path.expanduser('~/.config/seq2science/ena_single.p')
+sample_to_ena_paired_url = os.path.expanduser('~/.config/seq2science/ena_paired.p')
+sample_to_ena_url_lock = os.path.expanduser('~/.config/seq2science/ena.p.lock')
 
 def prep_filelock(lock_file, max_age=10):
     """
@@ -230,61 +235,67 @@ def get_layout_eutils(sample):
         return None
 
 
-def get_layout_trace1(sample):
+def get_layout_trace1(sample, timeout=10, max_tries=1):
     """
     Parse the ncbi trace website to check if a read has 1, 2, or 3 spots.
     Will fail if sample is not on ncbi database, however does not have the problem that uploader
     filled out the form wrongly.
     Complementary method of get_layout_eutils
     """
-    try:
-        url = f"https://www.ncbi.nlm.nih.gov/sra/?term={sample}"
+    for i in range(max_tries):
+        try:
+            url = f"https://www.ncbi.nlm.nih.gov/sra/?term={sample}"
 
-        conn = urllib.request.urlopen(url)
-        html = conn.read()
+            conn = urllib.request.urlopen(url, timeout=timeout)
+            html = conn.read()
 
-        soup = BeautifulSoup(html, features="html.parser")
-        links = soup.find_all('a')
+            soup = BeautifulSoup(html, features="html.parser")
+            links = soup.find_all('a')
 
-        for tag in links:
-            link = tag.get('href', None)
-            if link is not None and 'SRR' in link:
-                trace_conn = urllib.request.urlopen("https:" + link)
-                trace_html = trace_conn.read()
-                x = re.search("This run has (\d) read", str(trace_html))
+            vals = []
+            for tag in links:
+                link = tag.get('href', None)
+                if link is not None and 'SRR' in link:
+                    SRR = link[link.find("SRR"):]
+                    trace_conn = urllib.request.urlopen("https:" + link, timeout=timeout)
+                    trace_html = trace_conn.read()
+                    x = re.search("This run has (\d) read", str(trace_html))
 
-                # if there are spots without info, then just ignore this sample
-                if len(re.findall(", average length: 0", str(trace_html))) > 0:
-                    break
-                elif x.group(1) == '1':
-                    return 'SINGLE'
-                elif x.group(1) == '2':
-                    return 'PAIRED'
-    except:
-        pass
+                    # if there are spots without info, then just ignore this sample
+                    if len(re.findall(", average length: 0", str(trace_html))) > 0:
+                        break
+                    elif x.group(1) == '1':
+                        vals.append(('SINGLE', SRR))
+                    elif x.group(1) == '2':
+                        vals.append(('PAIRED', SRR))
+            if len(vals) > 0:
+                return vals
+        except:
+            pass
     return None
 
 
-def get_layout_trace2(sample):
+def get_layout_trace2(sample, timeout=10, max_tries=1):
     """
     Yet another sample lookup fallback.
     """
-    try:
-        url = f"https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={sample}"
+    for i in range(max_tries):
+        try:
+            url = f"https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={sample}"
 
-        conn = urllib.request.urlopen(url)
-        html = conn.read()
+            conn = urllib.request.urlopen(url, timeout=timeout)
+            html = conn.read()
 
-        soup = BeautifulSoup(html, features="html.parser")
-        links = soup.find_all('a')
+            soup = BeautifulSoup(html, features="html.parser")
+            links = soup.find_all('a')
 
-        for tag in links:
-            link = tag.get('href', None)
-            if link is not None and 'SRX' in link:
-                SRX = link[link.find("SRX"):]
-                return get_layout_trace1(SRX)
-    except:
-        pass
+            for tag in links:
+                link = tag.get('href', None)
+                if link is not None and 'SRX' in link:
+                    SRX = link[link.find("SRX"):]
+                    return get_layout_trace1(SRX, timeout)
+        except:
+            pass
     return None
 
 
@@ -317,13 +328,13 @@ with FileLock(layout_cachefile_lock):
 
     for sample in all_samples:
         if os.path.exists(expand(f'{{fastq_dir}}/{sample}.{{fqsuffix}}.gz', **config)[0]):
-            config['layout'][sample] ='SINGLE'
+            config['layout'][sample] = 'SINGLE'
         elif all(os.path.exists(path) for path in expand(f'{{fastq_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz', **config)):
-            config['layout'][sample] ='PAIRED'
+            config['layout'][sample] = 'PAIRED'
         elif sample.startswith(('GSM', 'SRR', 'ERR', 'DRR')):
             eutils_layout[sample] = eutils_tp.apply_async(get_layout_eutils, (sample,))
-            trace_layout1[sample] = trace_tp.apply_async(get_layout_trace1, (sample,))
-            trace_layout2[sample] = trace_tp.apply_async(get_layout_trace2, (sample,))
+            trace_layout1[sample] = trace_tp.apply_async(get_layout_trace1, (sample, 10, 3))
+            trace_layout2[sample] = trace_tp.apply_async(get_layout_trace2, (sample, 10, 3))
 
             # sleep 1.25 times the minimum required sleep time so eutils don't complain
             time.sleep(1.25 / (config.get('ncbi_requests', 3) // 2))
@@ -340,8 +351,8 @@ with FileLock(layout_cachefile_lock):
     config['layout'] = {**layout_cache,
                         **{k: v for k, v in config['layout'].items()},
                         **{k: v.get() for k, v in eutils_layout.items() if v.get() is not None},
-                        **{k: v.get() for k, v in trace_layout1.items() if v.get() is not None},
-                        **{k: v.get() for k, v in trace_layout2.items() if v.get() is not None}}
+                        **{k: v.get()[0][0] for k, v in trace_layout1.items() if v.get() is not None},
+                        **{k: v.get()[0][0] for k, v in trace_layout2.items() if v.get() is not None}}
 
     assert all(layout in ['SINGLE', 'PAIRED'] for sample, layout in config['layout'].items())
 
@@ -360,6 +371,95 @@ for sample in samples.index:
                          f"Are you sure this sample exists..? Downloading samples with restricted "
                          f"access is currently not supported. We advise you to download the sample "
                          f"manually, and continue the pipeline from there on.")
+
+sample_to_srr = {**{k: v.get() for k, v in trace_layout1.items() if v.get() is not None},
+                 **{k: v.get() for k, v in trace_layout2.items() if v.get() is not None}}
+
+trace_tp.close()
+eutils_tp.close()
+
+def url_is_alive(url):
+    """
+    Checks that a given URL is reachable.
+    https://gist.github.com/dehowell/884204
+    """
+    for i in range(3):
+        try:
+            request = urllib.request.Request(url)
+            request.get_method = lambda: 'HEAD'
+
+            urllib.request.urlopen(request, timeout=5)
+            return True
+        except:
+            continue
+    return False
+
+logger.info("Done!\n\n")
+logger.info("Now checking if the sample are on the ENA database..")
+logger.info("This can also take some time!")
+
+ena_single_end_urls = dict()
+ena_paired_end_urls = dict()
+
+# trace_tp = ThreadPool(40)
+
+# now check if we can simply download the fastq from ENA
+prep_filelock(sample_to_ena_url_lock, 5*60)
+
+with FileLock(sample_to_ena_url_lock):
+    # try to load the layout cache, otherwise defaults to empty dictionary
+    try:
+        ena_single_end_urls = pickle.load(open(sample_to_ena_single_url, "rb"))
+        ena_paired_end_urls = pickle.load(open(sample_to_ena_paired_url, "rb"))
+    except FileNotFoundError:
+        ena_single_end_urls = {}
+        ena_paired_end_urls = {}
+
+    for sample in samples.index:
+        # do not check if in cache
+        if sample in ena_single_end_urls or sample in ena_paired_end_urls:
+            continue
+
+        # do not check if the file already exists
+        if os.path.exists(expand(f'{{fastq_dir}}/{sample}.{{fqsuffix}}.gz', **config)[0]) or \
+           all(os.path.exists(path) for path in expand(f'{{fastq_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz', **config)):
+            continue
+
+        srrs = sample_to_srr.get(sample, None)
+        if srrs is not None:
+            layout = [srr[0] for srr in srrs]
+            if len(set(layout)) > 1:
+                raise ValueError("I can not deal with mixes of samples!")
+            if len(set(layout)) == 0:
+                continue
+            layout = layout[0]
+
+            for srr in [srr[1] for srr in srrs]:
+                prefix = srr[:6]
+                suffix = f"/{int(srr[9:]):03}" if len(srr) >= 10 else ""
+
+                fasp_address = "era-fasp@fasp.sra.ebi.ac.uk:"
+                wget_address = "ftp://ftp.sra.ebi.ac.uk/"
+
+                if layout == "SINGLE":
+                    wget_url = f"{wget_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}.fastq.gz"
+                    fasp_url = f"{fasp_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}.fastq.gz"
+                    if url_is_alive(wget_url):
+                        url = fasp_url if config.get("ascp_path") else wget_url
+                        ena_single_end_urls.setdefault(sample, []).append((srr, url))
+                elif layout == "PAIRED":
+                    wget_urls = [f"{wget_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}_1.fastq.gz",
+                                 f"{wget_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}_2.fastq.gz"]
+                    fasp_urls = [f"{fasp_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}_1.fastq.gz",
+                                 f"{fasp_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}_2.fastq.gz"]
+                    if all(url_is_alive(url) for url in wget_urls):
+                        urls = fasp_urls if config.get("ascp_path") else wget_urls
+                        ena_paired_end_urls.setdefault(sample, []).append((srr, urls))
+                else:
+                    raise NotImplementedError
+
+    pickle.dump(ena_single_end_urls, open(sample_to_ena_single_url, "wb"))
+    pickle.dump(ena_paired_end_urls, open(sample_to_ena_paired_url, "wb"))
 
 
 logger.info("Done!\n\n")

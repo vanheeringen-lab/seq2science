@@ -8,9 +8,18 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Changed
+
+- Explicit priority arguments to all group jobs (aligner + samtools_presort)
+- Snakemake version (5.22.1)
+- Reduced threads on salmon indexing (matching aligners)
+
+## [0.2.1] - 2020-08-10
+
 ### Added
 
 - Chipseeker images in MultiQC report
+- Samples that are on ENA are now directly downloaded from ENA as fastq. This means we skip the CPU instensive dumping step!
 
 ### Fixed
 
