@@ -143,11 +143,11 @@ rule sra2fastq_SE:
         # acquire a lock
         (
             flock --timeout 30 200 || exit 1
-            sleep 1
-            # dump to tmp dir
-            fasterq-dump -s {input}/* -O $tmpdir --threads {threads} --split-spot >> {log} 2>&1
-            sleep 1
+            sleep 2
         ) 200>{layout_cachefile_lock}
+
+        # dump
+        fasterq-dump -s {input}/* -O $tmpdir --threads {threads} --split-spot >> {log} 2>&1
 
         # rename file and move to output dir
         for f in $(ls -1q $tmpdir | grep -oP "^[^_]+" | uniq); do
@@ -183,14 +183,14 @@ rule sra2fastq_PE:
         tmpdir={config[sra_dir]}/tmp/{wildcards.sample}
         mkdir -p $tmpdir; trap "rm -rf $tmpdir" EXIT
 
-        # acquire a lock
+        # acquire the lock
         (
             flock --timeout 30 200 || exit 1
-            sleep 1
-            # dump to tmp dir
-            fasterq-dump -s {input}/* -O $tmpdir --threads {threads} --split-3 >> {log} 2>&1
-            sleep 1
+            sleep 2
         ) 200>{layout_cachefile_lock}
+
+        # dump
+        fasterq-dump -s {input}/* -O $tmpdir --threads {threads} --split-3 >> {log} 2>&1
 
         # rename files an   d move to output dir
         for f in $(ls -1q $tmpdir | grep -oP "^[^_]+" | uniq); do
