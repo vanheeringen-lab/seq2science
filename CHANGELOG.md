@@ -15,6 +15,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - Explicit priority arguments to all group jobs (aligner + samtools_presort)
 - Snakemake version (5.22.1)
 - Reduced threads on salmon indexing (matching aligners)
+- Make use of fasterq-dump instead of parallel-fastq-dump
 
 ### Fixed
 
