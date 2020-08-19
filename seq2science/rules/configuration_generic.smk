@@ -1,3 +1,5 @@
+import contextlib
+import genomepy
 import math
 import os.path
 import psutil
@@ -191,15 +193,12 @@ samples = samples.set_index('sample')
 samples.index = samples.index.map(str)
 
 
-# sample layouts
-# check if a sample is single-end or paired end, and store it
-logger.info("Checking if samples are single-end or paired-end...")
-logger.info("This can take some time.")
-layout_cachefile = os.path.expanduser('~/.config/seq2science/layouts.p')
-layout_cachefile_lock = os.path.expanduser('~/.config/seq2science/layouts.p.lock')
-sample_to_ena_single_url = os.path.expanduser('~/.config/seq2science/ena_single.p')
-sample_to_ena_paired_url = os.path.expanduser('~/.config/seq2science/ena_paired.p')
-sample_to_ena_url_lock = os.path.expanduser('~/.config/seq2science/ena.p.lock')
+# check availability of assemblies
+
+
+def get_workflow():
+    return workflow.snakefile.split('/')[-2]
+
 
 def prep_filelock(lock_file, max_age=10):
     """
@@ -216,6 +215,149 @@ def prep_filelock(lock_file, max_age=10):
             os.unlink(lock_file)
     except FileNotFoundError:
          pass
+
+
+if "assembly" in samples:
+    @lru_cache(maxsize=None)
+    def list_providers(assembly):
+        """
+        Return a minimal list of providers to check
+        """
+        readme_file = os.path.join(config['genome_dir'], assembly, "README.txt")
+        readme_provider = None
+        if os.path.exists(readme_file):
+            metadata, _ = genomepy.utils.read_readme(readme_file)
+            readme_provider = metadata.get("provider", "").lower()
+
+        if readme_provider in ["ensembl", "ucsc", "ncbi"]:
+            providers = [readme_provider]
+        elif config.get("provider"):
+            providers = [config["provider"].lower()]
+        else:
+            providers = ["ensembl", "ucsc", "ncbi"]
+
+        return providers
+
+
+    @lru_cache(maxsize=None)
+    def provider_with_file(file, assembly):
+        """
+        Returns the first provider which has the file for the assembly.
+        file: annotation or genome
+        """
+        with open(os.devnull, "w") as null:
+            with contextlib.redirect_stdout(null), contextlib.redirect_stderr(null):
+
+                for provider in list_providers(assembly):
+
+                    lock = os.path.expanduser(f'~/.config/seq2science/genomepy_{provider}.lock')
+                    prep_filelock(lock, 20)
+                    with FileLock(lock):
+
+                        p = genomepy.ProviderBase.create(provider)
+                        if assembly in p.genomes:
+                            if (file == "annotation" and p.get_annotation_download_link(assembly)) \
+                                    or (file == "genome" and p.get_genome_download_link(assembly)):
+                                return provider
+        return None
+
+
+    # determine the provider for each new assembly
+    providersfile = os.path.expanduser('~/.config/seq2science/providers.p')
+    providersfile_lock = os.path.expanduser('~/.config/seq2science/providers.p.lock')
+    prep_filelock(providersfile_lock)
+    with FileLock(providersfile_lock):
+        providers = providers_on_file = dict()
+        if os.path.exists(providersfile):
+            # read pickle
+            providers = providers_on_file = pickle.load(open(providersfile, "rb"))
+
+        if any([assembly not in providers for assembly in set(samples["assembly"])]):
+            logger.info("Determining assembly providers")
+
+            for assembly in set(samples["assembly"]):
+                if assembly not in providers:
+                    genome = os.path.join(config['genome_dir'], assembly, f"{assembly}.fa")
+                    gtf = os.path.join(config['genome_dir'], assembly, f"{assembly}.annotation.gtf")
+                    bed = os.path.join(config['genome_dir'], assembly, f"{assembly}.annotation.bed")
+                    providers[assembly] = {"genome": None, "annotation": None}
+
+                    # check if genome and annotations exist locally
+                    if os.path.exists(genome):
+                        providers[assembly]["genome"] = "local"
+                    if all(os.path.exists(file) for file in [gtf, bed]):
+                        providers[assembly]["annotation"] = "local"
+
+                    # check if the annotation can be downloaded
+                    if providers[assembly]["annotation"] is None:
+                        annotion_provider = provider_with_file("annotation", assembly)
+                        if annotion_provider:
+                            providers[assembly]["genome"] = annotion_provider  # exists if annotation does
+                            providers[assembly]["annotation"] = annotion_provider
+
+                    # check if the genome can be downloaded
+                    if providers[assembly]["genome"] is None:
+                        genome_provider = provider_with_file("genome", assembly)
+                        providers[assembly]["genome"] = genome_provider
+
+            pickle.dump(providers, open(providersfile, "wb"))
+
+    # check and simplify the dict
+    annotation_required = "rna_seq" in get_workflow() or config["aligner"] == "star"
+    _providers = providers
+    for assembly in providers:
+        if providers[assembly]["genome"] is None:
+            logger.info(
+                f"Could not download assembly {assembly}.\n"
+                f"Find alternative assemblies with `genomepy search {assembly}`"
+            )
+            exit(1)
+
+        if providers[assembly]["annotation"] is None:
+            logger.info(
+                f"No annotation for assembly {assembly} can be downloaded. Another provider (and "
+                f"thus another assembly name) might have gene annotations.\n"
+                f"Find alternative assemblies with `genomepy search {assembly}`"
+            )
+            if annotation_required:
+                exit(1)
+            # time.sleep(1)
+
+        a = providers[assembly]["annotation"]
+        g = providers[assembly]["genome"]
+        providers[assembly] = a if a else g
+
+
+    @lru_cache(maxsize=None)
+    def has_annotation(assembly):
+        """
+        Returns True/False on whether or not the assembly has an annotation.
+        """
+        # if _providers[assembly]["annotation"]:
+        #     return True
+        # return False
+        #
+        # check if the annotation exists locally
+        gtf = os.path.join(config['genome_dir'], assembly, f"{assembly}.annotation.gtf")
+        if any(os.path.exists(file) for file in [gtf, f"{gtf}.gz"]):
+            return True
+
+        # check if the annotation can be downloaded
+        if provider_with_file("annotation", assembly):
+            return True
+
+        return False
+
+
+# sample layouts
+# check if a sample is single-end or paired end, and store it
+logger.info("Checking if samples are single-end or paired-end...")
+logger.info("This can take some time.")
+layout_cachefile = os.path.expanduser('~/.config/seq2science/layouts.p')
+layout_cachefile_lock = os.path.expanduser('~/.config/seq2science/layouts.p.lock')
+sample_to_ena_single_url = os.path.expanduser('~/.config/seq2science/ena_single.p')
+sample_to_ena_paired_url = os.path.expanduser('~/.config/seq2science/ena_paired.p')
+sample_to_ena_url_lock = os.path.expanduser('~/.config/seq2science/ena.p.lock')
 
 
 def get_layout_eutils(sample):
@@ -480,10 +622,6 @@ if 'replicate' in samples:
 # workflow
 
 
-def get_workflow():
-    return workflow.snakefile.split('/')[-2]
-
-
 def any_given(*args):
     """
     returns a regex compatible string of all elements in the samples.tsv column given by the input
@@ -502,11 +640,12 @@ def any_given(*args):
 sample_constraints = ["sample"]
 wildcard_constraints:
     sorting='coordinate|queryname',
-    sorter='samtools|sambamba'
+    sorter='samtools|sambamba',
 
 if 'assembly' in samples:
     wildcard_constraints:
         assembly=any_given('assembly'),
+        assembly_=f"[^\{os.path.sep}]+"  # no path separators in wildcard
 
 if 'replicate' in samples:
     sample_constraints = ["sample", "replicate"]
