@@ -258,13 +258,27 @@ if "assembly" in samples:
     # determine provider for each new assembly
     providersfile = os.path.expanduser('~/.config/seq2science/providers.p')
     providersfile_lock = os.path.expanduser('~/.config/seq2science/providers.p.lock')
+
+    print("testing pickle existence:")
+    print(os.path.exists(providersfile))
+
+    print("testing lock existence:")
+    if os.path.exists(providersfile_lock):
+        print("lock exists, age:")
+        print(time.time() - os.stat(providersfile_lock).st_mtime)
+
     prep_filelock(providersfile_lock, 30)
     with FileLock(providersfile_lock):
+
+        print("in fileLock")
+
         providers = dict()
         if os.path.exists(providersfile):
-            providers = providers_on_file = pickle.load(open(providersfile, "rb"))
+            print("reading existing picle")
+            providers = pickle.load(open(providersfile, "rb"))
 
         if any([assembly not in providers for assembly in set(samples["assembly"])]):
+            print("new assemblies present")
             logger.info("Determining assembly providers")
 
             for assembly in set(samples["assembly"]):
