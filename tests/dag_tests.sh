@@ -26,6 +26,7 @@ function assert_rulecount {
   fi
   :
 }
+
 mkdir -p tests/local_test_results/fastq
 touch tests/local_test_results/fastq/S1_1_R1.fastq.gz
 touch tests/local_test_results/fastq/S1_1_R2.fastq.gz
@@ -40,6 +41,13 @@ touch tests/local_test_results/fastq/S6_1.fastq.gz
 touch tests/local_test_results/fastq/S7_1.fastq.gz
 touch tests/local_test_results/fastq/S8_1.fastq.gz
 
+for assembly in assembly1 assembly2; do
+  mkdir tests/local_test_results/${assembly}
+  touch tests/local_test_results/${assembly}/${assembly}.fa
+  touch tests/local_test_results/${assembly}/${assembly}.annotation.gtf
+  touch tests/local_test_results/${assembly}/${assembly}.annotation.bed
+done
+
 if [ $1 = "alignment" ]; then
 
   # download workflow
@@ -48,8 +56,9 @@ if [ $1 = "alignment" ]; then
   printf "\ndownload default\n"
   seq2science run download-fastq -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 sra2fastq_PE 1
-  # I don't know why this one keeps failing?!
-  # assert_rulecount $1 ena2fastq_PE 1
+  # TODO file is downloaded from SRA or ENA. inconsistently.
+  # assert_rulecount $1 sra2fastq_SE 1
+  # assert_rulecount $1 ena2fastq_SE 1
 
   # alignment workflow
   WF=alignment
@@ -60,15 +69,15 @@ if [ $1 = "alignment" ]; then
   assert_rulecount $1 mark_duplicates 1
 
   printf "\naligners\n"
-  seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={aligner:bowtie2,samples:tests/alignment/stranded_sample.tsv,fastq_dir:../tinyfastq} | tee tests/local_test_results/${1}_dag
+  seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={aligner:bowtie2} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bowtie2_index 1
-  seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={aligner:bwa-mem,samples:tests/alignment/stranded_sample.tsv,fastq_dir:../tinyfastq} | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 bwa_index 1
-  seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={aligner:bwa-mem2,samples:tests/alignment/stranded_sample.tsv,fastq_dir:../tinyfastq} | tee tests/local_test_results/${1}_dag
+#  seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={aligner:bwa-mem} | tee tests/local_test_results/${1}_dag  # default
+#  assert_rulecount $1 bwa_index 1
+  seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={aligner:bwa-mem2} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bwa_mem2_index 1
-  seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={aligner:hisat2,samples:tests/alignment/stranded_sample.tsv,fastq_dir:../tinyfastq} | tee tests/local_test_results/${1}_dag
+  seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={aligner:hisat2} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 hisat2_index 1
-  seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={aligner:star,samples:tests/alignment/stranded_sample.tsv,fastq_dir:../tinyfastq} | tee tests/local_test_results/${1}_dag
+  seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={aligner:star} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 star_index 1
 
   printf "\nalignmentsieve\n"

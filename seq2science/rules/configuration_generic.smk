@@ -248,9 +248,9 @@ if "assembly" in samples:
 
                 for provider in list_providers(assembly):
 
-                    lock = os.path.expanduser(f'~/.config/seq2science/genomepy_{provider}.lock')
-                    prep_filelock(lock, 20)
-                    with FileLock(lock):
+                    genomepy_lock = os.path.expanduser(f'~/.config/seq2science/genomepy_{provider}.lock')
+                    prep_filelock(genomepy_lock, 20)
+                    with FileLock(genomepy_lock):
 
                         p = genomepy.ProviderBase.create(provider)
                         if assembly in p.genomes:
