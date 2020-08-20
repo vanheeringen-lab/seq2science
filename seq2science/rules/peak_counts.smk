@@ -1,6 +1,3 @@
-ruleorder: macs2_callpeak > narrowpeak_summit
-
-
 def count_table_output():
     """
     get all the count table outputs.
@@ -52,6 +49,8 @@ rule narrowpeak_summit:
         expand("{log_dir}/narrowpeak_summit/{{sample}}-{{assembly}}-{{peak_caller}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/narrowpeak_summit/{{sample}}-{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
+    wildcard_constraints:
+        peak_caller="genrich|hmmratac"  # no macs2
     shell:
         """
         awk 'BEGIN {{OFS="\t"}} {{ print $1,$2+$10,$2+$10+1,$4,$9; }}' {input} > {output} 2> {log}

@@ -91,7 +91,7 @@ if config.get("bam_sorter", False):
 # make sure that our samples.tsv and configuration work together...
 # ...on biological replicates
 if "condition" in samples:
-    if "hmmratac" in config["peak_caller"]:
+    if "hmmratac" in config.get("peak_caller"):
         assert config.get("biological_replicates", "") == "idr", f"HMMRATAC peaks can only be combined through idr"
 
     for condition in set(samples["condition"]):

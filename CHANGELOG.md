@@ -19,6 +19,8 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Fixed
 
 - Profiles no longer overwrite command line arguments
+- Fixed edge-case with condition column in samples but no peak-calling
+- Ambiguity exception with rule narrowpeak_summit
 
 ## [0.2.1] - 2020-08-10
 
