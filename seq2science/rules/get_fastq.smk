@@ -39,13 +39,8 @@ rule id2sra:
         parallel_downloads=1,
     wildcard_constraints:
         sample="(GSM|SRR|ERR|DRR)\d+",
-    params:
-        ascp_path=config.get("ascp_path", "NO_ASCP_PATH_PROVIDED"),
-        ascp_key=config.get("ascp_key", "NO_ASCP_key_PROVIDED"),
     shell:
         """
-        export ascp={params.ascp_path}
-
         # acquire a lock
         (
             flock --timeout 30 200 || exit 1
@@ -53,7 +48,7 @@ rule id2sra:
         ) 200>{layout_cachefile_lock}
 
         # dump
-        prefetch --output-directory={os.path.split(output)[0]} --loglevel=debug --progress {wildcards.sample} >> {log} 2>&1
+        prefetch --output-directory {output} --log-level debug --progress {wildcards.sample} >> {log} 2>&1
         """
 
 
