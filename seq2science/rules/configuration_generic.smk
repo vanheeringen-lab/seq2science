@@ -258,7 +258,7 @@ if "assembly" in samples:
     # determine provider for each new assembly
     providersfile = os.path.expanduser('~/.config/seq2science/providers.p')
     providersfile_lock = os.path.expanduser('~/.config/seq2science/providers.p.lock')
-    prep_filelock(providersfile_lock, 40)
+    prep_filelock(providersfile_lock, 30)
     with FileLock(providersfile_lock):
         providers = dict()
         if os.path.exists(providersfile):

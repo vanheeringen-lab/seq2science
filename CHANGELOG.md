@@ -8,8 +8,14 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- (sc)RNA-seq: option to add spike ins to the indexes
+
 ### Changed
 
+- assemblies are now checked in the configuration, similar to samples
+- get_genome was split in 3 rules, allowing for less reruns
 - Profiles are now parsed by the s2s wrapper
 - Checking for validity of samples.tsv now happens with pandasschema
 - Explicit priority arguments to all group jobs (aligner + samtools_presort)
