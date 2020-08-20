@@ -1,8 +1,6 @@
 import glob
 import os
 import re
-import time
-import subprocess
 
 
 def gsm2srx(gsm):
@@ -44,78 +42,19 @@ rule id2sra:
     params:
         ascp_path=config.get("ascp_path", "NO_ASCP_PATH_PROVIDED"),
         ascp_key=config.get("ascp_key", "NO_ASCP_key_PROVIDED"),
-    run:
-        sample = wildcards.sample
-        eutils_compatible = True
-        with FileLock(layout_cachefile_lock):
-            time.sleep(1)
-            try:
-                layout = subprocess.check_output(
-                    f'''esearch -db sra -query {sample} | efetch | grep -Po "(?<=<LIBRARY_LAYOUT><)[^ /><]*"''',
-                    shell=True).decode('ascii').rstrip()
-            except (subprocess.CalledProcessError, ValueError):
-                sample = gsm2srx(sample)
-
-            time.sleep(1)
-
-            shell(
+    shell:
         """
-        echo "starting lookup of the sample in the sra database:" >> {log}
-        if [[ {sample} =~ GSM || {sample} =~ SRX ]]; then
-            IDS=$(esearch -db sra -query {sample} | efetch --format runinfo | cut -d ',' -f 1 | grep SRR);
-            TYPE_U=SRR;
-        else
-            IDS={sample};
-            TYPE_U=$(echo {sample} | grep 'SRR|ERR|DRR' -E -o);
-        fi;
-        TYPE_L=$(echo $TYPE_U | tr '[:upper:]' '[:lower:]');
-        echo "ids: $IDS, type (uppercase): $TYPE_U, type (lowercase): $TYPE_L" >> {log}
+        export ascp={params.ascp_path}
 
-        declare -a URLS
-        for ID in $IDS;
-        do
-            sleep 2s;
-            WGET_URL=$(esearch -db sra -query $ID | efetch --format runinfo | grep $ID | cut -d ',' -f 10 | grep http);
-            URLS+=($WGET_URL);
-        done;
+        # acquire a lock
+        (
+            flock --timeout 30 200 || exit 1
+            sleep 2
+        ) 200>{layout_cachefile_lock}
 
-        mkdir {output}
-        printf '%s\n' "${{IDS[@]}}" > {output}/ids
-        printf '%s\n' "${{URLS[@]}}" > {output}/urls
-        echo $TYPE_L > {output}/type_l
-        echo $TYPE_U > {output}/type_u
+        # dump
+        prefetch --output-directory={os.path.split(output)[0]} --loglevel=debug --progress {wildcards.sample} >> {log} 2>&1
         """
-            )
-            time.sleep(2)
-
-        shell(
-        """
-        read TYPE_L < {output}/type_l
-        read TYPE_U < {output}/type_u
-        readarray -t IDS < {output}/ids
-        readarray -t URLS < {output}/urls
-        rm {output}/*
-        for i in ${{!IDS[@]}}; do
-            ID="${{IDS[i]}}"
-
-            PREFIX=$(echo $ID | cut -c1-6);
-            SUFFIX=$(echo -n $ID | tail -c 3);
-
-            URL_ENA1="era-fasp@fasp.sra.ebi.ac.uk:/vol1/$TYPE_L/$PREFIX/$SUFFIX/$ID";
-            URL_ENA2="era-fasp@fasp.sra.ebi.ac.uk:/vol1/$TYPE_L/$PREFIX/$ID";
-            URL_NCBI="anonftp@ftp.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/$TYPE_U/$PREFIX/$ID/$ID.sra";
-            WGET_URL=${{URLS[i]}}
-
-            echo "trying to download $ID from, respectively: \n$URL_ENA1 \n$URL_ENA2 \n$URL_NCBI \n$WGET_URL" >> {log}
-            # first try the ENA (which has at least two different filing systems), if not successful, try NCBI
-            # if none of the ascp servers work, or ascp is not defined in the config, then simply wget
-            {params.ascp_path} -i {params.ascp_key} -P33001 -T -d -k 0 -Q -l 1G $URL_ENA1 {output[0]} >> {log} 2>&1 ||
-            {params.ascp_path} -i {params.ascp_key} -P33001 -T -d -k 0 -Q -l 1G $URL_ENA2 {output[0]} >> {log} 2>&1 ||
-            {params.ascp_path} -i {params.ascp_key}         -T -d -k 0 -Q -l 1G $URL_NCBI {output[0]} >> {log} 2>&1 ||
-            (mkdir -p {output[0]} >> {log} 2>&1 && wget -O {output[0]}/$ID -a {log} -nv $WGET_URL >> {log} 2>&1)
-        done;
-        """
-        )
 
 
 
