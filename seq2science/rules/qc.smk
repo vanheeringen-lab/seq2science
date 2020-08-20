@@ -216,7 +216,7 @@ rule plotFingerprint:
     log:
         expand("{log_dir}/plotFingerprint/{{assembly}}.log", **config)
     benchmark:
-        expand("{benchmark_dir}/plotFingerprint/{{{{assembly}}}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/plotFingerprint/{{assembly}}.benchmark.txt", **config)[0]
     conda:
         "../envs/deeptools.yaml"
     threads: 16
@@ -621,6 +621,7 @@ def get_peak_calling_qc(sample):
     assembly = treps.loc[sample, "assembly"]
     # TODO: replace with genomepy checkpoint in the future
     if has_annotation(assembly):
+        output.extend(expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config))  # added to be unzipped
         output.extend(expand("{qc_dir}/plotProfile/{{assembly}}-{peak_caller}.tsv", **config))
         if get_ftype(list(config["peak_caller"].keys())[0]) == "narrowPeak":
             output.extend(expand("{qc_dir}/chipseeker/{{assembly}}-{peak_caller}_img1_mqc.png", **config))

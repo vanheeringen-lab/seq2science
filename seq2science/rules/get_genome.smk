@@ -133,5 +133,6 @@ if not config.get("debug"):
             "{filepath}"
         wildcard_constraints:
             filepath=".*(?<!\.gz)$"  # filepath may not end with ".gz"
+        priority: 1
         run:
             genomepy.utils.gunzip_and_name(input[0])

@@ -23,6 +23,7 @@ if [ $1 = "cleanup_files" ]; then
   rm -rf tests/tinydata/tinydata.ixx
   rm -rf tests/tinydata/tinydata.transcripts.fa
   rm -rf tests/tinydata/tinydata_softmasking.bb
+  rm -rf tests/tinydata_SI
   test_ran=1
 fi
 
