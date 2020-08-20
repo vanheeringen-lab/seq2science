@@ -7,8 +7,10 @@ if config["quantifier"] == "salmon":
                 quant_dirs.append(f"{{result_dir}}/{{quantifier}}/{wildcards.assembly}-{sample}")
         return expand(quant_dirs, **config)
 
-    def get_index(wildcards):
+    def get_salmon_index(wildcards):
         index = f"{{genome_dir}}/{wildcards.assembly}/index/{{quantifier}}"
+        if "rna_seq" in get_workflow() and config.get("spike_in_fa") and config.get("spike_in_gtf"):
+            index = f"{{genome_dir}}/{wildcards.assembly}_SI/index/{{quantifier}}"
         if config["decoy_aware_index"]:
             index += "_decoy_aware"
         return expand(index, **config)
@@ -24,7 +26,7 @@ if config["quantifier"] == "salmon":
         input:
             fasta=expand("{genome_dir}/{{assembly}}/{{assembly}}.transcripts.fa", **config),
             gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
-            index_dir=get_index,
+            index_dir=get_salmon_index,
         output:
             index=expand("{genome_dir}/{{assembly}}/index/tximeta/linked_txome.json", **config), # symlink=expand(f"{{genome_dir}}/{{{{assembly}}}}/index/tximeta/{config['tximeta']['organism']}.{{{{assembly}}}}.{config['tximeta']['release']}.gtf", **config)
         params:
