@@ -368,6 +368,19 @@ if [ $1 = "rna-seq" ]; then
   seq2science run rna-seq -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={aligner:star,create_qc_report:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 fastqc 4
 
+  printf "\nspike ins\n"
+  touch tests/local_test_results/ERCC92.fa
+  touch tests/local_test_results/ERCC92.gtf
+  seq2science run rna-seq -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={aligner:star,quantifier:salmon,spike_in_fa:tests/local_test_results/ERCC92.fa,spike_in_gtf:tests/local_test_results/ERCC92.gtf} | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 add_spike_ins 1
+  assert_rulecount $1 salmon_index 1
+  seq2science run rna-seq -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={aligner:star,quantifier:htseq,spike_in_fa:tests/local_test_results/ERCC92.fa,spike_in_gtf:tests/local_test_results/ERCC92.gtf} | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 add_spike_ins 1
+  assert_rulecount $1 star_index 1
+  seq2science run rna-seq -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={aligner:hisat2,quantifier:htseq,spike_in_fa:tests/local_test_results/ERCC92.fa,spike_in_gtf:tests/local_test_results/ERCC92.gtf} | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 add_spike_ins 1
+  assert_rulecount $1 hisat2_splice_aware_index 1
+
   printf "\ndifferential expression analysis\n"
   seq2science run rna-seq -n --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={technical_replicates:keep} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 htseq_count 10
