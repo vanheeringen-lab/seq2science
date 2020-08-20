@@ -48,8 +48,6 @@ for assembly in assembly1 assembly2; do
   touch tests/local_test_results/${assembly}/${assembly}.annotation.bed
 done
 
-WF=alignment
-seq2science run alignment -nr --configfile tests/$WF/default_config.yaml --snakemakeOptions config={samples:tests/alignment/assemblies.tsv}
 
 if [ $1 = "alignment" ]; then
 

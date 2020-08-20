@@ -258,38 +258,20 @@ if "assembly" in samples:
     # determine provider for each new assembly
     providersfile = os.path.expanduser('~/.config/seq2science/providers.p')
     providersfile_lock = os.path.expanduser('~/.config/seq2science/providers.p.lock')
-
-    print("testing pickle existence:")
-    print(os.path.exists(providersfile))
-
-    print("testing lock existence:")
-    if os.path.exists(providersfile_lock):
-        print("lock exists, age:")
-        print(time.time() - os.stat(providersfile_lock).st_mtime)
-
     prep_filelock(providersfile_lock, 30)
     with FileLock(providersfile_lock):
-
-        print("in fileLock")
-
         providers = dict()
         if os.path.exists(providersfile):
             print("reading existing picle")
             providers = pickle.load(open(providersfile, "rb"))
 
         if any([assembly not in providers for assembly in set(samples["assembly"])]):
-            print("new assemblies present")
             logger.info("Determining assembly providers")
 
             for assembly in set(samples["assembly"]):
                 if assembly not in providers:
                     file = os.path.join(config['genome_dir'], assembly, assembly)
                     providers[assembly] = {"genome": None, "annotation": None}
-
-                    print("looking for")
-                    print(f"{file}.fa")
-                    print("exists")
-                    print(os.path.exists(f"{file}.fa"))
 
                     # check if genome and annotations exist locally
                     if os.path.exists(f"{file}.fa"):
