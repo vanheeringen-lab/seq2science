@@ -46,6 +46,9 @@ for assembly in assembly1 assembly2; do
   touch tests/local_test_results/${assembly}/${assembly}.fa
   touch tests/local_test_results/${assembly}/${assembly}.annotation.gtf
   touch tests/local_test_results/${assembly}/${assembly}.annotation.bed
+  echo "ls:"
+  ls tests/local_test_results/${assembly}
+  echo ""
 done
 
 if [ $1 = "alignment" ]; then
