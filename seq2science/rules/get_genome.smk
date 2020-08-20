@@ -1,84 +1,5 @@
-# import os
-# import time
 import contextlib
 import genomepy
-# from filelock import FileLock
-# from functools import lru_cache
-
-
-
-
-
-# @lru_cache(maxsize=None)
-# def has_annotation(assembly):
-#     """
-#     Returns True/False on whether or not the assembly has an annotation.
-#     """
-#     # check if the annotation exists locally
-#     gtf = os.path.join(config['genome_dir'], assembly, f"{assembly}.annotation.gtf")
-#     if any(os.path.exists(file) for file in [gtf, f"{gtf}.gz"]):
-#         return True
-#
-#     # check if the annotation can be downloaded
-#     if provider_with_file("annotation", assembly):
-#         return True
-#
-#     # # warn if an annotation is not needed, exit if it is.
-#     # logger.info(
-#     #     f"No annotation for assembly {assembly} can be downloaded. Another provider (and "
-#     #     f"thus another assembly name) might have gene annotations.\n"
-#     #     f"Find alternative assemblies with `genomepy search {assembly}`"
-#     # )
-#     # annotion_required = "rna_seq" in get_workflow() or config["aligner"] == "star"
-#     # if annotion_required:
-#     #     exit(1)
-#     # time.sleep(3)
-#     return False
-
-
-# rule get_genome_provider:
-#     """
-#     Determine which provider to download the assembly from.
-#
-#     Uses the provider used before, or else the provider specified in the config (example: provider: NCBI).
-#     If neither is found, each provider will be tried.
-#     """
-#     output:
-#         temp(expand("{genome_dir}/{{assembly}}/provider.txt", **config)),
-#     resources:
-#         parallel_downloads=1,
-#     priority: 2
-#     run:
-#         # genome_provider = provider_with_file("genome", wildcards.assembly)
-#         # if not genome_provider:
-#         #     logger.info(
-#         #         f"Could not download assembly {wildcards.assembly}.\n"
-#         #         f"Find alternative assemblies with `genomepy search {wildcards.assembly}`"
-#         #     )
-#
-#         # annotation_required = "rna_seq" in get_workflow() or config["aligner"] == "star"
-#         # annotation_provider = provider_with_file("annotation", wildcards.assembly)
-#         # if annotation_provider:
-#         #     provider = annotation_provider
-#         # elif has_annotation(wildcards.assembly) or not annotation_required:
-#         #     # assumes that if a local annotation is present that
-#         #     # the user made sure it is in the same style
-#         #     provider = provider_with_file("genome", wildcards.assembly)
-#         # else:
-#         #     logger.info(
-#         #         f"No annotation for assembly {wildcards.assembly} can be downloaded. Another provider (and "
-#         #         f"thus another assembly name) might have gene annotations.\n"
-#         #         f"Find alternative assemblies with `genomepy search {wildcards.assembly}`"
-#         #     )
-#         #     exit(1)
-#         annotation_provider = provider_with_file("annotation", wildcards.assembly)
-#         if annotation_provider:
-#             provider = annotation_provider
-#         else:
-#             provider = provider_with_file("genome", wildcards.assembly)
-#
-#         with open(output[0], "w") as out:
-#             out.write(provider)
 
 
 rule get_genome:
@@ -87,8 +8,6 @@ rule get_genome:
     
     Also download a blacklist if it exists.
     """
-    # input:
-    #     rules.get_genome_provider.output
     output:
         expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
     log:
@@ -102,8 +21,12 @@ rule get_genome:
     run:
         with open(log[0], "w") as log:
             with contextlib.redirect_stdout(log), contextlib.redirect_stderr(log):
-                # provider = open(input[0]).read()
-                provider = providers[wildcards.assembly]
+
+                # select a provider with the annotation if possible
+                a = providers["annotation"][wildcards.assembly]
+                g = providers["genome"][wildcards.assembly]
+                provider = g if a is None else a
+
                 p = genomepy.ProviderBase.create(provider)
                 p.download_genome(wildcards.assembly, config["genome_dir"])
 
@@ -118,8 +41,7 @@ rule get_genome_annotation:
     Download a gene annotation through genomepy.
     """
     input:
-        # rules.get_genome_provider.output,
-        rules.get_genome.output,  # required for sanitizing
+        rules.get_genome.output,
     output:
         gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf.gz", **config),
         bed=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.bed.gz", **config),
@@ -133,8 +55,8 @@ rule get_genome_annotation:
     run:
         with open(log[0], "w") as log:
             with contextlib.redirect_stdout(log), contextlib.redirect_stderr(log):
-                # provider = open(input[0]).read()
-                provider = providers[wildcards.assembly]
+
+                provider = providers["annotation"][wildcards.assembly]
                 p = genomepy.ProviderBase.create(provider)
 
                 kwargs = dict()
@@ -148,7 +70,7 @@ rule get_genome_annotation:
                     localname=wildcards.assembly,
                     kwargs=kwargs)
 
-                # try to sanitize the annotations
+                # sanitize the annotations
                 genome = genomepy.Genome(wildcards.assembly, config["genome_dir"])
                 genomepy.utils.sanitize_annotation(genome)
 
@@ -198,15 +120,18 @@ rule add_spike_ins:
         """
 
 
-rule unzip_file:
-    """
-    Unzip (b)gzipped files.
-    """
-    input:
-        "{filepath}.gz"
-    output:
-        "{filepath}"
-    wildcard_constraints:
-        filepath=".*(?<!\.gz)$"  # filepath may not end with ".gz"
-    run:
-        genomepy.utils.gunzip_and_name(input[0])
+# NOTE: if the workflow fails it tends to blame this rule.
+# Set "debug: True" in the config, or comment out the rule to see the root cause.
+if not config.get("debug"):
+    rule unzip_file:
+        """
+        Unzip (b)gzipped files.
+        """
+        input:
+            "{filepath}.gz"
+        output:
+            "{filepath}"
+        wildcard_constraints:
+            filepath=".*(?<!\.gz)$"  # filepath may not end with ".gz"
+        run:
+            genomepy.utils.gunzip_and_name(input[0])

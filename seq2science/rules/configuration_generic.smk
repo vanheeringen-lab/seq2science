@@ -193,7 +193,7 @@ samples = samples.set_index('sample')
 samples.index = samples.index.map(str)
 
 
-# check availability of assemblies
+# check availability of assembly genomes and annotations
 
 
 def get_workflow():
@@ -218,7 +218,6 @@ def prep_filelock(lock_file, max_age=10):
 
 
 if "assembly" in samples:
-    @lru_cache(maxsize=None)
     def list_providers(assembly):
         """
         Return a minimal list of providers to check
@@ -239,7 +238,6 @@ if "assembly" in samples:
         return providers
 
 
-    @lru_cache(maxsize=None)
     def provider_with_file(file, assembly):
         """
         Returns the first provider which has the file for the assembly.
@@ -262,14 +260,13 @@ if "assembly" in samples:
         return None
 
 
-    # determine the provider for each new assembly
+    # determine provider for each new assembly
     providersfile = os.path.expanduser('~/.config/seq2science/providers.p')
     providersfile_lock = os.path.expanduser('~/.config/seq2science/providers.p.lock')
     prep_filelock(providersfile_lock)
     with FileLock(providersfile_lock):
-        providers = providers_on_file = dict()
+        providers = dict()
         if os.path.exists(providersfile):
-            # read pickle
             providers = providers_on_file = pickle.load(open(providersfile, "rb"))
 
         if any([assembly not in providers for assembly in set(samples["assembly"])]):
@@ -277,15 +274,13 @@ if "assembly" in samples:
 
             for assembly in set(samples["assembly"]):
                 if assembly not in providers:
-                    genome = os.path.join(config['genome_dir'], assembly, f"{assembly}.fa")
-                    gtf = os.path.join(config['genome_dir'], assembly, f"{assembly}.annotation.gtf")
-                    bed = os.path.join(config['genome_dir'], assembly, f"{assembly}.annotation.bed")
+                    file = os.path.join(config['genome_dir'], assembly, assembly)
                     providers[assembly] = {"genome": None, "annotation": None}
 
                     # check if genome and annotations exist locally
-                    if os.path.exists(genome):
+                    if os.path.exists(f"{file}.fa"):
                         providers[assembly]["genome"] = "local"
-                    if all(os.path.exists(file) for file in [gtf, bed]):
+                    if all(os.path.exists(f) for f in [f"{file}.annotation.gtf", f"{file}.annotation.bed"]):
                         providers[assembly]["annotation"] = "local"
 
                     # check if the annotation can be downloaded
@@ -302,10 +297,9 @@ if "assembly" in samples:
 
             pickle.dump(providers, open(providersfile, "wb"))
 
-    # check and simplify the dict
+    # check the providers for the required assemblies
     annotation_required = "rna_seq" in get_workflow() or config["aligner"] == "star"
-    _providers = providers
-    for assembly in providers:
+    for assembly in set(samples["assembly"]):
         if providers[assembly]["genome"] is None:
             logger.info(
                 f"Could not download assembly {assembly}.\n"
@@ -321,11 +315,7 @@ if "assembly" in samples:
             )
             if annotation_required:
                 exit(1)
-            # time.sleep(1)
-
-        a = providers[assembly]["annotation"]
-        g = providers[assembly]["genome"]
-        providers[assembly] = a if a else g
+            time.sleep(2)  # give some time to read the message
 
 
     @lru_cache(maxsize=None)
@@ -333,23 +323,12 @@ if "assembly" in samples:
         """
         Returns True/False on whether or not the assembly has an annotation.
         """
-        # if _providers[assembly]["annotation"]:
-        #     return True
-        # return False
-        #
-        # check if the annotation exists locally
-        gtf = os.path.join(config['genome_dir'], assembly, f"{assembly}.annotation.gtf")
-        if any(os.path.exists(file) for file in [gtf, f"{gtf}.gz"]):
-            return True
-
-        # check if the annotation can be downloaded
-        if provider_with_file("annotation", assembly):
-            return True
-
-        return False
+        return True if providers[assembly]["annotation"] else False
 
 
 # sample layouts
+
+
 # check if a sample is single-end or paired end, and store it
 logger.info("Checking if samples are single-end or paired-end...")
 logger.info("This can take some time.")
