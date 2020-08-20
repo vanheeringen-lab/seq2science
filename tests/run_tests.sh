@@ -44,7 +44,7 @@ if [ $1 = "download" ]; then
 
   # test genome & annotation downloading
   printf "\ndownload genome & annotation\n"
-  seq2science run alignment --cores $CORES --configfile tests/$WF/remote_genome_n_sample.yaml --snakemakeOptions until=[get_genome]
+  seq2science run alignment --cores $CORES --configfile tests/$WF/remote_genome_n_sample.yaml --snakemakeOptions until=[get_genome_annotation]
 
   test_ran=1
 fi
@@ -166,7 +166,7 @@ if [ $1 = "rna-seq" ]; then
 
   # TODO: test samples are too similar for blind clustering and deseq2
   printf "\nrna-seq default - quantification\n"
-  seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions config={counts_dir:salmon_counts} \
+  seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions config={counts_dir:salmon_counts,spike_in_fa:tests/tinydata/tinyERCC92.fa,spike_in_gtf:tests/tinydata/tinyERCC92.gtf} \
   omit_from=[blind_clustering]  # <- remove when fixed
 
   printf "\nrna-seq default - quantification deseq2\n"
@@ -174,11 +174,11 @@ if [ $1 = "rna-seq" ]; then
   omit_from=[blind_clustering,deseq2]  # <- remove when fixed
 
   printf "\nrna-seq default - counting\n"
-  seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions config={quantifier:htseq,dexseq:True} \
+  seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions config={quantifier:htseq,dexseq:True,spike_in_fa:tests/tinydata/tinyERCC92.fa,spike_in_gtf:tests/tinydata/tinyERCC92.gtf} \
   omit_from=[blind_clustering]  # <- remove when fixed
   seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions config={quantifier:featurecounts,counts_dir:fc_counts} \
   omit_from=[blind_clustering]  # <- remove when fixed
-  seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions config={aligner:hisat2,quantifier:htseq,final_bam_dir:hisat2_final_bam,counts_dir:hisat2_counts} \
+  seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions config={aligner:hisat2,quantifier:htseq,final_bam_dir:hisat2_final_bam,counts_dir:hisat2_counts,spike_in_fa:tests/tinydata/tinyERCC92.fa,spike_in_gtf:tests/tinydata/tinyERCC92.gtf} \
   omit_from=[blind_clustering]  # <- remove when fixed
 
   printf "\nrna-seq default - counting deseq2\n"

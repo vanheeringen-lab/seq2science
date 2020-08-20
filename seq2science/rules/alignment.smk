@@ -218,7 +218,7 @@ elif config["aligner"] == "hisat2":
             python3 ${{hp}}_extract_exons.py {input.gtf} > {output}/exons.tsv
             
             hisat2-build {params} -p {threads} --ss {output}/splice_sites.tsv --exon {output}/exons.tsv \
-            {input.fasta} {output}/{wildcards.assembly_} > {log} 2>&1
+            {input.fasta} {output}/part > {log} 2>&1
             """
 
     rule hisat2_index:
@@ -243,7 +243,7 @@ elif config["aligner"] == "hisat2":
             config["index"],
         shell:
             """
-            hisat2-build {params} -p {threads} {input} {output}/{wildcards.assembly_} > {log} 2>&1
+            hisat2-build {params} -p {threads} {input} {output}/part > {log} 2>&1
             """
 
     def get_hisat_index(wildcards):
@@ -279,7 +279,7 @@ elif config["aligner"] == "hisat2":
             "../envs/hisat2.yaml"
         shell:
             """
-            hisat2 {params.params} --threads {threads} -x {input.index}/{wildcards.assembly} {params.input} 2> {log} | tee {output} 1> /dev/null 2>> {log}
+            hisat2 {params.params} --threads {threads} -x {input.index}/part {params.input} 2> {log} | tee {output} 1> /dev/null 2>> {log}
             """
 
 
