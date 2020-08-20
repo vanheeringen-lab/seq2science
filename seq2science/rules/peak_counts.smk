@@ -37,23 +37,24 @@ def get_peakfile_for_summit(wildcards):
     return expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}_peaks.narrowPeak", **config)
 
 
-if "macs2" not in config.get("peak_caller") or "summits.bed" not in config.get("macs2_types"):
-    rule narrowpeak_summit:
+rule narrowpeak_summit:
+    """
+    Convert a narrowpeak file to a "macs2 summits" file.
+    """
+    input:
+        get_peakfile_for_summit,
+    output:
+        expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}_summits.bed", **config),
+    log:
+        expand("{log_dir}/narrowpeak_summit/{{sample}}-{{assembly}}-{{peak_caller}}.log", **config),
+    benchmark:
+        expand("{benchmark_dir}/narrowpeak_summit/{{sample}}-{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
+    wildcard_constraints:
+        peak_caller="genrich|hmmratac"  # no macs2
+    shell:
         """
-        Convert a narrowpeak file to a "macs2 summits" file.
+        awk 'BEGIN {{OFS="\t"}} {{ print $1,$2+$10,$2+$10+1,$4,$9; }}' {input} > {output} 2> {log}
         """
-        input:
-            get_peakfile_for_summit,
-        output:
-            expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}_summits.bed", **config),
-        log:
-            expand("{log_dir}/narrowpeak_summit/{{sample}}-{{assembly}}-{{peak_caller}}.log", **config),
-        benchmark:
-            expand("{benchmark_dir}/narrowpeak_summit/{{sample}}-{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
-        shell:
-            """
-            awk 'BEGIN {{OFS="\t"}} {{ print $1,$2+$10,$2+$10+1,$4,$9; }}' {input} > {output} 2> {log}
-            """
 
 
 def get_summitfiles(wildcards):
