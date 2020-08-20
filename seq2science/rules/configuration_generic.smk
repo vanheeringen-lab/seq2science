@@ -247,23 +247,18 @@ if "assembly" in samples:
             with contextlib.redirect_stdout(null), contextlib.redirect_stderr(null):
 
                 for provider in list_providers(assembly):
-
-                    genomepy_lock = os.path.expanduser(f'~/.config/seq2science/genomepy_{provider}.lock')
-                    prep_filelock(genomepy_lock, 20)
-                    with FileLock(genomepy_lock):
-
-                        p = genomepy.ProviderBase.create(provider)
-                        if assembly in p.genomes:
-                            if (file == "annotation" and p.get_annotation_download_link(assembly)) \
-                                    or (file == "genome" and p.get_genome_download_link(assembly)):
-                                return provider
+                    p = genomepy.ProviderBase.create(provider)
+                    if assembly in p.genomes:
+                        if (file == "annotation" and p.get_annotation_download_link(assembly)) \
+                                or (file == "genome" and p.get_genome_download_link(assembly)):
+                            return provider
         return None
 
 
     # determine provider for each new assembly
     providersfile = os.path.expanduser('~/.config/seq2science/providers.p')
     providersfile_lock = os.path.expanduser('~/.config/seq2science/providers.p.lock')
-    prep_filelock(providersfile_lock)
+    prep_filelock(providersfile_lock, 30)
     with FileLock(providersfile_lock):
         providers = dict()
         if os.path.exists(providersfile):
