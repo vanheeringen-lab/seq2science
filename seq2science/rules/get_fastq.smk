@@ -60,7 +60,9 @@ rule sra2fastq_SE:
     input:
         rules.id2sra.output,
     output:
-        expand("{fastq_dir}/{{sample}}.{fqsuffix}.gz", **config),
+        fastq=expand("{fastq_dir}/{{sample}}.{fqsuffix}.gz", **config),
+        tmp_dump=temp(directory(expand("{sra_dir}/tmp/{{sample}}", **config))),
+        tmp_fastq=temp(directory(expand("{sra_dir}/fastq/{{sample}}", **config))),
     log:
         expand("{log_dir}/sra2fastq_SE/{{sample}}.log", **config),
     benchmark:
@@ -70,10 +72,6 @@ rule sra2fastq_SE:
         "../envs/get_fastq.yaml"
     shell:
         """
-        # setup tmp dir
-        tmpdir={config[sra_dir]}/tmp/{wildcards.sample}
-        mkdir -p $tmpdir; trap "rm -rf $tmpdir" EXIT
-
         # acquire a lock
         (
             flock --timeout 30 200 || exit 1
@@ -81,12 +79,12 @@ rule sra2fastq_SE:
         ) 200>{layout_cachefile_lock}
 
         # dump
-        fasterq-dump -s {input}/* -O $tmpdir --threads {threads} --split-spot >> {log} 2>&1
+        fasterq-dump -s {input}/* -O {output.tmp_fastq} -t {output.tmp_dump} --threads {threads} --split-spot >> {log} 2>&1
 
         # rename file and move to output dir
-        for f in $(ls -1q $tmpdir | grep -oP "^[^_]+" | uniq); do
+        for f in $(ls -1q {output.tmp_fastq} | grep -oP "^[^_]+" | uniq); do
             dst={config[fastq_dir]}/{wildcards.sample}.{config[fqsuffix]}
-            cat "${{tmpdir}}/${{f}}" >> $dst
+            cat "{output.tmp_fastq}/${{f}}" >> $dst
         done
         pigz -p {threads} {config[fastq_dir]}/{wildcards.sample}.{config[fqsuffix]}
         """
@@ -103,7 +101,9 @@ rule sra2fastq_PE:
     input:
         rules.id2sra.output,
     output:
-        expand("{fastq_dir}/{{sample}}_{fqext}.{fqsuffix}.gz", **config),
+        fastq=expand("{fastq_dir}/{{sample}}_{fqext}.{fqsuffix}.gz", **config),
+        tmp_dump=temp(directory(expand("{sra_dir}/tmp/{{sample}}", **config))),
+        tmp_fastq=temp(directory(expand("{sra_dir}/fastq/{{sample}}", **config))),
     log:
         expand("{log_dir}/sra2fastq_PE/{{sample}}.log", **config),
     benchmark:
@@ -113,10 +113,6 @@ rule sra2fastq_PE:
         "../envs/get_fastq.yaml"
     shell:
         """
-        # setup tmp dir
-        tmpdir={config[sra_dir]}/tmp/{wildcards.sample}
-        mkdir -p $tmpdir; trap "rm -rf $tmpdir" EXIT
-
         # acquire the lock
         (
             flock --timeout 30 200 || exit 1
@@ -124,14 +120,14 @@ rule sra2fastq_PE:
         ) 200>{layout_cachefile_lock}
 
         # dump
-        fasterq-dump -s {input}/* -O $tmpdir --threads {threads} --split-3 >> {log} 2>&1
+        fasterq-dump -s {input}/* -O {output.tmp_fastq} -t {output.tmp_dump} --threads {threads} --split-3 >> {log} 2>&1
 
-        # rename files an   d move to output dir
+        # rename files and move to output dir
         for f in $(ls -1q $tmpdir | grep -oP "^[^_]+" | uniq); do
             dst_1={config[fastq_dir]}/{wildcards.sample}_{config[fqext1]}.{config[fqsuffix]}
             dst_2={config[fastq_dir]}/{wildcards.sample}_{config[fqext2]}.{config[fqsuffix]}
-            cat "${{tmpdir}}/${{f}}_1.fastq" >> $dst_1
-            cat "${{tmpdir}}/${{f}}_2.fastq" >> $dst_2
+            cat "{output.tmp_fastq}/${{f}}_1.fastq" >> $dst_1
+            cat "{output.tmp_fastq}/${{f}}_2.fastq" >> $dst_2
         done
         pigz -p {threads} {config[fastq_dir]}/{wildcards.sample}_{config[fqext1]}.{config[fqsuffix]}
         pigz -p {threads} {config[fastq_dir]}/{wildcards.sample}_{config[fqext2]}.{config[fqsuffix]}
