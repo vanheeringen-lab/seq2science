@@ -272,6 +272,11 @@ if "assembly" in samples:
                     file = os.path.join(config['genome_dir'], assembly, assembly)
                     providers[assembly] = {"genome": None, "annotation": None}
 
+                    print("looking for")
+                    print(f"{file}.fa")
+                    print("exists")
+                    print(os.path.exists(f"{file}.fa"))
+
                     # check if genome and annotations exist locally
                     if os.path.exists(f"{file}.fa"):
                         providers[assembly]["genome"] = "local"
