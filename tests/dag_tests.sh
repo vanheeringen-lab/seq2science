@@ -42,7 +42,7 @@ touch tests/local_test_results/fastq/S7_1.fastq.gz
 touch tests/local_test_results/fastq/S8_1.fastq.gz
 
 for assembly in assembly1 assembly2; do
-  mkdir tests/local_test_results/${assembly}
+  mkdir -p tests/local_test_results/${assembly}
   touch tests/local_test_results/${assembly}/${assembly}.fa
   touch tests/local_test_results/${assembly}/${assembly}.annotation.gtf
   touch tests/local_test_results/${assembly}/${assembly}.annotation.bed
