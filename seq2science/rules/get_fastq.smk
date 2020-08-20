@@ -37,6 +37,8 @@ rule id2sra:
     message: explain_rule("id2sra")
     resources:
         parallel_downloads=1,
+    conda:
+        "../envs/get_fastq.yaml"
     wildcard_constraints:
         sample="(GSM|SRR|ERR|DRR)\d+",
     shell:
@@ -123,7 +125,7 @@ rule sra2fastq_PE:
         fasterq-dump -s {input}/* -O {output.tmp_fastq} -t {output.tmp_dump} --threads {threads} --split-3 >> {log} 2>&1
 
         # rename files and move to output dir
-        for f in $(ls -1q $tmpdir | grep -oP "^[^_]+" | uniq); do
+        for f in $(ls -1q {output.tmp_fastq} | grep -oP "^[^_]+" | uniq); do
             dst_1={config[fastq_dir]}/{wildcards.sample}_{config[fqext1]}.{config[fqsuffix]}
             dst_2={config[fastq_dir]}/{wildcards.sample}_{config[fqext2]}.{config[fqsuffix]}
             cat "{output.tmp_fastq}/${{f}}_1.fastq" >> $dst_1
