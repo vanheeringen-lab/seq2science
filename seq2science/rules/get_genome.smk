@@ -23,8 +23,8 @@ rule get_genome:
             with contextlib.redirect_stdout(log), contextlib.redirect_stderr(log):
 
                 # select a provider with the annotation if possible
-                a = providers["annotation"][wildcards.assembly]
-                g = providers["genome"][wildcards.assembly]
+                a = providers[wildcards.assembly]["annotation"]
+                g = providers[wildcards.assembly]["genome"]
                 provider = g if a is None else a
 
                 p = genomepy.ProviderBase.create(provider)
@@ -56,7 +56,7 @@ rule get_genome_annotation:
         with open(log[0], "w") as log:
             with contextlib.redirect_stdout(log), contextlib.redirect_stderr(log):
 
-                provider = providers["annotation"][wildcards.assembly]
+                provider = providers[wildcards.assembly]["annotation"]
                 p = genomepy.ProviderBase.create(provider)
 
                 kwargs = dict()

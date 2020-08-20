@@ -262,7 +262,6 @@ if "assembly" in samples:
     with FileLock(providersfile_lock):
         providers = dict()
         if os.path.exists(providersfile):
-            print("reading existing picle")
             providers = pickle.load(open(providersfile, "rb"))
 
         if any([assembly not in providers for assembly in set(samples["assembly"])]):
