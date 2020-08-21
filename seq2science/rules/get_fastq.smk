@@ -43,14 +43,19 @@ rule id2sra:
         sample="(GSM|SRR|ERR|DRR)\d+",
     shell:
         """
-        # acquire a lock
-        (
-            flock --timeout 30 200 || exit 1
-            sleep 2
-        ) 200>{layout_cachefile_lock}
-
-        # dump
-        prefetch --max-size 999999999999 --output-directory {output} --log-level debug --progress {wildcards.sample} >> {log} 2>&1
+        # three attempts
+        for i in {{1..3}}
+        do
+            # acquire a lock
+            (
+                flock --timeout 30 200 || continue
+                sleep 2
+            ) 200>{layout_cachefile_lock}
+    
+            # dump
+            prefetch --max-size 999999999999 --output-directory {output} --log-level debug --progress {wildcards.sample} >> {log} 2>&1 && break
+            sleep 10
+        done
         """
 
 
