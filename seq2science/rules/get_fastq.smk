@@ -52,7 +52,7 @@ rule id2sra:
             ) 200>{layout_cachefile_lock}
     
             # dump
-            prefetch --max-size 999999999999 --output-directory {output} --log-level debug --progress {wildcards.sample} >> {log} 2>&1 && break || sleep 15
+            prefetch --max-size 999999999999 --output-directory {output} --log-level debug --progress {wildcards.sample} >> {log} 2>&1 && break
         """
 
 
