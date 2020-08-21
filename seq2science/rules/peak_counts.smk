@@ -61,7 +61,7 @@ def get_summitfiles(wildcards):
     return expand(
         [
             f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{replicate}_summits.bed"
-            for replicate in treps[treps["assembly"] == wildcards.assembly].index
+            for replicate in breps[breps["assembly"] == wildcards.assembly].index
         ],
         **config,
     )
