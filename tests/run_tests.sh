@@ -2,6 +2,9 @@
 #   python setup.py develop
 #   bash ./tests/run_tests.sh TEST
 
+# for lazy asses:
+# seq2science clean && bash ./tests/run_tests.sh download && bash ./tests/run_tests.sh prep_align && bash ./tests/run_tests.sh bowtie2 && bash ./tests/run_tests.sh bwa-mem1 && bash ./tests/run_tests.sh bwa-mem2 && bash ./tests/run_tests.sh hisat2 && bash ./tests/run_tests.sh star && bash ./tests/run_tests.sh atac-seq && bash ./tests/run_tests.sh scatac-seq && bash ./tests/run_tests.sh rna-seq
+
 # check if an argument was passed
 if [ -z "$1" ]; then
     echo "No test specified"; exit
@@ -72,7 +75,7 @@ if [ $1 = "bowtie2" ]; then
   mkdir -p $RESULTS_DIR
   let "c = $CORES / 5"
 
-  seq2science run $WF --cores $c --configfile tests/$WF/default_config.yaml --snakemakeOptions config={samples:tests/alignment/local_sample.tsv,fastq_dir:../../../tests/tinyfastq,genome_dir:tests,result_dir:$RESULTS_DIR,aligner:$ALIGNER}
+  seq2science run $WF --cores $c --configfile tests/$WF/default_config.yaml --snakemakeOptions config={samples:tests/alignment/local_sample.tsv,fastq_dir:../../tinyfastq,genome_dir:tests,result_dir:$RESULTS_DIR,aligner:$ALIGNER}
 
   test_ran=1
 fi
@@ -85,7 +88,7 @@ if [ $1 = "bwa-mem1" ]; then
   mkdir -p $RESULTS_DIR
   let "c = $CORES / 5"
 
-  seq2science run $WF --cores $c --configfile tests/$WF/default_config.yaml --snakemakeOptions config={samples:tests/alignment/local_sample.tsv,fastq_dir:../../../tests/tinyfastq,genome_dir:tests,result_dir:$RESULTS_DIR,aligner:$ALIGNER}
+  seq2science run $WF --cores $c --configfile tests/$WF/default_config.yaml --snakemakeOptions until=[samtools_presort] config={samples:tests/alignment/local_sample.tsv,fastq_dir:../../tinyfastq,genome_dir:tests,result_dir:$RESULTS_DIR,aligner:$ALIGNER}
 
   test_ran=1
 fi
@@ -98,7 +101,7 @@ if [ $1 = "bwa-mem2" ]; then
   mkdir -p $RESULTS_DIR
   let "c = $CORES / 5"
 
-  seq2science run $WF --cores 12 --configfile tests/$WF/default_config.yaml --snakemakeOptions resources={mem_gb:999} config={samples:tests/alignment/local_sample.tsv,fastq_dir:../../../tests/tinyfastq,genome_dir:tests,result_dir:$RESULTS_DIR,aligner:$ALIGNER}
+  seq2science run $WF --cores 12 --configfile tests/$WF/default_config.yaml --snakemakeOptions until=[samtools_presort] resources={mem_gb:999} config={samples:tests/alignment/local_sample.tsv,fastq_dir:../../tinyfastq,genome_dir:tests,result_dir:$RESULTS_DIR,aligner:$ALIGNER}
 
   test_ran=1
 fi
@@ -111,7 +114,7 @@ if [ $1 = "hisat2" ]; then
   mkdir -p $RESULTS_DIR
   let "c = $CORES / 5"
 
-  seq2science run $WF --cores $c --configfile tests/$WF/default_config.yaml --snakemakeOptions config={samples:tests/alignment/local_sample.tsv,fastq_dir:../../../tests/tinyfastq,genome_dir:tests,result_dir:$RESULTS_DIR,aligner:$ALIGNER}
+  seq2science run $WF --cores $c --configfile tests/$WF/default_config.yaml --snakemakeOptions until=[samtools_presort] config={samples:tests/alignment/local_sample.tsv,fastq_dir:../../tinyfastq,genome_dir:tests,result_dir:$RESULTS_DIR,aligner:$ALIGNER}
 
   test_ran=1
 fi
@@ -124,7 +127,7 @@ if [ $1 = "star" ]; then
   mkdir -p $RESULTS_DIR
   let "c = $CORES / 5"
 
-  seq2science run $WF --cores $c --configfile tests/$WF/default_config.yaml --snakemakeOptions config={samples:tests/alignment/local_sample.tsv,fastq_dir:../../../tests/tinyfastq,genome_dir:tests,result_dir:$RESULTS_DIR,aligner:$ALIGNER}
+  seq2science run $WF --cores $c --configfile tests/$WF/default_config.yaml --snakemakeOptions until=[samtools_presort] config={samples:tests/alignment/local_sample.tsv,fastq_dir:../../tinyfastq,genome_dir:tests,result_dir:$RESULTS_DIR,aligner:$ALIGNER}
 
   test_ran=1
 fi
@@ -167,7 +170,7 @@ if [ $1 = "rna-seq" ]; then
 
   # TODO: test samples are too similar for blind clustering and deseq2
   printf "\nrna-seq default - quantification\n"
-  seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions config={counts_dir:salmon_counts,spike_in_fa:tests/tinydata/tinyERCC92.fa,spike_in_gtf:tests/tinydata/tinyERCC92.gtf} \
+  seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions config={counts_dir:salmon_counts,custom_genome_extension:tests/tinydata/tinyERCC92.fa,custom_annotation_extension:tests/tinydata/tinyERCC92.gtf} \
   omit_from=[blind_clustering]  # <- remove when fixed
 
   printf "\nrna-seq default - quantification deseq2\n"
@@ -175,11 +178,11 @@ if [ $1 = "rna-seq" ]; then
   omit_from=[blind_clustering,deseq2]  # <- remove when fixed
 
   printf "\nrna-seq default - counting\n"
-  seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions config={quantifier:htseq,dexseq:True,spike_in_fa:tests/tinydata/tinyERCC92.fa,spike_in_gtf:tests/tinydata/tinyERCC92.gtf} \
+  seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions config={quantifier:htseq,dexseq:True,custom_genome_extension:tests/local_test_results/ERCC92.fa,custom_annotation_extension:tests/local_test_results/ERCC92.gtf} \
   omit_from=[blind_clustering]  # <- remove when fixed
   seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions config={quantifier:featurecounts,counts_dir:fc_counts} \
   omit_from=[blind_clustering]  # <- remove when fixed
-  seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions config={aligner:hisat2,quantifier:htseq,final_bam_dir:hisat2_final_bam,counts_dir:hisat2_counts,spike_in_fa:tests/tinydata/tinyERCC92.fa,spike_in_gtf:tests/tinydata/tinyERCC92.gtf} \
+  seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions config={aligner:hisat2,quantifier:htseq,final_bam_dir:hisat2_final_bam,counts_dir:hisat2_counts,custom_genome_extension:tests/local_test_results/ERCC92.fa,custom_annotation_extension:tests/local_test_results/ERCC92.gtf} \
   omit_from=[blind_clustering]  # <- remove when fixed
 
   printf "\nrna-seq default - counting deseq2\n"

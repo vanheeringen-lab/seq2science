@@ -23,9 +23,6 @@ Reads are aligned using `STAR` or `HISAT2` (default `STAR`). Sensible defaults h
 
 The pipeline will check if the assembly you specified is present in the *genome_dir*, and otherwise will download it for you through [genomepy](https://github.com/vanheeringen-lab/genomepy). All these aligners require an index to be formed first for each assembly, but don't worry, the pipeline does this for you.
 
-##### Spike-ins
-Additional regions can be added to the genome and gene annotation files, such as ERCC spike-ins. To do so, add `spike_in_fa: path/to/spike_in.fa` and `spike_in_gtf: path/to/spike_in.gtf` to the config. Both file must be included (but can be left empty).
-
 ##### Bam sieving
 After aligning the bam you can choose to remove unmapped reads, low quality mappings, duplicates, and multimappers. Again, sensible defaults have been set, but can be overwritten.
 

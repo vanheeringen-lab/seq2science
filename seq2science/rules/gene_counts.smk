@@ -3,14 +3,12 @@ if config["quantifier"] == "salmon":
     def get_counts(wildcards):
         quant_dirs = []
         if config["quantifier"] in ["salmon", "star"]:
-            for sample in treps[treps["assembly"] == wildcards.assembly].index:
+            for sample in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index:
                 quant_dirs.append(f"{{result_dir}}/{{quantifier}}/{wildcards.assembly}-{sample}")
         return expand(quant_dirs, **config)
 
     def get_salmon_index(wildcards):
         index = f"{{genome_dir}}/{wildcards.assembly}/index/{{quantifier}}"
-        if "rna_seq" in get_workflow() and config.get("spike_in_fa") and config.get("spike_in_gtf"):
-            index = f"{{genome_dir}}/{wildcards.assembly}_SI/index/{{quantifier}}"
         if config["decoy_aware_index"]:
             index += "_decoy_aware"
         return expand(index, **config)
@@ -72,7 +70,7 @@ else:
 
     def get_counts(wildcards):
         count_tables = []
-        for sample in treps[treps["assembly"] == wildcards.assembly].index:
+        for sample in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index:
             count_tables.append(f"{{counts_dir}}/{wildcards.assembly}-{sample}.counts.tsv")
         return expand(count_tables, **config)
 
@@ -117,7 +115,7 @@ if config.get("dexseq"):
 
     def get_DEXSeq_counts(wildcards):
         count_tables = []
-        for sample in treps[treps["assembly"] == wildcards.assembly].index:
+        for sample in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index:
             count_tables.append(f"{{counts_dir}}/{wildcards.assembly}-{sample}.DEXSeq_counts.tsv")
         return expand(count_tables, **config)
 

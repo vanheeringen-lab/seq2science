@@ -218,6 +218,15 @@ def prep_filelock(lock_file, max_age=10):
 
 
 if "assembly" in samples:
+    # control whether to custom extended assemblies
+    if isinstance(config.get("custom_genome_extension"), str):
+        config["custom_genome_extension"] = [config["custom_genome_extension"]]
+    if isinstance(config.get("custom_annotation_extension"), str):
+        config["custom_annotation_extension"] = [config["custom_annotation_extension"]]
+    modified = config.get("custom_genome_extension") or config.get("custom_annotation_extension")
+    all_assemblies = [assembly + "_custom" if modified else assembly for assembly in set(samples['assembly'])]
+    suffix = "_custom" if modified else ""
+
     def list_providers(assembly):
         """
         Return a minimal list of providers to check
@@ -295,14 +304,16 @@ if "assembly" in samples:
     # check the providers for the required assemblies
     annotation_required = "rna_seq" in get_workflow() or config["aligner"] == "star"
     for assembly in set(samples["assembly"]):
-        if providers[assembly]["genome"] is None:
+        file = os.path.join(config['genome_dir'], assembly, assembly)
+        if providers[assembly]["genome"] is None and not os.path.exists(f"{file}.fa"):
             logger.info(
                 f"Could not download assembly {assembly}.\n"
                 f"Find alternative assemblies with `genomepy search {assembly}`"
             )
             exit(1)
 
-        if providers[assembly]["annotation"] is None:
+        if providers[assembly]["annotation"] is None and \
+                not all(os.path.exists(f) for f in [f"{file}.annotation.gtf", f"{file}.annotation.bed"]):
             logger.info(
                 f"No annotation for assembly {assembly} can be downloaded. Another provider (and "
                 f"thus another assembly name) might have gene annotations.\n"
@@ -310,7 +321,14 @@ if "assembly" in samples:
             )
             if annotation_required:
                 exit(1)
-            time.sleep(2)  # give some time to read the message
+            time.sleep(0 if config.get("debug") else 2)  # give some time to read the message
+
+
+    def ori_assembly(assembly):
+        """
+        remove _SI from assembly if is was added
+        """
+        return assembly[:-7] if assembly.endswith("_custom") and modified else assembly
 
 
     @lru_cache(maxsize=None)
@@ -318,7 +336,7 @@ if "assembly" in samples:
         """
         Returns True/False on whether or not the assembly has an annotation.
         """
-        return True if providers[assembly]["annotation"] else False
+        return True if providers[ori_assembly(assembly)]["annotation"] else False
 
 
 # sample layouts
@@ -596,18 +614,18 @@ if 'replicate' in samples:
 # workflow
 
 
-def any_given(*args):
+def any_given(*args, prefix="", suffix=""):
     """
     returns a regex compatible string of all elements in the samples.tsv column given by the input
     """
     elements = []
     for column_name in args:
-        if column_name in samples:
-            elements.extend(samples[column_name])
-        elif column_name is 'sample':
+        if column_name is 'sample':
             elements.extend(samples.index)
+        elif column_name in samples:
+            elements.extend(samples[column_name])
 
-    elements = [element for element in elements if isinstance(element, str)]
+    elements = [prefix + element + suffix for element in elements if isinstance(element, str)]
     return '|'.join(set(elements))
 
 # set global wildcard constraints (see workflow._wildcard_constraints)
@@ -618,21 +636,18 @@ wildcard_constraints:
 
 if 'assembly' in samples:
     wildcard_constraints:
-        assembly=any_given('assembly'),
-        assembly_=f"[^\{os.path.sep}]+"  # no path separators in wildcard
+        raw_assembly=any_given('assembly'),
+        assembly=any_given('assembly', suffix="_custom" if modified else ""),
 
 if 'replicate' in samples:
-    sample_constraints = ["sample", "replicate"]
+    sample_constraints.append("replicate")
     wildcard_constraints:
         replicate=any_given('replicate')
 
 if 'condition' in samples:
-    sample_constraints = ["sample", "condition"]
+    sample_constraints.append("condition")
     wildcard_constraints:
         condition=any_given('condition')
-
-if 'replicate' in samples and 'condition' in samples:
-    sample_constraints = ["sample", "replicate", "condition"]
 
 if "control" in samples:
     sample_constraints.append("control")

@@ -7,14 +7,14 @@ if config["quantifier"] == "salmon":
         Requires genome.fa and annotation.gtf (with matching chromosome/scaffold names)
         """
         input:
-            fa=expand("{genome_dir}/{{assembly_}}/{{assembly_}}.fa", **config),
-            gtf=expand("{genome_dir}/{{assembly_}}/{{assembly_}}.annotation.gtf", **config),
+            fa=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+            gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
         output:
-            expand("{genome_dir}/{{assembly_}}/{{assembly_}}.transcripts.fa", **config),
+            expand("{genome_dir}/{{assembly}}/{{assembly}}.transcripts.fa", **config),
         log:
-            expand("{log_dir}/get_genome/{{assembly_}}.transcripts.log", **config),
+            expand("{log_dir}/get_genome/{{assembly}}.transcripts.log", **config),
         benchmark:
-            expand("{benchmark_dir}/get_genome/{{assembly_}}.transcripts.benchmark.txt", **config)[0]
+            expand("{benchmark_dir}/get_genome/{{assembly}}.transcripts.benchmark.txt", **config)[0]
         conda:
             "../envs/salmon.yaml"
         priority: 1
@@ -29,18 +29,18 @@ if config["quantifier"] == "salmon":
         script source: https://github.com/COMBINE-lab/SalmonTools
         """
         input:
-            genome=expand("{genome_dir}/{{assembly_}}/{{assembly_}}.fa", **config),
-            gtf=expand("{genome_dir}/{{assembly_}}/{{assembly_}}.annotation.gtf", **config),
-            transcripts=expand("{genome_dir}/{{assembly_}}/{{assembly_}}.transcripts.fa", **config),
+            genome=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+            gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
+            transcripts=expand("{genome_dir}/{{assembly}}/{{assembly}}.transcripts.fa", **config),
         output:
-            expand("{genome_dir}/{{assembly_}}/decoy_transcripts/decoys.txt", **config),
+            expand("{genome_dir}/{{assembly}}/decoy_transcripts/decoys.txt", **config),
         params:
             script=f"{config['rule_dir']}/../scripts/generateDecoyTranscriptome.sh",
         log:
-            expand("{log_dir}/get_genome/{{assembly_}}.decoy_transcripts.log", **config),
+            expand("{log_dir}/get_genome/{{assembly}}.decoy_transcripts.log", **config),
         message: explain_rule("decoy_transcripts")
         benchmark:
-            expand("{benchmark_dir}/get_genome/{{assembly_}}.decoy_transcripts.benchmark.txt", **config)[0]
+            expand("{benchmark_dir}/get_genome/{{assembly}}.decoy_transcripts.benchmark.txt", **config)[0]
         threads: 40
         resources:
             mem_gb=65,
@@ -56,14 +56,14 @@ if config["quantifier"] == "salmon":
         Generate a decoy aware transcriptome index for Salmon.
         """
         input:
-            transcripts=expand("{genome_dir}/{{assembly_}}/{{assembly_}}.transcripts.fa", **config),
-            decoy_transcripts=expand("{genome_dir}/{{assembly_}}/decoy_transcripts/decoys.txt", **config),
+            transcripts=expand("{genome_dir}/{{assembly}}/{{assembly}}.transcripts.fa", **config),
+            decoy_transcripts=expand("{genome_dir}/{{assembly}}/decoy_transcripts/decoys.txt", **config),
         output:
-            directory(expand("{genome_dir}/{{assembly_}}/index/{quantifier}_decoy_aware", **config)),
+            directory(expand("{genome_dir}/{{assembly}}/index/{quantifier}_decoy_aware", **config)),
         log:
-            expand("{log_dir}/{quantifier}_index/{{assembly_}}.log", **config),
+            expand("{log_dir}/{quantifier}_index/{{assembly}}.log", **config),
         benchmark:
-            expand("{benchmark_dir}/{quantifier}_index/{{assembly_}}.benchmark.txt", **config)[0]
+            expand("{benchmark_dir}/{quantifier}_index/{{assembly}}.benchmark.txt", **config)[0]
         params:
             config["quantifier_index"],
         priority: 1
@@ -81,13 +81,13 @@ if config["quantifier"] == "salmon":
         Generate a transcriptome index for Salmon.
         """
         input:
-            expand("{genome_dir}/{{assembly_}}/{{assembly_}}.transcripts.fa", **config),
+            expand("{genome_dir}/{{assembly}}/{{assembly}}.transcripts.fa", **config),
         output:
-            directory(expand("{genome_dir}/{{assembly_}}/index/{quantifier}", **config)),
+            directory(expand("{genome_dir}/{{assembly}}/index/{quantifier}", **config)),
         log:
-            expand("{log_dir}/{quantifier}_index/{{assembly_}}.log", **config),
+            expand("{log_dir}/{quantifier}_index/{{assembly}}.log", **config),
         benchmark:
-            expand("{benchmark_dir}/{quantifier}_index/{{assembly_}}.benchmark.txt", **config)[0]
+            expand("{benchmark_dir}/{quantifier}_index/{{assembly}}.benchmark.txt", **config)[0]
         params:
             config["quantifier_index"],
         priority: 1

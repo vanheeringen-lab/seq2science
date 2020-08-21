@@ -11,14 +11,6 @@ def get_reads(wildcards):
             return expand("{trimmed_dir}/{{sample}}_trimmed.{fqsuffix}.gz", **config)
         return sorted(expand("{trimmed_dir}/{{sample}}_{fqext}_trimmed.{fqsuffix}.gz", **config))
 
-def get_index(wildcards):
-    """
-    (sc)RNA-seq only. Function that tells the aligner which genome index to use: normal or spike-in.
-    """
-    if "rna_seq" in get_workflow() and config.get("spike_in_fa") and config.get("spike_in_gtf"):
-        return expand(f"{{genome_dir}}/{wildcards.assembly}_SI/index/{{aligner}}/", **config)
-    return expand(f"{{genome_dir}}/{wildcards.assembly}/index/{{aligner}}/", **config)
-
 
 if config["aligner"] == "bowtie2":
 
@@ -27,13 +19,13 @@ if config["aligner"] == "bowtie2":
         Make a genome index for bowtie2. This index is required for alignment.
         """
         input:
-            expand("{genome_dir}/{{assembly_}}/{{assembly_}}.fa", **config),
+            expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
         output:
-            directory(expand("{genome_dir}/{{assembly_}}/index/{aligner}/", **config)),
+            directory(expand("{genome_dir}/{{assembly}}/index/{aligner}/", **config)),
         log:
-            expand("{log_dir}/{aligner}_index/{{assembly_}}.log", **config),
+            expand("{log_dir}/{aligner}_index/{{assembly}}.log", **config),
         benchmark:
-            expand("{benchmark_dir}/{aligner}_index/{{assembly_}}.benchmark.txt", **config)[0]
+            expand("{benchmark_dir}/{aligner}_index/{{assembly}}.benchmark.txt", **config)[0]
         priority: 1
         threads: 4
         conda:
@@ -42,7 +34,7 @@ if config["aligner"] == "bowtie2":
             config["index"],
         shell:
             """
-            bowtie2-build {params} --threads {threads} {input} {output}/{wildcards.assembly_} > {log} 2>&1
+            bowtie2-build {params} --threads {threads} {input} {output}/{wildcards.assembly} > {log} 2>&1
             """
 
     rule bowtie2_align:
@@ -51,7 +43,7 @@ if config["aligner"] == "bowtie2":
         """
         input:
             reads=get_reads,
-            index=get_index
+            index=expand("{genome_dir}/{{assembly}}/index/{aligner}/", **config)
         output:
             pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0]),
         log:
@@ -83,15 +75,15 @@ elif config["aligner"] == "bwa-mem":
         Make a genome index for bwa (mem). This index is required for alignment.
         """
         input:
-            expand("{genome_dir}/{{assembly_}}/{{assembly_}}.fa", **config),
+            expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
         output:
-            directory(expand("{genome_dir}/{{assembly_}}/index/{aligner}/", **config)),
+            directory(expand("{genome_dir}/{{assembly}}/index/{aligner}/", **config)),
         log:
-            expand("{log_dir}/{aligner}_index/{{assembly_}}.log", **config),
+            expand("{log_dir}/{aligner}_index/{{assembly}}.log", **config),
         benchmark:
-            expand("{benchmark_dir}/{aligner}_index/{{assembly_}}.benchmark.txt", **config)[0]
+            expand("{benchmark_dir}/{aligner}_index/{{assembly}}.benchmark.txt", **config)[0]
         params:
-            prefix="{genome_dir}/{{assembly_}}/index/{aligner}/{{assembly_}}".format(**config),
+            prefix="{genome_dir}/{{assembly}}/index/{aligner}/{{assembly}}".format(**config),
             params=config["index"],
         priority: 1
         resources:
@@ -109,7 +101,7 @@ elif config["aligner"] == "bwa-mem":
         """
         input:
             reads=get_reads,
-            index=get_index
+            index=expand("{genome_dir}/{{assembly}}/index/{aligner}/", **config)
         output:
             pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0]),
         log:
@@ -138,15 +130,15 @@ elif config["aligner"] == "bwa-mem2":
         Make a genome index for bwa-mem2. This index is required for alignment.
         """
         input:
-            expand("{genome_dir}/{{assembly_}}/{{assembly_}}.fa", **config),
+            expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
         output:
-            directory(expand("{genome_dir}/{{assembly_}}/index/{aligner}/", **config)),
+            directory(expand("{genome_dir}/{{assembly}}/index/{aligner}/", **config)),
         log:
-            expand("{log_dir}/{aligner}_index/{{assembly_}}.log", **config),
+            expand("{log_dir}/{aligner}_index/{{assembly}}.log", **config),
         benchmark:
-            expand("{benchmark_dir}/{aligner}_index/{{assembly_}}.benchmark.txt", **config)[0]
+            expand("{benchmark_dir}/{aligner}_index/{{assembly}}.benchmark.txt", **config)[0]
         params:
-            prefix="{genome_dir}/{{assembly_}}/index/{aligner}/{{assembly_}}".format(**config)
+            prefix="{genome_dir}/{{assembly}}/index/{aligner}/{{assembly}}".format(**config)
         priority: 1
         resources:
             mem_gb=100,
@@ -163,7 +155,7 @@ elif config["aligner"] == "bwa-mem2":
         """
         input:
             reads=get_reads,
-            index=get_index
+            index=expand("{genome_dir}/{{assembly}}/index/{aligner}/", **config)
         output:
             pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0]),
         log:
@@ -194,14 +186,14 @@ elif config["aligner"] == "hisat2":
         This index is required for alignment and quantification of RNA-seq data.
         """
         input:
-            fasta=expand("{genome_dir}/{{assembly_}}/{{assembly_}}.fa", **config),
-            gtf=expand("{genome_dir}/{{assembly_}}/{{assembly_}}.annotation.gtf", **config),
+            fasta=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+            gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
         output:
-            directory(expand("{genome_dir}/{{assembly_}}/index/{aligner}_splice_aware/", **config)),
+            directory(expand("{genome_dir}/{{assembly}}/index/{aligner}_splice_aware/", **config)),
         log:
-            expand("{log_dir}/{aligner}_index/{{assembly_}}.log", **config),
+            expand("{log_dir}/{aligner}_index/{{assembly}}.log", **config),
         benchmark:
-            expand("{benchmark_dir}/{aligner}_index/{{assembly_}}.benchmark.txt", **config)[0]
+            expand("{benchmark_dir}/{aligner}_index/{{assembly}}.benchmark.txt", **config)[0]
         message: explain_rule("hisat_splice_aware")
         priority: 1
         threads: 8
@@ -226,13 +218,13 @@ elif config["aligner"] == "hisat2":
         Make a genome index for hisat2. This index is required for alignment.
         """
         input:
-            expand("{genome_dir}/{{assembly_}}/{{assembly_}}.fa", **config),
+            expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
         output:
-            directory(expand("{genome_dir}/{{assembly_}}/index/{aligner}/", **config)),
+            directory(expand("{genome_dir}/{{assembly}}/index/{aligner}/", **config)),
         log:
-            expand("{log_dir}/{aligner}_index/{{assembly_}}.log", **config),
+            expand("{log_dir}/{aligner}_index/{{assembly}}.log", **config),
         benchmark:
-            expand("{benchmark_dir}/{aligner}_index/{{assembly_}}.benchmark.txt", **config)[0]
+            expand("{benchmark_dir}/{aligner}_index/{{assembly}}.benchmark.txt", **config)[0]
         priority: 1
         threads: 4
         resources:
@@ -247,7 +239,7 @@ elif config["aligner"] == "hisat2":
             """
 
     def get_hisat_index(wildcards):
-        index = get_index(wildcards)[0]
+        index = "{genome_dir}/{{assembly}}/index/{aligner}/"
         if "rna_seq" in get_workflow():
             index = index[:-1] + "_splice_aware/"
         return expand(index, **config)
@@ -301,15 +293,15 @@ elif config["aligner"] == "star":
                 index: --limitGenomeGenerateRAM 60000000000 --genomeSAsparseD 1
         """
         input:
-            genome=expand("{genome_dir}/{{assembly_}}/{{assembly_}}.fa", **config),
-            sizefile=expand("{genome_dir}/{{assembly_}}/{{assembly_}}.fa.sizes", **config),
-            gtf=expand("{genome_dir}/{{assembly_}}/{{assembly_}}.annotation.gtf", **config),
+            genome=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+            sizefile=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
+            gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
         output:
-            directory(expand("{genome_dir}/{{assembly_}}/index/{aligner}/", **config)),
+            directory(expand("{genome_dir}/{{assembly}}/index/{aligner}/", **config)),
         log:
-            expand("{log_dir}/{aligner}_index/{{assembly_}}.log", **config),
+            expand("{log_dir}/{aligner}_index/{{assembly}}.log", **config),
         benchmark:
-            expand("{benchmark_dir}/{aligner}_index/{{assembly_}}.benchmark.txt", **config)[0]
+            expand("{benchmark_dir}/{aligner}_index/{{assembly}}.benchmark.txt", **config)[0]
         params:
             config["index"],
         priority: 1
@@ -361,7 +353,7 @@ elif config["aligner"] == "star":
         """
         input:
             reads=get_reads,
-            index=get_index
+            index=expand("{genome_dir}/{{assembly}}/index/{aligner}/", **config)
         output:
             pipe=pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0]),
             dir=directory(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}", **config)),

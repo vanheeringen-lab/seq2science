@@ -10,7 +10,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Added
 
-- (sc)RNA-seq: option to add spike ins to the indexes
+- option to add custom files to each assembly (such as ERCC spike ins for scRNA-seq)
 
 ### Changed
 

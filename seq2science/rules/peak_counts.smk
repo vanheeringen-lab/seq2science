@@ -12,7 +12,7 @@ def count_table_output():
         **{
             **config,
             **{
-                "assemblies": set(samples["assembly"]),
+                "assemblies": all_assemblies,
                 "peak_caller": config["peak_caller"].keys(),
                 "normalization": [
                     "raw",
@@ -61,7 +61,7 @@ def get_summitfiles(wildcards):
     return expand(
         [
             f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{replicate}_summits.bed"
-            for replicate in treps[treps["assembly"] == wildcards.assembly].index
+            for replicate in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index
         ],
         **config,
     )
@@ -120,7 +120,7 @@ def get_coverage_table_replicates(file_ext):
             return expand(
                 [
                     f"{{final_bam_dir}}/{wildcards.assembly}-{replicate}.samtools-coordinate.{file_ext}"
-                    for replicate in treps[treps["assembly"] == wildcards.assembly].index
+                    for replicate in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index
                 ],
                 **config,
             )
@@ -128,7 +128,7 @@ def get_coverage_table_replicates(file_ext):
             return expand(
                 [
                     f"{{final_bam_dir}}/{wildcards.assembly}-{replicate}.sambamba-queryname.{file_ext}"
-                    for replicate in treps[treps["assembly"] == wildcards.assembly].index
+                    for replicate in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index
                 ],
                 **config,
             )
@@ -271,7 +271,7 @@ rule mean_center:
 
 def get_all_narrowpeaks(wildcards):
     return [f"{config['result_dir']}/{{peak_caller}}/{{assembly}}-{replicate}_peaks.narrowPeak"
-        for replicate in breps[breps['assembly'] == wildcards.assembly].index]
+        for replicate in breps[breps['assembly'] == ori_assembly(wildcards.assembly)].index]
 
 
 rule onehot_peaks:

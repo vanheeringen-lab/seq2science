@@ -163,7 +163,7 @@ rule mt_nuc_ratio_calculator:
 def fingerprint_multiBamSummary_input(wildcards):
     output = {"bams": set(), "bais": set()}
 
-    for trep in set(treps[treps['assembly'] == wildcards.assembly].index):
+    for trep in set(treps[treps['assembly'] == ori_assembly(wildcards.assembly)].index):
         output["bams"].update(expand(f"{{final_bam_dir}}/{wildcards.assembly}-{trep}.samtools-coordinate.bam", **config))
         output["bais"].update(expand(f"{{final_bam_dir}}/{wildcards.assembly}-{trep}.samtools-coordinate.bam.bai", **config))
         if "control" in treps and isinstance(treps.loc[trep, "control"], str):
@@ -232,7 +232,7 @@ rule plotFingerprint:
 def computematrix_input(wildcards):
     output = []
 
-    for trep in set(treps[treps['assembly'] == wildcards.assembly].index):
+    for trep in set(treps[treps['assembly'] == ori_assembly(wildcards.assembly)].index):
         output.append(expand(f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{trep}.bw", **config)[0])
 
     return output
@@ -363,7 +363,7 @@ def get_summits_bed(wildcards):
     return expand(
         [
             f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{replicate}_summits.bed"
-            for replicate in breps[breps["assembly"] == wildcards.assembly].index
+            for replicate in breps[breps["assembly"] == ori_assembly(wildcards.assembly)].index
         ],
         **config,
     )
@@ -417,7 +417,7 @@ rule multiqc_rename_buttons:
     output:
         temp(expand('{qc_dir}/sample_names_{{assembly}}.tsv', **config))
     run:
-        newsamples = samples[samples["assembly"] == wildcards.assembly].reset_index(level=0, inplace=False)
+        newsamples = samples[samples["assembly"] == ori_assembly(wildcards.assembly)].reset_index(level=0, inplace=False)
         newsamples = newsamples.drop(["assembly"], axis=1)
         newsamples.to_csv(output[0], sep="\t", index=False)
 
@@ -497,12 +497,12 @@ def get_qc_files(wildcards):
     if get_trimming_qc in quality_control:
         # scatac seq only on treps, not on single samples
         if get_workflow() != "scatac_seq":
-            for sample in samples[samples['assembly'] == wildcards.assembly].index:
+            for sample in samples[samples['assembly'] == ori_assembly(wildcards.assembly)].index:
                 qc['files'].update(get_trimming_qc(sample))
 
     # qc on merged technical replicates/samples
     if get_alignment_qc in quality_control:
-        for replicate in treps[treps['assembly'] == wildcards.assembly].index:
+        for replicate in treps[treps['assembly'] == ori_assembly(wildcards.assembly)].index:
             for function in [func for func in quality_control if
                              func.__name__ not in ['get_peak_calling_qc', 'get_trimming_qc']]:
                 qc['files'].update(function(replicate))
@@ -512,11 +512,11 @@ def get_qc_files(wildcards):
 
     # qc on combined biological replicates/samples
     if get_peak_calling_qc in quality_control:
-        for trep in treps[treps['assembly'] == wildcards.assembly].index:
+        for trep in treps[treps['assembly'] == ori_assembly(wildcards.assembly)].index:
             qc['files'].update(get_peak_calling_qc(trep))
 
     if get_rna_qc in quality_control and not config.get("ignore_strandedness"):
-        for trep in treps[treps['assembly'] == wildcards.assembly].index:
+        for trep in treps[treps['assembly'] == ori_assembly(wildcards.assembly)].index:
             qc['files'].update(get_rna_qc(trep))
 
     return qc

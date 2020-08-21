@@ -151,9 +151,6 @@ rule sra2fastq_SE:
         """
 
 
-ruleorder: renamefastq_PE > sra2fastq_PE
-
-
 rule sra2fastq_PE:
     """
     Downloaded (raw) SRAs are converted to paired-end fastq files.
@@ -190,36 +187,41 @@ rule sra2fastq_PE:
         """
 
 
-def get_wrong_fqext(wildcards):
-    """get all local samples with fqexts that do not match the config"""
-    fastqs = glob.glob(os.path.join(config["fastq_dir"], wildcards.sample + "*" + config["fqsuffix"] + ".gz"))
-    # exclude samples with the correct fqext
-    r1 = wildcards.sample + "_" + config["fqext1"] + "." + config["fqsuffix"] + ".gz"
-    r2 = wildcards.sample + "_" + config["fqext2"] + "." + config["fqsuffix"] + ".gz"
-    fastqs = [f for f in fastqs if not re.match(r1 + "|" + r2, f)]
-    if len(fastqs) == 0:
-        fastqs.append(
-            f"If you can read this, seq2science is looking for non-existing files (for sample {wildcards}) or in the wrong location. "
-            "Tip: Try removing the seq2science cache with 'seq2science clean'"
-        )
-    return sorted(fastqs)
+# NOTE: if the workflow fails it tends to blame this rule.
+# Set "debug: True" in the config to see the root cause.
+if not config.get("debug"):
+    ruleorder: renamefastq_PE > sra2fastq_PE
+
+    def get_wrong_fqext(wildcards):
+        """get all local samples with fqexts that do not match the config"""
+        fastqs = glob.glob(os.path.join(config["fastq_dir"], wildcards.sample + "*" + config["fqsuffix"] + ".gz"))
+        # exclude samples with the correct fqext
+        r1 = wildcards.sample + "_" + config["fqext1"] + "." + config["fqsuffix"] + ".gz"
+        r2 = wildcards.sample + "_" + config["fqext2"] + "." + config["fqsuffix"] + ".gz"
+        fastqs = [f for f in fastqs if not re.match(r1 + "|" + r2, f)]
+        if len(fastqs) == 0:
+            fastqs.append(
+                f"If you can read this, seq2science is looking for non-existing files (for sample {wildcards}) or in the wrong location. "
+                "Tip: Try removing the seq2science cache with 'seq2science clean'"
+            )
+        return sorted(fastqs)
 
 
-rule renamefastq_PE:
-    """
-    Create symlinks to fastqs with incorrect fqexts (default R1/R2).
-    Forward and reverse samples will be switched if forward/reverse names are not 
-    lexicographically ordered.
-    """
-    input:
-        get_wrong_fqext,
-    output:
-        temp(expand("{fastq_dir}/{{sample}}_{fqext}.{fqsuffix}.gz", **config)),
-    shell:
+    rule renamefastq_PE:
         """
-        ln {input[0]} {output[0]}
-        ln {input[1]} {output[1]}
+        Create symlinks to fastqs with incorrect fqexts (default R1/R2).
+        Forward and reverse samples will be switched if forward/reverse names are not 
+        lexicographically ordered.
         """
+        input:
+            get_wrong_fqext,
+        output:
+            temp(expand("{fastq_dir}/{{sample}}_{fqext}.{fqsuffix}.gz", **config)),
+        shell:
+            """
+            ln {input[0]} {output[0]}
+            ln {input[1]} {output[1]}
+            """
 
 
 ruleorder: ena2fastq_SE > sra2fastq_SE

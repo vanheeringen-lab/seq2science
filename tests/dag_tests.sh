@@ -2,6 +2,9 @@
 #   python setup.py develop
 #   bash ./tests/dag_tests.sh TEST
 
+# for lazy asses:
+# bash ./tests/dag_tests.sh alignment && bash ./tests/dag_tests.sh atac-seq && bash ./tests/dag_tests.sh scatac-seq && bash ./tests/dag_tests.sh rna-seq
+
 # check if an argument was passed
 if [ -z "$1" ]; then
     echo "No test specified"; exit
@@ -40,6 +43,8 @@ touch tests/local_test_results/fastq/S5_1.fastq.gz
 touch tests/local_test_results/fastq/S6_1.fastq.gz
 touch tests/local_test_results/fastq/S7_1.fastq.gz
 touch tests/local_test_results/fastq/S8_1.fastq.gz
+touch tests/local_test_results/ERCC92.fa
+touch tests/local_test_results/ERCC92.gtf
 
 for assembly in assembly1 assembly2; do
   mkdir -p tests/local_test_results/${assembly}
@@ -186,6 +191,16 @@ if [ $1 = "atac-seq" ]; then
   printf "\nmultiqc report\n"
   seq2science run atac-seq -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={create_qc_report:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 fastqc 4
+
+  printf "\ncustom assembly\n"
+  seq2science run atac-seq -n --configfile tests/$WF/macs2.yaml --snakemakeOptions quiet=True config={custom_genome_extension:tests/local_test_results/ERCC92.fa} | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 extend_genome 1
+  assert_rulecount $1 bwa_index 1
+  assert_rulecount $1 bwa_mem 1
+  seq2science run atac-seq -n --configfile tests/$WF/genrich.yaml --snakemakeOptions quiet=True config={custom_genome_extension:tests/local_test_results/ERCC92.fa} | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 extend_genome 1
+  assert_rulecount $1 bwa_index 1
+  assert_rulecount $1 bwa_mem 1
 
   printf "\nmultiple peak callers\n"
   seq2science run atac-seq -n --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
@@ -369,17 +384,18 @@ if [ $1 = "rna-seq" ]; then
   seq2science run rna-seq -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={aligner:star,create_qc_report:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 fastqc 4
 
-  printf "\nspike ins\n"
-  touch tests/local_test_results/ERCC92.fa
-  touch tests/local_test_results/ERCC92.gtf
-  seq2science run rna-seq -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={aligner:star,quantifier:salmon,spike_in_fa:tests/local_test_results/ERCC92.fa,spike_in_gtf:tests/local_test_results/ERCC92.gtf} | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 add_spike_ins 1
+  printf "\ncustom assembly\n"
+  seq2science run rna-seq -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={aligner:star,quantifier:salmon,custom_genome_extension:tests/local_test_results/ERCC92.fa,custom_annotation_extension:tests/local_test_results/ERCC92.gtf} | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 extend_genome 1
+  assert_rulecount $1 extend_genome_annotation 1
   assert_rulecount $1 salmon_index 1
-  seq2science run rna-seq -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={aligner:star,quantifier:htseq,spike_in_fa:tests/local_test_results/ERCC92.fa,spike_in_gtf:tests/local_test_results/ERCC92.gtf} | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 add_spike_ins 1
+  seq2science run rna-seq -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={aligner:star,quantifier:htseq,custom_genome_extension:tests/local_test_results/ERCC92.fa} | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 extend_genome 1
+  assert_rulecount $1 extend_genome_annotation 1
   assert_rulecount $1 star_index 1
-  seq2science run rna-seq -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={aligner:hisat2,quantifier:htseq,spike_in_fa:tests/local_test_results/ERCC92.fa,spike_in_gtf:tests/local_test_results/ERCC92.gtf} | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 add_spike_ins 1
+  seq2science run rna-seq -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={aligner:hisat2,quantifier:htseq,custom_annotation_extension:tests/local_test_results/ERCC92.gtf} | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 extend_genome 1
+  assert_rulecount $1 extend_genome_annotation 1
   assert_rulecount $1 hisat2_splice_aware_index 1
 
   printf "\ndifferential expression analysis\n"
