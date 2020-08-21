@@ -48,7 +48,7 @@ rule id2sra:
         do
             # acquire a lock
             (
-                flock --timeout 30 200 || exit 1
+                flock --timeout 30 200 || continue
                 sleep 2
             ) 200>{layout_cachefile_lock}
     
