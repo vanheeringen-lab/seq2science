@@ -9,7 +9,7 @@ build/
 .idea/
 .snakemake/
 tinydata/
-tests/tinydata_SI/
+tests/tinydata_custom/
 
 *results/
 *benchmark/
