@@ -426,7 +426,7 @@ rule trackhub:
                     for peak_caller in config["peak_caller"]:
                         for brep in set(breps[breps["assembly"] == ori_assembly(assembly)].index):
                             ftype = get_ftype(peak_caller)
-                            bigpeak = f"{config['result_dir']}/{peak_caller}/{assembly}{suffix}-{brep}.big{ftype}"
+                            bigpeak = f"{config['result_dir']}/{peak_caller}/{assembly}-{brep}.big{ftype}"
                             sample_name = rep_to_descriptive(brep, brep=True) + "_pk"
                             if len(config["peak_caller"]) > 1:
                                 sample_name += f"_{peak_caller}"
@@ -448,7 +448,7 @@ rule trackhub:
                             trackdb.add_tracks(track)
 
                             for trep in treps_from_brep[(brep, ori_assembly(assembly))]:
-                                bigwig = f"{config['result_dir']}/{peak_caller}/{assembly}{suffix}-{trep}.bw"
+                                bigwig = f"{config['result_dir']}/{peak_caller}/{assembly}-{trep}.bw"
                                 assert os.path.exists(bigwig), bigwig + " not found!"
                                 sample_name = rep_to_descriptive(trep) + "_bw"
                                 if len(config["peak_caller"]) > 1:
@@ -474,7 +474,7 @@ rule trackhub:
                 elif get_workflow() == "rna_seq":
                     for sample in treps[treps["assembly"] == ori_assembly(assembly)].index:
                         for bw in strandedness_to_trackhub(sample):
-                            bigwig = f"{config['bigwig_dir']}/{assembly}{suffix}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw"
+                            bigwig = f"{config['bigwig_dir']}/{assembly}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw"
                             assert os.path.exists(bigwig), bigwig + " not found!"
                             sample_name = rep_to_descriptive(sample)
                             sample_name = trackhub.helpers.sanitize(sample_name)
@@ -497,7 +497,7 @@ rule trackhub:
                 # Alignment trackhub
                 elif get_workflow() == "alignment":
                     for sample in treps[treps["assembly"] == ori_assembly(assembly)].index:
-                        bigwig = f"{config['bigwig_dir']}/{assembly}{suffix}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}.bw"
+                        bigwig = f"{config['bigwig_dir']}/{assembly}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}.bw"
                         assert os.path.exists(bigwig), bigwig + " not found!"
                         sample_name = rep_to_descriptive(sample)
                         sample_name = trackhub.helpers.sanitize(sample_name)

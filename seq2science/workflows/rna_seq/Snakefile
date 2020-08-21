@@ -23,9 +23,6 @@ include: f"{config['rule_dir']}/qc.smk"
 # load the quality control files
 quality_control = [get_trimming_qc, get_alignment_qc, get_rna_qc] if config['quantifier'] is not 'salmon' else [get_trimming_qc]
 
-# # load DE analysis contrasts
-# contrasts = get_contrasts()
-
 rule count_all:
     """
     count expressed genes per assembly and (optionally) perform differential expression analysis
