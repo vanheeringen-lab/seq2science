@@ -1,8 +1,6 @@
 import glob
 import os
 import re
-import time
-import subprocess
 
 
 def gsm2srx(gsm):
@@ -39,82 +37,26 @@ rule id2sra:
     message: explain_rule("id2sra")
     resources:
         parallel_downloads=1,
+    conda:
+        "../envs/get_fastq.yaml"
     wildcard_constraints:
         sample="(GSM|SRR|ERR|DRR)\d+",
-    params:
-        ascp_path=config.get("ascp_path", "NO_ASCP_PATH_PROVIDED"),
-        ascp_key=config.get("ascp_key", "NO_ASCP_key_PROVIDED"),
-    run:
-        sample = wildcards.sample
-        eutils_compatible = True
-        with FileLock(layout_cachefile_lock):
-            try:
-                layout = subprocess.check_output(
-                    f'''esearch -db sra -query {sample} | efetch | grep -Po "(?<=<LIBRARY_LAYOUT><)[^ /><]*"''',
-                    shell=True).decode('ascii').rstrip()
-            except (subprocess.CalledProcessError, ValueError):
-                sample = gsm2srx(sample)
-
-            time.sleep(2)
-
-            shell(
+    shell:
         """
-        echo "starting lookup of the sample in the sra database:" >> {log}
-        if [[ {sample} =~ GSM || {sample} =~ SRX ]]; then
-            IDS=$(esearch -db sra -query {sample} | efetch --format runinfo | cut -d ',' -f 1 | grep SRR);
-            TYPE_U=SRR;
-        else
-            IDS={sample};
-            TYPE_U=$(echo {sample} | grep 'SRR|ERR|DRR' -E -o);
-        fi;
-        TYPE_L=$(echo $TYPE_U | tr '[:upper:]' '[:lower:]');
-        echo "ids: $IDS, type (uppercase): $TYPE_U, type (lowercase): $TYPE_L" >> {log}
-
-        declare -a URLS
-        for ID in $IDS;
+        # three attempts
+        for i in {{1..3}}
         do
-            sleep 2s;
-            WGET_URL=$(esearch -db sra -query $ID | efetch --format runinfo | grep $ID | cut -d ',' -f 10 | grep http);
-            URLS+=($WGET_URL);
-        done;
-
-        mkdir {output}
-        printf '%s\n' "${{IDS[@]}}" > {output}/ids
-        printf '%s\n' "${{URLS[@]}}" > {output}/urls
-        echo $TYPE_L > {output}/type_l
-        echo $TYPE_U > {output}/type_u
+            # acquire a lock
+            (
+                flock --timeout 30 200 || continue
+                sleep 2
+            ) 200>{layout_cachefile_lock}
+    
+            # dump
+            prefetch --max-size 999999999999 --output-directory {output} --log-level debug --progress {wildcards.sample} >> {log} 2>&1 && break
+            sleep 10
+        done
         """
-            )
-            time.sleep(2)
-
-        shell(
-        """
-        read TYPE_L < {output}/type_l
-        read TYPE_U < {output}/type_u
-        readarray -t IDS < {output}/ids
-        readarray -t URLS < {output}/urls
-        rm {output}/*
-        for i in ${{!IDS[@]}}; do
-            ID="${{IDS[i]}}"
-
-            PREFIX=$(echo $ID | cut -c1-6);
-            SUFFIX=$(echo -n $ID | tail -c 3);
-
-            URL_ENA1="era-fasp@fasp.sra.ebi.ac.uk:/vol1/$TYPE_L/$PREFIX/$SUFFIX/$ID";
-            URL_ENA2="era-fasp@fasp.sra.ebi.ac.uk:/vol1/$TYPE_L/$PREFIX/$ID";
-            URL_NCBI="anonftp@ftp.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/$TYPE_U/$PREFIX/$ID/$ID.sra";
-            WGET_URL=${{URLS[i]}}
-
-            echo "trying to download $ID from, respectively: \n$URL_ENA1 \n$URL_ENA2 \n$URL_NCBI \n$WGET_URL" >> {log}
-            # first try the ENA (which has at least two different filing systems), if not successful, try NCBI
-            # if none of the ascp servers work, or ascp is not defined in the config, then simply wget
-            {params.ascp_path} -i {params.ascp_key} -P33001 -T -d -k 0 -Q -l 1G $URL_ENA1 {output[0]} >> {log} 2>&1 ||
-            {params.ascp_path} -i {params.ascp_key} -P33001 -T -d -k 0 -Q -l 1G $URL_ENA2 {output[0]} >> {log} 2>&1 ||
-            {params.ascp_path} -i {params.ascp_key}         -T -d -k 0 -Q -l 1G $URL_NCBI {output[0]} >> {log} 2>&1 ||
-            (mkdir -p {output[0]} >> {log} 2>&1 && wget -O {output[0]}/$ID -a {log} -nv $WGET_URL >> {log} 2>&1)
-        done;
-        """
-        )
 
 
 
@@ -125,7 +67,9 @@ rule sra2fastq_SE:
     input:
         rules.id2sra.output,
     output:
-        expand("{fastq_dir}/{{sample}}.{fqsuffix}.gz", **config),
+        fastq=expand("{fastq_dir}/{{sample}}.{fqsuffix}.gz", **config),
+        tmp_dump=temp(directory(expand("{sra_dir}/tmp/{{sample}}", **config))),
+        tmp_fastq=temp(directory(expand("{sra_dir}/fastq/{{sample}}", **config))),
     log:
         expand("{log_dir}/sra2fastq_SE/{{sample}}.log", **config),
     benchmark:
@@ -135,19 +79,21 @@ rule sra2fastq_SE:
         "../envs/get_fastq.yaml"
     shell:
         """
-        # setup tmp dir
-        tmpdir={config[sra_dir]}/tmp/{wildcards.sample}
-        mkdir -p $tmpdir; trap "rm -rf $tmpdir" EXIT
+        # acquire a lock
+        (
+            flock --timeout 30 200 || exit 1
+            sleep 2
+        ) 200>{layout_cachefile_lock}
 
-        # dump to tmp dir
-        parallel-fastq-dump -s {input}/* -O $tmpdir {config[splot]} \
-        --threads {threads} --gzip >> {log} 2>&1
+        # dump
+        fasterq-dump -s {input}/* -O {output.tmp_fastq} -t {output.tmp_dump} --threads {threads} --split-spot >> {log} 2>&1
 
         # rename file and move to output dir
-        for f in $(ls -1q $tmpdir | grep -oP "^[^_]+" | uniq); do
-            dst={config[fastq_dir]}/{wildcards.sample}.{config[fqsuffix]}.gz
-            cat "${{tmpdir}}/${{f}}_pass.fastq.gz" >> $dst
+        for f in $(ls -1q {output.tmp_fastq} | grep -oP "^[^_]+" | uniq); do
+            dst={config[fastq_dir]}/{wildcards.sample}.{config[fqsuffix]}
+            cat "{output.tmp_fastq}/${{f}}" >> $dst
         done
+        pigz -p {threads} {config[fastq_dir]}/{wildcards.sample}.{config[fqsuffix]}
         """
 
 
@@ -159,7 +105,9 @@ rule sra2fastq_PE:
     input:
         rules.id2sra.output,
     output:
-        expand("{fastq_dir}/{{sample}}_{fqext}.{fqsuffix}.gz", **config),
+        fastq=expand("{fastq_dir}/{{sample}}_{fqext}.{fqsuffix}.gz", **config),
+        tmp_dump=temp(directory(expand("{sra_dir}/tmp/{{sample}}", **config))),
+        tmp_fastq=temp(directory(expand("{sra_dir}/fastq/{{sample}}", **config))),
     log:
         expand("{log_dir}/sra2fastq_PE/{{sample}}.log", **config),
     benchmark:
@@ -169,21 +117,24 @@ rule sra2fastq_PE:
         "../envs/get_fastq.yaml"
     shell:
         """
-        # setup tmp dir
-        tmpdir={config[sra_dir]}/tmp/{wildcards.sample}
-        mkdir -p $tmpdir; trap "rm -rf $tmpdir" EXIT
+        # acquire the lock
+        (
+            flock --timeout 30 200 || exit 1
+            sleep 2
+        ) 200>{layout_cachefile_lock}
 
-        # dump to tmp dir
-        parallel-fastq-dump -s {input}/* -O $tmpdir {config[split]} \
-        --threads {threads} --gzip >> {log} 2>&1
+        # dump
+        fasterq-dump -s {input}/* -O {output.tmp_fastq} -t {output.tmp_dump} --threads {threads} --split-3 >> {log} 2>&1
 
         # rename files and move to output dir
-        for f in $(ls -1q $tmpdir | grep -oP "^[^_]+" | uniq); do
-            dst_1={config[fastq_dir]}/{wildcards.sample}_{config[fqext1]}.{config[fqsuffix]}.gz
-            dst_2={config[fastq_dir]}/{wildcards.sample}_{config[fqext2]}.{config[fqsuffix]}.gz
-            cat "${{tmpdir}}/${{f}}_pass_1.fastq.gz" >> $dst_1
-            cat "${{tmpdir}}/${{f}}_pass_2.fastq.gz" >> $dst_2
+        for f in $(ls -1q {output.tmp_fastq} | grep -oP "^[^_]+" | uniq); do
+            dst_1={config[fastq_dir]}/{wildcards.sample}_{config[fqext1]}.{config[fqsuffix]}
+            dst_2={config[fastq_dir]}/{wildcards.sample}_{config[fqext2]}.{config[fqsuffix]}
+            cat "{output.tmp_fastq}/${{f}}_1.fastq" >> $dst_1
+            cat "{output.tmp_fastq}/${{f}}_2.fastq" >> $dst_2
         done
+        pigz -p {threads} {config[fastq_dir]}/{wildcards.sample}_{config[fqext1]}.{config[fqsuffix]}
+        pigz -p {threads} {config[fastq_dir]}/{wildcards.sample}_{config[fqext2]}.{config[fqsuffix]}
         """
 
 
