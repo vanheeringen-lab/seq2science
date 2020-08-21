@@ -54,6 +54,7 @@ rule id2sra:
     
             # dump
             prefetch --max-size 999999999999 --output-directory {output} --log-level debug --progress {wildcards.sample} >> {log} 2>&1 && break
+            sleep 10
         done
         """
 
