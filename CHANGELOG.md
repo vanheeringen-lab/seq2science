@@ -24,6 +24,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - Downloading sra with prefetch tries multiple times to correct for lost connection 
 - Ambiguity exception with rule narrowpeak_summit
 - combine_peaks makes use of biological replicate's peaks, not technical replicate's peaks
+- Bug with direct peak-calling on conditions
 
 ## [0.2.1] - 2020-08-10
 
