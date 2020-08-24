@@ -225,7 +225,7 @@ if "assembly" in samples:
         config["custom_annotation_extension"] = [config["custom_annotation_extension"]]
     modified = config.get("custom_genome_extension") or config.get("custom_annotation_extension")
     all_assemblies = [assembly + "_custom" if modified else assembly for assembly in set(samples['assembly'])]
-    suffix = "_custom" if modified else ""
+    suffix = config["spike_suffix"] if modified else ""
 
     def list_providers(assembly):
         """
@@ -328,7 +328,7 @@ if "assembly" in samples:
         """
         remove _SI from assembly if is was added
         """
-        return assembly[:-7] if assembly.endswith("_custom") and modified else assembly
+        return assembly[:-7] if assembly.endswith(config["spike_suffix"]) and modified else assembly
 
 
     @lru_cache(maxsize=None)
