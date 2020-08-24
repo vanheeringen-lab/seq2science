@@ -8,6 +8,8 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+## [0.2.2] - 2020-08-24
+
 ### Added
 
 - option to add custom files to each assembly (such as ERCC spike ins for scRNA-seq)
@@ -130,6 +132,7 @@ Many minor bug- and quality of life fixes.
 First release of seq2science!
 
 [Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/master...develop
+[0.2.2]: https://github.com/vanheeringen-lab/seq2science/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/vanheeringen-lab/seq2science/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.0.3...v0.1.0
