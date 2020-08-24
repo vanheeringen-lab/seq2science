@@ -3,11 +3,11 @@ if config["quantifier"] == "salmon":
     def get_counts(wildcards):
         quant_dirs = []
         if config["quantifier"] in ["salmon", "star"]:
-            for sample in treps[treps["assembly"] == wildcards.assembly].index:
+            for sample in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index:
                 quant_dirs.append(f"{{result_dir}}/{{quantifier}}/{wildcards.assembly}-{sample}")
         return expand(quant_dirs, **config)
 
-    def get_index(wildcards):
+    def get_salmon_index(wildcards):
         index = f"{{genome_dir}}/{wildcards.assembly}/index/{{quantifier}}"
         if config["decoy_aware_index"]:
             index += "_decoy_aware"
@@ -24,7 +24,7 @@ if config["quantifier"] == "salmon":
         input:
             fasta=expand("{genome_dir}/{{assembly}}/{{assembly}}.transcripts.fa", **config),
             gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
-            index_dir=get_index,
+            index_dir=get_salmon_index,
         output:
             index=expand("{genome_dir}/{{assembly}}/index/tximeta/linked_txome.json", **config), # symlink=expand(f"{{genome_dir}}/{{{{assembly}}}}/index/tximeta/{config['tximeta']['organism']}.{{{{assembly}}}}.{config['tximeta']['release']}.gtf", **config)
         params:
@@ -70,7 +70,7 @@ else:
 
     def get_counts(wildcards):
         count_tables = []
-        for sample in treps[treps["assembly"] == wildcards.assembly].index:
+        for sample in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index:
             count_tables.append(f"{{counts_dir}}/{wildcards.assembly}-{sample}.counts.tsv")
         return expand(count_tables, **config)
 
@@ -115,7 +115,7 @@ if config.get("dexseq"):
 
     def get_DEXSeq_counts(wildcards):
         count_tables = []
-        for sample in treps[treps["assembly"] == wildcards.assembly].index:
+        for sample in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index:
             count_tables.append(f"{{counts_dir}}/{wildcards.assembly}-{sample}.DEXSeq_counts.tsv")
         return expand(count_tables, **config)
 

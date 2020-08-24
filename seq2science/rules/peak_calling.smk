@@ -190,7 +190,7 @@ rule keep_mates:
     input:
         expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config),
     output:
-        expand("{final_bam_dir}/{{sample}}-mates-{{assembly}}.samtools-coordinate.bam", **config),
+        expand("{final_bam_dir}/{{assembly}}-{{sample}}-mates.samtools-coordinate.bam", **config),
     message: explain_rule("keep_mates")
     log:
         expand("{log_dir}/keep_mates/{{assembly}}-{{sample}}.log", **config),
@@ -283,7 +283,7 @@ if "condition" in samples:
         def get_idr_replicates(wildcards):
             reps = []
             for replicate in treps[
-                (treps["assembly"] == wildcards.assembly) & (treps["condition"] == wildcards.condition)
+                (treps["assembly"] == ori_assembly(wildcards.assembly)) & (treps["condition"] == wildcards.condition)
             ].index:
                 reps.append(
                     f"{config['result_dir']}/{wildcards.peak_caller}/{wildcards.assembly}-{replicate}_peaks.{wildcards.ftype}"
@@ -351,7 +351,7 @@ if "condition" in samples:
                     [
                         f"{{result_dir}}/macs2/{wildcards.assembly}-{replicate}_qvalues.bdg"
                         for replicate in treps[
-                            (treps["assembly"] == wildcards.assembly) & (treps["condition"] == wildcards.condition)
+                            (treps["assembly"] == ori_assembly(wildcards.assembly)) & (treps["condition"] == wildcards.condition)
                         ].index
                     ],
                     **config,
@@ -360,7 +360,7 @@ if "condition" in samples:
             def get_macs_replicate(wildcards):
                 """the original peakfile, to link if there is only 1 sample for a condition"""
                 replicate = treps[
-                    (treps['assembly'] == wildcards.assembly) & (treps['condition'] == wildcards.condition)
+                    (treps['assembly'] == ori_assembly(wildcards.assembly)) & (treps['condition'] == wildcards.condition)
                 ].index
                 return expand(
                     f"{{result_dir}}/macs2/{wildcards.assembly}-{replicate[0]}_peaks.{wildcards.ftype}",

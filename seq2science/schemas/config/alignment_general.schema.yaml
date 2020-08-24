@@ -143,3 +143,8 @@ properties:
     description: The max memory used in gigabytes by samtools/sambamba when sorting bams
     default: 2
     type: integer
+
+  spike_suffix:
+    description: What to append to the assembly name to indicate that spike-ins have been added
+    default: '_custom'
+    type: string
