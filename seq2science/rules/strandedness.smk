@@ -31,12 +31,12 @@ if get_workflow() == "rna_seq":
                 ("strandedness" in samples and "nan" not in set(samples.strandedness)):
             files = []
         elif "strandedness" not in samples:
-            files = [f"{{qc_dir}}/strandedness/{samples[col == sample].assembly[0]}-{sample}.strandedness.txt" for sample in set(col)]
+            files = [f"{{qc_dir}}/strandedness/{samples[col == sample].assembly[0]}{suffix}-{sample}.strandedness.txt" for sample in set(col)]
         else:
             files = []
             for sample in set(col):
                 if samples[col == sample].strandedness not in ["yes", "forward", "reverse", "no"]:
-                    files.append(f"{{qc_dir}}/strandedness/{samples[col == sample].assembly[0]}-{sample}.strandedness.txt")
+                    files.append(f"{{qc_dir}}/strandedness/{samples[col == sample].assembly[0]}{suffix}-{sample}.strandedness.txt")
         return expand(files, **config)
 
 

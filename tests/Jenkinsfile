@@ -62,6 +62,9 @@ pipeline {
                 source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                 conda activate s2s
                 pip install .
+
+                # remove old cache files
+                seq2science clean
                 '''
             }
         }

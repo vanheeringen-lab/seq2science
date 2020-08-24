@@ -163,7 +163,7 @@ rule mt_nuc_ratio_calculator:
 def fingerprint_multiBamSummary_input(wildcards):
     output = {"bams": set(), "bais": set()}
 
-    for trep in set(treps[treps['assembly'] == wildcards.assembly].index):
+    for trep in set(treps[treps['assembly'] == ori_assembly(wildcards.assembly)].index):
         output["bams"].update(expand(f"{{final_bam_dir}}/{wildcards.assembly}-{trep}.samtools-coordinate.bam", **config))
         output["bais"].update(expand(f"{{final_bam_dir}}/{wildcards.assembly}-{trep}.samtools-coordinate.bam.bai", **config))
         if "control" in treps and isinstance(treps.loc[trep, "control"], str):
@@ -188,10 +188,14 @@ def get_descriptive_names(wildcards, input):
             trep = trep[:trep.find(".sam")]
         elif trep.find(".bw") != -1:
             trep = trep[:trep.find(".bw")]
+        elif trep.find("_summits.bed") != -1:
+            trep = trep[:trep.find("_summits.bed")]
         else:
             raise ValueError
 
-        if "control" in treps and trep not in treps.index:
+        if trep in breps.index:
+            labels += trep + " "
+        elif "control" in treps and trep not in treps.index:
             labels += f"control_{trep} "
         elif trep in samples.index:
             labels += samples.loc[trep, "descriptive_name"] + " "
@@ -212,7 +216,7 @@ rule plotFingerprint:
     log:
         expand("{log_dir}/plotFingerprint/{{assembly}}.log", **config)
     benchmark:
-        expand("{benchmark_dir}/plotFingerprint/{{{{assembly}}}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/plotFingerprint/{{assembly}}.benchmark.txt", **config)[0]
     conda:
         "../envs/deeptools.yaml"
     threads: 16
@@ -228,7 +232,7 @@ rule plotFingerprint:
 def computematrix_input(wildcards):
     output = []
 
-    for trep in set(treps[treps['assembly'] == wildcards.assembly].index):
+    for trep in set(treps[treps['assembly'] == ori_assembly(wildcards.assembly)].index):
         output.append(expand(f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{trep}.bw", **config)[0])
 
     return output
@@ -355,6 +359,35 @@ rule plotPCA:
         plotPCA --corData {input} --outFileNameData {output} > {log} 2>&1
         """
 
+def get_summits_bed(wildcards):
+    return expand(
+        [
+            f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{replicate}_summits.bed"
+            for replicate in breps[breps["assembly"] == ori_assembly(wildcards.assembly)].index
+        ],
+        **config,
+    )
+
+
+rule chipseeker:
+    input:
+        narrowpeaks=get_summits_bed
+    output:
+        img1=expand("{qc_dir}/chipseeker/{{assembly}}-{{peak_caller}}_img1_mqc.png", **config),
+        img2=expand("{qc_dir}/chipseeker/{{assembly}}-{{peak_caller}}_img2_mqc.png", **config),
+    params:
+        gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
+        names=lambda wildcards, input: get_descriptive_names(wildcards, input)
+    log:
+        expand("{log_dir}/chipseeker/{{assembly}}-{{peak_caller}}.log", **config)
+    conda:
+        "../envs/chipseeker.yaml"
+    message: explain_rule("chipseeker")
+    resources:
+        R_scripts=1, # conda's R can have issues when starting multiple times
+    script:
+        f"{config['rule_dir']}/../scripts/chipseeker.R"
+
 
 rule multiqc_header_info:
     """
@@ -384,7 +417,7 @@ rule multiqc_rename_buttons:
     output:
         temp(expand('{qc_dir}/sample_names_{{assembly}}.tsv', **config))
     run:
-        newsamples = samples[samples["assembly"] == wildcards.assembly].reset_index(level=0, inplace=False)
+        newsamples = samples[samples["assembly"] == ori_assembly(wildcards.assembly)].reset_index(level=0, inplace=False)
         newsamples = newsamples.drop(["assembly"], axis=1)
         newsamples.to_csv(output[0], sep="\t", index=False)
 
@@ -464,12 +497,12 @@ def get_qc_files(wildcards):
     if get_trimming_qc in quality_control:
         # scatac seq only on treps, not on single samples
         if get_workflow() != "scatac_seq":
-            for sample in samples[samples['assembly'] == wildcards.assembly].index:
+            for sample in samples[samples['assembly'] == ori_assembly(wildcards.assembly)].index:
                 qc['files'].update(get_trimming_qc(sample))
 
     # qc on merged technical replicates/samples
     if get_alignment_qc in quality_control:
-        for replicate in treps[treps['assembly'] == wildcards.assembly].index:
+        for replicate in treps[treps['assembly'] == ori_assembly(wildcards.assembly)].index:
             for function in [func for func in quality_control if
                              func.__name__ not in ['get_peak_calling_qc', 'get_trimming_qc']]:
                 qc['files'].update(function(replicate))
@@ -479,11 +512,11 @@ def get_qc_files(wildcards):
 
     # qc on combined biological replicates/samples
     if get_peak_calling_qc in quality_control:
-        for trep in treps[treps['assembly'] == wildcards.assembly].index:
+        for trep in treps[treps['assembly'] == ori_assembly(wildcards.assembly)].index:
             qc['files'].update(get_peak_calling_qc(trep))
 
     if get_rna_qc in quality_control and not config.get("ignore_strandedness"):
-        for trep in treps[treps['assembly'] == wildcards.assembly].index:
+        for trep in treps[treps['assembly'] == ori_assembly(wildcards.assembly)].index:
             qc['files'].update(get_rna_qc(trep))
 
     return qc
@@ -599,6 +632,10 @@ def get_peak_calling_qc(sample):
     assembly = treps.loc[sample, "assembly"]
     # TODO: replace with genomepy checkpoint in the future
     if has_annotation(assembly):
+        output.extend(expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config))  # added to be unzipped
         output.extend(expand("{qc_dir}/plotProfile/{{assembly}}-{peak_caller}.tsv", **config))
+        if get_ftype(list(config["peak_caller"].keys())[0]) == "narrowPeak":
+            output.extend(expand("{qc_dir}/chipseeker/{{assembly}}-{peak_caller}_img1_mqc.png", **config))
+            output.extend(expand("{qc_dir}/chipseeker/{{assembly}}-{peak_caller}_img2_mqc.png", **config))
 
     return output
