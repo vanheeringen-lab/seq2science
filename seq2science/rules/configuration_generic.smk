@@ -637,7 +637,7 @@ wildcard_constraints:
 if 'assembly' in samples:
     wildcard_constraints:
         raw_assembly=any_given('assembly'),
-        assembly=any_given('assembly', suffix="_custom" if modified else ""),
+        assembly=any_given('assembly', suffix=config["spike_suffix"] if modified else ""),
 
 if 'replicate' in samples:
     sample_constraints.append("replicate")
