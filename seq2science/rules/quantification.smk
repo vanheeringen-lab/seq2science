@@ -21,6 +21,7 @@ if config["quantifier"] == "salmon":
         shell:
             "gffread -w {output} -g {input.fa} {input.gtf} >> {log} 2>&1"
 
+
     rule decoy_transcripts:
         """
         Generate decoy_transcripts.txt for Salmon indexing  
@@ -65,7 +66,8 @@ if config["quantifier"] == "salmon":
             expand("{benchmark_dir}/{quantifier}_index/{{assembly}}.benchmark.txt", **config)[0]
         params:
             config["quantifier_index"],
-        threads: 40
+        priority: 1
+        threads: 10
         conda:
             "../envs/salmon.yaml"
         shell:
@@ -88,7 +90,8 @@ if config["quantifier"] == "salmon":
             expand("{benchmark_dir}/{quantifier}_index/{{assembly}}.benchmark.txt", **config)[0]
         params:
             config["quantifier_index"],
-        threads: 40
+        priority: 1
+        threads: 10
         conda:
             "../envs/salmon.yaml"
         shell:
@@ -102,7 +105,7 @@ if config["quantifier"] == "salmon":
         """
         input:
             reads=get_reads,
-            index=get_index,
+            index=get_salmon_index,
         output:
             dir=directory(expand("{result_dir}/{quantifier}/{{assembly}}-{{sample}}", **config)),
         log:

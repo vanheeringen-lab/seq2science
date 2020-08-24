@@ -62,8 +62,8 @@ else:
 
     messages={
         "bowtie2_align": "Reads were aligned with bowtie2 v@bowtie2[bowtie2] (https://dx.doi.org/10.1038%2Fnmeth.1923) with options '{config[align]}'.",
-        "bwa_mem": "Reads were aligned with bwa-mem v@bwa[bwa] (http://arxiv.org/abs/1303.3997) with options '{config[align]}'.",
-        "bwa_mem2": "Reads were aligned with bwa-mem2 v@bwamem2[bwa-mem2] (https://arxiv.org/abs/1907.12931) with options '{config[align]}'.",
+        "bwa-mem_align": "Reads were aligned with bwa-mem v@bwa[bwa] (http://arxiv.org/abs/1303.3997) with options '{config[align]}'.",
+        "bwa-mem2_align": "Reads were aligned with bwa-mem2 v@bwamem2[bwa-mem2] (https://arxiv.org/abs/1907.12931) with options '{config[align]}'.",
         "hisat_splice_aware": "An exon and splice-aware index was generated for HISAT2.",
         "hisat2_align": "Reads were aligned with HISAT2 v@hisat2[hisat2] (https://doi.org/10.1038/s41587-019-0201-4) with options '{config[align]}'.",
         "star_align": "Reads were aligned with STAR v@star[star] (https://dx.doi.org/10.1093%2Fbioinformatics%2Fbts635) with options '{config[align]}'.",
@@ -87,6 +87,7 @@ else:
         "count_matrix_txi": "Transcript abundance estimations were aggregated and converted to gene counts using tximeta v@tximeta[tximeta] (https://doi.org/10.1101/777888).",
         "id2sra": "Public samples were downloaded from the Sequence Read Archive (https://doi.org/10.1093/nar/gkq1019) with help of the ncbi e-utilities.",
         "get_genome": "Genome assembly {wildcards.assembly} was downloaded with genomepy v@get_genome[genomepy] (https://doi.org/10.21105/joss.00320).",
+        "custom_extension": "The genome and gene annotations was extended with custom regions.",
         "call_peak_genrich":"Peaks were called with genrich v@genrich[genrich] (https://github.com/jsh58/Genrich) with options '{config[peak_caller][genrich]}'.",
         "macs2_callpeak": "Peaks were called with macs2 v@macs2[macs2] (https://doi.org/10.1186/gb-2008-9-9-r137) with options '{config[peak_caller][macs2]}' in {params.format} mode.",
         "keep_mates": "After alignment we removed paired-end info from reads with seq2science to utilize both mates in the paired-end reads.",

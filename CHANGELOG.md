@@ -8,11 +8,37 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- option to add custom files to each assembly (such as ERCC spike ins for scRNA-seq)
+
+### Changed
+
+- assemblies are now checked in the configuration, similar to samples
+- get_genome was split in 3 rules, allowing for less reruns
+- Profiles are now parsed by the s2s wrapper
+- Checking for validity of samples.tsv now happens with pandasschema
+- Explicit priority arguments to all group jobs (aligner + samtools_presort)
+- Snakemake version (5.22.1)
+- Reduced threads on salmon indexing (matching aligners)
+- Make use of fasterq-dump instead of parallel-fastq-dump
+
+### Fixed
+
+- Test no longer use old cache files
+- Profiles no longer overwrite command line arguments
+- Fixed edge-case with condition column in samples but no peak-calling
+- Downloading sra with prefetch tries multiple times to correct for lost connection 
+- Ambiguity exception with rule narrowpeak_summit
+- combine_peaks makes use of biological replicate's peaks, not technical replicate's peaks
+- Bug with direct peak-calling on conditions
+
 ## [0.2.1] - 2020-08-10
 
 ### Added
 
 - Chipseeker images in MultiQC report
+- Samples that are on ENA are now directly downloaded from ENA as fastq. This means we skip the CPU instensive dumping step!
 
 ### Fixed
 
@@ -104,6 +130,8 @@ Many minor bug- and quality of life fixes.
 First release of seq2science!
 
 [Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/master...develop
+[0.2.1]: https://github.com/vanheeringen-lab/seq2science/compare/v0.2.0...v0.2.1
+[0.2.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.0.3...v0.1.0
 [0.0.3]: https://github.com/vanheeringen-lab/seq2science/compare/v0.0.2...v0.0.3
 [0.0.2]: https://github.com/vanheeringen-lab/seq2science/compare/v0.0.1...v0.0.2

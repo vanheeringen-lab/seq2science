@@ -2,11 +2,14 @@
 *.Rhistory
 slurm*.out
 report.html
+samples.tsv
+config.yaml
 build/
 *.egg*
 .idea/
 .snakemake/
 tinydata/
+tests/tinydata_custom/
 
 *results/
 *benchmark/
