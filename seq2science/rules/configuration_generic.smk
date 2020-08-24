@@ -326,9 +326,9 @@ if "assembly" in samples:
 
     def ori_assembly(assembly):
         """
-        remove _SI from assembly if is was added
+        remove the extension suffix from an assembly if is was added.
         """
-        return assembly[:-7] if assembly.endswith(config["spike_suffix"]) and modified else assembly
+        return assembly[:-len(config["spike_suffix"])] if assembly.endswith(config["spike_suffix"]) and modified else assembly
 
 
     @lru_cache(maxsize=None)
