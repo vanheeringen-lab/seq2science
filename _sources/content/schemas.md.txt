@@ -244,6 +244,13 @@ bam_sort_mem:
     default: 2
     type: integer
 ```
+#####spike_suffix
+```
+spike_suffix:
+    description: What to append to the assembly name to indicate that spike-ins have been added
+    default: _custom
+    type: string
+```
 
 ## alignment workflow specific
 #####bam_sorter

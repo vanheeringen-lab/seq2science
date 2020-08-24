@@ -88,8 +88,10 @@
 <li class="toctree-l2"><a class="reference internal" href="download_fastq.html">Downloading fastqs</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Alignment</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#pipeline-steps">Pipeline steps</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#downloading-of-sample-s">Downloading of sample(s)</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#automated-trimming">Automated trimming</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#alignment-sorting">Alignment &amp; Sorting</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#custom-assembly-extensions">Custom assembly extensions</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#mark-duplicates">Mark duplicates</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#samtools-index">Samtools index</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#quality-report">Quality report</a></li>
@@ -198,7 +200,11 @@
 <h2>Pipeline steps<a class="headerlink" href="#pipeline-steps" title="Permalink to this headline">¶</a></h2>
 <p align="center">
   <img src="../../_static/alignment.png">
-</p><div class="section" id="automated-trimming">
+</p><div class="section" id="downloading-of-sample-s">
+<h3>Downloading of sample(s)<a class="headerlink" href="#downloading-of-sample-s" title="Permalink to this headline">¶</a></h3>
+<p>Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples. Take a look at the <a class="reference external" href="https://vanheeringen-lab.github.io/seq2science/content/workflows/download_fastq.html">downloading_fastq</a> workflow for extensive documentation about downloading of public samples.</p>
+</div>
+<div class="section" id="automated-trimming">
 <h3>Automated trimming<a class="headerlink" href="#automated-trimming" title="Permalink to this headline">¶</a></h3>
 <p>The pipeline starts by trimming the reads with <a class="reference external" href="https://github.com/FelixKrueger/TrimGalore/blob/master/Docs/Trim_Galore_User_Guide.md">trim galore!</a>. Trim galore automatically first trims the low quality 3’ ends of reads, and removes short reads. After the quality trimming trim galore automatically detects which adapter was used, and trims it. The parameters of trim galore! for the pipeline can be set in the configuration by variable <em>trim_galore</em>.</p>
 </div>
@@ -213,6 +219,11 @@
 </div>
 <p>The pipeline will check if the assembly you specified is present in the <em>genome_dir</em>, and otherwise will download it for you through <a class="reference external" href="https://github.com/vanheeringen-lab/genomepy">genomepy</a>. All these aligners require an index to be formed first for each assembly, but don’t worry, the pipeline does this for you.</p>
 <p>The outputted alignment.bam is immediately sorted by either samtools or sambamba (<em>bam_sorter</em>) either in <em>queryname</em> or <em>coordinate</em> (default) order. Take a look at our <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/wiki/3.-Alignment#choosing-an-appropriate-aligner">Choosing an aligner</a> section for tips which aligner to use.</p>
+</div>
+<div class="section" id="custom-assembly-extensions">
+<h3>Custom assembly extensions<a class="headerlink" href="#custom-assembly-extensions" title="Permalink to this headline">¶</a></h3>
+<p>The genome and/or gene annotation can be extended with custom files, such as ERCC spike-ins for scRNA-seq. To do so, add <code class="docutils literal notranslate"><span class="pre">custom_genome_extension:</span> <span class="pre">path/to/spike_in.fa</span></code> and <code class="docutils literal notranslate"><span class="pre">custom_annotation_extension:</span> <span class="pre">path/to/spike_in.gtf</span></code> to the config.
+Seq2science will place the customized assembly in a separate folder in the <code class="docutils literal notranslate"><span class="pre">genome_dir</span></code>.</p>
 </div>
 <div class="section" id="mark-duplicates">
 <h3>Mark duplicates<a class="headerlink" href="#mark-duplicates" title="Permalink to this headline">¶</a></h3>

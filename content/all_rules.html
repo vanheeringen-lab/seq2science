@@ -116,12 +116,18 @@
 <li class="toctree-l3"><a class="reference internal" href="#deseq2">deseq2</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dexseq-count">dexseq_count</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#edger-normalization">edgeR_normalization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ena2fastq-pe">ena2fastq_PE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ena2fastq-se">ena2fastq_SE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#extend-genome">extend_genome</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#extend-genome-annotation">extend_genome_annotation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#fastqc">fastqc</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#featurecounts">featureCounts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id1">featurecounts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#gcpercent">gcPercent</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#genrich-pileup">genrich_pileup</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#get-genome">get_genome</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#get-genome-annotation">get_genome_annotation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#get-genome-support-files">get_genome_support_files</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#get-transcripts">get_transcripts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#hisat2-align">hisat2_align</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#hisat2-index">hisat2_index</a></li>
@@ -150,6 +156,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#multiqc-samplesconfig">multiqc_samplesconfig</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multiqc-schema">multiqc_schema</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#narrowpeak-summit">narrowpeak_summit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#onehot-peaks">onehot_peaks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#peak-bigpeak">peak_bigpeak</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#plotcorrelation">plotCorrelation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#plotfingerprint">plotFingerprint</a></li>
@@ -180,6 +187,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#trim-galore-pe">trim_galore_PE</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#trim-galore-se">trim_galore_SE</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#twobit">twobit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#unzip-file">unzip_file</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="schemas.html">All configurable options</a></li>
@@ -458,6 +466,9 @@ bedToBigBed -type=bed4 {output.cytoband_bd} -as={params.schema} \
 <h2>decoy_transcripts<a class="headerlink" href="#decoy-transcripts" title="Permalink to this headline">¶</a></h2>
 <p>Generate decoy_transcripts.txt for Salmon indexing</p>
 <p>script source: <a class="reference external" href="https://github.com/COMBINE-lab/SalmonTools">https://github.com/COMBINE-lab/SalmonTools</a></p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Generate a decoy aware transcriptome index for Salmon.
+</pre></div>
+</div>
 </div>
 <div class="section" id="deseq2">
 <h2>deseq2<a class="headerlink" href="#deseq2" title="Permalink to this headline">¶</a></h2>
@@ -483,6 +494,42 @@ RLE: is the scaling factor method proposed by Anders and Huber (2010). DEseq2 no
 </div></blockquote>
 <p>upperquartile: is the upper-quartile normalization method of Bullard et al (2010).</p>
 <p>In addition to</p>
+</div>
+<div class="section" id="ena2fastq-pe">
+<h2>ena2fastq_PE<a class="headerlink" href="#ena2fastq-pe" title="Permalink to this headline">¶</a></h2>
+<p>Download paired-end fastq files directly from the ENA.</p>
+</div>
+<div class="section" id="ena2fastq-se">
+<h2>ena2fastq_SE<a class="headerlink" href="#ena2fastq-se" title="Permalink to this headline">¶</a></h2>
+<p>Download single-end fastq files directly from the ENA.</p>
+</div>
+<div class="section" id="extend-genome">
+<h2>extend_genome<a class="headerlink" href="#extend-genome" title="Permalink to this headline">¶</a></h2>
+<p>Append given file(s) to genome</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span># extend the genome.fa
+cp {input.genome} {output.genome}
+
+for FILE in {input.extension}; do
+    cat $FILE &gt;&gt; {output.genome}
+done
+</pre></div>
+</div>
+</div>
+<div class="section" id="extend-genome-annotation">
+<h2>extend_genome_annotation<a class="headerlink" href="#extend-genome-annotation" title="Permalink to this headline">¶</a></h2>
+<p>Append given file(s) to genome annotation</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span># extend the genome.annotation.gtf
+cp {input.gtf} {output.gtf}
+
+for FILE in {input.extension}; do
+    cat $FILE &gt;&gt; {output.gtf}
+done
+
+# generate an extended genome.annotation.bed
+gtfToGenePred {output.gtf} {output.gp}
+genePredToBed {output.gp} {output.bed}
+</pre></div>
+</div>
 </div>
 <div class="section" id="fastqc">
 <h2>fastqc<a class="headerlink" href="#fastqc" title="Permalink to this headline">¶</a></h2>
@@ -538,78 +585,33 @@ Genrich -X -t $input -f {output.log} {params.control} -k {output.bedgraphish} \
 </div>
 <div class="section" id="get-genome">
 <h2>get_genome<a class="headerlink" href="#get-genome" title="Permalink to this headline">¶</a></h2>
-<p>Download a genome through genomepy.
-Additionally downloads the gene annotation if required downstream.</p>
-<p>If assemblies with the same name can be downloaded from multiple providers,
-a provider may be specified in the config (example: provider: NCBI). Otherwise,
-each provider will be tried in turn, stopping at the first success.</p>
-<p>Automatically turns on/off plugins.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span># turn off plugins and reset on exit. delete temp files on exit.
-active_plugins=$(genomepy config show | grep -Po &#39;(?&lt;=- ).*&#39; | paste -s -d, -) || echo &quot;&quot;
-trap &quot;genomepy plugin enable {{$active_plugins,}} &gt;&gt; {log} 2&gt;&amp;1; rm -f {params.temp}&quot; EXIT
-genomepy plugin disable {{blacklist,bowtie2,bwa,star,gmap,hisat2,minimap2}} &gt;&gt; {log} 2&gt;&amp;1
-genomepy plugin enable {{blacklist,}} &gt;&gt; {log} 2&gt;&amp;1
-
-# download the genome and attempt to download the annotation and blacklist
-if [[ ! {params.provider} = None  ]]; then
-    genomepy install --genomes_dir {params.dir} {wildcards.assembly} {params.provider} --annotation &gt;&gt; {log} 2&gt;&amp;1
-else
-    # try Ensembl
-    genomepy install --genomes_dir {params.dir} {wildcards.assembly} Ensembl --annotation &gt;&gt; {log} 2&gt;&amp;1 ||
-
-    # try UCSC (with Ensembl format annotation)
-    genomepy install -g {params.dir} {wildcards.assembly} UCSC -o --ucsc-annotation Ensembl &gt;&gt; {log} 2&gt;&amp;1 &amp;&amp;
-        genomepy install -g {params.dir} {wildcards.assembly} UCSC &gt;&gt; {log} 2&gt;&amp;1 ||
-
-    # try UCSC
-    genomepy install --genomes_dir {params.dir} {wildcards.assembly} UCSC --annotation &gt;&gt; {log} 2&gt;&amp;1 ||
-
-    # try NCBI
-    genomepy install --genomes_dir {params.dir} {wildcards.assembly} NCBI --annotation &gt;&gt; {log} 2&gt;&amp;1
-fi
-
-# unzip annotation if downloaded and gzipped
-if [ -f {params.gtf}.gz ]; then
-    gunzip -f {params.gtf}.gz &gt;&gt; {log} 2&gt;&amp;1
-fi
-if [ -f {params.bed}.gz ]; then
-    gunzip -f {params.bed}.gz &gt;&gt; {log} 2&gt;&amp;1
-fi
-
-# if assembly has no annotation, or annotation has no genes, throw an warning
-if [ ! -f {params.gtf} ] || $(grep -q &quot;No genes found&quot; {log}); then
-    echo &#39;\nEmpty or no annotation found for {wildcards.assembly}.\n&#39; | tee -a {log}
-
-    # if an annotation is required, make it an error and exit.
-    if $(echo {output} | grep -q annotation.gtf); then
-        echo&#39;\nSelect a different assembly or provide an annotation file manually.\n\n&#39; | tee -a {log}
-        exit 1
-    fi
-fi
-</pre></div>
+<p>Download a genome through genomepy.</p>
+<p>Also download a blacklist if it exists.</p>
 </div>
+<div class="section" id="get-genome-annotation">
+<h2>get_genome_annotation<a class="headerlink" href="#get-genome-annotation" title="Permalink to this headline">¶</a></h2>
+<p>Download a gene annotation through genomepy.</p>
+</div>
+<div class="section" id="get-genome-support-files">
+<h2>get_genome_support_files<a class="headerlink" href="#get-genome-support-files" title="Permalink to this headline">¶</a></h2>
+<p>Generate supporting files for a genome.</p>
 </div>
 <div class="section" id="get-transcripts">
 <h2>get_transcripts<a class="headerlink" href="#get-transcripts" title="Permalink to this headline">¶</a></h2>
 <p>Generate transcripts.fasta using gffread.</p>
 <p>Requires genome.fa and annotation.gtf (with matching chromosome/scaffold names)</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Generate decoy_transcripts.txt for Salmon indexing
-
-script source: https://github.com/COMBINE-lab/SalmonTools
-</pre></div>
-</div>
 </div>
 <div class="section" id="hisat2-align">
 <h2>hisat2_align<a class="headerlink" href="#hisat2-align" title="Permalink to this headline">¶</a></h2>
 <p>Align reads against a genome (index) with hisat2, and pipe the output to the required sorter(s).</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>hisat2 {params.params} --threads {threads} -x {input.index}/{wildcards.assembly} {params.input} 2&gt; {log} | tee {output} 1&gt; /dev/null 2&gt;&gt; {log}
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>hisat2 {params.params} --threads {threads} -x {input.index}/part {params.input} 2&gt; {log} | tee {output} 1&gt; /dev/null 2&gt;&gt; {log}
 </pre></div>
 </div>
 </div>
 <div class="section" id="hisat2-index">
 <h2>hisat2_index<a class="headerlink" href="#hisat2-index" title="Permalink to this headline">¶</a></h2>
 <p>Make a genome index for hisat2. This index is required for alignment.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>hisat2-build {params} -p {threads} {input} {output}/{wildcards.assembly} &gt; {log} 2&gt;&amp;1
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>hisat2-build {params} -p {threads} {input} {output}/part &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
 </div>
@@ -622,7 +624,7 @@ python3 ${{hp}}_extract_splice_sites.py {input.gtf} &gt; {output}/splice_sites.t
 python3 ${{hp}}_extract_exons.py {input.gtf} &gt; {output}/exons.tsv
 
 hisat2-build {params} -p {threads} --ss {output}/splice_sites.tsv --exon {output}/exons.tsv \
-{input.fasta} {output}/{wildcards.assembly} &gt; {log} 2&gt;&amp;1
+{input.fasta} {output}/part &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
 </div>
@@ -656,6 +658,21 @@ paste {output.tmp1} {output.tmp2} &gt; {output.out} 2&gt; {log}
 <p>Download the SRA of a sample by its unique identifier.</p>
 <p>Tries first downloading with the faster ascp protocol, if that fails it
 falls back on the slower http protocol.</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span># three attempts
+for i in {{1..3}}
+do
+    # acquire a lock
+    (
+        flock --timeout 30 200 || continue
+        sleep 2
+    ) 200&gt;{layout_cachefile_lock}
+
+    # dump
+    prefetch --max-size 999999999999 --output-directory {output} --log-level debug --progress {wildcards.sample} &gt;&gt; {log} 2&gt;&amp;1 &amp;&amp; break
+    sleep 10
+done
+</pre></div>
+</div>
 </div>
 <div class="section" id="idr">
 <h2>idr<a class="headerlink" href="#idr" title="Permalink to this headline">¶</a></h2>
@@ -815,6 +832,24 @@ against either “chrM” or “MT”.</p>
 </pre></div>
 </div>
 </div>
+<div class="section" id="onehot-peaks">
+<h2>onehot_peaks<a class="headerlink" href="#onehot-peaks" title="Permalink to this headline">¶</a></h2>
+<p>Get onehot encodings of which peaks are found in which samples</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>awk &#39;{{print $1&quot;:&quot;$2&quot;-&quot;$3}}&#39; {input.combinedpeaks} &gt; {output.real} 2&gt; {log}
+
+for brep in {input.narrowpeaks}
+do
+    bedtools sort -i $brep 2&gt; {log} |
+    bedtools intersect -a {input.combinedpeaks} -b stdin -c 2&gt; {log} |
+    awk &#39;{{print $4}}&#39; 2&gt; {log} |
+    paste {output.real} - &gt; {output.tmp}
+    mv {output.tmp} {output.real}
+done
+
+echo -e &quot;# onehot encoding of which condition contains which peaks\\n$(cat {output.real})&quot; &gt; {output.tmp} &amp;&amp; cp {output.tmp} {output.real}
+</pre></div>
+</div>
+</div>
 <div class="section" id="peak-bigpeak">
 <h2>peak_bigpeak<a class="headerlink" href="#peak-bigpeak" title="Permalink to this headline">¶</a></h2>
 <p>Convert a narrowpeak file into a bignarrowpeak file.
@@ -890,10 +925,6 @@ ln {input[1]} {output[1]}
 <div class="section" id="salmon-decoy-aware-index">
 <h2>salmon_decoy_aware_index<a class="headerlink" href="#salmon-decoy-aware-index" title="Permalink to this headline">¶</a></h2>
 <p>Generate a decoy aware transcriptome index for Salmon.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>salmon index -t {input.transcripts} --decoys {input.decoy_transcripts} -i {output} {params} \
---threads {threads} &gt; {log} 2&gt;&amp;1
-</pre></div>
-</div>
 </div>
 <div class="section" id="salmon-index">
 <h2>salmon_index<a class="headerlink" href="#salmon-index" title="Permalink to this headline">¶</a></h2>
@@ -1000,40 +1031,45 @@ bedToBigBed -type=bed3 {output.maskbed} {input.sizes} {output.mask} &gt;&gt; {lo
 <h2>sra2fastq_PE<a class="headerlink" href="#sra2fastq-pe" title="Permalink to this headline">¶</a></h2>
 <p>Downloaded (raw) SRAs are converted to paired-end fastq files.
 Forward and reverse samples will be switched if forward/reverse names are not lexicographically ordered.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span># setup tmp dir
-tmpdir={config[sra_dir]}/tmp/{wildcards.sample}
-mkdir -p $tmpdir; trap &quot;rm -rf $tmpdir&quot; EXIT
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span># acquire the lock
+(
+    flock --timeout 30 200 || exit 1
+    sleep 2
+) 200&gt;{layout_cachefile_lock}
 
-# dump to tmp dir
-parallel-fastq-dump -s {input}/* -O $tmpdir {config[split]} \
---threads {threads} --gzip &gt;&gt; {log} 2&gt;&amp;1
+# dump
+fasterq-dump -s {input}/* -O {output.tmp_fastq} -t {output.tmp_dump} --threads {threads} --split-3 &gt;&gt; {log} 2&gt;&amp;1
 
 # rename files and move to output dir
-for f in $(ls -1q $tmpdir | grep -oP &quot;^[^_]+&quot; | uniq); do
-    dst_1={config[fastq_dir]}/{wildcards.sample}_{config[fqext1]}.{config[fqsuffix]}.gz
-    dst_2={config[fastq_dir]}/{wildcards.sample}_{config[fqext2]}.{config[fqsuffix]}.gz
-    cat &quot;${{tmpdir}}/${{f}}_pass_1.fastq.gz&quot; &gt;&gt; $dst_1
-    cat &quot;${{tmpdir}}/${{f}}_pass_2.fastq.gz&quot; &gt;&gt; $dst_2
+for f in $(ls -1q {output.tmp_fastq} | grep -oP &quot;^[^_]+&quot; | uniq); do
+    dst_1={config[fastq_dir]}/{wildcards.sample}_{config[fqext1]}.{config[fqsuffix]}
+    dst_2={config[fastq_dir]}/{wildcards.sample}_{config[fqext2]}.{config[fqsuffix]}
+    cat &quot;{output.tmp_fastq}/${{f}}_1.fastq&quot; &gt;&gt; $dst_1
+    cat &quot;{output.tmp_fastq}/${{f}}_2.fastq&quot; &gt;&gt; $dst_2
 done
+pigz -p {threads} {config[fastq_dir]}/{wildcards.sample}_{config[fqext1]}.{config[fqsuffix]}
+pigz -p {threads} {config[fastq_dir]}/{wildcards.sample}_{config[fqext2]}.{config[fqsuffix]}
 </pre></div>
 </div>
 </div>
 <div class="section" id="sra2fastq-se">
 <h2>sra2fastq_SE<a class="headerlink" href="#sra2fastq-se" title="Permalink to this headline">¶</a></h2>
 <p>Downloaded (raw) SRAs are converted to single-end fastq files.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span># setup tmp dir
-tmpdir={config[sra_dir]}/tmp/{wildcards.sample}
-mkdir -p $tmpdir; trap &quot;rm -rf $tmpdir&quot; EXIT
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span># acquire a lock
+(
+    flock --timeout 30 200 || exit 1
+    sleep 2
+) 200&gt;{layout_cachefile_lock}
 
-# dump to tmp dir
-parallel-fastq-dump -s {input}/* -O $tmpdir {config[splot]} \
---threads {threads} --gzip &gt;&gt; {log} 2&gt;&amp;1
+# dump
+fasterq-dump -s {input}/* -O {output.tmp_fastq} -t {output.tmp_dump} --threads {threads} --split-spot &gt;&gt; {log} 2&gt;&amp;1
 
 # rename file and move to output dir
-for f in $(ls -1q $tmpdir | grep -oP &quot;^[^_]+&quot; | uniq); do
-    dst={config[fastq_dir]}/{wildcards.sample}.{config[fqsuffix]}.gz
-    cat &quot;${{tmpdir}}/${{f}}_pass.fastq.gz&quot; &gt;&gt; $dst
+for f in $(ls -1q {output.tmp_fastq} | grep -oP &quot;^[^_]+&quot; | uniq); do
+    dst={config[fastq_dir]}/{wildcards.sample}.{config[fqsuffix]}
+    cat &quot;{output.tmp_fastq}/${{f}}&quot; &gt;&gt; $dst
 done
+pigz -p {threads} {config[fastq_dir]}/{wildcards.sample}.{config[fqsuffix]}
 </pre></div>
 </div>
 </div>
@@ -1058,11 +1094,11 @@ find {log} -type f ! -name Log* -exec mv {{}} {output.dir} \;
 <h2>star_index<a class="headerlink" href="#star-index" title="Permalink to this headline">¶</a></h2>
 <p>Make a genome index for STAR.</p>
 <p>Troubleshooting:
-1) sufficient disk space?
+1) sufficient RAM &amp; disk space?
 2) increase the RAM available (–limitGenomeGenerateRAM)
 3) reduce the number of threads (seq2science -j 5)
 4) reduce accuracy (–genomeSAsparseD 2)</p>
-<p>For example, in your config.yaml, set aligner/quantifier:
+<p>In your config.yaml:
 aligner:
 star:
 index: –limitGenomeGenerateRAM 60000000000 –genomeSAsparseD 1</p>
@@ -1163,6 +1199,10 @@ mv $report {output.qc}
 <div class="section" id="twobit">
 <h2>twobit<a class="headerlink" href="#twobit" title="Permalink to this headline">¶</a></h2>
 <p>Generate a 2bit file for each assembly</p>
+</div>
+<div class="section" id="unzip-file">
+<h2>unzip_file<a class="headerlink" href="#unzip-file" title="Permalink to this headline">¶</a></h2>
+<p>Unzip (b)gzipped files.</p>
 </div>
 </div>
 

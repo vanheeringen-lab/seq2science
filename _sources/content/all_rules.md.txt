@@ -179,6 +179,9 @@ bedToBigBed -type=bed4 {output.cytoband_bd} -as={params.schema} \
 Generate decoy_transcripts.txt for Salmon indexing  
 
 script source: https://github.com/COMBINE-lab/SalmonTools
+```
+Generate a decoy aware transcriptome index for Salmon.
+```
 
 #### deseq2
 Differential gene expression analysis with DESeq2.
@@ -201,6 +204,38 @@ RLE: is the scaling factor method proposed by Anders and Huber (2010). DEseq2 no
 upperquartile: is the upper-quartile normalization method of Bullard et al (2010).
 
 In addition to 
+
+#### ena2fastq_PE
+Download paired-end fastq files directly from the ENA.
+
+#### ena2fastq_SE
+Download single-end fastq files directly from the ENA.
+
+#### extend_genome
+Append given file(s) to genome
+```
+# extend the genome.fa
+cp {input.genome} {output.genome}
+
+for FILE in {input.extension}; do
+    cat $FILE >> {output.genome}
+done
+```
+
+#### extend_genome_annotation
+Append given file(s) to genome annotation
+```
+# extend the genome.annotation.gtf
+cp {input.gtf} {output.gtf}
+
+for FILE in {input.extension}; do
+    cat $FILE >> {output.gtf}
+done
+
+# generate an extended genome.annotation.bed
+gtfToGenePred {output.gtf} {output.gp}
+genePredToBed {output.gp} {output.bed}
+```
 
 #### fastqc
 Generate quality control report for fastq files.
@@ -253,79 +288,30 @@ Genrich -X -t $input -f {output.log} {params.control} -k {output.bedgraphish} \
 
 #### get_genome
 Download a genome through genomepy.
-Additionally downloads the gene annotation if required downstream.
 
-If assemblies with the same name can be downloaded from multiple providers, 
-a provider may be specified in the config (example: provider: NCBI). Otherwise,
-each provider will be tried in turn, stopping at the first success.
+Also download a blacklist if it exists.
 
-Automatically turns on/off plugins.
-```
-# turn off plugins and reset on exit. delete temp files on exit.
-active_plugins=$(genomepy config show | grep -Po '(?<=- ).*' | paste -s -d, -) || echo ""
-trap "genomepy plugin enable {{$active_plugins,}} >> {log} 2>&1; rm -f {params.temp}" EXIT
-genomepy plugin disable {{blacklist,bowtie2,bwa,star,gmap,hisat2,minimap2}} >> {log} 2>&1
-genomepy plugin enable {{blacklist,}} >> {log} 2>&1
+#### get_genome_annotation
+Download a gene annotation through genomepy.
 
-# download the genome and attempt to download the annotation and blacklist
-if [[ ! {params.provider} = None  ]]; then
-    genomepy install --genomes_dir {params.dir} {wildcards.assembly} {params.provider} --annotation >> {log} 2>&1
-else
-    # try Ensembl
-    genomepy install --genomes_dir {params.dir} {wildcards.assembly} Ensembl --annotation >> {log} 2>&1 ||
-    
-    # try UCSC (with Ensembl format annotation)
-    genomepy install -g {params.dir} {wildcards.assembly} UCSC -o --ucsc-annotation Ensembl >> {log} 2>&1 &&
-        genomepy install -g {params.dir} {wildcards.assembly} UCSC >> {log} 2>&1 ||
-    
-    # try UCSC
-    genomepy install --genomes_dir {params.dir} {wildcards.assembly} UCSC --annotation >> {log} 2>&1 ||
-    
-    # try NCBI
-    genomepy install --genomes_dir {params.dir} {wildcards.assembly} NCBI --annotation >> {log} 2>&1
-fi
-
-# unzip annotation if downloaded and gzipped
-if [ -f {params.gtf}.gz ]; then
-    gunzip -f {params.gtf}.gz >> {log} 2>&1
-fi
-if [ -f {params.bed}.gz ]; then
-    gunzip -f {params.bed}.gz >> {log} 2>&1
-fi
-
-# if assembly has no annotation, or annotation has no genes, throw an warning
-if [ ! -f {params.gtf} ] || $(grep -q "No genes found" {log}); then
-    echo '\nEmpty or no annotation found for {wildcards.assembly}.\n' | tee -a {log}
-
-    # if an annotation is required, make it an error and exit.
-    if $(echo {output} | grep -q annotation.gtf); then
-        echo'\nSelect a different assembly or provide an annotation file manually.\n\n' | tee -a {log}
-        exit 1
-    fi
-fi
-```
+#### get_genome_support_files
+Generate supporting files for a genome.
 
 #### get_transcripts
 Generate transcripts.fasta using gffread.
 
 Requires genome.fa and annotation.gtf (with matching chromosome/scaffold names)
-```
-    Generate decoy_transcripts.txt for Salmon indexing  
-
-    script source: https://github.com/COMBINE-lab/SalmonTools
-    
-```
 
 #### hisat2_align
 Align reads against a genome (index) with hisat2, and pipe the output to the required sorter(s).
 ```
-hisat2 {params.params} --threads {threads} -x {input.index}/{wildcards.assembly} {params.input} 2> {log} | tee {output} 1> /dev/null 2>> {log}
+hisat2 {params.params} --threads {threads} -x {input.index}/part {params.input} 2> {log} | tee {output} 1> /dev/null 2>> {log}
 ```
 
 #### hisat2_index
 Make a genome index for hisat2. This index is required for alignment.
 ```
-hisat2-build {params} -p {threads} {input} {output}/{wildcards.assembly} > {log} 2>&1
+hisat2-build {params} -p {threads} {input} {output}/part > {log} 2>&1
 ```
 
 #### hisat2_splice_aware_index
@@ -337,7 +323,7 @@ python3 ${{hp}}_extract_splice_sites.py {input.gtf} > {output}/splice_sites.tsv
 python3 ${{hp}}_extract_exons.py {input.gtf} > {output}/exons.tsv
 
 hisat2-build {params} -p {threads} --ss {output}/splice_sites.tsv --exon {output}/exons.tsv \
-{input.fasta} {output}/{wildcards.assembly} > {log} 2>&1
+{input.fasta} {output}/part > {log} 2>&1
 ```
 
 #### hmmratac
@@ -368,6 +354,21 @@ Download the SRA of a sample by its unique identifier.
 
 Tries first downloading with the faster ascp protocol, if that fails it 
 falls back on the slower http protocol.
+```
+# three attempts
+for i in {{1..3}}
+do
+    # acquire a lock
+    (
+        flock --timeout 30 200 || continue
+        sleep 2
+    ) 200>{layout_cachefile_lock}
+    
+    # dump
+    prefetch --max-size 999999999999 --output-directory {output} --log-level debug --progress {wildcards.sample} >> {log} 2>&1 && break
+    sleep 10
+done
+```
 
 #### idr
 Combine replicates based on the irreproducible discovery rate (IDR). Can only handle two replicates.
@@ -515,6 +516,24 @@ Convert a narrowpeak file to a "macs2 summits" file.
 awk 'BEGIN {{OFS="\t"}} {{ print $1,$2+$10,$2+$10+1,$4,$9; }}' {input} > {output} 2> {log}
 ```
 
+#### onehot_peaks
+Get onehot encodings of which peaks are found in which samples
+```
+        awk '{{print $1":"$2"-"$3}}' {input.combinedpeaks} > {output.real} 2> {log}
+
+        for brep in {input.narrowpeaks}
+        do
+            bedtools sort -i $brep 2> {log} |
+            bedtools intersect -a {input.combinedpeaks} -b stdin -c 2> {log} |
+            awk '{{print $4}}' 2> {log} |
+            paste {output.real} - > {output.tmp}
+            mv {output.tmp} {output.real}
+        done
+        
+        echo -e "# onehot encoding of which condition contains which peaks\\n$(cat {output.real})" > {output.tmp} && cp {output.tmp} {output.real}
+        
+```
+
 #### peak_bigpeak
 Convert a narrowpeak file into a bignarrowpeak file.
 https://genome-source.gi.ucsc.edu/gitlist/kent.git/tree/master/src/hg/lib/
@@ -582,10 +601,6 @@ ln {input[1]} {output[1]}
 
 #### salmon_decoy_aware_index
 Generate a decoy aware transcriptome index for Salmon.
-```
-salmon index -t {input.transcripts} --decoys {input.decoy_transcripts} -i {output} {params} \
---threads {threads} > {log} 2>&1
-```
 
 #### salmon_index
 Generate a transcriptome index for Salmon.
@@ -681,39 +696,44 @@ source: https://github.com/Gaius-Augustus/MakeHub/blob/master/make_hub.py
 Downloaded (raw) SRAs are converted to paired-end fastq files.
 Forward and reverse samples will be switched if forward/reverse names are not lexicographically ordered.
 ```
-# setup tmp dir
-tmpdir={config[sra_dir]}/tmp/{wildcards.sample}
-mkdir -p $tmpdir; trap "rm -rf $tmpdir" EXIT
+# acquire the lock
+(
+    flock --timeout 30 200 || exit 1
+    sleep 2
+) 200>{layout_cachefile_lock}
 
-# dump to tmp dir
-parallel-fastq-dump -s {input}/* -O $tmpdir {config[split]} \
---threads {threads} --gzip >> {log} 2>&1
+# dump
+fasterq-dump -s {input}/* -O {output.tmp_fastq} -t {output.tmp_dump} --threads {threads} --split-3 >> {log} 2>&1
 
 # rename files and move to output dir
-for f in $(ls -1q $tmpdir | grep -oP "^[^_]+" | uniq); do
-    dst_1={config[fastq_dir]}/{wildcards.sample}_{config[fqext1]}.{config[fqsuffix]}.gz
-    dst_2={config[fastq_dir]}/{wildcards.sample}_{config[fqext2]}.{config[fqsuffix]}.gz
-    cat "${{tmpdir}}/${{f}}_pass_1.fastq.gz" >> $dst_1
-    cat "${{tmpdir}}/${{f}}_pass_2.fastq.gz" >> $dst_2
+for f in $(ls -1q {output.tmp_fastq} | grep -oP "^[^_]+" | uniq); do
+    dst_1={config[fastq_dir]}/{wildcards.sample}_{config[fqext1]}.{config[fqsuffix]}
+    dst_2={config[fastq_dir]}/{wildcards.sample}_{config[fqext2]}.{config[fqsuffix]}
+    cat "{output.tmp_fastq}/${{f}}_1.fastq" >> $dst_1
+    cat "{output.tmp_fastq}/${{f}}_2.fastq" >> $dst_2
 done
+pigz -p {threads} {config[fastq_dir]}/{wildcards.sample}_{config[fqext1]}.{config[fqsuffix]}
+pigz -p {threads} {config[fastq_dir]}/{wildcards.sample}_{config[fqext2]}.{config[fqsuffix]}
 ```
 
 #### sra2fastq_SE
 Downloaded (raw) SRAs are converted to single-end fastq files.
 ```
-# setup tmp dir
-tmpdir={config[sra_dir]}/tmp/{wildcards.sample}
-mkdir -p $tmpdir; trap "rm -rf $tmpdir" EXIT
+# acquire a lock
+(
+    flock --timeout 30 200 || exit 1
+    sleep 2
+) 200>{layout_cachefile_lock}
 
-# dump to tmp dir
-parallel-fastq-dump -s {input}/* -O $tmpdir {config[splot]} \
---threads {threads} --gzip >> {log} 2>&1
+# dump
+fasterq-dump -s {input}/* -O {output.tmp_fastq} -t {output.tmp_dump} --threads {threads} --split-spot >> {log} 2>&1
 
 # rename file and move to output dir
-for f in $(ls -1q $tmpdir | grep -oP "^[^_]+" | uniq); do
-    dst={config[fastq_dir]}/{wildcards.sample}.{config[fqsuffix]}.gz
-    cat "${{tmpdir}}/${{f}}_pass.fastq.gz" >> $dst
+for f in $(ls -1q {output.tmp_fastq} | grep -oP "^[^_]+" | uniq); do
+    dst={config[fastq_dir]}/{wildcards.sample}.{config[fqsuffix]}
+    cat "{output.tmp_fastq}/${{f}}" >> $dst
 done
+pigz -p {threads} {config[fastq_dir]}/{wildcards.sample}.{config[fqsuffix]}
 ```
 
 #### star_align
@@ -736,12 +756,12 @@ find {log} -type f ! -name Log* -exec mv {{}} {output.dir} \;
 Make a genome index for STAR.
 
 Troubleshooting:
-1) sufficient disk space?
+1) sufficient RAM & disk space?
 2) increase the RAM available (--limitGenomeGenerateRAM)
 3) reduce the number of threads (seq2science -j 5)
 4) reduce accuracy (--genomeSAsparseD 2)
 
-For example, in your config.yaml, set aligner/quantifier:
+In your config.yaml:
 aligner:
 star:
 index: --limitGenomeGenerateRAM 60000000000 --genomeSAsparseD 1
@@ -839,4 +859,7 @@ mv $report {output.qc}
 
 #### twobit
 Generate a 2bit file for each assembly
+
+#### unzip_file
+Unzip (b)gzipped files.
 
