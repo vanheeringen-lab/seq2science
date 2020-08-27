@@ -37,8 +37,6 @@ def get_peakfile_for_summit(wildcards):
     return expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}_peaks.narrowPeak", **config)
 
 
-ruleorder: macs2_callpeak > narrowpeak_summit
-
 rule narrowpeak_summit:
     """
     Convert a narrowpeak file to a "macs2 summits" file.
@@ -49,6 +47,8 @@ rule narrowpeak_summit:
         expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}_summits.bed", **config),
     log:
         expand("{log_dir}/narrowpeak_summit/{{sample}}-{{assembly}}-{{peak_caller}}.log", **config),
+    wildcard_constraints:
+        peak_caller="genrich|hmmratac"  # no macs2
     benchmark:
         expand("{benchmark_dir}/narrowpeak_summit/{{sample}}-{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     shell:
