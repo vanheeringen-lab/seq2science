@@ -12,6 +12,7 @@ import copy
 import json
 import requests
 from functools import lru_cache
+from socket import timeout
 
 import norns
 import numpy as np
@@ -247,6 +248,23 @@ if "assembly" in samples:
         return providers
 
 
+    # TODO: remove when next genomepy version releases
+    def retry(func, tries, *args):
+        """
+        Retry functions with potential connection errors.
+
+        *args are passed as variables to func.
+        """
+        attempt = 1
+        while attempt <= tries:
+            try:
+                answer = func(*args)
+                return answer
+            except (urllib.request.URLError, timeout):
+                time.sleep(1)
+                attempt += 1
+
+
     def provider_with_file(file, assembly):
         """
         Returns the first provider which has the file for the assembly.
@@ -289,14 +307,14 @@ if "assembly" in samples:
 
                     # check if the annotation can be downloaded
                     if providers[assembly]["annotation"] is None:
-                        annotion_provider = provider_with_file("annotation", assembly)
+                        annotion_provider = retry(provider_with_file, 2, "annotation", assembly)
                         if annotion_provider:
                             providers[assembly]["genome"] = annotion_provider  # exists if annotation does
                             providers[assembly]["annotation"] = annotion_provider
 
                     # check if the genome can be downloaded
                     if providers[assembly]["genome"] is None:
-                        genome_provider = provider_with_file("genome", assembly)
+                        genome_provider = retry(provider_with_file, 2, "genome", assembly)
                         providers[assembly]["genome"] = genome_provider
 
             pickle.dump(providers, open(providersfile, "wb"))
@@ -575,23 +593,23 @@ with FileLock(sample_to_ena_url_lock):
             layout = layout[0]
 
             for srr in [srr[1] for srr in srrs]:
-                prefix = srr[:6]
-                suffix = f"/{int(srr[9:]):03}" if len(srr) >= 10 else ""
+                pre = srr[:6]
+                suf = f"/{int(srr[9:]):03}" if len(srr) >= 10 else ""
 
                 fasp_address = "era-fasp@fasp.sra.ebi.ac.uk:"
                 wget_address = "ftp://ftp.sra.ebi.ac.uk/"
 
                 if layout == "SINGLE":
-                    wget_url = f"{wget_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}.fastq.gz"
-                    fasp_url = f"{fasp_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}.fastq.gz"
+                    wget_url = f"{wget_address}vol1/fastq/{pre}{suf}/{srr}/{srr}.fastq.gz"
+                    fasp_url = f"{fasp_address}vol1/fastq/{pre}{suf}/{srr}/{srr}.fastq.gz"
                     if url_is_alive(wget_url):
                         url = fasp_url if config.get("ascp_path") else wget_url
                         ena_single_end_urls.setdefault(sample, []).append((srr, url))
                 elif layout == "PAIRED":
-                    wget_urls = [f"{wget_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}_1.fastq.gz",
-                                 f"{wget_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}_2.fastq.gz"]
-                    fasp_urls = [f"{fasp_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}_1.fastq.gz",
-                                 f"{fasp_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}_2.fastq.gz"]
+                    wget_urls = [f"{wget_address}vol1/fastq/{pre}{suf}/{srr}/{srr}_1.fastq.gz",
+                                 f"{wget_address}vol1/fastq/{pre}{suf}/{srr}/{srr}_2.fastq.gz"]
+                    fasp_urls = [f"{fasp_address}vol1/fastq/{pre}{suf}/{srr}/{srr}_1.fastq.gz",
+                                 f"{fasp_address}vol1/fastq/{pre}{suf}/{srr}/{srr}_2.fastq.gz"]
                     if all(url_is_alive(url) for url in wget_urls):
                         urls = fasp_urls if config.get("ascp_path") else wget_urls
                         ena_paired_end_urls.setdefault(sample, []).append((srr, urls))
