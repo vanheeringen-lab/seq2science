@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Changed
+
+- update snakemake version
+
 ## [0.2.2] - 2020-08-24
 
 ### Added
