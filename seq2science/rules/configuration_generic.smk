@@ -12,6 +12,7 @@ import copy
 import json
 import requests
 from functools import lru_cache
+from socket import timeout
 
 import norns
 import numpy as np
@@ -254,14 +255,14 @@ if "assembly" in samples:
 
         *args are passed as variables to func.
         """
-        _try = 1
-        while _try <= tries:
+        attempt = 1
+        while attempt <= tries:
             try:
                 answer = func(*args)
                 return answer
-            except urllib.request.URLError:
+            except (urllib.request.URLError, timeout):
                 time.sleep(1)
-                _try += 1
+                attempt += 1
 
 
     def provider_with_file(file, assembly):
