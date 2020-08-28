@@ -10,11 +10,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Changed
 
-- update snakemake version, should fix ruleorder bugs
-
-### Fixed
-
-- issue with ruleorder for macs2 -> summits
+- update snakemake version
 
 ## [0.2.2] - 2020-08-24
 
