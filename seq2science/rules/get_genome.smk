@@ -137,19 +137,16 @@ rule get_genome_support_files:
         genomepy.Genome(wildcards.assembly, genomes_dir=config["genome_dir"])
 
 
-# NOTE: if the workflow fails it tends to blame this rule.
-# Set "debug: True" in the config to see the root cause.
-if not config.get("debug"):
-    rule unzip_file:
-        """
-        Unzip (b)gzipped files.
-        """
-        input:
-            "{filepath}.gz"
-        output:
-            "{filepath}"
-        wildcard_constraints:
-            filepath=".*(?<!\.gz)$"  # filepath may not end with ".gz"
-        priority: 1
-        run:
-            genomepy.utils.gunzip_and_name(input[0])
+rule unzip_annot:
+    """
+    Unzip (b)gzipped files.
+    """
+    input:
+        "{filepath}.gz"
+    output:
+        "{filepath}"
+    wildcard_constraints:
+        filepath=".*(\.annotation)(\.gtf|\.bed)(?<!\.gz)$"  # filepath may not end with ".gz"
+    priority: 1
+    run:
+        genomepy.utils.gunzip_and_name(input[0])
