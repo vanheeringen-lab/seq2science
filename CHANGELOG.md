@@ -12,6 +12,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 - update snakemake version
 
+### Fixed
+
+- bug with getting summit files from merged replicates of macs2
+
 ## [0.2.2] - 2020-08-24
 
 ### Added
