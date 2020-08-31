@@ -515,9 +515,13 @@ def get_qc_files(wildcards):
         for trep in treps[treps['assembly'] == ori_assembly(wildcards.assembly)].index:
             qc['files'].update(get_peak_calling_qc(trep))
 
-    if get_rna_qc in quality_control and not config.get("ignore_strandedness"):
-        for trep in treps[treps['assembly'] == ori_assembly(wildcards.assembly)].index:
-            qc['files'].update(get_rna_qc(trep))
+    if get_rna_qc in quality_control:
+        if not config.get("ignore_strandedness"):
+            for trep in treps[treps['assembly'] == ori_assembly(wildcards.assembly)].index:
+                qc['files'].update(get_rna_qc(trep))
+
+        if len(treps.index) > 2:
+            qc['files'].update(expand("{qc_dir}/clustering/{{assembly}}-Sample_clustering_mqc.png", **config))
 
     return qc
 
