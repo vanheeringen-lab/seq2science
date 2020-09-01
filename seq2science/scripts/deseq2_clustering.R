@@ -80,7 +80,8 @@ sampleDistMatrix <- as.matrix(dist(t(assay(log_counts))))
 rownames(sampleDistMatrix) <- colnames(counts(dds))
 colors <- colorRampPalette( rev(brewer.pal(9, "Blues")) )(255)
 
-svg(file=out_plot)
+no_samples <- length(coldata)
+png(file=out_plot, units='cm', width=no_samples+10, height=no_samples+8, res=300)
 pheatmap(sampleDistMatrix,
          main = main,
          angle_col = 45,
