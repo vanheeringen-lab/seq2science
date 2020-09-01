@@ -10,7 +10,6 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Changed
 
-- update snakemake version
 - retry mechanic for genomepy functions
 
 ### Fixed
