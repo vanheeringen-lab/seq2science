@@ -81,8 +81,6 @@ rownames(sampleDistMatrix) <- colnames(counts(dds))
 colors <- colorRampPalette( rev(brewer.pal(9, "Blues")) )(255)
 
 no_samples <- length(coldata)
-space <- 1*no_samples + 5
-
 png(file=out_plot, units='cm', width=no_samples+10, height=no_samples+8, res=300)
 pheatmap(sampleDistMatrix,
          main = main,
