@@ -35,6 +35,5 @@ rule count_all:
              (["{counts_dir}/{assemblies}-counts.tsv"]) +
              (["{counts_dir}/{assemblies}-DEXSeq_counts.tsv"] if config['dexseq'] else []) +
 
-             (["{dge_dir}/{assemblies}-clustering.svg"] if len(treps.index) > 2 else []) +
              ([f"{{dge_dir}}/{{assemblies}}-{{contrasts}}.diffexp.tsv"] if config.get('contrasts', False) else []),
              **{**config, **{'assemblies': all_assemblies, 'contrasts': get_contrasts()}})

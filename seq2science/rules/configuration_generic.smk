@@ -12,6 +12,7 @@ import copy
 import json
 import requests
 from functools import lru_cache
+from socket import timeout
 
 import norns
 import numpy as np
@@ -575,23 +576,23 @@ with FileLock(sample_to_ena_url_lock):
             layout = layout[0]
 
             for srr in [srr[1] for srr in srrs]:
-                prefix = srr[:6]
-                suffix = f"/{int(srr[9:]):03}" if len(srr) >= 10 else ""
+                pre = srr[:6]
+                suf = f"/{int(srr[9:]):03}" if len(srr) >= 10 else ""
 
                 fasp_address = "era-fasp@fasp.sra.ebi.ac.uk:"
                 wget_address = "ftp://ftp.sra.ebi.ac.uk/"
 
                 if layout == "SINGLE":
-                    wget_url = f"{wget_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}.fastq.gz"
-                    fasp_url = f"{fasp_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}.fastq.gz"
+                    wget_url = f"{wget_address}vol1/fastq/{pre}{suf}/{srr}/{srr}.fastq.gz"
+                    fasp_url = f"{fasp_address}vol1/fastq/{pre}{suf}/{srr}/{srr}.fastq.gz"
                     if url_is_alive(wget_url):
                         url = fasp_url if config.get("ascp_path") else wget_url
                         ena_single_end_urls.setdefault(sample, []).append((srr, url))
                 elif layout == "PAIRED":
-                    wget_urls = [f"{wget_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}_1.fastq.gz",
-                                 f"{wget_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}_2.fastq.gz"]
-                    fasp_urls = [f"{fasp_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}_1.fastq.gz",
-                                 f"{fasp_address}vol1/fastq/{prefix}{suffix}/{srr}/{srr}_2.fastq.gz"]
+                    wget_urls = [f"{wget_address}vol1/fastq/{pre}{suf}/{srr}/{srr}_1.fastq.gz",
+                                 f"{wget_address}vol1/fastq/{pre}{suf}/{srr}/{srr}_2.fastq.gz"]
+                    fasp_urls = [f"{fasp_address}vol1/fastq/{pre}{suf}/{srr}/{srr}_1.fastq.gz",
+                                 f"{fasp_address}vol1/fastq/{pre}{suf}/{srr}/{srr}_2.fastq.gz"]
                     if all(url_is_alive(url) for url in wget_urls):
                         urls = fasp_urls if config.get("ascp_path") else wget_urls
                         ena_paired_end_urls.setdefault(sample, []).append((srr, urls))

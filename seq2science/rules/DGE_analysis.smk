@@ -73,7 +73,7 @@ rule blind_clustering:
     input:
         expand("{counts_dir}/{{assembly}}-counts.tsv", **config),
     output:
-        expand("{dge_dir}/{{assembly}}-clustering.svg", **config),
+        expand("{qc_dir}/clustering/{{assembly}}-Sample_clustering_mqc.png", **config),
     conda:
         "../envs/deseq2.yaml"
     log:
