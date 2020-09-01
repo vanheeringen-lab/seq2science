@@ -860,6 +860,6 @@ mv $report {output.qc}
 #### twobit
 Generate a 2bit file for each assembly
 
-#### unzip_file
+#### unzip_annot
 Unzip (b)gzipped files.
 
