@@ -15,6 +15,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Fixed
 
 - suffix being overwritten by layouts
+- Assembly hub correctly showing annotations
 
 ## [0.2.2] - 2020-08-24
 
