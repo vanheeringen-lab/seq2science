@@ -210,7 +210,7 @@ def get_ucsc_name(assembly):
     """
     # patches are not relevant for which assembly it belongs to
     # (at least not human and mouse)
-    assembly_np = [split for split in re.split(r"(.+)(?=\.p\d)", assembly) if split != ""][0].lower()
+    assembly_np = [split for split in re.split(r"(.+)(?=\.p\d)", ori_assembly(assembly)) if split != ""][0].lower()
 
     # check if the assembly matches a ucsc assembly name
     if assembly_np in ucsc_assemblies:
@@ -224,7 +224,7 @@ def get_ucsc_name(assembly):
             return True, ucsc_assembly
 
     # if not found, return the original name
-    return False, assembly
+    return False, ori_assembly(assembly)
 
 
 def get_trackhub_files(wildcards):
@@ -240,14 +240,7 @@ def get_trackhub_files(wildcards):
     }
 
     # check whether or not each assembly is supported by ucsc
-    for assembly in set(samples["assembly"]):
-        # first, checks if get_genome still needs to run
-        # second, checks if an annotation file was found
-        # TODO: use next 2 lines again when checkpoints are stable
-        #  1) does the trackhub input update? 2) does ruleorder work?
-        # f = os.path.splitext(checkpoints.get_genome.get(assembly=assembly).output[0])[0]
-        # gtf = any([os.path.isfile(f+".annotation.gtf"), os.path.isfile(f+".gtf")])
-
+    for assembly in all_assemblies:
         # see if the title of the page mentions our assembly
         if not get_ucsc_name(assembly)[0]:
             trackfiles["twobits"].append(f"{config['genome_dir']}/{assembly}/{assembly}.2bit")
@@ -267,13 +260,13 @@ def get_trackhub_files(wildcards):
             for peak_caller in config["peak_caller"].keys():
                 ftype = get_ftype(peak_caller)
                 trackfiles["bigpeaks"].extend(
-                    expand(f"{{result_dir}}/{peak_caller}/{brep['assembly']}-{sample}.big{ftype}", **config)
+                    expand(f"{{result_dir}}/{peak_caller}/{brep['assembly']}{suffix}-{sample}.big{ftype}", **config)
                 )
 
         # get all the bigwigs
         for sample, trep in treps.iterrows():
             trackfiles["bigwigs"].extend(
-                expand(f"{{result_dir}}/{{peak_caller}}/{trep['assembly']}-{sample}.bw", **config)
+                expand(f"{{result_dir}}/{{peak_caller}}/{trep['assembly']}{suffix}-{sample}.bw", **config)
             )
 
     elif get_workflow() == "rna_seq":
@@ -283,7 +276,7 @@ def get_trackhub_files(wildcards):
         for sample in treps.index:
             for bw in strandedness_to_trackhub(sample):
                 bw = expand(
-                    f"{{bigwig_dir}}/{treps.loc[sample]['assembly']}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw",
+                    f"{{bigwig_dir}}/{treps.loc[sample]['assembly']}{suffix}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw",
                     **config,
                 )
                 trackfiles["bigwigs"].extend(bw)
@@ -292,7 +285,7 @@ def get_trackhub_files(wildcards):
         # get all the bigwigs
         for sample in treps.index:
             bw = expand(
-                f"{{bigwig_dir}}/{treps.loc[sample]['assembly']}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}.bw",
+                f"{{bigwig_dir}}/{treps.loc[sample]['assembly']}{suffix}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}.bw",
                 **config,
             )
             trackfiles["bigwigs"].extend(bw)
@@ -345,7 +338,7 @@ rule trackhub:
             genomes_file = trackhub.genomes_file.GenomesFile()
             hub.add_genomes_file(genomes_file)
 
-            for assembly in set(samples["assembly"]):
+            for assembly in all_assemblies:
                 assembly_uscs = get_ucsc_name(assembly)[1]
                 # add each assembly to the genomes file, make assembly hub if not supported else trackhub
                 if hasattr(input, "twobits") and any(assembly in twobit for twobit in input.twobits):
@@ -410,7 +403,7 @@ rule trackhub:
                             track = trackhub.Track(
                                 name="annotation",
                                 source=file,
-                                tracktype="bigBed",
+                                tracktype="bigBed 12",
                                 visibility="pack",
                                 color="140,43,69",  # bourgundy
                                 priority=2,
@@ -431,7 +424,7 @@ rule trackhub:
                 # ChIP-/ATAC-seq trackhub
                 if get_workflow() in ["atac_seq", "chip_seq"]:
                     for peak_caller in config["peak_caller"]:
-                        for brep in set(breps[breps["assembly"] == assembly].index):
+                        for brep in set(breps[breps["assembly"] == ori_assembly(assembly)].index):
                             ftype = get_ftype(peak_caller)
                             bigpeak = f"{config['result_dir']}/{peak_caller}/{assembly}-{brep}.big{ftype}"
                             sample_name = rep_to_descriptive(brep, brep=True) + "_pk"
@@ -454,7 +447,7 @@ rule trackhub:
                             priority += 1
                             trackdb.add_tracks(track)
 
-                            for trep in treps_from_brep[(brep, assembly)]:
+                            for trep in treps_from_brep[(brep, ori_assembly(assembly))]:
                                 bigwig = f"{config['result_dir']}/{peak_caller}/{assembly}-{trep}.bw"
                                 assert os.path.exists(bigwig), bigwig + " not found!"
                                 sample_name = rep_to_descriptive(trep) + "_bw"
@@ -479,7 +472,7 @@ rule trackhub:
 
                 # RNA-seq trackhub
                 elif get_workflow() == "rna_seq":
-                    for sample in treps[treps["assembly"] == assembly].index:
+                    for sample in treps[treps["assembly"] == ori_assembly(assembly)].index:
                         for bw in strandedness_to_trackhub(sample):
                             bigwig = f"{config['bigwig_dir']}/{assembly}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw"
                             assert os.path.exists(bigwig), bigwig + " not found!"
@@ -503,7 +496,7 @@ rule trackhub:
 
                 # Alignment trackhub
                 elif get_workflow() == "alignment":
-                    for sample in treps[treps["assembly"] == assembly].index:
+                    for sample in treps[treps["assembly"] == ori_assembly(assembly)].index:
                         bigwig = f"{config['bigwig_dir']}/{assembly}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}.bw"
                         assert os.path.exists(bigwig), bigwig + " not found!"
                         sample_name = rep_to_descriptive(sample)

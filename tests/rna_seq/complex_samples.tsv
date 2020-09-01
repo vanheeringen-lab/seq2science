@@ -2,8 +2,8 @@
 sample	assembly	replicate	stage	batch	descriptive_name
 S1_1	assembly1	R1_1	1	batch1	sample1_1
 S1_2	assembly1	R1_1	1	batch1	sample1_2
-S2_1	assembly1	R2_1	1	batch2	sample2
-S2_2	assembly1	R2_1	1	batch2	sample2
+S2_1	assembly1	R2_1	1	batch2	sample2_1
+S2_2	assembly1	R2_1	1	batch2	sample2_2
 S3_1	assembly1	R3_1	1	batch1	sample3
 S4_1	assembly1	R4_1	2	batch1
 S5_1	assembly1	R5_1	2	batch1

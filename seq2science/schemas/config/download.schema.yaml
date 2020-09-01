@@ -28,13 +28,3 @@ properties:
   ascp_key:
     description: the public key of ascp
     type: string
-
-  # fastq-dump parameters
-  split:
-    description: fastq-dump parameters when splitting reads (paired-end)
-    default: --split-files --skip-technical --dumpbase --readids --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' --defline-qual '+'
-    type: string
-  splot:
-    description: fastq-dump parameters when splotting reads (single-end)
-    default: --split-spot  --skip-technical --dumpbase --readids --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' --defline-qual '+'
-    type: string
