@@ -403,7 +403,7 @@ rule trackhub:
                             track = trackhub.Track(
                                 name="annotation",
                                 source=file,
-                                tracktype="bigBed",
+                                tracktype="bigBed 12",
                                 visibility="pack",
                                 color="140,43,69",  # bourgundy
                                 priority=2,
