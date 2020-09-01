@@ -12,12 +12,14 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 - retry mechanic for genomepy functions
 - moved RNA-seq sample clustering to the MultiQC
+- updated genomepy
 
 ### Fixed
 
 - suffix being overwritten by layouts
 - issue with combining conditions and ruleorder for macs2
 - Assembly hub correctly showing annotations
+- .fa.sizes staying empty
 
 ## [0.2.2] - 2020-08-24
 
