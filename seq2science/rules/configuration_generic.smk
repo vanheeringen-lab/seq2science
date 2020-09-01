@@ -248,23 +248,6 @@ if "assembly" in samples:
         return providers
 
 
-    # TODO: remove when next genomepy version releases
-    def retry(func, tries, *args):
-        """
-        Retry functions with potential connection errors.
-
-        *args are passed as variables to func.
-        """
-        attempt = 1
-        while attempt <= tries:
-            try:
-                answer = func(*args)
-                return answer
-            except (urllib.request.URLError, timeout):
-                time.sleep(1)
-                attempt += 1
-
-
     def provider_with_file(file, assembly):
         """
         Returns the first provider which has the file for the assembly.
@@ -307,14 +290,14 @@ if "assembly" in samples:
 
                     # check if the annotation can be downloaded
                     if providers[assembly]["annotation"] is None:
-                        annotion_provider = retry(provider_with_file, 2, "annotation", assembly)
+                        annotion_provider = provider_with_file("annotation", assembly)
                         if annotion_provider:
                             providers[assembly]["genome"] = annotion_provider  # exists if annotation does
                             providers[assembly]["annotation"] = annotion_provider
 
                     # check if the genome can be downloaded
                     if providers[assembly]["genome"] is None:
-                        genome_provider = retry(provider_with_file, 2, "genome", assembly)
+                        genome_provider = provider_with_file("genome", assembly)
                         providers[assembly]["genome"] = genome_provider
 
             pickle.dump(providers, open(providersfile, "wb"))

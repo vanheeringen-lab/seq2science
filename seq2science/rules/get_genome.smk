@@ -1,5 +1,6 @@
 import contextlib
 import genomepy
+import os
 
 
 rule get_genome:
@@ -67,12 +68,15 @@ rule get_genome_annotation:
                 p.download_annotation(
                     name=wildcards.raw_assembly,
                     genomes_dir=config["genome_dir"],
-                    localname=wildcards.raw_assembly,
                     kwargs=kwargs)
 
                 # sanitize the annotations
                 genome = genomepy.Genome(wildcards.raw_assembly, config["genome_dir"])
                 genomepy.utils.sanitize_annotation(genome)
+
+                # TODO remove after fixing inconsistency in gp
+                if os.path.exists(output.gtf[0][:-3]):
+                    genomepy.utils.gzip_and_name(output.gtf[0][:-3])
 
 
 rule extend_genome:
@@ -133,11 +137,14 @@ rule get_genome_support_files:
         expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.fai", **config),
         expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
         expand("{genome_dir}/{{assembly}}/{{assembly}}.gaps.bed", **config),
+        temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.done", **config),)
     run:
         genomepy.Genome(wildcards.assembly, genomes_dir=config["genome_dir"])
+        # snakemake doesnt wait until the above command finished running without this...
+        shell("touch {output[3]}")
 
 
-rule unzip_annot:
+rule unzip_annotation:
     """
     Unzip (b)gzipped files.
     """
