@@ -513,7 +513,9 @@ if len(bad_samples) > 0:
                  f"manually, and continue the pipeline from there on.\n")
     raise TerminatedException
 
-sample_to_srr = {**{k: v.get() for k, v in trace_layout1.items() if v.get() is not None},
+
+sample_to_srr = {**{k: [(config["layout"][k], k)] for k in trace_layout1.keys() if k.startswith("SRR")},
+                 **{k: v.get() for k, v in trace_layout1.items() if v.get() is not None},
                  **{k: v.get() for k, v in trace_layout2.items() if v.get() is not None}}
 
 trace_tp.close()
