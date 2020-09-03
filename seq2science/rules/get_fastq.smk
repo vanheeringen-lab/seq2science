@@ -131,6 +131,7 @@ rule sra2fastq_PE:
         --split-e --skip-technical --dumpbase --readids --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' --defline-qual '+' >> {log} 2>&1
 
         # rename files and move to output dir
+        shopt -s extglob
         for f in $(ls -1q {output.tmp_fastq} | grep -oP "^[^_]+" | uniq); do
             dst_1={config[fastq_dir]}/{wildcards.sample}_{config[fqext1]}.{config[fqsuffix]}
             dst_2={config[fastq_dir]}/{wildcards.sample}_{config[fqext2]}.{config[fqsuffix]}
