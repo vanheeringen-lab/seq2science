@@ -134,8 +134,8 @@ rule sra2fastq_PE:
         for f in $(ls -1q {output.tmp_fastq} | grep -oP "^[^_]+" | uniq); do
             dst_1={config[fastq_dir]}/{wildcards.sample}_{config[fqext1]}.{config[fqsuffix]}
             dst_2={config[fastq_dir]}/{wildcards.sample}_{config[fqext2]}.{config[fqsuffix]}
-            cat "{output.tmp_fastq}/${{f}}_1.fastq" >> $dst_1
-            cat "{output.tmp_fastq}/${{f}}_2.fastq" >> $dst_2
+            cat "{output.tmp_fastq}/${{f}}_*1.fastq" >> $dst_1
+            cat "{output.tmp_fastq}/${{f}}_*2.fastq" >> $dst_2
         done
         pigz -p {threads} {config[fastq_dir]}/{wildcards.sample}_{config[fqext1]}.{config[fqsuffix]}
         pigz -p {threads} {config[fastq_dir]}/{wildcards.sample}_{config[fqext2]}.{config[fqsuffix]}
