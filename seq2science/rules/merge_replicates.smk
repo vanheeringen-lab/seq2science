@@ -52,25 +52,16 @@ def rep_to_descriptive(rep, brep=False):
 if "replicate" in samples:
 
     def get_merge_replicates(wildcards):
-        input_files = dict()
-        input_files["reps"] = expand(
+        input_files = expand(
             [
                 f"{{trimmed_dir}}/{sample}{wildcards.fqext}_trimmed.{{fqsuffix}}.gz"
                 for sample in samples[samples["replicate"] == wildcards.replicate].index
             ],
             **config,
         )
-        if len(input_files["reps"]) == 0:
-            raise ValueError("Something went wrong, and we tried to merge replicates but there were no replicates?!")
-        # make sure we make the fastqc report before moving our file
-        if get_workflow() != "scatac_seq" and len(input_files["reps"]) == 1 and config["create_qc_report"]:
-            input_files["qc"] = expand(
-                [
-                    f"{{qc_dir}}/fastqc/{sample}{wildcards.fqext}_trimmed_fastqc.zip"
-                    for sample in samples[samples["replicate"] == wildcards.replicate].index
-                ],
-                **config,
-            )
+        if len(input_files) == 0:
+            return ["Something went wrong, and we tried to merge replicates but there were no replicates?!"]
+
         return input_files
 
     ruleorder: merge_replicates > renamefastq_PE > sra2fastq_PE
@@ -85,7 +76,7 @@ if "replicate" in samples:
         If a replicate has only 1 sample in it, simply move the file.
         """
         input:
-            unpack(get_merge_replicates),
+            get_merge_replicates,
         output:
             temp(sorted(expand("{trimmed_dir}/{{replicate}}{{fqext}}_trimmed.{fqsuffix}.gz", **config))),
         wildcard_constraints:
@@ -96,11 +87,8 @@ if "replicate" in samples:
         benchmark:
             expand("{benchmark_dir}/merge_replicates/{{replicate}}{{fqext}}.benchmark.txt", **config)[0]
         run:
-            if len(input.reps) == 1:
-                shell("mv {input.reps} {output} 2> {log}")
-            else:
-                for rep in input.reps:
-                    rep_name = re.findall("\/([^\/_]+)_", rep)[-1]
-                    shell(
-                        """zcat {rep} | awk '{{if (NR%4==1) {{gsub(/^@/, "@{rep_name}:"); print}} else {{print}}}}' | gzip >> {output}"""
-                    )
+            for rep in input.reps:
+                rep_name = re.findall("\/([^\/_]+)_", rep)[-1]
+                shell(
+                    """zcat {rep} | awk '{{if (NR%4==1) {{gsub(/^@/, "@{rep_name}:"); print}} else {{print}}}}' | gzip >> {output}"""
+                )
