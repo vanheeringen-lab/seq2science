@@ -10,7 +10,8 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Changed
 
-- markduplicates now removes duplicates by default
+- markduplicates now removes duplicates as default
+- testing: clear genomepy caches between runs
 
 ### Fixed
 
