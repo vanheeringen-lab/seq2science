@@ -12,6 +12,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 - markduplicates now removes duplicates by default
 
+### Fixed
+
+- Now also SRR numbers can be directly downloaded from ENA
+
 ## [0.2.3] - 2020-09-01
 
 ### Changed
