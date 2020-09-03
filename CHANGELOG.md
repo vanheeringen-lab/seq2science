@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Fixed
+
+- Issue with control and technical replicates
+
 ## [0.2.3] - 2020-09-01
 
 ### Changed
