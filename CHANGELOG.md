@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Changed
+
+- testing: clear genomepy caches between runs
+
 ### Fixed
 
 - Now also SRR numbers can be directly downloaded from ENA
