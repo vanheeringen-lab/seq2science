@@ -15,6 +15,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Fixed
 
+- Issue with control and technical replicates
 - Now also SRR numbers can be directly downloaded from ENA
 - Python3.8 syntaxwarnings
 
