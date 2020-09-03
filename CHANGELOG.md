@@ -11,6 +11,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Changed
 
 - testing: clear genomepy caches between runs
+- add parallel-fastq-dump fallback to fasterq-dump
 
 ### Fixed
 
