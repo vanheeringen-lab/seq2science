@@ -217,7 +217,7 @@ keys_to_remove = ["fqext1", "fqext2", "macs2_types", "cpulimit",
                   ("biological_replicates", "condition" not in samples),
                   ("filter_bam_by_strand", "strandedness" not in samples),
                   ("technical_replicates", "replicates" not in samples),
-                  ("tximeta", config.get("quantifier") is not "salmon")]
+                  ("tximeta", config.get("quantifier") != "salmon")]
 keys = rmkeys(["samples", "layout"] + keys_to_remove, keys)
 keys = ["samples"] + keys + ["layout"]
 
