@@ -360,7 +360,7 @@ def get_layout_eutils(sample):
     Complementary method of get_layout_trace
     """
     api_key = config.get('ncbi_key', "")
-    if api_key is not "":
+    if api_key != "":
         api_key = f'-api_key {api_key}'
 
     try:
@@ -497,7 +497,7 @@ with FileLock(layout_cachefile_lock):
     assert all(layout in ['SINGLE', 'PAIRED'] for sample, layout in config['layout'].items())
 
     # if new samples were added, update the cache
-    if len([sample for sample in samples.index if sample not in layout_cache]) is not 0:
+    if len([sample for sample in samples.index if sample not in layout_cache]) != 0:
         pickle.dump({**config['layout']}, open(layout_cachefile, "wb"))
 
 
@@ -623,7 +623,7 @@ def any_given(*args, prefix="", suffix=""):
     """
     elements = []
     for column_name in args:
-        if column_name is 'sample':
+        if column_name == 'sample':
             elements.extend(samples.index)
         elif column_name in samples:
             elements.extend(samples[column_name])
