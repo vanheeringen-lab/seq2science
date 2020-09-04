@@ -12,8 +12,17 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 - (BETA) new scrna-seq workflow! Currently only supports celseq protocols.
 
+### Changed
+
+- markduplicates now removes duplicates as default
+- testing: clear genomepy caches between runs
+- add parallel-fastq-dump fallback to fasterq-dump
+
 ### Fixed
 
+- Issue with control and technical replicates
+- Now also SRR numbers can be directly downloaded from ENA
+- Python3.8 syntaxwarnings
 - Fixed bug where scatac-seq workflow was making fastqc reports per sample
 
 ## [0.2.3] - 2020-09-01

@@ -73,10 +73,7 @@ rule featureCounts:
 
 def get_fastqc_input(wildcards):
     if '_trimmed' in wildcards.fname:
-        if 'replicate' in samples and all(sample not in wildcards.fname for sample in samples.index):
-            fqc_input = "{trimmed_dir}/merged/{{fname}}.{fqsuffix}.gz"
-        else:
-            fqc_input = "{trimmed_dir}/{{fname}}.{fqsuffix}.gz"
+        fqc_input = "{trimmed_dir}/{{fname}}.{fqsuffix}.gz"
     else:
         fqc_input = "{fastq_dir}/{{fname}}.{fqsuffix}.gz"
 

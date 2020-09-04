@@ -82,11 +82,13 @@ rule sra2fastq_SE:
         # acquire a lock
         (
             flock --timeout 30 200 || exit 1
-            sleep 2
+            sleep 3
         ) 200>{layout_cachefile_lock}
 
         # dump
-        fasterq-dump -s {input}/* -O {output.tmp_fastq} -t {output.tmp_dump} --threads {threads} --split-spot >> {log} 2>&1
+        fasterq-dump -s {input}/* -O {output.tmp_fastq} -t {output.tmp_dump} --threads {threads} --split-spot >> {log} 2>&1 || 
+        parallel-fastq-dump -s {input}/* -O {output.tmp_fastq} --threads {threads} \
+        --split-spot --skip-technical --dumpbase --readids --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' --defline-qual '+' >> {log} 2>&1
 
         # rename file and move to output dir
         for f in $(ls -1q {output.tmp_fastq} | grep -oP "^[^_]+" | uniq); do
@@ -120,18 +122,20 @@ rule sra2fastq_PE:
         # acquire the lock
         (
             flock --timeout 30 200 || exit 1
-            sleep 2
+            sleep 3
         ) 200>{layout_cachefile_lock}
 
         # dump
-        fasterq-dump -s {input}/* -O {output.tmp_fastq} -t {output.tmp_dump} --threads {threads} --split-3 >> {log} 2>&1
+        fasterq-dump -s {input}/* -O {output.tmp_fastq} -t {output.tmp_dump} --threads {threads} --split-3 >> {log} 2>&1 || 
+        parallel-fastq-dump -s {input}/* -O {output.tmp_fastq} --threads {threads} \
+        --split-e --skip-technical --dumpbase --readids --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' --defline-qual '+' >> {log} 2>&1
 
         # rename files and move to output dir
         for f in $(ls -1q {output.tmp_fastq} | grep -oP "^[^_]+" | uniq); do
             dst_1={config[fastq_dir]}/{wildcards.sample}_{config[fqext1]}.{config[fqsuffix]}
             dst_2={config[fastq_dir]}/{wildcards.sample}_{config[fqext2]}.{config[fqsuffix]}
-            cat "{output.tmp_fastq}/${{f}}_1.fastq" >> $dst_1
-            cat "{output.tmp_fastq}/${{f}}_2.fastq" >> $dst_2
+            cat "{output.tmp_fastq}/${{f}}_"*"1.fastq" >> $dst_1
+            cat "{output.tmp_fastq}/${{f}}_"*"2.fastq" >> $dst_2
         done
         pigz -p {threads} {config[fastq_dir]}/{wildcards.sample}_{config[fqext1]}.{config[fqsuffix]}
         pigz -p {threads} {config[fastq_dir]}/{wildcards.sample}_{config[fqext2]}.{config[fqsuffix]}
