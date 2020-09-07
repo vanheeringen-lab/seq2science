@@ -560,7 +560,7 @@ def get_trimming_qc(sample):
         # still something to think about to add later, since that might be a good quality check though.
         return expand(f"{{qc_dir}}/fastqc/{sample}_{{fqext}}_trimmed_fastqc.zip", **config)
     else:
-        if config['layout'][sample] == 'SINGLE':
+        if sampledict[sample]['layout'] == 'SINGLE':
             return expand([f"{{qc_dir}}/fastqc/{sample}_fastqc.zip",
                            f"{{qc_dir}}/fastqc/{sample}_trimmed_fastqc.zip",
                            f"{{qc_dir}}/trimming/{sample}.{{fqsuffix}}.gz_trimming_report.txt"],
@@ -582,7 +582,7 @@ def get_alignment_qc(sample):
         output.append(f"{{qc_dir}}/samtools_stats/{os.path.basename(config['final_bam_dir'])}/{{{{assembly}}}}-{sample}.samtools-coordinate.samtools_stats.txt")
 
     # add insert size metrics
-    if config['layout'][sample] == "PAIRED":
+    if sampledict[sample]['layout'] == "PAIRED":
         output.append(f"{{qc_dir}}/InsertSizeMetrics/{{{{assembly}}}}-{sample}.tsv")
 
     # get the ratio mitochondrial dna

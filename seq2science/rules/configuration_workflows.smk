@@ -15,7 +15,7 @@ if config.get("peak_caller", False):
     # if hmmratac peak caller, check if all samples are paired-end
     if "hmmratac" in config["peak_caller"]:
         assert all(
-            [config["layout"][sample] == "PAIRED" for sample in samples.index]
+            [sampledict[sample]['layout'] == "PAIRED" for sample in samples.index]
         ), "HMMRATAC requires all samples to be paired end"
 
     config["macs2_types"] = ["control_lambda.bdg", "peaks.xls", "treat_pileup.bdg"]
@@ -218,8 +218,8 @@ keys_to_remove = ["fqext1", "fqext2", "macs2_types", "cpulimit",
                   ("filter_bam_by_strand", "strandedness" not in samples),
                   ("technical_replicates", "replicates" not in samples),
                   ("tximeta", config.get("quantifier") != "salmon")]
-keys = rmkeys(["samples", "layout"] + keys_to_remove, keys)
-keys = ["samples"] + keys + ["layout"]
+keys = rmkeys(["samples"] + keys_to_remove, keys)
+keys = ["samples"] + keys
 
 for key in keys:
     if config[key] not in ["", False, 0, "None", "none@provided.com", "yourmail@here.com"]:

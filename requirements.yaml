@@ -3,6 +3,7 @@ channels:
   - bioconda
   - conda-forge
   - defaults
+  - gusdunn
 dependencies:
   - pkgs/main::python=3.6
   - bioconda::snakemake=5.18.0
@@ -19,3 +20,4 @@ dependencies:
   - conda-forge:pretty_html_table=0.9.dev0
   - conda-forge:pandas_schema=0.3.5
   - bioconda::trackhub=0.1.2019.12.24
+  - bioconda::pysradb=0.11.0

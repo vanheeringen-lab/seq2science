@@ -2,7 +2,7 @@ def get_reads(wildcards):
     """
     Function that returns the reads for any aligner.
     """
-    if config["layout"].get(wildcards.sample, False) == "SINGLE":
+    if sampledict[wildcards.sample]["layout"] == "SINGLE":
         return expand("{trimmed_dir}/{{sample}}_trimmed.{fqsuffix}.gz", **config)
     return sorted(expand("{trimmed_dir}/{{sample}}_{fqext}_trimmed.{fqsuffix}.gz", **config))
 
@@ -49,7 +49,7 @@ if config["aligner"] == "bowtie2":
         params:
             input=(
                 lambda wildcards, input: ["-U", input.reads]
-                if config["layout"][wildcards.sample] == "SINGLE"
+                if sampledict[wildcards.sample]["layout"] == "SINGLE"
                 else ["-1", input.reads[0], "-2", input.reads[1]]
             ),
             params=config["align"],
@@ -256,7 +256,7 @@ elif config["aligner"] == "hisat2":
         params:
             input=(
                 lambda wildcards, input: ["-U", input.reads]
-                if config["layout"][wildcards.sample] == "SINGLE"
+                if sampledict[wildcards.sample]["layout"] == "SINGLE"
                 else ["-1", input.reads[0], "-2", input.reads[1]]
             ),
             params=config["align"],
@@ -358,7 +358,7 @@ elif config["aligner"] == "star":
             expand("{benchmark_dir}/{aligner}_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
         message: explain_rule(f"{config['aligner']}_align")
         params:
-            input=lambda wildcards, input: input.reads if config["layout"][wildcards.sample] == "SINGLE" else input.reads[0:2],
+            input=lambda wildcards, input: input.reads if sampledict[wildcards.sample]["layout"] == "SINGLE" else input.reads[0:2],
             params=config["align"],
         priority: 0
         threads: 8
