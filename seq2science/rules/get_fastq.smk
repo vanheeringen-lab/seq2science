@@ -3,131 +3,120 @@ import os
 import re
 
 
-# rule id2sra:
-#     """
-#     Download the SRA of a sample by its unique identifier.
-#
-#     Tries first downloading with the faster ascp protocol, if that fails it
-#     falls back on the slower http protocol.
-#     """
-#     output:
-#         temp(directory(expand("{sra_dir}/{{sample}}", **config))),
-#     log:
-#         expand("{log_dir}/id2sra/{{sample}}.log", **config),
-#     benchmark:
-#         expand("{benchmark_dir}/id2sra/{{sample}}.benchmark.txt", **config)[0]
-#     message: explain_rule("id2sra")
-#     resources:
-#         parallel_downloads=1,
-#     conda:
-#         "../envs/get_fastq.yaml"
-#     wildcard_constraints:
-#         sample="(GSM|SRR|ERR|DRR)\d+",
-#     shell:
-#         """
-#         # three attempts
-#         for i in {{1..3}}
-#         do
-#             # acquire a lock
-#             (
-#                 flock --timeout 30 200 || continue
-#                 sleep 2
-#             ) 200>{layout_cachefile_lock}
-#
-#             # dump
-#             prefetch --max-size 999999999999 --output-directory {output} --log-level debug --progress {wildcards.sample} >> {log} 2>&1 && break
-#             sleep 10
-#         done
-#         """
-#
-#
-#
-# rule sra2fastq_SE:
-#     """
-#     Downloaded (raw) SRAs are converted to single-end fastq files.
-#     """
-#     input:
-#         rules.id2sra.output,
-#     output:
-#         fastq=expand("{fastq_dir}/{{sample}}.{fqsuffix}.gz", **config),
-#         tmp_dump=temp(directory(expand("{sra_dir}/tmp/{{sample}}", **config))),
-#         tmp_fastq=temp(directory(expand("{sra_dir}/fastq/{{sample}}", **config))),
-#     log:
-#         expand("{log_dir}/sra2fastq_SE/{{sample}}.log", **config),
-#     benchmark:
-#         expand("{benchmark_dir}/sra2fastq_SE/{{sample}}.benchmark.txt", **config)[0]
-#     threads: 8
-#     conda:
-#         "../envs/get_fastq.yaml"
-#     shell:
-#         """
-#         # acquire a lock
-#         (
-#             flock --timeout 30 200 || exit 1
-#             sleep 3
-#         ) 200>{layout_cachefile_lock}
-#
-#         # dump
-#         fasterq-dump -s {input}/* -O {output.tmp_fastq} -t {output.tmp_dump} --threads {threads} --split-spot >> {log} 2>&1 ||
-#         parallel-fastq-dump -s {input}/* -O {output.tmp_fastq} --threads {threads} \
-#         --split-spot --skip-technical --dumpbase --readids --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' --defline-qual '+' >> {log} 2>&1
-#
-#         # rename file and move to output dir
-#         for f in $(ls -1q {output.tmp_fastq} | grep -oP "^[^_]+" | uniq); do
-#             dst={config[fastq_dir]}/{wildcards.sample}.{config[fqsuffix]}
-#             cat "{output.tmp_fastq}/${{f}}" >> $dst
-#         done
-#         pigz -p {threads} {config[fastq_dir]}/{wildcards.sample}.{config[fqsuffix]}
-#         """
-#
-#
-# rule sra2fastq_PE:
-#     """
-#     Downloaded (raw) SRAs are converted to paired-end fastq files.
-#     Forward and reverse samples will be switched if forward/reverse names are not lexicographically ordered.
-#     """
-#     input:
-#         rules.id2sra.output,
-#     output:
-#         fastq=expand("{fastq_dir}/{{sample}}_{fqext}.{fqsuffix}.gz", **config),
-#         tmp_dump=temp(directory(expand("{sra_dir}/tmp/{{sample}}", **config))),
-#         tmp_fastq=temp(directory(expand("{sra_dir}/fastq/{{sample}}", **config))),
-#     log:
-#         expand("{log_dir}/sra2fastq_PE/{{sample}}.log", **config),
-#     benchmark:
-#         expand("{benchmark_dir}/sra2fastq_PE/{{sample}}.benchmark.txt", **config)[0]
-#     threads: 8
-#     conda:
-#         "../envs/get_fastq.yaml"
-#     shell:
-#         """
-#         # acquire the lock
-#         (
-#             flock --timeout 30 200 || exit 1
-#             sleep 3
-#         ) 200>{layout_cachefile_lock}
-#
-#         # dump
-#         fasterq-dump -s {input}/* -O {output.tmp_fastq} -t {output.tmp_dump} --threads {threads} --split-3 >> {log} 2>&1 ||
-#         parallel-fastq-dump -s {input}/* -O {output.tmp_fastq} --threads {threads} \
-#         --split-e --skip-technical --dumpbase --readids --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' --defline-qual '+' >> {log} 2>&1
-#
-#         # rename files and move to output dir
-#         for f in $(ls -1q {output.tmp_fastq} | grep -oP "^[^_]+" | uniq); do
-#             dst_1={config[fastq_dir]}/{wildcards.sample}_{config[fqext1]}.{config[fqsuffix]}
-#             dst_2={config[fastq_dir]}/{wildcards.sample}_{config[fqext2]}.{config[fqsuffix]}
-#             cat "{output.tmp_fastq}/${{f}}_"*"1.fastq" >> $dst_1
-#             cat "{output.tmp_fastq}/${{f}}_"*"2.fastq" >> $dst_2
-#         done
-#         pigz -p {threads} {config[fastq_dir]}/{wildcards.sample}_{config[fqext1]}.{config[fqsuffix]}
-#         pigz -p {threads} {config[fastq_dir]}/{wildcards.sample}_{config[fqext2]}.{config[fqsuffix]}
-#         """
+rule run2sra:
+    """
+    Download the SRA of a sample by its unique identifier.
+
+    Tries first downloading with the faster ascp protocol, if that fails it
+    falls back on the slower http protocol.
+    """
+    output:
+        temp(directory(expand("{sra_dir}/{{run}}", **config))),
+    log:
+        expand("{log_dir}/run2sra/{{run}}.log", **config),
+    benchmark:
+        expand("{benchmark_dir}/run2sra/{{run}}.benchmark.txt", **config)[0]
+    message: explain_rule("run2sra")
+    resources:
+        parallel_downloads=1,
+    conda:
+        "../envs/get_fastq.yaml"
+    wildcard_constraints:
+        run="SRR\d+",
+    shell:
+        """
+        # three attempts
+        for i in {{1..3}}
+        do
+            # acquire a lock
+            (
+                flock --timeout 30 200 || continue
+                sleep 2
+            ) 200>{eutils_cache_lock}
+
+            # dump
+            prefetch --max-size 999999999999 --output-directory {output} --log-level debug --progress {wildcards.run} >> {log} 2>&1 && break
+            sleep 10
+        done
+        """
+
+
+rule sra2fastq_SE:
+    """
+    Downloaded (raw) SRAs are converted to single-end fastq files.
+    """
+    input:
+        rules.run2sra.output,
+    output:
+        fastq_gz=expand("{fastq_dir}/runs/{{run}}.{fqsuffix}.gz", **config),
+        fastq=temp(expand("{fastq_dir}/runs/{{run}}.{fqsuffix}", **config)),
+        tmpdir=temp(directory(expand("{sra_dir}/tmp/{{run}}", **config))),
+    log:
+        expand("{log_dir}/sra2fastq_SE/{{run}}.log", **config),
+    benchmark:
+        expand("{benchmark_dir}/sra2fastq_SE/{{run}}.benchmark.txt", **config)[0]
+    wildcard_constraints:
+        run="SRR\d+",
+    threads: 8
+    conda:
+        "../envs/get_fastq.yaml"
+    shell:
+        """
+        # acquire a lock
+        (
+            flock --timeout 30 200 || exit 1
+            sleep 3
+        ) 200>{eutils_cache_lock}
+
+        # dump
+        fasterq-dump -s {input}/* -O {output.fastq} -t {output.tmpdir} --threads {threads} --split-spot >> {log} 2>&1
+
+        pigz -k -p {threads} {output.fastq}
+        """
+
+
+rule sra2fastq_PE:
+    """
+    Downloaded (raw) SRAs are converted to paired-end fastq files.
+    Forward and reverse samples will be switched if forward/reverse names are not lexicographically ordered.
+    """
+    input:
+        rules.run2sra.output,
+    output:
+        fastq_gz=expand("{fastq_dir}/runs/{{run}}_{fqext}.{fqsuffix}.gz", **config),
+        fastq=temp(expand("{fastq_dir}/runs/{{run}}_{fqext}.{fqsuffix}", **config)),
+        tmpdir=temp(directory(expand("{sra_dir}/tmp/{{run}}", **config))),
+    log:
+        expand("{log_dir}/sra2fastq_PE/{{run}}.log", **config),
+    benchmark:
+        expand("{benchmark_dir}/sra2fastq_PE/{{run}}.benchmark.txt", **config)[0]
+    threads: 8
+    wildcard_constraints:
+        run="SRR\d+",
+    conda:
+        "../envs/get_fastq.yaml"
+    shell:
+        """
+        # acquire the lock
+        (
+            flock --timeout 30 200 || exit 1
+            sleep 3
+        ) 200>{eutils_cache_lock}
+
+        # dump
+        fasterq-dump -s {input}/* -O {output.tmp_fastq} -t {output.tmpdir} --threads {threads} --split-3 >> {log} 2>&1 ||
+        parallel-fastq-dump -s {input}/* -O {output.run} --threads {threads} \
+        --split-e --skip-technical --dumpbase --readids --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' --defline-qual '+' >> {log} 2>&1
+
+        pigz -k -p {threads} {output.fastq}
+        pigz -k -p {threads} {output.fastq}
+        """
 
 
 # NOTE: if the workflow fails it tends to blame this rule.
 # Set "debug: True" in the config to see the root cause.
 if not config.get("debug") and False:
-    # ruleorder: renamefastq_PE > sra2fastq_PE
+    ruleorder: renamefastq_PE > sra2fastq_PE
 
     def get_wrong_fqext(wildcards):
         """get all local samples with fqexts that do not match the config"""
@@ -161,8 +150,8 @@ if not config.get("debug") and False:
             """
 
 
-# ruleorder: ena2fastq_SE > sra2fastq_SE
-# ruleorder: ena2fastq_PE > sra2fastq_PE
+ruleorder: ena2fastq_SE > sra2fastq_SE
+ruleorder: ena2fastq_PE > sra2fastq_PE
 ruleorder: ena2fastq_PE > ena2fastq_SE
 
 
