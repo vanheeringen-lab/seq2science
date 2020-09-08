@@ -48,9 +48,8 @@ rule sra2fastq_SE:
     input:
         rules.run2sra.output,
     output:
-        fastq_gz=expand("{fastq_dir}/runs/{{run}}.{fqsuffix}.gz", **config),
-        fastq=temp(expand("{fastq_dir}/runs/{{run}}.{fqsuffix}", **config)),
-        tmpdir=temp(directory(expand("{sra_dir}/tmp/{{run}}", **config))),
+        fastq=expand("{fastq_dir}/runs/{{run}}.{fqsuffix}.gz", **config),
+        tmpdir=temp(directory(expand("{fastq_dir}/runs/tmp/{{run}}", **config))),
     log:
         expand("{log_dir}/sra2fastq_SE/{{run}}.log", **config),
     benchmark:
@@ -62,18 +61,24 @@ rule sra2fastq_SE:
         "../envs/get_fastq.yaml"
     shell:
         """
-        # acquire a lock
+        # acquire the lock
         (
             flock --timeout 30 200 || exit 1
             sleep 3
         ) 200>{eutils_cache_lock}
 
-        # dump
-        fasterq-dump -s {input}/* -o {output.fastq} -t {output.tmpdir} --threads {threads} --split-spot >> {log} 2>&1
+        # setup tmp dir
+        mkdir -p {output.tmpdir}
 
-        pigz -k -p {threads} {output.fastq}
+        # dump to tmp dir
+        parallel-fastq-dump -s {input}/* -O {output.tmpdir} {config[splot]} \
+        --threads {threads} --split-spot --skip-technical --dumpbase --readids \
+        --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' \
+        --defline-qual '+' >> {log} 2>&1
+
+        # rename file and move to output dir
+        mv {output.tmpdir}/* {output.fastq}
         """
-
 
 rule sra2fastq_PE:
     """
@@ -83,9 +88,8 @@ rule sra2fastq_PE:
     input:
         rules.run2sra.output,
     output:
-        fastq_gz=expand("{fastq_dir}/runs/{{run}}_{fqext}.{fqsuffix}.gz", **config),
-        fastq=temp(expand("{fastq_dir}/runs/{{run}}_{fqext}.{fqsuffix}", **config)),
-        tmpdir=temp(directory(expand("{sra_dir}/tmp/{{run}}", **config))),
+        fastq=expand("{fastq_dir}/runs/{{run}}_{fqext}.{fqsuffix}.gz", **config),
+        tmpdir=temp(directory(expand("{fastq_dir}/runs/tmp/{{run}}", **config))),
     log:
         expand("{log_dir}/sra2fastq_PE/{{run}}.log", **config),
     benchmark:
@@ -102,14 +106,19 @@ rule sra2fastq_PE:
             flock --timeout 30 200 || exit 1
             sleep 3
         ) 200>{eutils_cache_lock}
+        
+        # setup tmp dir
+        mkdir -p {output.tmpdir}
 
-        # dump
-        fasterq-dump -s {input}/* -0 {output.fastq} -t {output.tmpdir} --threads {threads} --split-3 >> {log} 2>&1 ||
-        parallel-fastq-dump -s {input}/* -O {output.run} --threads {threads} \
-        --split-e --skip-technical --dumpbase --readids --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' --defline-qual '+' >> {log} 2>&1
-
-        pigz -k -p {threads} {output.fastq}
-        pigz -k -p {threads} {output.fastq}
+        # dump to tmp dir
+        parallel-fastq-dump -s {input}/* -O {output.tmp_fastq} \
+        --threads {threads} --split-e --skip-technical --dumpbase \
+        --readids --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' \
+        --defline-qual '+' >> {log} 2>&1
+        
+        # rename file and move to output dir
+        mv {output.tmpdir}/*_1* {output.fastq[0]}
+        mv {output.tmpdir}/*_2* {output.fastq[0]}
         """
 
 
