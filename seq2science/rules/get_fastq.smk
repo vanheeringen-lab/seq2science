@@ -188,8 +188,6 @@ rule ena2fastq_SE:
         else:
             shell("wget {url} -O {output} >> {log} 2>&1")
 
-print(ena_single_end)
-print(ena_paired_end)
 
 rule ena2fastq_PE:
     """
@@ -235,11 +233,9 @@ rule run2sample:
         expand("{log_dir}/run2sample/{{sample}}{{suffix}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/run2sample/{{sample}}{{suffix}}.benchmark.txt", **config)[0]
-    wildcard_constraints:
-        suffix=".*"
     run:
         shell("mv {input[0]} {output}")
 
         # now append all the later ones
         for i in range(len(input) - 1):
-            shell("mv {input[i + 1]} {output}")
+            shell("cat {input[i + 1]} {output}")

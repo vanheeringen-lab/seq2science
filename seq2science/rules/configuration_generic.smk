@@ -354,7 +354,20 @@ if "control" in samples:
         if isinstance(control, str):  # ignore nans
             all_samples.append(control)
 
-sampledict = samples_metadata(all_samples, config)
+eutils_cache = os.path.expanduser('~/.config/seq2science/eutils.p')
+eutils_cache_lock = os.path.expanduser('~/.config/seq2science/eutils.p.lock')
+prep_filelock(eutils_cache_lock, 30)
+with FileLock(eutils_cache_lock):
+    try:
+        sampledict = pickle.load(open(eutils_cache, "rb"))
+    except FileNotFoundError:
+        sampledict = {}
+
+    # only keep samples for this run
+    sampledict = {sample: values for sample, values in sampledict.items() if sample in all_samples}
+
+    missing_samples = [sample for sample in all_samples if sample not in sampledict.keys()]
+    sampledict.update(samples_metadata(missing_samples, config))
 
 logger.info("Done!\n\n")
 
@@ -367,7 +380,7 @@ ena_paired_end = [run for values in sampledict.values() if (values["layout"] == 
 run2download = dict()
 for sample, values in sampledict.items():
     for run in values["runs"]:
-        if values[ena_protocol][run] is not None:
+        if values[ena_protocol] and values[ena_protocol][run]:
             run2download[run] = values[ena_protocol][run]
 
 # if samples are merged add the layout of the technical replicate to the config
