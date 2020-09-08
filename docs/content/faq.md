@@ -32,3 +32,10 @@ export TMPDIR=/scratch/${USER}/tmp
 These commands make a folder tmp on the scratch disc (assuming this disc exists), and set the `$TMPDIR` to there. 
 
 Another, more simple reason why these errors can happen is that there simply is no more space/storage left on the server. This can simply be resolved by deleting unused/old files you no longer need.
+
+## I want to run the pipeline until a certain rule, but not farther
+let's say you want to download and trim reads with seq2science, but you do not want to align and do all the other stuff since you have your own methods for that. You can simply tell seq2science to run until some rules, and not farther:
+
+```
+seq2science run alignment --cores 48 --snakemakeOptions until=["trim_galore_PE","trim_galore_SE"]
+```
