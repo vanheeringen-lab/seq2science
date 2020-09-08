@@ -93,6 +93,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#i-changed-the-config-samples-file-but-seq2science-does-not-rerun">I changed the config/samples file but seq2science does not rerun</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#failed-to-call-external-services">Failed to call external services.</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#storage-exhausted-no-space-left-on-device">storage exhausted / No Space Left on Device</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#i-want-to-run-the-pipeline-until-a-certain-rule-but-not-farther">I want to run the pipeline until a certain rule, but not farther</a></li>
 </ul>
 </li>
 </ul>
@@ -195,6 +196,13 @@ export TMPDIR=/scratch/${USER}/tmp
 </div>
 <p>These commands make a folder tmp on the scratch disc (assuming this disc exists), and set the <code class="docutils literal notranslate"><span class="pre">$TMPDIR</span></code> to there.</p>
 <p>Another, more simple reason why these errors can happen is that there simply is no more space/storage left on the server. This can simply be resolved by deleting unused/old files you no longer need.</p>
+</div>
+<div class="section" id="i-want-to-run-the-pipeline-until-a-certain-rule-but-not-farther">
+<h2>I want to run the pipeline until a certain rule, but not farther<a class="headerlink" href="#i-want-to-run-the-pipeline-until-a-certain-rule-but-not-farther" title="Permalink to this headline">¶</a></h2>
+<p>let’s say you want to download and trim reads with seq2science, but you do not want to align and do all the other stuff since you have your own methods for that. You can simply tell seq2science to run until some rules, and not farther:</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>seq2science run alignment --cores 48 --snakemakeOptions until=[&quot;trim_galore_PE&quot;,&quot;trim_galore_SE&quot;]
+</pre></div>
+</div>
 </div>
 </div>
 
