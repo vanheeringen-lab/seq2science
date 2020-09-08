@@ -104,8 +104,8 @@ rule call_peak_genrich:
 
 def get_fastqc(wildcards):
     if (
-        sampledict[wildcards.sample].get("layout") == "SINGLE"
-        or sampledict[wildcards.assembly].get("layout") == "SINGLE"
+        sampledict.get(wildcards.sample, {}).get("layout") == "SINGLE"
+        or sampledict.get(wildcards.assembly, {}).get("layout") == "SINGLE"
     ):
         return expand("{qc_dir}/fastqc/{{sample}}_trimmed_fastqc.zip", **config)
     return sorted(expand("{qc_dir}/fastqc/{{sample}}_{fqext1}_trimmed_fastqc.zip", **config))
@@ -151,14 +151,14 @@ rule macs2_callpeak:
     params:
         name=(
             lambda wildcards, input: wildcards.sample
-            if config["layout"][wildcards.sample] == "SINGLE"
+            if sampledict[wildcards.sample]["layout"] == "SINGLE"
             else [f"{wildcards.sample}_{config['fqext1']}"]
         ),
         genome=f"{config['genome_dir']}/{{assembly}}/{{assembly}}.fa",
         macs_params=config["peak_caller"].get("macs2", ""),
         format=(
             lambda wildcards: "BAMPE"
-            if (config["layout"][wildcards.sample] == "PAIRED" and "--shift" not in config["peak_caller"].get("macs2", ""))
+            if (sampledict[wildcards.sample]["layout"] == "PAIRED" and "--shift" not in config["peak_caller"].get("macs2", ""))
             else "BAM"
         ),
         control=lambda wildcards, input: f"-c {input.control}" if "control" in input else "",

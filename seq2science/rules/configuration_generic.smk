@@ -358,6 +358,18 @@ sampledict = samples_metadata(all_samples, config)
 
 logger.info("Done!\n\n")
 
+# now check where to download which sample
+ena_protocol = "ena_fastq_ftp" if config.get("ascp_path") and config.get("ascp_key") else "ena_fastq_http"
+ena_single_end = [run for values in sampledict.values() if (values["layout"] == "SINGLE") and values[ena_protocol] is not None for run in values["runs"]]
+ena_paired_end = [run for values in sampledict.values() if (values["layout"] == "PAIRED") and values[ena_protocol] is not None for run in values["runs"]]
+
+# get download link per run
+run2download = dict()
+for sample, values in sampledict.items():
+    for run in values["runs"]:
+        if values[ena_protocol][run] is not None:
+            run2download[run] = values[ena_protocol][run]
+
 # if samples are merged add the layout of the technical replicate to the config
 if 'replicate' in samples:
     for sample in samples.index:
