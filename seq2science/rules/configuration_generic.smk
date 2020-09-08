@@ -363,11 +363,14 @@ with FileLock(eutils_cache_lock):
     except FileNotFoundError:
         sampledict = {}
 
+    missing_samples = [sample for sample in all_samples if sample not in sampledict.keys()]
+    if len(missing_samples) > 0:
+        sampledict.update(samples_metadata(missing_samples, config))
+
+    pickle.dump(sampledict, open(eutils_cache, "wb"))
+
     # only keep samples for this run
     sampledict = {sample: values for sample, values in sampledict.items() if sample in all_samples}
-
-    missing_samples = [sample for sample in all_samples if sample not in sampledict.keys()]
-    sampledict.update(samples_metadata(missing_samples, config))
 
 logger.info("Done!\n\n")
 
