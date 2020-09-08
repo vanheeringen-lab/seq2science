@@ -12,14 +12,11 @@ import copy
 import json
 import requests
 from functools import lru_cache
-from socket import timeout
+import yaml
 
-import norns
 import numpy as np
 import pandas as pd
 import urllib.request
-from bs4 import BeautifulSoup
-from multiprocessing.pool import ThreadPool
 from filelock import FileLock
 from pandas_schema import Column, Schema
 from pandas_schema.validation import MatchesPatternValidation, IsDistinctValidation
@@ -94,7 +91,8 @@ assert sorted(config['fqext'])[0] == config['fqext1'], \
      f"Your suffixes:    fqext1: {config['fqext1']}, fqext2: {config['fqext2']}\n")
 
 # read the config.yaml (not the profile)
-user_config = norns.config(config_file=workflow.overwrite_configfiles[0])
+with open(workflow.overwrite_configfiles[0], 'r') as stream:
+    user_config = yaml.safe_load(stream)
 
 # make absolute paths, nest default dirs in result_dir and cut off trailing slashes
 config['result_dir'] = re.split("\/$", os.path.abspath(config['result_dir']))[0]
