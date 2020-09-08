@@ -69,7 +69,7 @@ rule sra2fastq_SE:
         ) 200>{eutils_cache_lock}
 
         # dump
-        fasterq-dump -s {input}/* -O {output.fastq} -t {output.tmpdir} --threads {threads} --split-spot >> {log} 2>&1
+        fasterq-dump -s {input}/* -o {output.fastq} -t {output.tmpdir} --threads {threads} --split-spot >> {log} 2>&1
 
         pigz -k -p {threads} {output.fastq}
         """
@@ -104,7 +104,7 @@ rule sra2fastq_PE:
         ) 200>{eutils_cache_lock}
 
         # dump
-        fasterq-dump -s {input}/* -O {output.tmp_fastq} -t {output.tmpdir} --threads {threads} --split-3 >> {log} 2>&1 ||
+        fasterq-dump -s {input}/* -0 {output.fastq} -t {output.tmpdir} --threads {threads} --split-3 >> {log} 2>&1 ||
         parallel-fastq-dump -s {input}/* -O {output.run} --threads {threads} \
         --split-e --skip-technical --dumpbase --readids --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' --defline-qual '+' >> {log} 2>&1
 
