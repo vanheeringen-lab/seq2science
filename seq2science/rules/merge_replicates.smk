@@ -64,8 +64,8 @@ if "replicate" in samples:
 
         return input_files
 
-    ruleorder: merge_replicates > renamefastq_PE > sra2fastq_PE
-
+    ruleorder: merge_replicates > trim_galore_PE
+        
     rule merge_replicates:
         """
         Merge replicates (fastqs) simply by concatenating the files. We also change the name of the read headers to 
