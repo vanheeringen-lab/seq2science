@@ -64,7 +64,7 @@ if "replicate" in samples:
 
         return input_files
 
-    ruleorder: merge_replicates > renamefastq_PE > sra2fastq_PE
+    ruleorder: merge_replicates > trim_galore_PE
 
     rule merge_replicates:
         """
