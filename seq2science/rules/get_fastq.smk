@@ -71,14 +71,15 @@ rule sra2fastq_SE:
         mkdir -p {output.tmpdir}
 
         # dump to tmp dir
-        parallel-fastq-dump -s {input}/* -O {output.tmpdir} {config[splot]} \
+        parallel-fastq-dump -s {input}/* -O {output.tmpdir} \
         --threads {threads} --split-spot --skip-technical --dumpbase --readids \
         --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' \
-        --defline-qual '+' >> {log} 2>&1
+        --defline-qual '+' --gzip >> {log} 2>&1
 
         # rename file and move to output dir
         mv {output.tmpdir}/* {output.fastq}
         """
+
 
 rule sra2fastq_PE:
     """
@@ -106,19 +107,19 @@ rule sra2fastq_PE:
             flock --timeout 30 200 || exit 1
             sleep 3
         ) 200>{eutils_cache_lock}
-        
+
         # setup tmp dir
         mkdir -p {output.tmpdir}
 
         # dump to tmp dir
-        parallel-fastq-dump -s {input}/* -O {output.tmp_fastq} \
+        parallel-fastq-dump -s {input}/* -O {output.tmpdir} \
         --threads {threads} --split-e --skip-technical --dumpbase \
         --readids --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' \
-        --defline-qual '+' >> {log} 2>&1
-        
+        --defline-qual '+' --gzip >> {log} 2>&1
+
         # rename file and move to output dir
         mv {output.tmpdir}/*_1* {output.fastq[0]}
-        mv {output.tmpdir}/*_2* {output.fastq[0]}
+        mv {output.tmpdir}/*_2* {output.fastq[1]}
         """
 
 
@@ -204,6 +205,7 @@ rule ena2fastq_PE:
     run:
         shell("mkdir -p {config[fastq_dir]}/tmp >> {log} 2>&1")
         urls = run2download[wildcards.run]
+        print(urls)
         if config.get('ascp_path') and config.get('ascp_key'):
             shell("{config[ascp_path]} -QT -l 1G -P33001 -i {config[ascp_key]} {urls[0]} {output[0]} >> {log} 2>&1")
             shell("{config[ascp_path]} -QT -l 1G -P33001 -i {config[ascp_key]} {urls[1]} {output[1]} >> {log} 2>&1")
@@ -232,8 +234,9 @@ rule run2sample:
     benchmark:
         expand("{benchmark_dir}/run2sample/{{sample}}{{suffix}}.benchmark.txt", **config)[0]
     run:
-        shell("mv {input[0]} {output}")
+        shell("cp {input[0]} {output}")
 
         # now append all the later ones
-        for i in range(len(input) - 1):
-            shell("cat {input[i + 1]} {output}")
+        for i in range(1, len(input)):
+            inputfile = input[i]
+            shell("cat {inputfile} >> {output}")

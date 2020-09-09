@@ -84,13 +84,13 @@ def samples_metadata(samples, config):
         sampledict[sample]["ena_fastq_ftp"] = dict()
         for run in runs:
             if layout[0] == "SINGLE":
-                sampledict[sample]["ena_fastq_http"][run] = df.loc[idxs].ena_fastq_http.tolist()
-                sampledict[sample]["ena_fastq_ftp"][run] = df.loc[idxs].ena_fastq_ftp.tolist()
+                sampledict[sample]["ena_fastq_http"][run] = df[df.run_accession == run].ena_fastq_http.tolist()
+                sampledict[sample]["ena_fastq_ftp"][run] = df[df.run_accession == run].ena_fastq_ftp.tolist()
             elif layout[0] == "PAIRED":
-                sampledict[sample]["ena_fastq_http"][run] = df.loc[idxs].ena_fastq_http_1.tolist() + df.loc[
-                    idxs].ena_fastq_http_2.tolist()
-                sampledict[sample]["ena_fastq_ftp"][run] = df.loc[idxs].ena_fastq_ftp_1.tolist() + df.loc[
-                    idxs].ena_fastq_ftp_2.tolist()
+                sampledict[sample]["ena_fastq_http"][run] = df[df.run_accession == run].ena_fastq_http_1.tolist() + df[
+                    df.run_accession == run].ena_fastq_http_2.tolist()
+                sampledict[sample]["ena_fastq_ftp"][run] = df[df.run_accession == run].ena_fastq_ftp_1.tolist() + df[
+                    df.run_accession == run].ena_fastq_ftp_2.tolist()
 
         if any(["N/A" in urls for run, urls in sampledict[sample]["ena_fastq_http"].items()]):
             sampledict[sample]["ena_fastq_http"] = None
