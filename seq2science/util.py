@@ -55,13 +55,23 @@ def samples_metadata(samples, config):
                              f"\t{config['fastq_dir']}/{sample}_{config['fqext2']}.{config['fqsuffix']}.gz \n"
                              f"and since the sample did not start with either GSM, SRX, SRR, ERR, and DRR we couldn't find it online..\n")
 
+    if len(public_samples) == 0:
+        return sampledict
+
     db = pysradb.SRAweb()
 
     # now check GEO
-    geo_samples = [sample for sample in samples if sample.startswith("GSM")]
-    df = db.gsm_to_srx(geo_samples)
-    sample2clean = dict(zip(df.experiment_alias, df.experiment_accession))
+    geo_samples = [sample for sample in public_samples if sample.startswith("GSM")]
+    if len(geo_samples) > 0:
+        df = db.gsm_to_srx(geo_samples)
+        sample2clean = dict(zip(df.experiment_alias, df.experiment_accession))
+    else:
+        sample2clean = dict()
 
+    # add all non-gsm public
+    sample2clean.update({sample: sample for sample in public_samples if sample not in geo_samples})
+
+    # check our samples on sra
     df = db.sra_metadata(list(sample2clean.values()), detailed=True)
 
     for sample, clean in sample2clean.items():

@@ -48,7 +48,7 @@ rule sra2fastq_SE:
     input:
         rules.run2sra.output,
     output:
-        fastq=expand("{fastq_dir}/runs/{{run}}.{fqsuffix}.gz", **config),
+        fastq=temp(expand("{fastq_dir}/runs/{{run}}.{fqsuffix}.gz", **config)),
         tmpdir=temp(directory(expand("{fastq_dir}/runs/tmp/{{run}}", **config))),
     log:
         expand("{log_dir}/sra2fastq_SE/{{run}}.log", **config),
@@ -89,7 +89,7 @@ rule sra2fastq_PE:
     input:
         rules.run2sra.output,
     output:
-        fastq=expand("{fastq_dir}/runs/{{run}}_{fqext}.{fqsuffix}.gz", **config),
+        fastq=temp(expand("{fastq_dir}/runs/{{run}}_{fqext}.{fqsuffix}.gz", **config)),
         tmpdir=temp(directory(expand("{fastq_dir}/runs/tmp/{{run}}", **config))),
     log:
         expand("{log_dir}/sra2fastq_PE/{{run}}.log", **config),
@@ -125,7 +125,7 @@ rule sra2fastq_PE:
 
 # NOTE: if the workflow fails it tends to blame this rule.
 # Set "debug: True" in the config to see the root cause.
-if not config.get("debug") and False:
+if not config.get("debug"):
     ruleorder: renamefastq_PE > sra2fastq_PE
 
     def get_wrong_fqext(wildcards):
@@ -170,7 +170,7 @@ rule ena2fastq_SE:
     Download single-end fastq files directly from the ENA.
     """
     output:
-        expand("{fastq_dir}/runs/{{run}}.{fqsuffix}.gz", **config),
+        temp(expand("{fastq_dir}/runs/{{run}}.{fqsuffix}.gz", **config)),
     resources:
         parallel_downloads=1,
     log:
@@ -193,7 +193,7 @@ rule ena2fastq_PE:
     Download paired-end fastq files directly from the ENA.
     """
     output:
-        expand("{fastq_dir}/runs/{{run}}_{fqext}.{fqsuffix}.gz", **config),
+        temp(expand("{fastq_dir}/runs/{{run}}_{fqext}.{fqsuffix}.gz", **config)),
     resources:
         parallel_downloads=1,
     log:
@@ -205,7 +205,6 @@ rule ena2fastq_PE:
     run:
         shell("mkdir -p {config[fastq_dir]}/tmp >> {log} 2>&1")
         urls = run2download[wildcards.run]
-        print(urls)
         if config.get('ascp_path') and config.get('ascp_key'):
             shell("{config[ascp_path]} -QT -l 1G -P33001 -i {config[ascp_key]} {urls[0]} {output[0]} >> {log} 2>&1")
             shell("{config[ascp_path]} -QT -l 1G -P33001 -i {config[ascp_key]} {urls[1]} {output[1]} >> {log} 2>&1")
@@ -216,14 +215,15 @@ rule ena2fastq_PE:
 
 def get_runs_from_sample(wildcards):
     run_fastqs = []
-    for run in sampledict[wildcards.sample]["runs"]:
+    for run in sampledict[wildcards.sample].get("runs", []):
         run_fastqs.append(f"{config['fastq_dir']}/runs/{run}{wildcards.suffix}")
 
     return run_fastqs
 
 
-rule run2sample:
+rule runs2sample:
     """
+    Concatenate a single run or multiple runs together into a fastq
     """
     input:
         get_runs_from_sample
@@ -233,6 +233,8 @@ rule run2sample:
         expand("{log_dir}/run2sample/{{sample}}{{suffix}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/run2sample/{{sample}}{{suffix}}.benchmark.txt", **config)[0]
+    wildcard_constraints:
+        run="(GSM|SRR|ERR|DRR)\d+",
     run:
         shell("cp {input[0]} {output}")
 
