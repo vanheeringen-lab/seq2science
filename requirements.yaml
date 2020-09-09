@@ -3,7 +3,6 @@ channels:
   - bioconda
   - conda-forge
   - defaults
-  - gusdunn
 dependencies:
   - pkgs/main::python=3.6
   - bioconda::snakemake=5.18.0
