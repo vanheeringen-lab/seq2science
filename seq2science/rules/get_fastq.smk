@@ -145,7 +145,7 @@ rule sra2fastq_PE:
 # NOTE: if the workflow fails it tends to blame this rule.
 # Set "debug: True" in the config to see the root cause.
 if not config.get("debug"):
-    ruleorder: renamefastq_PE > sra2fastq_PE
+    ruleorder: renamefastq_PE > ena2fastq_PE > sra2fastq_PE
 
     def get_wrong_fqext(wildcards):
         """get all local samples with fqexts that do not match the config"""
