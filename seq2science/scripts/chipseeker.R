@@ -18,11 +18,15 @@ sink(log, type="message")
 
 # log all variables for debugging purposes
 cat('# variables used for this analysis:\n')
-cat('narrowpeaks      <-',   snakemake@input$narrowpeaks, '\n')
-cat('gtf              <-',   snakemake@input$gtf[[1]],    '\n')
-cat('descriptive name <-',   snakemake@params$names,      '\n')
-cat('out1             <-',   snakemake@output$img1[[1]],  '\n')
-cat('out2             <-',   snakemake@output$img2[[1]],  '\n')
+cat('narrowpeaks      <-',   narrowpeaks,       '\n')
+cat('gtf              <-',   gtf,               '\n')
+cat('descriptive name <-',   descriptive_names, '\n')
+cat('out1             <-',   out1,              '\n')
+cat('out2             <-',   out2,              '\n')
+cat('\n')
+
+cat('Sessioninfo:\n')
+sessionInfo()
 cat('\n')
 
 
