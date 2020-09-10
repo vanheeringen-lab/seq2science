@@ -6,4 +6,3 @@ channels:
 dependencies:
   - r-base=4.0.2=he766273_1
   - bioconductor-chipseeker=1.24.0=r40_0
-  - bioconductor-genomicfeatures=1.40.0
