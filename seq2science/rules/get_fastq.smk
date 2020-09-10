@@ -25,6 +25,9 @@ rule run2sra:
         run="SRR\d+",
     shell:
         """
+        # move to output dir since somehow prefetch sometimes puts files in the cwd...
+        mkdir -p {output}; cd {output}
+
         # three attempts
         for i in {{1..3}}
         do
