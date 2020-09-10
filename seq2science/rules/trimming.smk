@@ -21,8 +21,6 @@ rule trim_galore_SE:
     params:
         config=config["trim_galore"],
         fqsuffix=config["fqsuffix"],
-    wildcard_constraints:
-        sample="|".join(samples.index)
     shell:
         ("cpulimit --include-children -l {threads}00 --" if config. get("cpulimit", True) else"")+
         """\
@@ -61,8 +59,6 @@ rule trim_galore_PE:
     params:
         config=config["trim_galore"],
         fqsuffix=config["fqsuffix"],
-    wildcard_constraints:
-        sample="|".join(samples.index)
     shell:
         ("cpulimit --include-children -l {threads}00 --" if config. get("cpulimit", True) else"")+
         """\
