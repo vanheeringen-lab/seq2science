@@ -1,3 +1,4 @@
+# comment with utf-8 char: √
 name: chipseeker
 channels:
   - conda-forge
