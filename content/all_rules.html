@@ -1034,18 +1034,20 @@ Forward and reverse samples will be switched if forward/reverse names are not le
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span># acquire the lock
 (
     flock --timeout 30 200 || exit 1
-    sleep 2
+    sleep 3
 ) 200&gt;{layout_cachefile_lock}
 
 # dump
-fasterq-dump -s {input}/* -O {output.tmp_fastq} -t {output.tmp_dump} --threads {threads} --split-3 &gt;&gt; {log} 2&gt;&amp;1
+fasterq-dump -s {input}/* -O {output.tmp_fastq} -t {output.tmp_dump} --threads {threads} --split-3 &gt;&gt; {log} 2&gt;&amp;1 ||
+parallel-fastq-dump -s {input}/* -O {output.tmp_fastq} --threads {threads} \
+--split-e --skip-technical --dumpbase --readids --clip --read-filter pass --defline-seq &#39;@$ac.$si.$sg/$ri&#39; --defline-qual &#39;+&#39; &gt;&gt; {log} 2&gt;&amp;1
 
 # rename files and move to output dir
 for f in $(ls -1q {output.tmp_fastq} | grep -oP &quot;^[^_]+&quot; | uniq); do
     dst_1={config[fastq_dir]}/{wildcards.sample}_{config[fqext1]}.{config[fqsuffix]}
     dst_2={config[fastq_dir]}/{wildcards.sample}_{config[fqext2]}.{config[fqsuffix]}
-    cat &quot;{output.tmp_fastq}/${{f}}_1.fastq&quot; &gt;&gt; $dst_1
-    cat &quot;{output.tmp_fastq}/${{f}}_2.fastq&quot; &gt;&gt; $dst_2
+    cat &quot;{output.tmp_fastq}/${{f}}_&quot;*&quot;1.fastq&quot; &gt;&gt; $dst_1
+    cat &quot;{output.tmp_fastq}/${{f}}_&quot;*&quot;2.fastq&quot; &gt;&gt; $dst_2
 done
 pigz -p {threads} {config[fastq_dir]}/{wildcards.sample}_{config[fqext1]}.{config[fqsuffix]}
 pigz -p {threads} {config[fastq_dir]}/{wildcards.sample}_{config[fqext2]}.{config[fqsuffix]}
@@ -1058,11 +1060,13 @@ pigz -p {threads} {config[fastq_dir]}/{wildcards.sample}_{config[fqext2]}.{confi
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span># acquire a lock
 (
     flock --timeout 30 200 || exit 1
-    sleep 2
+    sleep 3
 ) 200&gt;{layout_cachefile_lock}
 
 # dump
-fasterq-dump -s {input}/* -O {output.tmp_fastq} -t {output.tmp_dump} --threads {threads} --split-spot &gt;&gt; {log} 2&gt;&amp;1
+fasterq-dump -s {input}/* -O {output.tmp_fastq} -t {output.tmp_dump} --threads {threads} --split-spot &gt;&gt; {log} 2&gt;&amp;1 ||
+parallel-fastq-dump -s {input}/* -O {output.tmp_fastq} --threads {threads} \
+--split-spot --skip-technical --dumpbase --readids --clip --read-filter pass --defline-seq &#39;@$ac.$si.$sg/$ri&#39; --defline-qual &#39;+&#39; &gt;&gt; {log} 2&gt;&amp;1
 
 # rename file and move to output dir
 for f in $(ls -1q {output.tmp_fastq} | grep -oP &quot;^[^_]+&quot; | uniq); do
