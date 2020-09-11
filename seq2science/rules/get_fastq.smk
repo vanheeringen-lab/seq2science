@@ -237,13 +237,13 @@ rule runs2sample:
     input:
         get_runs_from_sample
     output:
-        expand("{fastq_dir}/{{run}}{{suffix}}", **config),
+        expand("{fastq_dir}/{{sample}}{{suffix}}", **config),
     log:
         expand("{log_dir}/run2sample/{{sample}}{{suffix}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/run2sample/{{sample}}{{suffix}}.benchmark.txt", **config)[0]
     wildcard_constraints:
-        run="(GSM|SRR|ERR|DRR)\d+",
+        sample="(GSM|SRR|ERR|DRR)\d+",
     run:
         shell("cp {input[0]} {output}")
 
