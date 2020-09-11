@@ -368,13 +368,13 @@ def get_summits_bed(wildcards):
 
 rule chipseeker:
     input:
-        narrowpeaks=get_summits_bed
+        narrowpeaks=get_summits_bed,
+        gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config)
     output:
         img1=expand("{qc_dir}/chipseeker/{{assembly}}-{{peak_caller}}_img1_mqc.png", **config),
         img2=expand("{qc_dir}/chipseeker/{{assembly}}-{{peak_caller}}_img2_mqc.png", **config),
     params:
-        gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
-        names=lambda wildcards, input: get_descriptive_names(wildcards, input)
+        names=lambda wildcards, input: get_descriptive_names(wildcards, input.narrowpeaks)
     log:
         expand("{log_dir}/chipseeker/{{assembly}}-{{peak_caller}}.log", **config)
     conda:
