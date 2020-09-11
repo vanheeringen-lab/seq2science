@@ -64,6 +64,9 @@ rule sra2fastq_SE:
         "../envs/get_fastq.yaml"
     shell:
         """
+        # move to output dir since somehow parallel-fastq-dump sometimes puts files in the cwd...
+        mkdir -p {output.tmpdir}; cd {output.tmpdir}
+
         # acquire the lock
         (
             flock --timeout 30 200 || exit 1
@@ -105,6 +108,9 @@ rule sra2fastq_PE:
         "../envs/get_fastq.yaml"
     shell:
         """
+        # move to output dir since somehow parallel-fastq-dump sometimes puts files in the cwd...
+        mkdir -p {output.tmpdir}; cd {output.tmpdir}
+
         # acquire the lock
         (
             flock --timeout 30 200 || exit 1
