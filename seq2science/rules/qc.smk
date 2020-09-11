@@ -73,10 +73,7 @@ rule featureCounts:
 
 def get_fastqc_input(wildcards):
     if '_trimmed' in wildcards.fname:
-        if 'replicate' in samples and all(sample not in wildcards.fname for sample in samples.index):
-            fqc_input = "{trimmed_dir}/merged/{{fname}}.{fqsuffix}.gz"
-        else:
-            fqc_input = "{trimmed_dir}/{{fname}}.{fqsuffix}.gz"
+        fqc_input = "{trimmed_dir}/{{fname}}.{fqsuffix}.gz"
     else:
         fqc_input = "{fastq_dir}/{{fname}}.{fqsuffix}.gz"
 
@@ -371,13 +368,13 @@ def get_summits_bed(wildcards):
 
 rule chipseeker:
     input:
-        narrowpeaks=get_summits_bed
+        narrowpeaks=get_summits_bed,
+        gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config)
     output:
         img1=expand("{qc_dir}/chipseeker/{{assembly}}-{{peak_caller}}_img1_mqc.png", **config),
         img2=expand("{qc_dir}/chipseeker/{{assembly}}-{{peak_caller}}_img2_mqc.png", **config),
     params:
-        gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
-        names=lambda wildcards, input: get_descriptive_names(wildcards, input)
+        names=lambda wildcards, input: get_descriptive_names(wildcards, input.narrowpeaks)
     log:
         expand("{log_dir}/chipseeker/{{assembly}}-{{peak_caller}}.log", **config)
     conda:
