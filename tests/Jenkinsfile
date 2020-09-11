@@ -51,7 +51,7 @@ pipeline {
                 # conda config --set channel_priority strict
 
                 # speed up installation
-                # conda install conda-forge::mamba=$MAMBA
+                conda install conda-forge::mamba=$MAMBA
 
                 # create main env
                 printf "\ninstalling seq2science environment\n"
