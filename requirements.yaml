@@ -5,12 +5,13 @@ channels:
   - defaults
 dependencies:
   - pkgs/main::python=3.6
-  - bioconda::snakemake=5.18.0
+  - bioconda::snakemake=5.18.1
   - bioconda::sra-tools=2.9.1
   - bioconda::genomepy=0.9.0
   - bioconda::entrez-direct=11.0
   - bioconda::pysam=0.15.3
-  - pkgs/main::conda=4.7.11
+  - pkgs/main::conda=4.8.4
+  - bioconda::norns=0.1.5
   - anaconda::biopython=1.74
   - pkgs/main::filelock=3.0.12
   - pkgs/main::pyyaml=5.3.1
