@@ -237,7 +237,7 @@ rule runs2sample:
     input:
         get_runs_from_sample
     output:
-        expand("{fastq_dir}/{{sample}}{{suffix}}", **config),
+        expand("{fastq_dir}/{{run}}{{suffix}}", **config),
     log:
         expand("{log_dir}/run2sample/{{sample}}{{suffix}}.log", **config),
     benchmark:
