@@ -56,7 +56,7 @@ pipeline {
                 # create main env
                 printf "\ninstalling seq2science environment\n"
                 conda env create -f requirements.yaml
-                conda install -n s2s conda-forge::mamba=$MAMBA
+                conda install -n s2s conda-forge::mamba=$MAMBA python=3.6
 
                 # install seq2science
                 source $WORKSPACE/miniconda/etc/profile.d/conda.sh
