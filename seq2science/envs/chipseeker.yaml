@@ -1,12 +1,10 @@
-# comment with utf-8 char: √
 name: chipseeker
 channels:
   - conda-forge
   - bioconda
   - defaults
 dependencies:
-  - r-base=4.0.2=he766273_1
-  - bioconductor-chipseeker=1.24.0=r40_0
-  - bioconductor-do.db=2.9=r40_8
-  - bioconductor-genomicfeatures=1.40.0
-
+  - r-base=3.6.3
+  - bioconductor-chipseeker
+  - bioconductor-do.db
+  - bioconductor-genomicfeatures
