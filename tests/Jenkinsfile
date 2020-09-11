@@ -40,11 +40,18 @@ pipeline {
             steps {
                 sh '''#!/usr/bin/env bash
                 printf "\ndownload miniconda\n"
-                wget -qO- https://micromamba.snakepit.net/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
+                wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -nv -O miniconda.sh
 
-                printf "\ninstall micromamba\n"
-                ./bin/micromamba shell init -s bash -p ~/micromamba
-                source ~/.bashrc
+                printf "\ninstall miniconda\n"
+                bash miniconda.sh -b -p $WORKSPACE/miniconda > /dev/null
+
+                printf "\nconfigure miniconda\n"
+                conda config --set always_yes yes --set changeps1 false
+                conda update -n base -c defaults conda -q > /dev/null
+                # conda config --set channel_priority strict
+
+                # speed up installation
+                conda install conda-forge::mamba=$MAMBA
 
                 # create main env
                 printf "\ninstalling seq2science environment\n"
@@ -52,12 +59,12 @@ pipeline {
                 mamba install -n s2s conda-forge::mamba=$MAMBA
 
                 # install seq2science
-                mamba activate s2s
+                source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+                conda activate s2s
                 pip install .
 
                 # remove old cache files
                 seq2science clean
-                genomepy clean
                 '''
             }
         }
