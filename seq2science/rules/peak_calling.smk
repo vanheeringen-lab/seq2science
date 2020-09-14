@@ -103,7 +103,7 @@ rule call_peak_genrich:
 
 
 def get_fastq_qc_file(wildcards):
-    if config["trimmier"] == "trimgalore":
+    if config["trimmer"] == "trimgalore":
         if (
             config["layout"].get(wildcards.sample, False) == "SINGLE"
             or config["layout"].get(wildcards.assembly, False) == "SINGLE"
