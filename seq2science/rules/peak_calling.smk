@@ -136,7 +136,7 @@ def get_control_macs(wildcards):
 if config["trimmer"] == "trimgalore":
     get_macs2_kmer = "kmer_size=$(unzip -p {input.fastq_qc} {params.name}_trimmed_fastqc/fastqc_data.txt  | grep -P -o '(?<=Sequence length\\t).*' | grep -P -o '\d+$')"
 elif config["trimmer"] == "fastp":
-    get_macs2_kmer = "kmer_size=$(jq -r .summary.after_filtering.read1_mean_length {input.fastq_qc}})"
+    get_macs2_kmer = "kmer_size=$(jq -r .summary.after_filtering.read1_mean_length {input.fastq_qc})"
 
 rule macs2_callpeak:
     """
