@@ -130,6 +130,11 @@ def get_control_macs(wildcards):
     return {"control": expand(f"{{final_bam_dir}}/{control}-mates-{{{{assembly}}}}.samtools-coordinate.bam", **config)}
 
 
+if config["trimmer"] == "trimgalore":
+    get_macs2_kmer = "kmer_size=$(unzip -p {input.fastqc} {params.name}_trimmed_fastqc/fastqc_data.txt  | grep -P -o '(?<=Sequence length\\t).*' | grep -P -o '\d+$')"
+elif config["trimmer"] == "fastp":
+    get_macs2_kmer = "kmer_size=$(jq -r .summary.after_filtering.read1_mean_length {input.fastp_json}})"
+
 rule macs2_callpeak:
     """
     Call peaks using macs2.
@@ -169,8 +174,7 @@ rule macs2_callpeak:
     shell:
         """
         # extract the kmer size, and get the effective genome size from it
-        kmer_size=$(unzip -p {input.fastqc} {params.name}_trimmed_fastqc/fastqc_data.txt  | grep -P -o '(?<=Sequence length\\t).*' | grep -P -o '\d+$')
-
+        {get_macs2_kmer}
         echo "preparing to run unique-kmers.py with -k $kmer_size" >> {log}
         GENSIZE=$(unique-kmers.py {params.genome} -k $kmer_size --quiet 2>&1 | grep -P -o '(?<=\.fa: ).*')
         echo "kmer size: $kmer_size, and effective genome size: $GENSIZE" >> {log}
