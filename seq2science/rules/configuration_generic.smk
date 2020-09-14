@@ -27,7 +27,7 @@ from snakemake.utils import min_version
 from snakemake.exceptions import TerminatedException
 
 import seq2science
-from seq2science.util import samples_metadata
+from seq2science.util import samples2metadata
 
 logger.info(
 """\
@@ -363,7 +363,7 @@ with FileLock(eutils_cache_lock):
 
     missing_samples = [sample for sample in all_samples if sample not in sampledict.keys()]
     if len(missing_samples) > 0:
-        sampledict.update(samples_metadata(missing_samples, config))
+        sampledict.update(samples2metadata(missing_samples, config))
 
     pickle.dump(sampledict, open(eutils_cache, "wb"))
 

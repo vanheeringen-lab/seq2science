@@ -1,10 +1,18 @@
+"""
+Utility functions for seq2science
+"""
 import os
+from typing import List
 
+import pandas as pd
 import pysradb
 from snakemake.io import expand
 
 
-def sample_to_idxs(df, sample):
+def _sample_to_idxs(df: pd.DataFrame, sample: str) -> List[int]:
+    """
+    Get the index/indices that belong to a run in a pysradb dataframe
+    """
     if sample.startswith(("SRR", "DRR", "ERR")):
         idxs = df.index[df.run_accession == sample].tolist()
         assert len(idxs) == 1, f"sample {sample} with idxs: {idxs}"
@@ -16,28 +24,37 @@ def sample_to_idxs(df, sample):
     return idxs
 
 
-def samples_metadata(samples, config):
+def samples2metadata(samples: List[str], config: dict) -> dict:
     """
-    Sequencing run codes:
-    SRAXXXX
-    123
+    Get the required info to continue a seq2science run from a list of samples.
 
-    1.
-    S-Sra ncbi (usa)
-    E-Ebi (europe)
-    D-Ddbj (japan)
+    - If a sample already exists locally, we only want to know if it is paired-end or single-end.
+    - If a sample does not exist locally
+      - find its corresponding SRX number and all runs that belong to it,
+      - check if they all have the same layout, if not, crash
+      - see if we can download the runs from ena
 
-    2.
-    R-Run (this is a guess)
+    output:
+        dict(
+            "GSM1234": {"layout": "PAIRED",
+                         "runs": ["SRR1234", "SRR4321"],
+                         "ena_fastq_http": {
+                            "SRR1234": [...],
+                            "SRR4321": None
+                            },
+                         "ena_fastq_ftp": ["..."],
 
-    3.
-    R-Run
-    X-eXperiment
-    S-Sample
-    P-Project
+            "SRR5678": {"Layout": "SINGLE",
+                        "runs": ["SRR5678"],
+                        ena_fastq_http: None,
+                        ena_fastq_ftp: [...],
+            ...
+        )
     """
+    # start with empty dictionary which we fill out later
     sampledict = {sample: dict() for sample in samples}
 
+    # fill out the sampledict for the local samples, and store the public samples for later
     public_samples = []
     for sample in samples:
         if os.path.exists(expand(f'{{fastq_dir}}/{sample}.{{fqsuffix}}.gz', **config)[0]):
@@ -53,22 +70,23 @@ def samples_metadata(samples, config):
                              f"and for PE files:\n"
                              f"\t{config['fastq_dir']}/{sample}_{config['fqext1']}.{config['fqsuffix']}.gz \n"
                              f"\t{config['fastq_dir']}/{sample}_{config['fqext2']}.{config['fqsuffix']}.gz \n"
-                             f"and since the sample did not start with either GSM, SRX, SRR, ERR, and DRR we couldn't find it online..\n")
+                             f"and since the sample did not start with either GSM, SRX, SRR, ERR, and DRR we "
+                             f"couldn't find it online..\n")
 
     if len(public_samples) == 0:
         return sampledict
 
+    # only continue with public samples
     db = pysradb.SRAweb()
 
-    # now check GEO
+    # all samples that are on GEO (GSM numbers), must first be converted to SRA ids (SRX numbers)
     geo_samples = [sample for sample in public_samples if sample.startswith("GSM")]
-    if len(geo_samples) > 0:
-        df = db.gsm_to_srx(geo_samples)
-        sample2clean = dict(zip(df.experiment_alias, df.experiment_accession))
-    else:
-        sample2clean = dict()
 
-    # add all non-gsm public
+    # in sample2clean we store the (potential GEO) sample name in a SRA compliant name
+    df = db.gsm_to_srx(geo_samples)
+    sample2clean = dict(zip(df.experiment_alias, df.experiment_accession))
+
+    # now add the already SRA compliant names with a reference to itself
     sample2clean.update({sample: sample for sample in public_samples if sample not in geo_samples})
 
     # check our samples on sra
@@ -76,7 +94,7 @@ def samples_metadata(samples, config):
 
     for sample, clean in sample2clean.items():
         # table indices
-        idxs = sample_to_idxs(df, clean)
+        idxs = _sample_to_idxs(df, clean)
 
         # get all runs that belong to the sample
         runs = df.loc[idxs].run_accession.tolist()
@@ -102,6 +120,7 @@ def samples_metadata(samples, config):
                 sampledict[sample]["ena_fastq_ftp"][run] = df[df.run_accession == run].ena_fastq_ftp_1.tolist() + df[
                     df.run_accession == run].ena_fastq_ftp_2.tolist()
 
+        # if any run from a sample is not found on ENA, better be safe, and assume that sample as a whole is not on ENA
         if any(["N/A" in urls for run, urls in sampledict[sample]["ena_fastq_http"].items()]):
             sampledict[sample]["ena_fastq_http"] = None
         if any(["N/A" in urls for run, urls in sampledict[sample]["ena_fastq_ftp"].items()]):
