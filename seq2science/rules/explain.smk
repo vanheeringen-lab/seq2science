@@ -86,7 +86,7 @@ else:
                                "the normal prior distribution provided by DESeq2.")], sep=" ", final_sep=" "),
         "count_matrix_txi": "Transcript abundance estimations were aggregated and converted to gene counts using tximeta v@tximeta[tximeta] (https://doi.org/10.1101/777888).",
         "id2sra": "Public samples were downloaded from the Sequence Read Archive (https://doi.org/10.1093/nar/gkq1019) with help of the ncbi e-utilities.",
-        "get_genome": "Genome assembly {wildcards.raw_assembly} was downloaded with genomepy v@../../requirements[genomepy] (https://doi.org/10.21105/joss.00320).",
+        "get_genome": "Genome assembly {wildcards.raw_assembly} was downloaded with genomepy {genomepy.__version__} (https://doi.org/10.21105/joss.00320).",
         "custom_extension": "The genome and gene annotations was extended with custom regions.",
         "call_peak_genrich":"Peaks were called with genrich v@genrich[genrich] (https://github.com/jsh58/Genrich) with options '{config[peak_caller][genrich]}'.",
         "macs2_callpeak": "Peaks were called with macs2 v@macs2[macs2] (https://doi.org/10.1186/gb-2008-9-9-r137) with options '{config[peak_caller][macs2]}' in {params.format} mode.",
