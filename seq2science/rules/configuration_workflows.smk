@@ -222,6 +222,6 @@ keys = rmkeys(["samples", "layout"] + keys_to_remove, keys)
 keys = ["samples"] + keys + ["layout"]
 
 for key in keys:
-    if config[key] not in ["", False, 0, "None", "none@provided.com", "yourmail@here.com"]:
+    if config[key] not in ["", False, 0, "None", "none@provided.com", "yourmail@here.com", "_custom"]:
         logger.info(f"{key: <23}: {config[key]}")
 logger.info("\n\n")

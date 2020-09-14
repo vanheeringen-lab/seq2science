@@ -226,7 +226,7 @@ if "assembly" in samples:
         config["custom_annotation_extension"] = [config["custom_annotation_extension"]]
     modified = config.get("custom_genome_extension") or config.get("custom_annotation_extension")
     all_assemblies = [assembly + "_custom" if modified else assembly for assembly in set(samples['assembly'])]
-    suffix = config["spike_suffix"] if modified else ""
+    suffix = config["custom_assembly_suffix"] if modified else ""
 
     def list_providers(assembly):
         """
@@ -329,7 +329,8 @@ if "assembly" in samples:
         """
         remove the extension suffix from an assembly if is was added.
         """
-        return assembly[:-len(config["spike_suffix"])] if assembly.endswith(config["spike_suffix"]) and modified else assembly
+        return assembly[:-len(config["custom_assembly_suffix"])] if \
+            assembly.endswith(config["custom_assembly_suffix"]) and modified else assembly
 
 
     @lru_cache(maxsize=None)
@@ -640,7 +641,7 @@ wildcard_constraints:
 if 'assembly' in samples:
     wildcard_constraints:
         raw_assembly=any_given('assembly'),
-        assembly=any_given('assembly', suffix=config["spike_suffix"] if modified else ""),
+        assembly=any_given('assembly', suffix=config["custom_assembly_suffix"] if modified else ""),
 
 if 'replicate' in samples:
     sample_constraints.append("replicate")
