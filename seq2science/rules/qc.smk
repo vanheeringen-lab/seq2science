@@ -80,27 +80,87 @@ def get_fastqc_input(wildcards):
     return sorted(expand(fqc_input, **config))
 
 
-rule fastqc:
-    """
-    Generate quality control report for fastq files.
-    """
-    input:
-        get_fastqc_input
-    output:
-        f"{config['qc_dir']}/fastqc/{{fname}}_fastqc.html",
-        f"{config['qc_dir']}/fastqc/{{fname}}_fastqc.zip"
-    message:explain_rule("fastqc")
-    log:
-        f"{config['log_dir']}/fastqc/{{fname}}.log"
-    params:
-        f"{config['qc_dir']}/fastqc/"
-    conda:
-        "../envs/qc.yaml"
-    priority: -10
-    shell:
+if config["trimmer"] == "trimgalore":
+    rule fastqc:
         """
-        fastqc {input} -O {params} > {log} 2>&1
+        Generate quality control report for fastq files.
         """
+        input:
+            get_fastqc_input
+        output:
+            f"{config['qc_dir']}/fastqc/{{fname}}_fastqc.html",
+            f"{config['qc_dir']}/fastqc/{{fname}}_fastqc.zip"
+        message:explain_rule("fastqc")
+        log:
+            f"{config['log_dir']}/fastqc/{{fname}}.log"
+        params:
+            f"{config['qc_dir']}/fastqc/"
+        conda:
+            "../envs/qc.yaml"
+        priority: -10
+        shell:
+            """
+            fastqc {input} -O {params} > {log} 2>&1
+            """
+
+
+elif config["trimmer"] == "fastp":
+    ruleorder: fastp_qc_PE> fastp_qc_SE > fastp_PE > fastp_SE
+
+
+    rule fastp_qc_SE:
+        """
+        Get quality scores for (technical) replicates
+        """
+        input:
+            expand("{trimmed_dir}/{{sample}}_trimmed.{fqsuffix}.gz", **config),
+        output:
+            qc_json=expand("{qc_dir}/trimming/{{sample}}.fastp.json", **config),
+            qc_html=expand("{qc_dir}/trimming/{{sample}}.fastp.html", **config),
+        conda:
+            "../envs/fastp.yaml"
+        threads: 1
+        wildcard_constraints:
+            sample="|".join(merged_treps_single) if len(merged_treps_single) else "$a"
+        log:
+            expand("{log_dir}/fastp_SE/{{sample}}.log", **config),
+        benchmark:
+            expand("{benchmark_dir}/fastp_SE/{{sample}}.benchmark.txt", **config)[0]
+        priority: -10
+        params:
+            fqsuffix=config["fqsuffix"],
+        shell:
+            """\
+            fastp -w {threads} --in1 {input} -h {output.qc_html} -j {output.qc_json} > {log} 2>&1
+            """
+
+
+    rule fastp_qc_PE:
+        """
+        Get quality scores for (technical) replicates
+        """
+        input:
+            r1=expand("{trimmed_dir}/{{sample}}_{fqext1}_trimmed.{fqsuffix}.gz", **config),
+            r2=expand("{trimmed_dir}/{{sample}}_{fqext2}_trimmed.{fqsuffix}.gz", **config),
+        output:
+            qc_json=expand("{qc_dir}/trimming/{{sample}}.fastp.json", **config),
+            qc_html=expand("{qc_dir}/trimming/{{sample}}.fastp.html", **config),
+        threads: 1
+        wildcard_constraints:
+            sample="|".join(merged_treps_paired) if len(merged_treps_paired) else "$a"
+        log:
+            expand("{log_dir}/fastp_PE/{{sample}}.log", **config),
+        benchmark:
+            expand("{benchmark_dir}/fastp_PE/{{sample}}.benchmark.txt", **config)[0]
+        priority: -10
+        params:
+            config=config["trimoptions"],
+        shell:
+            """\
+            fastp -w {threads} --in1 {input[0]} --in2 {input[1]} \
+            -h {output.qc_html} -j {output.qc_json} \
+            {params.config} > {log} 2>&1
+            """
 
 
 rule insert_size_metrics:

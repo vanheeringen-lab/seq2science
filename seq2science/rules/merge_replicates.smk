@@ -9,6 +9,11 @@ if "control" in samples:
 treps = samples.reset_index()[cols].drop_duplicates().set_index(cols[0])
 assert treps.index.is_unique, "duplicate value found in treps"
 
+# treps that came from a merge
+merged_treps = [trep for trep in treps.index if trep not in samples.index]
+merged_treps_single = [trep for trep in merged_treps if config["layout"][trep] == "SINGLE"]
+merged_treps_paired = [trep for trep in merged_treps if config["layout"][trep] == "PAIRED"]
+
 # dataframe with all replicates collapsed
 breps = treps
 if "condition" in treps:
