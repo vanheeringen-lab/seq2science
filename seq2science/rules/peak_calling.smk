@@ -102,14 +102,16 @@ rule call_peak_genrich:
         """
 
 
-def get_fastqc(wildcards):
-    if (
-        config["layout"].get(wildcards.sample, False) == "SINGLE"
-        or config["layout"].get(wildcards.assembly, False) == "SINGLE"
-    ):
-        return expand("{qc_dir}/fastqc/{{sample}}_trimmed_fastqc.zip", **config)
-    return sorted(expand("{qc_dir}/fastqc/{{sample}}_{fqext1}_trimmed_fastqc.zip", **config))
-
+def get_fastq_qc_file(wildcards):
+    if config["trimmier"] == "trimgalore":
+        if (
+            config["layout"].get(wildcards.sample, False) == "SINGLE"
+            or config["layout"].get(wildcards.assembly, False) == "SINGLE"
+        ):
+            return expand("{qc_dir}/fastqc/{{sample}}_trimmed_fastqc.zip", **config)
+        return sorted(expand("{qc_dir}/fastqc/{{sample}}_{fqext1}_trimmed_fastqc.zip", **config))
+    elif config["trimmer"] == "fastp":
+        return expand("{qc_dir}/trimming/{{sample}}.fastq.json", **config)
 
 def get_macs2_bam(wildcards):
     if not config["macs2_keep_mates"] is True or config["layout"].get(wildcards.sample, False) == "SINGLE":
@@ -143,7 +145,7 @@ rule macs2_callpeak:
     input:
         unpack(get_control_macs),
         bam=get_macs2_bam,
-        fastqc=get_fastqc,
+        fastqc=get_fastq_qc_file,
     output:
         expand("{result_dir}/macs2/{{assembly}}-{{sample}}_{macs2_types}", **config),
     log:
