@@ -175,9 +175,9 @@ rule macs2_callpeak:
     conda:
         "../envs/macs2.yaml"
     shell:
-        """
         # extract the kmer size, and get the effective genome size from it
-        {get_macs2_kmer}
+        get_macs2_kmer +
+        """
         echo "preparing to run unique-kmers.py with -k $kmer_size" >> {log}
         GENSIZE=$(unique-kmers.py {params.genome} -k $kmer_size --quiet 2>&1 | grep -P -o '(?<=\.fa: ).*')
         echo "kmer size: $kmer_size, and effective genome size: $GENSIZE" >> {log}
