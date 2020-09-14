@@ -112,7 +112,7 @@ def get_fastq_qc_file(wildcards):
             return expand("{qc_dir}/fastqc/{{sample}}_trimmed_fastqc.zip", **config)
         return sorted(expand("{qc_dir}/fastqc/{{sample}}_{fqext1}_trimmed_fastqc.zip", **config))
     elif config["trimmer"] == "fastp":
-        return expand("{qc_dir}/trimming/{{sample}}.fastq.json", **config)
+        return expand("{qc_dir}/trimming/{{sample}}.fastp.json", **config)
 
 def get_macs2_bam(wildcards):
     if not config["macs2_keep_mates"] is True or config["layout"].get(wildcards.sample, False) == "SINGLE":
