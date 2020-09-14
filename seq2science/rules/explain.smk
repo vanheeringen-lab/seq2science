@@ -57,8 +57,12 @@ else:
             return start + final_sep.join([all_but_last, last]) + end
         return start + "".join(lst) + end
 
-    # I could unroll the dicts, but that would clog up the config at the start of s2s
-    DE_params = config.get('diffexp', {}).get('deseq2', {}).get('DE_params', {})
+    # schemas are not validated when this runs.
+    deseq2 = config.get('deseq2', {})
+    defaults = {'multiple_testing_procedure': 'BH', 'alpha_value': 0.1, 'shrinkage_estimator': 'apeglm'}
+    for k,v in defaults.items():
+        if k not in deseq2:
+            deseq2[k] = v
 
     messages={
         "bowtie2_align": "Reads were aligned with bowtie2 v@bowtie2[bowtie2] (https://dx.doi.org/10.1038%2Fnmeth.1923) with options '{config[align]}'.",
@@ -75,14 +79,14 @@ else:
                       end=" and finally were tn5 bias shifted by seq2science." if config.get("tn5_shift", 0) > 0 else "."),
         # "samtools_sort": "Bam files were sorted with samtools v@samtools[samtools].",
         "sambamba_sort": "Bam files were sorted with sambamba v@sambamba[sambamba] (https://doi.org/10.1093/bioinformatics/btv098).",
-        "mark_duplicates": "Afterwards, duplicate reads were marked with picard MarkDuplicates v@picard[picard] (http://broadinstitute.github.io/picard).",
+        "mark_duplicates": "Afterwards, duplicate reads were removed with picard MarkDuplicates v@picard[picard] (http://broadinstitute.github.io/picard).",
         "bam2cram": "Bam files were converted to cram format with samtools v@samtools[samtools].",
         "deseq2":
             text_join(start="Differential gene expression analysis was performed using DESeq2 v@deseq2[bioconductor-deseq2] (https://dx.doi.org/10.1186%2Fs13059-014-0550-8). To adjust for multiple testing ",
-                      lst=["the (default) Benjamini-Hochberg procedure " if DE_params.get('multiple_testing_procedure') == "BH" else "Independent hypothesis weighting (http://dx.doi.org/10.1038/nmeth.3885) ",
-                           "was performed with an FDR cutoff of {config[DE_params][alpha_value]} (default is 0.1). Counts were log transformed using ",
-                           "the (default) shrinkage estimator apeglm (https://doi.org/10.1093/bioinformatics/bty895). " if DE_params.get('shrinkage_estimator') == "apeglm" else (
-                               "shrinkage estimator ashr (https://doi.org/10.1093/biostatistics/kxw041). " if DE_params.get('shrinkage_estimator') == "ashr" else
+                      lst=[("the (default) Benjamini-Hochberg procedure " if deseq2.get('multiple_testing_procedure') == "BH" else "Independent hypothesis weighting (http://dx.doi.org/10.1038/nmeth.3885) "),
+                           "was performed with an FDR cutoff of {config[deseq2][alpha_value]} (default is 0.1). Counts were log transformed using ",
+                           "the (default) shrinkage estimator apeglm (https://doi.org/10.1093/bioinformatics/bty895). " if deseq2.get('shrinkage_estimator') == "apeglm" else (
+                               "shrinkage estimator ashr (https://doi.org/10.1093/biostatistics/kxw041). " if deseq2.get('shrinkage_estimator') == "ashr" else
                                "the normal prior distribution provided by DESeq2.")], sep=" ", final_sep=" "),
         "count_matrix_txi": "Transcript abundance estimations were aggregated and converted to gene counts using tximeta v@tximeta[tximeta] (https://doi.org/10.1101/777888).",
         "id2sra": "Public samples were downloaded from the Sequence Read Archive (https://doi.org/10.1093/nar/gkq1019) with help of the ncbi e-utilities.",

@@ -60,7 +60,7 @@ if config.get("peak_caller", False):
 
 
 # ...for alignment and rna-seq
-for conf_dict in ["aligner", "quantifier", "diffexp"]:
+for conf_dict in ["aligner", "quantifier"]:
     if config.get(conf_dict, False):
         dict_key = list(config[conf_dict].keys())[0]
         for k, v in list(config[conf_dict].values())[0].items():
@@ -80,6 +80,9 @@ if get_workflow() == "rna_seq":
         col = samples.replicate if "replicate" in samples else samples.index
         if len(strandedness.index) != len(set(col)) or not all(s in set(col) for s in strandedness.index):
             os.unlink(strandedness_report)
+
+    # regular dict is prettier in the log
+    config["deseq2"] = dict(config["deseq2"])
 
 
 # ...for alignment
@@ -217,7 +220,11 @@ keys_to_remove = ["fqext1", "fqext2", "macs2_types", "cpulimit",
                   ("biological_replicates", "condition" not in samples),
                   ("filter_bam_by_strand", "strandedness" not in samples),
                   ("technical_replicates", "replicates" not in samples),
-                  ("tximeta", config.get("quantifier") != "salmon")]
+                  ("tximeta", config.get("quantifier") != "salmon"),
+                  ("deseq2", not config.get("contrasts")),
+                  ("dge_dir", not config.get("contrasts")),
+                  ("bigwig_dir", not config.get("create_trackhub")),
+                  ("qc_dir", not config.get("create_qc_report"))]
 keys = rmkeys(["samples", "layout"] + keys_to_remove, keys)
 keys = ["samples"] + keys + ["layout"]
 

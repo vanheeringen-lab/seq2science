@@ -11,9 +11,9 @@ counts_file     <- snakemake@input[[1]]
 samples_file    <- snakemake@params$samples
 replicates      <- snakemake@params$replicates
 contrast        <- snakemake@wildcards$contrast
-mtp             <- snakemake@config$DE_params$multiple_testing_procedure
-fdr             <- snakemake@config$DE_params$alpha_value
-se              <- snakemake@config$DE_params$shrinkage_estimator
+mtp             <- snakemake@config$deseq2$multiple_testing_procedure
+fdr             <- snakemake@config$deseq2$alpha_value
+se              <- snakemake@config$deseq2$shrinkage_estimator
 assembly        <- snakemake@wildcards$assembly
 salmon          <- snakemake@config$quantifier == "salmon"
 counts_dir      <- snakemake@config$counts_dir
