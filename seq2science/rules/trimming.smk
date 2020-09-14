@@ -93,8 +93,10 @@ elif config["trimmer"] == "fastp":
             qc_html=expand("{qc_dir}/trimming/{{sample}}.html", **config),
         conda:
             "../envs/fastp.yaml"
-        threads: 6
+        threads: 3
         message: explain_rule("fastp_SE")
+        wildcard_constraints:
+            sample="|".join([sample for sample in samples.index if config["layout"][sample] == "SINGLE"])
         log:
             expand("{log_dir}/fastp_SE/{{sample}}.log", **config),
         benchmark:
@@ -118,11 +120,13 @@ elif config["trimmer"] == "fastp":
         output:
             r1=temp(expand("{trimmed_dir}/{{sample}}_{fqext1}_trimmed.{fqsuffix}.gz", **config)),
             r2=temp(expand("{trimmed_dir}/{{sample}}_{fqext2}_trimmed.{fqsuffix}.gz", **config)),
-            qc_json=expand("{qc_dir}/trimming/{{sample}}.json", **config),
-            qc_html=expand("{qc_dir}/trimming/{{sample}}.html", **config),
+            qc_json=expand("{qc_dir}/trimming/{{sample}}_fastp.json", **config),
+            qc_html=expand("{qc_dir}/trimming/{{sample}}_fastp.html", **config),
         conda:
             "../envs/fastp.yaml"
-        threads: 6
+        threads: 3
+        wildcard_constraints:
+            sample="|".join([sample for sample in samples.index if config["layout"][sample] == "PAIRED"])
         message: explain_rule("fastp_PE")
         log:
             expand("{log_dir}/fastp_PE/{{sample}}.log", **config),
