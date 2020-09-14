@@ -102,8 +102,9 @@ rule call_peak_genrich:
         """
 
 
-def get_fastq_qc_file(wildcards):
-    if config["trimmer"] == "trimgalore":
+def get_fastqc_file(wildcards):
+    if config["trimmer"] == "trimgalore" or \
+            (wildcards.sample in treps.index and wildcards.sample not in samples.index):
         if (
             config["layout"].get(wildcards.sample, False) == "SINGLE"
             or config["layout"].get(wildcards.assembly, False) == "SINGLE"
