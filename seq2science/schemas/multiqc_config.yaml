@@ -5,6 +5,7 @@ log_filesize_limit: 350000000  # 350 mb
 
 
 module_order:
+    - fastp
     - fastqc:
         name: 'FastQC (raw)'
         path_filters:

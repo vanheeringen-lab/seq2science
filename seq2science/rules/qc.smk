@@ -574,7 +574,7 @@ def get_trimming_qc(sample):
 
     elif config["trimmer"] == "fastp":
         # not sure how fastp should work with scatac here
-         return expand(f"{{qc_dir}}/trimming/{sample}_fastp.json", **config)
+         return expand(f"{{qc_dir}}/trimming/{sample}.fastp.json", **config)
 
 
 def get_alignment_qc(sample):

@@ -67,7 +67,7 @@ if "replicate" in samples:
     if config["trimmer"] == "fastp":
         ruleorder: merge_replicates > fastp_PE > fastp_SE
     elif config["trimmer"] == "trimgalore":
-        ruleorder: merge_replicates > trim_galore_PE > trim_galore_SE
+        ruleorder: merge_replicates > trimgalore_PE > trimgalore_SE
 
     rule merge_replicates:
         """
