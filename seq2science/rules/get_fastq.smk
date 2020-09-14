@@ -83,7 +83,7 @@ rule sra2fastq_SE:
         --defline-qual '+' --gzip >> {log} 2>&1
 
         # rename file and move to output dir
-        mv {output.tmpdir}/* {output.fastq}
+        mv {output.tmpdir}/*.fastq.gz {output.fastq}
         """
 
 
