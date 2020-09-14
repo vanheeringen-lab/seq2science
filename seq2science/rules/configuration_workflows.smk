@@ -58,9 +58,8 @@ if config.get("peak_caller", False):
         else:
             config["macs2_types"].extend(["summits.bed", "peaks.narrowPeak"])
 
-
 # ...for alignment and rna-seq
-for conf_dict in ["aligner", "quantifier", "diffexp"]:
+for conf_dict in ["aligner", "quantifier", "diffexp", "trimmer"]:
     if config.get(conf_dict, False):
         dict_key = list(config[conf_dict].keys())[0]
         for k, v in list(config[conf_dict].values())[0].items():

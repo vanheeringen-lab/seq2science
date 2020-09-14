@@ -555,21 +555,26 @@ rule multiqc:
 
 
 def get_trimming_qc(sample):
-    if get_workflow() == "scatac_seq":
-        # we (at least for now) do not was fastqc for each single cell before and after trimming.
-        # still something to think about to add later, since that might be a good quality check though.
-        return expand(f"{{qc_dir}}/fastqc/{sample}_{{fqext}}_trimmed_fastqc.zip", **config)
-    else:
-        if config['layout'][sample] == 'SINGLE':
-            return expand([f"{{qc_dir}}/fastqc/{sample}_fastqc.zip",
-                           f"{{qc_dir}}/fastqc/{sample}_trimmed_fastqc.zip",
-                           f"{{qc_dir}}/trimming/{sample}.{{fqsuffix}}.gz_trimming_report.txt"],
-                           **config)
+    if config["trimmer"] == "trimgalore":
+        if get_workflow() == "scatac_seq":
+            # we (at least for now) do not was fastqc for each single cell before and after trimming.
+            # still something to think about to add later, since that might be a good quality check though.
+            return expand(f"{{qc_dir}}/fastqc/{sample}_{{fqext}}_trimmed_fastqc.zip", **config)
         else:
-            return expand([f"{{qc_dir}}/fastqc/{sample}_{{fqext}}_fastqc.zip",
-                           f"{{qc_dir}}/fastqc/{sample}_{{fqext}}_trimmed_fastqc.zip",
-                           f"{{qc_dir}}/trimming/{sample}_{{fqext}}.{{fqsuffix}}.gz_trimming_report.txt"],
-                           **config)
+            if config['layout'][sample] == 'SINGLE':
+                return expand([f"{{qc_dir}}/fastqc/{sample}_fastqc.zip",
+                               f"{{qc_dir}}/fastqc/{sample}_trimmed_fastqc.zip",
+                               f"{{qc_dir}}/trimming/{sample}.{{fqsuffix}}.gz_trimming_report.txt"],
+                               **config)
+            else:
+                return expand([f"{{qc_dir}}/fastqc/{sample}_{{fqext}}_fastqc.zip",
+                               f"{{qc_dir}}/fastqc/{sample}_{{fqext}}_trimmed_fastqc.zip",
+                               f"{{qc_dir}}/trimming/{sample}_{{fqext}}.{{fqsuffix}}.gz_trimming_report.txt"],
+                               **config)
+
+    elif config["trimmer"] == "fastp":
+        # not sure how fastp should work with scatac here
+         return expand(f"{{qc_dir}}/trimming/{sample}.json", **config)
 
 
 def get_alignment_qc(sample):
