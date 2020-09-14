@@ -187,6 +187,10 @@ def sieve_bam(configdict):
     )
 
 
+# after all is done, explain the workflow if requested
+include: f"{config['rule_dir']}/explain.smk"
+
+
 def rmkeys(del_list, target_list):
     """
     remove all elements in del_list from target_list
