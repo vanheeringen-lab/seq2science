@@ -89,8 +89,8 @@ elif config["trimmer"] == "fastp":
             expand("{fastq_dir}/{{sample}}.{fqsuffix}.gz", **config),
         output:
             se=temp(expand("{trimmed_dir}/{{sample}}_trimmed.{fqsuffix}.gz", **config)),
-            qc_json=expand("{qc_dir}/trimming/{{sample}}.json", **config),
-            qc_html=expand("{qc_dir}/trimming/{{sample}}.html", **config),
+            qc_json=expand("{qc_dir}/trimming/{{sample}}_fastp.json", **config),
+            qc_html=expand("{qc_dir}/trimming/{{sample}}_fastp.html", **config),
         conda:
             "../envs/fastp.yaml"
         threads: 3
