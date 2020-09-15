@@ -38,7 +38,7 @@ properties:
 
   # genomepy
   provider:
-    description: specify to only download new genomes from one provider
+    description: Specify provider to download new genomes from. Will try Ensembl > UCSC > NCBI if left blank.
     enum: [Ensembl, UCSC, NCBI]
     type: string
 

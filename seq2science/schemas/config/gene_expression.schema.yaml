@@ -23,7 +23,7 @@ properties:
           quantifier_flags:
             default: '--seqBias --gcBias --validateMappings --recoverOrphans' # --posBias experimental flag
           decoy_aware_index:
-            default: False  # Requires ~65 GB RAM for GRCh38
+            default: False
         default:
           quantifier_index: '-k 31'
           quantifier_flags: '--seqBias --gcBias --validateMappings --recoverOrphans'
