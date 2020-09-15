@@ -123,9 +123,9 @@ elif config["trimmer"] == "fastp":
         wildcard_constraints:
             sample="|".join(merged_treps_single) if len(merged_treps_single) else "$a"
         log:
-            expand("{log_dir}/fastp_SE/{{sample}}.log", **config),
+            expand("{log_dir}/fastp_qc_SE/{{sample}}.log", **config),
         benchmark:
-            expand("{benchmark_dir}/fastp_SE/{{sample}}.benchmark.txt", **config)[0]
+            expand("{benchmark_dir}/fastp_qc_SE/{{sample}}.benchmark.txt", **config)[0]
         priority: -10
         params:
             fqsuffix=config["fqsuffix"],
@@ -145,13 +145,15 @@ elif config["trimmer"] == "fastp":
         output:
             qc_json=expand("{qc_dir}/trimming/{{sample}}.fastp.json", **config),
             qc_html=expand("{qc_dir}/trimming/{{sample}}.fastp.html", **config),
+        conda:
+            "../envs/fastp.yaml"
         threads: 1
         wildcard_constraints:
             sample="|".join(merged_treps_paired) if len(merged_treps_paired) else "$a"
         log:
-            expand("{log_dir}/fastp_PE/{{sample}}.log", **config),
+            expand("{log_dir}/fastp_qc_PE/{{sample}}.log", **config),
         benchmark:
-            expand("{benchmark_dir}/fastp_PE/{{sample}}.benchmark.txt", **config)[0]
+            expand("{benchmark_dir}/fastp_qc_PE/{{sample}}.benchmark.txt", **config)[0]
         priority: -10
         params:
             config=config["trimoptions"],
