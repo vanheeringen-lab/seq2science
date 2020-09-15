@@ -27,6 +27,7 @@ from snakemake.utils import validate
 from snakemake.utils import min_version
 from snakemake.exceptions import TerminatedException
 
+import seq2science
 from seq2science.util import prep_filelock
 
 
