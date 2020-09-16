@@ -11,7 +11,7 @@ from snakemake.io import expand
 
 def _sample_to_idxs(df: pd.DataFrame, sample: str) -> List[int]:
     """
-    Get the index/indices that belong to a run in a pysradb dataframe
+    Get a list of index/indices that belong to a run in a pysradb dataframe
     """
     if sample.startswith(("SRR", "DRR", "ERR")):
         idxs = df.index[df.run_accession == sample].tolist()
@@ -20,11 +20,36 @@ def _sample_to_idxs(df: pd.DataFrame, sample: str) -> List[int]:
         idxs = df.index[df.experiment_accession == sample].tolist()
         assert len(idxs) >= 1, len(idxs)
     else:
-        assert False
+        assert False, f"sample {sample} not a run, this should not be able to happen!" \
+                      f" Please make an issue about this!"
     return idxs
 
 
-def samples2metadata(samples: List[str], config: dict) -> dict:
+def samples2metadata_local(samples: List[str], config: dict) -> dict:
+    """
+
+    """
+    sampledict = dict()
+    for sample in samples:
+        if os.path.exists(expand(f'{{fastq_dir}}/{sample}.{{fqsuffix}}.gz', **config)[0]):
+            sampledict[sample]["layout"] = "SINGLE"
+        elif all(os.path.exists(path) for path in expand(f'{{fastq_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz', **config)):
+            sampledict[sample]["layout"] = "PAIRED"
+        elif sample.startswith(('GSM', 'SRX', 'SRR', 'ERR', 'DRR')):
+            continue
+        else:
+            raise ValueError(f"\nsample {sample} was not found..\n"
+                             f"We checked for SE file:\n"
+                             f"\t{config['fastq_dir']}/{sample}.{config['fqsuffix']}.gz \n"
+                             f"and for PE files:\n"
+                             f"\t{config['fastq_dir']}/{sample}_{config['fqext1']}.{config['fqsuffix']}.gz \n"
+                             f"\t{config['fastq_dir']}/{sample}_{config['fqext2']}.{config['fqsuffix']}.gz \n"
+                             f"and since the sample did not start with either GSM, SRX, SRR, ERR, and DRR we "
+                             f"couldn't find it online..\n")
+    return sampledict
+
+
+def samples2metadata_sra(samples: List[str]) -> dict:
     """
     Get the required info to continue a seq2science run from a list of samples.
 
@@ -42,59 +67,37 @@ def samples2metadata(samples: List[str], config: dict) -> dict:
                             "SRR1234": [...],
                             "SRR4321": None
                             },
-                         "ena_fastq_ftp": ["..."],
+                         "ena_fastq_ftp": {...},
 
-            "SRR5678": {"Layout": "SINGLE",
+            "SRR5678": {"layout": "SINGLE",
                         "runs": ["SRR5678"],
                         ena_fastq_http: None,
-                        ena_fastq_ftp: [...],
+                        ena_fastq_ftp: {...},
             ...
         )
     """
     # start with empty dictionary which we fill out later
     sampledict = {sample: dict() for sample in samples}
 
-    # fill out the sampledict for the local samples, and store the public samples for later
-    public_samples = []
-    for sample in samples:
-        if os.path.exists(expand(f'{{fastq_dir}}/{sample}.{{fqsuffix}}.gz', **config)[0]):
-            sampledict[sample]["layout"] = "SINGLE"
-        elif all(os.path.exists(path) for path in expand(f'{{fastq_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz', **config)):
-            sampledict[sample]["layout"] = "PAIRED"
-        elif sample.startswith(('GSM', 'SRX', 'SRR', 'ERR', 'DRR')):
-            public_samples.append(sample)
-        else:
-            raise ValueError(f"\nsample {sample} was not found..\n"
-                             f"We checked for SE file:\n"
-                             f"\t{config['fastq_dir']}/{sample}.{config['fqsuffix']}.gz \n"
-                             f"and for PE files:\n"
-                             f"\t{config['fastq_dir']}/{sample}_{config['fqext1']}.{config['fqsuffix']}.gz \n"
-                             f"\t{config['fastq_dir']}/{sample}_{config['fqext2']}.{config['fqsuffix']}.gz \n"
-                             f"and since the sample did not start with either GSM, SRX, SRR, ERR, and DRR we "
-                             f"couldn't find it online..\n")
-
-    if len(public_samples) == 0:
-        return sampledict
-
     # only continue with public samples
-    db = pysradb.SRAweb()
+    db_sra = pysradb.SRAweb()
 
     # all samples that are on GEO (GSM numbers), must first be converted to SRA ids (SRX numbers)
-    geo_samples = [sample for sample in public_samples if sample.startswith("GSM")]
+    geo_samples = [sample for sample in samples if sample.startswith("GSM")]
 
     # in sample2clean we store the (potential GEO) sample name in a SRA compliant name
-    df = db.gsm_to_srx(geo_samples)
-    sample2clean = dict(zip(df.experiment_alias, df.experiment_accession))
+    df_geo = db_sra.gsm_to_srx(geo_samples)
+    sample2clean = dict(zip(df_geo.experiment_alias, df_geo.experiment_accession))
 
     # now add the already SRA compliant names with a reference to itself
-    sample2clean.update({sample: sample for sample in public_samples if sample not in geo_samples})
+    sample2clean.update({sample: sample for sample in samples if sample not in geo_samples})
 
     # check our samples on sra
-    df = db.sra_metadata(list(sample2clean.values()), detailed=True)
+    df_sra = db_sra.sra_metadata(list(sample2clean.values()), detailed=True)
 
     for sample, clean in sample2clean.items():
         # table indices
-        idxs = _sample_to_idxs(df, clean)
+        idxs = _sample_to_idxs(df_sra, clean)
 
         # get all runs that belong to the sample
         runs = df.loc[idxs].run_accession.tolist()
@@ -127,3 +130,15 @@ def samples2metadata(samples: List[str], config: dict) -> dict:
             sampledict[sample]["ena_fastq_ftp"] = None
 
     return sampledict
+
+
+def samples2metada(samples: List[str], config: dict) -> dict:
+    local_samples = samples2metadata_local(samples, config)
+    public_samples = [sample for sample in samples if sample not in local_samples.keys()]
+
+    if len(public_samples) == 0:
+        return local_samples
+
+    sra_samples = samples2metadata_sra(public_samples)
+
+    return {**local_samples, **sra_samples}
