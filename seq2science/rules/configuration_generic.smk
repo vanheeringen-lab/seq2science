@@ -56,6 +56,22 @@ if workflow.conda_frontend == "conda":
 # give people a second to appreciate this beautiful ascii art
 time.sleep(1)
 
+def url_is_alive(url):
+    """
+    Checks that a given URL is reachable.
+    https://gist.github.com/dehowell/884204
+    """
+    for i in range(3):
+        try:
+            request = urllib.request.Request(url)
+            request.get_method = lambda: 'HEAD'
+
+            urllib.request.urlopen(request, timeout=5)
+            return True
+        except:
+            continue
+    return False
+
 
 # config.yaml(s)
 
@@ -95,7 +111,10 @@ user_config = norns.config(config_file=workflow.overwrite_configfiles[0])
 
 # make absolute paths, nest default dirs in result_dir and cut off trailing slashes
 config['result_dir'] = re.split("\/$", os.path.abspath(config['result_dir']))[0]
-config['samples'] = os.path.abspath(config['samples'])
+
+if not url_is_alive(config['samples']):
+    config['samples'] = os.path.abspath(config['samples'])
+
 for key, value in config.items():
     if key.endswith("_dir"):
         if key in ['result_dir', 'genome_dir', 'rule_dir'] or key in user_config:
@@ -505,22 +524,6 @@ sample_to_srr = {**{k: [(config["layout"][k], k)] for k in trace_layout1.keys() 
 
 trace_tp.close()
 eutils_tp.close()
-
-def url_is_alive(url):
-    """
-    Checks that a given URL is reachable.
-    https://gist.github.com/dehowell/884204
-    """
-    for i in range(3):
-        try:
-            request = urllib.request.Request(url)
-            request.get_method = lambda: 'HEAD'
-
-            urllib.request.urlopen(request, timeout=5)
-            return True
-        except:
-            continue
-    return False
 
 logger.info("Done!\n\n")
 logger.info("Now checking if the samples are on the ENA database..")
