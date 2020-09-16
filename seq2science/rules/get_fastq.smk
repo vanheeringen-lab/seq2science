@@ -224,7 +224,7 @@ rule ena2fastq_PE:
 
 def get_runs_from_sample(wildcards):
     run_fastqs = []
-    for run in sampledict[wildcards.sample].get("runs", []):
+    for run in sampledict[wildcards.sample]["runs"]:
         run_fastqs.append(f"{config['fastq_dir']}/runs/{run}{wildcards.suffix}")
 
     return run_fastqs

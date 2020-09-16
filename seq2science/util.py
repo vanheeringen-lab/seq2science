@@ -32,8 +32,10 @@ def samples2metadata_local(samples: List[str], config: dict) -> dict:
     sampledict = dict()
     for sample in samples:
         if os.path.exists(expand(f'{{fastq_dir}}/{sample}.{{fqsuffix}}.gz', **config)[0]):
+            sampledict[sample] = dict()
             sampledict[sample]["layout"] = "SINGLE"
         elif all(os.path.exists(path) for path in expand(f'{{fastq_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz', **config)):
+            sampledict[sample] = dict()
             sampledict[sample]["layout"] = "PAIRED"
         elif sample.startswith(('GSM', 'SRX', 'SRR', 'ERR', 'DRR')):
             continue
@@ -118,9 +120,9 @@ def samples2metadata_sra(samples: List[str]) -> dict:
                 sampledict[sample]["ena_fastq_http"][run] = df_sra[df_sra.run_accession == run].ena_fastq_http.tolist()
                 sampledict[sample]["ena_fastq_ftp"][run] = df_sra[df_sra.run_accession == run].ena_fastq_ftp.tolist()
             elif layout[0] == "PAIRED":
-                sampledict[sample]["ena_fastq_http"][run] = df_sra[df_sra.run_accession == run].ena_fastq_http_1.tolist() + df[
+                sampledict[sample]["ena_fastq_http"][run] = df_sra[df_sra.run_accession == run].ena_fastq_http_1.tolist() + df_sra[
                     df_sra.run_accession == run].ena_fastq_http_2.tolist()
-                sampledict[sample]["ena_fastq_ftp"][run] = df_sra[df_sra.run_accession == run].ena_fastq_ftp_1.tolist() + df[
+                sampledict[sample]["ena_fastq_ftp"][run] = df_sra[df_sra.run_accession == run].ena_fastq_ftp_1.tolist() + df_sra[
                     df_sra.run_accession == run].ena_fastq_ftp_2.tolist()
 
         # if any run from a sample is not found on ENA, better be safe, and assume that sample as a whole is not on ENA
@@ -132,7 +134,7 @@ def samples2metadata_sra(samples: List[str]) -> dict:
     return sampledict
 
 
-def samples2metada(samples: List[str], config: dict) -> dict:
+def samples2metadata(samples: List[str], config: dict) -> dict:
     local_samples = samples2metadata_local(samples, config)
     public_samples = [sample for sample in samples if sample not in local_samples.keys()]
 
