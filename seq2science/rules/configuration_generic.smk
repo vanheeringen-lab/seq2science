@@ -5,14 +5,12 @@ import os.path
 import psutil
 import pickle
 import re
-import shutil
 import subprocess
 import time
 import copy
 import json
 import requests
 from functools import lru_cache
-from socket import timeout
 
 import norns
 import numpy as np
@@ -30,6 +28,7 @@ from snakemake.utils import min_version
 from snakemake.exceptions import TerminatedException
 
 import seq2science
+from seq2science.util import prep_filelock
 
 
 logger.info(
@@ -104,6 +103,7 @@ for key, value in config.items():
         else:
             value = os.path.abspath(os.path.join(config['result_dir'], value))
         config[key] = re.split("\/$", value)[0]
+
 
 # samples.tsv
 
@@ -197,23 +197,6 @@ samples.index = samples.index.map(str)
 
 def get_workflow():
     return workflow.snakefile.split('/')[-2]
-
-
-def prep_filelock(lock_file, max_age=10):
-    """
-    create the directory for the lock_file if needed
-    and remove locks older than the max_age (in seconds)
-    """
-    os.makedirs(os.path.dirname(lock_file), exist_ok=True)
-
-    # sometimes two jobs start in parallel and try to delete at the same time
-    try:
-        # ignore locks that are older than the max_age
-        if os.path.exists(lock_file) and \
-                time.time() - os.stat(lock_file).st_mtime > max_age:
-            os.unlink(lock_file)
-    except FileNotFoundError:
-         pass
 
 
 if "assembly" in samples:
@@ -337,6 +320,9 @@ if "assembly" in samples:
         Returns True/False on whether or not the assembly has an annotation.
         """
         return True if providers[ori_assembly(assembly)]["annotation"] else False
+
+else:
+    modified = False
 
 
 # sample layouts
@@ -630,6 +616,7 @@ def any_given(*args, prefix="", suffix=""):
     elements = [prefix + element + suffix for element in elements if isinstance(element, str)]
     return '|'.join(set(elements))
 
+
 # set global wildcard constraints (see workflow._wildcard_constraints)
 sample_constraints = ["sample"]
 wildcard_constraints:
@@ -717,21 +704,3 @@ if config.get("create_trackhub"):
 
         # read hubfile
         ucsc_assemblies = pickle.load(open(hubfile, "rb"))
-
-onstart:
-    # save a copy of the latest samples and config file(s) in the log_dir
-    # skip this step on Jenkins, as it runs in parallel
-    if os.getcwd() != config['log_dir'] and not os.getcwd().startswith('/var/lib/jenkins'):
-        os.makedirs(config['log_dir'], exist_ok=True)
-        for n, file in enumerate([config['samples']] + workflow.overwrite_configfiles):
-            src = os.path.join(os.getcwd(), file)
-            dst = os.path.join(config['log_dir'], os.path.basename(file) if n<2 else "profile.yaml")
-            shutil.copy(src, dst)
-onsuccess:
-    if config.get("email") not in ["none@provided.com", "yourmail@here.com", None]:
-        os.system(f"""echo "Succesful pipeline run! :)" | mail -s "The seq2science pipeline finished succesfully." {config["email"]} 2> /dev/null""")
-onerror:
-    if config.get("email") not in ["none@provided.com", "yourmail@here.com", None]:
-        os.system(f"""echo "Unsuccessful pipeline run! :(" | mail -s "The seq2science pipeline finished prematurely..." {config["email"]} 2> /dev/null """)
-
-include: "../rules/configuration_workflows.smk"
