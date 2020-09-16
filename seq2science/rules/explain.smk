@@ -86,7 +86,7 @@ else:
                                "the normal prior distribution provided by DESeq2.")], sep=" ", final_sep=" "),
         "count_matrix_txi": "Transcript abundance estimations were aggregated and converted to gene counts using tximeta v@tximeta[tximeta] (https://doi.org/10.1101/777888).",
         "id2sra": "Public samples were downloaded from the Sequence Read Archive (https://doi.org/10.1093/nar/gkq1019) with help of the ncbi e-utilities.",
-        "get_genome": "Genome assembly {wildcards.assembly} was downloaded with genomepy v@get_genome[genomepy] (https://doi.org/10.21105/joss.00320).",
+        "get_genome": "Genome assembly {wildcards.raw_assembly} was downloaded with genomepy {genomepy.__version__} (https://doi.org/10.21105/joss.00320).",
         "custom_extension": "The genome and gene annotations was extended with custom regions.",
         "call_peak_genrich":"Peaks were called with genrich v@genrich[genrich] (https://github.com/jsh58/Genrich) with options '{config[peak_caller][genrich]}'.",
         "macs2_callpeak": "Peaks were called with macs2 v@macs2[macs2] (https://doi.org/10.1186/gb-2008-9-9-r137) with options '{config[peak_caller][macs2]}' in {params.format} mode.",
@@ -108,5 +108,5 @@ else:
         "trackhub": "We used the UCSC genome browser (http://www.genome.org/cgi/doi/10.1101/gr.229102) to visualize and inspect alignment.",
         "trim_galore_SE": "We trimmed single-end reads with trim galore! v@trimgalore[trim-galore] (http://www.bioinformatics.babraham.ac.uk/projects/trim_galore/) with options '{config[trim_galore]}' and cutadapt (https://doi.org/10.14806/ej.17.1.200).",
         "trim_galore_PE": "We trimmed paired-end reads with trim galore! v@trimgalore[trim-galore] (http://www.bioinformatics.babraham.ac.uk/projects/trim_galore/) with options '{config[trim_galore]}' and cutadapt (https://doi.org/10.14806/ej.17.1.200).",
-        "chipseeker": "A peak feature distribution plot and peak localization plot relative to TSS were made with chipseeker v@chipseeker[chipseeker] (https://doi.org/doi:10.18129/B9.bioc.ChIPseeker).",
+        "chipseeker": "A peak feature distribution plot and peak localization plot relative to TSS were made with chipseeker (https://doi.org/doi:10.18129/B9.bioc.ChIPseeker).",  # v@chipseeker[chipseeker]
     }
