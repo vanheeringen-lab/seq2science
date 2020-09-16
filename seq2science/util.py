@@ -100,12 +100,12 @@ def samples2metadata_sra(samples: List[str]) -> dict:
         idxs = _sample_to_idxs(df_sra, clean)
 
         # get all runs that belong to the sample
-        runs = df.loc[idxs].run_accession.tolist()
+        runs = df_sra.loc[idxs].run_accession.tolist()
         assert len(runs) >= 1
         sampledict[sample]["runs"] = runs
 
         # get the layout
-        layout = df.loc[idxs].library_layout.tolist()
+        layout = df_sra.loc[idxs].library_layout.tolist()
         assert len(set(layout)) == 1, f"sample {sample} consists of mixed layouts, bad!"
         assert layout[0] in ["PAIRED", "SINGLE"], f"sample {sample} is an unclear layout, bad!"
         sampledict[sample]["layout"] = layout[0]
@@ -115,13 +115,13 @@ def samples2metadata_sra(samples: List[str]) -> dict:
         sampledict[sample]["ena_fastq_ftp"] = dict()
         for run in runs:
             if layout[0] == "SINGLE":
-                sampledict[sample]["ena_fastq_http"][run] = df[df.run_accession == run].ena_fastq_http.tolist()
-                sampledict[sample]["ena_fastq_ftp"][run] = df[df.run_accession == run].ena_fastq_ftp.tolist()
+                sampledict[sample]["ena_fastq_http"][run] = df_sra[df_sra.run_accession == run].ena_fastq_http.tolist()
+                sampledict[sample]["ena_fastq_ftp"][run] = df_sra[df_sra.run_accession == run].ena_fastq_ftp.tolist()
             elif layout[0] == "PAIRED":
-                sampledict[sample]["ena_fastq_http"][run] = df[df.run_accession == run].ena_fastq_http_1.tolist() + df[
-                    df.run_accession == run].ena_fastq_http_2.tolist()
-                sampledict[sample]["ena_fastq_ftp"][run] = df[df.run_accession == run].ena_fastq_ftp_1.tolist() + df[
-                    df.run_accession == run].ena_fastq_ftp_2.tolist()
+                sampledict[sample]["ena_fastq_http"][run] = df_sra[df_sra.run_accession == run].ena_fastq_http_1.tolist() + df[
+                    df_sra.run_accession == run].ena_fastq_http_2.tolist()
+                sampledict[sample]["ena_fastq_ftp"][run] = df_sra[df_sra.run_accession == run].ena_fastq_ftp_1.tolist() + df[
+                    df_sra.run_accession == run].ena_fastq_ftp_2.tolist()
 
         # if any run from a sample is not found on ENA, better be safe, and assume that sample as a whole is not on ENA
         if any(["N/A" in urls for run, urls in sampledict[sample]["ena_fastq_http"].items()]):
