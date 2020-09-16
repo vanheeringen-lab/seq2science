@@ -600,6 +600,7 @@ rule multiqc:
     params:
         dir = "{qc_dir}/".format(**config),
         fqext1 = '_' + config['fqext1'],
+        filter_buttons=lambda wildcards, input: f"--sample-filters {input.filter_buttons}" if hasattr(input, "filter_buttons") else ""
     log:
         expand("{log_dir}/multiqc_{{assembly}}.log", **config)
     conda:
@@ -610,7 +611,7 @@ rule multiqc:
         --config {input.schema}                                                    \
         --config {input.header}                                                    \
         --sample-names {input.sample_names}                                        \
-        --sample-filters {input.filter_buttons}                                    \
+        {params.filter_buttons}                                    \
         --cl_config "extra_fn_clean_exts: [                                        \
             {{'pattern': ^.*{wildcards.assembly}-, 'type': 'regex'}},              \
             {{'pattern': {params.fqext1},          'type': 'regex'}},              \
