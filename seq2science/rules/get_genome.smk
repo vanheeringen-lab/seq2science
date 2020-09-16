@@ -149,9 +149,9 @@ rule gene_id2name:
     Parse the gtf file to generate a gene_id to gene_name conversion table.
     """
     input:
-        expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.annotation.gtf", **config),
+        expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
     output:
-        expand("{genome_dir}/{{raw_assembly}}/gene_id2name.tsv", **config),
+        expand("{genome_dir}/{{assembly}}/gene_id2name.tsv", **config),
     run:
         def can_convert():
             """check if we can make a conversion table at all"""
@@ -175,18 +175,18 @@ rule gene_id2name:
                 for line in gtf:
                     try:
                         attributes = line.split("\t")[8].split(";")
+                        id = name = None
+                        for attribute in attributes:
+                            attribute = attribute.strip()
+                            if attribute.lower().startswith("gene_id"):
+                                id = attribute.split(" ")[1].strip('"')
+                            if attribute.lower().startswith("gene_name"):
+                                name = attribute.split(" ")[1].strip('"')
+                        if id and name:
+                            table[id] = name
                     except IndexError:
-                        continue  # skip lines that are too short
-
-                    id = name = None
-                    for attribute in attributes:
-                        attribute = attribute.strip()
-                        if attribute.lower().startswith("gene_id"):
-                            id = attribute.split(" ")[1].strip('"')
-                        if attribute.lower().startswith("gene_name"):
-                            name = attribute.split(" ")[1].strip('"')
-                    if id and name:
-                        table[id] = name
+                        # skip lines that are too short/misformatted
+                        continue
 
             # save the dict
             with open(output[0], "w") as out:
