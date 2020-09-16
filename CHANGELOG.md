@@ -20,6 +20,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - Now also SRR numbers can be directly downloaded from ENA
 - Python3.8 syntaxwarnings
 - Chipseeker missing gtf input
+- bugs with explain
 
 ## [0.2.3] - 2020-09-01
 
