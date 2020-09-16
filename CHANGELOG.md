@@ -24,6 +24,8 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - Now also SRR numbers can be directly downloaded from ENA
 - Python3.8 syntaxwarnings
 - Fixed bug where scatac-seq workflow was making fastqc reports per sample
+- Chipseeker missing gtf input
+- bugs with explain
 
 ## [0.2.3] - 2020-09-01
 

@@ -1,7 +1,0 @@
-name: get_genome
-channels:
-  - conda-forge
-  - bioconda
-  - defaults
-dependencies:
-  - bioconda::genomepy=0.8.4
