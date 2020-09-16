@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- you can now specify an url for your samples file
+
 ### Changed
 
 - markduplicates now removes duplicates as default
