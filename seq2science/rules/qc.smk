@@ -566,7 +566,8 @@ def get_qc_files(wildcards):
                              func.__name__ not in ['get_peak_calling_qc', 'get_trimming_qc']]:
                 qc['files'].update(function(replicate))
             # scatac seq only on treps, not on single samples
-            if get_workflow() == "scatac_seq" and get_trimming_qc in quality_control:
+            # and fastp also on treps
+            if config.get("trimmer") == "fastp" or (get_workflow() == "scatac_seq" and get_trimming_qc in quality_control):
                 qc['files'].update(get_trimming_qc(replicate))
 
     # qc on combined biological replicates/samples

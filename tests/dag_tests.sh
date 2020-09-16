@@ -74,6 +74,22 @@ if [ $1 = "alignment" ]; then
   assert_rulecount $1 bwa_index 1
   assert_rulecount $1 mark_duplicates 1
 
+  printf "\ntrimmers\n"
+  printf "\tfastp\n"
+  seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={trimmer:fastp,create_qc_report:True} | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 fastp_PE 1
+  seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/alignment/replicates.tsv,trimmer:fastp,create_qc_report:True,technical_replicates:merge} | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 fastp_PE 2
+  assert_rulecount $1 fastp_qc_PE 1
+
+  printf "\n\ttrimgalore\n"
+  seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={trimmer:trimgalore,create_qc_report:True} | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 trimgalore_PE 1
+  assert_rulecount $1 fastqc 4
+  seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/alignment/replicates.tsv,trimmer:trimgalore,create_qc_report:True,technical_replicates:merge} | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 trimgalore_PE 2
+  assert_rulecount $1 fastqc 8
+
   printf "\naligners\n"
   seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={aligner:bowtie2} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bowtie2_index 1
