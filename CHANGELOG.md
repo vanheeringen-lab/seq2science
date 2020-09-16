@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- fastp as aligner (default), makes trimgalore optional other aligner
+
 ### Changed
 
 - markduplicates now removes duplicates as default

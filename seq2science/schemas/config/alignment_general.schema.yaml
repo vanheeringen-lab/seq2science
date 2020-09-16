@@ -37,8 +37,8 @@ properties:
         default:
           trimoptions: ''
     default:
-      trimgalore:
-        trimoptions: '--quality 10 --length 20 --consider_already_trimmed 10'
+      fastp:
+        trimoptions: ''
     type: object
 
   # replicate handling
