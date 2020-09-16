@@ -11,6 +11,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Added
 
 - fastp as aligner (default), makes trimgalore optional other aligner
+- you can now specify an url for your samples file
 
 ### Changed
 
@@ -20,11 +21,12 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Fixed
 
-- Issue with control and technical replicates
-- Now also SRR numbers can be directly downloaded from ENA
-- Python3.8 syntaxwarnings
-- Chipseeker missing gtf input
+- issue with control and technical replicates
+- now also SRR numbers can be directly downloaded from ENA
+- python3.8 syntaxwarnings
+- chipseeker missing gtf input
 - bugs with explain
+- bwa-mem2 not working with less than 12 cores
 
 ## [0.2.3] - 2020-09-01
 
