@@ -8,12 +8,20 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- RNA-seq: gene_id to gene_name conversion table will be output for downstream analysis
+  - (may be empty if gtf didn't contain both fields or wrong formatting)
+- RNA-seq: quantifying with salmon will now also output a gene length table
+  - (gene lengths, tpms and gene counts can still be found together in the SingleCellExperiment object)
+
 ### Changed
 
 - markduplicates now removes duplicates as default
 - testing: clear genomepy caches between runs
 - add parallel-fastq-dump fallback to fasterq-dump
-- deseq2 options renamed (from `diffexp` to `deseq2` and `contrasts`)
+- DESeq2 options renamed (from `diffexp` to `deseq2` and `contrasts`)
+- DESeq2 will now generate batch corrected counts (and TPMs for Salmon) for all samples, based on the set condition column.
 
 ### Fixed
 
@@ -22,6 +30,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - Python3.8 syntaxwarnings
 - Chipseeker missing gtf input
 - bugs with explain
+- batch corrected TPMs no longer break when samples/rows are subset.
 
 ## [0.2.3] - 2020-09-01
 
