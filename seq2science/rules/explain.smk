@@ -110,5 +110,5 @@ else:
         "trimgalore_PE": "We trimmed paired-end reads with trim galore! v@trimgalore[trim-galore] (http://www.bioinformatics.babraham.ac.uk/projects/trim_galore/) with options '{config[trimoptions]}' and cutadapt (https://doi.org/10.14806/ej.17.1.200).",
         "fastp_SE": "We trimmed single-end reads with fastp v@fastp[fastp] (https://doi.org/10.1093/bioinformatics/bty560) with options '{config[trimoptions]}'.",
         "fastp_PE": "We trimmed paired-end reads with fastp v@fastp[fastp] (https://doi.org/10.1093/bioinformatics/bty560) with options '{config[trimoptions]}'.",
-        "chipseeker": "A peak feature distribution plot and peak localization plot relative to TSS were made with chipseeker v@chipseeker[chipseeker] (https://doi.org/doi:10.18129/B9.bioc.ChIPseeker).",
+        "chipseeker": "A peak feature distribution plot and peak localization plot relative to TSS were made with chipseeker (https://doi.org/doi:10.18129/B9.bioc.ChIPseeker).",  # v@chipseeker[chipseeker]
     }
