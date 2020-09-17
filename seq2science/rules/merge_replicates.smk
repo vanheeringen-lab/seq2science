@@ -6,13 +6,14 @@ if "condition" in samples:
     cols.append("condition")
 if "control" in samples:
     cols.append("control")
+
 treps = samples.reset_index()[cols].drop_duplicates().set_index(cols[0])
 assert treps.index.is_unique, "duplicate value found in treps"
 
 # treps that came from a merge
 merged_treps = [trep for trep in treps.index if trep not in samples.index]
-merged_treps_single = [trep for trep in merged_treps if config["layout"][trep] == "SINGLE"]
-merged_treps_paired = [trep for trep in merged_treps if config["layout"][trep] == "PAIRED"]
+merged_treps_single = [trep for trep in merged_treps if sampledict[trep]["layout"] == "SINGLE"]
+merged_treps_paired = [trep for trep in merged_treps if sampledict[trep]["layout"] == "PAIRED"]
 
 # all samples (including controls)
 all_samples = [sample for sample in samples.index]
@@ -79,6 +80,9 @@ if "replicate" in samples:
     elif config["trimmer"] == "trimgalore":
         ruleorder: merge_replicates > trimgalore_PE > trimgalore_SE
 
+    # true treps are treps combined of 2 samples or more
+    true_treps = [trep for trep in treps.index if trep not in samples.index]
+
     rule merge_replicates:
         """
         Merge replicates (fastqs) simply by concatenating the files. We also change the name of the read headers to 
@@ -93,7 +97,7 @@ if "replicate" in samples:
         output:
             temp(sorted(expand("{trimmed_dir}/{{replicate}}{{fqext}}_trimmed.{fqsuffix}.gz", **config))),
         wildcard_constraints:
-            replicate=any_given("replicate"),
+            replicate="|".join(true_treps) if len(true_treps) else "$a",
             fqext=f"_{config['fqext1']}|_{config['fqext2']}|", # nothing (SE), or fqext with an underscore (PE)
         log:
             expand("{log_dir}/merge_replicates/{{replicate}}{{fqext}}.log", **config),

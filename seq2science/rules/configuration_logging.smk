@@ -57,9 +57,14 @@ keys_to_remove = ["fqext1", "fqext2", "macs2_types", "cpulimit",
                   ("bigwig_dir", not config.get("create_trackhub")),
                   ("qc_dir", not config.get("create_qc_report"))]
 keys = rmkeys(["samples", "layout"] + keys_to_remove, keys)
-keys = ["samples"] + keys + ["layout"]
+keys = ["samples"] + keys
 
 for key in keys:
     if config[key] not in ["", False, 0, "None", "none@provided.com", "yourmail@here.com", "_custom"]:
         logger.info(f"{key: <23}: {config[key]}")
+
+layouts = {sample: values['layout'] for sample, values in sampledict.items()}
+logger.info(f"layout:                : {layouts}")
+
+
 logger.info("\n\n")

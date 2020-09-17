@@ -376,7 +376,8 @@ for sample, values in sampledict.items():
 if 'replicate' in samples:
     for sample in samples.index:
         replicate = samples.loc[sample, 'replicate']
-        sampledict[replicate] = {'layout':  sampledict[sample]['layout']}
+        if replicate not in sampledict:
+            sampledict[replicate] = {'layout':  sampledict[sample]['layout']}
 
 # workflow
 
