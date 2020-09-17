@@ -1,5 +1,6 @@
 import re
 
+import seq2science
 from seq2science.util import sieve_bam
 
 
