@@ -10,6 +10,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Added
 
+- fastp as aligner (default), makes trimgalore optional other aligner
 - you can now specify an url for your samples file
 
 ### Changed

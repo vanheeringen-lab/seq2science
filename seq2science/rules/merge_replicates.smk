@@ -9,6 +9,16 @@ if "control" in samples:
 treps = samples.reset_index()[cols].drop_duplicates().set_index(cols[0])
 assert treps.index.is_unique, "duplicate value found in treps"
 
+# treps that came from a merge
+merged_treps = [trep for trep in treps.index if trep not in samples.index]
+merged_treps_single = [trep for trep in merged_treps if config["layout"][trep] == "SINGLE"]
+merged_treps_paired = [trep for trep in merged_treps if config["layout"][trep] == "PAIRED"]
+
+# all samples (including controls)
+all_samples = [sample for sample in samples.index]
+if "control" in samples.columns:
+    all_samples.extend(samples["control"].dropna().tolist())
+
 # dataframe with all replicates collapsed
 breps = treps
 if "condition" in treps:
@@ -64,7 +74,10 @@ if "replicate" in samples:
 
         return input_files
 
-    ruleorder: merge_replicates > trim_galore_PE > trim_galore_SE
+    if config["trimmer"] == "fastp":
+        ruleorder: merge_replicates > fastp_PE > fastp_SE
+    elif config["trimmer"] == "trimgalore":
+        ruleorder: merge_replicates > trimgalore_PE > trimgalore_SE
 
     rule merge_replicates:
         """
