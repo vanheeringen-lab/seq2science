@@ -622,7 +622,7 @@ rule multiqc:
 def get_trimming_qc(sample):
     if config["trimmer"] == "trimgalore":
         if get_workflow() == "scatac_seq":
-            # we (at least for now) do not was fastqc for each single cell before and after trimming.
+            # we (at least for now) do not was fastqc for each single cell before and after trimming (too much for MultiQC).
             # still something to think about to add later, since that might be a good quality check though.
             return expand(f"{{qc_dir}}/fastqc/{sample}_{{fqext}}_trimmed_fastqc.zip", **config)
         else:
