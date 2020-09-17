@@ -24,6 +24,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - configuration rules split into more sections
 - DESeq2 options renamed (from `diffexp` to `deseq2` and `contrasts`)
 - DESeq2 will now generate batch corrected counts (and TPMs for Salmon) for all samples, based on the set condition column.
+  - (batch corrected output is still meant for downstream analysis that cannot model batch effects independently, e.g. plotting)
 
 ### Fixed
 
