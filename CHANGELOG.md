@@ -8,18 +8,34 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- fastp as aligner (default), makes trimgalore optional other aligner
+- you can now specify an url for your samples file
+- RNA-seq: gene_id to gene_name conversion table will be output for downstream analysis
+  - (may be empty if gtf didn't contain both fields or wrong formatting)
+- RNA-seq: quantifying with salmon will now also output a gene length table
+  - (gene lengths, tpms and gene counts can still be found together in the SingleCellExperiment object)
+
 ### Changed
 
 - markduplicates now removes duplicates as default
 - testing: clear genomepy caches between runs
 - add parallel-fastq-dump fallback to fasterq-dump
+- configuration rules split into more sections
+- DESeq2 options renamed (from `diffexp` to `deseq2` and `contrasts`)
+- DESeq2 will now generate batch corrected counts (and TPMs for Salmon) for all samples, based on the set condition column.
+  - (batch corrected output is still meant for downstream analysis that cannot model batch effects independently, e.g. plotting)
 
 ### Fixed
 
-- Issue with control and technical replicates
-- Now also SRR numbers can be directly downloaded from ENA
-- Python3.8 syntaxwarnings
-- Chipseeker missing gtf input
+- issue with control and technical replicates
+- now also SRR numbers can be directly downloaded from ENA
+- python3.8 syntaxwarnings
+- chipseeker missing gtf input
+- bugs with explain
+- bwa-mem2 not working with less than 12 cores
+- batch corrected TPMs no longer break when samples/rows are subset.
 
 ## [0.2.3] - 2020-09-01
 
@@ -160,7 +176,7 @@ Many minor bug- and quality of life fixes.
 First release of seq2science!
 
 [Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/master...v0.2.3
-[0.2.2]: https://github.com/vanheeringen-lab/seq2science/compare/v0.2.2...v0.2.3
+[0.2.3]: https://github.com/vanheeringen-lab/seq2science/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/vanheeringen-lab/seq2science/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/vanheeringen-lab/seq2science/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.1.0...v0.2.0

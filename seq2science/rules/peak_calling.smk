@@ -102,14 +102,16 @@ rule call_peak_genrich:
         """
 
 
-def get_fastqc(wildcards):
-    if (
-        sampledict.get(wildcards.sample, {}).get("layout") == "SINGLE"
-        or sampledict.get(wildcards.assembly, {}).get("layout") == "SINGLE"
-    ):
-        return expand("{qc_dir}/fastqc/{{sample}}_trimmed_fastqc.zip", **config)
-    return sorted(expand("{qc_dir}/fastqc/{{sample}}_{fqext1}_trimmed_fastqc.zip", **config))
-
+def get_fastq_qc_file(wildcards):
+    if config["trimmer"] == "trimgalore":
+        if (
+            sampledict.get(wildcards.sample, {}).get("layout") == "SINGLE"
+            or sampledict.get(wildcards.assembly, {}).get("layout") == "SINGLE"
+        ):
+            return expand("{qc_dir}/fastqc/{{sample}}_trimmed_fastqc.zip", **config)
+        return sorted(expand("{qc_dir}/fastqc/{{sample}}_{fqext1}_trimmed_fastqc.zip", **config))
+    elif config["trimmer"] == "fastp":
+        return expand("{qc_dir}/trimming/{{sample}}.fastp.json", **config)
 
 def get_macs2_bam(wildcards):
     if not config["macs2_keep_mates"] is True or sampledict[wildcards.sample].get("layout") == "SINGLE":
@@ -130,6 +132,12 @@ def get_control_macs(wildcards):
     return {"control": expand(f"{{final_bam_dir}}/{control}-mates-{{{{assembly}}}}.samtools-coordinate.bam", **config)}
 
 
+if config["trimmer"] == "trimgalore":
+    get_macs2_kmer = "kmer_size=$(unzip -p {input.fastq_qc} {params.name}_trimmed_fastqc/fastqc_data.txt  | grep -P -o '(?<=Sequence length\\t).*' | grep -P -o '\d+$')"
+elif config["trimmer"] == "fastp":
+    get_macs2_kmer = "kmer_size=$(jq -r .summary.after_filtering.read1_mean_length {input.fastq_qc})"
+
+
 rule macs2_callpeak:
     """
     Call peaks using macs2.
@@ -138,7 +146,7 @@ rule macs2_callpeak:
     input:
         unpack(get_control_macs),
         bam=get_macs2_bam,
-        fastqc=get_fastqc,
+        fastq_qc=get_fastq_qc_file,
     output:
         expand("{result_dir}/macs2/{{assembly}}-{{sample}}_{macs2_types}", **config),
     log:
@@ -167,10 +175,9 @@ rule macs2_callpeak:
     conda:
         "../envs/macs2.yaml"
     shell:
-        """
         # extract the kmer size, and get the effective genome size from it
-        kmer_size=$(unzip -p {input.fastqc} {params.name}_trimmed_fastqc/fastqc_data.txt  | grep -P -o '(?<=Sequence length\\t).*' | grep -P -o '\d+$')
-
+        get_macs2_kmer +
+        """
         echo "preparing to run unique-kmers.py with -k $kmer_size" >> {log}
         GENSIZE=$(unique-kmers.py {params.genome} -k $kmer_size --quiet 2>&1 | grep -P -o '(?<=\.fa: ).*')
         echo "kmer size: $kmer_size, and effective genome size: $GENSIZE" >> {log}

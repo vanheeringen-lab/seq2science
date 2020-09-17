@@ -5,7 +5,6 @@ import os.path
 import psutil
 import pickle
 import re
-import shutil
 import subprocess
 import time
 import copy
@@ -26,8 +25,8 @@ from snakemake.utils import validate
 from snakemake.utils import min_version
 from snakemake.exceptions import TerminatedException
 
-import seq2science
-from seq2science.util import samples2metadata
+from seq2science.util import samples2metadata, prep_filelock, url_is_alive
+
 
 logger.info(
 """\
@@ -47,8 +46,6 @@ logger.info(
 docs: https://vanheeringen-lab.github.io/seq2science
 """
 )
-
-include: f"{config['rule_dir']}/explain.smk"
 
 
 if workflow.conda_frontend == "conda":
@@ -75,7 +72,7 @@ for key, value in config.items():
         config[key] = os.path.expanduser(value)
 
 # make sure that difficult data-types (yaml objects) are in correct data format
-for kw in ['aligner', 'quantifier', 'bam_sorter']:
+for kw in ['aligner', 'quantifier', 'bam_sorter', "trimmer"]:
     if isinstance(config.get(kw, None), str):
         config[kw] = {config[kw]: {}}
 
@@ -96,7 +93,10 @@ with open(workflow.overwrite_configfiles[0], 'r') as stream:
 
 # make absolute paths, nest default dirs in result_dir and cut off trailing slashes
 config['result_dir'] = re.split("\/$", os.path.abspath(config['result_dir']))[0]
-config['samples'] = os.path.abspath(config['samples'])
+
+if not url_is_alive(config['samples']):
+    config['samples'] = os.path.abspath(config['samples'])
+
 for key, value in config.items():
     if key.endswith("_dir"):
         if key in ['result_dir', 'genome_dir', 'rule_dir'] or key in user_config:
@@ -104,6 +104,7 @@ for key, value in config.items():
         else:
             value = os.path.abspath(os.path.join(config['result_dir'], value))
         config[key] = re.split("\/$", value)[0]
+
 
 # samples.tsv
 
@@ -199,23 +200,6 @@ def get_workflow():
     return workflow.snakefile.split('/')[-2]
 
 
-def prep_filelock(lock_file, max_age=10):
-    """
-    create the directory for the lock_file if needed
-    and remove locks older than the max_age (in seconds)
-    """
-    os.makedirs(os.path.dirname(lock_file), exist_ok=True)
-
-    # sometimes two jobs start in parallel and try to delete at the same time
-    try:
-        # ignore locks that are older than the max_age
-        if os.path.exists(lock_file) and \
-                time.time() - os.stat(lock_file).st_mtime > max_age:
-            os.unlink(lock_file)
-    except FileNotFoundError:
-         pass
-
-
 if "assembly" in samples:
     # control whether to custom extended assemblies
     if isinstance(config.get("custom_genome_extension"), str):
@@ -224,7 +208,7 @@ if "assembly" in samples:
         config["custom_annotation_extension"] = [config["custom_annotation_extension"]]
     modified = config.get("custom_genome_extension") or config.get("custom_annotation_extension")
     all_assemblies = [assembly + "_custom" if modified else assembly for assembly in set(samples['assembly'])]
-    suffix = config["spike_suffix"] if modified else ""
+    suffix = config["custom_assembly_suffix"] if modified else ""
 
     def list_providers(assembly):
         """
@@ -327,7 +311,8 @@ if "assembly" in samples:
         """
         remove the extension suffix from an assembly if is was added.
         """
-        return assembly[:-len(config["spike_suffix"])] if assembly.endswith(config["spike_suffix"]) and modified else assembly
+        return assembly[:-len(config["custom_assembly_suffix"])] if \
+            assembly.endswith(config["custom_assembly_suffix"]) and modified else assembly
 
 
     @lru_cache(maxsize=None)
@@ -336,6 +321,9 @@ if "assembly" in samples:
         Returns True/False on whether or not the assembly has an annotation.
         """
         return True if providers[ori_assembly(assembly)]["annotation"] else False
+
+else:
+    modified = False
 
 
 # sample layouts
@@ -407,6 +395,7 @@ def any_given(*args, prefix="", suffix=""):
     elements = [prefix + element + suffix for element in elements if isinstance(element, str)]
     return '|'.join(set(elements))
 
+
 # set global wildcard constraints (see workflow._wildcard_constraints)
 sample_constraints = ["sample"]
 wildcard_constraints:
@@ -416,7 +405,7 @@ wildcard_constraints:
 if 'assembly' in samples:
     wildcard_constraints:
         raw_assembly=any_given('assembly'),
-        assembly=any_given('assembly', suffix=config["spike_suffix"] if modified else ""),
+        assembly=any_given('assembly', suffix=config["custom_assembly_suffix"] if modified else ""),
 
 if 'replicate' in samples:
     sample_constraints.append("replicate")
@@ -494,21 +483,3 @@ if config.get("create_trackhub"):
 
         # read hubfile
         ucsc_assemblies = pickle.load(open(hubfile, "rb"))
-
-onstart:
-    # save a copy of the latest samples and config file(s) in the log_dir
-    # skip this step on Jenkins, as it runs in parallel
-    if os.getcwd() != config['log_dir'] and not os.getcwd().startswith('/var/lib/jenkins'):
-        os.makedirs(config['log_dir'], exist_ok=True)
-        for n, file in enumerate([config['samples']] + workflow.overwrite_configfiles):
-            src = os.path.join(os.getcwd(), file)
-            dst = os.path.join(config['log_dir'], os.path.basename(file) if n<2 else "profile.yaml")
-            shutil.copy(src, dst)
-onsuccess:
-    if config.get("email") not in ["none@provided.com", "yourmail@here.com", None]:
-        os.system(f"""echo "Succesful pipeline run! :)" | mail -s "The seq2science pipeline finished succesfully." {config["email"]} 2> /dev/null""")
-onerror:
-    if config.get("email") not in ["none@provided.com", "yourmail@here.com", None]:
-        os.system(f"""echo "Unsuccessful pipeline run! :(" | mail -s "The seq2science pipeline finished prematurely..." {config["email"]} 2> /dev/null """)
-
-include: "../rules/configuration_workflows.smk"

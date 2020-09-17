@@ -1,7 +1,7 @@
 # do onstart/onexit things
 sample_schemas = ['sample']
 config_schemas = ['general', 'download']
-include: "../../rules/configuration_generic.smk"
+include: "../../rules/configuration.smk"
 
 
 # load the relevant rules
