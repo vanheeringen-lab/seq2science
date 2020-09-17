@@ -53,6 +53,12 @@ properties:
     enum: [fisher, idr, keep]
     type: string
 
+  # genomepy
+  provider:
+    description: Specify provider to download new genomes from. Will try Ensembl > UCSC > NCBI if left blank.
+    enum: [Ensembl, UCSC, NCBI]
+    type: string
+
   # aligner
   aligner:
     description: which aligner to use
@@ -107,7 +113,6 @@ properties:
         index: '-a bwtsw'
         align: '-M'
 
-
   # samtools index
   samtools_index:
     description: samtools index settings
@@ -161,7 +166,14 @@ properties:
     default: 2
     type: integer
 
-  spike_suffix:
-    description: What to append to the assembly name to indicate that spike-ins have been added
+  # custom extensions to the assemblies
+  custom_genome_extension:
+    description: File(s) to append to the genome (must be in fasta format)
+
+  custom_annotation_extension:
+    description: File(s) to append to the gene annotations (must be in GTF format)
+
+  custom_assembly_suffix:
+    description: What to append to the assembly name to indicate that custom data has been added to either genome or assembly.
     default: '_custom'
     type: string

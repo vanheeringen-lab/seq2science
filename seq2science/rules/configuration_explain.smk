@@ -57,9 +57,6 @@ else:
             return start + final_sep.join([all_but_last, last]) + end
         return start + "".join(lst) + end
 
-    # I could unroll the dicts, but that would clog up the config at the start of s2s
-    DE_params = config.get('diffexp', {}).get('deseq2', {}).get('DE_params', {})
-
     messages={
         "bowtie2_align": "Reads were aligned with bowtie2 v@bowtie2[bowtie2] (https://dx.doi.org/10.1038%2Fnmeth.1923) with options '{config[align]}'.",
         "bwa-mem_align": "Reads were aligned with bwa-mem v@bwa[bwa] (http://arxiv.org/abs/1303.3997) with options '{config[align]}'.",
@@ -75,15 +72,16 @@ else:
                       end=" and finally were tn5 bias shifted by seq2science." if config.get("tn5_shift", 0) > 0 else "."),
         # "samtools_sort": "Bam files were sorted with samtools v@samtools[samtools].",
         "sambamba_sort": "Bam files were sorted with sambamba v@sambamba[sambamba] (https://doi.org/10.1093/bioinformatics/btv098).",
-        "mark_duplicates": "Afterwards, duplicate reads were marked with picard MarkDuplicates v@picard[picard] (http://broadinstitute.github.io/picard).",
+        "mark_duplicates": "Afterwards, duplicate reads were removed with picard MarkDuplicates v@picard[picard] (http://broadinstitute.github.io/picard).",
         "bam2cram": "Bam files were converted to cram format with samtools v@samtools[samtools].",
         "deseq2":
             text_join(start="Differential gene expression analysis was performed using DESeq2 v@deseq2[bioconductor-deseq2] (https://dx.doi.org/10.1186%2Fs13059-014-0550-8). To adjust for multiple testing ",
-                      lst=["the (default) Benjamini-Hochberg procedure " if DE_params.get('multiple_testing_procedure') == "BH" else "Independent hypothesis weighting (http://dx.doi.org/10.1038/nmeth.3885) ",
-                           "was performed with an FDR cutoff of {config[DE_params][alpha_value]} (default is 0.1). Counts were log transformed using ",
-                           "the (default) shrinkage estimator apeglm (https://doi.org/10.1093/bioinformatics/bty895). " if DE_params.get('shrinkage_estimator') == "apeglm" else (
-                               "shrinkage estimator ashr (https://doi.org/10.1093/biostatistics/kxw041). " if DE_params.get('shrinkage_estimator') == "ashr" else
-                               "the normal prior distribution provided by DESeq2.")], sep=" ", final_sep=" "),
+                      lst=[("the (default) Benjamini-Hochberg procedure " if config.get('deseq2', {}).get('multiple_testing_procedure') == "BH" else
+                               "Independent hypothesis weighting (http://dx.doi.org/10.1038/nmeth.3885) "),
+                           "was performed with an FDR cutoff of {config[deseq2][alpha_value]} (default is 0.1). Counts were log transformed using ",
+                           "the (default) shrinkage estimator apeglm (https://doi.org/10.1093/bioinformatics/bty895). " if config.get('deseq2', {}).get('shrinkage_estimator') == "apeglm" else (
+                               "shrinkage estimator ashr (https://doi.org/10.1093/biostatistics/kxw041). " if config.get('deseq2', {}).get('shrinkage_estimator') == "ashr" else
+                                   "the normal prior distribution provided by DESeq2.")], sep=" ", final_sep=" "),
         "count_matrix_txi": "Transcript abundance estimations were aggregated and converted to gene counts using tximeta v@tximeta[tximeta] (https://doi.org/10.1101/777888).",
         "id2sra": "Public samples were downloaded from the Sequence Read Archive (https://doi.org/10.1093/nar/gkq1019) with help of the ncbi e-utilities.",
         "get_genome": "Genome assembly {wildcards.raw_assembly} was downloaded with genomepy {genomepy.__version__} (https://doi.org/10.21105/joss.00320).",
@@ -99,7 +97,7 @@ else:
         "fastqc": "Fastq quality was measured by FastQC v@qc[fastqc] (http://www.bioinformatics.babraham.ac.uk/projects/fastqc).",
         "computeMatrix": "Deeptools v@deeptools[deeptools] (https://doi.org/10.1093/nar/gkw257) was used for the fingerprint, profile, correlation and heatmap plots.",
         "decoy_transcripts": "Decoy transcript were generated in order improve improve Salmon indexing accuracy (using the script from https://github.com/COMBINE-lab/SalmonTools)",
-        "salmon_quant": "Transcript abundances were quantified with Salmon v@salmon[salmon] (https://doi.org/10.1038/nmeth.4197) with options '{config[quantify]}'.",
+        "salmon_quant": "Transcript abundances were quantified with Salmon v@salmon[salmon] (https://doi.org/10.1038/nmeth.4197) with options '{config[quantifier_flags]}'.",
         "htseq_count": "Read counting and summarizing to gene-level was performed on filtered bam using HTSeq-count v@gene_counts[htseq] (https://doi.org/10.1093/bioinformatics/btu638).",
         "featurecounts_rna": "Read counting and summarizing to gene-level was performed on filtered bam using featureCounts v@gene_counts[subread] (https://doi.org/10.1093/bioinformatics/btt656).",
         "dexseq": "Additionally, exon usage was counted using [DEXSeq] v@dexseq[bioconductor-dexseq] (https://doi.org/doi:10.18129/B9.bioc.DEXSeq) for (potential) downstream analysis.",
