@@ -1,5 +1,7 @@
 import re
 
+from seq2science.util import sieve_bam
+
 
 def samtools_stats_input(wildcards):
     if wildcards.directory == config["aligner"]:

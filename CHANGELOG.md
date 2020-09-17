@@ -17,6 +17,8 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - markduplicates now removes duplicates as default
 - testing: clear genomepy caches between runs
 - add parallel-fastq-dump fallback to fasterq-dump
+- deseq2 options renamed (from `diffexp` to `deseq2` and `contrasts`)
+- configuration rules split into more sections
 
 ### Fixed
 
