@@ -16,6 +16,9 @@ create_trackhub: True
 # how to handle replicates
 technical_replicates: merge    # change to "keep" to not combine them
 
+# which trimmer to use
+trimmer: fastp
+
 # which quantifier to use
 quantifier: htseq  # or salmon or featurecounts
 

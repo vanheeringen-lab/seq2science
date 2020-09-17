@@ -5,6 +5,7 @@ log_filesize_limit: 350000000  # 350 mb
 
 
 module_order:
+    - fastp
     - fastqc:
         name: 'FastQC (raw)'
         path_filters:
@@ -62,6 +63,13 @@ table_columns_placement:
         treatment_redundant_rate: 1020
 
 table_columns_visible:
+    fastp:
+      pct_duplication: True
+      after_filtering_q30_rate: False
+      after_filtering_q30_bases: False
+      after_filtering_gc_content: True
+      pct_surviving: True
+      pct_adapter: True
     FastQC (raw):
         percent_duplicates: False
         percent_gc: False
