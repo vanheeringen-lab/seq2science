@@ -34,6 +34,7 @@ rule count_all:
 
              (["{counts_dir}/{assemblies}-counts.tsv"]) +
              (["{counts_dir}/{assemblies}-DEXSeq_counts.tsv"] if config['dexseq'] else []) +
+             (["{genome_dir}/{assemblies}/gene_id2name.tsv"]) +
 
              ([f"{{dge_dir}}/{{assemblies}}-{{contrasts}}.diffexp.tsv"] if config.get('contrasts', False) else []),
              **{**config, **{'assemblies': all_assemblies, 'contrasts': get_contrasts()}})

@@ -75,8 +75,18 @@ coldata <- samples
 coldata[,"condition"] <- coldata[condition]
 coldata[,"batch"]     <- ifelse(!is.na(batch), coldata[batch], NA)
 
+# determine if we need to run batch correction on the whole assembly
+output_batch_corr_counts <- sub(paste0(contrast, ".diffexp.tsv"), paste0(batch, "+", condition, ".batch_corr_counts.tsv"), output, fixed=TRUE)
+output_batch_corr_tpm <- sub(paste0(contrast, ".diffexp.tsv"), paste0(batch, "+", condition, ".batch_corr_tpm.tsv"), output, fixed=TRUE)
+no_batch_correction_required <- is.na(batch) | (file.exists(output_batch_corr_counts) & (!salmon | file.exists(output_batch_corr_tpm)))
+
 # filter for assembly and condition & order data for DESeq
-coldata <- coldata[coldata$assembly == assembly & coldata$condition %in% c(groups[1], groups[2]), c("condition", "batch")]
+if (no_batch_correction_required) {
+  coldata <- coldata[coldata$assembly == assembly & coldata$condition %in% c(groups[1], groups[2]), c("condition", "batch")]
+} else {
+  cat('\nbatch correction dataset selected\n\n')
+  coldata <- coldata[coldata$assembly == assembly & !is.na(coldata$batch), c("condition", "batch")]  # for batch corrected counts output
+}
 coldata$condition <- factor(coldata$condition)
 coldata$condition <- relevel(coldata$condition, ref = groups[2])
 coldata$batch     <- factor(coldata$batch)
@@ -105,13 +115,8 @@ cat('\n')
 
 
 ## Extract differentially expressed genes
-cat('batches & contrasts:\n', resultsNames(dds), '\n')
-DE_contrast_names <- resultsNames(dds)
-for (DE_contrast in DE_contrast_names){
-  if (startsWith(DE_contrast, 'condition')){
-    break
-  }
-}
+cat('batches & contrasts:\n', resultsNames(dds), '\n\n')
+DE_contrast <- paste("condition", groups[1], "vs", groups[2], sep="_")
 cat('selected contrast:', DE_contrast, '\n\n')
 
 # correct for multiple testing
@@ -208,40 +213,45 @@ if (is.na(batch)){
 
   # Generate the batch corrected counts
   # (for downstream tools that do not model batch effects)
-  batch_corrected_counts <- function(dds) {
-    #' accepts a large DESeqDataSet, normalizes and removes the batch effects, and returns a batch corrected count matrix
+  if (!file.exists(output_batch_corr_counts)){
 
-    nonblind_vst <- DESeq2::varianceStabilizingTransformation(dds, blind = FALSE)
-    mat <- SummarizedExperiment::assay(nonblind_vst)
-    mat <- limma::removeBatchEffect(mat, nonblind_vst$batch)
+    batch_corrected_counts <- function(dds) {
+      #' accepts a large DESeqDataSet, normalizes and removes the batch effects, and returns a batch corrected count matrix
 
-    # mat contains the normalized and batch corrected variant stabilized data (mat = vst.fn(batch_corr_counts))
-    # next, we invert this function (from DESeq2::getVarianceStabilizedData) to get normalized and batch corrected counts (batch_corr_counts)
+      nonblind_vst <- DESeq2::varianceStabilizingTransformation(dds, blind = FALSE)
+      mat <- SummarizedExperiment::assay(nonblind_vst)
+      mat <- limma::removeBatchEffect(mat, nonblind_vst$batch)
 
-    # vst.fn <- function(q) {
-    #     log((1 + coefs["extraPois"] + 2 * coefs["asymptDisp"] *
-    #         q + 2 * sqrt(coefs["asymptDisp"] * q * (1 + coefs["extraPois"] +
-    #         coefs["asymptDisp"] * q)))/(4 * coefs["asymptDisp"]))/log(2)
-    # }
-    coefs <- attr(DESeq2::dispersionFunction(dds), "coefficients")
-    x <- mat * log(2)
-    x <- exp(1)^x * (4 * coefs["asymptDisp"])
-    x <- (x - (1 + coefs["extraPois"]))/2
-    batch_corr_counts <- x^2 / (coefs["asymptDisp"] * (coefs["extraPois"] + 2 * x + 1))
-    return(batch_corr_counts)
+      # mat contains the normalized and batch corrected variant stabilized data (mat = vst.fn(batch_corr_counts))
+      # next, we invert this function (from DESeq2::getVarianceStabilizedData) to get normalized and batch corrected counts (batch_corr_counts)
+
+      # vst.fn <- function(q) {
+      #     log((1 + coefs["extraPois"] + 2 * coefs["asymptDisp"] *
+      #         q + 2 * sqrt(coefs["asymptDisp"] * q * (1 + coefs["extraPois"] +
+      #         coefs["asymptDisp"] * q)))/(4 * coefs["asymptDisp"]))/log(2)
+      # }
+      coefs <- attr(DESeq2::dispersionFunction(dds), "coefficients")
+      x <- mat * log(2)
+      x <- exp(1)^x * (4 * coefs["asymptDisp"])
+      x <- (x - (1 + coefs["extraPois"]))/2
+      batch_corr_counts <- x^2 / (coefs["asymptDisp"] * (coefs["extraPois"] + 2 * x + 1))
+      return(batch_corr_counts)
+    }
+
+    batch_corr_counts <- batch_corrected_counts(dds)
+
+    bcc <- cbind(gene = rownames(batch_corr_counts), batch_corr_counts)  # consistent with other tables
+    write.table(bcc, file=output_batch_corr_counts, quote = F, sep = '\t', row.names = F)
+    cat('-batch corrected counts saved\n')
+  } else {
+    cat('-batch corrected counts already exists\n')
   }
 
-  batch_corr_counts <- batch_corrected_counts(dds)
-  output_batch_corr_counts <- sub(".diffexp.tsv", ".batch_corr_counts.tsv", output)
-  write.table(batch_corr_counts, file=output_batch_corr_counts, quote = F, sep = '\t', col.names=NA)
-  cat('-batch corrected counts saved\n')
-
   # if quantified with salmon, generate the batch corrected TPMs as well
-  if(salmon){
-    RDS_path <- file.path(counts_dir, paste0(assembly, "-se.rds"))
-    se <- readRDS(RDS_path)
-    sg <- se$sg
-    gene_lengths <- assay(sg, "length")
+  if(salmon & !file.exists(output_batch_corr_tpm)){
+    lengths_file <- sub("-counts.tsv", "-gene_lengths.tsv", counts_file)
+    gene_lengths <- read.table(lengths_file, row.names = 1, header = T, stringsAsFactors = F, sep = '\t', check.names = F)
+    gene_lengths <- gene_lengths[rownames(batch_corr_counts),colnames(batch_corr_counts)]
 
     counts_to_tpm <- function(mat.counts, mat.gene_lengths) {
       #' snippet from https://support.bioconductor.org/p/91218/ to convert counts to TPM
@@ -252,8 +262,9 @@ if (is.na(batch)){
     }
     batch_corr_tpm <- counts_to_tpm(batch_corr_counts, gene_lengths)
 
-    output_batch_corr_tpm <- sub(".diffexp.tsv", ".batch_corr_tpm.tsv", output)
     write.table(batch_corr_tpm, file=output_batch_corr_tpm, quote = F, sep = '\t', col.names=NA)
     cat('-batch corrected TPMs saved\n')
+  } else if (salmon & file.exists(output_batch_corr_tpm)) {
+    cat('-batch corrected TPMs already exists\n')
   }
 }

@@ -363,6 +363,7 @@ if [ $1 = "rna-seq" ]; then
 
   printf "\nrna-seq default\n"
   seq2science run rna-seq -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={aligner:star,dexseq:True} | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 gene_id2name 1
   assert_rulecount $1 htseq_count 1
   assert_rulecount $1 dexseq_count 1
 

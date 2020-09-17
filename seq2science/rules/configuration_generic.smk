@@ -28,7 +28,7 @@ from snakemake.utils import min_version
 from snakemake.exceptions import TerminatedException
 
 import seq2science
-from seq2science.util import prep_filelock
+from seq2science.util import prep_filelock, url_is_alive
 
 
 logger.info(
@@ -55,22 +55,6 @@ if workflow.conda_frontend == "conda":
     logger.info("NOTE: seq2science is using the conda frontend, for faster environment creation install mamba.")
 # give people a second to appreciate this beautiful ascii art
 time.sleep(1)
-
-def url_is_alive(url):
-    """
-    Checks that a given URL is reachable.
-    https://gist.github.com/dehowell/884204
-    """
-    for i in range(3):
-        try:
-            request = urllib.request.Request(url)
-            request.get_method = lambda: 'HEAD'
-
-            urllib.request.urlopen(request, timeout=5)
-            return True
-        except:
-            continue
-    return False
 
 
 # config.yaml(s)

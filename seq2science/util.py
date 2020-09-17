@@ -1,6 +1,7 @@
 """
 Utility functions for seq2science
 """
+import urllib.request
 import os
 import time
 
@@ -55,3 +56,20 @@ def parse_de_contrasts(de_contrast):
     # parse contrast column and groups
     parsed_contrast = de_contrast.split("_")
     return parsed_contrast, batch
+
+
+def url_is_alive(url):
+    """
+    Checks that a given URL is reachable.
+    https://gist.github.com/dehowell/884204
+    """
+    for i in range(3):
+        try:
+            request = urllib.request.Request(url)
+            request.get_method = lambda: 'HEAD'
+
+            urllib.request.urlopen(request, timeout=5)
+            return True
+        except:
+            continue
+    return False
