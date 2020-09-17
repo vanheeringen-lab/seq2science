@@ -14,6 +14,11 @@ merged_treps = [trep for trep in treps.index if trep not in samples.index]
 merged_treps_single = [trep for trep in merged_treps if config["layout"][trep] == "SINGLE"]
 merged_treps_paired = [trep for trep in merged_treps if config["layout"][trep] == "PAIRED"]
 
+# all samples (including controls)
+all_samples = [sample for sample in samples.index]
+if "control" in samples.columns:
+    all_samples.extend(samples["control"].dropna().tolist())
+
 # dataframe with all replicates collapsed
 breps = treps
 if "condition" in treps:

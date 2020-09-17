@@ -96,7 +96,7 @@ elif config["trimmer"] == "fastp":
         threads: 3
         message: explain_rule("fastp_SE")
         wildcard_constraints:
-            sample="|".join([sample for sample in samples.index if config["layout"][sample] == "SINGLE"])
+            sample="|".join([sample if config["layout"][sample] == "SINGLE" else "$a" for sample in all_samples])
         log:
             expand("{log_dir}/fastp_SE/{{sample}}.log", **config),
         benchmark:
@@ -126,7 +126,7 @@ elif config["trimmer"] == "fastp":
             "../envs/fastp.yaml"
         threads: 3
         wildcard_constraints:
-            sample="|".join([sample for sample in samples.index if config["layout"][sample] == "PAIRED"])
+            sample="|".join([sample if config["layout"][sample] == "PAIRED" else "$a" for sample in all_samples])
         message: explain_rule("fastp_PE")
         log:
             expand("{log_dir}/fastp_PE/{{sample}}.log", **config),
