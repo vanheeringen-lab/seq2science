@@ -274,6 +274,7 @@ elif config["aligner"] == "minimap2":
 
     rule minimap2_index:
         """
+        Make a genome index for minimap2. This index is required for alignment.
         """
         input:
             genome=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
@@ -298,6 +299,7 @@ elif config["aligner"] == "minimap2":
 
     rule minimap2_align:
         """
+        Align reads against a genome (index) with minimap2, and pipe the output to the required sorter(s).
         """
         input:
             reads=get_reads,
