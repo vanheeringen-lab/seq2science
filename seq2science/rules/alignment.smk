@@ -297,6 +297,7 @@ elif config["aligner"] == "minimap2":
             minimap2 -t {threads} -d {output} {input} {params} > {log} 2>&1
             """
 
+
     rule minimap2_align:
         """
         Align reads against a genome (index) with minimap2, and pipe the output to the required sorter(s).
