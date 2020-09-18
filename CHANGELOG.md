@@ -19,6 +19,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Changed
 
+- make use of pysradb for quering layout and SRR ids instead of API and web-scraping
 - markduplicates now removes duplicates as default
 - testing: clear genomepy caches between runs
 - add parallel-fastq-dump fallback to fasterq-dump
