@@ -16,6 +16,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
   - (may be empty if gtf didn't contain both fields or wrong formatting)
 - RNA-seq: quantifying with salmon will now also output a gene length table
   - (gene lengths, tpms and gene counts can still be found together in the SingleCellExperiment object)
+- minimap2 aligner
 
 ### Changed
 

@@ -411,7 +411,7 @@ def core_parser(parsed_args):
     """
     cores = parsed_args["cores"]
     sorters = ["samtools_presort"]
-    aligners = ["bwa_mem", "bwa_mem2", "bowtie2_align", "hisat2_align", "star_align"]
+    aligners = ["bwa_mem", "bwa_mem2", "bowtie2_align", "hisat2_align", "minimap2_align", "star_align"]
 
     d_sorters_threads = 2
     d_aligner_threads = 10
