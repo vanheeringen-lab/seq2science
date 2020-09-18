@@ -63,7 +63,6 @@ else:
         "bwa-mem2_align": "Reads were aligned with bwa-mem2 v@bwamem2[bwa-mem2] (https://arxiv.org/abs/1907.12931) with options '{config[align]}'.",
         "hisat_splice_aware": "An exon and splice-aware index was generated for HISAT2.",
         "hisat2_align": "Reads were aligned with HISAT2 v@hisat2[hisat2] (https://doi.org/10.1038/s41587-019-0201-4) with options '{config[align]}'.",
-        "minimap2_align": "Reads were aligned with minimap2 v@minimap[minimap] (https://doi.org/10.1093/bioinformatics/bty191) with options '{config[align]}'.",
         "star_align": "Reads were aligned with STAR v@star[star] (https://dx.doi.org/10.1093%2Fbioinformatics%2Fbts635) with options '{config[align]}'.",
         "sieve_bam":
             text_join(start="Mapped reads were removed if they ",
@@ -88,7 +87,7 @@ else:
         "get_genome": "Genome assembly {wildcards.raw_assembly} was downloaded with genomepy {genomepy.__version__} (https://doi.org/10.21105/joss.00320).",
         "custom_extension": "The genome and gene annotations was extended with custom regions.",
         "call_peak_genrich":"Peaks were called with genrich v@genrich[genrich] (https://github.com/jsh58/Genrich) with options '{config[peak_caller][genrich]}'.",
-        "macs2_callpeak": "Peaks were called with macs2 v@macs2[macs2] (https://doi.org/10.1186/gb-2008-9-9-r137) with options '{config[peak_caller][macs2]}' in {params.format} mode.",
+        "macs2_callpeak": "Peaks were called with macs2 v@macs2[macs2] (https://doi.org/10.1186/gb-2008-9-9-r137) with options '{config[peak_caller][macs2]}' in {params.format} mode. The effective genome size was estimated by taking the number of unique kmers in the assembly of the same length as the average read length for each sample/",
         "keep_mates": "After alignment we removed paired-end info from reads with seq2science to utilize both mates in the paired-end reads.",
         "idr": "Narrowpeak files of replicates belonging to the same condition were merged with the irreproducible discovery rate v@idr[idr] (http://dx.doi.org/10.1214/11-AOAS466).",
         "macs_cmbreps": "Narrowpeak files of replicates belonging to the same condition were merged with fisher's method in macs2 v@macs2[macs2].",
