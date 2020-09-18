@@ -56,7 +56,7 @@ keys_to_remove = ["fqext1", "fqext2", "macs2_types", "cpulimit",
                   ("dge_dir", not config.get("contrasts")),
                   ("bigwig_dir", not config.get("create_trackhub")),
                   ("qc_dir", not config.get("create_qc_report"))]
-keys = rmkeys(["samples", "layout"] + keys_to_remove, keys)
+keys = rmkeys(["samples"] + keys_to_remove, keys)
 keys = ["samples"] + keys
 
 for key in keys:
