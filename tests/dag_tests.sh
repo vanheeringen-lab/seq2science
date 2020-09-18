@@ -93,12 +93,14 @@ if [ $1 = "alignment" ]; then
   printf "\naligners\n"
   seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={aligner:bowtie2} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bowtie2_index 1
-#  seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={aligner:bwa-mem} | tee tests/local_test_results/${1}_dag  # default
-#  assert_rulecount $1 bwa_index 1
+  seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={aligner:bwa-mem} | tee tests/local_test_results/${1}_dag  # default
+  assert_rulecount $1 bwa_index 1
   seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={aligner:bwa-mem2} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bwa_mem2_index 1
   seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={aligner:hisat2} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 hisat2_index 1
+  seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={aligner:minimap2} | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 minimap2_index 1
   seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={aligner:star} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 star_index 1
 
