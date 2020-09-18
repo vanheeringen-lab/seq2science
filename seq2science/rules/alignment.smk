@@ -270,60 +270,6 @@ elif config["aligner"] == "hisat2":
             """
 
 
-elif config["aligner"] == "minimap2":
-
-    rule minimap2_index:
-        """
-        """
-        input:
-            genome=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
-        output:
-            directory(expand("{genome_dir}/{{assembly}}/index/{aligner}/ref.mmi", **config)),
-        log:
-            expand("{log_dir}/{aligner}_index/{{assembly}}.log", **config),
-        benchmark:
-            expand("{benchmark_dir}/{aligner}_index/{{assembly}}.benchmark.txt", **config)[0]
-        params:
-            config["index"],
-        priority: 1
-        threads: 3
-        resources:
-            mem_gb=12,
-        conda:
-            "../envs/minimap2.yaml"
-        shell:
-            """
-            minimap2 -t {threads} -d {output} {input} {params} > {log} 2>&1
-            """
-
-    rule minimap2_align:
-        """
-        """
-        input:
-            reads=get_reads,
-            index=rules.minimap2_index.output
-        output:
-            pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0]),
-        log:
-            expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}.log", **config),
-        benchmark:
-            expand("{benchmark_dir}/{aligner}_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
-        message: explain_rule(f"{config['aligner']}_align")
-        params:
-        #     input=lambda wildcards, input: input.reads if config["layout"][wildcards.sample] == "SINGLE" else input.reads[0:2],
-            params=config["align"],
-        priority: 0
-        threads: 10
-        resources:
-            mem_gb=20,
-        conda:
-            "../envs/minimap2.yaml"
-        shell:
-            """
-            minimap2 -t {threads} -a {input.index} {input.reads} {params} > {output} 2> {log}
-            """
-
-
 elif config["aligner"] == "star":
 
     rule star_index:
