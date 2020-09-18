@@ -278,7 +278,7 @@ elif config["aligner"] == "minimap2":
         input:
             genome=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
         output:
-            directory(expand("{genome_dir}/{{assembly}}/index/{aligner}/ref.mmi", **config)),
+            expand("{genome_dir}/{{assembly}}/index/{aligner}/ref.mmi", **config),
         log:
             expand("{log_dir}/{aligner}_index/{{assembly}}.log", **config),
         benchmark:

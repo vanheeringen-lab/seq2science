@@ -104,7 +104,7 @@ properties:
           index:
             default: ''
           align:
-            default: '-a'
+            default: '-a sr'
         default:
           index: ''
           align: ''
