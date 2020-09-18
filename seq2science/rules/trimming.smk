@@ -14,11 +14,11 @@ if config["trimmer"] == "trimgalore":
         conda:
             "../envs/trimgalore.yaml"
         threads: 6
-        message: explain_rule("trim_galore_SE")
+        message: explain_rule("trimgalore_SE")
         log:
-            expand("{log_dir}/trim_galore_SE/{{sample}}.log", **config),
+            expand("{log_dir}/trimgalore_SE/{{sample}}.log", **config),
         benchmark:
-            expand("{benchmark_dir}/trim_galore_SE/{{sample}}.benchmark.txt", **config)[0]
+            expand("{benchmark_dir}/trimgalore_SE/{{sample}}.benchmark.txt", **config)[0]
         params:
             config=config["trimoptions"],
             fqsuffix=config["fqsuffix"],
@@ -54,9 +54,9 @@ if config["trimmer"] == "trimgalore":
         threads: 6
         message: explain_rule("trimgalore_PE")
         log:
-            expand("{log_dir}/trimgalore_PE/{{sample}}.log", **config),
+            expand("{log_dir}/trimgalorePE/{{sample}}.log", **config),
         benchmark:
-            expand("{benchmark_dir}/trimgalore_PE/{{sample}}.benchmark.txt", **config)[0]
+            expand("{benchmark_dir}/trimgalorePE/{{sample}}.benchmark.txt", **config)[0]
         params:
             config=config["trimoptions"],
             fqsuffix=config["fqsuffix"],

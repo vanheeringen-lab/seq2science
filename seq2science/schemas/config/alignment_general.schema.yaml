@@ -23,7 +23,7 @@ properties:
     description: which adapter trimmer to use
     properties:
       trimgalore:
-        description: trim_galore settings (note that the adapter is autodetected, so you do not have to set it here)
+        description: trim galore! settings (note that the adapter is autodetected, so you do not have to set it here)
         properties:
           trimoptions:
             default: '--quality 10 --length 20 --consider_already_trimmed 10'
