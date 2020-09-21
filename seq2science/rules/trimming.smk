@@ -103,7 +103,7 @@ elif config["trimmer"] == "fastp":
             expand("{benchmark_dir}/fastp_SE/{{sample}}.benchmark.txt", **config)[0]
         params:
             fqsuffix=config["fqsuffix"],
-            threads=lambda threads: max(1, threads - 2),
+            threads=lambda wildcards, threads: max(1, threads - 2),
             config=config["trimoptions"],
         shell:
             """\
@@ -136,7 +136,7 @@ elif config["trimmer"] == "fastp":
             expand("{benchmark_dir}/fastp_PE/{{sample}}.benchmark.txt", **config)[0]
         params:
             config=config["trimoptions"],
-            threads=lambda threads: max(1, threads - 2)
+            threads=lambda wildcards, threads: max(1, threads - 2),
         shell:
             """\
             fastp -w {params.threads} --in1 {input[0]} --in2 {input[1]} \
