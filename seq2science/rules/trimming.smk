@@ -93,7 +93,7 @@ elif config["trimmer"] == "fastp":
             qc_html=expand("{qc_dir}/trimming/{{sample}}.fastp.html", **config),
         conda:
             "../envs/fastp.yaml"
-        threads: 3
+        threads: 4
         message: explain_rule("fastp_SE")
         wildcard_constraints:
             sample="|".join([sample if sampledict[sample]["layout"] == "SINGLE" else "$a" for sample in all_samples])
@@ -103,10 +103,12 @@ elif config["trimmer"] == "fastp":
             expand("{benchmark_dir}/fastp_SE/{{sample}}.benchmark.txt", **config)[0]
         params:
             fqsuffix=config["fqsuffix"],
+            threads=lambda threads: max(1, threads - 2),
+            config=config["trimoptions"],
         shell:
             """\
-            fastp -w {threads} --in1 {input} --out1 {output.se} -h {output.qc_html} -j {output.qc_json} \
-            > {log} 2>&1
+            fastp -w {params.threads} --in1 {input} --out1 {output.se} -h {output.qc_html} -j {output.qc_json} \
+            {params.config} > {log} 2>&1
             """
 
 
@@ -124,7 +126,7 @@ elif config["trimmer"] == "fastp":
             qc_html=expand("{qc_dir}/trimming/{{sample}}.fastp.html", **config),
         conda:
             "../envs/fastp.yaml"
-        threads: 3
+        threads: 4
         wildcard_constraints:
             sample="|".join([sample if sampledict[sample]["layout"] == "PAIRED" else "$a" for sample in all_samples])
         message: explain_rule("fastp_PE")
@@ -134,9 +136,10 @@ elif config["trimmer"] == "fastp":
             expand("{benchmark_dir}/fastp_PE/{{sample}}.benchmark.txt", **config)[0]
         params:
             config=config["trimoptions"],
+            threads=lambda threads: max(1, threads - 2)
         shell:
             """\
-            fastp -w {threads} --in1 {input[0]} --in2 {input[1]} \
+            fastp -w {params.threads} --in1 {input[0]} --in2 {input[1]} \
             --out1 {output.r1} --out2 {output.r2} -h {output.qc_html} -j {output.qc_json} \
             {params.config} > {log} 2>&1
             """
