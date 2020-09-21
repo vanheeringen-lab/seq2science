@@ -194,7 +194,7 @@ rule ena2fastq_SE:
         if config.get('ascp_path') and config.get('ascp_key'):
             shell("{config[ascp_path]} -QT -l 1G -P33001 -i {config[ascp_key]} {url} {output} >> {log} 2>&1")
         else:
-            shell("wget {url} -O {output} >> {log} 2>&1")
+            shell("wget {url} -O {output} --waitretry 20 >> {log} 2>&1")
 
 
 rule ena2fastq_PE:
@@ -218,8 +218,8 @@ rule ena2fastq_PE:
             shell("{config[ascp_path]} -QT -l 1G -P33001 -i {config[ascp_key]} {urls[0]} {output[0]} >> {log} 2>&1")
             shell("{config[ascp_path]} -QT -l 1G -P33001 -i {config[ascp_key]} {urls[1]} {output[1]} >> {log} 2>&1")
         else:
-            shell("wget {urls[0]} -O {output[0]} >> {log} 2>&1")
-            shell("wget {urls[1]} -O {output[1]} >> {log} 2>&1")
+            shell("wget {urls[0]} -O {output[0]} --waitretry 20 >> {log} 2>&1")
+            shell("wget {urls[1]} -O {output[1]} --waitretry 20 >> {log} 2>&1")
 
 
 def get_runs_from_sample(wildcards):
