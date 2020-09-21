@@ -1,7 +1,7 @@
-name: get_genome
+name: minimap2
 channels:
   - conda-forge
   - bioconda
   - defaults
 dependencies:
-  - bioconda::genomepy=0.8.4
+  - bioconda::minimap=2.17

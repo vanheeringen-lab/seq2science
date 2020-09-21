@@ -2,7 +2,7 @@ def get_reads(wildcards):
     """
     Function that returns the reads for any aligner.
     """
-    if config["layout"].get(wildcards.sample, False) == "SINGLE":
+    if sampledict[wildcards.sample]["layout"] == "SINGLE":
         return expand("{trimmed_dir}/{{sample}}_trimmed.{fqsuffix}.gz", **config)
     return sorted(expand("{trimmed_dir}/{{sample}}_{fqext}_trimmed.{fqsuffix}.gz", **config))
 
@@ -49,7 +49,7 @@ if config["aligner"] == "bowtie2":
         params:
             input=(
                 lambda wildcards, input: ["-U", input.reads]
-                if config["layout"][wildcards.sample] == "SINGLE"
+                if sampledict[wildcards.sample]["layout"] == "SINGLE"
                 else ["-1", input.reads[0], "-2", input.reads[1]]
             ),
             params=config["align"],
@@ -256,7 +256,7 @@ elif config["aligner"] == "hisat2":
         params:
             input=(
                 lambda wildcards, input: ["-U", input.reads]
-                if config["layout"][wildcards.sample] == "SINGLE"
+                if sampledict[wildcards.sample]["layout"] == "SINGLE"
                 else ["-1", input.reads[0], "-2", input.reads[1]]
             ),
             params=config["align"],
@@ -267,6 +267,63 @@ elif config["aligner"] == "hisat2":
         shell:
             """
             hisat2 {params.params} --threads {threads} -x {input.index}/part {params.input} 2> {log} | tee {output} 1> /dev/null 2>> {log}
+            """
+
+
+elif config["aligner"] == "minimap2":
+
+    rule minimap2_index:
+        """
+        Make a genome index for minimap2. This index is required for alignment.
+        """
+        input:
+            genome=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+        output:
+            expand("{genome_dir}/{{assembly}}/index/{aligner}/ref.mmi", **config),
+        log:
+            expand("{log_dir}/{aligner}_index/{{assembly}}.log", **config),
+        benchmark:
+            expand("{benchmark_dir}/{aligner}_index/{{assembly}}.benchmark.txt", **config)[0]
+        params:
+            config["index"],
+        priority: 1
+        threads: 3
+        resources:
+            mem_gb=12,
+        conda:
+            "../envs/minimap2.yaml"
+        shell:
+            """
+            minimap2 -t {threads} -d {output} {input} {params} > {log} 2>&1
+            """
+
+
+    rule minimap2_align:
+        """
+        Align reads against a genome (index) with minimap2, and pipe the output to the required sorter(s).
+        """
+        input:
+            reads=get_reads,
+            index=rules.minimap2_index.output
+        output:
+            pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0]),
+        log:
+            expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}.log", **config),
+        benchmark:
+            expand("{benchmark_dir}/{aligner}_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
+        message: explain_rule(f"{config['aligner']}_align")
+        params:
+        #     input=lambda wildcards, input: input.reads if config["layout"][wildcards.sample] == "SINGLE" else input.reads[0:2],
+            params=config["align"],
+        priority: 0
+        threads: 10
+        resources:
+            mem_gb=20,
+        conda:
+            "../envs/minimap2.yaml"
+        shell:
+            """
+            minimap2 -t {threads} -a {input.index} {input.reads} {params} > {output} 2> {log}
             """
 
 
@@ -358,7 +415,7 @@ elif config["aligner"] == "star":
             expand("{benchmark_dir}/{aligner}_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
         message: explain_rule(f"{config['aligner']}_align")
         params:
-            input=lambda wildcards, input: input.reads if config["layout"][wildcards.sample] == "SINGLE" else input.reads[0:2],
+            input=lambda wildcards, input: input.reads if sampledict[wildcards.sample]["layout"] == "SINGLE" else input.reads[0:2],
             params=config["align"],
         priority: 0
         threads: 8

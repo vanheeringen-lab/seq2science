@@ -47,11 +47,3 @@ fqsuffix: fastq
 fqext1: R1
 fqext2: R2
 ```
-
-#### Downloading many samples
-Before the pipeline starts downloading it will first determine whether the samples are paired-end or single-end. This is done by doing two requests per sample with the ncbi tools. Unregistered accounts can only make 3 requests per second. This means that initialization takes +/- 0.66s per sample. If you are an extremely impatient person, like us, you can up these numbers a with a [ncbi api key](https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/) (their default one allows 10 request p/s). You can set the variables *ncbi_key* and *ncbi_requests* (the nr of requests per second) accordingly in the config.yaml.
-
-The results of these lookups get cached, so when re-running parts of the workflow with the same samples no lookup online is required.
-
-#### Fastq-dump options
-We made a selection of [reasonable parameters](https://edwards.sdsu.edu/research/fastq-dump/) for the dumping of SRAs to fastq. You can change these settings by changing the variable *splot* for single-end dumping, or the variable *split* for paired-end dumping, in the config.yaml, or on the command line. 

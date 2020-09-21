@@ -16,16 +16,11 @@ create_trackhub: True
 # how to handle replicates
 technical_replicates: merge    # change to "keep" to not combine them
 
+# which trimmer to use
+trimmer: fastp
+
 # which quantifier to use
-quantifier: htseq
-
-# or specify which quantifier to use with the option to specify own parameters
-#quantifier:
-#  salmon:
-#    quantifier_index: '-k 31'
-#    quantify: '--seqBias --gcBias --validateMappings --recoverOrphans'
-#    decoy_aware_index: False  # salmon only. Requires ~65 GB RAM for GRCh38
-
+quantifier: htseq  # or salmon or featurecounts
 
 ##### aligner and filter options are not used for the gene counts matrix if the quantifier is Salmon
 
@@ -37,17 +32,13 @@ remove_blacklist: True
 min_mapping_quality: 255  # (only keep uniquely mapped reads from STAR alignments)
 only_primary_align: True
 
-
 ##### differential gene expression analysis (optional) #####
 
-# specify contrasts to perform analysis
-#diffexp:
-#  deseq2:
-#    DE_params:
-#      multiple_testing_procedure: BH  # options: BH/IHW
-#      alpha_value: 0.05
-#      shrinkage_estimator: apeglm
-#    contrasts:
-##      - 'disease_control_disease'
-#      - 'stage_2_1'
-#      - 'stage_all_1'
+#deseq2:
+#  multiple_testing_procedure: BH
+#  alpha_value: 0.1
+#  shrinkage_estimator: apeglm
+
+#contrasts:
+#  - 'stage_2_1'
+#  - 'stage_all_1'

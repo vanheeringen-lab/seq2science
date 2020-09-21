@@ -23,7 +23,10 @@ tn5_shift: True
 min_mapping_quality: 30
 only_primary_align: True
 
-# use 'our' default parameters
+# which trimmer to use
+trimmer: fastp
+
+# which aligner to use
 aligner: bwa-mem
 
 # snaptools options

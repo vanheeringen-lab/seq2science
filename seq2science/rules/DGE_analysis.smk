@@ -1,3 +1,5 @@
+from seq2science.util import parse_de_contrasts
+
 def get_contrasts():
     """
     splits contrasts that contain multiple comparisons
