@@ -99,6 +99,15 @@ properties:
         default:
           index: ''
           align: ''
+      minimap2:
+        properties:
+          index:
+            default: ''
+          align:
+            default: '-a sr --secondary=no'
+        default:
+          index: ''
+          align: ''
       star:
         properties:
           index:
