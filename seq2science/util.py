@@ -67,16 +67,11 @@ def samples2metadata_sra(samples: List[str]) -> dict:
         dict(
             "GSM1234": {"layout": "PAIRED",
                          "runs": ["SRR1234", "SRR4321"],
-                         "ena_fastq_http": {
-                            "SRR1234": [...],
-                            "SRR4321": None
-                            },
                          "ena_fastq_ftp": {...},
 
             "SRR5678": {"layout": "SINGLE",
                         "runs": ["SRR5678"],
-                        ena_fastq_http: None,
-                        ena_fastq_ftp: {...},
+                        ena_fastq_ftp: None,
             ...
         )
     """
@@ -115,21 +110,15 @@ def samples2metadata_sra(samples: List[str]) -> dict:
         sampledict[sample]["layout"] = layout[0]
 
         # get the ena url
-        sampledict[sample]["ena_fastq_http"] = dict()
         sampledict[sample]["ena_fastq_ftp"] = dict()
         for run in runs:
             if layout[0] == "SINGLE":
-                sampledict[sample]["ena_fastq_http"][run] = df_sra[df_sra.run_accession == run].ena_fastq_http.tolist()
                 sampledict[sample]["ena_fastq_ftp"][run] = df_sra[df_sra.run_accession == run].ena_fastq_ftp.tolist()
             elif layout[0] == "PAIRED":
-                sampledict[sample]["ena_fastq_http"][run] = df_sra[df_sra.run_accession == run].ena_fastq_http_1.tolist() + df_sra[
-                    df_sra.run_accession == run].ena_fastq_http_2.tolist()
                 sampledict[sample]["ena_fastq_ftp"][run] = df_sra[df_sra.run_accession == run].ena_fastq_ftp_1.tolist() + df_sra[
                     df_sra.run_accession == run].ena_fastq_ftp_2.tolist()
 
         # if any run from a sample is not found on ENA, better be safe, and assume that sample as a whole is not on ENA
-        if any(["N/A" in urls for run, urls in sampledict[sample]["ena_fastq_http"].items()]):
-            sampledict[sample]["ena_fastq_http"] = None
         if any(["N/A" in urls for run, urls in sampledict[sample]["ena_fastq_ftp"].items()]):
             sampledict[sample]["ena_fastq_ftp"] = None
 
