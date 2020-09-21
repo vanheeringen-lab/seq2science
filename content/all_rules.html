@@ -120,10 +120,15 @@
 <li class="toctree-l3"><a class="reference internal" href="#ena2fastq-se">ena2fastq_SE</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#extend-genome">extend_genome</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#extend-genome-annotation">extend_genome_annotation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#fastp-pe">fastp_PE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#fastp-se">fastp_SE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#fastp-qc-pe">fastp_qc_PE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#fastp-qc-se">fastp_qc_SE</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#fastqc">fastqc</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#featurecounts">featureCounts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id1">featurecounts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#gcpercent">gcPercent</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gene-id2name">gene_id2name</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#genrich-pileup">genrich_pileup</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#get-genome">get_genome</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#get-genome-annotation">get_genome_annotation</a></li>
@@ -135,7 +140,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#hmmratac">hmmratac</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#hmmratac-genome-info">hmmratac_genome_info</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#htseq-count">htseq_count</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id2sra">id2sra</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#idr">idr</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#infer-strandedness">infer_strandedness</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#insert-size-metrics">insert_size_metrics</a></li>
@@ -148,6 +152,8 @@
 <li class="toctree-l3"><a class="reference internal" href="#mark-duplicates">mark_duplicates</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#mean-center">mean_center</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#merge-replicates">merge_replicates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#minimap2-align">minimap2_align</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#minimap2-index">minimap2_index</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#mt-nuc-ratio-calculator">mt_nuc_ratio_calculator</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multibamsummary">multiBamSummary</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multiqc">multiqc</a></li>
@@ -165,6 +171,8 @@
 <li class="toctree-l3"><a class="reference internal" href="#prepare-dexseq-annotation">prepare_DEXseq_annotation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#quantile-normalization">quantile_normalization</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#renamefastq-pe">renamefastq_PE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#run2sra">run2sra</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#runs2sample">runs2sample</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#salmon-decoy-aware-index">salmon_decoy_aware_index</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#salmon-index">salmon_index</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#salmon-quant">salmon_quant</a></li>
@@ -184,8 +192,8 @@
 <li class="toctree-l3"><a class="reference internal" href="#star-index">star_index</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#trackhub">trackhub</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#trackhub-index">trackhub_index</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#trim-galore-pe">trim_galore_PE</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#trim-galore-se">trim_galore_SE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trimgalore-pe">trimgalore_PE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trimgalore-se">trimgalore_SE</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#twobit">twobit</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#unzip-annotation">unzip_annotation</a></li>
 </ul>
@@ -531,6 +539,39 @@ genePredToBed {output.gp} {output.bed}
 </pre></div>
 </div>
 </div>
+<div class="section" id="fastp-pe">
+<h2>fastp_PE<a class="headerlink" href="#fastp-pe" title="Permalink to this headline">¶</a></h2>
+<p>Automated adapter detection, adapter trimming, and quality trimming through fastp (paired-end).</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>fastp -w {params.threads} --in1 {input[0]} --in2 {input[1]} \
+--out1 {output.r1} --out2 {output.r2} -h {output.qc_html} -j {output.qc_json} \
+{params.config} &gt; {log} 2&gt;&amp;1
+</pre></div>
+</div>
+</div>
+<div class="section" id="fastp-se">
+<h2>fastp_SE<a class="headerlink" href="#fastp-se" title="Permalink to this headline">¶</a></h2>
+<p>Automated adapter detection, adapter trimming, and quality trimming through fastp (single-end).</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>fastp -w {params.threads} --in1 {input} --out1 {output.se} -h {output.qc_html} -j {output.qc_json} \
+{params.config} &gt; {log} 2&gt;&amp;1
+</pre></div>
+</div>
+</div>
+<div class="section" id="fastp-qc-pe">
+<h2>fastp_qc_PE<a class="headerlink" href="#fastp-qc-pe" title="Permalink to this headline">¶</a></h2>
+<p>Get quality scores for (technical) replicates</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>fastp -w {threads} --in1 {input[0]} --in2 {input[1]} \
+-h {output.qc_html} -j {output.qc_json} \
+{params.config} &gt; {log} 2&gt;&amp;1
+</pre></div>
+</div>
+</div>
+<div class="section" id="fastp-qc-se">
+<h2>fastp_qc_SE<a class="headerlink" href="#fastp-qc-se" title="Permalink to this headline">¶</a></h2>
+<p>Get quality scores for (technical) replicates</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>fastp -w {threads} --in1 {input} -h {output.qc_html} -j {output.qc_json} &gt; {log} 2&gt;&amp;1
+</pre></div>
+</div>
+</div>
 <div class="section" id="fastqc">
 <h2>fastqc<a class="headerlink" href="#fastqc" title="Permalink to this headline">¶</a></h2>
 <p>Generate quality control report for fastq files.</p>
@@ -572,6 +613,10 @@ mv $(dirname {output.real_out})/$(basename {output.summary}) {output.summary}
         wigToBigWig {output.gcpcvar} {input.sizes} {output.gcpc} &gt;&gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
+</div>
+<div class="section" id="gene-id2name">
+<h2>gene_id2name<a class="headerlink" href="#gene-id2name" title="Permalink to this headline">¶</a></h2>
+<p>Parse the gtf file to generate a gene_id to gene_name conversion table.</p>
 </div>
 <div class="section" id="genrich-pileup">
 <h2>genrich_pileup<a class="headerlink" href="#genrich-pileup" title="Permalink to this headline">¶</a></h2>
@@ -653,27 +698,6 @@ paste {output.tmp1} {output.tmp2} &gt; {output.out} 2&gt; {log}
 </pre></div>
 </div>
 </div>
-<div class="section" id="id2sra">
-<h2>id2sra<a class="headerlink" href="#id2sra" title="Permalink to this headline">¶</a></h2>
-<p>Download the SRA of a sample by its unique identifier.</p>
-<p>Tries first downloading with the faster ascp protocol, if that fails it
-falls back on the slower http protocol.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span># three attempts
-for i in {{1..3}}
-do
-    # acquire a lock
-    (
-        flock --timeout 30 200 || continue
-        sleep 2
-    ) 200&gt;{layout_cachefile_lock}
-
-    # dump
-    prefetch --max-size 999999999999 --output-directory {output} --log-level debug --progress {wildcards.sample} &gt;&gt; {log} 2&gt;&amp;1 &amp;&amp; break
-    sleep 10
-done
-</pre></div>
-</div>
-</div>
 <div class="section" id="idr">
 <h2>idr<a class="headerlink" href="#idr" title="Permalink to this headline">¶</a></h2>
 <p>Combine replicates based on the irreproducible discovery rate (IDR). Can only handle two replicates.
@@ -722,10 +746,7 @@ macs2 in this case only keeps the first in pair.</p>
 <h2>macs2_callpeak<a class="headerlink" href="#macs2-callpeak" title="Permalink to this headline">¶</a></h2>
 <p>Call peaks using macs2.
 Macs2 requires a genome size, which we estimate from the amount of unique kmers of the average read length.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span># extract the kmer size, and get the effective genome size from it
-kmer_size=$(unzip -p {input.fastqc} {params.name}_trimmed_fastqc/fastqc_data.txt  | grep -P -o &#39;(?&lt;=Sequence length\\t).*&#39; | grep -P -o &#39;\d+$&#39;)
-
-echo &quot;preparing to run unique-kmers.py with -k $kmer_size&quot; &gt;&gt; {log}
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>echo &quot;preparing to run unique-kmers.py with -k $kmer_size&quot; &gt;&gt; {log}
 GENSIZE=$(unique-kmers.py {params.genome} -k $kmer_size --quiet 2&gt;&amp;1 | grep -P -o &#39;(?&lt;=\.fa: ).*&#39;)
 echo &quot;kmer size: $kmer_size, and effective genome size: $GENSIZE&quot; &gt;&gt; {log}
 
@@ -776,6 +797,20 @@ contain the name of the original replicate.</p>
 <p>Must happen after trimming due to trim-galore’s automatic adapter trimming method</p>
 <p>If a replicate has only 1 sample in it, simply move the file.</p>
 </div>
+<div class="section" id="minimap2-align">
+<h2>minimap2_align<a class="headerlink" href="#minimap2-align" title="Permalink to this headline">¶</a></h2>
+<p>Align reads against a genome (index) with minimap2, and pipe the output to the required sorter(s).</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>minimap2 -t {threads} -a {input.index} {input.reads} {params} &gt; {output} 2&gt; {log}
+</pre></div>
+</div>
+</div>
+<div class="section" id="minimap2-index">
+<h2>minimap2_index<a class="headerlink" href="#minimap2-index" title="Permalink to this headline">¶</a></h2>
+<p>Make a genome index for minimap2. This index is required for alignment.</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>minimap2 -t {threads} -d {output} {input} {params} &gt; {log} 2&gt;&amp;1
+</pre></div>
+</div>
+</div>
 <div class="section" id="mt-nuc-ratio-calculator">
 <h2>mt_nuc_ratio_calculator<a class="headerlink" href="#mt-nuc-ratio-calculator" title="Permalink to this headline">¶</a></h2>
 <p>Estimate the amount of nuclear and mitochondrial reads in a sample. This metric
@@ -801,7 +836,7 @@ against either “chrM” or “MT”.</p>
 --config {input.schema}                                                    \
 --config {input.header}                                                    \
 --sample-names {input.sample_names}                                        \
---sample-filters {input.filter_buttons}                                    \
+{params.filter_buttons}                                    \
 --cl_config &quot;extra_fn_clean_exts: [                                        \
     {{&#39;pattern&#39;: ^.*{wildcards.assembly}-, &#39;type&#39;: &#39;regex&#39;}},              \
     {{&#39;pattern&#39;: {params.fqext1},          &#39;type&#39;: &#39;regex&#39;}},              \
@@ -922,6 +957,34 @@ ln {input[1]} {output[1]}
 </pre></div>
 </div>
 </div>
+<div class="section" id="run2sra">
+<h2>run2sra<a class="headerlink" href="#run2sra" title="Permalink to this headline">¶</a></h2>
+<p>Download the SRA of a sample by its unique identifier.</p>
+<p>Tries first downloading with the faster ascp protocol, if that fails it
+falls back on the slower http protocol.</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span># move to output dir since somehow prefetch sometimes puts files in the cwd...
+mkdir -p {output}; cd {output}
+
+# three attempts
+for i in {{1..3}}
+do
+    # acquire a lock
+    (
+        flock --timeout 30 200 || continue
+        sleep 2
+    ) 200&gt;{eutils_cache_lock}
+
+    # dump
+    prefetch --max-size 999999999999 --output-directory {output} --log-level debug --progress {wildcards.run} &gt;&gt; {log} 2&gt;&amp;1 &amp;&amp; break
+    sleep 10
+done
+</pre></div>
+</div>
+</div>
+<div class="section" id="runs2sample">
+<h2>runs2sample<a class="headerlink" href="#runs2sample" title="Permalink to this headline">¶</a></h2>
+<p>Concatenate a single run or multiple runs together into a fastq</p>
+</div>
 <div class="section" id="salmon-decoy-aware-index">
 <h2>salmon_decoy_aware_index<a class="headerlink" href="#salmon-decoy-aware-index" title="Permalink to this headline">¶</a></h2>
 <p>Generate a decoy aware transcriptome index for Salmon.</p>
@@ -1031,49 +1094,53 @@ bedToBigBed -type=bed3 {output.maskbed} {input.sizes} {output.mask} &gt;&gt; {lo
 <h2>sra2fastq_PE<a class="headerlink" href="#sra2fastq-pe" title="Permalink to this headline">¶</a></h2>
 <p>Downloaded (raw) SRAs are converted to paired-end fastq files.
 Forward and reverse samples will be switched if forward/reverse names are not lexicographically ordered.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span># acquire the lock
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span># move to output dir since somehow parallel-fastq-dump sometimes puts files in the cwd...
+mkdir -p {output.tmpdir}; cd {output.tmpdir}
+
+# acquire the lock
 (
     flock --timeout 30 200 || exit 1
     sleep 3
-) 200&gt;{layout_cachefile_lock}
+) 200&gt;{eutils_cache_lock}
 
-# dump
-fasterq-dump -s {input}/* -O {output.tmp_fastq} -t {output.tmp_dump} --threads {threads} --split-3 &gt;&gt; {log} 2&gt;&amp;1 ||
-parallel-fastq-dump -s {input}/* -O {output.tmp_fastq} --threads {threads} \
---split-e --skip-technical --dumpbase --readids --clip --read-filter pass --defline-seq &#39;@$ac.$si.$sg/$ri&#39; --defline-qual &#39;+&#39; &gt;&gt; {log} 2&gt;&amp;1
+# setup tmp dir
+mkdir -p {output.tmpdir}
 
-# rename files and move to output dir
-for f in $(ls -1q {output.tmp_fastq} | grep -oP &quot;^[^_]+&quot; | uniq); do
-    dst_1={config[fastq_dir]}/{wildcards.sample}_{config[fqext1]}.{config[fqsuffix]}
-    dst_2={config[fastq_dir]}/{wildcards.sample}_{config[fqext2]}.{config[fqsuffix]}
-    cat &quot;{output.tmp_fastq}/${{f}}_&quot;*&quot;1.fastq&quot; &gt;&gt; $dst_1
-    cat &quot;{output.tmp_fastq}/${{f}}_&quot;*&quot;2.fastq&quot; &gt;&gt; $dst_2
-done
-pigz -p {threads} {config[fastq_dir]}/{wildcards.sample}_{config[fqext1]}.{config[fqsuffix]}
-pigz -p {threads} {config[fastq_dir]}/{wildcards.sample}_{config[fqext2]}.{config[fqsuffix]}
+# dump to tmp dir
+parallel-fastq-dump -s {input}/* -O {output.tmpdir} \
+--threads {threads} --split-e --skip-technical --dumpbase \
+--readids --clip --read-filter pass --defline-seq &#39;@$ac.$si.$sg/$ri&#39; \
+--defline-qual &#39;+&#39; --gzip &gt;&gt; {log} 2&gt;&amp;1
+
+# rename file and move to output dir
+mv {output.tmpdir}/*_1* {output.fastq[0]}
+mv {output.tmpdir}/*_2* {output.fastq[1]}
 </pre></div>
 </div>
 </div>
 <div class="section" id="sra2fastq-se">
 <h2>sra2fastq_SE<a class="headerlink" href="#sra2fastq-se" title="Permalink to this headline">¶</a></h2>
 <p>Downloaded (raw) SRAs are converted to single-end fastq files.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span># acquire a lock
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span># move to output dir since somehow parallel-fastq-dump sometimes puts files in the cwd...
+mkdir -p {output.tmpdir}; cd {output.tmpdir}
+
+# acquire the lock
 (
     flock --timeout 30 200 || exit 1
     sleep 3
-) 200&gt;{layout_cachefile_lock}
+) 200&gt;{eutils_cache_lock}
 
-# dump
-fasterq-dump -s {input}/* -O {output.tmp_fastq} -t {output.tmp_dump} --threads {threads} --split-spot &gt;&gt; {log} 2&gt;&amp;1 ||
-parallel-fastq-dump -s {input}/* -O {output.tmp_fastq} --threads {threads} \
---split-spot --skip-technical --dumpbase --readids --clip --read-filter pass --defline-seq &#39;@$ac.$si.$sg/$ri&#39; --defline-qual &#39;+&#39; &gt;&gt; {log} 2&gt;&amp;1
+# setup tmp dir
+mkdir -p {output.tmpdir}
+
+# dump to tmp dir
+parallel-fastq-dump -s {input}/* -O {output.tmpdir} \
+--threads {threads} --split-spot --skip-technical --dumpbase --readids \
+--clip --read-filter pass --defline-seq &#39;@$ac.$si.$sg/$ri&#39; \
+--defline-qual &#39;+&#39; --gzip &gt;&gt; {log} 2&gt;&amp;1
 
 # rename file and move to output dir
-for f in $(ls -1q {output.tmp_fastq} | grep -oP &quot;^[^_]+&quot; | uniq); do
-    dst={config[fastq_dir]}/{wildcards.sample}.{config[fqsuffix]}
-    cat &quot;{output.tmp_fastq}/${{f}}&quot; &gt;&gt; $dst
-done
-pigz -p {threads} {config[fastq_dir]}/{wildcards.sample}.{config[fqsuffix]}
+mv {output.tmpdir}/*.fastq.gz {output.fastq}
 </pre></div>
 </div>
 </div>
@@ -1167,8 +1234,8 @@ ixIxx {output.indexinfo} {output.ix} {output.ixx} &gt;&gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
 </div>
-<div class="section" id="trim-galore-pe">
-<h2>trim_galore_PE<a class="headerlink" href="#trim-galore-pe" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="trimgalore-pe">
+<h2>trimgalore_PE<a class="headerlink" href="#trimgalore-pe" title="Permalink to this headline">¶</a></h2>
 <p>Automated adapter detection, adapter trimming, and quality trimming through trim galore (paired-end).</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>trim_galore --paired -j {threads} {params.config} -o $(dirname {output.r1}) {input.r1} {input.r2} &gt; {log} 2&gt;&amp;1
 
@@ -1184,8 +1251,8 @@ for f in $(find &quot;$(dirname {output.r1})/&quot; -name &quot;{wildcards.sampl
 </pre></div>
 </div>
 </div>
-<div class="section" id="trim-galore-se">
-<h2>trim_galore_SE<a class="headerlink" href="#trim-galore-se" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="trimgalore-se">
+<h2>trimgalore_SE<a class="headerlink" href="#trimgalore-se" title="Permalink to this headline">¶</a></h2>
 <p>Automated adapter detection, adapter trimming, and quality trimming through trim galore (single-end).</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>trim_galore -j {threads} {params.config} -o $(dirname {output.se}) {input} &gt; {log} 2&gt;&amp;1
 

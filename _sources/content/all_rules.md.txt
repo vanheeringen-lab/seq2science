@@ -237,6 +237,35 @@ gtfToGenePred {output.gtf} {output.gp}
 genePredToBed {output.gp} {output.bed}
 ```
 
+#### fastp_PE
+Automated adapter detection, adapter trimming, and quality trimming through fastp (paired-end).
+```
+fastp -w {params.threads} --in1 {input[0]} --in2 {input[1]} \
+--out1 {output.r1} --out2 {output.r2} -h {output.qc_html} -j {output.qc_json} \
+{params.config} > {log} 2>&1
+```
+
+#### fastp_SE
+Automated adapter detection, adapter trimming, and quality trimming through fastp (single-end).
+```
+fastp -w {params.threads} --in1 {input} --out1 {output.se} -h {output.qc_html} -j {output.qc_json} \
+{params.config} > {log} 2>&1
+```
+
+#### fastp_qc_PE
+Get quality scores for (technical) replicates
+```
+fastp -w {threads} --in1 {input[0]} --in2 {input[1]} \
+-h {output.qc_html} -j {output.qc_json} \
+{params.config} > {log} 2>&1
+```
+
+#### fastp_qc_SE
+Get quality scores for (technical) replicates
+```
+fastp -w {threads} --in1 {input} -h {output.qc_html} -j {output.qc_json} > {log} 2>&1
+```
+
 #### fastqc
 Generate quality control report for fastq files.
 ```
@@ -276,6 +305,9 @@ source: http://hgdownload.cse.ucsc.edu/goldenPath/hg19/gc5Base/
         wigToBigWig {output.gcpcvar} {input.sizes} {output.gcpc} >> {log} 2>&1
         
 ```
+
+#### gene_id2name
+Parse the gtf file to generate a gene_id to gene_name conversion table.
 
 #### genrich_pileup
 Generate the pileup. We do this separately from peak-calling since these two
@@ -349,27 +381,6 @@ summarize reads to gene level. Outputs a counts table per bam file.
 htseq-count {input.bam} {input.gtf} -r pos -s {params.strandedness} {params.user_flags} -n {threads} -c {output} > {log} 2>&1
 ```
 
-#### id2sra
-Download the SRA of a sample by its unique identifier.
-
-Tries first downloading with the faster ascp protocol, if that fails it 
-falls back on the slower http protocol.
-```
-# three attempts
-for i in {{1..3}}
-do
-    # acquire a lock
-    (
-        flock --timeout 30 200 || continue
-        sleep 2
-    ) 200>{layout_cachefile_lock}
-    
-    # dump
-    prefetch --max-size 999999999999 --output-directory {output} --log-level debug --progress {wildcards.sample} >> {log} 2>&1 && break
-    sleep 10
-done
-```
-
 #### idr
 Combine replicates based on the irreproducible discovery rate (IDR). Can only handle two replicates.
 For more than two replicates use fisher's method.
@@ -415,9 +426,6 @@ Log1p normalization of a count table.
 Call peaks using macs2.
 Macs2 requires a genome size, which we estimate from the amount of unique kmers of the average read length.
 ```
-# extract the kmer size, and get the effective genome size from it
-kmer_size=$(unzip -p {input.fastqc} {params.name}_trimmed_fastqc/fastqc_data.txt  | grep -P -o '(?<=Sequence length\\t).*' | grep -P -o '\d+$')
-
 echo "preparing to run unique-kmers.py with -k $kmer_size" >> {log}
 GENSIZE=$(unique-kmers.py {params.genome} -k $kmer_size --quiet 2>&1 | grep -P -o '(?<=\.fa: ).*')
 echo "kmer size: $kmer_size, and effective genome size: $GENSIZE" >> {log}
@@ -467,6 +475,18 @@ Must happen after trimming due to trim-galore's automatic adapter trimming metho
 
 If a replicate has only 1 sample in it, simply move the file.
 
+#### minimap2_align
+Align reads against a genome (index) with minimap2, and pipe the output to the required sorter(s).
+```
+minimap2 -t {threads} -a {input.index} {input.reads} {params} > {output} 2> {log}
+```
+
+#### minimap2_index
+Make a genome index for minimap2. This index is required for alignment.
+```
+minimap2 -t {threads} -d {output} {input} {params} > {log} 2>&1
+```
+
 #### mt_nuc_ratio_calculator
 Estimate the amount of nuclear and mitochondrial reads in a sample. This metric
 is especially important in ATAC-seq experiments where mitochondrial DNA can
@@ -491,7 +511,7 @@ multiqc {input.files} -o {params.dir} -n multiqc_{wildcards.assembly}.html \
 --config {input.schema}                                                    \
 --config {input.header}                                                    \
 --sample-names {input.sample_names}                                        \
---sample-filters {input.filter_buttons}                                    \
+{params.filter_buttons}                                    \
 --cl_config "extra_fn_clean_exts: [                                        \
     {{'pattern': ^.*{wildcards.assembly}-, 'type': 'regex'}},              \
     {{'pattern': {params.fqext1},          'type': 'regex'}},              \
@@ -599,6 +619,33 @@ ln {input[0]} {output[0]}
 ln {input[1]} {output[1]}
 ```
 
+#### run2sra
+Download the SRA of a sample by its unique identifier.
+
+Tries first downloading with the faster ascp protocol, if that fails it
+falls back on the slower http protocol.
+```
+# move to output dir since somehow prefetch sometimes puts files in the cwd...
+mkdir -p {output}; cd {output}
+
+# three attempts
+for i in {{1..3}}
+do
+    # acquire a lock
+    (
+        flock --timeout 30 200 || continue
+        sleep 2
+    ) 200>{eutils_cache_lock}
+
+    # dump
+    prefetch --max-size 999999999999 --output-directory {output} --log-level debug --progress {wildcards.run} >> {log} 2>&1 && break
+    sleep 10
+done
+```
+
+#### runs2sample
+Concatenate a single run or multiple runs together into a fastq
+
 #### salmon_decoy_aware_index
 Generate a decoy aware transcriptome index for Salmon.
 
@@ -696,48 +743,52 @@ source: https://github.com/Gaius-Augustus/MakeHub/blob/master/make_hub.py
 Downloaded (raw) SRAs are converted to paired-end fastq files.
 Forward and reverse samples will be switched if forward/reverse names are not lexicographically ordered.
 ```
+# move to output dir since somehow parallel-fastq-dump sometimes puts files in the cwd...
+mkdir -p {output.tmpdir}; cd {output.tmpdir}
+
 # acquire the lock
 (
     flock --timeout 30 200 || exit 1
     sleep 3
-) 200>{layout_cachefile_lock}
+) 200>{eutils_cache_lock}
 
-# dump
-fasterq-dump -s {input}/* -O {output.tmp_fastq} -t {output.tmp_dump} --threads {threads} --split-3 >> {log} 2>&1 || 
-parallel-fastq-dump -s {input}/* -O {output.tmp_fastq} --threads {threads} \
---split-e --skip-technical --dumpbase --readids --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' --defline-qual '+' >> {log} 2>&1
+# setup tmp dir
+mkdir -p {output.tmpdir}
 
-# rename files and move to output dir
-for f in $(ls -1q {output.tmp_fastq} | grep -oP "^[^_]+" | uniq); do
-    dst_1={config[fastq_dir]}/{wildcards.sample}_{config[fqext1]}.{config[fqsuffix]}
-    dst_2={config[fastq_dir]}/{wildcards.sample}_{config[fqext2]}.{config[fqsuffix]}
-    cat "{output.tmp_fastq}/${{f}}_"*"1.fastq" >> $dst_1
-    cat "{output.tmp_fastq}/${{f}}_"*"2.fastq" >> $dst_2
-done
-pigz -p {threads} {config[fastq_dir]}/{wildcards.sample}_{config[fqext1]}.{config[fqsuffix]}
-pigz -p {threads} {config[fastq_dir]}/{wildcards.sample}_{config[fqext2]}.{config[fqsuffix]}
+# dump to tmp dir
+parallel-fastq-dump -s {input}/* -O {output.tmpdir} \
+--threads {threads} --split-e --skip-technical --dumpbase \
+--readids --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' \
+--defline-qual '+' --gzip >> {log} 2>&1
+
+# rename file and move to output dir
+mv {output.tmpdir}/*_1* {output.fastq[0]}
+mv {output.tmpdir}/*_2* {output.fastq[1]}
 ```
 
 #### sra2fastq_SE
 Downloaded (raw) SRAs are converted to single-end fastq files.
 ```
-# acquire a lock
+# move to output dir since somehow parallel-fastq-dump sometimes puts files in the cwd...
+mkdir -p {output.tmpdir}; cd {output.tmpdir}
+
+# acquire the lock
 (
     flock --timeout 30 200 || exit 1
     sleep 3
-) 200>{layout_cachefile_lock}
+) 200>{eutils_cache_lock}
 
-# dump
-fasterq-dump -s {input}/* -O {output.tmp_fastq} -t {output.tmp_dump} --threads {threads} --split-spot >> {log} 2>&1 || 
-parallel-fastq-dump -s {input}/* -O {output.tmp_fastq} --threads {threads} \
---split-spot --skip-technical --dumpbase --readids --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' --defline-qual '+' >> {log} 2>&1
+# setup tmp dir
+mkdir -p {output.tmpdir}
+
+# dump to tmp dir
+parallel-fastq-dump -s {input}/* -O {output.tmpdir} \
+--threads {threads} --split-spot --skip-technical --dumpbase --readids \
+--clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' \
+--defline-qual '+' --gzip >> {log} 2>&1
 
 # rename file and move to output dir
-for f in $(ls -1q {output.tmp_fastq} | grep -oP "^[^_]+" | uniq); do
-    dst={config[fastq_dir]}/{wildcards.sample}.{config[fqsuffix]}
-    cat "{output.tmp_fastq}/${{f}}" >> $dst
-done
-pigz -p {threads} {config[fastq_dir]}/{wildcards.sample}.{config[fqsuffix]}
+mv {output.tmpdir}/*.fastq.gz {output.fastq}
 ```
 
 #### star_align
@@ -830,32 +881,32 @@ grep -v "^#" {output.info} | awk '{{print $1, $2, $8, $9, $10, $1}}' > {output.i
 ixIxx {output.indexinfo} {output.ix} {output.ixx} >> {log} 2>&1
 ```
 
-#### trim_galore_PE
+#### trimgalore_PE
 Automated adapter detection, adapter trimming, and quality trimming through trim galore (paired-end).
 ```
 trim_galore --paired -j {threads} {params.config} -o $(dirname {output.r1}) {input.r1} {input.r2} > {log} 2>&1
-
+    
 # now rename to proper output
 for f in $(find "$(dirname {output.r1})/" -name "{wildcards.sample}_*val_*.fq.gz"); do
     mv "$f" "$(echo "$f" | sed s/.fq/.{params.fqsuffix}/)"; done
 for f in $(find "$(dirname {output.r1})/" -maxdepth 1 -name "{wildcards.sample}_*val_*.{params.fqsuffix}.gz"); do
     mv "$f" "$(echo "$f" | sed s/_val_./_trimmed/)"; done
-
+    
 # move the trimming reports to qc directory
 for f in $(find "$(dirname {output.r1})/" -name "{wildcards.sample}_*.{params.fqsuffix}.gz_trimming_report.txt"); do
     mv "$f" "$(dirname {output.qc[0]})/$(basename $f)"; done
 ```
 
-#### trim_galore_SE
+#### trimgalore_SE
 Automated adapter detection, adapter trimming, and quality trimming through trim galore (single-end).
 ```
 trim_galore -j {threads} {params.config} -o $(dirname {output.se}) {input} > {log} 2>&1
-
+    
 # now rename to proper output
 if [ "{params.fqsuffix}" != "fq" ]; then
   mv "$(dirname {output.se})/{wildcards.sample}_trimmed.fq.gz" {output.se}
 fi 
-
+    
 # move the trimming report to qc directory
 report=$(dirname {output.se})/{wildcards.sample}.{params.fqsuffix}.gz_trimming_report.txt
 mv $report {output.qc}

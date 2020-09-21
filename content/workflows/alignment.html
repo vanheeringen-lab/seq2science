@@ -206,7 +206,7 @@
 </div>
 <div class="section" id="automated-trimming">
 <h3>Automated trimming<a class="headerlink" href="#automated-trimming" title="Permalink to this headline">¶</a></h3>
-<p>The pipeline starts by trimming the reads with <a class="reference external" href="https://github.com/FelixKrueger/TrimGalore/blob/master/Docs/Trim_Galore_User_Guide.md">trim galore!</a>. Trim galore automatically first trims the low quality 3’ ends of reads, and removes short reads. After the quality trimming trim galore automatically detects which adapter was used, and trims it. The parameters of trim galore! for the pipeline can be set in the configuration by variable <em>trim_galore</em>.</p>
+<p>The pipeline starts by trimming the reads with either <a class="reference external" href="https://github.com/FelixKrueger/TrimGalore/blob/master/Docs/Trim_Galore_User_Guide.md">trim galore!</a> or <a class="reference external" href="https://github.com/OpenGene/fastp">fastp</a>. Trim galore and fastp both automatically detect which adapter was used and remove those. In addition they trim the low quality 3’ ends of reads, and remove short reads. Which trimmer should be used (and their params) can be set by the key <code class="docutils literal notranslate"><span class="pre">trimmer</span></code> in the config.yaml.</p>
 </div>
 <div class="section" id="alignment-sorting">
 <h3>Alignment &amp; Sorting<a class="headerlink" href="#alignment-sorting" title="Permalink to this headline">¶</a></h3>
@@ -314,13 +314,16 @@ If you are working with multiple assemblies in one workflow, replicate names hav
 <tr class="row-even"><td><p>Bowtie2</p></td>
 <td><p>41</p></td>
 </tr>
-<tr class="row-odd"><td><p>BWA</p></td>
+<tr class="row-odd"><td><p>Bwa-mem(2)</p></td>
 <td><p>30</p></td>
 </tr>
 <tr class="row-even"><td><p>Hisat2</p></td>
 <td><p>44</p></td>
 </tr>
-<tr class="row-odd"><td><p>STAR</p></td>
+<tr class="row-odd"><td><p>Minimap</p></td>
+<td><p>0, but use <code class="docutils literal notranslate"><span class="pre">--secondary=no</span></code> as alignment option</p></td>
+</tr>
+<tr class="row-even"><td><p>STAR</p></td>
 <td><p>255</p></td>
 </tr>
 </tbody>

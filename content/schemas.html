@@ -108,9 +108,10 @@
 <li class="toctree-l4"><a class="reference internal" href="#trimmed-dir">trimmed_dir</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#qc-dir">qc_dir</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#final-bam-dir">final_bam_dir</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#trim-galore">trim_galore</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#trimmer">trimmer</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#technical-replicates">technical_replicates</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#biological-replicates">biological_replicates</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#provider">provider</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#aligner">aligner</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#samtools-index">samtools_index</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#markduplicates">markduplicates</a></li>
@@ -121,7 +122,9 @@
 <li class="toctree-l4"><a class="reference internal" href="#only-primary-align">only_primary_align</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#create-qc-report">create_qc_report</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#bam-sort-mem">bam_sort_mem</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#spike-suffix">spike_suffix</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#custom-genome-extension">custom_genome_extension</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#custom-annotation-extension">custom_annotation_extension</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#custom-assembly-suffix">custom_assembly_suffix</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#alignment-workflow-specific">alignment workflow specific</a><ul>
@@ -141,10 +144,11 @@
 <li class="toctree-l4"><a class="reference internal" href="#counts-dir">counts_dir</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#dge-dir">dge_dir</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#quantifier">quantifier</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ignore-strandedness">ignore_strandedness</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#tximeta">tximeta</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ignore-strandedness">ignore_strandedness</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#dexseq">dexseq</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#diffexp">diffexp</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#deseq2">deseq2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#contrasts">contrasts</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#single-cell-atac">single-cell ATAC</a><ul>
@@ -368,12 +372,29 @@
 </pre></div>
 </div>
 </div>
-<div class="section" id="trim-galore">
-<h3>trim_galore<a class="headerlink" href="#trim-galore" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">trim_galore:</span>
-<span class="c">    description: trim_galore settings (note that the adapter is autodetected, so you do not have to set it here)</span>
-<span class="c">    default: --quality 10 --length 20 --consider_already_trimmed 10</span>
-<span class="c">    type: string</span>
+<div class="section" id="trimmer">
+<h3>trimmer<a class="headerlink" href="#trimmer" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">trimmer:</span>
+<span class="c">    description: which adapter trimmer to use</span>
+<span class="c">    properties:</span>
+<span class="c">        trimgalore:</span>
+<span class="c">            description: trim galore! settings (note that the adapter is autodetected, so you do not have to set it here)</span>
+<span class="c">            properties:</span>
+<span class="c">                trimoptions:</span>
+<span class="c">                    default: --quality 10 --length 20 --consider_already_trimmed 10</span>
+<span class="c">            default:</span>
+<span class="c">                trimoptions: --quality 10 --length 20 --consider_already_trimmed 10</span>
+<span class="c">        fastp:</span>
+<span class="c">            description: fastp settings (note that the adapter is autodetected, so you do not have to set it here)</span>
+<span class="c">            properties:</span>
+<span class="c">                trimoptions:</span>
+<span class="c">                    default:</span>
+<span class="c">            default:</span>
+<span class="c">                trimoptions:</span>
+<span class="c">    default:</span>
+<span class="c">        fastp:</span>
+<span class="c">            trimoptions:</span>
+<span class="c">    type: object</span>
 </pre></div>
 </div>
 </div>
@@ -392,6 +413,15 @@
 <span class="c">    description: which method to use to combine replicates (fisher (n &gt;=2), idr (n==2), or keep)</span>
 <span class="c">    default: keep</span>
 <span class="c">    enum: [&#39;fisher&#39;, &#39;idr&#39;, &#39;keep&#39;]</span>
+<span class="c">    type: string</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="provider">
+<h3>provider<a class="headerlink" href="#provider" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">provider:</span>
+<span class="c">    description: Specify provider to download new genomes from. Will try Ensembl &gt; UCSC &gt; NCBI if left blank.</span>
+<span class="c">    enum: [&#39;Ensembl&#39;, &#39;UCSC&#39;, &#39;NCBI&#39;]</span>
 <span class="c">    type: string</span>
 </pre></div>
 </div>
@@ -434,6 +464,15 @@
 <span class="c">                    default:</span>
 <span class="c">                align:</span>
 <span class="c">                    default:</span>
+<span class="c">            default:</span>
+<span class="c">                index:</span>
+<span class="c">                align:</span>
+<span class="c">        minimap2:</span>
+<span class="c">            properties:</span>
+<span class="c">                index:</span>
+<span class="c">                    default:</span>
+<span class="c">                align:</span>
+<span class="c">                    default: -a sr --secondary=no</span>
 <span class="c">            default:</span>
 <span class="c">                index:</span>
 <span class="c">                align:</span>
@@ -534,10 +573,24 @@
 </pre></div>
 </div>
 </div>
-<div class="section" id="spike-suffix">
-<h3>spike_suffix<a class="headerlink" href="#spike-suffix" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">spike_suffix:</span>
-<span class="c">    description: What to append to the assembly name to indicate that spike-ins have been added</span>
+<div class="section" id="custom-genome-extension">
+<h3>custom_genome_extension<a class="headerlink" href="#custom-genome-extension" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">custom_genome_extension:</span>
+<span class="c">    description: File(s) to append to the genome (must be in fasta format)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="custom-annotation-extension">
+<h3>custom_annotation_extension<a class="headerlink" href="#custom-annotation-extension" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">custom_annotation_extension:</span>
+<span class="c">    description: File(s) to append to the gene annotations (must be in GTF format)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="custom-assembly-suffix">
+<h3>custom_assembly_suffix<a class="headerlink" href="#custom-assembly-suffix" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">custom_assembly_suffix:</span>
+<span class="c">    description: What to append to the assembly name to indicate that custom data has been added to either genome or assembly.</span>
 <span class="c">    default: _custom</span>
 <span class="c">    type: string</span>
 </pre></div>
@@ -683,15 +736,6 @@
 </pre></div>
 </div>
 </div>
-<div class="section" id="ignore-strandedness">
-<h3>ignore_strandedness<a class="headerlink" href="#ignore-strandedness" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">ignore_strandedness:</span>
-<span class="c">    description: ignore/dont infer strand-specificity?</span>
-<span class="c">    default: False</span>
-<span class="c">    type: boolean</span>
-</pre></div>
-</div>
-</div>
 <div class="section" id="tximeta">
 <h3>tximeta<a class="headerlink" href="#tximeta" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">tximeta:</span>
@@ -710,6 +754,15 @@
 </pre></div>
 </div>
 </div>
+<div class="section" id="ignore-strandedness">
+<h3>ignore_strandedness<a class="headerlink" href="#ignore-strandedness" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">ignore_strandedness:</span>
+<span class="c">    description: ignore/dont infer strand-specificity?</span>
+<span class="c">    default: False</span>
+<span class="c">    type: boolean</span>
+</pre></div>
+</div>
+</div>
 <div class="section" id="dexseq">
 <h3>dexseq<a class="headerlink" href="#dexseq" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">dexseq:</span>
@@ -719,26 +772,33 @@
 </pre></div>
 </div>
 </div>
-<div class="section" id="diffexp">
-<h3>diffexp<a class="headerlink" href="#diffexp" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">diffexp:</span>
-<span class="c">    description: which differential expression analysis to use (DESeq2 or None, default is None). Will not run without a contrast.</span>
-<span class="c">    type: object</span>
+<div class="section" id="deseq2">
+<h3>deseq2<a class="headerlink" href="#deseq2" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">deseq2:</span>
+<span class="c">    description: DESeq2 settings. See the DESeq2 vignette for details</span>
 <span class="c">    properties:</span>
-<span class="c">        deseq2:</span>
-<span class="c">            properties:</span>
-<span class="c">                DE_params:</span>
-<span class="c">                    default:</span>
-<span class="c">                        multiple_testing_procedure: BH</span>
-<span class="c">                        alpha_value: 0.1</span>
-<span class="c">                        shrinkage_estimator: apeglm</span>
-<span class="c">                contrasts:</span>
-<span class="c">                    default:</span>
-<span class="c">            default:</span>
-<span class="c">                contrasts:</span>
+<span class="c">        multiple_testing_procedure:</span>
+<span class="c">            default: BH</span>
+<span class="c">            enum: [&#39;BH&#39;, &#39;IHW&#39;]</span>
+<span class="c">            type: string</span>
+<span class="c">        alpha_value:</span>
+<span class="c">            default: 0.1</span>
+<span class="c">            type: number</span>
+<span class="c">        shrinkage_estimator:</span>
+<span class="c">            default: apeglm</span>
+<span class="c">            enum: [&#39;apeglm&#39;, &#39;ashr&#39;, &#39;normal&#39;]</span>
+<span class="c">            type: string</span>
 <span class="c">    default:</span>
-<span class="c">        None:</span>
-<span class="c">            contrasts:</span>
+<span class="c">        multiple_testing_procedure: BH</span>
+<span class="c">        alpha_value: 0.1</span>
+<span class="c">        shrinkage_estimator: apeglm</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="contrasts">
+<h3>contrasts<a class="headerlink" href="#contrasts" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">contrasts:</span>
+<span class="c">    description: deseq2 design contrast(s)</span>
 </pre></div>
 </div>
 </div>
@@ -786,7 +846,7 @@
 <h3>deeptools_flags<a class="headerlink" href="#deeptools-flags" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">deeptools_flags:</span>
 <span class="c">    description: flags for bam to bigwig conversions with deeptools bamCoverage</span>
-<span class="c">    default: --samFlagExclude 1024</span>
+<span class="c">    default:</span>
 </pre></div>
 </div>
 </div>

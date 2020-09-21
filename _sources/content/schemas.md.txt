@@ -104,12 +104,29 @@ final_bam_dir:
     default: final_bam
     type: string
 ```
-#####trim_galore
+#####trimmer
 ```
-trim_galore:
-    description: trim_galore settings (note that the adapter is autodetected, so you do not have to set it here)
-    default: --quality 10 --length 20 --consider_already_trimmed 10
-    type: string
+trimmer:
+    description: which adapter trimmer to use
+    properties:
+        trimgalore:
+            description: trim galore! settings (note that the adapter is autodetected, so you do not have to set it here)
+            properties:
+                trimoptions:
+                    default: --quality 10 --length 20 --consider_already_trimmed 10
+            default:
+                trimoptions: --quality 10 --length 20 --consider_already_trimmed 10
+        fastp:
+            description: fastp settings (note that the adapter is autodetected, so you do not have to set it here)
+            properties:
+                trimoptions:
+                    default: 
+            default:
+                trimoptions: 
+    default:
+        fastp:
+            trimoptions: 
+    type: object
 ```
 #####technical_replicates
 ```
@@ -124,6 +141,13 @@ biological_replicates:
     description: which method to use to combine replicates (fisher (n >=2), idr (n==2), or keep)
     default: keep
     enum: ['fisher', 'idr', 'keep']
+    type: string
+```
+#####provider
+```
+provider:
+    description: Specify provider to download new genomes from. Will try Ensembl > UCSC > NCBI if left blank.
+    enum: ['Ensembl', 'UCSC', 'NCBI']
     type: string
 ```
 #####aligner
@@ -164,6 +188,15 @@ aligner:
                     default: 
                 align:
                     default: 
+            default:
+                index: 
+                align: 
+        minimap2:
+            properties:
+                index:
+                    default: 
+                align:
+                    default: -a sr --secondary=no
             default:
                 index: 
                 align: 
@@ -244,10 +277,20 @@ bam_sort_mem:
     default: 2
     type: integer
 ```
-#####spike_suffix
+#####custom_genome_extension
 ```
-spike_suffix:
-    description: What to append to the assembly name to indicate that spike-ins have been added
+custom_genome_extension:
+    description: File(s) to append to the genome (must be in fasta format)
+```
+#####custom_annotation_extension
+```
+custom_annotation_extension:
+    description: File(s) to append to the gene annotations (must be in GTF format)
+```
+#####custom_assembly_suffix
+```
+custom_assembly_suffix:
+    description: What to append to the assembly name to indicate that custom data has been added to either genome or assembly.
     default: _custom
     type: string
 ```
@@ -368,13 +411,6 @@ quantifier:
         htseq:
             htseq_flags: 
 ```
-#####ignore_strandedness
-```
-ignore_strandedness:
-    description: ignore/dont infer strand-specificity?
-    default: False
-    type: boolean
-```
 #####tximeta
 ```
 tximeta:
@@ -391,6 +427,13 @@ tximeta:
         organism: tximeta_file
         release: 42
 ```
+#####ignore_strandedness
+```
+ignore_strandedness:
+    description: ignore/dont infer strand-specificity?
+    default: False
+    type: boolean
+```
 #####dexseq
 ```
 dexseq:
@@ -398,26 +441,31 @@ dexseq:
     default: False
     type: boolean
 ```
-#####diffexp
+#####deseq2
 ```
-diffexp:
-    description: which differential expression analysis to use (DESeq2 or None, default is None). Will not run without a contrast.
-    type: object
+deseq2:
+    description: DESeq2 settings. See the DESeq2 vignette for details
     properties:
-        deseq2:
-            properties:
-                DE_params:
-                    default:
-                        multiple_testing_procedure: BH
-                        alpha_value: 0.1
-                        shrinkage_estimator: apeglm
-                contrasts:
-                    default: 
-            default:
-                contrasts: 
+        multiple_testing_procedure:
+            default: BH
+            enum: ['BH', 'IHW']
+            type: string
+        alpha_value:
+            default: 0.1
+            type: number
+        shrinkage_estimator:
+            default: apeglm
+            enum: ['apeglm', 'ashr', 'normal']
+            type: string
     default:
-        None:
-            contrasts: 
+        multiple_testing_procedure: BH
+        alpha_value: 0.1
+        shrinkage_estimator: apeglm
+```
+#####contrasts
+```
+contrasts:
+    description: deseq2 design contrast(s)
 ```
 
 ## single-cell ATAC
@@ -453,6 +501,6 @@ bigwig_dir:
 ```
 deeptools_flags:
     description: flags for bam to bigwig conversions with deeptools bamCoverage
-    default: --samFlagExclude 1024
+    default: 
 ```
 
