@@ -88,7 +88,7 @@ def samples2metadata_sra(samples: List[str]) -> dict:
     # in sample2clean we store the (potential GEO) sample name in a SRA compliant name
     try:
         df_geo = db_sra.gsm_to_srx(geo_samples)
-    except SystemExit:
+    except:
         print("We had trouble querying the SRA. This probably means that the SRA was unresponsive, and their servers "
               "are overloaded or slow. Please try again in a bit...")
         sys.exit(1)
@@ -101,7 +101,7 @@ def samples2metadata_sra(samples: List[str]) -> dict:
     # check our samples on sra
     try:
         df_sra = db_sra.sra_metadata(list(sample2clean.values()), detailed=True)
-    except SystemExit:
+    except:
         print("We had trouble querying the SRA. This probably means that the SRA was unresponsive, and their servers "
               "are overloaded or slow. Please try again in a bit...")
         sys.exit(1)
