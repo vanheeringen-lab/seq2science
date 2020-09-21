@@ -86,10 +86,10 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
     )
     clean = subparsers.add_parser(
         "clean",
-        help="Remove all cached sample layouts and conda environments.",
+        help="Remove all cached sample files and conda environments.",
         description="At the start of each workflow run, seq2science starts with installing environments for each "
-                    "rule. It also stores the layout of public samples in its cache. These environments can get large "
-                    "and it might be best to remove them when you are done with an analysis. \n"
+                    "rule. It also stores the GEO soft files of public samples in its cache. These environments can get"
+                    " large and it might be best to remove them when you are done with an analysis. \n"
                     "seq2science clean will clean up these files for you."
     )
     docs = subparsers.add_parser(
@@ -339,7 +339,7 @@ def _explain(args, base_dir, workflows_dir, config_path):
 
 def _clean(base_dir):
     """
-    Clean the .snakemake folder and layouts cache.
+    Clean the .snakemake folder and cache.
     """
     # remove the snakemake cache
     shutil.rmtree(os.path.join(base_dir, ".snakemake"), ignore_errors=True)

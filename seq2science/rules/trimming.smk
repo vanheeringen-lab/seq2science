@@ -14,11 +14,11 @@ if config["trimmer"] == "trimgalore":
         conda:
             "../envs/trimgalore.yaml"
         threads: 6
-        message: explain_rule("trim_galore_SE")
+        message: explain_rule("trimgalore_SE")
         log:
-            expand("{log_dir}/trim_galore_SE/{{sample}}.log", **config),
+            expand("{log_dir}/trimgalore_SE/{{sample}}.log", **config),
         benchmark:
-            expand("{benchmark_dir}/trim_galore_SE/{{sample}}.benchmark.txt", **config)[0]
+            expand("{benchmark_dir}/trimgalore_SE/{{sample}}.benchmark.txt", **config)[0]
         params:
             config=config["trimoptions"],
             fqsuffix=config["fqsuffix"],
@@ -54,9 +54,9 @@ if config["trimmer"] == "trimgalore":
         threads: 6
         message: explain_rule("trimgalore_PE")
         log:
-            expand("{log_dir}/trimgalore_PE/{{sample}}.log", **config),
+            expand("{log_dir}/trimgalorePE/{{sample}}.log", **config),
         benchmark:
-            expand("{benchmark_dir}/trimgalore_PE/{{sample}}.benchmark.txt", **config)[0]
+            expand("{benchmark_dir}/trimgalorePE/{{sample}}.benchmark.txt", **config)[0]
         params:
             config=config["trimoptions"],
             fqsuffix=config["fqsuffix"],
@@ -93,20 +93,22 @@ elif config["trimmer"] == "fastp":
             qc_html=expand("{qc_dir}/trimming/{{sample}}.fastp.html", **config),
         conda:
             "../envs/fastp.yaml"
-        threads: 3
+        threads: 4
         message: explain_rule("fastp_SE")
         wildcard_constraints:
-            sample="|".join([sample if config["layout"][sample] == "SINGLE" else "$a" for sample in all_samples])
+            sample="|".join([sample if sampledict[sample]["layout"] == "SINGLE" else "$a" for sample in all_samples])
         log:
             expand("{log_dir}/fastp_SE/{{sample}}.log", **config),
         benchmark:
             expand("{benchmark_dir}/fastp_SE/{{sample}}.benchmark.txt", **config)[0]
         params:
             fqsuffix=config["fqsuffix"],
+            threads=lambda wildcards, threads: max(1, threads - 2),
+            config=config["trimoptions"],
         shell:
             """\
-            fastp -w {threads} --in1 {input} --out1 {output.se} -h {output.qc_html} -j {output.qc_json} \
-            > {log} 2>&1
+            fastp -w {params.threads} --in1 {input} --out1 {output.se} -h {output.qc_html} -j {output.qc_json} \
+            {params.config} > {log} 2>&1
             """
 
 
@@ -124,9 +126,9 @@ elif config["trimmer"] == "fastp":
             qc_html=expand("{qc_dir}/trimming/{{sample}}.fastp.html", **config),
         conda:
             "../envs/fastp.yaml"
-        threads: 3
+        threads: 4
         wildcard_constraints:
-            sample="|".join([sample if config["layout"][sample] == "PAIRED" else "$a" for sample in all_samples])
+            sample="|".join([sample if sampledict[sample]["layout"] == "PAIRED" else "$a" for sample in all_samples])
         message: explain_rule("fastp_PE")
         log:
             expand("{log_dir}/fastp_PE/{{sample}}.log", **config),
@@ -134,9 +136,10 @@ elif config["trimmer"] == "fastp":
             expand("{benchmark_dir}/fastp_PE/{{sample}}.benchmark.txt", **config)[0]
         params:
             config=config["trimoptions"],
+            threads=lambda wildcards, threads: max(1, threads - 2),
         shell:
             """\
-            fastp -w {threads} --in1 {input[0]} --in2 {input[1]} \
+            fastp -w {params.threads} --in1 {input[0]} --in2 {input[1]} \
             --out1 {output.r1} --out2 {output.r2} -h {output.qc_html} -j {output.qc_json} \
             {params.config} > {log} 2>&1
             """

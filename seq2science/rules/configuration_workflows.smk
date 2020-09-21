@@ -19,7 +19,7 @@ if config.get("peak_caller", False):
     # if hmmratac peak caller, check if all samples are paired-end
     if "hmmratac" in config["peak_caller"]:
         assert all(
-            [config["layout"][sample] == "PAIRED" for sample in samples.index]
+            [sampledict[sample]['layout'] == "PAIRED" for sample in samples.index]
         ), "HMMRATAC requires all samples to be paired end"
 
     config["macs2_types"] = ["control_lambda.bdg", "peaks.xls", "treat_pileup.bdg"]

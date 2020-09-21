@@ -83,7 +83,7 @@ else:
                                "shrinkage estimator ashr (https://doi.org/10.1093/biostatistics/kxw041). " if config.get('deseq2', {}).get('shrinkage_estimator') == "ashr" else
                                    "the normal prior distribution provided by DESeq2.")], sep=" ", final_sep=" "),
         "count_matrix_txi": "Transcript abundance estimations were aggregated and converted to gene counts using tximeta v@tximeta[tximeta] (https://doi.org/10.1101/777888).",
-        "id2sra": "Public samples were downloaded from the Sequence Read Archive (https://doi.org/10.1093/nar/gkq1019) with help of the ncbi e-utilities.",
+        "run2sra": "Public samples were downloaded from the Sequence Read Archive (https://doi.org/10.1093/nar/gkq1019) with help of the ncbi e-utilities.",
         "get_genome": "Genome assembly {wildcards.raw_assembly} was downloaded with genomepy {genomepy.__version__} (https://doi.org/10.21105/joss.00320).",
         "custom_extension": "The genome and gene annotations was extended with custom regions.",
         "call_peak_genrich":"Peaks were called with genrich v@genrich[genrich] (https://github.com/jsh58/Genrich) with options '{config[peak_caller][genrich]}'.",

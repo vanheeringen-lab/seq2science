@@ -105,8 +105,8 @@ rule call_peak_genrich:
 def get_fastq_qc_file(wildcards):
     if config["trimmer"] == "trimgalore":
         if (
-            config["layout"].get(wildcards.sample, False) == "SINGLE"
-            or config["layout"].get(wildcards.assembly, False) == "SINGLE"
+            sampledict.get(wildcards.sample, {}).get("layout") == "SINGLE"
+            or sampledict.get(wildcards.assembly, {}).get("layout") == "SINGLE"
         ):
             return expand("{qc_dir}/fastqc/{{sample}}_trimmed_fastqc.zip", **config)
         return sorted(expand("{qc_dir}/fastqc/{{sample}}_{fqext1}_trimmed_fastqc.zip", **config))
@@ -114,7 +114,7 @@ def get_fastq_qc_file(wildcards):
         return expand("{qc_dir}/trimming/{{sample}}.fastp.json", **config)
 
 def get_macs2_bam(wildcards):
-    if not config["macs2_keep_mates"] is True or config["layout"].get(wildcards.sample, False) == "SINGLE":
+    if not config["macs2_keep_mates"] is True or sampledict[wildcards.sample].get("layout") == "SINGLE":
         return expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config)
     return rules.keep_mates.output
 
@@ -127,7 +127,7 @@ def get_control_macs(wildcards):
     if not isinstance(control, str) and math.isnan(control):
         return dict()
 
-    if not config["macs2_keep_mates"] is True or config["layout"].get(wildcards.sample, False) == "SINGLE":
+    if not config["macs2_keep_mates"] is True or sampledict[wildcards.sample].get("layout") == "SINGLE":
         return {"control": expand(f"{{final_bam_dir}}/{{{{assembly}}}}-{control}.samtools-coordinate.bam", **config)}
     return {"control": expand(f"{{final_bam_dir}}/{control}-mates-{{{{assembly}}}}.samtools-coordinate.bam", **config)}
 
@@ -159,14 +159,14 @@ rule macs2_callpeak:
     params:
         name=(
             lambda wildcards, input: wildcards.sample
-            if config["layout"][wildcards.sample] == "SINGLE"
+            if sampledict[wildcards.sample]["layout"] == "SINGLE"
             else [f"{wildcards.sample}_{config['fqext1']}"]
         ),
         genome=f"{config['genome_dir']}/{{assembly}}/{{assembly}}.fa",
         macs_params=config["peak_caller"].get("macs2", ""),
         format=(
             lambda wildcards: "BAMPE"
-            if (config["layout"][wildcards.sample] == "PAIRED" and "--shift" not in config["peak_caller"].get("macs2", ""))
+            if (sampledict[wildcards.sample]["layout"] == "PAIRED" and "--shift" not in config["peak_caller"].get("macs2", ""))
             else "BAM"
         ),
         control=lambda wildcards, input: f"-c {input.control}" if "control" in input else "",
