@@ -97,8 +97,9 @@ For the default aligners (BWA and STAR), a minimal quality score has been set to
 |Aligner|min. MAPQ scores for uniquely mapped reads|
 |---|---|
 |Bowtie2|41|
-|BWA|30|
+|Bwa-mem(2)|30|
 |Hisat2|44|
+|Minimap|0, but use `--secondary=no` as alignment option|
 |STAR|255|
 
 #### Cram support
