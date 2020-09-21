@@ -2,6 +2,7 @@
 Utility functions for seq2science
 """
 import os
+import sys
 from typing import List
 import time
 import urllib.request
@@ -88,7 +89,9 @@ def samples2metadata_sra(samples: List[str]) -> dict:
     try:
         df_geo = db_sra.gsm_to_srx(geo_samples)
     except SystemExit:
-        raise RuntimeError("We had trouble querying the SRA. Please try again in a bit..")
+        print("We had trouble querying the SRA. This probably means that the SRA was unresponsive, and their servers "
+              "are overloaded or slow. Please try again in a bit...")
+        sys.exit(1)
 
     sample2clean = dict(zip(df_geo.experiment_alias, df_geo.experiment_accession))
 
@@ -99,7 +102,9 @@ def samples2metadata_sra(samples: List[str]) -> dict:
     try:
         df_sra = db_sra.sra_metadata(list(sample2clean.values()), detailed=True)
     except SystemExit:
-        raise RuntimeError("We had trouble querying the SRA. Please try again in a bit..")
+        print("We had trouble querying the SRA. This probably means that the SRA was unresponsive, and their servers "
+              "are overloaded or slow. Please try again in a bit...")
+        sys.exit(1)
 
     for sample, clean in sample2clean.items():
         # table indices
