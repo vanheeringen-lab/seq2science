@@ -85,14 +85,21 @@ def samples2metadata_sra(samples: List[str]) -> dict:
     geo_samples = [sample for sample in samples if sample.startswith("GSM")]
 
     # in sample2clean we store the (potential GEO) sample name in a SRA compliant name
-    df_geo = db_sra.gsm_to_srx(geo_samples)
+    try:
+        df_geo = db_sra.gsm_to_srx(geo_samples)
+    except RuntimeError:
+        raise RuntimeError("We had trouble querying the SRA. Please try again in a bit..")
+
     sample2clean = dict(zip(df_geo.experiment_alias, df_geo.experiment_accession))
 
     # now add the already SRA compliant names with a reference to itself
     sample2clean.update({sample: sample for sample in samples if sample not in geo_samples})
 
     # check our samples on sra
-    df_sra = db_sra.sra_metadata(list(sample2clean.values()), detailed=True)
+    try:
+        df_sra = db_sra.sra_metadata(list(sample2clean.values()), detailed=True)
+    except RuntimeError:
+        raise RuntimeError("We had trouble querying the SRA. Please try again in a bit..")
 
     for sample, clean in sample2clean.items():
         # table indices
