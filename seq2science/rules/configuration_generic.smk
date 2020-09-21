@@ -369,8 +369,8 @@ run2download = dict()
 for sample, values in sampledict.items():
     for run in values.get("runs", []):
         if values["ena_fastq_ftp"] and values["ena_fastq_ftp"][run]:
-            if config.get("ascp_path") and config.get("ascp_key"):
-                run2download[run] = values["ena_fastq_ftp"][run].replace("era-fasp@fasp", "ftp")
+            if not (config.get("ascp_path") and config.get("ascp_key")):
+                run2download[run] = [url.replace("era-fasp@fasp", "ftp") for url in values["ena_fastq_ftp"][run]]
             else:
                 run2download[run] = values["ena_fastq_ftp"][run]
 
