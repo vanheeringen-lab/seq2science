@@ -222,13 +222,13 @@ After clustering peaks can be called on the aggregated cluster signals. This mak
 <h2>2.6.1 Filling out the samples.tsv<a class="headerlink" href="#filling-out-the-samples-tsv" title="Permalink to this headline">¶</a></h2>
 <p>Before running a workflow you will have to specify which samples you want to run the workflow on. Each workflow starts with a samples.tsv as an example, and you should adapt it to your specific needs. One thing you need to check before filling a sample into your sample.tsv file, is that the fastq file is not completely empty! If a fastq file has a size of 0 it will crash the pipeline.
 You can run bash code to automatically remove completely empty fastq files from a directory, e.g. run:</p>
-<p><a href="#id3"><span class="problematic" id="id4">``</span></a><a href="#id5"><span class="problematic" id="id6">`</span></a>cd fastq-dir-here
-find . -size 0 -delete</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>After removing all the completely empty fastq files, use the remainder to fill your samples.tsv file with.
-As an example, the samples.tsv could look something like this:
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>cd fastq-dir-here
+find . -size 0 -delete
 </pre></div>
 </div>
-<p>sample  assembly    replicate
+<p>After removing all the completely empty fastq files, use the remainder to fill your samples.tsv file with.
+As an example, the samples.tsv could look something like this:</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>sample  assembly    replicate
 GSM1596256  hg38    H1ESC
 GSM1596257  hg38    H1ESC
 GSM1596258  hg38    H1ESC
@@ -251,7 +251,8 @@ iPSC-2-KC-diff-plate2-plate2-16718m701m513  hg38    plate2
 iPSC-2-KC-diff-plate2-plate2-16718m701m515  hg38    plate2
 iPSC-2-KC-diff-plate2-plate2-16718m701m516  hg38    plate2
 iPSC-2-KC-diff-plate2-plate2-16718m701m517  hg38    plate2
-<a href="#id7"><span class="problematic" id="id8">``</span></a><a href="#id9"><span class="problematic" id="id10">`</span></a></p>
+</pre></div>
+</div>
 <div class="section" id="sample-column">
 <h3>Sample column<a class="headerlink" href="#sample-column" title="Permalink to this headline">¶</a></h3>
 <p>This column is necessary for all workflows, not just the atac-seq workflow. If you use the pipeline on public data this should be the name of the accession (e.g. GSM2837484), if you use the pipeline on local data this should be the <em>basename</em> of the file without the <em>extension</em>. For instance <code class="docutils literal notranslate"><span class="pre">/home/user/myfastqs/sample1.fastq.gz</span></code> would be <code class="docutils literal notranslate"><span class="pre">sample1</span></code>. For the scATAC files, the sample name should correspond to a single cell Fastq file! If instead its a fastq file containing data from multiple cells, the pipeline will need alterations before you can use it.</p>
