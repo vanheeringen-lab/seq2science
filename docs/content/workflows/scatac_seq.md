@@ -36,7 +36,8 @@ TODO: Make sure to take a look at: [example preprocessing](../scATAC_postprocess
 Before running a workflow you will have to specify which samples you want to run the workflow on. Each workflow starts with a samples.tsv as an example, and you should adapt it to your specific needs. One thing you need to check before filling a sample into your sample.tsv file, is that the fastq file is not completely empty! If a fastq file has a size of 0 it will crash the pipeline.
 You can run bash code to automatically remove completely empty fastq files from a directory, e.g. run: 
 
-```cd fastq-dir-here
+```
+cd fastq-dir-here
 find . -size 0 -delete
 ```
 
