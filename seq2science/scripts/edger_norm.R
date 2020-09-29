@@ -17,8 +17,17 @@ sink(log, type="message")
 counts <- read.delim(counts_tsv, sep = "\t", na.strings = "", comment.char = "#", stringsAsFactors = F, , row.names=1)
 
 # normalize
-dgelist <- calcNormFactors(DGEList(counts), method=method)
-norm_counts <- cpm(dgelist)
+tryCatch(
+    expr = {
+        dgelist <- calcNormFactors(DGEList(counts), method=method)
+        norm_counts <- cpm(dgelist)
+    },
+    error = function(e){
+        norm_counts <- data.frame(counts)
+        norm_counts[norm_counts >= 0] <- "NA"
+        print(paste("Something went wrong when converting the count table with method ", method, "."))
+    }
+)
 
 # and save
 cat(paste("# The number of reads under each peak, cpm", method, "normalized\n", sep=" "), file=norm_counts_tsv)
