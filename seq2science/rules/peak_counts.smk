@@ -234,8 +234,13 @@ rule log_normalization:
         # get our base
         base = float(wildcards.base)
 
-        # take log
-        species_log = np.log1p(cov_table) / np.log(base)
+        if cov_table.isin(["NA"]).any(axis=None):
+            # return all NA if NA exists
+            species_log = cov_table.copy()
+            species_log[:] = "NA"
+        else:
+            # take log
+            species_log = np.log1p(cov_table) / np.log(base)
 
         # prepend a comment with how we normalized
         open(str(output), "w").write(
@@ -254,13 +259,17 @@ rule mean_center:
         expand("{result_dir}/count_table/{{peak_caller}}/{{assembly}}_meancenter_log{{base}}_{{normalisation}}.tsv", **config),
     run:
         import pandas as pd
-        import numpy as np
 
         # read the coverage table as input
         cov_table = pd.read_csv(str(input), comment="#", index_col=0, sep="\t")
 
         # take mean center
-        cov_mc = cov_table.subtract(cov_table.mean(axis=1), axis=0)
+        if cov_table.isin(["NA"]).any(axis=None):
+            # return all NA if NA exists
+            cov_mc = cov_table.copy()
+            cov_mc[:] = "NA"
+        else:
+            cov_mc = cov_table.subtract(cov_table.mean(axis=1), axis=0)
 
         # prepend a comment with how we normalized
         open(str(output), "w").write(
