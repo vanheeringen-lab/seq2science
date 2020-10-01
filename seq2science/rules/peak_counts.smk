@@ -185,6 +185,7 @@ rule quantile_normalization:
         expand("{benchmark_dir}/quantile_normalization/{{assembly}}-{{peak_caller}}-quantilenorm.benchmark.txt", **config)[0]
     conda:
         "../envs/qnorm.yaml"
+    threads: 4
     script:
         f"{config['rule_dir']}/../scripts/qnorm.py"
 
