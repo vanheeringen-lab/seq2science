@@ -8,6 +8,12 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Fixed
+
+- not using the local annotation files
+- not recognizing a mix of gzipped and unzipped annotation files
+- RNA-seq trackhub now properly display when using stranded bigwigs
+
 ## [0.3.0] - 2020-09-22
 
 ### Added
