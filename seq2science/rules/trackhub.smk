@@ -476,7 +476,7 @@ rule trackhub:
                         for bw in strandedness_to_trackhub(sample):
                             bigwig = f"{config['bigwig_dir']}/{assembly}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw"
                             assert os.path.exists(bigwig), bigwig + " not found!"
-                            sample_name = rep_to_descriptive(sample) + "" if bw == "" else bw[1:]  # add direction
+                            sample_name = f'{rep_to_descriptive(sample)}{"" if bw == "" else bw[1:]}'  # add direction
                             sample_name = trackhub.helpers.sanitize(sample_name)
 
                             track = trackhub.Track(
