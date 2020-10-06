@@ -1,7 +1,7 @@
 # do onstart/onexit things
 sample_schemas = ['sample', 'assembly', 'replicate', 'strandedness']
 config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific', 'gene_expression', 'trackhub']
-include: "../../rules/configuration_generic.smk"
+include: "../../rules/configuration.smk"
 
 
 # load the remaining relevant rules
@@ -34,6 +34,7 @@ rule count_all:
 
              (["{counts_dir}/{assemblies}-counts.tsv"]) +
              (["{counts_dir}/{assemblies}-DEXSeq_counts.tsv"] if config['dexseq'] else []) +
+             (["{genome_dir}/{assemblies}/gene_id2name.tsv"]) +
 
              ([f"{{dge_dir}}/{{assemblies}}-{{contrasts}}.diffexp.tsv"] if config.get('contrasts', False) else []),
              **{**config, **{'assemblies': all_assemblies, 'contrasts': get_contrasts()}})

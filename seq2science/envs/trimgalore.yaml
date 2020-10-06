@@ -1,4 +1,4 @@
-name: trim_auto
+name: trimgalore
 channels:
   - conda-forge
   - bioconda

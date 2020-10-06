@@ -116,7 +116,7 @@ if config["quantifier"] == "salmon":
         params:
             input=(
                 lambda wildcards, input: ["-r", input.reads]
-                if config["layout"][wildcards.sample] == "SINGLE"
+                if sampledict[wildcards.sample]["layout"] == "SINGLE"
                 else ["-1", input.reads[0], "-2", input.reads[1]]
             ),
             params=config["quantifier_flags"],
@@ -248,7 +248,7 @@ elif config["quantifier"] == "featurecounts":
             expand("{counts_dir}/{{assembly}}-{{sample}}.counts.tsv", **config),
         params:
             strandedness=lambda wildcards: strandedness_to_quant(wildcards, "featurecounts"),
-            endedness=lambda wildcards: "" if config['layout'][wildcards.sample] == 'SINGLE' else "-p",
+            endedness=lambda wildcards: "" if sampledict[wildcards.sample]["layout"] == 'SINGLE' else "-p",
             user_flags=config["featurecounts_flags"],
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-{{sample}}.counts.log", **config),
@@ -300,7 +300,7 @@ if config.get("dexseq"):
         message: explain_rule("dexseq")
         params:
             strandedness=lambda wildcards: strandedness_to_quant(wildcards, "dexseq"),
-            endedness=lambda wildcards: "" if config['layout'][wildcards.sample] == 'SINGLE' else "-p yes",
+            endedness=lambda wildcards: "" if sampledict[wildcards.sample]["layout"] == 'SINGLE' else "-p yes",
         conda:
              "../envs/dexseq.yaml"
         shell:

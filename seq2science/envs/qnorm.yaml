@@ -4,4 +4,5 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - conda-forge::qnorm=0.1.2
+  - conda-forge::qnorm=0.4.0
+  - conda-forge::pandas=1.1.2

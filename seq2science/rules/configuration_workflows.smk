@@ -1,4 +1,8 @@
-from snakemake.logging import logger
+import math
+import os
+import pandas as pd
+
+from seq2science.util import parse_de_contrasts
 
 
 # apply workflow specific changes...
@@ -15,7 +19,7 @@ if config.get("peak_caller", False):
     # if hmmratac peak caller, check if all samples are paired-end
     if "hmmratac" in config["peak_caller"]:
         assert all(
-            [config["layout"][sample] == "PAIRED" for sample in samples.index]
+            [sampledict[sample]['layout'] == "PAIRED" for sample in samples.index]
         ), "HMMRATAC requires all samples to be paired end"
 
     config["macs2_types"] = ["control_lambda.bdg", "peaks.xls", "treat_pileup.bdg"]
@@ -58,9 +62,8 @@ if config.get("peak_caller", False):
         else:
             config["macs2_types"].extend(["summits.bed", "peaks.narrowPeak"])
 
-
 # ...for alignment and rna-seq
-for conf_dict in ["aligner", "quantifier", "diffexp"]:
+for conf_dict in ["aligner", "quantifier", "trimmer"]:
     if config.get(conf_dict, False):
         dict_key = list(config[conf_dict].keys())[0]
         for k, v in list(config[conf_dict].values())[0].items():
@@ -80,6 +83,9 @@ if get_workflow() == "rna_seq":
         col = samples.replicate if "replicate" in samples else samples.index
         if len(strandedness.index) != len(set(col)) or not all(s in set(col) for s in strandedness.index):
             os.unlink(strandedness_report)
+
+    # regular dict is prettier in the log
+    config["deseq2"] = dict(config["deseq2"])
 
 
 # ...for alignment
@@ -111,29 +117,6 @@ if "condition" in samples:
 
 # ...on DE contrasts
 if config.get("contrasts"):
-
-    def parse_de_contrasts(de_contrast):
-        """
-        Extract contrast column, groups and batch effect column from a DE contrast design
-
-        Accepts a string containing a DESeq2 contrast design
-
-        Returns
-        parsed_contrast, lst: the contrast components
-        batch, str: the batch effect column or None
-        """
-        # remove whitespaces (and '~'s if used)
-        de_contrast = de_contrast.replace(" ", "").replace("~", "")
-
-        # split and store batch effect
-        batch = None
-        if "+" in de_contrast:
-            batch, de_contrast = de_contrast.split("+")[0:2]
-
-        # parse contrast column and groups
-        parsed_contrast = de_contrast.split("_")
-        return parsed_contrast, batch
-
     # check differential gene expression contrasts
     for contrast in list(config["contrasts"]):
         parsed_contrast, batch = parse_de_contrasts(contrast)
@@ -170,58 +153,3 @@ if config.get("contrasts"):
                     f"\nYour contrast design contains group {group} which cannot be found "
                     f'in column {column_name} of {config["samples"]}.\n'
                 )
-
-
-def sieve_bam(configdict):
-    """
-    helper function to check whether or not we use rule sieve_bam
-    """
-    return (
-        configdict.get("min_mapping_quality", 0) > 0
-        or configdict.get("tn5_shift", False)
-        or configdict.get("remove_blacklist", False)
-        or configdict.get("remove_mito", False)
-    )
-
-
-def rmkeys(del_list, target_list):
-    """
-    remove all elements in del_list from target_list
-    each element may be a tuple with an added condition
-    """
-    for element in del_list:
-        if isinstance(element, str) and element in target_list:
-            target_list.remove(element)
-        elif element[1] and element[0] in target_list:
-            target_list.remove(element[0])
-    return target_list
-
-
-# after all is done, log (print) the configuration
-logger.info("CONFIGURATION VARIABLES:")
-
-# sort config: samples.tsv & directories first, alphabetized second
-keys = sorted(config.keys())
-dir_keys = []
-other_keys = []
-for key in keys:
-    if key.endswith("_dir"):
-        dir_keys.append(key)
-    else:
-        other_keys.append(key)
-keys = dir_keys + other_keys
-
-# remove superfluous keys
-keys_to_remove = ["fqext1", "fqext2", "macs2_types", "cpulimit",
-                  "genome_types", "genomepy_temp", "bam_sort_mem",
-                  ("biological_replicates", "condition" not in samples),
-                  ("filter_bam_by_strand", "strandedness" not in samples),
-                  ("technical_replicates", "replicates" not in samples),
-                  ("tximeta", config.get("quantifier") != "salmon")]
-keys = rmkeys(["samples", "layout"] + keys_to_remove, keys)
-keys = ["samples"] + keys + ["layout"]
-
-for key in keys:
-    if config[key] not in ["", False, 0, "None", "none@provided.com", "yourmail@here.com"]:
-        logger.info(f"{key: <23}: {config[key]}")
-logger.info("\n\n")

@@ -156,6 +156,56 @@ rule get_genome_support_files:
         shell("touch {output[3]}")
 
 
+rule gene_id2name:
+    """
+    Parse the gtf file to generate a gene_id to gene_name conversion table.
+    """
+    input:
+        expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
+    output:
+        expand("{genome_dir}/{{assembly}}/gene_id2name.tsv", **config),
+    run:
+        def can_convert():
+            """check if we can make a conversion table at all"""
+            with open(input[0]) as gtf:
+                for n, line in enumerate(gtf):
+                    line = line.lower()
+                    if "gene_id" in line and "gene_name" in line:
+                        return True
+                    if n > 100:
+                        break
+                return False
+
+        if not can_convert():
+            with open(output[0], "w") as out:
+                out.write("assembly does not contain both gene_ids and gene_names")
+        else:
+
+            # loop over the gtf and store the conversion in the table
+            table = dict()
+            with open(input[0]) as gtf:
+                for line in gtf:
+                    try:
+                        attributes = line.split("\t")[8].split(";")
+                        id = name = None
+                        for attribute in attributes:
+                            attribute = attribute.strip()
+                            if attribute.lower().startswith("gene_id"):
+                                id = attribute.split(" ")[1].strip('"')
+                            if attribute.lower().startswith("gene_name"):
+                                name = attribute.split(" ")[1].strip('"')
+                        if id and name:
+                            table[id] = name
+                    except IndexError:
+                        # skip lines that are too short/misformatted
+                        continue
+
+            # save the dict
+            with open(output[0], "w") as out:
+                for k,v in table.items():
+                    out.write(f"{k}\t{v}\n")
+
+
 rule unzip_annotation:
     """
     Unzip (b)gzipped files.

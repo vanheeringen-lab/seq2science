@@ -18,11 +18,28 @@ properties:
     type: string
 
 
-  # trim_galore parameters
-  trim_galore:
-    description: trim_galore settings (note that the adapter is autodetected, so you do not have to set it here)
-    default: --quality 10 --length 20 --consider_already_trimmed 10
-    type: string
+  # trimming parameters
+  trimmer:
+    description: which adapter trimmer to use
+    properties:
+      trimgalore:
+        description: trim galore! settings (note that the adapter is autodetected, so you do not have to set it here)
+        properties:
+          trimoptions:
+            default: '--quality 10 --length 20 --consider_already_trimmed 10'
+        default:
+          trimoptions: '--quality 10 --length 20 --consider_already_trimmed 10'
+      fastp:
+        description: fastp settings (note that the adapter is autodetected, so you do not have to set it here)
+        properties:
+          trimoptions:
+            default: ''
+        default:
+          trimoptions: ''
+    default:
+      fastp:
+        trimoptions: ''
+    type: object
 
   # replicate handling
   technical_replicates:
@@ -34,6 +51,12 @@ properties:
     description: which method to use to combine replicates (fisher (n >=2), idr (n==2), or keep)
     default: keep
     enum: [fisher, idr, keep]
+    type: string
+
+  # genomepy
+  provider:
+    description: Specify provider to download new genomes from. Will try Ensembl > UCSC > NCBI if left blank.
+    enum: [Ensembl, UCSC, NCBI]
     type: string
 
   # aligner
@@ -76,6 +99,15 @@ properties:
         default:
           index: ''
           align: ''
+      minimap2:
+        properties:
+          index:
+            default: ''
+          align:
+            default: '-a sr --secondary=no'
+        default:
+          index: ''
+          align: ''
       star:
         properties:
           index:
@@ -89,7 +121,6 @@ properties:
       bwa-mem:
         index: '-a bwtsw'
         align: '-M'
-
 
   # samtools index
   samtools_index:
@@ -144,7 +175,14 @@ properties:
     default: 2
     type: integer
 
-  spike_suffix:
-    description: What to append to the assembly name to indicate that spike-ins have been added
+  # custom extensions to the assemblies
+  custom_genome_extension:
+    description: File(s) to append to the genome (must be in fasta format)
+
+  custom_annotation_extension:
+    description: File(s) to append to the gene annotations (must be in GTF format)
+
+  custom_assembly_suffix:
+    description: What to append to the assembly name to indicate that custom data has been added to either genome or assembly.
     default: '_custom'
     type: string

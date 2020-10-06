@@ -1,3 +1,5 @@
+from seq2science.util import sieve_bam
+
 def get_blacklist_files(wildcards):
     files = {}
     # ideally get genome is a checkpoint, however there are quite some Snakemake
