@@ -87,6 +87,16 @@ elif config["trimmer"] == "fastp":
         ruleorder: fastp_PE > fastp_SE
 
 
+    if get_workflow() == "scrna_seq":
+        all_single_samples = [sample for sample in all_samples if sampledict[sample]["layout"] == "SINGLE"]
+        assert len(all_single_samples) == 0
+        all_single_samples = [sample + f"_{config['fqext2']}" for sample in all_samples if sampledict[sample]["layout"] == "PAIRED"]
+        all_paired_samples = []
+    else:
+        all_single_samples = [sample for sample in all_samples if sampledict[sample]["layout"] == "SINGLE"]
+        all_paired_samples = [sample for sample in all_samples if sampledict[sample]["layout"] == "PAIRED"]
+
+
     rule fastp_SE:
         """
         Automated adapter detection, adapter trimming, and quality trimming through fastp (single-end).
@@ -102,7 +112,7 @@ elif config["trimmer"] == "fastp":
         threads: 4
         message: explain_rule("fastp_SE")
         wildcard_constraints:
-            sample="|".join([sample if sampledict[sample]["layout"] == "SINGLE" else "$a" for sample in all_samples])
+            sample="|".join(all_single_samples) if len(all_single_samples) else "$a"
         log:
             expand("{log_dir}/fastp_SE/{{sample}}.log", **config),
         benchmark:
@@ -134,7 +144,7 @@ elif config["trimmer"] == "fastp":
             "../envs/fastp.yaml"
         threads: 4
         wildcard_constraints:
-            sample="|".join([sample if sampledict[sample]["layout"] == "PAIRED" else "$a" for sample in all_samples])
+            sample="|".join(all_paired_samples) if len(all_paired_samples) else "$a"
         message: explain_rule("fastp_PE")
         log:
             expand("{log_dir}/fastp_PE/{{sample}}.log", **config),
@@ -149,3 +159,4 @@ elif config["trimmer"] == "fastp":
             --out1 {output.r1} --out2 {output.r2} -h {output.qc_html} -j {output.qc_json} \
             {params.config} > {log} 2>&1
             """
+

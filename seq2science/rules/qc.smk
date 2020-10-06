@@ -652,8 +652,10 @@ def get_trimming_qc(sample):
                                **config)
 
     elif config["trimmer"] == "fastp":
+        if get_workflow() == "scrna_seq":
+            return [] 
         # not sure how fastp should work with scatac here
-         return expand(f"{{qc_dir}}/trimming/{sample}.fastp.json", **config)
+        return expand(f"{{qc_dir}}/trimming/{sample}.fastp.json", **config)
 
 
 def get_alignment_qc(sample):
