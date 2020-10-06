@@ -152,7 +152,7 @@ elif config["quantifier"] == "kallistobus":
             "../envs/kallistobus.yaml"
         params:
             basename=lambda wildcards, output: f"{output[0]}{wildcards.assembly}",
-            options=config.get("quantifier")["ref"]
+            options=config.get("ref")
         shell:
             """
             kb ref \
@@ -167,7 +167,7 @@ elif config["quantifier"] == "kallistobus":
         reads = []
         sample = wildcards.sample
         if config.get("protocol") == "celseq":
-            assert config["layout"][sample] == "PAIRED"
+            assert sampledict[sample]["layout"] == "PAIRED"
             reads += expand("{fastq_dir}/{{sample}}_R1.{fqsuffix}.gz", **config)
             reads += expand(f"{{trimmed_dir}}/{sample}_R2_trimmed.{{fqsuffix}}.gz", **config)
         else:
@@ -196,7 +196,7 @@ elif config["quantifier"] == "kallistobus":
         message: explain_rule("kallistobus-count")
         params:
             basename=lambda wildcards, input: f"{input.basedir[0]}/{wildcards.assembly}",
-            options=config.get("quantifier")["count"]
+            options=config.get("count")
         shell:
             """
             kb count \
