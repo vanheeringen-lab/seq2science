@@ -1,8 +1,8 @@
 if config["trimmer"] == "trimgalore":
     if "scrna_seq" == get_workflow():
-        ruleorder: trim_galore_SE > trim_galore_PE
+        ruleorder: trimgalore_SE > trimgalore_PE
     else:
-        ruleorder: trim_galore_PE > trim_galore_SE
+        ruleorder: trimgalore_PE > trimgalore_SE
 
 
     rule trimgalore_SE:
