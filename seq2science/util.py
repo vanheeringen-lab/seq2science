@@ -94,7 +94,7 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
         logger.error("We had trouble querying the SRA. This probably means that the SRA was unresponsive, and their servers "
                      "are overloaded or slow. Please try again in a bit...\n"
                      "Another possible option is that you try to access samples that do not exist or are protected, and "
-                     "seq2science does not support downloading those..")
+                     "seq2science does not support downloading those..\n\n")
         raise TerminatedException
 
     sample2clean = dict(zip(df_geo.experiment_alias, df_geo.experiment_accession))
@@ -109,7 +109,7 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
         logger.error("We had trouble querying the SRA. This probably means that the SRA was unresponsive, and their servers "
                      "are overloaded or slow. Please try again in a bit...\n"
                      "Another possible option is that you try to access samples that do not exist or are protected, and "
-                     "seq2science does not support downloading those..")
+                     "seq2science does not support downloading those..\n\n")
         raise TerminatedException
 
     for sample, clean in sample2clean.items():
@@ -143,14 +143,14 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
     return sampledict
 
 
-def samples2metadata(samples: List[str], config: dict) -> dict:
-    local_samples = samples2metadata_local(samples, config)
+def samples2metadata(samples: List[str], config: dict, logger) -> dict:
+    local_samples = samples2metadata_local(samples, config, logger)
     public_samples = [sample for sample in samples if sample not in local_samples.keys()]
 
     if len(public_samples) == 0:
         return local_samples
 
-    sra_samples = samples2metadata_sra(public_samples)
+    sra_samples = samples2metadata_sra(public_samples, logger)
 
     return {**local_samples, **sra_samples}
 
