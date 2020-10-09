@@ -19,6 +19,7 @@ rule run2sra:
     message: explain_rule("run2sra")
     resources:
         parallel_downloads=1,
+    params: outdir= lambda wildcards: f"{cofig['sra_dir']}/{wildcards.run}/"
     conda:
         "../envs/get_fastq.yaml"
     wildcard_constraints:
@@ -38,7 +39,7 @@ rule run2sra:
             ) 200>{eutils_cache_lock}
 
             # dump
-            prefetch --max-size 999999999999 --output-directory {output} --log-level debug --progress {wildcards.run} >> {log} 2>&1 && break
+            prefetch --max-size 999999999999 --output-directory {params.outdir} --log-level debug --progress {wildcards.run} >> {log} 2>&1 && break
             sleep 10
         done
         """
