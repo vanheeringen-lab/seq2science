@@ -11,6 +11,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Changed
 
 - layouts are stored per version, as to not have collisions in the way these are stored between versions.
+- scATAC no longer supports trackhub
 
 ### Fixed
 

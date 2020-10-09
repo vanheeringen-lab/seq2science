@@ -1,6 +1,6 @@
 # do onstart/onexit things
 sample_schemas = ['sample', 'assembly']
-config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific', 'scatac', 'trackhub']
+config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific', 'scatac']
 include: "../../rules/configuration.smk"
 
 
@@ -8,13 +8,11 @@ include: "../../rules/configuration.smk"
 include: f"{config['rule_dir']}/alignment.smk"
 include: f"{config['rule_dir']}/bam_cleaning.smk"
 include: f"{config['rule_dir']}/strandedness.smk"
-include: f"{config['rule_dir']}/bigfiles.smk"
 include: f"{config['rule_dir']}/get_fastq.smk"
 include: f"{config['rule_dir']}/get_genome.smk"
 include: f"{config['rule_dir']}/merge_replicates.smk"
 include: f"{config['rule_dir']}/qc.smk"
 include: f"{config['rule_dir']}/scATAC.smk"
-include: f"{config['rule_dir']}/trackhub.smk"
 include: f"{config['rule_dir']}/trimming.smk"
 
 # set the quality_control functions
@@ -26,7 +24,6 @@ rule snapATAC_all:
     """
     input:
         expand(
-            (["{result_dir}/trackhub"] if config['create_trackhub'] else []) +
             (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []) +
             ([f"{{result_dir}}/snap/{trep}-{treps.loc[trep, 'assembly']}.binned.snap" for trep in treps.index]),
             **{**config, **{'assemblies': all_assemblies}})
