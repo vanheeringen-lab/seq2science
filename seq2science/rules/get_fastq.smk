@@ -35,7 +35,7 @@ rule run2sra:
             (
                 flock --timeout 30 200 || continue
                 sleep 2
-            ) 200>{eutils_cache_lock}
+            ) 200>{pysradb_cache_lock}
 
             # dump
             prefetch --max-size 999999999999 --output-directory {output} --log-level debug --progress {wildcards.run} >> {log} 2>&1 && break
@@ -71,7 +71,7 @@ rule sra2fastq_SE:
         (
             flock --timeout 30 200 || exit 1
             sleep 3
-        ) 200>{eutils_cache_lock}
+        ) 200>{pysradb_cache_lock}
 
         # setup tmp dir
         mkdir -p {output.tmpdir}
@@ -115,7 +115,7 @@ rule sra2fastq_PE:
         (
             flock --timeout 30 200 || exit 1
             sleep 3
-        ) 200>{eutils_cache_lock}
+        ) 200>{pysradb_cache_lock}
 
         # setup tmp dir
         mkdir -p {output.tmpdir}
