@@ -11,7 +11,7 @@ rule run2sra:
     falls back on the slower http protocol.
     """
     output:
-        temp(directory(expand("{sra_dir}/{{run}}", **config))),
+        temp(directory(expand("{sra_dir}/{{run}}/{{run}}/{{run}}.sra", **config))),
     log:
         expand("{log_dir}/run2sra/{{run}}.log", **config),
     benchmark:
@@ -74,7 +74,7 @@ rule sra2fastq_SE:
         ) 200>{eutils_cache_lock}
 
         # dump to tmp dir
-        parallel-fastq-dump -s {input}/* -O {output.tmpdir} \
+        parallel-fastq-dump -s {input} -O {output.tmpdir} \
         --threads {threads} --split-spot --skip-technical --dumpbase --readids \
         --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' \
         --defline-qual '+' --gzip >> {log} 2>&1
@@ -115,7 +115,7 @@ rule sra2fastq_PE:
         ) 200>{eutils_cache_lock}
 
         # dump to tmp dir
-        parallel-fastq-dump -s {input}/* -O {output.tmpdir} \
+        parallel-fastq-dump -s {input} -O {output.tmpdir} \
         --threads {threads} --split-e --skip-technical --dumpbase \
         --readids --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' \
         --defline-qual '+' --gzip >> {log} 2>&1
