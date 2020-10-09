@@ -10,6 +10,7 @@ import urllib.request
 import pandas as pd
 import pysradb
 from snakemake.io import expand
+from snakemake.exceptions import TerminatedException
 
 
 def _sample_to_idxs(df: pd.DataFrame, sample: str) -> List[int]:
