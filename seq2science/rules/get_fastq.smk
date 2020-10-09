@@ -11,7 +11,7 @@ rule run2sra:
     falls back on the slower http protocol.
     """
     output:
-        temp(directory(expand("{sra_dir}/{{run}}/{{run}}/{{run}}.sra", **config))),
+        temp(expand("{sra_dir}/{{run}}/{{run}}/{{run}}.sra", **config)),
     log:
         expand("{log_dir}/run2sra/{{run}}.log", **config),
     benchmark:
@@ -19,7 +19,7 @@ rule run2sra:
     message: explain_rule("run2sra")
     resources:
         parallel_downloads=1,
-    params: outdir= lambda wildcards: f"{cofig['sra_dir']}/{wildcards.run}/"
+    params: outdir= lambda wildcards: f"{config['sra_dir']}/{wildcards.run}"
     conda:
         "../envs/get_fastq.yaml"
     wildcard_constraints:
@@ -27,7 +27,8 @@ rule run2sra:
     shell:
         """
         # move to output dir since somehow prefetch sometimes puts files in the cwd...
-        mkdir -p {output}; cd {output}
+        # and remove the top level folder since prefetch will assume we are done otherwise
+        mkdir -p {params.outdir}; cd {params.outdir}; rm -r {wildcards.run}
 
         # three attempts
         for i in {{1..3}}
@@ -39,7 +40,7 @@ rule run2sra:
             ) 200>{eutils_cache_lock}
 
             # dump
-            prefetch --max-size 999999999999 --output-directory {params.outdir} --log-level debug --progress {wildcards.run} >> {log} 2>&1 && break
+            prefetch --max-size 999999999999 --output-directory ./ --log-level debug --progress {wildcards.run} >> {log} 2>&1 && break
             sleep 10
         done
         """
