@@ -8,6 +8,11 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Changed
+
+- layouts are stored per version, as to not have collisions in the way these are stored between versions.
+- scATAC no longer supports trackhub
+
 ### Fixed
 
 - bug with edgeR (upperquartile) normalization failed. Not sure why it fails, but when is does, it now returns a dataframe of nan instead of failing the rule, and thus the whole pipeline.
