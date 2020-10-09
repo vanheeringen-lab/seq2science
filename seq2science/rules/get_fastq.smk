@@ -73,9 +73,6 @@ rule sra2fastq_SE:
             sleep 3
         ) 200>{eutils_cache_lock}
 
-        # setup tmp dir
-        mkdir -p {output.tmpdir}
-
         # dump to tmp dir
         parallel-fastq-dump -s {input}/* -O {output.tmpdir} \
         --threads {threads} --split-spot --skip-technical --dumpbase --readids \
@@ -116,9 +113,6 @@ rule sra2fastq_PE:
             flock --timeout 30 200 || exit 1
             sleep 3
         ) 200>{eutils_cache_lock}
-
-        # setup tmp dir
-        mkdir -p {output.tmpdir}
 
         # dump to tmp dir
         parallel-fastq-dump -s {input}/* -O {output.tmpdir} \
