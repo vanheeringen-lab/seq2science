@@ -376,11 +376,27 @@ for sample, values in sampledict.items():
                 run2download[run] = values["ena_fastq_ftp"][run]
 
 # if samples are merged add the layout of the technical replicate to the config
+failed_samples = dict()
 if 'replicate' in samples:
     for sample in samples.index:
         replicate = samples.loc[sample, 'replicate']
         if replicate not in sampledict:
             sampledict[replicate] = {'layout':  sampledict[sample]['layout']}
+        elif sampledict[replicate]['layout'] != sampledict[sample]['layout']:
+            assembly = samples.loc[sample, "assembly"]
+            treps = samples[(samples["assembly"] == assembly) & (samples["replicate"] == replicate)].index
+            failed_samples.setdefault(replicate, set()).update({trep for trep in treps}) 
+
+if len(failed_samples):
+    logger.error("Your technical replicates consist of a mix of single-end and paired-end samples!")
+    logger.error("This is not supported.\n")
+
+    for replicate, samples in failed_samples.items():
+        logger.error(f"{replicate}:")
+        for sample in samples:
+            logger.error(f"\t{sample}: {sampledict[sample]['layout']}")
+        logger.error("\n")
+    raise TerminatedException
 
 # workflow
 
