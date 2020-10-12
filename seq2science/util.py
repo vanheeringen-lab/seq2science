@@ -31,7 +31,7 @@ def _sample_to_idxs(df: pd.DataFrame, sample: str) -> List[int]:
 
 def samples2metadata_local(samples: List[str], config: dict, logger) -> dict:
     """
-
+    (try to) get the metadata of local samples
     """
     sampledict = dict()
     for sample in samples:
