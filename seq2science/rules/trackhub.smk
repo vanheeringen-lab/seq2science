@@ -482,7 +482,7 @@ rule trackhub:
                             track = trackhub.Track(
                                 name=sample_name,  # track names can't have any spaces or special chars.
                                 source=bigwig,  # filename to build this track from
-                                visibility="dense",  # shows the dense/full signal
+                                visibility="dense",  # shows the hidden/dense/full signal
                                 color="0,0,0",  # black
                                 autoScale="on",  # allow the track to autoscale
                                 tracktype="bigWig",  # required when making a track
