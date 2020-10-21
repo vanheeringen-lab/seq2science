@@ -12,10 +12,18 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 - (BETA) new scrna-seq workflow! Currently only supports celseq protocols.
 
+### Changed
+
+- layouts are stored per version, as to not have collisions in the way these are stored between versions.
+- scATAC no longer supports trackhub
+
 ### Fixed
 
 - bug with edgeR (upperquartile) normalization failed. Not sure why it fails, but when is does, it now returns a dataframe of nan instead of failing the rule, and thus the whole pipeline.
 - use gimmemotifs 0.15.0, so gimme.combine_peaks works with numeric chromosome names
+- clearer error message when trying samples that can not be found
+- edge case with trying to dump sra from empty directory
+- now give a nice error message when a technical replicate consists of a mix of paired-end and single-end samples
 
 ## [0.3.0] - 2020-09-22
 
@@ -41,18 +49,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Fixed
 
-<<<<<<< HEAD
-- Issue with control and technical replicates
-- Now also SRR numbers can be directly downloaded from ENA
-- Python3.8 syntaxwarnings
-- Fixed bug where scatac-seq workflow was making fastqc reports per sample
-- Chipseeker missing gtf input
-=======
 - issue with control and technical replicates
 - now also SRR numbers can be directly downloaded from ENA
 - python3.8 syntaxwarnings
 - chipseeker missing gtf input
->>>>>>> develop
 - bugs with explain
 - bwa-mem2 not working with less than 12 cores
 - batch corrected TPMs no longer break when samples/rows are subset.

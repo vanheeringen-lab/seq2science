@@ -345,7 +345,7 @@ def _clean(base_dir):
     shutil.rmtree(os.path.join(base_dir, ".snakemake"), ignore_errors=True)
 
     # remove seq2science caches
-    shutil.rmtree(os.path.expanduser(f'~/.config/seq2science'), ignore_errors=True)
+    shutil.rmtree(os.path.expanduser(f'~/.config/seq2science/{seq2science.__version__}'), ignore_errors=True)
 
     print("All cleaned up!")
 

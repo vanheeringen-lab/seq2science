@@ -25,6 +25,7 @@ from snakemake.utils import validate
 from snakemake.utils import min_version
 from snakemake.exceptions import TerminatedException
 
+import seq2science
 from seq2science.util import samples2metadata, prep_filelock, url_is_alive
 
 
@@ -248,8 +249,8 @@ if "assembly" in samples:
 
 
     # determine provider for each new assembly
-    providersfile = os.path.expanduser('~/.config/seq2science/providers.p')
-    providersfile_lock = os.path.expanduser('~/.config/seq2science/providers.p.lock')
+    providersfile = os.path.expanduser(f'~/.config/seq2science/{seq2science.__version__}/providers.p')
+    providersfile_lock = os.path.expanduser(f'~/.config/seq2science/{seq2science.__version__}/providers.p.lock')
     prep_filelock(providersfile_lock, 30)
     with FileLock(providersfile_lock):
         providers = dict()
@@ -340,20 +341,20 @@ if "control" in samples:
         if isinstance(control, str):  # ignore nans
             all_samples.append(control)
 
-eutils_cache = os.path.expanduser('~/.config/seq2science/eutils.p')
-eutils_cache_lock = os.path.expanduser('~/.config/seq2science/eutils.p.lock')
-prep_filelock(eutils_cache_lock, 30)
-with FileLock(eutils_cache_lock):
+pysradb_cache = os.path.expanduser(f'~/.config/seq2science/{seq2science.__version__}/pysradb.p')
+pysradb_cache_lock = os.path.expanduser(f'~/.config/seq2science/{seq2science.__version__}/pysradb.p.lock')
+prep_filelock(pysradb_cache_lock, 30)
+with FileLock(pysradb_cache_lock):
     try:
-        sampledict = pickle.load(open(eutils_cache, "rb"))
+        sampledict = pickle.load(open(pysradb_cache, "rb"))
     except FileNotFoundError:
         sampledict = {}
 
     missing_samples = [sample for sample in all_samples if sample not in sampledict.keys()]
     if len(missing_samples) > 0:
-        sampledict.update(samples2metadata(missing_samples, config))
+        sampledict.update(samples2metadata(missing_samples, config, logger))
 
-    pickle.dump(sampledict, open(eutils_cache, "wb"))
+    pickle.dump(sampledict, open(pysradb_cache, "wb"))
 
     # only keep samples for this run
     sampledict = {sample: values for sample, values in sampledict.items() if sample in all_samples}
@@ -375,11 +376,27 @@ for sample, values in sampledict.items():
                 run2download[run] = values["ena_fastq_ftp"][run]
 
 # if samples are merged add the layout of the technical replicate to the config
+failed_samples = dict()
 if 'replicate' in samples:
     for sample in samples.index:
         replicate = samples.loc[sample, 'replicate']
         if replicate not in sampledict:
             sampledict[replicate] = {'layout':  sampledict[sample]['layout']}
+        elif sampledict[replicate]['layout'] != sampledict[sample]['layout']:
+            assembly = samples.loc[sample, "assembly"]
+            treps = samples[(samples["assembly"] == assembly) & (samples["replicate"] == replicate)].index
+            failed_samples.setdefault(replicate, set()).update({trep for trep in treps}) 
+
+if len(failed_samples):
+    logger.error("Your technical replicates consist of a mix of single-end and paired-end samples!")
+    logger.error("This is not supported.\n")
+
+    for replicate, samples in failed_samples.items():
+        logger.error(f"{replicate}:")
+        for sample in samples:
+            logger.error(f"\t{sample}: {sampledict[sample]['layout']}")
+        logger.error("\n")
+    raise TerminatedException
 
 # workflow
 
@@ -466,8 +483,8 @@ else:
 
 # record which assembly trackhubs are found on UCSC
 if config.get("create_trackhub"):
-    hubfile = os.path.expanduser('~/.config/seq2science/ucsc_trackhubs.p')
-    hubfile_lock = os.path.expanduser('~/.config/seq2science/ucsc_trackhubs.p.lock')
+    hubfile = os.path.expanduser(f'~/.config/seq2science/{seq2science.__version__}/ucsc_trackhubs.p')
+    hubfile_lock = os.path.expanduser(f'~/.config/seq2science/{seq2science.__version__}/ucsc_trackhubs.p.lock')
     prep_filelock(hubfile_lock)
 
     with FileLock(hubfile_lock):
