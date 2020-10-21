@@ -440,6 +440,10 @@ if 'condition' in samples:
 if "control" in samples:
     sample_constraints.append("control")
 
+if get_workflow() == "scrna_seq" and config.get("protocol") == "celseq":
+    if "sample" in sample_constraints:
+        sample_constraints.remove("sample")
+
 wildcard_constraints:
     sample=any_given(*sample_constraints)
 
