@@ -114,7 +114,7 @@ if get_workflow() == "rna_seq":
         """
         out = {
             ".fwd": ["--filterRNAstrand forward", "--filterRNAstrand reverse"],
-            ".rev": ["--filterRNAstrand forward", "--filterRNAstrand reverse"], #  ["--filterRNAstrand reverse", "--filterRNAstrand forward"],
+            ".rev": ["--filterRNAstrand forward", "--filterRNAstrand reverse"],
             "": [""]
         }
 
