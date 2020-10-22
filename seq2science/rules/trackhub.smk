@@ -2,6 +2,9 @@ import os.path
 import trackhub
 from Bio import SeqIO
 from multiprocessing import Pool
+import matplotlib as mpl
+import colorsys
+import numpy as np
 
 
 rule twobit:
@@ -238,6 +241,128 @@ def get_defaultPos(sizefile):
     return dflt[0] + ":0-" + str(min(int(dflt[1]), 100000))
 
 
+def get_colors(asmbly):
+    """
+    Return a dictionary with colors for each track.
+
+    First picks a color for each main track (biological replicates for ATAC-/ChIP-seq or
+    forward stranded technical replicate for alignment/RNA-seq).
+
+    Then add paler colors for each sub track.
+    """
+    def main_colors(n, min_h=0, max_h=0.9, dflt_s=1.00, dflt_v=0.75):
+        """
+        Return a list of n tuples with HSV colors varying in hue.
+        """
+        # for fewer samples, select nearby colors
+        steps = max(n, 8)
+
+        hues = np.linspace(min_h,max_h, steps)[0:n]
+        S = dflt_s
+        V = dflt_v
+        return [(H, S, V) for H in hues]
+
+    def sub_colors(hsv, n):
+        """
+        Return a list of n tuples with HSV colors varying in brightness (saturation + value).
+        """
+        # for fewer samples, select nearby colors
+        steps = max(n, 4)
+
+        H = [hsv[0][0] for _ in range(n)]       # constant
+        S = np.linspace(hsv[0][1], 0.2, steps)  # goes down
+        V = np.linspace(hsv[0][2], 1.0, steps)  # goes up
+        return [(H[_], S[_], V[_]) for _ in range(n)]
+
+    palletes = {}
+    if get_workflow() in ["atac_seq", "chip_seq"]:
+        main_tracks = set(breps[breps["assembly"] == asmbly].index)
+        number_of_main_tracks = len(main_tracks)
+        mc = main_colors(number_of_main_tracks)
+
+        for brep in main_tracks:
+            tracks_per_main_track = 1 + len(treps_from_brep[(brep, asmbly)])
+            palletes[brep] = sub_colors(mc, tracks_per_main_track)
+
+    elif get_workflows() in ["alignment", "rna_seq"]:
+        main_tracks = treps[treps["assembly"] == asmbly].index
+        number_of_main_tracks = len(main_tracks)
+        mc = main_colors(number_of_main_tracks)
+
+        for trep in main_tracks:
+            tracks_per_main_track = 2  # at most 1 forward and 1 reverse
+            palletes[trep] = sub_colors(mc, tracks_per_main_track)
+
+    return palletes
+
+
+def mpl_hsv_to_ucsc_rgb(value):
+    """
+    matplotlib uses 3 floats between 0-1.
+    UCSC accepts 3 comma separated ints between 0-255 without spaces.
+    """
+    rgb = [round(n*255) for n in mpl.colors.hsv_to_rgb(value)]
+    return f"{rgb[0]},{rgb[1]},{rgb[2]}"
+
+
+# mpl_long_to_mpl_short = {
+#     "blue": "b",
+#     "green": "g",
+#     "red": "r",
+#     "cyan": "c",
+#     "magenta": "m",
+#     "yellow": "y",
+#     "black": "k",
+#     "white": "w"
+# }
+#
+# mpl_short_to_mpl_rgb = {
+#     "b": (0.0, 0.0, 1.0),
+#     "g": (0.0, 0.5, 0.0),
+#     "r": (1.0, 0.0, 0.0),
+#     "c": (0.0, 0.75, 0.75),
+#     "m": (0.75, 0, 0.75),
+#     "y": (0.75, 0.75, 0),
+#     "k": (0.0, 0.0, 0.0),
+#     "w": (1.0, 1.0, 1.0)
+# }
+#
+# def mpl_rgb_to_ucsc_rgb(value):
+#     rgb = [round(n*255) for n in value]
+#     return f"{rgb[0]},{rgb[1]},{rgb[2]}"
+#
+#
+# def hex_to_ucsc_rgb(value):
+#     value = value.lstrip('#')
+#     lv = len(value)
+#     rgb = tuple(int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3))
+#     return f"{rgb[0]},{rgb[1]},{rgb[2]}"
+#
+#
+# def yiq_to_ucsc_rgb(value):
+#     y = value[0]
+#     i = value[1]
+#     q = value[2]
+#     rgb = colorsys.yiq_to_rgb(y, i, q)
+#     return f"{rgb[0]},{rgb[1]},{rgb[2]}"
+#
+#
+# def hls_to_ucsc_rgb(value):
+#     h = value[0]
+#     l = value[1]
+#     s = value[2]
+#     rgb = colorsys.hls_to_rgb(h, l, s)
+#     return f"{rgb[0]},{rgb[1]},{rgb[2]}"
+#
+#
+# def hsv_to_ucsc_rgb(value):
+#     h = value[0]
+#     s = value[1]
+#     v = value[2]
+#     rgb = colorsys.hsv_to_rgb(h, s, v)
+#     return f"{rgb[0]},{rgb[1]},{rgb[2]}"
+
+
 def trackhub_data(wildcards):
     """
     generate a workflow specific dictionary with
@@ -295,6 +420,7 @@ def trackhub_data(wildcards):
     for assembly in all_assemblies:
         asmbly = ori_assembly(assembly)  # no custom suffix, if present
         track_data[assembly] = {}
+        palletes = get_colors(asmbly)
         priority = 10.0
 
         # check if the trackhub exists on UCSC, or if we need to make an assembly hub
@@ -390,7 +516,7 @@ def trackhub_data(wildcards):
                         subgroups       = {},
                         source          = f"{config['result_dir']}/{peak_caller}/{assembly}-{brep}.big{ftype}",  # filename to build this track from
                         visibility      = "dense",  # full/squish/pack/dense/hide visibility of the track
-                        color           = "0,0,0",  # black
+                        color           = mpl_hsv_to_ucsc_rgb(palletes[brep][0]),
                         priority        = priority  # change the order this track will appear in
                     )
                     if track_data[assembly][peak_caller][brep][brep].tracktype != "bigNarrowPeak":
@@ -398,7 +524,7 @@ def trackhub_data(wildcards):
                         track_data[assembly][peak_caller][brep][brep].maxHeightPixels = "100:32:8"
 
                     # the technical replicate(s) that comprise this biological replicate
-                    for trep in treps_from_brep[(brep, asmbly)]:
+                    for n, trep in enumerate(treps_from_brep[(brep, asmbly)]):
                         priority += 1.0
                         track_data[assembly][peak_caller][brep][trep] = trackhub.Track(
                             name            = trackhub.helpers.sanitize(f"{rep_to_descriptive(trep)}{peak_caller_suffix}_bw"),
@@ -408,7 +534,7 @@ def trackhub_data(wildcards):
                             subgroups       = {},
                             source          = f"{config['result_dir']}/{peak_caller}/{assembly}-{trep}.bw",  # filename to build this track from
                             visibility      = "dense",  # full/squish/pack/dense/hide visibility of the track
-                            color           = "0,0,0",  # black
+                            color           = mpl_hsv_to_ucsc_rgb(palletes[brep][n+1]),
                             autoScale       = "on",  # allow the track to autoscale
                             maxHeightPixels = "100:32:8",
                             priority        = priority  # change the order this track will appear in
@@ -419,7 +545,8 @@ def trackhub_data(wildcards):
             track_data[assembly][config["aligner"]] = {}
             for trep in treps[treps["assembly"] == asmbly].index:
                 track_data[assembly][config["aligner"]][trep] = {}
-                for bw in strandedness_to_trackhub(trep):
+
+                for n, bw in enumerate(strandedness_to_trackhub(trep)):
                     folder = "unstranded" if bw == "" else ("forward" if bw == ".fwd" else "reverse")
                     priority += 1.0
                     track_data[assembly][config["aligner"]][trep][folder] = trackhub.Track(
@@ -430,7 +557,7 @@ def trackhub_data(wildcards):
                         subgroups       = {},
                         source          = f"{config['bigwig_dir']}/{assembly}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw",  # filename to build this track from
                         visibility      = "dense",  # full/squish/pack/dense/hide visibility of the track
-                        color           = "0,0,0",  # black
+                        color           = mpl_hsv_to_ucsc_rgb(palletes[trep][n]),
                         autoScale       = "on",  # allow the track to autoscale
                         maxHeightPixels = "100:32:8",
                         priority        = priority  # change the order this track will appear in
@@ -508,9 +635,6 @@ rule trackhub:
 
             for assembly in all_assemblies:
                 trackdb = trackhub.trackdb.TrackDb()
-                priority = 11.0
-
-                # trackhub/assembly hub
                 if "hubfiles" in track_data[assembly]:
                     # create an assembly hub for this genome
                     hubfiles = track_data[assembly]["hubfiles"]
