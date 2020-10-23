@@ -6,6 +6,7 @@ import matplotlib as mpl
 import colorsys
 import numpy as np
 from seq2science.util import unique
+from math import ceil
 
 
 rule twobit:
@@ -250,14 +251,22 @@ def get_colors(asmbly):
 
     Then add paler colors for each sub track.
     """
-    def main_colors(n, min_h=0, max_h=0.9, dflt_s=1.00, dflt_v=0.75):
+    def main_colors(n, min_h=0, max_h=0.85, dflt_s=1.00, dflt_v=0.75, alternate=True):
         """
         Return a list of n tuples with HSV colors varying in hue.
+        Alternate determines whether colors shift gradual or discretely between tracks
         """
         # for fewer samples, select nearby colors
         steps = max(n, 8)
 
-        hues = np.linspace(min_h,max_h, steps)[0:n]
+        hues = np.linspace(min_h,max_h, steps).tolist()[0:n]
+        if alternate:
+            m = ceil(len(hues)/2)
+            h1 = hues[:m]
+            h2 = hues[m:]
+            hues[::2] = h1
+            hues[1::2] = h2
+
         S = dflt_s
         V = dflt_v
         return [(H, S, V) for H in hues]
