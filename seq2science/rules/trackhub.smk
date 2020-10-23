@@ -171,17 +171,16 @@ rule trackhub_index:
     source: https://genome.ucsc.edu/goldenPath/help/hubQuickStartSearch.html
     """
     input:
-        sizes=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config), # TODO: add gtf back to input once checkpoints are fixed
-    params:
+        sizes=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
         gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
     output:
         genePred=temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.gp", **config)),
         genePredbed=temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.gp.bed", **config)),
-        genePredbigbed=expand("{genome_dir}/{{assembly}}/{{assembly}}.bb", **config),
+        genePredbigbed=expand("{genome_dir}/{{assembly}}/annotation.bedBed", **config),
         info=temp(expand("{genome_dir}/{{assembly}}/info.txt", **config)),
         indexinfo=temp(expand("{genome_dir}/{{assembly}}/indexinfo.txt", **config)),
-        ix=expand("{genome_dir}/{{assembly}}/{{assembly}}.ix", **config),
-        ixx=expand("{genome_dir}/{{assembly}}/{{assembly}}.ixx", **config),
+        ix=expand("{genome_dir}/{{assembly}}/annotation.ix", **config),
+        ixx=expand("{genome_dir}/{{assembly}}/annotation.ixx", **config),
     log:
         expand("{log_dir}/trackhub/{{assembly}}.index.log", **config),
     benchmark:
@@ -191,7 +190,7 @@ rule trackhub_index:
     shell:
         """
         # generate annotation files
-        gtfToGenePred -allErrors -geneNameAsName2 -genePredExt {params.gtf} {output.genePred} -infoOut={output.info} >> {log} 2>&1
+        gtfToGenePred -allErrors -geneNameAsName2 -genePredExt {input.gtf} {output.genePred} -infoOut={output.info} >> {log} 2>&1
 
         genePredToBed {output.genePred} {output.genePredbed} >> {log} 2>&1
 
@@ -269,29 +268,27 @@ def get_colors(asmbly):
         # for fewer samples, select nearby colors
         steps = max(n, 4)
 
-        H = [hsv[0][0] for _ in range(n)]       # constant
-        S = np.linspace(hsv[0][1], 0.2, steps)  # goes down
-        V = np.linspace(hsv[0][2], 1.0, steps)  # goes up
+        H = [hsv[0] for _ in range(n)]       # constant
+        S = np.linspace(hsv[1], 0.2, steps)  # goes down
+        V = np.linspace(hsv[2], 1.0, steps)  # goes up
         return [(H[_], S[_], V[_]) for _ in range(n)]
 
     palletes = {}
     if get_workflow() in ["atac_seq", "chip_seq"]:
         main_tracks = set(breps[breps["assembly"] == asmbly].index)
-        number_of_main_tracks = len(main_tracks)
-        mc = main_colors(number_of_main_tracks)
+        mc = main_colors(len(main_tracks))
 
-        for brep in main_tracks:
+        for n, brep in enumerate(main_tracks):
             tracks_per_main_track = 1 + len(treps_from_brep[(brep, asmbly)])
-            palletes[brep] = sub_colors(mc, tracks_per_main_track)
+            palletes[brep] = sub_colors(mc[n], tracks_per_main_track)
 
     elif get_workflows() in ["alignment", "rna_seq"]:
         main_tracks = treps[treps["assembly"] == asmbly].index
-        number_of_main_tracks = len(main_tracks)
-        mc = main_colors(number_of_main_tracks)
+        mc = main_colors(len(main_tracks))
 
-        for trep in main_tracks:
+        for n, trep in enumerate(main_tracks):
             tracks_per_main_track = 2  # at most 1 forward and 1 reverse
-            palletes[trep] = sub_colors(mc, tracks_per_main_track)
+            palletes[trep] = sub_colors(mc[n], tracks_per_main_track)
 
     return palletes
 
@@ -462,20 +459,20 @@ def trackhub_data(wildcards):
             if has_annotation(assembly):
                 track_data[assembly]["hubfiles"]["annotation"] = trackhub.Track(
                     name="annotation",
-                    source=f"{config['genome_dir']}/{assembly}/{assembly}.bb",
+                    source=f"{config['genome_dir']}/{assembly}/annotation.bedBed",
                     tracktype="bigBed 12",
                     visibility="pack",
                     color="140,43,69",  # bourgundy
                     priority=10.2,
                     searchIndex="name",
-                    searchTrix=f"{assembly}.ix",
+                    searchTrix="annotation.ix",
                 )
                 # the ix and ixx files are required above
                 track_data[assembly]["hubfiles"]["ix"] = RequiredFiles(
-                    f"{config['genome_dir']}/{assembly}/{assembly}.ix"
+                    f"{config['genome_dir']}/{assembly}/annotation.ix"
                 )
                 track_data[assembly]["hubfiles"]["ixx"] = RequiredFiles(
-                    f"{config['genome_dir']}/{assembly}/{assembly}.ixx"
+                    f"{config['genome_dir']}/{assembly}/annotation.ixx"
                 )
 
             track_data[assembly]["hubfiles"]["gcPercent"] = trackhub.Track(
@@ -651,10 +648,10 @@ rule trackhub:
                         dir = os.path.join(str(output), assembly)
                         shell(f"mkdir -p {dir}")
                         basename = f"{config['genome_dir']}/{assembly}/{assembly}"
-                        for ext in [".ix", ".ixx"]:
-                            file_loc = basename + ext
-                            link_loc = os.path.join(dir, assembly + ext)
-                            shell(f"ln {file_loc} {link_loc}")
+                        for ext in ["ix", "ixx"]:
+                            file_loc = f"{basename}.{ext}"
+                            link_loc = os.path.join(dir, f"annotation.{ext}")
+                            shell(f"cp {file_loc} {link_loc}")
                 else:
                     # link this data to an existing trackhub
                     assembly_uscs = get_ucsc_name(assembly)[1]
