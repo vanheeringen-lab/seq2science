@@ -242,6 +242,29 @@ def get_defaultPos(sizefile):
     return dflt[0] + ":0-" + str(min(int(dflt[1]), 100000))
 
 
+# convert matplotlib colors to HSV
+mpl_long_to_mpl_short = {
+    "blue": "b",
+    "green": "g",
+    "red": "r",
+    "cyan": "c",
+    "magenta": "m",
+    "yellow": "y",
+    "black": "k",
+    "white": "w"
+}
+mpl_short_to_mpl_rgb = {
+    "b": (0.0, 0.0, 1.0),
+    "g": (0.0, 0.5, 0.0),
+    "r": (1.0, 0.0, 0.0),
+    "c": (0.0, 0.75, 0.75),
+    "m": (0.75, 0, 0.75),
+    "y": (0.75, 0.75, 0),
+    "k": (0.0, 0.0, 0.0),
+    "w": (1.0, 1.0, 1.0)
+}
+
+
 def get_colors(asmbly):
     """
     Return a dictionary with colors for each track.
@@ -283,19 +306,53 @@ def get_colors(asmbly):
         V = np.linspace(hsv[2], 1.0, steps)  # goes up
         return [(H[_], S[_], V[_]) for _ in range(n)]
 
+    def color_model_parser(color):
+        """
+        convert nans, matplotlib and RGB to HSV tuples
+        """
+        if str(color) == "nan":
+            return tuple([0, 0, 0])
+
+        elif color.count(",") == 2:
+            numbers = [float(c) for c in color.split(",")]
+            if all([n <= 1 for n in numbers]):
+                return tuple(numbers)
+            else:
+                return tuple([n/255 for n in numbers])
+
+        # hex codes start with #, so are commented out!!!
+        # elif color.startswith("#"):
+        #     value = color.lstrip('#')
+        #     lv = len(value)
+        #     return tuple(value[i:i + lv // 3] for i in range(0, lv, lv // 3))
+        #     #return f"{rgb[0]},{rgb[1]},{rgb[2]}"
+
+        else:
+            try:
+                if len(color) > 1:
+                    color = mpl_long_to_mpl_short[color]
+                return mpl_short_to_mpl_rgb[color]
+            except KeyError:
+                print(f"color not recognized: {color}")
+                raise ValueError
+
     palletes = {}
-    if get_workflow() in ["atac_seq", "chip_seq"]:
-        main_tracks = unique(breps[breps["assembly"] == asmbly].index)
+    main_tracks = unique(breps[breps["assembly"] == asmbly].index)
+    if "colors" in breps:
+        rep_colors = breps[breps.index.isin(main_tracks)].colors\
+            .reset_index().drop_duplicates(breps.index.name).set_index(cols[0])
+        mc = []
+        for c in rep_colors.colors:
+            mc.append(color_model_parser(c))
+    else:
         mc = main_colors(len(main_tracks))
 
+    if get_workflow() in ["atac_seq", "chip_seq"]:
         for n, brep in enumerate(main_tracks):
             tracks_per_main_track = 1 + len(treps_from_brep[(brep, asmbly)])
             palletes[brep] = sub_colors(mc[n], tracks_per_main_track)
 
     elif get_workflow() in ["alignment", "rna_seq"]:
-        main_tracks = treps[treps["assembly"] == asmbly].index
-        mc = main_colors(len(main_tracks))
-
         for n, trep in enumerate(main_tracks):
             tracks_per_main_track = 2  # at most 1 forward and 1 reverse
             palletes[trep] = sub_colors(mc[n], tracks_per_main_track)
