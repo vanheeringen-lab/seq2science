@@ -5,6 +5,7 @@ from multiprocessing import Pool
 import matplotlib as mpl
 import colorsys
 import numpy as np
+from seq2science.util import unique
 
 
 rule twobit:
@@ -275,7 +276,7 @@ def get_colors(asmbly):
 
     palletes = {}
     if get_workflow() in ["atac_seq", "chip_seq"]:
-        main_tracks = set(breps[breps["assembly"] == asmbly].index)
+        main_tracks = unique(breps[breps["assembly"] == asmbly].index)
         mc = main_colors(len(main_tracks))
 
         for n, brep in enumerate(main_tracks):
@@ -500,7 +501,7 @@ def trackhub_data(wildcards):
 
                 ftype = get_ftype(peak_caller)
                 peak_caller_suffix = "" if len(config["peak_caller"]) == 1 else f"_{peak_caller}"
-                for brep in set(breps[breps["assembly"] == asmbly].index):
+                for brep in unique(breps[breps["assembly"] == asmbly].index):
                     track_data[assembly][peak_caller][brep] = {brep: {}}
 
                     # the biological replicate
