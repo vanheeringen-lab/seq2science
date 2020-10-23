@@ -502,7 +502,7 @@ def trackhub_data(wildcards):
                 ftype = get_ftype(peak_caller)
                 peak_caller_suffix = "" if len(config["peak_caller"]) == 1 else f"_{peak_caller}"
                 for brep in unique(breps[breps["assembly"] == asmbly].index):
-                    track_data[assembly][peak_caller][brep] = {brep: {}}
+                    track_data[assembly][peak_caller][brep] = {}
 
                     # the biological replicate
                     priority += 1.0
@@ -523,8 +523,9 @@ def trackhub_data(wildcards):
 
                     # the technical replicate(s) that comprise this biological replicate
                     for n, trep in enumerate(treps_from_brep[(brep, asmbly)]):
+                        folder = f"{trep}_bw"  # prevents overwriting if brep == trep
                         priority += 1.0
-                        track_data[assembly][peak_caller][brep][trep] = trackhub.Track(
+                        track_data[assembly][peak_caller][brep][folder] = trackhub.Track(
                             name            = trackhub.helpers.sanitize(f"{rep_to_descriptive(trep)}{peak_caller_suffix}_bw"),
                             tracktype       = "bigWig",  # required when making a track
                             short_label     = None,  # 17 characters max
