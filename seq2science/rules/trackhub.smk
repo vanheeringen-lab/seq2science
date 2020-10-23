@@ -5,7 +5,7 @@ from multiprocessing import Pool
 import matplotlib as mpl
 import colorsys
 import numpy as np
-from seq2science.util import unique
+from seq2science.util import unique, shorten
 from math import ceil
 
 
@@ -292,7 +292,7 @@ def get_colors(asmbly):
             tracks_per_main_track = 1 + len(treps_from_brep[(brep, asmbly)])
             palletes[brep] = sub_colors(mc[n], tracks_per_main_track)
 
-    elif get_workflows() in ["alignment", "rna_seq"]:
+    elif get_workflow() in ["alignment", "rna_seq"]:
         main_tracks = treps[treps["assembly"] == asmbly].index
         mc = main_colors(len(main_tracks))
 
@@ -509,17 +509,18 @@ def trackhub_data(wildcards):
                 track_data[assembly][peak_caller] = {}
 
                 ftype = get_ftype(peak_caller)
-                peak_caller_suffix = "" if len(config["peak_caller"]) == 1 else f"_{peak_caller}"
+                peak_caller_suffix = "" if len(config["peak_caller"]) == 1 else f" {peak_caller}"
+                pcs = shorten(peak_caller_suffix, 5)
                 for brep in unique(breps[breps["assembly"] == asmbly].index):
                     track_data[assembly][peak_caller][brep] = {}
 
                     # the biological replicate
                     priority += 1.0
                     track_data[assembly][peak_caller][brep][brep] = trackhub.Track(
-                        name            = trackhub.helpers.sanitize(f"{rep_to_descriptive(brep, brep=True)}{peak_caller_suffix}_pk"),
+                        name            = trackhub.helpers.sanitize(f"{rep_to_descriptive(brep, brep=True)}{peak_caller_suffix} pk"),
                         tracktype       = "bigNarrowPeak" if ftype == "narrowPeak" else "bigBed",
-                        short_label     = None,  # 17 characters max
-                        long_label      = None,
+                        short_label     = f"{shorten(rep_to_descriptive(brep, brep=True), 14-len(pcs), ['signs', 'vowels', 'center'])}{pcs} pk",  # <= 17 characters suggested
+                        long_label      = f"{rep_to_descriptive(brep, brep=True)}{peak_caller_suffix} peaks",
                         subgroups       = {},
                         source          = f"{config['result_dir']}/{peak_caller}/{assembly}-{brep}.big{ftype}",  # filename to build this track from
                         visibility      = "dense",  # full/squish/pack/dense/hide visibility of the track
@@ -535,10 +536,10 @@ def trackhub_data(wildcards):
                         folder = f"{trep}_bw"  # prevents overwriting if brep == trep
                         priority += 1.0
                         track_data[assembly][peak_caller][brep][folder] = trackhub.Track(
-                            name            = trackhub.helpers.sanitize(f"{rep_to_descriptive(trep)}{peak_caller_suffix}_bw"),
+                            name            = trackhub.helpers.sanitize(f"{rep_to_descriptive(trep)}{peak_caller_suffix} bw"),
                             tracktype       = "bigWig",  # required when making a track
-                            short_label     = None,  # 17 characters max
-                            long_label      = None,
+                            short_label     = f"{shorten(rep_to_descriptive(trep), 14-len(pcs), ['signs', 'vowels', 'center'])}{pcs} bw",  # <= 17 characters suggested
+                            long_label      = f"{rep_to_descriptive(trep)}{peak_caller_suffix} bigWig",
                             subgroups       = {},
                             source          = f"{config['result_dir']}/{peak_caller}/{assembly}-{trep}.bw",  # filename to build this track from
                             visibility      = "dense",  # full/squish/pack/dense/hide visibility of the track
@@ -560,8 +561,9 @@ def trackhub_data(wildcards):
                     track_data[assembly][config["aligner"]][trep][folder] = trackhub.Track(
                         name            = trackhub.helpers.sanitize(f"{rep_to_descriptive(trep)}{bw}"),
                         tracktype       = "bigWig",  # required when making a track
-                        short_label     = None,  # 17 characters max
-                        long_label      = None,
+                        short_label     = shorten(rep_to_descriptive(trep), 14 if bw else 17, ['signs', 'vowels', 'center']) +
+                                          ("" if bw == "" else (" fw" if bw == ".fwd" else " rv")),  # <= 17 characters suggested
+                        long_label      = rep_to_descriptive(trep) + ("" if bw == "" else (" forward" if bw == ".fwd" else " reverse")),
                         subgroups       = {},
                         source          = f"{config['bigwig_dir']}/{assembly}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw",  # filename to build this track from
                         visibility      = "dense",  # full/squish/pack/dense/hide visibility of the track

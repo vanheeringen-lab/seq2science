@@ -4,6 +4,7 @@ Utility functions for seq2science
 import os
 import sys
 from typing import List
+from math import ceil, floor
 import time
 import urllib.request
 
@@ -221,3 +222,43 @@ def url_is_alive(url):
 def unique(sequence):
     seen = set()
     return [x for x in sequence if not (x in seen or seen.add(x))]
+
+
+def shorten(string, max_length, methods="right"):
+    """
+    shorten a string to a max_length, multiple methods accepted.
+    "signs" and "vowels" remove their respective characters from right to left.
+    "left","right" and "center" can be performed afterward if the desired length is not yet reached.
+    """
+    overhead = len(string) - max_length
+    if overhead <= 0:
+        return string
+
+    if "signs" in methods:
+        signs = ["-", "_", "."]
+        s = ""
+        for l in string[::-1]:
+            if l in signs and overhead > 0:
+                overhead -= 1
+            else:
+                s += l
+        string = s[::-1]
+
+    if "vowels" in methods:
+        vowels = ["a", "e", "i", "o", "u"]
+        s = ""
+        for l in string[::-1]:
+            if l in vowels and overhead > 0:
+                overhead -= 1
+            else:
+                s += l
+        string = s[::-1]
+
+    if "right" in methods:
+        string = string[:max_length]
+    elif "left" in methods:
+        string = string[len(string)-max_length:]
+    elif "center" in methods:
+        string = string[:ceil(max_length/2)] + string[len(string)-floor(max_length/2):]
+
+    return string
