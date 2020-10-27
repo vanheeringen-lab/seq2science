@@ -589,7 +589,7 @@ rule combine_qc_files:
     input:
         unpack(get_qc_files)
     output:
-        temp("{sample}.tmp.list")
+        expand("{qc_dir}/multiqc_{{assembly}}.tmp.files", **config),
     run:
         with open(output[0]) as out:
             out.write('\n'.join(input))
@@ -662,7 +662,7 @@ def get_trimming_qc(sample):
 
     elif config["trimmer"] == "fastp":
         # not sure how fastp should work with scatac here
-         return expand(f"{{qc_dir}}/trimming/{sample}.fastp.json", **config)
+        return expand(f"{{qc_dir}}/trimming/{sample}.fastp.json", **config)
 
 
 def get_alignment_qc(sample):
