@@ -162,7 +162,7 @@ elif config["aligner"] == "bwa-mem2":
             index_dir=expand("{genome_dir}/{{assembly}}/index/{aligner}/{{assembly}}", **config),
             params=config["align"],
         resources:
-            mem_gb=13,
+            mem_gb=40,
         priority: 0
         threads: 10
         conda:

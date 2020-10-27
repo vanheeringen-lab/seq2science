@@ -10,6 +10,7 @@ import urllib.request
 import pandas as pd
 import pysradb
 from snakemake.io import expand
+from snakemake.exceptions import TerminatedException
 
 
 def _sample_to_idxs(df: pd.DataFrame, sample: str) -> List[int]:
@@ -28,9 +29,9 @@ def _sample_to_idxs(df: pd.DataFrame, sample: str) -> List[int]:
     return idxs
 
 
-def samples2metadata_local(samples: List[str], config: dict) -> dict:
+def samples2metadata_local(samples: List[str], config: dict, logger) -> dict:
     """
-
+    (try to) get the metadata of local samples
     """
     sampledict = dict()
     for sample in samples:
@@ -43,18 +44,20 @@ def samples2metadata_local(samples: List[str], config: dict) -> dict:
         elif sample.startswith(('GSM', 'SRX', 'SRR', 'ERR', 'DRR')):
             continue
         else:
-            raise ValueError(f"\nsample {sample} was not found..\n"
-                             f"We checked for SE file:\n"
-                             f"\t{config['fastq_dir']}/{sample}.{config['fqsuffix']}.gz \n"
-                             f"and for PE files:\n"
-                             f"\t{config['fastq_dir']}/{sample}_{config['fqext1']}.{config['fqsuffix']}.gz \n"
-                             f"\t{config['fastq_dir']}/{sample}_{config['fqext2']}.{config['fqsuffix']}.gz \n"
-                             f"and since the sample did not start with either GSM, SRX, SRR, ERR, and DRR we "
-                             f"couldn't find it online..\n")
+            logger.error(f"\nsample {sample} was not found..\n"
+                         f"We checked for SE file:\n"
+                         f"\t{config['fastq_dir']}/{sample}.{config['fqsuffix']}.gz \n"
+                         f"and for PE files:\n"
+                         f"\t{config['fastq_dir']}/{sample}_{config['fqext1']}.{config['fqsuffix']}.gz \n"
+                         f"\t{config['fastq_dir']}/{sample}_{config['fqext2']}.{config['fqsuffix']}.gz \n"
+                         f"and since the sample did not start with either GSM, SRX, SRR, ERR, and DRR we "
+                         f"couldn't find it online..\n")
+            raise TerminatedException
+
     return sampledict
 
 
-def samples2metadata_sra(samples: List[str]) -> dict:
+def samples2metadata_sra(samples: List[str], logger) -> dict:
     """
     Get the required info to continue a seq2science run from a list of samples.
 
@@ -89,9 +92,11 @@ def samples2metadata_sra(samples: List[str]) -> dict:
     try:
         df_geo = db_sra.gsm_to_srx(geo_samples)
     except:
-        print("We had trouble querying the SRA. This probably means that the SRA was unresponsive, and their servers "
-              "are overloaded or slow. Please try again in a bit...")
-        sys.exit(1)
+        logger.error("We had trouble querying the SRA. This probably means that the SRA was unresponsive, and their servers "
+                     "are overloaded or slow. Please try again in a bit...\n"
+                     "Another possible option is that you try to access samples that do not exist or are protected, and "
+                     "seq2science does not support downloading those..\n\n")
+        raise TerminatedException
 
     sample2clean = dict(zip(df_geo.experiment_alias, df_geo.experiment_accession))
 
@@ -102,9 +107,11 @@ def samples2metadata_sra(samples: List[str]) -> dict:
     try:
         df_sra = db_sra.sra_metadata(list(sample2clean.values()), detailed=True)
     except:
-        print("We had trouble querying the SRA. This probably means that the SRA was unresponsive, and their servers "
-              "are overloaded or slow. Please try again in a bit...")
-        sys.exit(1)
+        logger.error("We had trouble querying the SRA. This probably means that the SRA was unresponsive, and their servers "
+                     "are overloaded or slow. Please try again in a bit...\n"
+                     "Another possible option is that you try to access samples that do not exist or are protected, and "
+                     "seq2science does not support downloading those..\n\n")
+        raise TerminatedException
 
     for sample, clean in sample2clean.items():
         # table indices
@@ -137,14 +144,14 @@ def samples2metadata_sra(samples: List[str]) -> dict:
     return sampledict
 
 
-def samples2metadata(samples: List[str], config: dict) -> dict:
-    local_samples = samples2metadata_local(samples, config)
+def samples2metadata(samples: List[str], config: dict, logger) -> dict:
+    local_samples = samples2metadata_local(samples, config, logger)
     public_samples = [sample for sample in samples if sample not in local_samples.keys()]
 
     if len(public_samples) == 0:
         return local_samples
 
-    sra_samples = samples2metadata_sra(public_samples)
+    sra_samples = samples2metadata_sra(public_samples, logger)
 
     return {**local_samples, **sra_samples}
 
