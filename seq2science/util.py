@@ -6,7 +6,6 @@ import sys
 from typing import List
 import time
 import urllib.request
-from pathlib import Path
 
 import pandas as pd
 import pysradb
@@ -163,7 +162,6 @@ def prep_filelock(lock_file, max_age=10):
         if os.path.exists(lock_file) and \
                 time.time() - os.stat(lock_file).st_mtime > max_age:
             os.unlink(lock_file)
-            Path(lock_file).touch()
     except FileNotFoundError:
          pass
 
