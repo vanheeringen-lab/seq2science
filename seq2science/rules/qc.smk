@@ -592,7 +592,7 @@ rule combine_qc_files:
         expand("{qc_dir}/multiqc_{{assembly}}.tmp.files", **config),
     run:
         with open(output[0]) as out:
-            out.write('\n'.join(input))
+            out.write('\n'.join(input.files))
 
 
 def get_qc_schemas(wildcards):
