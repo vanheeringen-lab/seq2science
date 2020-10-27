@@ -601,7 +601,7 @@ def get_qc_schemas(wildcards):
     qc['sample_names'] = expand('{qc_dir}/sample_names_{{assembly}}.tsv', **config)[0]
     qc['schema'] = expand('{qc_dir}/schema.yaml', **config)[0]
     if config["trimmer"] == "trimgalore":
-        qc['filter_buttons'] = expand('{qc_dir}/sample_filters_{{assembly}}.tsv', **config)[0
+        qc['filter_buttons'] = expand('{qc_dir}/sample_filters_{{assembly}}.tsv', **config)[0]
     return qc
 
 
