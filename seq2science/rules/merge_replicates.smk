@@ -1,8 +1,7 @@
 # dataframe with all technical replicates collapsed
 cols = subset = ["sample", "assembly"]
 if "replicate" in samples:
-    cols = ["replicate", "assembly"]
-    subset = ["replicate", "assembly"]
+    cols = subset = ["replicate", "assembly"]
 if "condition" in samples:
     cols.append("condition")
     subset.append("condition")
@@ -27,7 +26,7 @@ if "control" in samples.columns:
 # dataframe with all replicates collapsed
 breps = treps
 if "condition" in treps:
-    breps = treps.reset_index(drop=True).drop_duplicates(subset=subset).set_index("condition")
+    breps = treps.reset_index(drop=True).drop_duplicates(subset=subset[1:]).set_index("condition")
 
 
 # make a dict that returns the treps that belong to a brep

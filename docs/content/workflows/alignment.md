@@ -79,6 +79,10 @@ If you are working with multiple assemblies in one workflow, replicate names hav
 
 Replicate merging is turned on by default. It can be turned off by setting `technical_replicates` in the `config.yaml` to `keep`.
 
+#### Colors column
+If you are visualizing your data on the UCSC trackhub you can optionally specify the colors of each track.
+To do so, you can add the color by name (google "matplotlib colors" for the options), or RGB values, in the "colors" column. Empty fields are considered black.
+
 #### Final notes
 - Make sure that the samples.tsv is a tab separated values file when running the pipeline.
 - Feel free to delete or add columns to your liking.

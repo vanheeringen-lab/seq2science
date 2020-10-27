@@ -8,11 +8,17 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- automatic selection of trackhub track colors
+- specify trackhub track colors with the "colors" column in the samples.tsv. Accepts RGB and matplotlib colors.
+
 ### Fixed
 
 - not using the local annotation files
 - not recognizing a mix of gzipped and unzipped annotation files
 - RNA-seq trackhub now properly display when using stranded bigwigs
+- trackhub track order is not identical to the samples.tsv (was alphabetical for ChIP-/ATAC-seq
 
 ## [0.3.0] - 2020-09-22
 

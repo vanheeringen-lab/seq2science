@@ -2,10 +2,9 @@ import os.path
 import trackhub
 from Bio import SeqIO
 from multiprocessing import Pool
-import matplotlib as mpl
 import colorsys
 import numpy as np
-from seq2science.util import unique, shorten
+from seq2science.util import color_picker, color_gradient, hsv_to_ucsc, unique, shorten
 from math import ceil
 
 
@@ -235,34 +234,11 @@ def get_ucsc_name(assembly):
     return False, assembly
 
 
-def get_defaultPos(sizefile):
+def get_defaultpos(sizefile):
     # extract a default position spanning the first scaffold/chromosome in the sizefile.
     with open(sizefile, "r") as file:
         dflt = file.readline().strip("\n").split("\t")
     return dflt[0] + ":0-" + str(min(int(dflt[1]), 100000))
-
-
-# convert matplotlib colors to HSV
-mpl_long_to_mpl_short = {
-    "blue": "b",
-    "green": "g",
-    "red": "r",
-    "cyan": "c",
-    "magenta": "m",
-    "yellow": "y",
-    "black": "k",
-    "white": "w"
-}
-mpl_short_to_mpl_rgb = {
-    "b": (0.0, 0.0, 1.0),
-    "g": (0.0, 0.5, 0.0),
-    "r": (1.0, 0.0, 0.0),
-    "c": (0.0, 0.75, 0.75),
-    "m": (0.75, 0, 0.75),
-    "y": (0.75, 0.75, 0),
-    "k": (0.0, 0.0, 0.0),
-    "w": (1.0, 1.0, 1.0)
-}
 
 
 def get_colors(asmbly):
@@ -271,160 +247,27 @@ def get_colors(asmbly):
 
     First picks a color for each main track (biological replicates for ATAC-/ChIP-seq or
     forward stranded technical replicate for alignment/RNA-seq).
+    Main track colors can be specified in the samples.tsv, in column 'colors'.
 
     Then add paler colors for each sub track.
     """
-    def main_colors(n, min_h=0, max_h=0.85, dflt_s=1.00, dflt_v=0.75, alternate=True):
-        """
-        Return a list of n tuples with HSV colors varying in hue.
-        Alternate determines whether colors shift gradual or discretely between tracks
-        """
-        # for fewer samples, select nearby colors
-        steps = max(n, 8)
-
-        hues = np.linspace(min_h,max_h, steps).tolist()[0:n]
-        if alternate:
-            m = ceil(len(hues)/2)
-            h1 = hues[:m]
-            h2 = hues[m:]
-            hues[::2] = h1
-            hues[1::2] = h2
-
-        S = dflt_s
-        V = dflt_v
-        return [(H, S, V) for H in hues]
-
-    def sub_colors(hsv, n):
-        """
-        Return a list of n tuples with HSV colors varying in brightness (saturation + value).
-        """
-        # for fewer samples, select nearby colors
-        steps = max(n, 4)
-
-        H = [hsv[0] for _ in range(n)]       # constant
-        S = np.linspace(hsv[1], 0.2, steps)  # goes down
-        V = np.linspace(hsv[2], 1.0, steps)  # goes up
-        return [(H[_], S[_], V[_]) for _ in range(n)]
-
-    def color_model_parser(color):
-        """
-        convert nans, matplotlib and RGB to HSV tuples
-        """
-        if str(color) == "nan":
-            return tuple([0, 0, 0])
-
-        elif color.count(",") == 2:
-            numbers = [float(c) for c in color.split(",")]
-            if all([n <= 1 for n in numbers]):
-                return tuple(numbers)
-            else:
-                return tuple([n/255 for n in numbers])
-
-        # hex codes start with #, so are commented out!!!
-        # elif color.startswith("#"):
-        #     value = color.lstrip('#')
-        #     lv = len(value)
-        #     return tuple(value[i:i + lv // 3] for i in range(0, lv, lv // 3))
-        #     #return f"{rgb[0]},{rgb[1]},{rgb[2]}"
-
-        else:
-            try:
-                if len(color) > 1:
-                    color = mpl_long_to_mpl_short[color]
-                return mpl_short_to_mpl_rgb[color]
-            except KeyError:
-                print(f"color not recognized: {color}")
-                raise ValueError
-
     palletes = {}
+
+    # pick colors for each main track
     main_tracks = unique(breps[breps["assembly"] == asmbly].index)
     if "colors" in breps:
-        rep_colors = breps[breps.index.isin(main_tracks)].colors\
-            .reset_index().drop_duplicates(breps.index.name).set_index(cols[0])
-        mc = []
-        for c in rep_colors.colors:
-            mc.append(color_model_parser(c))
+        mc = breps[breps.index.isin(main_tracks)].colors\
+            .reset_index().drop_duplicates(breps.index.name).set_index(cols[0])\
+            ['colors'].to_list()
     else:
-        mc = main_colors(len(main_tracks))
+        mc = color_picker(len(main_tracks))
 
-    if get_workflow() in ["atac_seq", "chip_seq"]:
-        for n, brep in enumerate(main_tracks):
-            tracks_per_main_track = 1 + len(treps_from_brep[(brep, asmbly)])
-            palletes[brep] = sub_colors(mc[n], tracks_per_main_track)
-
-    elif get_workflow() in ["alignment", "rna_seq"]:
-        for n, trep in enumerate(main_tracks):
-            tracks_per_main_track = 2  # at most 1 forward and 1 reverse
-            palletes[trep] = sub_colors(mc[n], tracks_per_main_track)
+    # create a gradient for each main track color
+    for n, rep in enumerate(main_tracks):
+        tracks_per_main_track = (1 + len(treps_from_brep[(rep, asmbly)])) #if get_workflow() in ["atac_seq", "chip_seq"] else 2
+        palletes[rep] = color_gradient(mc[n], tracks_per_main_track)
 
     return palletes
-
-
-def mpl_hsv_to_ucsc_rgb(value):
-    """
-    matplotlib uses 3 floats between 0-1.
-    UCSC accepts 3 comma separated ints between 0-255 without spaces.
-    """
-    rgb = [round(n*255) for n in mpl.colors.hsv_to_rgb(value)]
-    return f"{rgb[0]},{rgb[1]},{rgb[2]}"
-
-
-# mpl_long_to_mpl_short = {
-#     "blue": "b",
-#     "green": "g",
-#     "red": "r",
-#     "cyan": "c",
-#     "magenta": "m",
-#     "yellow": "y",
-#     "black": "k",
-#     "white": "w"
-# }
-#
-# mpl_short_to_mpl_rgb = {
-#     "b": (0.0, 0.0, 1.0),
-#     "g": (0.0, 0.5, 0.0),
-#     "r": (1.0, 0.0, 0.0),
-#     "c": (0.0, 0.75, 0.75),
-#     "m": (0.75, 0, 0.75),
-#     "y": (0.75, 0.75, 0),
-#     "k": (0.0, 0.0, 0.0),
-#     "w": (1.0, 1.0, 1.0)
-# }
-#
-# def mpl_rgb_to_ucsc_rgb(value):
-#     rgb = [round(n*255) for n in value]
-#     return f"{rgb[0]},{rgb[1]},{rgb[2]}"
-#
-#
-# def hex_to_ucsc_rgb(value):
-#     value = value.lstrip('#')
-#     lv = len(value)
-#     rgb = tuple(int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3))
-#     return f"{rgb[0]},{rgb[1]},{rgb[2]}"
-#
-#
-# def yiq_to_ucsc_rgb(value):
-#     y = value[0]
-#     i = value[1]
-#     q = value[2]
-#     rgb = colorsys.yiq_to_rgb(y, i, q)
-#     return f"{rgb[0]},{rgb[1]},{rgb[2]}"
-#
-#
-# def hls_to_ucsc_rgb(value):
-#     h = value[0]
-#     l = value[1]
-#     s = value[2]
-#     rgb = colorsys.hls_to_rgb(h, l, s)
-#     return f"{rgb[0]},{rgb[1]},{rgb[2]}"
-#
-#
-# def hsv_to_ucsc_rgb(value):
-#     h = value[0]
-#     s = value[1]
-#     v = value[2]
-#     rgb = colorsys.hsv_to_rgb(h, s, v)
-#     return f"{rgb[0]},{rgb[1]},{rgb[2]}"
 
 
 def trackhub_data(wildcards):
@@ -501,7 +344,7 @@ def trackhub_data(wildcards):
             track_data[assembly]["hubfiles"] = {}
 
             sizes_file = f"{config['genome_dir']}/{assembly}/{assembly}.fa.sizes"
-            dflt = get_defaultPos(sizes_file) if os.path.exists(sizes_file) else "chr1:0-10000"  # placeholder
+            dflt = get_defaultpos(sizes_file) if os.path.exists(sizes_file) else "chr1:0-10000"  # placeholder
             track_data[assembly]["hubfiles"]["genome"] = trackhub.Assembly(
                 genome=asmbly,
                 twobit_file=f"{config['genome_dir']}/{assembly}/{assembly}.2bit",  # only file input not named "source"
@@ -581,7 +424,7 @@ def trackhub_data(wildcards):
                         subgroups       = {},
                         source          = f"{config['result_dir']}/{peak_caller}/{assembly}-{brep}.big{ftype}",  # filename to build this track from
                         visibility      = "dense",  # full/squish/pack/dense/hide visibility of the track
-                        color           = mpl_hsv_to_ucsc_rgb(palletes[brep][0]),
+                        color           = hsv_to_ucsc(palletes[brep][0]),
                         priority        = priority  # change the order this track will appear in
                     )
                     if track_data[assembly][peak_caller][brep][brep].tracktype != "bigNarrowPeak":
@@ -600,7 +443,7 @@ def trackhub_data(wildcards):
                             subgroups       = {},
                             source          = f"{config['result_dir']}/{peak_caller}/{assembly}-{trep}.bw",  # filename to build this track from
                             visibility      = "dense",  # full/squish/pack/dense/hide visibility of the track
-                            color           = mpl_hsv_to_ucsc_rgb(palletes[brep][n+1]),
+                            color           = hsv_to_ucsc(palletes[brep][n+1]),
                             autoScale       = "on",  # allow the track to autoscale
                             maxHeightPixels = "100:32:8",
                             priority        = priority  # change the order this track will appear in
@@ -624,7 +467,7 @@ def trackhub_data(wildcards):
                         subgroups       = {},
                         source          = f"{config['bigwig_dir']}/{assembly}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw",  # filename to build this track from
                         visibility      = "dense",  # full/squish/pack/dense/hide visibility of the track
-                        color           = mpl_hsv_to_ucsc_rgb(palletes[trep][n]),
+                        color           = hsv_to_ucsc(palletes[trep][n]),
                         autoScale       = "on",  # allow the track to autoscale
                         maxHeightPixels = "100:32:8",
                         priority        = priority  # change the order this track will appear in

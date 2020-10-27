@@ -118,6 +118,10 @@ If you are working with multiple assemblies in one workflow, replicate names hav
 
 Replicate merging is turned on by default. It can be turned off by setting `technical_replicates` in the `config.yaml` to `keep`.
 
+#### Colors column
+If you are visualizing your data on the UCSC trackhub you can optionally specify the colors of each track.
+To do so, you can add the color by name (google "matplotlib colors" for the options), or RGB values, in the "colors" column. Empty fields are considered black.
+
 ***
 ### DESeq2 contrast designs
 The following section will guide you through the process of creating a DESeq2 contrast using only the samples.tsv and the config.yaml.

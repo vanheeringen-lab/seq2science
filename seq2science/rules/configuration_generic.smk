@@ -5,7 +5,6 @@ import os.path
 import psutil
 import pickle
 import re
-import subprocess
 import time
 import copy
 import json
@@ -25,7 +24,7 @@ from snakemake.utils import validate
 from snakemake.utils import min_version
 from snakemake.exceptions import TerminatedException
 
-from seq2science.util import samples2metadata, prep_filelock, url_is_alive
+from seq2science.util import samples2metadata, prep_filelock, url_is_alive, color_parser
 
 
 logger.info(
@@ -160,6 +159,11 @@ if 'strandedness' in samples:
     samples['strandedness'] = samples['strandedness'].mask(pd.isnull, 'nan')
     if config.get('ignore_strandedness', True) or not any([field in list(samples['strandedness']) for field in ['yes', 'forward', 'reverse', 'no']]):
         samples = samples.drop(columns=['strandedness'])
+if 'colors' in samples:
+    samples['colors'] = samples['colors'].mask(pd.isnull, '0,0,0')  # nan -> black
+    samples['colors'] = [color_parser(c) for c in samples['colors']]  # convert input to HSV color
+    if not config.get('create_trackhub', False):
+        samples = samples.drop(columns=['colors'])
 
 if 'replicate' in samples:
     # check if replicate names are unique between assemblies
