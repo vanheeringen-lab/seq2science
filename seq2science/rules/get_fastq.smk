@@ -239,7 +239,7 @@ rule runs2sample:
     benchmark:
         expand("{benchmark_dir}/run2sample/{{sample}}{{suffix}}.benchmark.txt", **config)[0]
     wildcard_constraints:
-        sample="(GSM|SRR|ERR|DRR)\d+",
+        sample=lambda wildcards: "(GSM|SRR|ERR|DRR)\d+" if "runs" in sampledict[wildcards.sample] else "$a",
     run:
         shell("cp {input[0]} {output}")
 
