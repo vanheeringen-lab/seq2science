@@ -287,8 +287,12 @@ if "assembly" in samples:
                                 providers[assembly]["genome"] = genome_provider
 
                     pickle.dump(providers, open(providersfile, "wb"))
+                break
         except FileNotFoundError:
-            continue
+            time.sleep(1)
+    else:
+        logger.error("There were some problems with locking the seq2science cache. Please try again in a bit.")
+        raise TerminatedException
 
     # check the providers for the required assemblies
     annotation_required = "rna_seq" in get_workflow() or config["aligner"] == "star"
@@ -366,8 +370,12 @@ for _ in range(2):
 
             # only keep samples for this run
             sampledict = {sample: values for sample, values in sampledict.items() if sample in all_samples}
+        break
     except FileNotFoundError:
-        continue
+        time.sleep(1)
+else:
+    logger.error("There were some problems with locking the seq2science cache. Please try again in a bit.")
+    raise TerminatedException
 
 logger.info("Done!\n\n")
 
@@ -515,5 +523,10 @@ if config.get("create_trackhub"):
 
                 # read hubfile
                 ucsc_assemblies = pickle.load(open(hubfile, "rb"))
+            break
         except FileNotFoundError:
-            continue
+            time.sleep(1)
+    else:
+        logger.error("There were some problems with locking the seq2science cache. Please try again in a bit.")
+        raise TerminatedException
+
