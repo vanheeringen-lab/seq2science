@@ -607,9 +607,12 @@ def get_qc_schemas(wildcards):
 
 rule multiqc:
     """
-    Aggregate all the quality control metrics for every sample into a single multiqc report.
+    Aggregate all the quality control metrics for every sample into a single 
+    multiqc report.
     
-    The input can get very long ....
+    The input can get very long (causing problems with the shell), so we have 
+    to write the input to a file, and then we can use that file as input to 
+    multiqc.
     """
     input:
         unpack(get_qc_schemas),
