@@ -613,6 +613,7 @@ rule multiqc:
     """
     input:
         unpack(get_qc_schemas),
+        tmp=expand('{qc_dir}/samplesconfig_mqc.html', **config),
         files=rules.combine_qc_files.output,
     output:
         expand("{qc_dir}/multiqc_{{assembly}}.html", **config),
@@ -628,8 +629,7 @@ rule multiqc:
         "../envs/qc.yaml"
     shell:
         """
-        <{input.files} xargs -I % \
-        multiqc % -o {params.dir} -n multiqc_{wildcards.assembly}.html \
+        multiqc $(< {input.files}) -o {params.dir} -n multiqc_{wildcards.assembly}.html \
         --config {input.schema}                                                    \
         --config {input.header}                                                    \
         --sample-names {input.sample_names}                                        \
