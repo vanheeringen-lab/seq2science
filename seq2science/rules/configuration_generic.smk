@@ -351,10 +351,10 @@ pysradb_cache_lock = os.path.expanduser(f'~/.config/seq2science/{seq2science.__v
 for _ in range(2):
     # we get two tries, in case parallel executions are interfering with one another
     try:
-        prep_filelock(eutils_cache_lock, 30)
-        with FileLock(eutils_cache_lock):
+        prep_filelock(pysradb_cache_lock, 30)
+        with FileLock(pysradb_cache_lock):
             try:
-                sampledict = pickle.load(open(eutils_cache, "rb"))
+                sampledict = pickle.load(open(pysradb_cache, "rb"))
             except FileNotFoundError:
                 sampledict = {}
 
@@ -362,7 +362,7 @@ for _ in range(2):
             if len(missing_samples) > 0:
                 sampledict.update(samples2metadata(missing_samples, config))
 
-            pickle.dump(sampledict, open(eutils_cache, "wb"))
+            pickle.dump(sampledict, open(pysradb_cache, "wb"))
 
             # only keep samples for this run
             sampledict = {sample: values for sample, values in sampledict.items() if sample in all_samples}
