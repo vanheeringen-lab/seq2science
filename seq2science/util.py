@@ -89,16 +89,19 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
     geo_samples = [sample for sample in samples if sample.startswith("GSM")]
 
     # in sample2clean we store the (potential GEO) sample name in a SRA compliant name
-    try:
-        df_geo = db_sra.gsm_to_srx(geo_samples)
-    except:
-        logger.error("We had trouble querying the SRA. This probably means that the SRA was unresponsive, and their servers "
-                     "are overloaded or slow. Please try again in a bit...\n"
-                     "Another possible option is that you try to access samples that do not exist or are protected, and "
-                     "seq2science does not support downloading those..\n\n")
-        raise TerminatedException
+    if len(geo_samples):
+        try:
+            df_geo = db_sra.gsm_to_srx(geo_samples)
+        except:
+            logger.error("We had trouble querying the SRA. This probably means that the SRA was unresponsive, and their servers "
+                         "are overloaded or slow. Please try again in a bit...\n"
+                         "Another possible option is that you try to access samples that do not exist or are protected, and "
+                         "seq2science does not support downloading those..\n\n")
+            raise TerminatedException
 
-    sample2clean = dict(zip(df_geo.experiment_alias, df_geo.experiment_accession))
+        sample2clean = dict(zip(df_geo.experiment_alias, df_geo.experiment_accession))
+    else:
+        sample2clean = dict()
 
     # now add the already SRA compliant names with a reference to itself
     sample2clean.update({sample: sample for sample in samples if sample not in geo_samples})
