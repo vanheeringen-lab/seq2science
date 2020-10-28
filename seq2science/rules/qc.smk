@@ -591,7 +591,7 @@ rule combine_qc_files:
     output:
         expand("{qc_dir}/multiqc_{{assembly}}.tmp.files", **config),
     run:
-        with open(output[0]) as out:
+        with open(output[0], mode="w") as out:
             out.write('\n'.join(input.files))
 
 
