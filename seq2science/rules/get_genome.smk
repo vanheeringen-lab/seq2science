@@ -141,7 +141,13 @@ rule get_genome_support_files:
         expand("{genome_dir}/{{assembly}}/{{assembly}}.gaps.bed", **config),
     run:
         genomepy.Genome(wildcards.assembly, genomes_dir=config["genome_dir"])
+        # somehow genomepy returns async?
+        # first make sure each file exists
         while not all([os.path.exists(out) for out in output]):
+            time.sleep(1)
+
+        # and then make sure each hasn't been changed for at least 1 second
+        while not all([time.time() - os.path.getmtime(out) > 1 for out in output]):
             time.sleep(1)
 
 
