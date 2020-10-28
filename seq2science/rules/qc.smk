@@ -628,9 +628,8 @@ rule multiqc:
         "../envs/qc.yaml"
     shell:
         """
-        cat {input.files} | \
-        xargs zcat -f | \
-        multiqc -o {params.dir} -n multiqc_{wildcards.assembly}.html \
+        <{input.files} xargs -I % \
+        multiqc % -o {params.dir} -n multiqc_{wildcards.assembly}.html \
         --config {input.schema}                                                    \
         --config {input.header}                                                    \
         --sample-names {input.sample_names}                                        \
