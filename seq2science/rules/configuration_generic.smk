@@ -360,7 +360,7 @@ for _ in range(2):
 
             missing_samples = [sample for sample in all_samples if sample not in sampledict.keys()]
             if len(missing_samples) > 0:
-                sampledict.update(samples2metadata(missing_samples, config))
+                sampledict.update(samples2metadata(missing_samples, config, logger))
 
             pickle.dump(sampledict, open(pysradb_cache, "wb"))
 
