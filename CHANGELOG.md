@@ -21,6 +21,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - clearer error message when trying samples that can not be found
 - edge case with trying to dump sra from empty directory
 - now give a nice error message when a technical replicate consists of a mix of paired-end and single-end samples
+- bug with downloading only SRR/DRR samples (but no GSM)
 
 ## [0.3.0] - 2020-09-22
 
