@@ -3,4 +3,4 @@ add description
 """
 import genomepy
 
-genomepy.Genome(snakemake.wildcards.assembly, genomes_dir=config["genome_dir"])
+genomepy.Genome(snakemake.wildcards.assembly, genomes_dir=snakemake.params.genome_dir)

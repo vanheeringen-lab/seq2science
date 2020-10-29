@@ -139,6 +139,8 @@ rule get_genome_support_files:
         expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.fai", **config),
         expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
         expand("{genome_dir}/{{assembly}}/{{assembly}}.gaps.bed", **config),
+    params:
+        genome_dir=config["genome_dir"]
     script:
         f"{config['rule_dir']}/../scripts/genome_support.py"
 
