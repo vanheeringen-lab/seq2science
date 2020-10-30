@@ -1,5 +1,5 @@
 """
-add description
+Generate supporting files for a genome.
 """
 import genomepy
 
