@@ -203,8 +203,7 @@ samples.index = samples.index.map(str)
 def get_workflow():
     return workflow.snakefile.split('/')[-2]
 
-
-wf = get_workflow()\
+sequencing_protocol = get_workflow()\
     .replace('alignment',  'Alignment')\
     .replace('atac_seq',   'ATAC-seq')\
     .replace('chip_seq',   'ChIP-seq')\
