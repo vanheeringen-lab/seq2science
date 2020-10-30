@@ -194,8 +194,11 @@ rule trackhub_index:
         # generate annotation files
         gtfToGenePred -allErrors -ignoreGroupsWithoutExons -geneNameAsName2 -genePredExt {input.gtf} {output.genePred} -infoOut={output.info} >> {log} 2>&1
 
+        # check if gtf has gene_names > if l!=0, use gene_name, else transcript_id
+        l=$(head -n 100 {input.gtf} | grep gene_name | wc -l)
+        
         # switch columns 1 (transcript_id) and 12 (gene_name)
-        awk 'BEGIN {{ FS = "\t" }}; {{ t = $1; $1 = $12; $12 = t; print; }}' {output.genePred} > {output.genePrednamed}
+        awk -v len=$l 'BEGIN {{ FS = "\t" }}; {{ if(len!="0") {{ t = $1; $1 = $12; $12 = t; print; }} else {{ print; }} }}' {output.genePred} > {output.genePrednamed}
 
         genePredToBed {output.genePrednamed} {output.genePredbed} >> {log} 2>&1
 
@@ -204,7 +207,7 @@ rule trackhub_index:
         bedToBigBed -extraIndex=name {output.genePredbed} {input.sizes} {output.genePredbigbed} >> {log} 2>&1
 
         # generate searchable indexes (by 1: transcriptID, 2: geneId, 8: proteinID, 9: geneName, 10: transcriptName)
-        grep -v "^#" {output.info} | awk 'BEGIN {{ FS = "\t" }} ; {{print $9, $1, $2, $8, $9, $10, $1}}' > {output.indexinfo}
+        grep -v "^#" {output.info} | awk -v len=$l 'BEGIN {{ FS = "\t" }} ; {{ if(len!="0") {{print $9, $1, $2, $8, $9, $10}} else {{print $1, $1, $2, $8, $9, $10}} }}' > {output.indexinfo}
 
         ixIxx {output.indexinfo} {output.ix} {output.ixx} >> {log} 2>&1
         """
