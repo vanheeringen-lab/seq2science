@@ -204,6 +204,14 @@ def get_workflow():
     return workflow.snakefile.split('/')[-2]
 
 
+wf = get_workflow()\
+    .replace('alignment',  'Alignment')\
+    .replace('atac_seq',   'ATAC-seq')\
+    .replace('chip_seq',   'ChIP-seq')\
+    .replace('rna_seq',    'RNA-seq')\
+    .replace('scatac_seq', 'scATAC-seq')
+
+
 if "assembly" in samples:
     # control whether to custom extended assemblies
     if isinstance(config.get("custom_genome_extension"), str):
