@@ -269,7 +269,7 @@ def get_colors(asmbly):
     return palletes
 
 
-def trackhub_data(wildcards):
+def create_trackhub():
     """
     Create a UCSC trackhub.
     Returns the hub, and a list of required files.
@@ -279,8 +279,8 @@ def trackhub_data(wildcards):
     └──genomes_file
        └──genome (1 per assembly)
           ├──trackdb
-          |  ├── peaks, bigwigs
-          |  └── annotation files (assembly hub only)
+          |  ├── annotation files (assembly hub only)
+          |  └── peaks, bigwigs
           └──groups_file (assembly hub only)
 
     trackdb
@@ -288,12 +288,12 @@ def trackhub_data(wildcards):
     ├──(gcPercent  group annotation assembly hub only)
     ├──(softmasked group annotation assembly hub only)
     |
-    └──composite (1 per peak caller/aligner)
-       ├──view: peaks (ChIP- & ATAC-seq only)
-       ├──view: signal
-       ├──----brep1       peak   (group trackhub - assembly hub only)
-       ├──----brep1 trep1 signal (group trackhub - assembly hub only)
-       └──----brep1 trep2 signal (group trackhub - assembly hub only)
+    └──composite (1 per peak caller, group trackhub - assembly hub only)
+       ├──view: peaks  (forward strand/unstranded for Alignment/RNA-seq)
+       ├──view: signal (reverse strand for Alignment/RNA-seq)
+       ├──----brep1       view peak, subgroup brep
+       ├──----brep1 trep1 view signal, subgroup brep
+       └──----brep1 trep2 view signal, subgroup brep
     """
     out = {
         "hub": None,  # the complete trackhub
@@ -334,7 +334,7 @@ def trackhub_data(wildcards):
             # the genome
             file = f"{config['genome_dir']}/{assembly}/{assembly}.2bit"
             sizes_file = f"{config['genome_dir']}/{assembly}/{assembly}.fa.sizes"
-            dflt = "chr1:0-10000"  # placeholder    # get_defaultpos(sizes_file) if os.path.exists(sizes_file) else "chr1:0-10000"  # placeholder  # TODO: overwrite in the rule
+            dflt = get_defaultpos(sizes_file) if os.path.exists(sizes_file) else "chr1:0-10000"  # placeholder
             genome = trackhub.Assembly(
                 genome=asmbly,
                 twobit_file=file,
@@ -442,7 +442,7 @@ def trackhub_data(wildcards):
                     dimensions=f"dimX=view dimY=conditions",
                     tracktype="bigWig",
                     visibility="dense",  # to keep loading times managable
-                    # autoScale="group",  # the package cannot handle this composite-bigwig-only option, but its nice.
+                    # autoScale="group",  # the package cannot handle this composite-bigwig-only option. Added later.
                 )
                 if hub_type == "assembly_hub":
                     composite.add_params(group="trackhub")
@@ -498,7 +498,7 @@ def trackhub_data(wildcards):
                         source          = file,
                         visibility      = "full",  # full/squish/pack/dense/hide visibility of the track
                         color           = hsv_to_ucsc(palletes[brep][0]),
-                        priority        = priority  # change the order this track will appear in
+                        priority        = priority  # the order this track will appear in
                     )
                     if ttype != "bigNarrowPeak":
                         track.autoScale       = "on",  # allow the track to autoscale
@@ -519,7 +519,7 @@ def trackhub_data(wildcards):
                             source          = file,
                             visibility      = "full",  # full/squish/pack/dense/hide visibility of the track
                             color           = hsv_to_ucsc(palletes[brep][n+1]),
-                            priority        = priority  # change the order this track will appear in
+                            priority        = priority  # the order this track will appear in
                         )
                         out["files"].append(file)
                         signal_view.add_tracks(track)
@@ -535,7 +535,7 @@ def trackhub_data(wildcards):
                 dimensions=f"dimX=view dimY=samples",
                 tracktype="bigWig",
                 visibility="dense",  # to keep loading times managable
-                # autoScale="group",  # the package cannot handle this composite-bigwig-only option, but its nice.
+                # autoScale="group",  # the package cannot handle this composite-bigwig-only option. Added later.
             )
             if hub_type == "assembly_hub":
                 composite.add_params(group="trackhub")
@@ -596,7 +596,7 @@ def trackhub_data(wildcards):
                         source          = file,
                         visibility      = "full",  # full/squish/pack/dense/hide visibility of the track
                         color           = hsv_to_ucsc(palletes[trep][n]),
-                        priority        = priority  # change the order this track will appear in
+                        priority        = priority  # the order this track will appear in
                     )
                     out["files"].append(file)
                     view.add_tracks(track)
@@ -606,9 +606,9 @@ def trackhub_data(wildcards):
 
 def get_trackhub_files(wildcards):
     """
-    extract all files from the trackhub_data dict
+    all files used in create_trackhub()
     """
-    return trackhub_data(wildcards)["files"]
+    return create_trackhub()["files"]
 
 
 rule trackhub:
@@ -623,108 +623,42 @@ rule trackhub:
         get_trackhub_files
     output:
         directory(f"{config['result_dir']}/trackhub"),
-    params:
-        trackhub_data
     message: explain_rule("trackhub")
     log:
         expand("{log_dir}/trackhub/trackhub.log", **config),
     benchmark:
         expand("{benchmark_dir}/trackhub/trackhub.benchmark.txt", **config)[0]
     run:
-        hub = params[0]["hub"]
-        print("hub")
-        exit(0)
+        import sys
 
+        with open(log[0], "w") as f:
+            sys.stderr = sys.stdout = f
 
-        # test the code
-        # TODO: this needs to be in the actual rule
-        hub = trackhub_data("")["hub"]
-        output = [f"{config['result_dir']}/trackhub"]
-        assembly = asmbly = "XENTR_10.0"
+            # create the hub
+            hub = create_trackhub()["hub"]
 
-        # create the hub
+            # upload the hub
+            trackhub.upload.upload_hub(hub=hub, host="localhost", remote_dir=output[0])
 
-        # set defaultPos
+            # actions not supported by the Trackhub package
+            for assembly in all_assemblies:
+                asmbly = ori_assembly(assembly)  # no custom suffix, if present
+                hub_type = "trackhub" if get_ucsc_name(assembly)[0] else "assembly_hub"
 
-        # actions (2) not supported by the Trackhub package
-        # 1/2: copy the trix files
-        if False:  # only for assembly hubs
-            shell(f"mkdir -p {output[0]}/{asmbly}")
-            for ext in ["ix", "ixx"]:
-                src = f"{config['genome_dir']}/{assembly}/annotation.{ext}"
-                dst = f"{output[0]}/{asmbly}/annotation.{ext}"
-                shell(f"rsync {src} {dst}")
+                # copy the trix files
+                if hub_type == "assembly_hub" and has_annotation(asmbly):
+                    for ext in ["ix", "ixx"]:
+                        src = f"{config['genome_dir']}/{assembly}/annotation.{ext}"
+                        dst = f"{output[0]}/{asmbly}/annotation.{ext}"
+                        shell(f"rsync {src} {dst}")
 
-        # 2/2: overwrite the scaling in the composite tracks
+                # add group scaling to the composite tracks
+                trackdb_file = f"{output[0]}/{get_ucsc_name(assembly)[1]}/trackDb.txt"
+                with open(trackdb_file , "r") as tf:
+                    contents = tf.readlines()
 
-        # upload the hub
-        trackhub.upload.upload_hub(hub=hub, host="localhost", remote_dir=output[0])
-        exit(0)
-
-
-
-        # import re
-        # import sys
-        # # import trackhub
-        #
-        # with open(log[0], "w") as f:
-        #     #sys.stderr = sys.stdout = f
-        #     track_data = params[0]
-        #
-        #     # start a shared hub
-        #     hub = trackhub.Hub(
-        #         hub=config.get("hubname", f"{get_workflow()} trackhub"),
-        #         short_label=config.get("shortlabel", f"seq2science {get_workflow()}"),  # title of the control box in the genome browser (for trackhubs)
-        #         long_label=config.get(
-        #             "longlabel",
-        #             f"Automated {get_workflow()} trackhub generated by seq2science: \nhttps://github.com/vanheeringen-lab/seq2scsience",
-        #         ),
-        #         email=config.get("email", "none@provided.com"),
-        #     )
-        #
-        #     # link a genomes file to the hub
-        #     genomes_file = trackhub.genomes_file.GenomesFile()
-        #     hub.add_genomes_file(genomes_file)
-        #
-        #     for assembly in all_assemblies:
-        #         trackdb = trackhub.trackdb.TrackDb()
-        #         if "hubfiles" in track_data[assembly]:
-        #             # create an assembly hub for this genome
-        #             hubfiles = track_data[assembly]["hubfiles"]
-        #             genome = hubfiles["genome"]
-        #
-        #             # add the assembly hub tracks to the trackdb
-        #             trackdb.add_tracks(hubfiles["cytobands"])
-        #             trackdb.add_tracks(hubfiles["gcPercent"])
-        #             trackdb.add_tracks(hubfiles["RMsoft"])
-        #             if "annotation" in hubfiles:
-        #                 trackdb.add_tracks(hubfiles["annotation"])
-        #
-        #                 # copy the trix files (not supported by the Trackhub package)
-        #                 dir = os.path.join(str(output), assembly)
-        #                 shell(f"mkdir -p {dir}")
-        #                 basename = f"{config['genome_dir']}/{assembly}/{assembly}"
-        #                 for ext in ["ix", "ixx"]:
-        #                     file_loc = f"{basename}.{ext}"
-        #                     link_loc = os.path.join(dir, f"annotation.{ext}")
-        #                     shell(f"cp {file_loc} {link_loc}")
-        #         else:
-        #             # link this data to an existing trackhub
-        #             assembly_uscs = get_ucsc_name(assembly)[1]
-        #             genome = trackhub.Genome(assembly_uscs)
-        #         genomes_file.add_genome(genome)
-        #         genome.add_trackdb(trackdb)
-        #
-        #         # add the workflow specific files
-        #         for div in [d for d in track_data[assembly] if d != "hubfiles"]:  # div  = peak_caller/aligner
-        #             for rep in track_data[assembly][div].values():                         # rep  = brep/trep
-        #                 trackdb.add_tracks(rep["composite"])
-        #                 #print(rep["composite"])
-        #                 #exit(0)
-        #             # for rep in track_data[assembly][div]:                         # rep  = brep/trep
-        #             #     for track in track_data[assembly][div][rep]:              # track= peaks & reads/reads per strand
-        #             #         sample_track = track_data[assembly][div][rep][track]
-        #             #         trackdb.add_tracks(sample_track)
-        #
-        #     # now finish by storing the result
-        #     trackhub.upload.upload_hub(hub=hub, host="localhost", remote_dir=output[0])
+                with open(trackdb_file, "w") as tf:
+                    for line in contents:
+                        if line.startswith("compositeTrack"):
+                            line = "autoScale group\n" + line
+                        tf.write(line)
