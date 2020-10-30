@@ -21,6 +21,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 - not using the local annotation files
 - not recognizing a mix of gzipped and unzipped annotation files
+- bigwigs are now correctly labelled forward/reverse (when protocol was stranded)
 - trackhub: RNA-seq trackhub now displays both strands of the bigwig (when protocol was stranded)
 - trackhub: track order is now identical to the samples.tsv (was alphabetical for ChIP-/ATAC-seq)
 
