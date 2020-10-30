@@ -168,13 +168,15 @@ rule trackhub_index:
     """
     Generate a searchable annotation & index for each assembly
 
-    source: https://genome.ucsc.edu/goldenPath/help/hubQuickStartSearch.html
+    sources: https://genome.ucsc.edu/goldenPath/help/hubQuickStartSearch.html
+             https://www.biostars.org/p/272649/
     """
     input:
         sizes=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
         gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
     output:
         genePred=temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.gp", **config)),
+        genePrednamed=temp(expand("{genome_dir}/{{assembly}}/{{assembly}}named.gp", **config)),
         genePredbed=temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.gp.bed", **config)),
         genePredbigbed=expand("{genome_dir}/{{assembly}}/annotation.bedBed", **config),
         info=temp(expand("{genome_dir}/{{assembly}}/info.txt", **config)),
@@ -190,16 +192,19 @@ rule trackhub_index:
     shell:
         """
         # generate annotation files
-        gtfToGenePred -allErrors -geneNameAsName2 -genePredExt {input.gtf} {output.genePred} -infoOut={output.info} >> {log} 2>&1
+        gtfToGenePred -allErrors -ignoreGroupsWithoutExons -geneNameAsName2 -genePredExt {input.gtf} {output.genePred} -infoOut={output.info} >> {log} 2>&1
 
-        genePredToBed {output.genePred} {output.genePredbed} >> {log} 2>&1
+        # switch columns 1 (transcript_id) and 12 (gene_name)
+        awk 'BEGIN {{ FS = "\t" }}; {{ t = $1; $1 = $12; $12 = t; print; }}' {output.genePred} > {output.genePrednamed}
+
+        genePredToBed {output.genePrednamed} {output.genePredbed} >> {log} 2>&1
 
         bedSort {output.genePredbed} {output.genePredbed} >> {log} 2>&1
 
         bedToBigBed -extraIndex=name {output.genePredbed} {input.sizes} {output.genePredbigbed} >> {log} 2>&1
 
-        # generate searchable indexes (by 2: geneId, 8: proteinID, 9: geneName, 10: transcriptName and 1: transcriptID)
-        grep -v "^#" {output.info} | awk '{{print $1, $2, $8, $9, $10, $1}}' > {output.indexinfo}
+        # generate searchable indexes (by 1: transcriptID, 2: geneId, 8: proteinID, 9: geneName, 10: transcriptName)
+        grep -v "^#" {output.info} | awk 'BEGIN {{ FS = "\t" }} ; {{print $9, $1, $2, $8, $9, $10, $1}}' > {output.indexinfo}
 
         ixIxx {output.indexinfo} {output.ix} {output.ixx} >> {log} 2>&1
         """
