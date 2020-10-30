@@ -3,7 +3,6 @@ Utility functions for seq2science
 """
 import colorsys
 import os
-import sys
 from typing import List
 from math import ceil, floor
 import time
