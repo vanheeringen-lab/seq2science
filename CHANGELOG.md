@@ -26,6 +26,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - bigwigs are now correctly labelled forward/reverse (when protocol was stranded)
 - trackhub: RNA-seq trackhub now displays both strands of the bigwig (when protocol was stranded)
 - trackhub: track order is now identical to the samples.tsv (was alphabetical for ChIP-/ATAC-seq)
+- trackhub: assembly hub index now returns gene_name instead of transcript_id.
 - bug with edgeR (upperquartile) normalization failed. Not sure why it fails, but when is does, it now returns a dataframe of nan instead of failing the rule, and thus the whole pipeline.
 - use gimmemotifs 0.15.0, so gimme.combine_peaks works with numeric chromosome names
 - s2s is slightly more lenient with an edge-case when running seq2science in parallel  
