@@ -67,8 +67,8 @@ Seq2science currently supports four different normalisation methods: quantile no
 
 After these normalisations the counts are log normalised, and the base can be set with `logbase` and defaults to 2. As a final step the count tables are mean-centered. This final count table can be used for tools like [gimme maelstrom](https://gimmemotifs.readthedocs.io/en/master/reference.html#command-gimme-maelstrom) to scan for enriched transcription factor motifs. Note that this table contains **all** peaks, and no selection on differential peaks has been made. This is something that might be supported in the future, but for now you have to do this yourself.
 
-#### Trackhub ###
-A UCSC compatible trackhub is be generated for this workflow. See the [trackhub page](../results.html#trackhub) for more information!
+#### Trackhub
+A UCSC compatible trackhub can be generated for this workflow. See the [trackhub page](../results.html#trackhub)<!-- @IGNORE PREVIOUS: link --> for more information!
 
 ### Filling out the samples.tsv
 Before running a workflow you will have to specify which samples you want to run the workflow on. Each workflow starts with a `samples.tsv` as an example, and you should adapt it to your specific needs. As an example, the `samples.tsv` could look something like this:

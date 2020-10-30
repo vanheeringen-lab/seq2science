@@ -76,7 +76,7 @@ This will let seq2science to output an exon counts matrix per assembly, which ca
 Note: this utilizes scripts implemented by DEXseq, which are [built for Ensembl genomes](https://bioconductor.org/packages/devel/bioc/vignettes/DEXSeq/inst/doc/DEXSeq.html#24_Preparing_the_annotation).
 
 ***
-### Optional: Trackhub
+#### Trackhub
 A UCSC compatible trackhub can be generated for this workflow. See the [trackhub page](../results.html#trackhub)<!-- @IGNORE PREVIOUS: link --> for more information!
 
 ***
