@@ -296,10 +296,6 @@ if [ $1 = "scatac-seq" ]; then
   seq2science run scatac-seq -n --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/scatac_seq/samples.tsv} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 create_SNAP_object 1
 
-  printf "\ntrackhub\n"
-  seq2science run scatac-seq -n --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/scatac_seq/samples.tsv,create_trackhub:True} | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 trackhub 1
-
   printf "\nqc multiqc report\n"
   seq2science run scatac-seq -n --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/scatac_seq/samples.tsv,create_qc_report:True,trimmer:trimgalore} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 fastqc 2  # None for sample and twice for trep
@@ -308,10 +304,6 @@ if [ $1 = "scatac-seq" ]; then
   seq2science run scatac-seq -n --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/scatac_seq/assemblies.tsv} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bwa_index 2
   assert_rulecount $1 create_SNAP_object 2
-
-  printf "\nmultiple assemblies - trackhubs\n"
-  seq2science run scatac-seq -n --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/scatac_seq/assemblies.tsv,create_trackhub:True} | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 twobit 2
 
   printf "\nmultiple assemblies - multiqc\n"
   seq2science run scatac-seq -n --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/scatac_seq/assemblies.tsv,create_qc_report:True,trimmer:trimgalore} | tee tests/local_test_results/${1}_dag
@@ -327,10 +319,6 @@ if [ $1 = "scatac-seq" ]; then
   assert_rulecount $1 merge_replicates 2
   assert_rulecount $1 bwa_mem 1
 
-  printf "\nmultiple replicates - trackhub\n"
-  seq2science run scatac-seq -n --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/scatac_seq/replicates.tsv,technical_replicates:merge,create_trackhub:True} | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 twobit 1
-
   printf "\nmultiple replicates - multiqc report\n"
   seq2science run scatac-seq -n --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/scatac_seq/replicates.tsv,technical_replicates:merge,create_qc_report:True,trimmer:trimgalore} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 fastqc 2  # none for sample and twice for trep
@@ -345,10 +333,6 @@ if [ $1 = "scatac-seq" ]; then
   seq2science run scatac-seq -n --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/scatac_seq/complex_samples.tsv,technical_replicates:merge} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 merge_replicates 3
   assert_rulecount $1 bwa_mem 2
-
-  printf "\nmultiple assemblies and replicates - trackhub\n"
-  seq2science run scatac-seq -n --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/scatac_seq/complex_samples.tsv,technical_replicates:merge,create_trackhub:True} | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 twobit 2
 
   printf "\nmultiple assemblies and replicates - multiqc report\n"
   seq2science run scatac-seq -n --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/scatac_seq/complex_samples.tsv,technical_replicates:merge,create_qc_report:True,trimmer:trimgalore} | tee tests/local_test_results/${1}_dag

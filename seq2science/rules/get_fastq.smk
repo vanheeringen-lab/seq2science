@@ -11,7 +11,7 @@ rule run2sra:
     falls back on the slower http protocol.
     """
     output:
-        temp(directory(expand("{sra_dir}/{{run}}", **config))),
+        temp(expand("{sra_dir}/{{run}}/{{run}}/{{run}}.sra", **config)),
     log:
         expand("{log_dir}/run2sra/{{run}}.log", **config),
     benchmark:
@@ -19,6 +19,7 @@ rule run2sra:
     message: explain_rule("run2sra")
     resources:
         parallel_downloads=1,
+    params: outdir= lambda wildcards: f"{config['sra_dir']}/{wildcards.run}"
     conda:
         "../envs/get_fastq.yaml"
     wildcard_constraints:
@@ -26,7 +27,8 @@ rule run2sra:
     shell:
         """
         # move to output dir since somehow prefetch sometimes puts files in the cwd...
-        mkdir -p {output}; cd {output}
+        # and remove the top level folder since prefetch will assume we are done otherwise
+        mkdir -p {params.outdir}; cd {params.outdir}; rm -r {wildcards.run}
 
         # three attempts
         for i in {{1..3}}
@@ -35,10 +37,10 @@ rule run2sra:
             (
                 flock --timeout 30 200 || continue
                 sleep 2
-            ) 200>{eutils_cache_lock}
+            ) 200>{pysradb_cache_lock}
 
             # dump
-            prefetch --max-size 999999999999 --output-directory {output} --log-level debug --progress {wildcards.run} >> {log} 2>&1 && break
+            prefetch --max-size 999999999999 --output-directory ./ --log-level debug --progress {wildcards.run} >> {log} 2>&1 && break
             sleep 10
         done
         """
@@ -71,13 +73,10 @@ rule sra2fastq_SE:
         (
             flock --timeout 30 200 || exit 1
             sleep 3
-        ) 200>{eutils_cache_lock}
-
-        # setup tmp dir
-        mkdir -p {output.tmpdir}
+        ) 200>{pysradb_cache_lock}
 
         # dump to tmp dir
-        parallel-fastq-dump -s {input}/* -O {output.tmpdir} \
+        parallel-fastq-dump -s {input} -O {output.tmpdir} \
         --threads {threads} --split-spot --skip-technical --dumpbase --readids \
         --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' \
         --defline-qual '+' --gzip >> {log} 2>&1
@@ -115,13 +114,10 @@ rule sra2fastq_PE:
         (
             flock --timeout 30 200 || exit 1
             sleep 3
-        ) 200>{eutils_cache_lock}
-
-        # setup tmp dir
-        mkdir -p {output.tmpdir}
+        ) 200>{pysradb_cache_lock}
 
         # dump to tmp dir
-        parallel-fastq-dump -s {input}/* -O {output.tmpdir} \
+        parallel-fastq-dump -s {input} -O {output.tmpdir} \
         --threads {threads} --split-e --skip-technical --dumpbase \
         --readids --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' \
         --defline-qual '+' --gzip >> {log} 2>&1
