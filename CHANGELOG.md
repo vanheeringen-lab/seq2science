@@ -23,6 +23,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - now give a nice error message when a technical replicate consists of a mix of paired-end and single-end samples
 - issue with large number of inputs for multiqc exceeding the os command max length
 - bug with downloading only SRR/DRR samples (but no GSM)
+- issue with async generation of genome support files 
 
 ## [0.3.0] - 2020-09-22
 

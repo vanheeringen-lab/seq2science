@@ -1,6 +1,8 @@
-import contextlib
-import genomepy
 import os
+import time
+import contextlib
+
+import genomepy
 
 
 rule get_genome:
@@ -137,11 +139,10 @@ rule get_genome_support_files:
         expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.fai", **config),
         expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
         expand("{genome_dir}/{{assembly}}/{{assembly}}.gaps.bed", **config),
-        temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.done", **config),)
-    run:
-        genomepy.Genome(wildcards.assembly, genomes_dir=config["genome_dir"])
-        # snakemake doesnt wait until the above command finished running without this...
-        shell("touch {output[3]}")
+    params:
+        genome_dir=config["genome_dir"]
+    script:
+        f"{config['rule_dir']}/../scripts/genome_support.py"
 
 
 rule gene_id2name:
