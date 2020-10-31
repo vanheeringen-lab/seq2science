@@ -136,6 +136,7 @@ rule softmask_track_1:
             # As soon as a contig is scanned, the output is yielded and written to file.
             for softmasked_regions_per_contig in p.imap_unordered(get_masked_regions, SeqIO.parse(genome_handle, "fasta")):
                 bed_handle.write(softmasked_regions_per_contig)
+            p.close()
 
 
 rule softmask_track_2:
