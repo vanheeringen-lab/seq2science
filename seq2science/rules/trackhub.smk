@@ -1,11 +1,17 @@
 import os.path
-import trackhub
 from Bio import SeqIO
 from multiprocessing import Pool
-import colorsys
-import numpy as np
 from seq2science.util import color_picker, color_gradient, hsv_to_ucsc, unique, shorten
-from math import ceil
+
+import trackhub
+import logging
+
+# remove the logger created by trackhub (in trackhub.upload)
+# (it adds global logging of all stdout messages, duplicating snakemake's logging)
+for handler in logging.root.handlers:
+    if handler.__class__.__name__ == 'StreamHandler':
+        logging.root.removeHandler(handler)
+del logging
 
 
 rule twobit:
@@ -532,7 +538,7 @@ def create_trackhub():
                         )
                         out["files"].append(file)
                         signal_view.add_tracks(track)
-                        
+
         elif get_workflow() in ["alignment", "rna_seq"]:
             # one composite track to rule them all...
             name = f"{sequencing_protocol} samples"
@@ -639,6 +645,7 @@ rule trackhub:
         expand("{benchmark_dir}/trackhub/trackhub.benchmark.txt", **config)[0]
     run:
         import sys
+        import trackhub
 
         with open(log[0], "w") as f:
             sys.stderr = sys.stdout = f
