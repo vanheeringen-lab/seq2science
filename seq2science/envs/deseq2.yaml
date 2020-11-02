@@ -5,6 +5,7 @@ channels:
   - conda-forge
   - defaults
 dependencies:
+  - conda-forge::r-cairo=1.5_12.2
   - r::r-base=3.6.1
   - bioconda::bioconductor-deseq2=1.26.0
   - bioconda::bioconductor-ihw=1.14.0
