@@ -226,6 +226,8 @@ def get_runs_from_sample(wildcards):
     return run_fastqs
 
 
+public_samples = [sample for sample, values in sampledict.items() if "runs" in values]
+
 rule runs2sample:
     """
     Concatenate a single run or multiple runs together into a fastq
@@ -239,7 +241,7 @@ rule runs2sample:
     benchmark:
         expand("{benchmark_dir}/run2sample/{{sample}}{{suffix}}.benchmark.txt", **config)[0]
     wildcard_constraints:
-        sample="(GSM|SRR|ERR|DRR)\d+",
+        sample="|".join(public_samples) if len(public_samples) > 0 else "$a"
     run:
         shell("cp {input[0]} {output}")
 
