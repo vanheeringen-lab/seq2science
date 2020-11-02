@@ -5,7 +5,6 @@ import os.path
 import psutil
 import pickle
 import re
-import subprocess
 import time
 import copy
 import json
@@ -26,7 +25,8 @@ from snakemake.utils import min_version
 from snakemake.exceptions import TerminatedException
 
 import seq2science
-from seq2science.util import samples2metadata, prep_filelock, url_is_alive
+from seq2science.util import samples2metadata, prep_filelock, url_is_alive, color_parser
+
 
 
 logger.info(
@@ -161,6 +161,11 @@ if 'strandedness' in samples:
     samples['strandedness'] = samples['strandedness'].mask(pd.isnull, 'nan')
     if config.get('ignore_strandedness', True) or not any([field in list(samples['strandedness']) for field in ['yes', 'forward', 'reverse', 'no']]):
         samples = samples.drop(columns=['strandedness'])
+if 'colors' in samples:
+    samples['colors'] = samples['colors'].mask(pd.isnull, '0,0,0')  # nan -> black
+    samples['colors'] = [color_parser(c) for c in samples['colors']]  # convert input to HSV color
+    if not config.get('create_trackhub', False):
+        samples = samples.drop(columns=['colors'])
 
 if 'replicate' in samples:
     # check if replicate names are unique between assemblies
@@ -199,6 +204,13 @@ samples.index = samples.index.map(str)
 
 def get_workflow():
     return workflow.snakefile.split('/')[-2]
+
+sequencing_protocol = get_workflow()\
+    .replace('alignment',  'Alignment')\
+    .replace('atac_seq',   'ATAC-seq')\
+    .replace('chip_seq',   'ChIP-seq')\
+    .replace('rna_seq',    'RNA-seq')\
+    .replace('scatac_seq', 'scATAC-seq')
 
 
 if "assembly" in samples:
@@ -271,14 +283,15 @@ if "assembly" in samples:
                             # check if genome and annotations exist locally
                             if os.path.exists(f"{file}.fa"):
                                 providers[assembly]["genome"] = "local"
-                            if all(os.path.exists(f) for f in [f"{file}.annotation.gtf", f"{file}.annotation.bed"]):
+                            if any(os.path.exists(f) for f in [f"{file}.annotation.gtf", f"{file}.annotation.gtf.gz"]) and \
+                                any(os.path.exists(f) for f in [f"{file}.annotation.bed", f"{file}.annotation.bed.gz"]):
                                 providers[assembly]["annotation"] = "local"
 
                             # check if the annotation can be downloaded
                             if providers[assembly]["annotation"] is None:
                                 annotion_provider = provider_with_file("annotation", assembly)
                                 if annotion_provider:
-                                    providers[assembly]["genome"] = annotion_provider  # exists if annotation does
+                                    providers[assembly]["genome"] = annotion_provider  # genome always exists if annotation does
                                     providers[assembly]["annotation"] = annotion_provider
 
                             # check if the genome can be downloaded
@@ -296,6 +309,7 @@ if "assembly" in samples:
 
     # check the providers for the required assemblies
     annotation_required = "rna_seq" in get_workflow() or config["aligner"] == "star"
+    _has_annot = dict()
     for assembly in set(samples["assembly"]):
         file = os.path.join(config['genome_dir'], assembly, assembly)
         if providers[assembly]["genome"] is None and not os.path.exists(f"{file}.fa"):
@@ -305,16 +319,21 @@ if "assembly" in samples:
             )
             exit(1)
 
-        if providers[assembly]["annotation"] is None and \
-                not all(os.path.exists(f) for f in [f"{file}.annotation.gtf", f"{file}.annotation.bed"]):
+        if providers[assembly]["annotation"] is None and not (
+                any(os.path.exists(f) for f in [f"{file}.annotation.gtf", f"{file}.annotation.gtf.gz"]) and
+                any(os.path.exists(f) for f in [f"{file}.annotation.bed", f"{file}.annotation.bed.gz"])
+        ):
             logger.info(
                 f"No annotation for assembly {assembly} can be downloaded. Another provider (and "
-                f"thus another assembly name) might have gene annotations.\n"
-                f"Find alternative assemblies with `genomepy search {assembly}`"
+                f"thus another assembly name) might have a gene annotation.\n"
+                f"Find alternative assemblies with `genomepy search {assembly}`\n"
             )
             if annotation_required:
                 exit(1)
+            _has_annot[assembly] = False
             time.sleep(0 if config.get("debug") else 2)  # give some time to read the message
+        else:
+            _has_annot[assembly] = True
 
 
     def ori_assembly(assembly):
@@ -330,7 +349,7 @@ if "assembly" in samples:
         """
         Returns True/False on whether or not the assembly has an annotation.
         """
-        return True if providers[ori_assembly(assembly)]["annotation"] else False
+        return _has_annot[assembly]
 
 else:
     modified = False

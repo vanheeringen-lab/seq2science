@@ -12,7 +12,8 @@ dependencies:
   - anaconda::biopython=1.74
   - pkgs/main::filelock=3.0.12
   - pkgs/main::pyyaml=5.3.1
-  - conda-forge:pretty_html_table=0.9.dev0
-  - conda-forge:pandas_schema=0.3.5
+  - conda-forge::pretty_html_table=0.9.dev0
+  - conda-forge::pandas_schema=0.3.5
   - bioconda::trackhub=0.1.2019.12.24
   - bioconda::pysradb=0.11.1
+  - conda-forge::matplotlib=3.3.2

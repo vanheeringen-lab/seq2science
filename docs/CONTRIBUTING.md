@@ -83,3 +83,4 @@ There are a couple important global variables
 * **sampledict**, sampledict contains some information per sample that is not present in the samples.tsv file. In here is stored whether samples are SINGLE-end or PAIRED-end, and their corresponding SRR numbers.
 * **breps & treps**, breps and treps are variables that represent the technical and biological replicates. If you want to iterate over eiher of the technical replicates or biological replicates, or check what a sample belongs to, it is probably easiest to use these.
 * **global wildcard constraints**, seq2science sets global wildcard constraints in `seq2science/rules/configuration_generic.smk`. Make sure to adhere to the naming convention of samples and assembly. 
+* **sequencing_protocol** contains the current workflow, spelled out properly (e.g. "ChIP-seq").
