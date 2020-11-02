@@ -8,9 +8,8 @@ import logging
 
 # remove the logger created by trackhub (in trackhub.upload)
 # (it adds global logging of all stdout messages, duplicating snakemake's logging)
-for handler in logging.root.handlers:
-    if handler.__class__.__name__ == 'StreamHandler':
-        logging.root.removeHandler(handler)
+th_handler = logging.root.handlers[-1]  # assumption: the last logger was added by trackhub
+logging.root.removeHandler(th_handler)
 del logging
 
 
