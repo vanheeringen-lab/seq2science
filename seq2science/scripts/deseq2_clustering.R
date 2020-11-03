@@ -87,6 +87,9 @@ cell_dimensions = (if (num_samples < 16) {as.integer(160/num_samples)}          
                    else if (num_samples < 24) {10}                                  # pleasant size
                    else if (num_samples < 32) {as.integer(25 - 0.625*num_samples)}  # linear shrink
                    else {5})                                                        # minimal size
+
+# make heatmap and save as pdf (only pdfs can consistently save text properly)
+out_pdf <- sub(".png", ".pdf", out_plot)
 pheatmap(sampleDistMatrix,
          main = main,
          angle_col = 45,
@@ -98,5 +101,15 @@ pheatmap(sampleDistMatrix,
          cellwidth  = cell_dimensions,
          cellheight = cell_dimensions,
          col=colors,
-         filename=out_plot
+         filename=out_pdf
+)
+
+# convert pdf to png (required for MULTIQC)
+pdftools::pdf_convert(
+  out_pdf,
+  format = "png",
+  filenames = out_plot,
+  dpi = 300,  # standard minimum
+  antialias = TRUE,
+  verbose = TRUE
 )
