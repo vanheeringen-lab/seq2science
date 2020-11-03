@@ -5,7 +5,6 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - conda-forge::r-cairo=1.5_12.2
   - r::r-base=3.6.1
   - bioconda::bioconductor-deseq2=1.26.0
   - bioconda::bioconductor-ihw=1.14.0
@@ -14,4 +13,5 @@ dependencies:
   - bioconda::bioconductor-limma=3.42.0
   - r::r-rcolorbrewer=1.1_2
   - r::r-ggplot2=3.1.1
-  - conda-forge::r-pheatmap=1.0.12
+  - r::r-pheatmap=1.0.12
+  - r::r-pdftools=2.2
