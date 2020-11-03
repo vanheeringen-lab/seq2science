@@ -6,7 +6,7 @@ channels:
 dependencies:
   - pkgs/main::python=3.6
   - bioconda::snakemake=5.18.1
-  - bioconda::genomepy=0.9.0
+  - bioconda::genomepy=0.9.1
   - bioconda::pysam=0.15.3
   - pkgs/main::conda=4.8.4
   - anaconda::biopython=1.74
