@@ -8,13 +8,25 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
-### Changed
+### Added
 
+- trackhub: automatic color selection
+- trackhub: specify colors with the "colors" column in the samples.tsv. Accepts RGB and matplotlib colors.
+- trackhub: grouped samples in a composite track with sample filters and composite control
+
+### Changed
+- trackhub: better defaults for each track
 - layouts are stored per version, as to not have collisions in the way these are stored between versions.
 - scATAC no longer supports trackhub
 
 ### Fixed
 
+- not using the local annotation files
+- not recognizing a mix of gzipped and unzipped annotation files
+- bigwigs are now correctly labelled forward/reverse (when protocol was stranded)
+- trackhub: RNA-seq trackhub now displays both strands of the bigwig (when protocol was stranded)
+- trackhub: track order is now identical to the samples.tsv (was alphabetical for ChIP-/ATAC-seq)
+- trackhub: assembly hub index now returns gene_name instead of transcript_id.
 - bug with edgeR (upperquartile) normalization failed. Not sure why it fails, but when is does, it now returns a dataframe of nan instead of failing the rule, and thus the whole pipeline.
 - use gimmemotifs 0.15.0, so gimme.combine_peaks works with numeric chromosome names
 - s2s is slightly more lenient with an edge-case when running seq2science in parallel  
@@ -23,7 +35,8 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - now give a nice error message when a technical replicate consists of a mix of paired-end and single-end samples
 - issue with large number of inputs for multiqc exceeding the os command max length
 - bug with downloading only SRR/DRR samples (but no GSM)
-- issue with async generation of genome support files 
+- issue with async generation of genome support files
+- checking for sequencing runs when sample is already downloaded 
 
 ## [0.3.0] - 2020-09-22
 
