@@ -18,9 +18,12 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - trackhub: better defaults for each track
 - layouts are stored per version, as to not have collisions in the way these are stored between versions.
 - scATAC no longer supports trackhub
+- bigwigs are now (BPM) normalized by default
 
 ### Fixed
 
+- markduplicates now uses $TMP_DIR, if it is defined
+- RNA-seq cluster figures werent displaying text on some platforms
 - not using the local annotation files
 - not recognizing a mix of gzipped and unzipped annotation files
 - bigwigs are now correctly labelled forward/reverse (when protocol was stranded)
