@@ -2,11 +2,11 @@ name: s2s
 channels:
   - bioconda
   - conda-forge
-  - defaults 
+  - defaults
 dependencies:
   - pkgs/main::python=3.8
   - bioconda::snakemake=5.27.4
-  - bioconda::genomepy=0.9.1
+  - bioconda::genomepy=0.9.0
   - bioconda::pysam=0.16.01
   - pkgs/main::conda=4.8.4
   - anaconda::biopython=1.74
