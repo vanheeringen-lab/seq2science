@@ -1,7 +1,7 @@
 name: s2s
 dependencies:
   - pkgs/main::python=3.8
-  - bioconda::snakemake=5.27.2
+  - bioconda::snakemake=5.27.4
   - bioconda::genomepy=0.9.1
   - bioconda::pysam=0.15.3
   - pkgs/main::conda=4.8.4
