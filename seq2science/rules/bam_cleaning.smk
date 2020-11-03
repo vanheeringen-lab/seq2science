@@ -211,10 +211,7 @@ rule mark_duplicates:
         "../envs/picard.yaml"
     shell:
         """
-        # use the $TMPDIR if set, and not given in the config
-        if [[ -n $TMPDIR && {params} != *"TMP_DIR"* ]]; then set_tempdir=TMP_DIR=$TMPDIR; else set_tempdir=""; fi
-
-        picard MarkDuplicates $set_tempdir {params} INPUT={input} \
+        picard MarkDuplicates {params} INPUT={input} \
         OUTPUT={output.bam} METRICS_FILE={output.metrics} > {log} 2>&1
         """
 
