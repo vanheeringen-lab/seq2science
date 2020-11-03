@@ -1,13 +1,16 @@
 # dataframe with all technical replicates collapsed
-cols = ["sample", "assembly"]
+cols = subset = ["sample", "assembly"]
 if "replicate" in samples:
-    cols = ["replicate", "assembly"]
+    cols = subset = ["replicate", "assembly"]
 if "condition" in samples:
     cols.append("condition")
+    subset.append("condition")
 if "control" in samples:
     cols.append("control")
+if "colors" in samples:
+    cols.append("colors")
 
-treps = samples.reset_index()[cols].drop_duplicates().set_index(cols[0])
+treps = samples.reset_index()[cols].drop_duplicates(subset=subset).set_index(cols[0])
 assert treps.index.is_unique, "duplicate value found in treps"
 
 # treps that came from a merge
@@ -23,7 +26,7 @@ if "control" in samples.columns:
 # dataframe with all replicates collapsed
 breps = treps
 if "condition" in treps:
-    breps = treps.reset_index(drop=True).drop_duplicates().set_index("condition")
+    breps = treps.reset_index(drop=True).drop_duplicates(subset=subset[1:]).set_index("condition")
 
 
 # make a dict that returns the treps that belong to a brep

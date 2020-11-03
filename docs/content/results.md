@@ -32,9 +32,9 @@ The general statistics table shows a quick summary of your data. The table is in
 
 ***
 ## Trackhub
-It is often good to 'eyeball' the data, and check if e.g. peak calling went alright. One of the features of the pipeline is that it can generate a trackhub, including all required support files. You can host the trackhub yourself on a web accessible location, and visualize on the [UCSC genome browser](https://genome.ucsc.edu/cgi-bin/hgHubConnect). Alternatively, you can visualize the files locally in [IGV](https://software.broadinstitute.org/software/igv/).
+It is often good to 'eyeball' the data, and check if e.g. peak calling went alright. One of the features of the pipeline is that it can generate a trackhub. You can host the trackhub yourself on a web accessible location, and visualize on the [UCSC genome browser](https://genome.ucsc.edu/cgi-bin/hgHubConnect). Alternatively, you can visualize the files locally in [IGV](https://software.broadinstitute.org/software/igv/).
 
-Generation of the trackhub files is optional for all workflows, and is turned off by default. Remove `create_trackhub: False` from the config, or set the parameter to True to start generating.
+Generation of the trackhub files is optional for all workflows that support it, and is turned off by default. Set `create_trackhub: True` in the config to start generating your hub.
 
 ### UCSC genome browser
 If you move the *trackhub* folder to a web-accessible location, you can upload the URL to the `hub.txt` file on the [UCSC genome browser](https://genome-euro.ucsc.edu/cgi-bin/hgHubConnect#unlistedHubs) to gain access to your personalized hub!
@@ -56,7 +56,7 @@ If your genome assembly is not recognized on UCSC, a number of files must be gen
 
 ### Gene annotations
 If gene annotations are available, these are added as *annotations.bigBed*. This a visible as a separate track containing genes.
-Additionally, the *genome.2bit* is indexed to allow you to search your assembly by gene.
+Additionally, the *genome.2bit* is indexed to allow you to search your assembly by gene name (if the annotation file was formatted properly).
 
 ### Supporting tracks
 Track depicting the GC-percentage and the softmasked regions of the genome are generated, similarly to [MakeHub](https://github.com/Gaius-Augustus/MakeHub).

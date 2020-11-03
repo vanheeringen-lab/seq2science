@@ -167,7 +167,7 @@ rule gene_id2name:
 
         if not can_convert():
             with open(output[0], "w") as out:
-                out.write("assembly does not contain both gene_ids and gene_names")
+                out.write("assembly does not contain both gene_ids and gene_names\n")
         else:
 
             # loop over the gtf and store the conversion in the table
