@@ -212,7 +212,12 @@ rule mark_duplicates:
     shell:
         """
         # use the TMPDIR if set, and not given in the config
-        if [[ ${{TMPDIR:=F}} == "F" ]] || [[ "{params}" == *TMP_DIR* ]]; then tmpdir=""; else tmpdir=TMP_DIR=$TMPDIR; fi
+        if [[ ${{TMPDIR:=F}} == "F" ]] || [[ "{params}" == *TMP_DIR* ]]
+        then
+            tmpdir=""
+        else 
+            tmpdir=TMP_DIR=$TMPDIR
+        fi
 
         picard MarkDuplicates $tmpdir {params} INPUT={input} \
         OUTPUT={output.bam} METRICS_FILE={output.metrics} > {log} 2>&1
