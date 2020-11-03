@@ -159,8 +159,8 @@ if(plot_DEGs == 0){
 ## generate additional files if DE genes are found
 
 # generate MA plot (log fold change vs mean gene counts)
-output_ma_plot <- sub(".diffexp.tsv", ".ma_plot.svg", output)
-svg(output_ma_plot)
+output_ma_plot <- sub(".diffexp.tsv", ".ma_plot.pdf", output)
+pdf(output_ma_plot)
 plotMA(plot_res, ylim=c(-2,2),
        main = paste0(contrast, '\n', plot_DEGs, ' DE genes (a = ', fdr, ')'))
 invisible(dev.off())
@@ -173,8 +173,8 @@ if (is.na(batch)){
 
   g = plotPCA(blind_vst, intgroup="condition")
 
-  output_pca_plot <- sub(".diffexp.tsv", ".pca_plot.svg", output)
-  svg(output_pca_plot)
+  output_pca_plot <- sub(".diffexp.tsv", ".pca_plot.pdf", output)
+  pdf(output_pca_plot)
   plot(g + ggtitle("blind PCA") + aes(color=condition) + theme(legend.position="bottom"))
   invisible(dev.off())
   cat('-PCA plot saved\n')
@@ -193,8 +193,8 @@ if (is.na(batch)){
   g1 = plotPCA(blind_vst, intgroup=c("condition", "batch"))
   g2 = plotPCA(batchcorr_vst, intgroup=c("condition", "batch"))
 
-  output_pca_plots <- sub(".diffexp.tsv", ".pca_plot_%01d.svg", output)
-  svg(output_pca_plots)
+  output_pca_plots <- sub(".diffexp.tsv", ".pca_plot_%01d.pdf", output)
+  pdf(output_pca_plots)
   if(length(levels(blind_vst$batch)) < 7){
     plot(g1 + ggtitle("blind PCA - color by condition") + aes(color=condition, shape=batch) + theme(legend.position="bottom"))
     plot(g1 + ggtitle("blind PCA - color by batch") + aes(color=batch) + theme(legend.position="bottom"))
