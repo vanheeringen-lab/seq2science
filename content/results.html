@@ -241,8 +241,8 @@
 <hr class="docutils" />
 <div class="section" id="trackhub">
 <h2>Trackhub<a class="headerlink" href="#trackhub" title="Permalink to this headline">¶</a></h2>
-<p>It is often good to ‘eyeball’ the data, and check if e.g. peak calling went alright. One of the features of the pipeline is that it can generate a trackhub, including all required support files. You can host the trackhub yourself on a web accessible location, and visualize on the <a class="reference external" href="https://genome.ucsc.edu/cgi-bin/hgHubConnect">UCSC genome browser</a>. Alternatively, you can visualize the files locally in <a class="reference external" href="https://software.broadinstitute.org/software/igv/">IGV</a>.</p>
-<p>Generation of the trackhub files is optional for all workflows, and is turned off by default. Remove <code class="docutils literal notranslate"><span class="pre">create_trackhub:</span> <span class="pre">False</span></code> from the config, or set the parameter to True to start generating.</p>
+<p>It is often good to ‘eyeball’ the data, and check if e.g. peak calling went alright. One of the features of the pipeline is that it can generate a trackhub. You can host the trackhub yourself on a web accessible location, and visualize on the <a class="reference external" href="https://genome.ucsc.edu/cgi-bin/hgHubConnect">UCSC genome browser</a>. Alternatively, you can visualize the files locally in <a class="reference external" href="https://software.broadinstitute.org/software/igv/">IGV</a>.</p>
+<p>Generation of the trackhub files is optional for all workflows that support it, and is turned off by default. Set <code class="docutils literal notranslate"><span class="pre">create_trackhub:</span> <span class="pre">True</span></code> in the config to start generating your hub.</p>
 <div class="section" id="id2">
 <h3>UCSC genome browser<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <p>If you move the <em>trackhub</em> folder to a web-accessible location, you can upload the URL to the <code class="docutils literal notranslate"><span class="pre">hub.txt</span></code> file on the <a class="reference external" href="https://genome-euro.ucsc.edu/cgi-bin/hgHubConnect#unlistedHubs">UCSC genome browser</a> to gain access to your personalized hub!</p>
@@ -268,7 +268,7 @@
 <div class="section" id="gene-annotations">
 <h3>Gene annotations<a class="headerlink" href="#gene-annotations" title="Permalink to this headline">¶</a></h3>
 <p>If gene annotations are available, these are added as <em>annotations.bigBed</em>. This a visible as a separate track containing genes.
-Additionally, the <em>genome.2bit</em> is indexed to allow you to search your assembly by gene.</p>
+Additionally, the <em>genome.2bit</em> is indexed to allow you to search your assembly by gene name (if the annotation file was formatted properly).</p>
 </div>
 <div class="section" id="supporting-tracks">
 <h3>Supporting tracks<a class="headerlink" href="#supporting-tracks" title="Permalink to this headline">¶</a></h3>

@@ -268,6 +268,7 @@
 <li><p><strong>sampledict</strong>, sampledict contains some information per sample that is not present in the samples.tsv file. In here is stored whether samples are SINGLE-end or PAIRED-end, and their corresponding SRR numbers.</p></li>
 <li><p><strong>breps &amp; treps</strong>, breps and treps are variables that represent the technical and biological replicates. If you want to iterate over eiher of the technical replicates or biological replicates, or check what a sample belongs to, it is probably easiest to use these.</p></li>
 <li><p><strong>global wildcard constraints</strong>, seq2science sets global wildcard constraints in <code class="docutils literal notranslate"><span class="pre">seq2science/rules/configuration_generic.smk</span></code>. Make sure to adhere to the naming convention of samples and assembly.</p></li>
+<li><p><strong>sequencing_protocol</strong> contains the current workflow, spelled out properly (e.g. “ChIP-seq”).</p></li>
 </ul>
 </div>
 </div>

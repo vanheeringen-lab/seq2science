@@ -99,14 +99,15 @@
 <li class="toctree-l4"><a class="reference internal" href="#differential-gene-expression-analysis">Differential gene expression analysis</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#differential-transcript-usage">Differential transcript usage</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#differential-exon-usage">Differential exon usage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#trackhub">Trackhub</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#optional-trackhub">Optional: Trackhub</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#filling-out-the-samples-tsv">Filling out the samples.tsv</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#sample-column">Sample column</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#assembly-column">Assembly column</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#descriptive-name-column">Descriptive_name column</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#technical-replicates">Technical replicates</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#colors-column">Colors column</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#deseq2-contrast-designs">DESeq2 contrast designs</a><ul>
@@ -280,11 +281,11 @@ Expression counts are log transformed (by default using the apeglm method). Thes
 This will let seq2science to output an exon counts matrix per assembly, which can be loaded directly into <code class="docutils literal notranslate"><span class="pre">DEXSeqDataSet()</span></code>.</p>
 <p>Note: this utilizes scripts implemented by DEXseq, which are <a class="reference external" href="https://bioconductor.org/packages/devel/bioc/vignettes/DEXSeq/inst/doc/DEXSeq.html#24_Preparing_the_annotation">built for Ensembl genomes</a>.</p>
 </div>
-</div>
 <hr class="docutils" />
-<div class="section" id="optional-trackhub">
-<h2>Optional: Trackhub<a class="headerlink" href="#optional-trackhub" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="trackhub">
+<h3>Trackhub<a class="headerlink" href="#trackhub" title="Permalink to this headline">¶</a></h3>
 <p>A UCSC compatible trackhub can be generated for this workflow. See the <a class="reference external" href="../results.html#trackhub">trackhub page</a><span class="raw-html-m2r"><!-- @IGNORE PREVIOUS: link --></span> for more information!</p>
+</div>
 </div>
 <hr class="docutils" />
 <div class="section" id="filling-out-the-samples-tsv">
@@ -300,7 +301,7 @@ GSM890    danRer11    stage_9      stage_9             GSM234
 </div>
 <div class="section" id="sample-column">
 <h3>Sample column<a class="headerlink" href="#sample-column" title="Permalink to this headline">¶</a></h3>
-<p>This column is necessary for all workflows, not just the atac-seq workflow. If you use the pipeline on public data this should be the name of the accession (e.g. GSM2837484), if you use the pipeline on local data this should be the <em>basename</em> of the file without the <em>extension</em>. For instance <code class="docutils literal notranslate"><span class="pre">/home/user/myfastqs/sample1.fastq.gz</span></code> would be <code class="docutils literal notranslate"><span class="pre">sample1</span></code>.</p>
+<p>This column is necessary for all workflows, not just the RNA-seq workflow. If you use the pipeline on public data this should be the name of the accession (e.g. GSM2837484). If you use the pipeline on local data this should be the <em>basename</em> of the file without the <em>extension(s)</em>. For instance, <code class="docutils literal notranslate"><span class="pre">/home/user/myfastqs/sample1.fastq.gz</span></code> would be <code class="docutils literal notranslate"><span class="pre">sample1</span></code> (for single-ended data). For paired-ended data <code class="docutils literal notranslate"><span class="pre">/home/user/myfastqs/sample2_R1.fastq.gz</span></code> and <code class="docutils literal notranslate"><span class="pre">/home/user/myfastqs/sample2_R2.fastq.gz</span></code> would be <code class="docutils literal notranslate"><span class="pre">sample2</span></code>.</p>
 </div>
 <div class="section" id="assembly-column">
 <h3>Assembly column<a class="headerlink" href="#assembly-column" title="Permalink to this headline">¶</a></h3>
@@ -325,6 +326,11 @@ GSM890    danRer11
 <p><strong>Note:</strong>
 If you are working with multiple assemblies in one workflow, replicate names have to be unique between assemblies (you will receive a warning if names overlap).</p>
 <p>Replicate merging is turned on by default. It can be turned off by setting <code class="docutils literal notranslate"><span class="pre">technical_replicates</span></code> in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> to <code class="docutils literal notranslate"><span class="pre">keep</span></code>.</p>
+</div>
+<div class="section" id="colors-column">
+<h3>Colors column<a class="headerlink" href="#colors-column" title="Permalink to this headline">¶</a></h3>
+<p>If you are visualizing your data on the UCSC trackhub you can optionally specify the colors of each track.
+To do so, you can add the color by name (google “matplotlib colors” for the options), or RGB values, in the “colors” column. Empty fields are considered black.</p>
 </div>
 </div>
 <hr class="docutils" />

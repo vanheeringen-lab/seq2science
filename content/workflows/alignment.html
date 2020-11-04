@@ -103,6 +103,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#assembly-column">Assembly column</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#descriptive-name-column">Descriptive_name column</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#technical-replicates">Technical replicates</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#colors-column">Colors column</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#final-notes">Final notes</a></li>
 </ul>
 </li>
@@ -239,7 +240,7 @@ Seq2science will place the customized assembly in a separate folder in the <code
 </div>
 <div class="section" id="trackhub">
 <h3>Trackhub<a class="headerlink" href="#trackhub" title="Permalink to this headline">¶</a></h3>
-<p>A UCSC compatible trackhub is be generated for this workflow. See the <a class="reference external" href="../results.html#trackhub">trackhub page</a> for more information!</p>
+<p>A UCSC compatible trackhub can be generated for this workflow. See the <a class="reference external" href="../results.html#trackhub">trackhub page</a><span class="raw-html-m2r"><!-- @IGNORE PREVIOUS: link --></span> for more information!</p>
 </div>
 </div>
 <div class="section" id="filling-out-the-samples-tsv">
@@ -255,7 +256,7 @@ GSM890    danRer11    stage_9      stage_9
 </div>
 <div class="section" id="sample-column">
 <h3>Sample column<a class="headerlink" href="#sample-column" title="Permalink to this headline">¶</a></h3>
-<p>This column is necessary for all workflows, not just the atac-seq workflow. If you use the pipeline on public data this should be the name of the accession (e.g. GSM2837484), if you use the pipeline on local data this should be the <em>basename</em> of the file without the <em>extension</em>. For instance <code class="docutils literal notranslate"><span class="pre">/home/user/myfastqs/sample1.fastq.gz</span></code> would be <code class="docutils literal notranslate"><span class="pre">sample1</span></code>.</p>
+<p>This column is necessary for all workflows, not just the atac-seq workflow. If you use the pipeline on public data this should be the name of the accession (e.g. GSM2837484). If you use the pipeline on local data this should be the <em>basename</em> of the file without the <em>extension(s)</em>. For instance, <code class="docutils literal notranslate"><span class="pre">/home/user/myfastqs/sample1.fastq.gz</span></code> would be <code class="docutils literal notranslate"><span class="pre">sample1</span></code> (for single-ended data). For paired-ended data <code class="docutils literal notranslate"><span class="pre">/home/user/myfastqs/sample2_R1.fastq.gz</span></code> and <code class="docutils literal notranslate"><span class="pre">/home/user/myfastqs/sample2_R2.fastq.gz</span></code> would be <code class="docutils literal notranslate"><span class="pre">sample2</span></code>.</p>
 </div>
 <div class="section" id="assembly-column">
 <h3>Assembly column<a class="headerlink" href="#assembly-column" title="Permalink to this headline">¶</a></h3>
@@ -280,6 +281,11 @@ GSM890    danRer11
 <p><strong>Note:</strong>
 If you are working with multiple assemblies in one workflow, replicate names have to be unique between assemblies (you will receive a warning if names overlap).</p>
 <p>Replicate merging is turned on by default. It can be turned off by setting <code class="docutils literal notranslate"><span class="pre">technical_replicates</span></code> in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> to <code class="docutils literal notranslate"><span class="pre">keep</span></code>.</p>
+</div>
+<div class="section" id="colors-column">
+<h3>Colors column<a class="headerlink" href="#colors-column" title="Permalink to this headline">¶</a></h3>
+<p>If you are visualizing your data on the UCSC trackhub you can optionally specify the colors of each track.
+To do so, you can add the color by name (google “matplotlib colors” for the options), or RGB values, in the “colors” column. Empty fields are considered black.</p>
 </div>
 <div class="section" id="final-notes">
 <h3>Final notes<a class="headerlink" href="#final-notes" title="Permalink to this headline">¶</a></h3>

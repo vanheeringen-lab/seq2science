@@ -501,6 +501,6 @@ bigwig_dir:
 ```
 deeptools_flags:
     description: flags for bam to bigwig conversions with deeptools bamCoverage
-    default: 
+    default: --normalizeUsing BPM
 ```
 

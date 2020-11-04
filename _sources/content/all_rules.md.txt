@@ -112,6 +112,14 @@ combine_peaks -i {input.summitfiles} -g {input.sizes} \
 --window {params} > {output} 2> {log}
 ```
 
+#### combine_qc_files
+Aggregate all the quality control metrics for every sample into a single 
+multiqc report.
+
+The input can get very long (causing problems with the shell), so we have 
+to write the input to a file, and then we can use that file as input to 
+multiqc.
+
 #### complement_blacklist
 Take the complement of the blacklist. We need this complement to tell samtools
 to only keep reads that are in the complement of the blacklist.
@@ -460,7 +468,15 @@ cat {output.tmppeaks} | tail -n +2 > {output.peaks}
 #### mark_duplicates
 Mark all duplicate reads in a bam file with picard MarkDuplicates
 ```
-picard MarkDuplicates {params} INPUT={input} \
+# use the TMPDIR if set, and not given in the config
+if [[ ${{TMPDIR:=F}} == "F" ]] || [[ "{params}" == *TMP_DIR* ]]
+then
+    tmpdir=""
+else 
+    tmpdir=TMP_DIR=$TMPDIR
+fi
+
+picard MarkDuplicates $tmpdir {params} INPUT={input} \
 OUTPUT={output.bam} METRICS_FILE={output.metrics} > {log} 2>&1
 ```
 
@@ -502,20 +518,6 @@ mtnucratio {input.bam} {params.mitochondria}
 Pre-compute a bam summary with deeptools.
 ```
 multiBamSummary bins --bamfiles {input.bams} -out {output} {params} -p {threads} > {log} 2>&1
-```
-
-#### multiqc
-Aggregate all the quality control metrics for every sample into a single multiqc report.
-```
-multiqc {input.files} -o {params.dir} -n multiqc_{wildcards.assembly}.html \
---config {input.schema}                                                    \
---config {input.header}                                                    \
---sample-names {input.sample_names}                                        \
-{params.filter_buttons}                                    \
---cl_config "extra_fn_clean_exts: [                                        \
-    {{'pattern': ^.*{wildcards.assembly}-, 'type': 'regex'}},              \
-    {{'pattern': {params.fqext1},          'type': 'regex'}},              \
-    ]" > {log} 2>&1
 ```
 
 #### multiqc_filter_buttons
@@ -626,7 +628,8 @@ Tries first downloading with the faster ascp protocol, if that fails it
 falls back on the slower http protocol.
 ```
 # move to output dir since somehow prefetch sometimes puts files in the cwd...
-mkdir -p {output}; cd {output}
+# and remove the top level folder since prefetch will assume we are done otherwise
+mkdir -p {params.outdir}; cd {params.outdir}; rm -r {wildcards.run}
 
 # three attempts
 for i in {{1..3}}
@@ -635,10 +638,10 @@ do
     (
         flock --timeout 30 200 || continue
         sleep 2
-    ) 200>{eutils_cache_lock}
+    ) 200>{pysradb_cache_lock}
 
     # dump
-    prefetch --max-size 999999999999 --output-directory {output} --log-level debug --progress {wildcards.run} >> {log} 2>&1 && break
+    prefetch --max-size 999999999999 --output-directory ./ --log-level debug --progress {wildcards.run} >> {log} 2>&1 && break
     sleep 10
 done
 ```
@@ -750,13 +753,10 @@ mkdir -p {output.tmpdir}; cd {output.tmpdir}
 (
     flock --timeout 30 200 || exit 1
     sleep 3
-) 200>{eutils_cache_lock}
-
-# setup tmp dir
-mkdir -p {output.tmpdir}
+) 200>{pysradb_cache_lock}
 
 # dump to tmp dir
-parallel-fastq-dump -s {input}/* -O {output.tmpdir} \
+parallel-fastq-dump -s {input} -O {output.tmpdir} \
 --threads {threads} --split-e --skip-technical --dumpbase \
 --readids --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' \
 --defline-qual '+' --gzip >> {log} 2>&1
@@ -776,13 +776,10 @@ mkdir -p {output.tmpdir}; cd {output.tmpdir}
 (
     flock --timeout 30 200 || exit 1
     sleep 3
-) 200>{eutils_cache_lock}
-
-# setup tmp dir
-mkdir -p {output.tmpdir}
+) 200>{pysradb_cache_lock}
 
 # dump to tmp dir
-parallel-fastq-dump -s {input}/* -O {output.tmpdir} \
+parallel-fastq-dump -s {input} -O {output.tmpdir} \
 --threads {threads} --split-spot --skip-technical --dumpbase --readids \
 --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' \
 --defline-qual '+' --gzip >> {log} 2>&1
@@ -858,25 +855,35 @@ echo $x
 ```
 
 #### trackhub
-Generate a trackhub which has to be hosted on an web accessible location, 
-but can then be viewed through the UCSC genome browser.
+Generate a UCSC track hub/assembly hub. 
+
+To view the hub, the output directory must be hosted on an web accessible location, 
+and the location of the hub.txt file given the UCSC genome browser at 
+My Data > Track Hubs > My Hubs
 
 #### trackhub_index
 Generate a searchable annotation & index for each assembly
 
-source: https://genome.ucsc.edu/goldenPath/help/hubQuickStartSearch.html
+sources: https://genome.ucsc.edu/goldenPath/help/hubQuickStartSearch.html
+ https://www.biostars.org/p/272649/
 ```
 # generate annotation files
-gtfToGenePred -allErrors -geneNameAsName2 -genePredExt {params.gtf} {output.genePred} -infoOut={output.info} >> {log} 2>&1
+gtfToGenePred -allErrors -ignoreGroupsWithoutExons -geneNameAsName2 -genePredExt {input.gtf} {output.genePred} -infoOut={output.info} >> {log} 2>&1
 
-genePredToBed {output.genePred} {output.genePredbed} >> {log} 2>&1
+# check if gtf has gene_names > if l!=0, use gene_name, else transcript_id
+l=$(head -n 100 {input.gtf} | grep gene_name | wc -l)
+
+# switch columns 1 (transcript_id) and 12 (gene_name)
+awk -v len=$l 'BEGIN {{ FS = "\t" }}; {{ if(len!="0") {{ t = $1; $1 = $12; $12 = t; print; }} else {{ print; }} }}' {output.genePred} > {output.genePrednamed}
+
+genePredToBed {output.genePrednamed} {output.genePredbed} >> {log} 2>&1
 
 bedSort {output.genePredbed} {output.genePredbed} >> {log} 2>&1
 
 bedToBigBed -extraIndex=name {output.genePredbed} {input.sizes} {output.genePredbigbed} >> {log} 2>&1
 
-# generate searchable indexes (by 2: geneId, 8: proteinID, 9: geneName, 10: transcriptName and 1: transcriptID)
-grep -v "^#" {output.info} | awk '{{print $1, $2, $8, $9, $10, $1}}' > {output.indexinfo}
+# generate searchable indexes (by 1: transcriptID, 2: geneId, 8: proteinID, 9: geneName, 10: transcriptName)
+grep -v "^#" {output.info} | awk -v len=$l 'BEGIN {{ FS = "\t" }} ; {{ if(len!="0") {{print $9, $1, $2, $8, $9, $10}} else {{print $1, $1, $2, $8, $9, $10}} }}' > {output.indexinfo}
 
 ixIxx {output.indexinfo} {output.ix} {output.ixx} >> {log} 2>&1
 ```

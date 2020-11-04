@@ -107,6 +107,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#descriptive-name-column">Descriptive_name column</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#technical-replicates">Technical replicates</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#biological-replicates">Biological replicates</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#colors-column">Colors column</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#final-notes">Final notes</a></li>
 </ul>
 </li>
@@ -264,7 +265,7 @@ chr1:7399-7599  47.00000    1.00000
 </div>
 <div class="section" id="trackhub">
 <h3>Trackhub<a class="headerlink" href="#trackhub" title="Permalink to this headline">¶</a></h3>
-<p>A UCSC compatible trackhub is be generated for this workflow. See the <a class="reference external" href="../results.html#trackhub">trackhub page</a> for more information!</p>
+<p>A UCSC compatible trackhub can be generated for this workflow. See the <a class="reference external" href="../results.html#trackhub">trackhub page</a><span class="raw-html-m2r"><!-- @IGNORE PREVIOUS: link --></span> for more information!</p>
 </div>
 </div>
 <div class="section" id="filling-out-the-samples-tsv">
@@ -280,7 +281,7 @@ GSM890    danRer11    stage_9      stage_9             GSM234
 </div>
 <div class="section" id="sample-column">
 <h3>Sample column<a class="headerlink" href="#sample-column" title="Permalink to this headline">¶</a></h3>
-<p>This column is necessary for all workflows, not just the atac-seq workflow. If you use the pipeline on public data this should be the name of the accession (e.g. GSM2837484), if you use the pipeline on local data this should be the <em>basename</em> of the file without the <em>extension</em>. For instance <code class="docutils literal notranslate"><span class="pre">/home/user/myfastqs/sample1.fastq.gz</span></code> would be <code class="docutils literal notranslate"><span class="pre">sample1</span></code>.</p>
+<p>This column is necessary for all workflows, not just the ATAC-seq workflow. If you use the pipeline on public data this should be the name of the accession (e.g. GSM2837484), if you use the pipeline on local data this should be the <em>basename</em> of the file without the <em>extension</em>. For instance <code class="docutils literal notranslate"><span class="pre">/home/user/myfastqs/sample1.fastq.gz</span></code> would be <code class="docutils literal notranslate"><span class="pre">sample1</span></code>.</p>
 </div>
 <div class="section" id="assembly-column">
 <h3>Assembly column<a class="headerlink" href="#assembly-column" title="Permalink to this headline">¶</a></h3>
@@ -326,6 +327,11 @@ If you are working with multiple assemblies in one workflow, replicate names hav
 <h4>Fisher’s method<a class="headerlink" href="#fisher-s-method" title="Permalink to this headline">¶</a></h4>
 <p><a class="reference external" href="https://en.wikipedia.org/wiki/Fisher%27s_method">Fisher’s method</a> simply is a method to ‘combine’ multiple p-values. This method is built-in for genrich and macs2, and allows any number of replicates (<code class="docutils literal notranslate"><span class="pre">n</span> <span class="pre">&gt;=</span> <span class="pre">2</span></code>). However a ‘disadvantage’ of this method is that it assumes the p-values a method generates are actual p-values (and not a general indication of significance). MACS2 is slightly notorious for that its p-values are not true p-values. Genrich claims by fitting on a log-normal distribution that their p-values are true. Even though fisher’s method might not be ideal, it’s the only option you have (we provide) within this pipeline for more than 2 replicates.</p>
 </div>
+</div>
+<div class="section" id="colors-column">
+<h3>Colors column<a class="headerlink" href="#colors-column" title="Permalink to this headline">¶</a></h3>
+<p>If you are visualizing your data on the UCSC trackhub you can optionally specify the colors of each main track. For ATAC- and ChIP-seq, each biological replicate is a main track.
+To do so, you can add the color by name (google “matplotlib colors” for the options), or RGB values, in the “colors” column. Empty fields are considered black.</p>
 </div>
 <div class="section" id="final-notes">
 <h3>Final notes<a class="headerlink" href="#final-notes" title="Permalink to this headline">¶</a></h3>
