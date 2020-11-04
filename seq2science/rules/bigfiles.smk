@@ -134,6 +134,14 @@ rule peak_bigpeak:
         """
 
 
+def set_strand(wildcards):
+    if wildcards.strand == ".fwd":
+        return "--filterRNAstrand forward"
+    elif wildcards.strand == ".rev":
+        return "--filterRNAstrand reverse"
+    return ""
+
+
 rule bam_bigwig:
     """
     Convert a bam file into a bigwig file.
@@ -142,12 +150,11 @@ rule bam_bigwig:
     input:
         bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config),
         bai=expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam.bai", **config),
-        required=_strandedness_report,
     output:
         expand("{bigwig_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}{{strand}}.bw", **config),
     params:
         flags=config["deeptools_flags"],
-        strandedness=strandedness_to_bambigwig,
+        strand_filter=set_strand,
     wildcard_constraints:
         sorting=config["bam_sort_order"] if config.get("bam_sort_order") else "",
         strand='|.fwd|.rev',
@@ -162,5 +169,5 @@ rule bam_bigwig:
         deeptools_limit=lambda wildcards, threads: threads,
     shell:
         """
-        bamCoverage --bam {input.bam} --outFileName {output} {params.strandedness} --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1
+        bamCoverage --bam {input.bam} --outFileName {output} {params.strand_filter} --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1
         """

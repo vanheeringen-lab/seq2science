@@ -283,6 +283,18 @@ def get_colors(asmbly):
     return palletes
 
 
+def strandedness_to_trackhub(sample):
+    """
+    translate strandedness to the name and number of bigwigs to include in the trackhub
+    """
+    if get_workflow() != "rna_seq":
+        return [""]
+    else:
+        strandedness = pd.read_csv(_strandedness_report(wildcards=None), sep='\t', dtype='str', index_col=0)
+        s = strandedness[strandedness.index == sample].strandedness[0]
+        return [".fwd", ".rev"] if s in ["yes", "forward", "reverse"] else [""]
+
+
 def create_trackhub():
     """
     Create a UCSC trackhub.
