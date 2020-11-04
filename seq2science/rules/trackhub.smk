@@ -283,6 +283,18 @@ def get_colors(asmbly):
     return palletes
 
 
+def strandedness_to_trackhub(sample):
+    """
+    translate strandedness to the name and number of bigwigs to include in the trackhub
+    """
+    if get_workflow() != "rna_seq":
+        return [""]
+    else:
+        strandedness = pd.read_csv(_strandedness_report(wildcards=None), sep='\t', dtype='str', index_col=0)
+        s = strandedness[strandedness.index == sample].strandedness[0]
+        return [".fwd", ".rev"] if s in ["yes", "forward", "reverse"] else [""]
+
+
 def create_trackhub():
     """
     Create a UCSC trackhub.
@@ -599,12 +611,12 @@ def create_trackhub():
                     view = rev_view if bw == ".rev" else fwd_view
                     bigwig_suffix = "" if bw == "" else (" forward" if bw == ".fwd" else " reverse")
                     bw_suffix = "" if bw == "" else (" fw" if bw == ".fwd" else " rv")
-                    file = f"{config['bigwig_dir']}/{assembly}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw"
+                    file = f"{config['bigwig_dir']}/{assembly}-{trep}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw"
                     priority += 1.0
                     track = trackhub.Track(
                         name            = trackhub.helpers.sanitize(f"{descriptive}{bigwig_suffix}"),
                         tracktype       = "bigWig",
-                        short_label     = shorten(descriptive, 17-len(bw), ['signs', 'vowels', 'center']) + bw_suffix,  # <= 17 characters suggested
+                        short_label     = shorten(descriptive, 17-len(bw_suffix), ['signs', 'vowels', 'center']) + bw_suffix,  # <= 17 characters suggested
                         long_label      = descriptive + bigwig_suffix,
                         subgroups       = {"samples": safedescr},
                         source          = file,
