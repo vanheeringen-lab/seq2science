@@ -616,7 +616,7 @@ def create_trackhub():
                     track = trackhub.Track(
                         name            = trackhub.helpers.sanitize(f"{descriptive}{bigwig_suffix}"),
                         tracktype       = "bigWig",
-                        short_label     = shorten(descriptive, 17-len(bw), ['signs', 'vowels', 'center']) + bw_suffix,  # <= 17 characters suggested
+                        short_label     = shorten(descriptive, 17-len(bw_suffix), ['signs', 'vowels', 'center']) + bw_suffix,  # <= 17 characters suggested
                         long_label      = descriptive + bigwig_suffix,
                         subgroups       = {"samples": safedescr},
                         source          = file,
