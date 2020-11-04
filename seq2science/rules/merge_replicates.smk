@@ -1,5 +1,6 @@
 # dataframe with all technical replicates collapsed
-cols = subset = ["sample", "assembly"]
+cols = ["sample", "assembly"]
+subset = ["sample", "assembly"]
 if "replicate" in samples:
     cols = subset = ["replicate", "assembly"]
 if "condition" in samples:
