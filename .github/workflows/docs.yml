@@ -17,8 +17,9 @@ jobs:
 
       - name: Install dependencies 🔨
         run: |
-          $CONDA/bin/conda env update --file requirements.yaml --name base
-          $CONDA/bin/conda install m2r sphinx_rtd_theme sphinx=2.4.4 sphinx-argparse graphviz
+          $CONDA/bin/conda install mamba
+          $CONDA/bin/mamba env update --file requirements.yaml --name base
+          $CONDA/bin/mamba install m2r sphinx_rtd_theme sphinx=2.4.4 sphinx-argparse graphviz
 
       - name: Build 🔧
         run: |
