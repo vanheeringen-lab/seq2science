@@ -17,7 +17,8 @@ jobs:
 
       - name: Install dependencies 🔨
         run: |
-          $CONDA/bin/conda config --add channels conda-forge bioconda
+          $CONDA/bin/conda config --add channels conda-forge
+          $CONDA/bin/conda config --add channels bioconda
           $CONDA/bin/conda install mamba
           $CONDA/bin/mamba env update --file requirements.yaml --name base
           $CONDA/bin/mamba install m2r sphinx_rtd_theme sphinx=2.4.4 sphinx-argparse graphviz
