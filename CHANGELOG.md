@@ -15,6 +15,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - trackhub: grouped samples in a composite track with sample filters and composite control
 
 ### Changed
+- updated genomepy to 0.9.1: genomes will have alternative regions removed (if designated with "alt" in the name)
 - trackhub: better defaults for each track
 - layouts are stored per version, as to not have collisions in the way these are stored between versions.
 - scATAC no longer supports trackhub
