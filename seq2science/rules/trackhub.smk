@@ -611,7 +611,7 @@ def create_trackhub():
                     view = rev_view if bw == ".rev" else fwd_view
                     bigwig_suffix = "" if bw == "" else (" forward" if bw == ".fwd" else " reverse")
                     bw_suffix = "" if bw == "" else (" fw" if bw == ".fwd" else " rv")
-                    file = f"{config['bigwig_dir']}/{assembly}-{sample}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw"
+                    file = f"{config['bigwig_dir']}/{assembly}-{trep}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw"
                     priority += 1.0
                     track = trackhub.Track(
                         name            = trackhub.helpers.sanitize(f"{descriptive}{bigwig_suffix}"),
