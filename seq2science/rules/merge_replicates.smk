@@ -2,7 +2,8 @@
 cols = ["sample", "assembly"]
 subset = ["sample", "assembly"]
 if "replicate" in samples:
-    cols = subset = ["replicate", "assembly"]
+    cols = ["replicate", "assembly"]
+    subset = ["replicate", "assembly"]
 if "condition" in samples:
     cols.append("condition")
     subset.append("condition")
