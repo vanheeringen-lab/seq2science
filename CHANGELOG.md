@@ -8,6 +8,8 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+## [0.3.1] - 2020-11-05
+
 ### Added
 
 - trackhub: automatic color selection
