@@ -288,7 +288,7 @@
 <h2>bam_bigwig<a class="headerlink" href="#bam-bigwig" title="Permalink to this headline">¶</a></h2>
 <p>Convert a bam file into a bigwig file.
 Can output strand specific bam</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>bamCoverage --bam {input.bam} --outFileName {output} {params.strandedness} --numberOfProcessors {threads} {params.flags} --verbose &gt;&gt; {log} 2&gt;&amp;1
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>bamCoverage --bam {input.bam} --outFileName {output} {params.strand_filter} --numberOfProcessors {threads} {params.flags} --verbose &gt;&gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
 </div>

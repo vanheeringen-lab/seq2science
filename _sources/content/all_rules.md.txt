@@ -12,7 +12,7 @@ samtools view -T {input.assembly} -C {input.bam} -@ {threads} > {output} 2> {log
 Convert a bam file into a bigwig file.
 Can output strand specific bam
 ```
-bamCoverage --bam {input.bam} --outFileName {output} {params.strandedness} --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1
+bamCoverage --bam {input.bam} --outFileName {output} {params.strand_filter} --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1
 ```
 
 #### bedgraph_bigwig
