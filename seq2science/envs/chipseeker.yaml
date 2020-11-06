@@ -1,10 +1,11 @@
 name: chipseeker
 channels:
-  - conda-forge
+  - r
   - bioconda
+  - conda-forge
   - defaults
 dependencies:
-  - r-base=3.6.3
-  - bioconductor-chipseeker
-  - bioconductor-do.db
-  - bioconductor-genomicfeatures
+  - r::r-base=3.6.3
+  - bioconda::bioconductor-chipseeker=1.26.0
+#  - bioconda::bioconductor-do.db
+  - bioconda::bioconductor-genomicfeatures=1.42.0
