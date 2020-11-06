@@ -61,6 +61,9 @@ pipeline {
                 # install seq2science
                 source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                 conda activate s2s
+                conda config --add channels conda-forge
+                conda config --add channels bioconda
+                conda config --add channels r
                 pip install .
 
                 # remove old cache files
