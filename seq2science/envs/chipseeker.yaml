@@ -8,5 +8,6 @@ dependencies:
   - r::r-base=3.6.3
   - bioconda::bioconductor-chipseeker=1.26.0
   - bioconda::bioconductor-enrichplot=1.10.0
+  - bioconda::bioconductor-biomart=2.46.0
 #  - bioconda::bioconductor-do.db
   - bioconda::bioconductor-genomicfeatures=1.42.0
