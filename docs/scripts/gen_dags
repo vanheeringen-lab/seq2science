@@ -1,3 +1,5 @@
+set -euxo pipefail
+
 dir=$(pwd)
 
 for f in seq2science/workflows/*; do
