@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Fixed
+
+- make a trackhub index when the gene_name is not present in gtf file
+
 ## [0.3.1] - 2020-11-05
 
 ### Added
