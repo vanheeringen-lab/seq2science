@@ -201,7 +201,7 @@ rule trackhub_index:
         gtfToGenePred -allErrors -ignoreGroupsWithoutExons -geneNameAsName2 -genePredExt {input.gtf} {output.genePred} -infoOut={output.info} >> {log} 2>&1
 
         # check if gtf has gene_names > if l!=0, use gene_name, else transcript_id
-        l=$(head -n 100 {input.gtf} | grep gene_name | wc -l)
+        l=$(head -n 100 {input.gtf} | (grep gene_name || true) | wc -l)
         
         # switch columns 1 (transcript_id) and 12 (gene_name)
         awk -v len=$l 'BEGIN {{ FS = "\t" }}; {{ if(len!="0") {{ t = $1; $1 = $12; $12 = t; print; }} else {{ print; }} }}' {output.genePred} > {output.genePrednamed}
