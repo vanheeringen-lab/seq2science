@@ -166,8 +166,15 @@ elif config["quantifier"] == "kallistobus":
     def get_kallistobus_reads(wildcards):
         reads = []
         sample = wildcards.sample
-        if config.get("protocol") == "celseq":
-            assert sampledict[sample]["layout"] == "PAIRED"
+        assert sampledict[sample]["layout"] == "PAIRED"
+        assert bool(re.search(regex, config.get("count")))
+        triplet = [t.split(',') for t in re.findall(regex, config.get("count"))[0].split(":")]   
+        mate_id = int(triplet[2][0])
+        #Determine mate for trimming
+        if mate_id == 0:
+            reads += expand("{fastq_dir}/{{sample}}_R2.{fqsuffix}.gz", **config)
+            reads += expand(f"{{trimmed_dir}}/{sample}_R1_trimmed.{{fqsuffix}}.gz", **config)
+        elif mate_id == 1:
             reads += expand("{fastq_dir}/{{sample}}_R1.{fqsuffix}.gz", **config)
             reads += expand(f"{{trimmed_dir}}/{sample}_R2_trimmed.{{fqsuffix}}.gz", **config)
         else:
