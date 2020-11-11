@@ -3,16 +3,23 @@ Utility functions for seq2science
 """
 import colorsys
 import os
-from typing import List
-from math import ceil, floor
 import time
 import urllib.request
 import numpy as np
 import pandas as pd
 import pysradb
 import matplotlib.colors as mcolors
+
+from typing import List
+from math import ceil, floor
+from typing import List
+from snakemake.logging import logger
 from snakemake.io import expand
 from snakemake.exceptions import TerminatedException
+
+
+# default colors in matplotlib. Order dictates the priority.
+DEFAULT_COLOR_DICTS = [mcolors.BASE_COLORS, mcolors.TABLEAU_COLORS, mcolors.CSS4_COLORS, mcolors.XKCD_COLORS]
 
 
 def _sample_to_idxs(df: pd.DataFrame, sample: str) -> List[int]:
@@ -231,16 +238,18 @@ def url_is_alive(url):
 
 
 def hex_to_rgb(value):
-    """hex in, tuple out (0-255)"""
+    """In: hex(#ffffff). Out: tuple(255, 255, 255)"""
     value = value.lstrip('#')
-    return tuple(int(value[i:i + 2], 16) for i in (0, 2, 4))
+    rgb = tuple(int(value[i:i + 2], 16) for i in (0, 2, 4))
+    return rgb
 
 
-def rgb_to_hvs(value):
+def rgb_to_hsv(value):
     """In: tuple(1, 1, 0.996) or tuple(255, 255, 254). Out: tuple(0.24, 0.04, 1)"""
     if not all([n <= 1 for n in value]):
         value = tuple([n / 255 for n in value])
-    return colorsys.rgb_to_hsv(value[0], value[1], value[2])
+    hsv = colorsys.rgb_to_hsv(value[0], value[1], value[2])
+    return hsv
 
 
 def hsv_to_ucsc(value):
@@ -249,16 +258,15 @@ def hsv_to_ucsc(value):
     In: tuple(1, 1, 0.996). Out: str("255,255,254")
     """
     rgb = [round(n*255) for n in mcolors.hsv_to_rgb(value)]
-    return f"{rgb[0]},{rgb[1]},{rgb[2]}"
+    ucsc_rgb = f"{rgb[0]},{rgb[1]},{rgb[2]}"
+    return ucsc_rgb
 
 
-# default colors in matplotlib. Order dictates the priority.
-default_color_dicts = [mcolors.BASE_COLORS, mcolors.TABLEAU_COLORS, mcolors.CSS4_COLORS, mcolors.XKCD_COLORS]
-
-
-def color_parser(color, color_dicts=None):
+def color_parser(color: str, color_dicts: list=None) -> tuple:
     """
-    convert RGB/matplotlib named colors to matplotlib HSV tuples.
+    convert a string with RGB/matplotlib named colors to matplotlib HSV tuples.
+
+    supports RGB colors with ranges between 0-1 or 0-255.
 
     supported matplotlib colors can be found here:
     https://matplotlib.org/3.3.1/gallery/color/named_colors.html
@@ -266,10 +274,10 @@ def color_parser(color, color_dicts=None):
     # input: RGB
     if color.count(",") == 2:
         value = [float(c) for c in color.split(",")]
-        return rgb_to_hvs(value)
+        return rgb_to_hsv(value)
 
     # input: matplotlib colors
-    cdicts = color_dicts if color_dicts else default_color_dicts
+    cdicts = color_dicts if color_dicts else DEFAULT_COLOR_DICTS
     for cdict in cdicts:
         if color in cdict:
             value = cdict[color]
@@ -278,13 +286,13 @@ def color_parser(color, color_dicts=None):
             if str(value).startswith("#"):
                 value = hex_to_rgb(value)
 
-            return rgb_to_hvs(value)
+            return rgb_to_hsv(value)
 
-    print(f"Color not recognized: {color}")
+    logger.error(f"Color not recognized: {color}")
     raise ValueError
 
 
-def color_picker(n, min_h=0, max_h=0.85, dflt_s=1.00, dflt_v=0.75, alternate=True):
+def color_picker(n, min_h=0, max_h=0.85, s=1.00, v=0.75, alternate=True):
     """
     Return a list of n tuples with HSV colors varying only in hue.
     "Alternate" determines whether hues transition gradually or discretely.
@@ -292,7 +300,7 @@ def color_picker(n, min_h=0, max_h=0.85, dflt_s=1.00, dflt_v=0.75, alternate=Tru
     # for fewer samples, select nearby colors
     steps = max(n, 8)
 
-    hues = np.linspace(min_h,max_h, steps).tolist()[0:n]
+    hues = np.linspace(min_h, max_h, steps).tolist()[0:n]
     if alternate:
         m = ceil(len(hues)/2)
         h1 = hues[:m]
@@ -300,23 +308,25 @@ def color_picker(n, min_h=0, max_h=0.85, dflt_s=1.00, dflt_v=0.75, alternate=Tru
         hues[::2] = h1
         hues[1::2] = h2
 
-    S = dflt_s
-    V = dflt_v
-    return [(H, S, V) for H in hues]
+    hsv_colors_list = [(h, s, v) for h in hues]
+    return hsv_colors_list
 
 
-def color_gradient(hsv, n):
+def color_gradient(hsv: tuple, n: int) -> List[tuple]:
     """
     Based on the input HSV color,
-    return a list of n tuples with HSV colors varying in brightness (saturation + value).
+    return a list of n tuples with HSV colors
+    of increasing brightness (saturation + value).
     """
     # for fewer samples, select nearby colors
     steps = max(n, 4)
 
-    H = [hsv[0] for _ in range(n)]       # constant
-    S = np.linspace(hsv[1], 0.2, steps)  # goes down
-    V = np.linspace(hsv[2], 1.0, steps)  # goes up
-    return [(H[_], S[_], V[_]) for _ in range(n)]
+    h = hsv[0]
+    s = np.linspace(hsv[1], 0.2, steps)  # goes down
+    v = np.linspace(hsv[2], 1.0, steps)  # goes up
+
+    hsv_gradient_list = [(h, s[i], v[i]) for i in range(n)]
+    return hsv_gradient_list
 
 
 def unique(sequence):
