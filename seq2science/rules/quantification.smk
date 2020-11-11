@@ -120,7 +120,7 @@ if config["quantifier"] == "salmon":
                 else ["-1", input.reads[0], "-2", input.reads[1]]
             ),
             params=config["quantifier_flags"],
-        threads: 20
+        threads: 12
         resources:
             mem_gb=8,
         conda:
