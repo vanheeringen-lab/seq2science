@@ -166,7 +166,7 @@ elif config["quantifier"] == "kallistobus":
     def get_kallistobus_reads(wildcards):
         reads = []
         sample = wildcards.sample
-        regex = "[0-2],\d*,\d*:[0-2],\d*,\d*:[0-2],\d*,\d*"
+        regex = "[0,1],\d*,\d*:[0,1],\d*,\d*:[0,1],\d*,\d*"
         assert sampledict[sample]["layout"] == "PAIRED"
         assert bool(re.search(regex, config.get("count")))
         triplet = [t.split(',') for t in re.findall(regex, config.get("count"))[0].split(":")]   
@@ -178,10 +178,6 @@ elif config["quantifier"] == "kallistobus":
         elif mate_id == 1:
             reads += expand("{fastq_dir}/{{sample}}_R1.{fqsuffix}.gz", **config)
             reads += expand(f"{{trimmed_dir}}/{sample}_R2_trimmed.{{fqsuffix}}.gz", **config)
-        elif mate_id == 2:
-            reads += expand("{fastq_dir}/{{sample}}_R1.{fqsuffix}.gz", **config)
-            reads += expand("{fastq_dir}/{{sample}}_R2.{fqsuffix}.gz", **config)
-            reads += expand(f"{{trimmed_dir}}/{sample}_R3_trimmed.{{fqsuffix}}.gz", **config)
         else:    
             raise NotImplementedError
 
