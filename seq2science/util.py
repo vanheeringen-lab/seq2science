@@ -2,21 +2,19 @@
 Utility functions for seq2science
 """
 import colorsys
+from math import ceil, floor
 import os
 import time
+from typing import List
 import urllib.request
+
+import matplotlib.colors as mcolors
 import numpy as np
 import pandas as pd
 import pysradb
-import matplotlib.colors as mcolors
-
-from typing import List
-from math import ceil, floor
-from typing import List
-from snakemake.logging import logger
-from snakemake.io import expand
 from snakemake.exceptions import TerminatedException
-
+from snakemake.io import expand
+from snakemake.logging import logger
 
 # default colors in matplotlib. Order dictates the priority.
 DEFAULT_COLOR_DICTS = [mcolors.BASE_COLORS, mcolors.TABLEAU_COLORS, mcolors.CSS4_COLORS, mcolors.XKCD_COLORS]
