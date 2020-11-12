@@ -8,6 +8,12 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Fixed
+
+- make a trackhub index when the gene_name is not present in gtf file
+
+## [0.3.1] - 2020-11-05
+
 ### Added
 
 - trackhub: automatic color selection
@@ -15,12 +21,16 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - trackhub: grouped samples in a composite track with sample filters and composite control
 
 ### Changed
+- updated genomepy to 0.9.1: genomes will have alternative regions removed (if designated with "alt" in the name)
 - trackhub: better defaults for each track
 - layouts are stored per version, as to not have collisions in the way these are stored between versions.
 - scATAC no longer supports trackhub
+- bigwigs are now (BPM) normalized by default
 
 ### Fixed
 
+- markduplicates now uses $TMP_DIR, if it is defined
+- RNA-seq cluster figures werent displaying text on some platforms
 - not using the local annotation files
 - not recognizing a mix of gzipped and unzipped annotation files
 - bigwigs are now correctly labelled forward/reverse (when protocol was stranded)
@@ -208,7 +218,8 @@ Many minor bug- and quality of life fixes.
 ## [0.0.0] - 2020-06-11
 First release of seq2science!
 
-[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/master...v0.3.0
+[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/master...v0.3.1
+[0.3.1]: https://github.com/vanheeringen-lab/seq2science/compare/v0.3.1...v0.3.0
 [0.3.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.2.3...v0.3.0
 [0.2.3]: https://github.com/vanheeringen-lab/seq2science/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/vanheeringen-lab/seq2science/compare/v0.2.1...v0.2.2
