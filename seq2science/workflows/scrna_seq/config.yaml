@@ -14,12 +14,11 @@ email: yourmail@here.com
 technical_replicates: merge
 
 # scRNA options
+# the umi/bc/read order is automatically infered from the -x parameter (https://pachterlab.github.io/kallisto/manual).
+# seq2science does currently not support scrna-seq platforms that generate more than two fastq files, such as 10xv1.
 quantifier:
   kallistobus:
     ref: '--lamanno'
     count: '-x 0,8,16:0,0,8:1,0,0 --verbose --lamanno'
 
-# currently only supported protocol is celseq, please make issue on github
-# if you want another supported: https://github.com/vanheeringen-lab/seq2science
-protocol: celseq
 barcodefile: "barcodes.txt"
