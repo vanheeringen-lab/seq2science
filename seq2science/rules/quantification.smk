@@ -33,7 +33,8 @@ if config["quantifier"] == "salmon":
             gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
             transcripts=expand("{genome_dir}/{{assembly}}/{{assembly}}.transcripts.fa", **config),
         output:
-            expand("{genome_dir}/{{assembly}}/decoy_transcripts/decoys.txt", **config),
+            gentrome=expand("{genome_dir}/{{assembly}}/decoy_transcripts/gentrome.fa", **config),
+            decoys=expand("{genome_dir}/{{assembly}}/decoy_transcripts/decoys.txt", **config),
         params:
             script=f"{config['rule_dir']}/../scripts/generateDecoyTranscriptome.sh",
         log:
@@ -49,15 +50,15 @@ if config["quantifier"] == "salmon":
         priority: 1
         shell:
             ("cpulimit --include-children -l {threads}00 -- " if config. get("cpulimit", True) else" ")+
-            "sh {params.script} -j {threads} -g {input.genome} -a {input.gtf} -t {input.transcripts} -o $(dirname {output}) > {log} 2>&1"
+            "sh {params.script} -j {threads} -g {input.genome} -a {input.gtf} -t {input.transcripts} -o $(dirname {output[0]}) > {log} 2>&1"
 
     rule salmon_decoy_aware_index:
         """
         Generate a decoy aware transcriptome index for Salmon.
         """
         input:
-            transcripts=expand("{genome_dir}/{{assembly}}/{{assembly}}.transcripts.fa", **config),
-            decoy_transcripts=expand("{genome_dir}/{{assembly}}/decoy_transcripts/decoys.txt", **config),
+            gentrome=expand("{genome_dir}/{{assembly}}/decoy_transcripts/gentrome.fa", **config),
+            decoys=expand("{genome_dir}/{{assembly}}/decoy_transcripts/decoys.txt", **config),
         output:
             directory(expand("{genome_dir}/{{assembly}}/index/{quantifier}_decoy_aware", **config)),
         log:
@@ -72,7 +73,7 @@ if config["quantifier"] == "salmon":
             "../envs/salmon.yaml"
         shell:
             """
-            salmon index -t {input.transcripts} --decoys {input.decoy_transcripts} -i {output} {params} \
+            salmon index -t {input.gentrome} -d {input.decoys} -i {output} {params} \
             --threads {threads} > {log} 2>&1
             """
 
