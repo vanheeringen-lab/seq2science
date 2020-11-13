@@ -11,7 +11,7 @@ import pandas as pd
 import pysradb
 from snakemake.io import expand
 from snakemake.exceptions import TerminatedException
-
+import re
 
 def _sample_to_idxs(df: pd.DataFrame, sample: str) -> List[int]:
     """
@@ -223,3 +223,10 @@ def url_is_alive(url):
         except:
             continue
     return False
+
+def get_bustools_rid(params):
+    regex = "[0,1],\d*,\d*:[0,1],\d*,\d*:[0,1],\d*,\d*"
+    assert bool(re.search(regex, params)),"Incorrect bc:umi:read format (See https://pachterlab.github.io/kallisto/manual)"
+    bus = re.findall(regex, params)[0].split(":")
+    read_id = bus[2].split(",")
+    return int(read_id[0])

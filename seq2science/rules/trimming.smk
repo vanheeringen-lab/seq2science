@@ -1,3 +1,5 @@
+from seq2science.util import get_bustools_rid
+
 if config["trimmer"] == "trimgalore":
     if "scrna_seq" == get_workflow():
         ruleorder: trimgalore_SE > trimgalore_PE
@@ -86,20 +88,18 @@ elif config["trimmer"] == "fastp":
     else:
         ruleorder: fastp_PE > fastp_SE
 
-
     if get_workflow() == "scrna_seq":
         all_single_samples = [sample for sample in all_samples if sampledict[sample]["layout"] == "SINGLE"]
         assert len(all_single_samples) == 0
         #Check kallisto bustools read id
-        regex = "[0,1],\d*,\d*:[0,1],\d*,\d*:[0,1],\d*,\d*"
-        assert sampledict[sample]["layout"] == "PAIRED"
-        assert bool(re.search(regex, config.get("count")))
-        bus = [t.split(',') for t in re.findall(regex, config.get("count"))[0].split(":")]   
-        read_id = int(bus[2][0])
+        read_id = get_bustools_rid(config.get("count"))
         if read_id == 0:
             all_single_samples = [sample + f"_{config['fqext1']}" for sample in all_samples if sampledict[sample]["layout"] == "PAIRED"]
         elif read_id == 1:
             all_single_samples = [sample + f"_{config['fqext2']}" for sample in all_samples if sampledict[sample]["layout"] == "PAIRED"]
+        else:
+            raise NotImplementedError
+
         all_paired_samples = []
     else:
         all_single_samples = [sample for sample in all_samples if sampledict[sample]["layout"] == "SINGLE"]

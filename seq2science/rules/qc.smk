@@ -1,7 +1,7 @@
 import re
 
 import seq2science
-from seq2science.util import sieve_bam
+from seq2science.util import sieve_bam, get_bustools_rid
 
 
 def samtools_stats_input(wildcards):
@@ -632,11 +632,7 @@ def get_trimming_qc(sample):
             # single-cell RNA seq does weird things with barcodes in the fastq file
             # therefore we can not just always start trimming paired-end even though
             # the samples are paired-end (ish)
-            regex = "[0,1],\d*,\d*:[0,1],\d*,\d*:[0,1],\d*,\d*"
-            assert sampledict[sample]["layout"] == "PAIRED"
-            assert bool(re.search(regex, config.get("count")))
-            bus = [t.split(',') for t in re.findall(regex, config.get("count"))[0].split(":")]   
-            read_id = int(bus[2][0])
+            read_id = get_bustools_rid(config.get("count"))
             if read_id == 0:
                 return expand([f"{{qc_dir}}/fastqc/{sample}_R1_fastqc.zip",
                                f"{{qc_dir}}/fastqc/{sample}_R1_trimmed_fastqc.zip",
@@ -663,12 +659,8 @@ def get_trimming_qc(sample):
                                **config)
 
     elif config["trimmer"] == "fastp":
-        if get_workflow() == "scrna_seq":
-            regex = "[0,1],\d*,\d*:[0,1],\d*,\d*:[0,1],\d*,\d*"
-            assert sampledict[sample]["layout"] == "PAIRED"
-            assert bool(re.search(regex, config.get("count")))
-            bus = [t.split(',') for t in re.findall(regex, config.get("count"))[0].split(":")]   
-            read_id = int(bus[2][0])
+        if get_workflow() == "scrna_seq": 
+            read_id = get_bustools_rid(config.get("count"))
             if read_id == 0:
                 return expand(f"{{qc_dir}}/trimming/{sample}_R1.fastp.json", **config)
             elif read_id == 1:

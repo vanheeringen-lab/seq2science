@@ -1,3 +1,5 @@
+from seq2science.util import get_bustools_rid
+
 if config["quantifier"] == "salmon":
 
     rule get_transcripts:
@@ -166,11 +168,8 @@ elif config["quantifier"] == "kallistobus":
     def get_kallistobus_reads(wildcards):
         reads = []
         sample = wildcards.sample
-        regex = "[0,1],\d*,\d*:[0,1],\d*,\d*:[0,1],\d*,\d*"
         assert sampledict[sample]["layout"] == "PAIRED"
-        assert bool(re.search(regex, config.get("count")))
-        bus = [t.split(',') for t in re.findall(regex, config.get("count"))[0].split(":")]   
-        read_id = int(bus[2][0])
+        read_id = get_bustools_rid(config.get("count"))
         #Determine mate for trimming
         if read_id == 0:
             reads += expand(f"{{trimmed_dir}}/{sample}_R1_trimmed.{{fqsuffix}}.gz", **config)
