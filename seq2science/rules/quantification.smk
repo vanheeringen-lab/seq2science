@@ -173,8 +173,8 @@ elif config["quantifier"] == "kallistobus":
         read_id = int(bus[2][0])
         #Determine mate for trimming
         if read_id == 0:
-            reads += expand("{fastq_dir}/{{sample}}_R2.{fqsuffix}.gz", **config)
             reads += expand(f"{{trimmed_dir}}/{sample}_R1_trimmed.{{fqsuffix}}.gz", **config)
+            reads += expand("{fastq_dir}/{{sample}}_R2.{fqsuffix}.gz", **config)
         elif read_id == 1:
             reads += expand("{fastq_dir}/{{sample}}_R1.{fqsuffix}.gz", **config)
             reads += expand(f"{{trimmed_dir}}/{sample}_R2_trimmed.{{fqsuffix}}.gz", **config)
