@@ -632,11 +632,22 @@ def get_trimming_qc(sample):
             # single-cell RNA seq does weird things with barcodes in the fastq file
             # therefore we can not just always start trimming paired-end even though
             # the samples are paired-end (ish)
-            if config.get("protocol") == "celseq":
-                return expand([f"{{qc_dir}}/fastqc/{sample}_R2_fastqc.zip",
-                               f"{{qc_dir}}/fastqc/{sample}_R2_trimmed_fastqc.zip",
-                               f"{{qc_dir}}/trimming/{sample}_R2.{{fqsuffix}}.gz_trimming_report.txt"],
+            regex = "[0,1],\d*,\d*:[0,1],\d*,\d*:[0,1],\d*,\d*"
+            assert sampledict[sample]["layout"] == "PAIRED"
+            assert bool(re.search(regex, config.get("count")))
+            bus = [t.split(',') for t in re.findall(regex, config.get("count"))[0].split(":")]   
+            read_id = int(bus[2][0])
+            if read_id == 0:
+                return expand([f"{{qc_dir}}/fastqc/{sample}_R1_fastqc.zip",
+                               f"{{qc_dir}}/fastqc/{sample}_R1_trimmed_fastqc.zip",
+                               f"{{qc_dir}}/trimming/{sample}_R1.{{fqsuffix}}.gz_trimming_report.txt"],
                               **config)
+            elif read_id == 1:
+                return expand([f"{{qc_dir}}/fastqc/{sample}_R2_fastqc.zip",
+                            f"{{qc_dir}}/fastqc/{sample}_R2_trimmed_fastqc.zip",
+                            f"{{qc_dir}}/trimming/{sample}_R2.{{fqsuffix}}.gz_trimming_report.txt"],
+                            **config)
+
             else:
                 raise NotImplementedError
         else:
@@ -653,7 +664,17 @@ def get_trimming_qc(sample):
 
     elif config["trimmer"] == "fastp":
         if get_workflow() == "scrna_seq":
-            return expand(f"{{qc_dir}}/trimming/{sample}_R2.fastp.json", **config)
+            regex = "[0,1],\d*,\d*:[0,1],\d*,\d*:[0,1],\d*,\d*"
+            assert sampledict[sample]["layout"] == "PAIRED"
+            assert bool(re.search(regex, config.get("count")))
+            bus = [t.split(',') for t in re.findall(regex, config.get("count"))[0].split(":")]   
+            read_id = int(bus[2][0])
+            if read_id == 0:
+                return expand(f"{{qc_dir}}/trimming/{sample}_R1.fastp.json", **config)
+            elif read_id == 1:
+                return expand(f"{{qc_dir}}/trimming/{sample}_R2.fastp.json", **config)
+            else:
+                raise NotImplementedError
         # not sure how fastp should work with scatac here
         return expand(f"{{qc_dir}}/trimming/{sample}.fastp.json", **config)
 
