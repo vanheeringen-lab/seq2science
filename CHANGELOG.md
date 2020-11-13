@@ -11,6 +11,8 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Fixed
 
 - make a trackhub index when the gene_name is not present in gtf file
+- make a trackhub index when the gene_name is not present in gene all entries
+- update Salmon & salmon rules
 
 ## [0.3.1] - 2020-11-05
 
