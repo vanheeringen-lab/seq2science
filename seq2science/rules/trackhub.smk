@@ -184,7 +184,7 @@ rule trackhub_index:
         genePred=temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.gp", **config)),
         genePrednamed=temp(expand("{genome_dir}/{{assembly}}/{{assembly}}named.gp", **config)),
         genePredbed=temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.gp.bed", **config)),
-        genePredbigbed=expand("{genome_dir}/{{assembly}}/annotation.bedBed", **config),
+        genePredbigbed=expand("{genome_dir}/{{assembly}}/annotation.bigBed", **config),
         info=temp(expand("{genome_dir}/{{assembly}}/info.txt", **config)),
         indexinfo=temp(expand("{genome_dir}/{{assembly}}/indexinfo.txt", **config)),
         ix=expand("{genome_dir}/{{assembly}}/annotation.ix", **config),
@@ -206,7 +206,10 @@ rule trackhub_index:
         # switch columns 1 (transcript_id) and 12 (gene_name)
         awk -v len=$l 'BEGIN {{ FS = "\t" }}; {{ if(len!="0") {{ t = $1; $1 = $12; $12 = t; print; }} else {{ print; }} }}' {output.genePred} > {output.genePrednamed}
 
-        genePredToBed {output.genePrednamed} {output.genePredbed} >> {log} 2>&1
+        # remove lines with missing headers        
+        grep -v "^ " {output.genePrednamed} > {output.genePred}
+
+        genePredToBed {output.genePred} {output.genePredbed} >> {log} 2>&1
 
         bedSort {output.genePredbed} {output.genePredbed} >> {log} 2>&1
 
@@ -428,10 +431,10 @@ def create_trackhub():
 
             # add gtf-dependent track(s) if possible
             if has_annotation(asmbly):
-                file = f"{config['genome_dir']}/{assembly}/annotation.bedBed"
+                file = f"{config['genome_dir']}/{assembly}/annotation.bigBed"
                 track = trackhub.Track(
                     name="annotation",
-                    source=f"{config['genome_dir']}/{assembly}/annotation.bedBed",
+                    source=file,
                     tracktype="bigBed 12",
                     visibility="pack",
                     color="140,43,69",  # bourgundy
