@@ -5,7 +5,8 @@ samples: samples.tsv
 result_dir: ./results  # where to store results
 genome_dir: ./genomes  # where to look for or download the genomes
 # fastq_dir: (default is inside result_dir) # where to look for fastqs
-
+bigwig_dir: ./bigwig
+deeptools_flags: ""
 
 # contact info for multiqc report and trackhub
 email: yourmail@here.com
