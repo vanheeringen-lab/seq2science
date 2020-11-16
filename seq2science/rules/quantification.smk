@@ -1,3 +1,5 @@
+from seq2science.util import get_bustools_rid
+
 if config["quantifier"] == "salmon":
 
     rule get_transcripts:
@@ -166,11 +168,16 @@ elif config["quantifier"] == "kallistobus":
     def get_kallistobus_reads(wildcards):
         reads = []
         sample = wildcards.sample
-        if config.get("protocol") == "celseq":
-            assert sampledict[sample]["layout"] == "PAIRED"
+        assert sampledict[sample]["layout"] == "PAIRED"
+        read_id = get_bustools_rid(config.get("count"))
+        #Determine mate for trimming
+        if read_id == 0:
+            reads += expand(f"{{trimmed_dir}}/{sample}_R1_trimmed.{{fqsuffix}}.gz", **config)
+            reads += expand("{fastq_dir}/{{sample}}_R2.{fqsuffix}.gz", **config)
+        elif read_id == 1:
             reads += expand("{fastq_dir}/{{sample}}_R1.{fqsuffix}.gz", **config)
             reads += expand(f"{{trimmed_dir}}/{sample}_R2_trimmed.{{fqsuffix}}.gz", **config)
-        else:
+        else:    
             raise NotImplementedError
 
         return reads

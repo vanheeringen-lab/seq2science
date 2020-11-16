@@ -23,6 +23,4 @@ properties:
   barcodefile:
     type: string
 
-  protocol:
-    type: string
-    enum: [celseq]
+  

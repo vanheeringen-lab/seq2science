@@ -1,6 +1,7 @@
 """
 Utility functions for seq2science
 """
+import re
 import os
 import sys
 from typing import List
@@ -223,3 +224,26 @@ def url_is_alive(url):
         except:
             continue
     return False
+
+#def get_bustools_rid(params):
+#    regex = "[0,1],\d*,\d*:[0,1],\d*,\d*:[0,1],\d*,\d*"
+#    assert bool(re.search(regex, params)),"Incorrect bc:umi:read format (See https://pachterlab.github.io/kallisto/manual)"
+#    bus = re.findall(regex, params)[0].split(":")
+#    read_id = bus[2].split(",")
+#    return int(read_id[0])
+
+def get_bustools_rid(params):
+    kb_tech_dict = { '10xv2': 1,'10xv3': 1,'celseq': 1,'celseq2': 1,'dropseq': 1,'scrubseq': 1 }
+    #Check for occurence of short-hand tech
+    bus_regex = "[0-1],\d*,\d*:[0-1],\d*,\d*:[0-1],\d*,\d*"
+    bus_regex_short = "\\b(?i)(10XV2|10XV3|CELSEQ|CELSEQ2|DROPSEQ|SCRUBSEQ)\\b"
+    read_id = None
+    if re.search(bus_regex, params) != None:
+        bus = re.findall(bus_regex, params)[0]
+        read_id = int(bus.split(":")[2].split(",")[0])
+    elif re.search(bus_regex_short, params) != None:
+        tech = re.findall(bus_regex_short, params)[0]
+        read_id = kb_tech_dict[tech.lower()]
+    else:
+        raise Exception("Not a valid scrna-seq platform. Please check -x parameter")
+    return read_id

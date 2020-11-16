@@ -10,7 +10,9 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Added
 
-- (BETA) new scrna-seq workflow! Currently only supports celseq protocols.
+- (BETA) Added support for multiple scrna-seq platforms (Kallistobus)
+- (BETA) Fastp detects the correct mate for trimming based on BUS settings.
+- (BETA) Support for Kallistobus short-hand syntax.
 
 ### Changed
 
