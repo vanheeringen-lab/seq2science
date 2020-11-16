@@ -4,4 +4,4 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - bioconda::minimap=2.17
+  - bioconda::minimap2=2.17
