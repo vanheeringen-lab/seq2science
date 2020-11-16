@@ -32,7 +32,6 @@ pipeline {
     environment {
         PATH = "$WORKSPACE/miniconda/bin:$PATH"
         CORES = "28"
-        MAMBA = "0.5.1"
     }
 
     stages {
@@ -56,7 +55,7 @@ pipeline {
                 # create main env
                 printf "\ninstalling seq2science environment\n"
                 mamba env create -f requirements.yaml
-                mamba install -n s2s conda-forge::mamba=$MAMBA
+                # mamba install -n s2s conda-forge::mamba=$MAMBA
 
                 # install seq2science
                 source $WORKSPACE/miniconda/etc/profile.d/conda.sh
