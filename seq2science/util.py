@@ -245,4 +245,4 @@ def get_bustools_rid(params):
         read_id = kb_tech_dict[tech.lower()]
     else:
         raise Exception("Not a valid scrna-seq platform. Please check -x parameter")
-    return read_id∏
+    return read_id
