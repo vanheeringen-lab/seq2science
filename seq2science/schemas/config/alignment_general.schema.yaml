@@ -1,4 +1,4 @@
-$schema: "http://json-schema.org/draft-06/schema#"
+$schema: "http://json-schema.org/draft-07/schema#"
 
 description: seq2science general alignment configuration
 
@@ -167,7 +167,7 @@ properties:
   # whether or not to generate a multiqc report
   create_qc_report:
     description: whether or not to generate a multiqc report
-    default: True
+    default: true
     type: boolean
 
   bam_sort_mem:
