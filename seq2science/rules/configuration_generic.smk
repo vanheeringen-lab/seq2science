@@ -78,8 +78,19 @@ for kw in ['aligner', 'quantifier', 'bam_sorter', "trimmer"]:
         config[kw] = {config[kw]: {}}
 
 # validate and complement the config dict
-for schema in config_schemas:
-    validate(config, schema=f"{config['rule_dir']}/../schemas/config/{schema}.schema.yaml")
+try:
+    for schema in config_schemas:
+        validate(config, schema=f"{config['rule_dir']}/../schemas/config/{schema}.schema.yaml")
+except Exception as e:
+    print()
+    print(config)
+    print()
+    print(config["create_qc_report"])
+    print(type(config["create_qc_report"]))
+    print()
+    print(e)
+    raise Exception
+
 
 # check if paired-end filename suffixes are lexicographically ordered
 config['fqext'] = [config['fqext1'], config['fqext2']]
