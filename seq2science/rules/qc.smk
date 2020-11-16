@@ -643,7 +643,6 @@ def get_trimming_qc(sample):
                             f"{{qc_dir}}/fastqc/{sample}_R2_trimmed_fastqc.zip",
                             f"{{qc_dir}}/trimming/{sample}_R2.{{fqsuffix}}.gz_trimming_report.txt"],
                             **config)
-
             else:
                 raise NotImplementedError
         else:
