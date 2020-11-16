@@ -1,6 +1,7 @@
 """
 Utility functions for seq2science
 """
+import re
 import os
 import sys
 from typing import List
@@ -11,7 +12,7 @@ import pandas as pd
 import pysradb
 from snakemake.io import expand
 from snakemake.exceptions import TerminatedException
-import re
+
 
 def _sample_to_idxs(df: pd.DataFrame, sample: str) -> List[int]:
     """
