@@ -5,7 +5,7 @@ channels:
   - defaults
 dependencies:
   - pkgs/main::python=3.6
-  - bioconda::snakemake=5.28.0
+  - bioconda::snakemake=5.27.4
   - pkgs/main::conda=4.9.2
   - conda-forge::mamba=0.7.1
   - bioconda::genomepy=0.9.1
