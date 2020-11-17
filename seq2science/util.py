@@ -255,7 +255,9 @@ def hsv_to_ucsc(value):
     UCSC accepts RGB as string without spaces.
     In: tuple(1, 1, 0.996). Out: str("255,255,254")
     """
-    rgb = [round(n*255) for n in mcolors.hsv_to_rgb(value)]
+    # older versions of numpy hijack round and return a float, hence int()
+    # see https://github.com/numpy/numpy/issues/11810
+    rgb = [int(round(n*255)) for n in mcolors.hsv_to_rgb(value)]
     ucsc_rgb = f"{rgb[0]},{rgb[1]},{rgb[2]}"
     return ucsc_rgb
 
