@@ -1,0 +1,7 @@
+name: htmltable
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - conda - forge::pretty_html_table = 0.9.dev0
