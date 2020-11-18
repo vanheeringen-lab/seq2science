@@ -1,6 +1,8 @@
-import contextlib
-import genomepy
 import os
+import time
+import contextlib
+
+import genomepy
 
 
 # the filetypes genomepy will download
@@ -149,11 +151,10 @@ rule get_genome_support_files:
         expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.fai", **config),
         expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
         expand("{genome_dir}/{{assembly}}/{{assembly}}.gaps.bed", **config),
-        temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.done", **config),)
-    run:
-        genomepy.Genome(wildcards.assembly, genomes_dir=config["genome_dir"])
-        # snakemake doesnt wait until the above command finished running without this...
-        shell("touch {output[3]}")
+    params:
+        genome_dir=config["genome_dir"]
+    script:
+        f"{config['rule_dir']}/../scripts/genome_support.py"
 
 
 rule gene_id2name:
@@ -178,7 +179,7 @@ rule gene_id2name:
 
         if not can_convert():
             with open(output[0], "w") as out:
-                out.write("assembly does not contain both gene_ids and gene_names")
+                out.write("assembly does not contain both gene_ids and gene_names\n")
         else:
 
             # loop over the gtf and store the conversion in the table

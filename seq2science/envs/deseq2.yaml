@@ -13,4 +13,5 @@ dependencies:
   - bioconda::bioconductor-limma=3.42.0
   - r::r-rcolorbrewer=1.1_2
   - r::r-ggplot2=3.1.1
-  - conda-forge::r-pheatmap=1.0.12
+  - r::r-pheatmap=1.0.12
+  - r::r-pdftools=2.2

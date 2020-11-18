@@ -1,17 +1,25 @@
 """
 Utility functions for seq2science
 """
+
 import re
+import colorsys
+from math import ceil, floor
 import os
-import sys
-from typing import List
 import time
+from typing import List
 import urllib.request
 
+import matplotlib.colors as mcolors
+import numpy as np
 import pandas as pd
 import pysradb
-from snakemake.io import expand
 from snakemake.exceptions import TerminatedException
+from snakemake.io import expand
+from snakemake.logging import logger
+
+# default colors in matplotlib. Order dictates the priority.
+DEFAULT_COLOR_DICTS = [mcolors.BASE_COLORS, mcolors.TABLEAU_COLORS, mcolors.CSS4_COLORS, mcolors.XKCD_COLORS]
 
 
 def _sample_to_idxs(df: pd.DataFrame, sample: str) -> List[int]:
@@ -90,16 +98,19 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
     geo_samples = [sample for sample in samples if sample.startswith("GSM")]
 
     # in sample2clean we store the (potential GEO) sample name in a SRA compliant name
-    try:
-        df_geo = db_sra.gsm_to_srx(geo_samples)
-    except:
-        logger.error("We had trouble querying the SRA. This probably means that the SRA was unresponsive, and their servers "
-                     "are overloaded or slow. Please try again in a bit...\n"
-                     "Another possible option is that you try to access samples that do not exist or are protected, and "
-                     "seq2science does not support downloading those..\n\n")
-        raise TerminatedException
+    if len(geo_samples):
+        try:
+            df_geo = db_sra.gsm_to_srx(geo_samples)
+        except:
+            logger.error("We had trouble querying the SRA. This probably means that the SRA was unresponsive, and their servers "
+                         "are overloaded or slow. Please try again in a bit...\n"
+                         "Another possible option is that you try to access samples that do not exist or are protected, and "
+                         "seq2science does not support downloading those..\n\n")
+            raise TerminatedException
 
-    sample2clean = dict(zip(df_geo.experiment_alias, df_geo.experiment_accession))
+        sample2clean = dict(zip(df_geo.experiment_alias, df_geo.experiment_accession))
+    else:
+        sample2clean = dict()
 
     # now add the already SRA compliant names with a reference to itself
     sample2clean.update({sample: sample for sample in samples if sample not in geo_samples})
@@ -225,13 +236,7 @@ def url_is_alive(url):
             continue
     return False
 
-#def get_bustools_rid(params):
-#    regex = "[0,1],\d*,\d*:[0,1],\d*,\d*:[0,1],\d*,\d*"
-#    assert bool(re.search(regex, params)),"Incorrect bc:umi:read format (See https://pachterlab.github.io/kallisto/manual)"
-#    bus = re.findall(regex, params)[0].split(":")
-#    read_id = bus[2].split(",")
-#    return int(read_id[0])
-
+  
 def get_bustools_rid(params):
     kb_tech_dict = { '10xv2': 1,'10xv3': 1,'celseq': 1,'celseq2': 1,'dropseq': 1,'scrubseq': 1 }
     #Check for occurence of short-hand tech
@@ -247,3 +252,143 @@ def get_bustools_rid(params):
     else:
         raise Exception("Not a valid scrna-seq platform. Please check -x parameter")
     return read_id
+
+def hex_to_rgb(value):
+    """In: hex(#ffffff). Out: tuple(255, 255, 255)"""
+    value = value.lstrip('#')
+    rgb = tuple(int(value[i:i + 2], 16) for i in (0, 2, 4))
+    return rgb
+
+
+def rgb_to_hsv(value):
+    """In: tuple(1, 1, 0.996) or tuple(255, 255, 254). Out: tuple(0.24, 0.04, 1)"""
+    if not all([n <= 1 for n in value]):
+        value = tuple([n / 255 for n in value])
+    hsv = colorsys.rgb_to_hsv(value[0], value[1], value[2])
+    return hsv
+
+
+def hsv_to_ucsc(value):
+    """
+    UCSC accepts RGB as string without spaces.
+    In: tuple(1, 1, 0.996). Out: str("255,255,254")
+    """
+    # older versions of numpy hijack round and return a float, hence int()
+    # see https://github.com/numpy/numpy/issues/11810
+    rgb = [int(round(n*255)) for n in mcolors.hsv_to_rgb(value)]
+    ucsc_rgb = f"{rgb[0]},{rgb[1]},{rgb[2]}"
+    return ucsc_rgb
+
+
+def color_parser(color: str, color_dicts: list=None) -> tuple:
+    """
+    convert a string with RGB/matplotlib named colors to matplotlib HSV tuples.
+
+    supports RGB colors with ranges between 0-1 or 0-255.
+
+    supported matplotlib colors can be found here:
+    https://matplotlib.org/3.3.1/gallery/color/named_colors.html
+    """
+    # input: RGB
+    if color.count(",") == 2:
+        value = [float(c) for c in color.split(",")]
+        return rgb_to_hsv(value)
+
+    # input: matplotlib colors
+    cdicts = color_dicts if color_dicts else DEFAULT_COLOR_DICTS
+    for cdict in cdicts:
+        if color in cdict:
+            value = cdict[color]
+
+            # tableau, css4 and xkcd return hex colors.
+            if str(value).startswith("#"):
+                value = hex_to_rgb(value)
+
+            return rgb_to_hsv(value)
+
+    logger.error(f"Color not recognized: {color}")
+    raise ValueError
+
+
+def color_picker(n, min_h=0, max_h=0.85, s=1.00, v=0.75, alternate=True):
+    """
+    Return a list of n tuples with HSV colors varying only in hue.
+    "Alternate" determines whether hues transition gradually or discretely.
+    """
+    # for fewer samples, select nearby colors
+    steps = max(n, 8)
+
+    hues = np.linspace(min_h, max_h, steps).tolist()[0:n]
+    if alternate:
+        m = ceil(len(hues)/2)
+        h1 = hues[:m]
+        h2 = hues[m:]
+        hues[::2] = h1
+        hues[1::2] = h2
+
+    hsv_colors_list = [(h, s, v) for h in hues]
+    return hsv_colors_list
+
+
+def color_gradient(hsv: tuple, n: int) -> List[tuple]:
+    """
+    Based on the input HSV color,
+    return a list of n tuples with HSV colors
+    of increasing brightness (saturation + value).
+    """
+    # for fewer samples, select nearby colors
+    steps = max(n, 4)
+
+    h = hsv[0]
+    s = np.linspace(hsv[1], 0.2, steps)  # goes down
+    v = np.linspace(hsv[2], 1.0, steps)  # goes up
+
+    hsv_gradient_list = [(h, s[i], v[i]) for i in range(n)]
+    return hsv_gradient_list
+
+
+def unique(sequence):
+    seen = set()
+    return [x for x in sequence if not (x in seen or seen.add(x))]
+
+
+def shorten(string, max_length, methods="right"):
+    """
+    shorten a string to a max_length, multiple methods accepted.
+    "signs" and "vowels" remove their respective characters from right to left.
+    "left","right" and "center" can be performed afterward if the desired length is not yet reached.
+    """
+    overhead = len(string) - max_length
+    if overhead <= 0:
+        return string
+
+    if "signs" in methods:
+        signs = ["-", "_", "."]
+        s = ""
+        for l in string[::-1]:
+            if l in signs and overhead > 0:
+                overhead -= 1
+            else:
+                s += l
+        string = s[::-1]
+
+    if "vowels" in methods:
+        vowels = ["a", "e", "i", "o", "u"]
+        s = ""
+        for l in string[::-1]:
+            if l in vowels and overhead > 0:
+                overhead -= 1
+            else:
+                s += l
+        string = s[::-1]
+
+    if "right" in methods:
+        string = string[:max_length]
+    elif "left" in methods:
+        string = string[len(string)-max_length:]
+    elif "center" in methods:
+        string = string[:ceil(max_length/2)] + string[len(string)-floor(max_length/2):]
+
+    return string
+
+  

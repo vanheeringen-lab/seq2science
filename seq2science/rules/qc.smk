@@ -545,15 +545,10 @@ rule multiqc_schema:
 
 
 def get_qc_files(wildcards):
+    qc = dict()
     assert 'quality_control' in globals(), "When trying to generate multiqc output, make sure that the "\
                                            "variable 'quality_control' exists and contains all the "\
                                            "relevant quality control functions."
-    qc = dict()
-    qc['header'] = expand('{qc_dir}/header_info.yaml', **config)[0]
-    qc['sample_names'] = expand('{qc_dir}/sample_names_{{assembly}}.tsv', **config)[0]
-    qc['schema'] = expand('{qc_dir}/schema.yaml', **config)[0]
-    if config["trimmer"] == "trimgalore":
-        qc['filter_buttons'] = expand('{qc_dir}/sample_filters_{{assembly}}.tsv', **config)[0]
     qc['files'] = set([expand('{qc_dir}/samplesconfig_mqc.html', **config)[0]])
 
     # trimming qc on individual samples
@@ -590,12 +585,39 @@ def get_qc_files(wildcards):
     return qc
 
 
-rule multiqc:
-    """
-    Aggregate all the quality control metrics for every sample into a single multiqc report.
-    """
+rule combine_qc_files:
     input:
         unpack(get_qc_files)
+    output:
+        expand("{qc_dir}/multiqc_{{assembly}}.tmp.files", **config),
+    run:
+        with open(output[0], mode="w") as out:
+            out.write('\n'.join(input.files))
+
+
+def get_qc_schemas(wildcards):
+    qc = dict()
+    qc['header'] = expand('{qc_dir}/header_info.yaml', **config)[0]
+    qc['sample_names'] = expand('{qc_dir}/sample_names_{{assembly}}.tsv', **config)[0]
+    qc['schema'] = expand('{qc_dir}/schema.yaml', **config)[0]
+    if config["trimmer"] == "trimgalore":
+        qc['filter_buttons'] = expand('{qc_dir}/sample_filters_{{assembly}}.tsv', **config)[0]
+    return qc
+
+
+rule multiqc:
+    """
+    Aggregate all the quality control metrics for every sample into a single 
+    multiqc report.
+    
+    The input can get very long (causing problems with the shell), so we have 
+    to write the input to a file, and then we can use that file as input to 
+    multiqc.
+    """
+    input:
+        unpack(get_qc_schemas),
+        tmp=expand('{qc_dir}/samplesconfig_mqc.html', **config),
+        files=rules.combine_qc_files.output,
     output:
         expand("{qc_dir}/multiqc_{{assembly}}.html", **config),
         directory(expand("{qc_dir}/multiqc_{{assembly}}_data", **config))
@@ -610,7 +632,7 @@ rule multiqc:
         "../envs/qc.yaml"
     shell:
         """
-        multiqc {input.files} -o {params.dir} -n multiqc_{wildcards.assembly}.html \
+        multiqc $(< {input.files}) -o {params.dir} -n multiqc_{wildcards.assembly}.html \
         --config {input.schema}                                                    \
         --config {input.header}                                                    \
         --sample-names {input.sample_names}                                        \

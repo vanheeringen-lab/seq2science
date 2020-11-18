@@ -2,8 +2,6 @@ name: docs
 
 on:
   push:
-    branches:
-      - master
 
 jobs:
   docs:
@@ -19,22 +17,26 @@ jobs:
 
       - name: Install dependencies 🔨
         run: |
-          python -m pip install --upgrade pip
-          pip install 'sphinx==2.4.4' m2r sphinx_rtd_theme pyyaml sphinx-argparse snakemake filelock pyyaml numpy pandas biopython trackhub 'genomepy==0.8.3' pandas-schema pysradb
-          sudo apt install graphviz ncbi-entrez-direct
-          pip install .
+          $CONDA/bin/conda config --add channels conda-forge
+          $CONDA/bin/conda config --add channels bioconda
+          $CONDA/bin/conda install mamba
+          $CONDA/bin/mamba env update --file requirements.yaml --name base
+          $CONDA/bin/mamba install m2r sphinx_rtd_theme sphinx=2.4.4 sphinx-argparse graphviz
+          $CONDA/bin/pip install .
 
       - name: Build 🔧
         run: |
-          python docs/scripts/schemas.py
-          python docs/scripts/rule_description.py
+          $CONDA/bin/python docs/scripts/schemas.py
+          $CONDA/bin/python docs/scripts/rule_description.py
           ./docs/scripts/gen_dags
           cp CHANGELOG.md docs/content
-          sphinx-build docs/ build
+          $CONDA/bin/sphinx-build docs/ build
           touch build/.nojekyll
 
+      # only deploy
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@releases/v3
+        if: github.ref == 'refs/heads/master'
         with:
           ACCESS_TOKEN: ${{ secrets.AccessToken }}
           BRANCH: gh-pages # The branch the action should deploy to.

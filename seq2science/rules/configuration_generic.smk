@@ -5,7 +5,6 @@ import os.path
 import psutil
 import pickle
 import re
-import subprocess
 import time
 import copy
 import json
@@ -26,7 +25,8 @@ from snakemake.utils import min_version
 from snakemake.exceptions import TerminatedException
 
 import seq2science
-from seq2science.util import samples2metadata, prep_filelock, url_is_alive
+from seq2science.util import samples2metadata, prep_filelock, url_is_alive, color_parser
+
 
 
 logger.info(
@@ -161,6 +161,11 @@ if 'strandedness' in samples:
     samples['strandedness'] = samples['strandedness'].mask(pd.isnull, 'nan')
     if config.get('ignore_strandedness', True) or not any([field in list(samples['strandedness']) for field in ['yes', 'forward', 'reverse', 'no']]):
         samples = samples.drop(columns=['strandedness'])
+if 'colors' in samples:
+    samples['colors'] = samples['colors'].mask(pd.isnull, '0,0,0')  # nan -> black
+    samples['colors'] = [color_parser(c) for c in samples['colors']]  # convert input to HSV color
+    if not config.get('create_trackhub', False):
+        samples = samples.drop(columns=['colors'])
 
 if 'replicate' in samples:
     # check if replicate names are unique between assemblies
@@ -199,6 +204,13 @@ samples.index = samples.index.map(str)
 
 def get_workflow():
     return workflow.snakefile.split('/')[-2]
+
+sequencing_protocol = get_workflow()\
+    .replace('alignment',  'Alignment')\
+    .replace('atac_seq',   'ATAC-seq')\
+    .replace('chip_seq',   'ChIP-seq')\
+    .replace('rna_seq',    'RNA-seq')\
+    .replace('scatac_seq', 'scATAC-seq')
 
 
 if "assembly" in samples:
@@ -251,42 +263,53 @@ if "assembly" in samples:
     # determine provider for each new assembly
     providersfile = os.path.expanduser(f'~/.config/seq2science/{seq2science.__version__}/providers.p')
     providersfile_lock = os.path.expanduser(f'~/.config/seq2science/{seq2science.__version__}/providers.p.lock')
-    prep_filelock(providersfile_lock, 30)
-    with FileLock(providersfile_lock):
-        providers = dict()
-        if os.path.exists(providersfile):
-            providers = pickle.load(open(providersfile, "rb"))
+    for _ in range(2):
+        # we get two tries, in case parallel executions are interfering with one another
+        try:
+            prep_filelock(providersfile_lock, 30)
+            with FileLock(providersfile_lock):
+                providers = dict()
+                if os.path.exists(providersfile):
+                    providers = pickle.load(open(providersfile, "rb"))
 
-        if any([assembly not in providers for assembly in set(samples["assembly"])]):
-            logger.info("Determining assembly providers")
+                if any([assembly not in providers for assembly in set(samples["assembly"])]):
+                    logger.info("Determining assembly providers")
 
-            for assembly in set(samples["assembly"]):
-                if assembly not in providers:
-                    file = os.path.join(config['genome_dir'], assembly, assembly)
-                    providers[assembly] = {"genome": None, "annotation": None}
+                    for assembly in set(samples["assembly"]):
+                        if assembly not in providers:
+                            file = os.path.join(config['genome_dir'], assembly, assembly)
+                            providers[assembly] = {"genome": None, "annotation": None}
 
-                    # check if genome and annotations exist locally
-                    if os.path.exists(f"{file}.fa"):
-                        providers[assembly]["genome"] = "local"
-                    if all(os.path.exists(f) for f in [f"{file}.annotation.gtf", f"{file}.annotation.bed"]):
-                        providers[assembly]["annotation"] = "local"
+                            # check if genome and annotations exist locally
+                            if os.path.exists(f"{file}.fa"):
+                                providers[assembly]["genome"] = "local"
+                            if any(os.path.exists(f) for f in [f"{file}.annotation.gtf", f"{file}.annotation.gtf.gz"]) and \
+                                any(os.path.exists(f) for f in [f"{file}.annotation.bed", f"{file}.annotation.bed.gz"]):
+                                providers[assembly]["annotation"] = "local"
 
-                    # check if the annotation can be downloaded
-                    if providers[assembly]["annotation"] is None:
-                        annotion_provider = provider_with_file("annotation", assembly)
-                        if annotion_provider:
-                            providers[assembly]["genome"] = annotion_provider  # exists if annotation does
-                            providers[assembly]["annotation"] = annotion_provider
+                            # check if the annotation can be downloaded
+                            if providers[assembly]["annotation"] is None:
+                                annotion_provider = provider_with_file("annotation", assembly)
+                                if annotion_provider:
+                                    providers[assembly]["genome"] = annotion_provider  # genome always exists if annotation does
+                                    providers[assembly]["annotation"] = annotion_provider
 
-                    # check if the genome can be downloaded
-                    if providers[assembly]["genome"] is None:
-                        genome_provider = provider_with_file("genome", assembly)
-                        providers[assembly]["genome"] = genome_provider
+                            # check if the genome can be downloaded
+                            if providers[assembly]["genome"] is None:
+                                genome_provider = provider_with_file("genome", assembly)
+                                providers[assembly]["genome"] = genome_provider
 
-            pickle.dump(providers, open(providersfile, "wb"))
+                    pickle.dump(providers, open(providersfile, "wb"))
+                break
+        except FileNotFoundError:
+            time.sleep(1)
+    else:
+        logger.error("There were some problems with locking the seq2science cache. Please try again in a bit.")
+        raise TerminatedException
 
     # check the providers for the required assemblies
     annotation_required = "rna_seq" in get_workflow() or config["aligner"] == "star"
+    _has_annot = dict()
     for assembly in set(samples["assembly"]):
         file = os.path.join(config['genome_dir'], assembly, assembly)
         if providers[assembly]["genome"] is None and not os.path.exists(f"{file}.fa"):
@@ -296,16 +319,21 @@ if "assembly" in samples:
             )
             exit(1)
 
-        if providers[assembly]["annotation"] is None and \
-                not all(os.path.exists(f) for f in [f"{file}.annotation.gtf", f"{file}.annotation.bed"]):
+        if providers[assembly]["annotation"] is None and not (
+                any(os.path.exists(f) for f in [f"{file}.annotation.gtf", f"{file}.annotation.gtf.gz"]) and
+                any(os.path.exists(f) for f in [f"{file}.annotation.bed", f"{file}.annotation.bed.gz"])
+        ):
             logger.info(
                 f"No annotation for assembly {assembly} can be downloaded. Another provider (and "
-                f"thus another assembly name) might have gene annotations.\n"
-                f"Find alternative assemblies with `genomepy search {assembly}`"
+                f"thus another assembly name) might have a gene annotation.\n"
+                f"Find alternative assemblies with `genomepy search {assembly}`\n"
             )
             if annotation_required:
                 exit(1)
+            _has_annot[assembly] = False
             time.sleep(0 if config.get("debug") else 2)  # give some time to read the message
+        else:
+            _has_annot[assembly] = True
 
 
     def ori_assembly(assembly):
@@ -321,7 +349,7 @@ if "assembly" in samples:
         """
         Returns True/False on whether or not the assembly has an annotation.
         """
-        return True if providers[ori_assembly(assembly)]["annotation"] else False
+        return _has_annot[assembly]
 
 else:
     modified = False
@@ -343,21 +371,30 @@ if "control" in samples:
 
 pysradb_cache = os.path.expanduser(f'~/.config/seq2science/{seq2science.__version__}/pysradb.p')
 pysradb_cache_lock = os.path.expanduser(f'~/.config/seq2science/{seq2science.__version__}/pysradb.p.lock')
-prep_filelock(pysradb_cache_lock, 30)
-with FileLock(pysradb_cache_lock):
+for _ in range(2):
+    # we get two tries, in case parallel executions are interfering with one another
     try:
-        sampledict = pickle.load(open(pysradb_cache, "rb"))
+        prep_filelock(pysradb_cache_lock, 30)
+        with FileLock(pysradb_cache_lock):
+            try:
+                sampledict = pickle.load(open(pysradb_cache, "rb"))
+            except FileNotFoundError:
+                sampledict = {}
+
+            missing_samples = [sample for sample in all_samples if sample not in sampledict.keys()]
+            if len(missing_samples) > 0:
+                sampledict.update(samples2metadata(missing_samples, config, logger))
+
+            pickle.dump(sampledict, open(pysradb_cache, "wb"))
+
+            # only keep samples for this run
+            sampledict = {sample: values for sample, values in sampledict.items() if sample in all_samples}
+        break
     except FileNotFoundError:
-        sampledict = {}
-
-    missing_samples = [sample for sample in all_samples if sample not in sampledict.keys()]
-    if len(missing_samples) > 0:
-        sampledict.update(samples2metadata(missing_samples, config, logger))
-
-    pickle.dump(sampledict, open(pysradb_cache, "wb"))
-
-    # only keep samples for this run
-    sampledict = {sample: values for sample, values in sampledict.items() if sample in all_samples}
+        time.sleep(1)
+else:
+    logger.error("There were some problems with locking the seq2science cache. Please try again in a bit.")
+    raise TerminatedException
 
 logger.info("Done!\n\n")
 
@@ -485,25 +522,34 @@ else:
 if config.get("create_trackhub"):
     hubfile = os.path.expanduser(f'~/.config/seq2science/{seq2science.__version__}/ucsc_trackhubs.p')
     hubfile_lock = os.path.expanduser(f'~/.config/seq2science/{seq2science.__version__}/ucsc_trackhubs.p.lock')
-    prep_filelock(hubfile_lock)
+    for _ in range(2):
+        # we get two tries, in case parallel executions are interfering with one another
+        try:
+            prep_filelock(hubfile_lock)
+            with FileLock(hubfile_lock):
+                if not os.path.exists(hubfile):
+                    # check for response of ucsc
+                    response = requests.get(f"https://genome.ucsc.edu/cgi-bin/hgGateway",
+                                            allow_redirects=True)
+                    assert response.ok, "Make sure you are connected to the internet"
 
-    with FileLock(hubfile_lock):
-        if not os.path.exists(hubfile):
-            # check for response of ucsc
-            response = requests.get(f"https://genome.ucsc.edu/cgi-bin/hgGateway",
-                                    allow_redirects=True)
-            assert response.ok, "Make sure you are connected to the internet"
+                    with urllib.request.urlopen("https://api.genome.ucsc.edu/list/ucscGenomes") as url:
+                        data = json.loads(url.read().decode())['ucscGenomes']
 
-            with urllib.request.urlopen("https://api.genome.ucsc.edu/list/ucscGenomes") as url:
-                data = json.loads(url.read().decode())['ucscGenomes']
+                    # generate a dict ucsc assemblies
+                    ucsc_assemblies = dict()
+                    for key, values in data.items():
+                        ucsc_assemblies[key.lower()] = [key, values.get("description", "")]
 
-            # generate a dict ucsc assemblies
-            ucsc_assemblies = dict()
-            for key, values in data.items():
-                ucsc_assemblies[key.lower()] = [key, values.get("description", "")]
+                    # save to file
+                    pickle.dump(ucsc_assemblies, open(hubfile, "wb"))
 
-            # save to file
-            pickle.dump(ucsc_assemblies, open(hubfile, "wb"))
+                # read hubfile
+                ucsc_assemblies = pickle.load(open(hubfile, "rb"))
+            break
+        except FileNotFoundError:
+            time.sleep(1)
+    else:
+        logger.error("There were some problems with locking the seq2science cache. Please try again in a bit.")
+        raise TerminatedException
 
-        # read hubfile
-        ucsc_assemblies = pickle.load(open(hubfile, "rb"))

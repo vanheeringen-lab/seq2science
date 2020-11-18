@@ -15,18 +15,22 @@ set -e  # Exit immediately if a command exits with a non-zero status.
 
 if [ $1 = "cleanup_files" ]; then
   rm -rf tests/local_test_results
-  rm -rf tests/tinydata/index
   rm -rf tests/tinydata/decoy_transcripts
+  rm -rf tests/tinydata/index
+  rm -rf tests/tinydata/annotation.bigBed
+  rm -rf tests/tinydata/annotation.ix
+  rm -rf tests/tinydata/annotation.ixx
   rm -rf tests/tinydata/cytoBandIdeo.bb
+  rm -rf tests/tinydata/gene_id2name.tsv
   rm -rf tests/tinydata/tinydata.2bit
-  rm -rf tests/tinydata/tinydata.bb
-  rm -rf tests/tinydata/tinydata.custom*
+  rm -rf tests/tinydata/tinydata.DEXseq*
+  rm -rf tests/tinydata/tinydata.fa.fai
+  rm -rf tests/tinydata/tinydata.fa.sizes
+  rm -rf tests/tinydata/tinydata.gaps.bed
   rm -rf tests/tinydata/tinydata.gc5Base.bw
-  rm -rf tests/tinydata/tinydata.ix
-  rm -rf tests/tinydata/tinydata.ixx
   rm -rf tests/tinydata/tinydata.transcripts.fa
   rm -rf tests/tinydata/tinydata_softmasking.bb
-  rm -rf tests/tinydata_SI
+  rm -rf tests/tinydata_custom
   test_ran=1
 fi
 
