@@ -348,6 +348,9 @@ def _clean(base_dir):
     # remove seq2science caches
     shutil.rmtree(os.path.expanduser(os.path.join(xdg.XDG_CACHE_HOME, "seq2science")), ignore_errors=True)
 
+    # remove historic seq2science cache location
+    shutil.rmtree(os.path.expanduser(f'~/.config/seq2science/'), ignore_errors=True)
+
     print("All cleaned up!")
 
 
