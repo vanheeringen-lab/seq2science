@@ -5,4 +5,4 @@ channels:
   - defaults
 dependencies:
   - python>=3.7
-  - kb-python
+  - bioconda::kb-python=0.24.4

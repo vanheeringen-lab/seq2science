@@ -6,13 +6,10 @@ include: "../../rules/configuration.smk"
 
 # load all the relevant rules
 include: f"{config['rule_dir']}/alignment.smk"
-include: f"{config['rule_dir']}/strandedness.smk"
-include: f"{config['rule_dir']}/bigfiles.smk"
 include: f"{config['rule_dir']}/get_fastq.smk"
 include: f"{config['rule_dir']}/get_genome.smk"
 include: f"{config['rule_dir']}/merge_replicates.smk"
 include: f"{config['rule_dir']}/qc.smk"
-include: f"{config['rule_dir']}/trackhub.smk"
 include: f"{config['rule_dir']}/trimming.smk"
 include: f"{config['rule_dir']}/quantification.smk"
 
