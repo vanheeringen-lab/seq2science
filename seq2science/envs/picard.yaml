@@ -4,4 +4,4 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - bioconda::picard=2.23.8
+  - bioconda::picard=2.21.2
