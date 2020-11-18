@@ -12,6 +12,7 @@ import inspect
 import contextlib
 import yaml
 
+import xdg
 
 # we need to be able to get the parser from the file without a valid seq2science installation
 try:
@@ -345,7 +346,7 @@ def _clean(base_dir):
     shutil.rmtree(os.path.join(base_dir, ".snakemake"), ignore_errors=True)
 
     # remove seq2science caches
-    shutil.rmtree(os.path.expanduser(f'~/.config/seq2science/{seq2science.__version__}'), ignore_errors=True)
+    shutil.rmtree(os.path.expanduser(os.path.join(xdg.XDG_CACHE_HOME, "seq2science")), ignore_errors=True)
 
     print("All cleaned up!")
 
