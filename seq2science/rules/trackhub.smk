@@ -6,10 +6,11 @@ from seq2science.util import color_picker, color_gradient, hsv_to_ucsc, unique, 
 import trackhub
 import logging
 
-# remove the logger created by trackhub (in trackhub.upload)
-# (it adds global logging of all stdout messages, duplicating snakemake's logging)
-th_handler = logging.root.handlers[-1]  # assumption: the last logger was added by trackhub
-logging.root.removeHandler(th_handler)
+if logging.root.handlers:
+    # remove the logger created by trackhub (in trackhub.upload)
+    # (it adds global logging of all stdout messages, duplicating snakemake's logging)
+    th_handler = logging.root.handlers[-1]  # assumption: the last logger was added by trackhub
+    logging.root.removeHandler(th_handler)
 del logging
 
 

@@ -11,6 +11,7 @@ import re
 import inspect
 import contextlib
 import yaml
+from io import StringIO
 
 
 # we need to be able to get the parser from the file without a valid seq2science installation
@@ -167,6 +168,12 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         action='store_true'
     )
     run.add_argument(
+        "--rerun-updated",
+        help="After the workflow completed once, rerun it with updated input. "
+             "Recognizes changes in the samples.tsv and different paths & tools used in the config.yaml.",
+        action='store_true'
+    )
+    run.add_argument(
         "--unlock",
         help="Remove a lock on the working directory.",
         action='store_true'
@@ -277,6 +284,9 @@ def _run(args, base_dir, workflows_dir, config_path):
 
     core_parser(parsed_args)
     parsed_args["config"].update({"cores": parsed_args["cores"]})
+
+    if args.rerun_updated:
+        parsed_args.update(args_for_rerunning(parsed_args))
 
     # run snakemake
     exit_code = snakemake.snakemake(**parsed_args)
@@ -433,3 +443,64 @@ def core_parser(parsed_args):
             for k, v in overwrite_threads.items():
                 if k not in parsed_args["overwrite_threads"]:
                     parsed_args["overwrite_threads"][k] = v
+
+
+def args_for_rerunning(parsed_args):
+    """
+    Snakemake only runs rules when the output is missing.
+    If the input is updated, but the output remains the same, noting is rerun.
+
+    Rules with output files that do not reflect their input (trackhub, multiQC, etc.) are created last.
+    This function gets those inputs and force-reruns them.
+
+    As a result, this function can handle all changes to the samples.tsv,
+    and all changes to the config.yaml except parameter changes (for example a different 'min_mapping_quality').
+    For these changes, delete the files created using these parameters, and then rerun the workflow.
+    """
+    # run a dryrun to determine the input from rule seq2science (trackhub, multiqc, etc.)
+    parsed_args2 = parsed_args
+    parsed_args2.update({"dryrun": True, "cores": 999, "forcerun": ["seq2science"]})
+    with Capturing() as log:
+        exit_code = snakemake.snakemake(**parsed_args2)
+    if not exit_code:
+        sys.exit(0)
+
+    # parse the log for the input files
+    rule = "seq2science"
+    target = "    input: "
+    read_input = False
+    files_to_rerun = []
+    for entry in log:
+        if rule in entry:
+            read_input = True
+        if read_input and target in entry:
+            files_to_rerun = entry[len(target):].split(", ")
+            break
+
+    # exclude stuff that does not need rerunning
+    ignored_files = ["gene_id2name.tsv"]
+    for file_to_rerun in files_to_rerun:
+        filename = os.path.basename(file_to_rerun)
+        if filename in ignored_files:
+            files_to_rerun.remove(file_to_rerun)
+
+    out = {}
+    if files_to_rerun:
+        out = {"targets": files_to_rerun, "forcetargets": True}
+
+    return out
+
+
+class Capturing(list):
+    """
+    Store stdout as a list in self
+    """
+    def __enter__(self):
+        self._stdout = sys.stdout
+        sys.stdout = self._stringio = StringIO()
+        return self
+
+    def __exit__(self, *args):
+        self.extend(self._stringio.getvalue().splitlines())
+        del self._stringio    # free up some memory
+        sys.stdout = self._stdout
