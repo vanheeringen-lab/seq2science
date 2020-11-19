@@ -94,6 +94,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#failed-to-call-external-services">Failed to call external services.</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#storage-exhausted-no-space-left-on-device">storage exhausted / No Space Left on Device</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#i-want-to-run-the-pipeline-until-a-certain-rule-but-not-farther">I want to run the pipeline until a certain rule, but not farther</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#rna-seq-this-gene-should-be-expressed">RNA-seq: this gene should be expressed!</a></li>
 </ul>
 </li>
 </ul>
@@ -203,6 +204,15 @@ export TMPDIR=/scratch/${USER}/tmp
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>seq2science run alignment --cores 48 --snakemakeOptions until=[&quot;trim_galore_PE&quot;,&quot;trim_galore_SE&quot;]
 </pre></div>
 </div>
+</div>
+<div class="section" id="rna-seq-this-gene-should-be-expressed">
+<h2>RNA-seq: this gene should be expressed!<a class="headerlink" href="#rna-seq-this-gene-should-be-expressed" title="Permalink to this headline">¶</a></h2>
+<p>Seq2science supports 3 gene-quantifiers: HTSeq-count, FeatureCounts and Salmon.
+All three are valid methods, and a large population of the expressed genes is found by all quantifiers.
+There are differences between these methods however, and caution is advised with the genes not found by another method.</p>
+<p>Additionally, Seq2science employs strict quality checks by default.
+You could try reducing the <code class="docutils literal notranslate"><span class="pre">min_mapping_quality</span></code> (for HTSeq and FeatureCounts) or change the parameters to the quantifier.</p>
+<p>The biggest difference in expressed genes found is in switching to or from Salmon.</p>
 </div>
 </div>
 

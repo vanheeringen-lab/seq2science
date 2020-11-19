@@ -1224,12 +1224,15 @@ My Data &gt; Track Hubs &gt; My Hubs</p>
 gtfToGenePred -allErrors -ignoreGroupsWithoutExons -geneNameAsName2 -genePredExt {input.gtf} {output.genePred} -infoOut={output.info} &gt;&gt; {log} 2&gt;&amp;1
 
 # check if gtf has gene_names &gt; if l!=0, use gene_name, else transcript_id
-l=$(head -n 100 {input.gtf} | grep gene_name | wc -l)
+l=$(head -n 100 {input.gtf} | (grep gene_name || true) | wc -l)
 
 # switch columns 1 (transcript_id) and 12 (gene_name)
 awk -v len=$l &#39;BEGIN {{ FS = &quot;\t&quot; }}; {{ if(len!=&quot;0&quot;) {{ t = $1; $1 = $12; $12 = t; print; }} else {{ print; }} }}&#39; {output.genePred} &gt; {output.genePrednamed}
 
-genePredToBed {output.genePrednamed} {output.genePredbed} &gt;&gt; {log} 2&gt;&amp;1
+# remove lines with missing headers
+grep -v &quot;^ &quot; {output.genePrednamed} &gt; {output.genePred}
+
+genePredToBed {output.genePred} {output.genePredbed} &gt;&gt; {log} 2&gt;&amp;1
 
 bedSort {output.genePredbed} {output.genePredbed} &gt;&gt; {log} 2&gt;&amp;1
 
