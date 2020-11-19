@@ -13,10 +13,13 @@ user@comp:~$ conda config --set channel_priority flexible
 ```
 
 ## I changed the config/samples file but seq2science does not rerun
-TODO: we should support rerunning!
-Seq2science (actually Snakemake) has a "lazy" policy regarding the generation of files, and will normally only rerun jobs if the input is younger than the output. 
+Seq2science (actually Snakemake) has a "lazy" policy regarding the generation of files, and will normally only run jobs if the output is missing, or the input is younger than the output.
 
-To push seq2science to do this anyway, you need to remove one or two downstream files. We suggest deleting the MultiQC file, and a fastqc file of the samples that need to rerun.
+To re-evaluate the workflow, add the flag `--rerun-updated` to your `seq2science run` command.
+With this command, seq2science will rerun a subset of rules which are more sensitive to changes.
+This works for *most* changes (does register tool and path changes, but not parameter changes).
+
+If this does not work, you need to remove the files to the points the changes take effect manually.
 
 ## Failed to call external services.
 When downloading samples / looking up their layout online, seq2science makes use of online resources. Sometimes it can happen that those services are not online at the moment of running seq2science, you do not have internet, or you lose connection with the service. Usually just re-running seq2science solves these issues, either directly or a couple hours later.

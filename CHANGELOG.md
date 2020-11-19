@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- --rerun-updated flag to the seq2science CLI
+
 ### Fixed
 
 - make a trackhub index when the gene_name is not present in gtf file

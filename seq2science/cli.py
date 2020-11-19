@@ -448,12 +448,12 @@ def core_parser(parsed_args):
 def args_for_rerunning(parsed_args):
     """
     Snakemake only runs rules when the output is missing.
-    If the input is updated, but the output remains the same, noting is rerun.
+    If the input is updated, but the output remains the same, nothing is rerun.
 
-    Rules with output files that do not reflect their input (trackhub, multiQC, etc.) are created last.
-    This function gets those inputs and force-reruns them.
+    Rules with output that do not reflect the changed input (trackhub, multiQC, etc.) are created last.
+    This function gets those outputs and force-reruns them.
 
-    As a result, this function can handle all changes to the samples.tsv,
+    Limitations: this function can handle all changes to the samples.tsv,
     and all changes to the config.yaml except parameter changes (for example a different 'min_mapping_quality').
     For these changes, delete the files created using these parameters, and then rerun the workflow.
     """
