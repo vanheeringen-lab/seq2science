@@ -8,9 +8,13 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- a check to see if the downloaded fastq from ENA is not empty. Related to a recent internal error (guess) at the side of ENA sending empty fastq files.
+
 ### Changed
 
-- The multiqc samples & config tables are generated in a script with its own environment to make base env smaller.
+- the multiqc samples & config tables are generated in a script with its own environment to make base env smaller.
 
 ### Fixed
 
