@@ -193,8 +193,8 @@ rule ena2fastq_SE:
             shell("wget {url} -O {output} --waitretry 20 >> {log} 2>&1")
 
         if not (os.path.exists(output[0]) and os.path.getsize(output[0]) > 0):
-            shell("echo \"Something went wrong.. The downloaded file was empty!\\n\" >> {log} 2>&1")
-            shell("exit 1 >> {log} 2>&1")
+            shell('echo \"Something went wrong.. The downloaded file was empty!\" >> {log} 2>&1')
+            shell('exit 1 >> {log} 2>&1')
 
 
 rule ena2fastq_PE:
@@ -223,8 +223,8 @@ rule ena2fastq_PE:
 
         if not (os.path.exists(output[0]) and (os.path.getsize(output[0]) > 0) and
                 os.path.exists(output[1]) and (os.path.getsize(output[1]) > 0)):
-            shell("echo \"Something went wrong.. The downloaded file(s) were empty!\\n\" >> {log} 2>&1")
-            shell("exit 1 >> {log} 2>&1")
+            shell('echo \"Something went wrong.. The downloaded file(s) were empty!\" >> {log} 2>&1')
+            shell('exit 1 >> {log} 2>&1')
 
 
 def get_runs_from_sample(wildcards):
