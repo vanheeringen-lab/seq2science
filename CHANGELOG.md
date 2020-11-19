@@ -12,6 +12,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 - a check to see if the downloaded fastq from ENA is not empty. Related to a recent internal error (guess) at the side of ENA sending empty fastq files.
 
+### Changed
+
+- the multiqc samples & config tables are generated in a script with its own environment to make base env smaller.
+
 ### Fixed
 
 - make a trackhub index when the gene_name is not present in gtf file
