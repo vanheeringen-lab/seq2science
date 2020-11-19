@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Changed
+
+- The multiqc samples & config tables are generated in a script with its own environment to make base env smaller.
+
 ### Fixed
 
 - make a trackhub index when the gene_name is not present in gtf file
