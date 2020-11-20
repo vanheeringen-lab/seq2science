@@ -2,8 +2,6 @@
 
 suppressMessages({
   library(tidyverse)
-  library(tximeta)
-  library(readr)
   library(SingleCellExperiment)
 })
 
@@ -36,16 +34,24 @@ cat('\n')
 
 
 ## Load linked_txome.json
-loadLinkedTxome(linked_txome)
+tximeta::loadLinkedTxome(linked_txome)
 
 samplenames <- gsub(paste0(assembly, '-'), '', basename(samples))
-coldata <- data.frame(names = samplenames, files = file.path(samples, 'quant.sf'), stringsAsFactors = F, check.names = F)
+coldata <- data.frame(files = file.path(samples, 'quant.sf'), names = samplenames, stringsAsFactors = F, check.names = F)
 
 ## import annotated abundances in transcript level
-st <- tximeta::tximeta(coldata, cleanDuplicateTxps = TRUE)
+st <- tximeta::tximeta(
+    coldata=coldata,
+    # txOut=TRUE,
+    # skipMeta=TRUE,           # doesn't work
+    # skipSeqinfo=TRUE,
+    useHub=FALSE,
+    # markDuplicateTxps=TRUE,  # doesn't work
+    # cleanDuplicateTxps=TRUE, # doesn't work
+)
 
 ## Summarize to gene level
-sg <- summarizeToGene(st)
+sg <- tximeta::summarizeToGene(st)
 
 
 ## This section deviates from the source script
@@ -70,7 +76,7 @@ write.table(lengths, file=out_lengths_matrix, quote = F, sep = '\t', row.names =
 ## Returning to source script
 
 
-## If rowData(st)$gene_id is a CharacterList, convert it to character to allow 
+## If rowData(st)$gene_id is a CharacterList, convert it to character to allow
 ## the joining below
 if (is(rowData(st)$gene_id, "CharacterList")) {
   if (any(vapply(rowData(st)$gene_id, length, 1) > 1)) {
@@ -80,7 +86,7 @@ if (is(rowData(st)$gene_id, "CharacterList")) {
   rowData(st)$gene_id <- vapply(rowData(st)$gene_id, function(w) w[[1]], "")
 }
 
-## If rowData(st)$tx_id is of class integer, replace it with the tx_name 
+## If rowData(st)$tx_id is of class integer, replace it with the tx_name
 ## column
 if (is(rowData(st)$tx_id, "integer")) {
   rowData(st)$tx_id <- rowData(st)$tx_name
@@ -91,7 +97,7 @@ if (is(rowData(st)$tx_id, "integer")) {
 rowData(st) <- rowData(st) %>%
   data.frame() %>%
   dplyr::left_join(data.frame(rowData(sg))) %>%
-  DataFrame()
+  data.frame()
 
 ## Change the row names in sg to have geneID__geneSymbol
 rownames(sg) <- paste(rowData(sg)$gene_id, rowData(sg)$gene_name, sep = "__")

@@ -206,11 +206,11 @@ elif config["aligner"] == "hisat2":
             config["index"],
         shell:
             """
+            mkdir -p {output}
+            
             hp=$(which hisat2)
             python3 ${{hp}}_extract_splice_sites.py {input.gtf} > {output}/splice_sites.tsv
             python3 ${{hp}}_extract_exons.py {input.gtf} > {output}/exons.tsv
-            
-            mkdir -p {output}
             
             hisat2-build {params} -p {threads} --ss {output}/splice_sites.tsv --exon {output}/exons.tsv \
             {input.fasta} {output}/part > {log} 2>&1
