@@ -12,6 +12,7 @@ import requests
 from functools import lru_cache
 import yaml
 
+import xdg
 import numpy as np
 import pandas as pd
 import urllib.request
@@ -54,6 +55,8 @@ if workflow.conda_frontend == "conda":
 # give people a second to appreciate this beautiful ascii art
 time.sleep(1)
 
+# get the cache and config dirs
+CACHE_DIR = os.path.join(xdg.XDG_CACHE_HOME, "seq2science", seq2science.__version__)
 
 # config.yaml(s)
 
@@ -261,8 +264,8 @@ if "assembly" in samples:
 
 
     # determine provider for each new assembly
-    providersfile = os.path.expanduser(f'~/.config/seq2science/{seq2science.__version__}/providers.p')
-    providersfile_lock = os.path.expanduser(f'~/.config/seq2science/{seq2science.__version__}/providers.p.lock')
+    providersfile = f"{CACHE_DIR}/providers.p"
+    providersfile_lock = f"{CACHE_DIR}/providers.p.lock"
     for _ in range(2):
         # we get two tries, in case parallel executions are interfering with one another
         try:
@@ -369,8 +372,8 @@ if "control" in samples:
         if isinstance(control, str):  # ignore nans
             all_samples.append(control)
 
-pysradb_cache = os.path.expanduser(f'~/.config/seq2science/{seq2science.__version__}/pysradb.p')
-pysradb_cache_lock = os.path.expanduser(f'~/.config/seq2science/{seq2science.__version__}/pysradb.p.lock')
+pysradb_cache = f"{CACHE_DIR}/pysradb.p"
+pysradb_cache_lock = f"{CACHE_DIR}/pysradb.p.lock"
 for _ in range(2):
     # we get two tries, in case parallel executions are interfering with one another
     try:
@@ -516,8 +519,8 @@ else:
 
 # record which assembly trackhubs are found on UCSC
 if config.get("create_trackhub"):
-    hubfile = os.path.expanduser(f'~/.config/seq2science/{seq2science.__version__}/ucsc_trackhubs.p')
-    hubfile_lock = os.path.expanduser(f'~/.config/seq2science/{seq2science.__version__}/ucsc_trackhubs.p.lock')
+    hubfile = f"{CACHE_DIR}/ucsc_trackhubs.p"
+    hubfile_lock = f"{CACHE_DIR}/ucsc_trackhubs.p.lock"
     for _ in range(2):
         # we get two tries, in case parallel executions are interfering with one another
         try:
