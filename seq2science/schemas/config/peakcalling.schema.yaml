@@ -17,7 +17,7 @@ properties:
 
   # keep macs2 mates when peak calling with shift
   macs2_keep_mates:
-    description: which method to use to combine replicates (idr or fisher)
+    description: macs2 normally removes paired-end mates when doing --nomodel shift peak calling. When this flag is on, the paired-end bam is converted to sngle-end bam, so all reads are counted. This is not conventional to do, but might help with low sequencing depth.
     default: false
     type: boolean
 
