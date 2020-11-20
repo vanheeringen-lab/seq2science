@@ -39,3 +39,13 @@ let's say you want to download and trim reads with seq2science, but you do not w
 ```
 seq2science run alignment --cores 48 --snakemakeOptions until=["trim_galore_PE","trim_galore_SE"]
 ```
+
+## RNA-seq: this gene should be expressed!
+Seq2science supports 3 gene-quantifiers: HTSeq-count, FeatureCounts and Salmon.
+All three are valid methods, and a large population of the expressed genes is found by all quantifiers.
+There are differences between these methods however, and caution is advised with the genes not found by another method.
+
+Additionally, Seq2science employs strict quality checks by default.
+You could try reducing the `min_mapping_quality` (for HTSeq and FeatureCounts) or change the parameters to the quantifier.
+
+The biggest difference in expressed genes found is in switching to or from Salmon.
