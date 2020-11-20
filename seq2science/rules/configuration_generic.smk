@@ -28,7 +28,6 @@ import seq2science
 from seq2science.util import samples2metadata, prep_filelock, url_is_alive, color_parser
 
 
-
 logger.info(
 """\
                ____  ____   __              
@@ -78,19 +77,8 @@ for kw in ['aligner', 'quantifier', 'bam_sorter', "trimmer"]:
         config[kw] = {config[kw]: {}}
 
 # validate and complement the config dict
-try:
-    for schema in config_schemas:
-        validate(config, schema=f"{config['rule_dir']}/../schemas/config/{schema}.schema.yaml")
-except Exception as e:
-    print()
-    print(config)
-    print()
-    print(config["create_qc_report"])
-    print(type(config["create_qc_report"]))
-    print()
-    print(e)
-    raise Exception
-
+for schema in config_schemas:
+    validate(config, schema=f"{config['rule_dir']}/../schemas/config/{schema}.schema.yaml")
 
 # check if paired-end filename suffixes are lexicographically ordered
 config['fqext'] = [config['fqext1'], config['fqext2']]
@@ -446,6 +434,7 @@ if len(failed_samples):
         logger.error("\n")
     raise TerminatedException
 
+
 # workflow
 
 
@@ -559,4 +548,3 @@ if config.get("create_trackhub"):
     else:
         logger.error("There were some problems with locking the seq2science cache. Please try again in a bit.")
         raise TerminatedException
-
