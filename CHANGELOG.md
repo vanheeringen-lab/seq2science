@@ -15,6 +15,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Changed
 
 - the multiqc samples & config tables are generated in a script with its own environment to make base env smaller.
+- seq2science cache now respects the xdg cache
 
 ### Fixed
 
