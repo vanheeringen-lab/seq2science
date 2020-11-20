@@ -18,7 +18,7 @@ import sys
 
 project = "seq2science"
 author = "Maarten van der Sande & Siebren Frölich"
-copyright = "Maarten van der Sande, Siebren Frölich, Jos Smits, Rebecca Snabel, Tilman Schaeffers, & " \
+copyright = "Maarten van der Sande, Siebren Frölich, Jos Smits, Rebecca Snabel, Tilman Schaefers, & " \
             "Simon van Heeringen."
 
 # -- General configuration ---------------------------------------------------
