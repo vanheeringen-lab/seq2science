@@ -502,27 +502,14 @@ rule multiqc_samplesconfig:
     """
     output:
         temp(expand('{qc_dir}/samplesconfig_mqc.html', **config))
-    run:
-        outstring = \
-            "<!--\n" \
-            "id: 'samplesconfig'\n" \
-            "section_name: 'Samples & Config'\n" \
-            "-->\n"
-
-        from pretty_html_table import build_table
-        outstring += "The samples file used for this run: <br>" \
-                     f"{build_table(sanitized_samples, 'blue_dark')}"
-
-        if len(workflow.overwrite_configfiles) > 0:
-            outstring += "The config file used for this run: <br>"
-            outstring += '<pre><code class="codeblock">'
-            with open(workflow.overwrite_configfiles[-1], "r") as config_file:
-                outstring += config_file.read()
-            outstring += '</code></pre>'
-
-        with open(output[0], "w") as out_file:
-            out_file.write(outstring)
-
+    params:
+        config_used=len(workflow.overwrite_configfiles) > 0,
+        configfile=workflow.overwrite_configfiles[-1],
+        sanitized_samples=sanitized_samples
+    conda:
+        "../envs/htmltable.yaml"
+    script:
+        f"{config['rule_dir']}/../scripts/multiqc_samplesconfig.py"
 
 rule multiqc_schema:
     """
