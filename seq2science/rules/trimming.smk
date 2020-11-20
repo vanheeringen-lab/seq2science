@@ -90,7 +90,7 @@ elif config["trimmer"] == "fastp":
 
     if get_workflow() == "scrna_seq":
         all_single_samples = [sample for sample in all_samples if sampledict[sample]["layout"] == "SINGLE"]
-        assert len(all_single_samples) == 0
+        assert len(all_single_samples) == 0, "Seq2science does not support scRNA-seq samples that are single-ended"
         #Check kallisto bustools read id
         read_id = get_bustools_rid(config.get("count"))
         if read_id == 0:

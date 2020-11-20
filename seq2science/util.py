@@ -238,11 +238,12 @@ def url_is_alive(url):
 
   
 def get_bustools_rid(params):
-    kb_tech_dict = { '10xv2': 1,'10xv3': 1,'celseq': 1,'celseq2': 1,'dropseq': 1,'scrubseq': 1 }
+    kb_tech_dict = {'10xv2': 1, '10xv3': 1, 'celseq': 1, 'celseq2': 1,
+                    'dropseq': 1, 'scrubseq': 1}
     #Check for occurence of short-hand tech
     bus_regex = "[0-1],\d*,\d*:[0-1],\d*,\d*:[0-1],\d*,\d*"
     bus_regex_short = "\\b(?i)(10XV2|10XV3|CELSEQ|CELSEQ2|DROPSEQ|SCRUBSEQ)\\b"
-    read_id = None
+
     if re.search(bus_regex, params) != None:
         bus = re.findall(bus_regex, params)[0]
         read_id = int(bus.split(":")[2].split(",")[0])
@@ -390,5 +391,3 @@ def shorten(string, max_length, methods="right"):
         string = string[:ceil(max_length/2)] + string[len(string)-floor(max_length/2):]
 
     return string
-
-  
