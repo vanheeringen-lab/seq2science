@@ -1,4 +1,5 @@
 # to run these tests locally:
+#   mamba install toml --yes
 #   python setup.py develop
 #   bash ./tests/dag_tests.sh TEST
 
