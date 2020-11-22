@@ -19,12 +19,27 @@ onsuccess:
         os.system(f"""echo "Succesful pipeline run! :)" | mail -s "The seq2science pipeline finished succesfully." {config["email"]} 2> /dev/null""")
 
 onerror:
-    logger.info("One or more rules did not finish as expected! \n\n"
-                "Please take a look at our Frequently Asked Questions for help: "
-                "https://vanheeringen-lab.github.io/seq2science/content/faq.html \n\n"
-                "If that does not help you, don't be afraid to reach out to us. "
-                "The easiest way would be to make an issue on our github page: "
-                "https://github.com/vanheeringen-lab/seq2science/issues \n\n"
+    logger.info(
+"""
+
+
+  __    __    __  ____  ____  _   
+ /  \  /  \  /  \(  _ \/ ___)/ \  
+(  O )(  O )(  O )) __/\___ \\\\_/  
+ \__/  \__/  \__/(__)  (____/(_)  
+
+
+One or more rules did not finish as expected!
+
+
+Please take a look at our Frequently Asked Questions for help: 
+https://vanheeringen-lab.github.io/seq2science/content/faq.html
+
+If that does not help you, don't be afraid to reach out to us. 
+The easiest way would be to make an issue on our github page: 
+https://github.com/vanheeringen-lab/seq2science/issues
+
+"""
                 )
 
     if config.get("email") not in ["none@provided.com", "yourmail@here.com", None]:

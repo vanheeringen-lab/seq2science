@@ -1,5 +1,4 @@
 import os
-import time
 import contextlib
 
 import genomepy
@@ -18,25 +17,14 @@ rule get_genome:
     benchmark:
         expand("{benchmark_dir}/get_genome/{{raw_assembly}}.genome.benchmark.txt", **config)[0]
     message: explain_rule("get_genome")
+    params:
+        providers=providers,
+        genome_dir=config["genome_dir"]
     resources:
         parallel_downloads=1,
     priority: 1
-    run:
-        with open(log[0], "w") as log:
-            with contextlib.redirect_stdout(log), contextlib.redirect_stderr(log):
-
-                # select a provider with the annotation if possible
-                a = providers[wildcards.raw_assembly]["annotation"]
-                g = providers[wildcards.raw_assembly]["genome"]
-                provider = g if a is None else a
-
-                p = genomepy.ProviderBase.create(provider)
-                p.download_genome(wildcards.raw_assembly, config["genome_dir"])
-
-                # try to download the blacklist
-                genome = genomepy.Genome(wildcards.raw_assembly, config["genome_dir"])
-                plugins = genomepy.plugin.init_plugins()
-                plugins["blacklist"].after_genome_download(genome)
+    script:
+        f"{config['rule_dir']}/../scripts/get_genome.py"
 
 
 rule get_genome_annotation:
@@ -54,31 +42,12 @@ rule get_genome_annotation:
         expand("{benchmark_dir}/get_annotation/{{raw_assembly}}.genome.benchmark.txt", **config)[0]
     resources:
         parallel_downloads=1,
+    params:
+        providers=providers,
+        genome_dir=config["genome_dir"]
     priority: 1
-    run:
-        with open(log[0], "w") as log:
-            with contextlib.redirect_stdout(log), contextlib.redirect_stderr(log):
-
-                provider = providers[wildcards.raw_assembly]["annotation"]
-                p = genomepy.ProviderBase.create(provider)
-
-                kwargs = dict()
-                if provider == "ucsc" and p.get_annotation_download_link(
-                        name=wildcards.raw_assembly, kwargs={"ucsc_annotation_type": "ensembl"}):
-                    kwargs = {"ucsc_annotation_type": "ensembl"}
-
-                p.download_annotation(
-                    name=wildcards.raw_assembly,
-                    genomes_dir=config["genome_dir"],
-                    kwargs=kwargs)
-
-                # sanitize the annotations
-                genome = genomepy.Genome(wildcards.raw_assembly, config["genome_dir"])
-                genomepy.utils.sanitize_annotation(genome)
-
-                # TODO remove after fixing inconsistency in gp
-                if os.path.exists(output.gtf[0][:-3]):
-                    genomepy.utils.gzip_and_name(output.gtf[0][:-3])
+    script:
+        f"{config['rule_dir']}/../scripts/get_genome_annotation.py"
 
 
 rule extend_genome:
