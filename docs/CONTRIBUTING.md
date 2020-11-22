@@ -4,15 +4,6 @@
 
 The following is a set of guidelines and hints how to get started with contributing to seq2science.
 
-#### Table Of Contents
-
-[I don't want to read this whole thing, I just have a question!!!](##I-dont-want-to-read-this-whole-thing-i-just-have-a-question)
-
-How Can I Contribute?
-  * [Reporting Bugs](#reporting-bugs)
-  * [Suggesting Enhancements](#Suggesting-enhancements)
-  * [Code/documentation Contribution](#Code/documentation-contribution)
-
 ## I dont want to read this whole thing i just have a question
 
 Questions can be asked on the github issues page. Make sure to check if the question has been asked before in old issues and check the Frequently Asked Section (FAQ) in the docs if it's there.
@@ -24,7 +15,7 @@ Bug reports can be made by making an issue on the [github issues page](https://g
 
 Outside of bugs/docs fixes, before you make a code contribution make sure to check in with us (the developers) if we are willing to support the contribution by making an issue first.
 
-For an example on how to add to the documentation, [click here](#example-PR) 
+For an example on how to add to the documentation, see the example PR below. 
 
 ### Gitflow
 
