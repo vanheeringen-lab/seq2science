@@ -20,7 +20,7 @@ Our supported workflows:
 * [scATAC-seq](https://vanheeringen-lab.github.io/seq2science/content/workflows/scatac_seq.html)
 
 ## New users
-Information for new users, such as how to install and configure can be found in our [getting started](https://vanheeringen-lab.github.io/seq2science/content/gettingstarted.html) page.
+Information for new users, such as how to install and configure can be found in our [getting started](https://vanheeringen-lab.github.io/seq2science/content/gettingstarted.html) page, and our [Frequently Asked Questions (FAQ)](https://vanheeringen-lab.github.io/seq2science/content/faq.html) section. 
 
 ## Feedback
 Anything not working as expected? Please reach out to us via our [issues](https://github.com/vanheeringen-lab/seq2science/issues) page and we'll try to help you as soon as possible!
