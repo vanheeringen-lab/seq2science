@@ -90,9 +90,9 @@ If something in the documentation is wrong or unclear, please feel free to chang
 ![fork](resources/edit.jpg)
 5. "commit" your changes to the `master` branch`.
 6. Make a Pull Request (PR). 
-* ![fork](resources/PR1.jpg)
-* ![fork](resources/PR2.jpg)
-* ![fork](resources/PR3.jpg)
-* ![fork](resources/PR4.jpg)
+    * ![fork](resources/PR1.jpg)
+    * ![fork](resources/PR2.jpg)
+    * ![fork](resources/PR3.jpg)
+    * ![fork](resources/PR4.jpg)
 7. Wait for us to accept it..
 8. See the changed docs online!
