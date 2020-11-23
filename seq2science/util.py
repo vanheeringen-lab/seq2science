@@ -1,12 +1,14 @@
 """
 Utility functions for seq2science
 """
-import colorsys
-from math import ceil, floor
 import os
+import sys
 import time
-from typing import List
+import colorsys
 import urllib.request
+from io import StringIO
+from typing import List
+from math import ceil, floor
 
 import matplotlib.colors as mcolors
 import numpy as np
@@ -380,3 +382,19 @@ def shorten(string, max_length, methods="right"):
         string = string[:ceil(max_length/2)] + string[len(string)-floor(max_length/2):]
 
     return string
+
+
+class CaptureStdout(list):
+    """
+    Context manager that somehow manages to capture prints,
+    and not snakemake log
+    """
+    def __enter__(self):
+        self._stdout = sys.stdout
+        sys.stdout = self._stringio = StringIO()
+        return self
+
+    def __exit__(self, *args):
+        self.extend(self._stringio.getvalue().splitlines())
+        del self._stringio  # free up some memory
+        sys.stdout = self._stdout
