@@ -648,7 +648,7 @@
 <div class="section" id="macs2-keep-mates">
 <h3>macs2_keep_mates<a class="headerlink" href="#macs2-keep-mates" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">macs2_keep_mates:</span>
-<span class="c">    description: which method to use to combine replicates (idr or fisher)</span>
+<span class="c">    description: macs2 normally removes paired-end mates when doing --nomodel shift peak calling. When this flag is on, the paired-end bam is converted to sngle-end bam, so all reads are counted. This is not conventional to do, but might help with low sequencing depth.</span>
 <span class="c">    default: False</span>
 <span class="c">    type: boolean</span>
 </pre></div>

@@ -4,25 +4,18 @@
 
 The following is a set of guidelines and hints how to get started with contributing to seq2science.
 
-#### Table Of Contents
-
-[I don't want to read this whole thing, I just have a question!!!](##I-dont-want-to-read-this-whole-thing-i-just-have-a-question)
-
-How Can I Contribute?
-  * [Reporting Bugs](##reporting-bugs)
-  * [Suggesting Enhancements](##Suggesting-enhancements)
-  * [Code Contribution](##Code-contribution)
-
 ## I dont want to read this whole thing i just have a question
 
 Questions can be asked on the github issues page. Make sure to check if the question has been asked before in old issues and check the Frequently Asked Section (FAQ) in the docs if it's there.
 
 ## Reporting bugs
-Bug reports can be made by making an issue on the github page.
+Bug reports can be made by making an issue on the [github issues page](https://github.com/vanheeringen-lab/seq2science/issues).
 
-## Code contribution
+## Code/documentation
 
 Outside of bugs/docs fixes, before you make a code contribution make sure to check in with us (the developers) if we are willing to support the contribution by making an issue first.
+
+For an example on how to add to the documentation, see the example PR below. 
 
 ### Gitflow
 
@@ -32,7 +25,7 @@ We (try to) use the [gitflow](https://nvie.com/posts/a-successful-git-branching-
 
 Seq2science has grown to be a rather large project, with a complicated code structure. Before contributing to seq2science it is important to be up-to-date with the file and logic structure. 
 
-#### docs
+#### Documentation
 
 The documentation can always be improved, and contributions are highly appreciated! Apart from the auto-generated part of the docs, all the stuff relevant to the documentation is in the `docs` folder in the root. The markdown files that make up the documentation are in `docs/content`.
 
@@ -84,3 +77,22 @@ There are a couple important global variables
 * **breps & treps**, breps and treps are variables that represent the technical and biological replicates. If you want to iterate over eiher of the technical replicates or biological replicates, or check what a sample belongs to, it is probably easiest to use these.
 * **global wildcard constraints**, seq2science sets global wildcard constraints in `seq2science/rules/configuration_generic.smk`. Make sure to adhere to the naming convention of samples and assembly. 
 * **sequencing_protocol** contains the current workflow, spelled out properly (e.g. "ChIP-seq").
+
+### Example PR
+
+If something in the documentation is wrong or unclear, please feel free to change it, no matter how small. Veteran FOSS (Free and Open Source Software) contributors already know how the process of suggesting changes to a project work (called a PR/Pull Request). However for people new to FOSS this relatively easy process can be a daunting task. Here we give an example of how to make changes to the documentation and propose them to us (the maintainers).
+
+1. Make a github account
+2. Make a "fork" of the repository
+![fork](resources/fork.jpg)
+3. Now navigate on your "fork" to the documentation you want to change, for instance you could go to`docs/content/FAQ.md` to add a new question (and answer!).
+4. make some changes
+![fork](resources/edit.jpg)
+5. "commit" your changes to the `master` branch`.
+6. Make a Pull Request (PR). 
+* ![fork](resources/PR1.jpg)
+* ![fork](resources/PR2.jpg)
+* ![fork](resources/PR3.jpg)
+* ![fork](resources/PR4.jpg)
+7. Wait for us to accept it..
+8. See the changed docs online!
