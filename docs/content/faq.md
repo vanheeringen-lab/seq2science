@@ -23,6 +23,9 @@ To push seq2science to do this anyway, you need to remove one or two downstream 
 ## Failed to call external services.
 When downloading samples / looking up their layout online, seq2science makes use of online resources. Sometimes it can happen that those services are not online at the moment of running seq2science, you do not have internet, or you lose connection with the service. Usually just re-running seq2science solves these issues, either directly or a couple hours later.
 
+## Unknown provider
+When downloading a genome assembly, seq2science uses genomepy to look up online which assemblies exist, and whether or not the one you try to download can actually be downloaded. In some rare cases this fails, which gives the error `Unknown provider`. This is ussually resolved by rerunning seq2science, either directly or a couple hours later.
+
 ## storage exhausted / No Space Left on Device
 Some rules in seq2science make a lot of temporary intermediate files. Generally your operating system stores these temporary files on the location of variable `$TMPDIR` which usually is on `/tmp`. Some servers/computers have a small `$TMPDIR` and seq2science does not handle those cases well! You can manually set the tmpdir to another location with commands:
 
