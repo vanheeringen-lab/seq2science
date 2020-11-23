@@ -11,6 +11,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Added
 
 - a check to see if the downloaded fastq from ENA is not empty. Related to a recent internal error (guess) at the side of ENA sending empty fastq files
+- a custom message when a rule fails, that redirect to docs
 
 ### Changed
 
@@ -18,6 +19,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - the multiqc samples & config tables are generated in a script with its own environment to make base env smaller
 - keep_mates for macs2 turned into a script with ts own environment ot make the base env smaller
 - seq2science cache now respects the xdg cache
+- moved genome downloading rules into scripts instead of run directives, should result in user-friendlier errors
 
 ### Fixed
 
