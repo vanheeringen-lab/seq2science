@@ -32,7 +32,7 @@ onerror:
 One or more rules did not finish as expected!
 
 
-Please take a look at our Frequently Asked Questions for help: 
+Please take a look at the log files of the failed rule(s), and our Frequently Asked Questions: 
 https://vanheeringen-lab.github.io/seq2science/content/faq.html
 
 If that does not help you, don't be afraid to reach out to us. 
