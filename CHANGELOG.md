@@ -14,6 +14,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Changed
 
+- sample layout lookup is split up in 100's, to avoid a jsondecodeerror which results from very long lists of samples
 - the multiqc samples & config tables are generated in a script with its own environment to make base env smaller
 - keep_mates for macs2 turned into a script with ts own environment ot make the base env smaller
 - seq2science cache now respects the xdg cache
