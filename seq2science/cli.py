@@ -447,7 +447,7 @@ def _rerun_params(parsed_args):
     """
     TODO explanation
     """
-    with seq2science.util.CaptureStdout as targets:
+    with seq2science.util.CaptureStdout() as targets:
         exit_code = snakemake.snakemake(**{**parsed_args, **{"list_params_changes": True}})
         # TODO exit code
 
@@ -460,6 +460,8 @@ def _rerun_params(parsed_args):
         # now touch all (existing) files that are upstream of our targets
         exit_code = snakemake.snakemake(**{**parsed_args, **{"forcerun": targets,
                                                              "targets": targets,
-                                                             "touch": True
+                                                             "forcetargets": True,
+                                                             #"touch": True,
+                                                             "dryrun": False
                                                              }})
         # TODO exit code
