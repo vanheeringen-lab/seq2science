@@ -281,9 +281,25 @@ def _run(args, base_dir, workflows_dir, config_path):
 
     # run snakemake
     # 1. first check for ..
-    _rerun_params(parsed_args)
+    with seq2science.util.CaptureStdout() as targets:
+        exit_code = snakemake.snakemake(**{**parsed_args, **{"list_params_changes": True,
+                                                             "quiet": True}})
+        # TODO exit code
+
+    if len(targets):
+        # remove the targets
+        for f in targets:
+            if os.path.exists(f):
+                shutil.rmtree(f)
+        targets += ["seq2science"]
+
+        parsed_args["forcerun"] = targets
+        parsed_args["targets"] = targets
+        parsed_args["forcetargets"] = True
+
     # 2. actually run pipeline
     exit_code = snakemake.snakemake(**parsed_args)
+
     # 3. proper exit code
     sys.exit(0) if exit_code else sys.exit(1)
 
@@ -441,27 +457,3 @@ def core_parser(parsed_args):
             for k, v in overwrite_threads.items():
                 if k not in parsed_args["overwrite_threads"]:
                     parsed_args["overwrite_threads"][k] = v
-
-
-def _rerun_params(parsed_args):
-    """
-    TODO explanation
-    """
-    with seq2science.util.CaptureStdout() as targets:
-        exit_code = snakemake.snakemake(**{**parsed_args, **{"list_params_changes": True}})
-        # TODO exit code
-
-    if len(targets):
-        # remove the targets
-        for f in targets:
-            if os.path.exists(f):
-                os.remove(f)
-
-        # now touch all (existing) files that are upstream of our targets
-        exit_code = snakemake.snakemake(**{**parsed_args, **{"forcerun": targets,
-                                                             "targets": targets,
-                                                             "forcetargets": True,
-                                                             #"touch": True,
-                                                             "dryrun": False
-                                                             }})
-        # TODO exit code
