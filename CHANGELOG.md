@@ -8,15 +8,20 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+## [0.3.2] - 2020-11-26
+
 ### Added
 
 - a check to see if the downloaded fastq from ENA is not empty. Related to a recent internal error (guess) at the side of ENA sending empty fastq files
+- a custom message when a rule fails, that redirect to docs
 
 ### Changed
 
+- sample layout lookup is split up in 100's, to avoid a jsondecodeerror which results from very long lists of samples
 - the multiqc samples & config tables are generated in a script with its own environment to make base env smaller
 - keep_mates for macs2 turned into a script with ts own environment ot make the base env smaller
 - seq2science cache now respects the xdg cache
+- moved genome downloading rules into scripts instead of run directives, should result in user-friendlier errors
 
 ### Fixed
 
@@ -230,7 +235,8 @@ Many minor bug- and quality of life fixes.
 ## [0.0.0] - 2020-06-11
 First release of seq2science!
 
-[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/master...v0.3.1
+[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/master...v0.3.2
+[0.3.2]: https://github.com/vanheeringen-lab/seq2science/compare/v0.3.2...v0.3.1
 [0.3.1]: https://github.com/vanheeringen-lab/seq2science/compare/v0.3.1...v0.3.0
 [0.3.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.2.3...v0.3.0
 [0.2.3]: https://github.com/vanheeringen-lab/seq2science/compare/v0.2.2...v0.2.3
