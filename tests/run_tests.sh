@@ -189,7 +189,7 @@ if [ $1 = "rna-seq" ]; then
 
   # TODO: test samples are too similar for blind clustering and deseq2
   printf "\nrna-seq default - quantification\n"
-  seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions config={counts_dir:salmon_counts,custom_genome_extension:tests/tinydata/tinyERCC92.fa,custom_annotation_extension:tests/tinydata/tinyERCC92.gtf} \
+  seq2science run rna-seq -r --cores $CORES --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions config={counts_dir:salmon_counts,custom_genome_extension:tests/tinydata/tinyERCC92.fa,custom_annotation_extension:tests/tinydata/tinyERCC92.gtf} \
   omit_from=[blind_clustering]  # <- remove when fixed
 
   printf "\nrna-seq default - quantification deseq2\n"
