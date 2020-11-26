@@ -38,12 +38,20 @@ pipeline {
         stage('Setup Miniconda') {
             steps {
                 sh '''#!/usr/bin/env bash
+                # tests
+                echo ""
+                echo "which conda:"
+                which conda
+                echo ""
+                echo "which seq2science:"
+                which seq2science
+                echo ""
+
                 printf "\ndownload miniconda\n"
                 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -nv -O miniconda.sh
 
                 printf "\ninstall miniconda\n"
                 bash miniconda.sh -b -p $WORKSPACE/miniconda > /dev/null
-                export PATH=$WORKSPACE/miniconda/bin:$PATH
 
                 printf "\nconfigure miniconda\n"
                 conda config --set always_yes yes --set changeps1 false
@@ -67,11 +75,13 @@ pipeline {
                 genomepy clean
 
                 # tests
+                echo ""
+                echo "which conda:"
                 which conda
-                echo " "
+                echo ""
+                echo "which seq2science:"
                 which seq2science
-                echo " "
-                conda -h
+                echo ""
                 '''
             }
         }
@@ -329,6 +339,15 @@ pipeline {
                 set -e
                 source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                 conda activate s2s
+
+                # tests
+                echo ""
+                echo "which conda:"
+                which conda
+                echo ""
+                echo "which seq2science:"
+                which seq2science
+                echo ""
 
                 bash ./tests/run_tests.sh rna-seq
                 '''
