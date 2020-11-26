@@ -38,15 +38,6 @@ pipeline {
         stage('Setup Miniconda') {
             steps {
                 sh '''#!/usr/bin/env bash
-                # tests
-                echo ""
-                echo "which conda:"
-                which conda
-                echo ""
-                echo "which seq2science:"
-                which seq2science
-                echo ""
-
                 printf "\ndownload miniconda\n"
                 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -nv -O miniconda.sh
 
@@ -73,15 +64,6 @@ pipeline {
                 # remove old cache files
                 seq2science clean
                 genomepy clean
-
-                # tests
-                echo ""
-                echo "which conda:"
-                which conda
-                echo ""
-                echo "which seq2science:"
-                which seq2science
-                echo ""
                 '''
             }
         }
@@ -340,15 +322,6 @@ pipeline {
                 source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                 conda activate s2s
 
-                # tests
-                echo ""
-                echo "which conda:"
-                which conda
-                echo ""
-                echo "which seq2science:"
-                which seq2science
-                echo ""
-
                 bash ./tests/run_tests.sh rna-seq
                 '''
             }
@@ -378,11 +351,11 @@ pipeline {
     }
 
 
-    post {
-        always {
-            dir("$WORKSPACE") {
-                deleteDir()
-            }
-        }
-    }
+//     post {
+//         always {
+//             dir("$WORKSPACE") {
+//                 deleteDir()
+//             }
+//         }
+//     }
 }
