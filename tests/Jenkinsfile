@@ -43,6 +43,7 @@ pipeline {
 
                 printf "\ninstall miniconda\n"
                 bash miniconda.sh -b -p $WORKSPACE/miniconda > /dev/null
+                export PATH=$WORKSPACE/miniconda/bin:$PATH
 
                 printf "\nconfigure miniconda\n"
                 conda config --set always_yes yes --set changeps1 false
@@ -64,6 +65,13 @@ pipeline {
                 # remove old cache files
                 seq2science clean
                 genomepy clean
+
+                # tests
+                which conda
+                echo " "
+                which seq2science
+                echo " "
+                conda -h
                 '''
             }
         }
