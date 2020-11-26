@@ -1,6 +1,9 @@
 import os
 import shutil
 
+from snakemake.logging import logger
+
+
 onstart:
     # save a copy of the latest samples and config file(s) in the log_dir
     # skip this step on Jenkins, as it runs in parallel
@@ -10,10 +13,35 @@ onstart:
             src = os.path.join(os.getcwd(), file)
             dst = os.path.join(config['log_dir'], os.path.basename(file) if n<2 else "profile.yaml")
             shutil.copy(src, dst)
+
 onsuccess:
     if config.get("email") not in ["none@provided.com", "yourmail@here.com", None]:
         os.system(f"""echo "Succesful pipeline run! :)" | mail -s "The seq2science pipeline finished succesfully." {config["email"]} 2> /dev/null""")
+
 onerror:
+    logger.info(
+"""
+
+
+  __    __    __  ____  ____  _   
+ /  \  /  \  /  \(  _ \/ ___)/ \  
+(  O )(  O )(  O )) __/\___ \\\\_/  
+ \__/  \__/  \__/(__)  (____/(_)  
+
+
+One or more rules did not finish as expected!
+
+
+Please take a look at the log files of the failed rule(s), and our Frequently Asked Questions: 
+https://vanheeringen-lab.github.io/seq2science/content/faq.html
+
+If that does not help you, don't be afraid to reach out to us. 
+The easiest way would be to make an issue on our github page: 
+https://github.com/vanheeringen-lab/seq2science/issues
+
+"""
+                )
+
     if config.get("email") not in ["none@provided.com", "yourmail@here.com", None]:
         os.system(f"""echo "Unsuccessful pipeline run! :(" | mail -s "The seq2science pipeline finished prematurely..." {config["email"]} 2> /dev/null """)
 

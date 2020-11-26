@@ -161,7 +161,15 @@ def samples2metadata(samples: List[str], config: dict, logger) -> dict:
     if len(public_samples) == 0:
         return local_samples
 
-    sra_samples = samples2metadata_sra(public_samples, logger)
+    # chop public samples into smaller chunks, doing large queries results into
+    # pysradb decode errors..
+    chunksize = 100
+    chunked_public = [public_samples[i:i+chunksize] for i in range(0, len(public_samples), chunksize)]
+    sra_samples = dict()
+    for chunk in chunked_public:
+        sra_samples.update(samples2metadata_sra(chunk, logger))
+        # just to be sure sleep in between to not go over our API limit
+        time.sleep(1)
 
     return {**local_samples, **sra_samples}
 
