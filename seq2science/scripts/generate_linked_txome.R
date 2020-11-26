@@ -35,7 +35,8 @@ cat('\n')
 ## create a symlink to the gtf with Ensembl naming scheme (required for tximeta)
 fake_gtf_path <- file.path(dirname(output), paste0(organism, '.', genome, '.', release, '.gtf'))
 cat('Renaming GTF:\n')
-R.utils::createLink(fake_gtf_path, gtf)
+file.symlink(from=gtf, to=fake_gtf_path)
+# R.utils::createLink(fake_gtf_path, gtf) is more robust, but conda/Jenkins has issues with R.utils
 cat('\n')
 
 ## Creating linked transcriptome

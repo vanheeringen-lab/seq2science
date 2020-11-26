@@ -8,8 +8,6 @@ dependencies:
   # linked_txome & txi count table
   - conda-forge::r-base=4.0.3
   - bioconda::bioconductor-tximeta=1.8.0
-  # linked_txome
-  - conda-forge::r-r.utils=2.10.1
   # txi counts table
   - bioconda::bioconductor-singlecellexperiment=1.12.0
   - conda-forge::r-tidyverse=1.3.0
