@@ -42,8 +42,8 @@ coldata <- data.frame(files = file.path(samples, 'quant.sf'), names = samplename
 ## import annotated abundances in transcript level
 st <- tximeta::tximeta(
     coldata=coldata,
-    # txOut=TRUE,              # output transcripts
-    # skipMeta=TRUE,           # required for transcript outputs
+    txOut=TRUE,                # output transcripts (default)
+    # skipMeta=TRUE,           # meta = required for transcript outputs
     # skipSeqinfo=TRUE,        # lookup sizes
     # useHub=FALSE,            # lookup similar indexes
     # markDuplicateTxps=TRUE,  # mark and track
