@@ -43,7 +43,7 @@ cat('\n')
 cat('Creating linked transcriptome:\n')
 tximeta::makeLinkedTxome(
   indexDir = salmonindex,
-  source = source,  # TODO: try "de-novo" with non-ensembl gtfs
+  source = "de-novo", #source,  # TODO: try "de-novo" with non-ensembl gtfs
   organism = organism,
   release = release,
   genome = genome,
