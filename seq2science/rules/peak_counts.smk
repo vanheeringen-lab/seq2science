@@ -110,7 +110,7 @@ rule bedtools_slop:
         "../envs/bedtools.yaml"
     shell:
         """
-        bedtools slop -i {input.bedfile} -g {input.sizes} -b {config[slop]} > {output} 2> {log}
+        bedtools slop -i {input.bedfile} -g {input.sizes} -b {config[slop]} | uniq > {output} 2> {log}
         """
 
 
