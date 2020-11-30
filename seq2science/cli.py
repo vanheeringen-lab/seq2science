@@ -2,15 +2,16 @@
 """
 This is the user's entry-point for the seq2science tool.
 """
+import os
 import sys
 import argparse
-import os
 import shutil
 import webbrowser
 import re
 import inspect
 import contextlib
 import yaml
+import psutil
 
 import xdg
 
@@ -284,6 +285,7 @@ def _run(args, base_dir, workflows_dir, config_path):
 
     core_parser(parsed_args)
     parsed_args["config"].update({"cores": parsed_args["cores"]})
+    resource_parser(parsed_args)
 
     # run snakemake
     exit_code = snakemake.snakemake(**parsed_args)
@@ -443,3 +445,30 @@ def core_parser(parsed_args):
             for k, v in overwrite_threads.items():
                 if k not in parsed_args["overwrite_threads"]:
                     parsed_args["overwrite_threads"][k] = v
+
+
+def resource_parser(parsed_args):
+    """
+    Make sure to properly parse the resources.
+    Memory limit changes depending on local execution or cluster
+    """
+    # set some defaults
+    parsed_args["resources"] = {**{'parallel_downloads': 3, 'deeptools_limit': 16, 'R_scripts': 1},
+                                **parsed_args.get("resources", {})}
+
+    if "mem_mb" in parsed_args["resources"]:
+        # convert memory to gigabytes
+        parsed_args["resources"]["mem_gb"] = round(parsed_args["resources"]["mem_mb"] / 1024.)
+        del parsed_args["resources"]["mem_mb"]
+
+    # no need to get system limit when specified
+    if "mem_gb" in parsed_args["resources"]:
+        return
+
+    if "cluster" in parsed_args:
+        # if running on a cluster assume no limit on memory (unless specified)
+        parsed_args["resources"]["mem_gb"] = 999999
+    else:
+        # otherwise assume system memory
+        mem = psutil.virtual_memory().total / 1024 ** 3
+        parsed_args["resources"]["mem_gb"] = round(mem)
