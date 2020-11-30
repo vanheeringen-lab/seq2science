@@ -127,7 +127,9 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         metavar="N",
         type=int,
         # required=True,  # --dryruns and --profile can overwrite None
-        help="Use at most N cores in parallel. Must be at least 2.",
+        help="Use at most N cores in parallel. Must be at least 2. When "
+             "executing on a cluster, this number controls the maximum number"
+             "of parallel jobs.",
     )
     run.add_argument(
         "-n", "--dryrun",
@@ -275,6 +277,10 @@ def _run(args, base_dir, workflows_dir, config_path):
 
     if parsed_args["cores"] < 2:
         subjectively_prettier_error(core_arg, "specify at least two cores.")
+
+    # when running on a cluster assume cores == nodes (just like snakemake does)
+    if "cluster" in parsed_args and not "nodes" in parsed_args:
+        parsed_args["nodes"] = parsed_args["cores"]
 
     core_parser(parsed_args)
     parsed_args["config"].update({"cores": parsed_args["cores"]})
