@@ -16,4 +16,4 @@ properties:
 
   deeptools_flags:
     description: flags for bam to bigwig conversions with deeptools bamCoverage
-    default: --samFlagExclude 1024 # exclude duplicates marked by Picard
+    default: '--normalizeUsing BPM'  # Bins Per Million mapped reads, same as TPM in RNA-seq

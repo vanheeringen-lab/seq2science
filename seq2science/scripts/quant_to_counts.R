@@ -62,6 +62,11 @@ mode(counts) <- "integer"
 counts <- data.frame(counts, stringsAsFactors = F, check.names = F) %>% rownames_to_column("gene")
 write.table(counts, file=out_matrix, quote = F, sep = '\t', row.names = F)
 
+## Save gene length matrix
+lengths <- data.frame(assay(sg, "length"), stringsAsFactors = F, check.names = F) %>% rownames_to_column("gene")
+out_lengths_matrix <- sub("-counts.tsv", "-gene_lengths.tsv", out_matrix)
+write.table(lengths, file=out_lengths_matrix, quote = F, sep = '\t', row.names = F)
+
 ## Returning to source script
 
 

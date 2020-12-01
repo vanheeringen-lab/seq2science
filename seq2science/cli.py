@@ -2,16 +2,18 @@
 """
 This is the user's entry-point for the seq2science tool.
 """
+import os
 import sys
 import argparse
-import os
 import shutil
 import webbrowser
 import re
 import inspect
 import contextlib
 import yaml
+import psutil
 
+import xdg
 
 # we need to be able to get the parser from the file without a valid seq2science installation
 try:
@@ -86,10 +88,10 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
     )
     clean = subparsers.add_parser(
         "clean",
-        help="Remove all cached sample layouts and conda environments.",
+        help="Remove all cached sample files and conda environments.",
         description="At the start of each workflow run, seq2science starts with installing environments for each "
-                    "rule. It also stores the layout of public samples in its cache. These environments can get large "
-                    "and it might be best to remove them when you are done with an analysis. \n"
+                    "rule. It also stores the GEO soft files of public samples in its cache. These environments can get"
+                    " large and it might be best to remove them when you are done with an analysis. \n"
                     "seq2science clean will clean up these files for you."
     )
     docs = subparsers.add_parser(
@@ -126,7 +128,9 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         metavar="N",
         type=int,
         # required=True,  # --dryruns and --profile can overwrite None
-        help="Use at most N cores in parallel. Must be at least 2.",
+        help="Use at most N cores in parallel. Must be at least 2. When "
+             "executing on a cluster, this number controls the maximum number"
+             "of parallel jobs.",
     )
     run.add_argument(
         "-n", "--dryrun",
@@ -275,8 +279,13 @@ def _run(args, base_dir, workflows_dir, config_path):
     if parsed_args["cores"] < 2:
         subjectively_prettier_error(core_arg, "specify at least two cores.")
 
+    # when running on a cluster assume cores == nodes (just like snakemake does)
+    if "cluster" in parsed_args and not "nodes" in parsed_args:
+        parsed_args["nodes"] = parsed_args["cores"]
+
     core_parser(parsed_args)
     parsed_args["config"].update({"cores": parsed_args["cores"]})
+    resource_parser(parsed_args)
 
     # run snakemake
     exit_code = snakemake.snakemake(**parsed_args)
@@ -339,13 +348,16 @@ def _explain(args, base_dir, workflows_dir, config_path):
 
 def _clean(base_dir):
     """
-    Clean the .snakemake folder and layouts cache.
+    Clean the .snakemake folder and cache.
     """
     # remove the snakemake cache
     shutil.rmtree(os.path.join(base_dir, ".snakemake"), ignore_errors=True)
 
     # remove seq2science caches
-    shutil.rmtree(os.path.expanduser(f'~/.config/seq2science'), ignore_errors=True)
+    shutil.rmtree(os.path.expanduser(os.path.join(xdg.XDG_CACHE_HOME, "seq2science")), ignore_errors=True)
+
+    # remove historic seq2science cache location
+    shutil.rmtree(os.path.expanduser(f'~/.config/seq2science/'), ignore_errors=True)
 
     print("All cleaned up!")
 
@@ -411,7 +423,7 @@ def core_parser(parsed_args):
     """
     cores = parsed_args["cores"]
     sorters = ["samtools_presort"]
-    aligners = ["bwa_mem", "bowtie2_align", "hisat2_align", "star_align"]
+    aligners = ["bwa_mem", "bwa_mem2", "bowtie2_align", "hisat2_align", "star_align"]
 
     d_sorters_threads = 2
     d_aligner_threads = 10
@@ -433,3 +445,30 @@ def core_parser(parsed_args):
             for k, v in overwrite_threads.items():
                 if k not in parsed_args["overwrite_threads"]:
                     parsed_args["overwrite_threads"][k] = v
+
+
+def resource_parser(parsed_args):
+    """
+    Make sure to properly parse the resources.
+    Memory limit changes depending on local execution or cluster
+    """
+    # set some defaults
+    parsed_args["resources"] = {**{'parallel_downloads': 3, 'deeptools_limit': 16, 'R_scripts': 1},
+                                **parsed_args.get("resources", {})}
+
+    if "mem_mb" in parsed_args["resources"]:
+        # convert memory to gigabytes
+        parsed_args["resources"]["mem_gb"] = round(parsed_args["resources"]["mem_mb"] / 1024.)
+        del parsed_args["resources"]["mem_mb"]
+
+    # no need to get system limit when specified
+    if "mem_gb" in parsed_args["resources"]:
+        return
+
+    if "cluster" in parsed_args:
+        # if running on a cluster assume no limit on memory (unless specified)
+        parsed_args["resources"]["mem_gb"] = 999999
+    else:
+        # otherwise assume system memory
+        mem = psutil.virtual_memory().total / 1024 ** 3
+        parsed_args["resources"]["mem_gb"] = round(mem)

@@ -4,4 +4,4 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - bioconda::bwa-mem2=2.0
+  - bioconda::bwa-mem2=2.1

@@ -1,18 +1,34 @@
 # dataframe with all technical replicates collapsed
 cols = ["sample", "assembly"]
+subset = ["sample", "assembly"]
 if "replicate" in samples:
     cols = ["replicate", "assembly"]
+    subset = ["replicate", "assembly"]
 if "condition" in samples:
     cols.append("condition")
+    subset.append("condition")
 if "control" in samples:
     cols.append("control")
-treps = samples.reset_index()[cols].drop_duplicates().set_index(cols[0])
+if "colors" in samples:
+    cols.append("colors")
+
+treps = samples.reset_index()[cols].drop_duplicates(subset=subset).set_index(cols[0])
 assert treps.index.is_unique, "duplicate value found in treps"
+
+# treps that came from a merge
+merged_treps = [trep for trep in treps.index if trep not in samples.index]
+merged_treps_single = [trep for trep in merged_treps if sampledict[trep]["layout"] == "SINGLE"]
+merged_treps_paired = [trep for trep in merged_treps if sampledict[trep]["layout"] == "PAIRED"]
+
+# all samples (including controls)
+all_samples = [sample for sample in samples.index]
+if "control" in samples.columns:
+    all_samples.extend(samples["control"].dropna().tolist())
 
 # dataframe with all replicates collapsed
 breps = treps
 if "condition" in treps:
-    breps = treps.reset_index(drop=True).drop_duplicates().set_index("condition")
+    breps = treps.reset_index(drop=True).drop_duplicates(subset=subset[1:]).set_index("condition")
 
 
 # make a dict that returns the treps that belong to a brep
@@ -52,24 +68,25 @@ def rep_to_descriptive(rep, brep=False):
 if "replicate" in samples:
 
     def get_merge_replicates(wildcards):
-        input_files = dict()
-        input_files["reps"] = expand(
+        input_files = expand(
             [
                 f"{{trimmed_dir}}/{sample}{wildcards.fqext}_trimmed.{{fqsuffix}}.gz"
                 for sample in samples[samples["replicate"] == wildcards.replicate].index
             ],
             **config,
         )
-        # make sure we make the fastqc report before moving our file
-        if get_workflow() != "scatac_seq" and len(input_files["reps"]) == 1 and config["create_qc_report"]:
-            input_files["qc"] = expand(
-                [
-                    f"{{qc_dir}}/fastqc/{sample}{wildcards.fqext}_trimmed_fastqc.zip"
-                    for sample in samples[samples["replicate"] == wildcards.replicate].index
-                ],
-                **config,
-            )
+        if len(input_files) == 0:
+            return ["Something went wrong, and we tried to merge replicates but there were no replicates?!"]
+
         return input_files
+
+    if config["trimmer"] == "fastp":
+        ruleorder: merge_replicates > fastp_PE > fastp_SE
+    elif config["trimmer"] == "trimgalore":
+        ruleorder: merge_replicates > trimgalore_PE > trimgalore_SE
+
+    # true treps are treps combined of 2 samples or more
+    true_treps = [trep for trep in treps.index if trep not in samples.index]
 
     rule merge_replicates:
         """
@@ -81,22 +98,19 @@ if "replicate" in samples:
         If a replicate has only 1 sample in it, simply move the file.
         """
         input:
-            unpack(get_merge_replicates),
+            get_merge_replicates,
         output:
-            temp(sorted(expand("{trimmed_dir}/merged/{{replicate}}{{fqext}}_trimmed.{fqsuffix}.gz", **config))),
+            temp(sorted(expand("{trimmed_dir}/{{replicate}}{{fqext}}_trimmed.{fqsuffix}.gz", **config))),
         wildcard_constraints:
-            replicate=any_given("replicate", "control"),
+            replicate="|".join(true_treps) if len(true_treps) else "$a",
             fqext=f"_{config['fqext1']}|_{config['fqext2']}|", # nothing (SE), or fqext with an underscore (PE)
         log:
             expand("{log_dir}/merge_replicates/{{replicate}}{{fqext}}.log", **config),
         benchmark:
             expand("{benchmark_dir}/merge_replicates/{{replicate}}{{fqext}}.benchmark.txt", **config)[0]
         run:
-            if len(input.reps) == 1:
-                shell("mv {input.reps} {output} 2> {log}")
-            else:
-                for rep in input.reps:
-                    rep_name = re.findall("\/([^\/_]+)_", rep)[-1]
-                    shell(
-                        """zcat {rep} | awk '{{if (NR%4==1) {{gsub(/^@/, "@{rep_name}:"); print}} else {{print}}}}' | gzip >> {output}"""
-                    )
+            for rep in input:
+                rep_name = re.findall("\/([^\/_]+)_", rep)[-1]
+                shell(
+                    """zcat {rep} | awk '{{if (NR%4==1) {{gsub(/^@/, "@{rep_name}:"); print}} else {{print}}}}' | gzip >> {output}"""
+                )

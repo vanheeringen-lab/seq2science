@@ -8,6 +8,101 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Fixed
+
+- (literal) genome edge-case where taking the slop of peaks results in identical peaks. One of the duplicates is removed.
+
+## [0.3.2] - 2020-11-26
+
+### Added
+
+- a check to see if the downloaded fastq from ENA is not empty. Related to a recent internal error (guess) at the side of ENA sending empty fastq files
+- a custom message when a rule fails, that redirect to docs
+
+### Changed
+
+- sample layout lookup is split up in 100's, to avoid a jsondecodeerror which results from very long lists of samples
+- the multiqc samples & config tables are generated in a script with its own environment to make base env smaller
+- keep_mates for macs2 turned into a script with ts own environment ot make the base env smaller
+- seq2science cache now respects the xdg cache
+- moved genome downloading rules into scripts instead of run directives, should result in user-friendlier errors
+
+### Fixed
+
+- make a trackhub index when the gene_name is not present in gtf file
+- make a trackhub index when the gene_name is not present in gene all entries
+- update Salmon & salmon rules
+
+## [0.3.1] - 2020-11-05
+
+### Added
+
+- trackhub: automatic color selection
+- trackhub: specify colors with the "colors" column in the samples.tsv. Accepts RGB and matplotlib colors.
+- trackhub: grouped samples in a composite track with sample filters and composite control
+
+### Changed
+- updated genomepy to 0.9.1: genomes will have alternative regions removed (if designated with "alt" in the name)
+- trackhub: better defaults for each track
+- layouts are stored per version, as to not have collisions in the way these are stored between versions.
+- scATAC no longer supports trackhub
+- bigwigs are now (BPM) normalized by default
+
+### Fixed
+
+- markduplicates now uses $TMP_DIR, if it is defined
+- RNA-seq cluster figures werent displaying text on some platforms
+- not using the local annotation files
+- not recognizing a mix of gzipped and unzipped annotation files
+- bigwigs are now correctly labelled forward/reverse (when protocol was stranded)
+- trackhub: RNA-seq trackhub now displays both strands of the bigwig (when protocol was stranded)
+- trackhub: track order is now identical to the samples.tsv (was alphabetical for ChIP-/ATAC-seq)
+- trackhub: assembly hub index now returns gene_name instead of transcript_id.
+- bug with edgeR (upperquartile) normalization failed. Not sure why it fails, but when is does, it now returns a dataframe of nan instead of failing the rule, and thus the whole pipeline.
+- use gimmemotifs 0.15.0, so gimme.combine_peaks works with numeric chromosome names
+- s2s is slightly more lenient with an edge-case when running seq2science in parallel  
+- clearer error message when trying samples that can not be found
+- edge case with trying to dump sra from empty directory
+- now give a nice error message when a technical replicate consists of a mix of paired-end and single-end samples
+- issue with large number of inputs for multiqc exceeding the os command max length
+- bug with downloading only SRR/DRR samples (but no GSM)
+- issue with async generation of genome support files
+- checking for sequencing runs when sample is already downloaded 
+
+## [0.3.0] - 2020-09-22
+
+### Added
+
+- fastp as aligner (default), makes trimgalore optional other aligner
+- you can now specify an url for your samples file
+- RNA-seq: gene_id to gene_name conversion table will be output for downstream analysis
+  - (may be empty if gtf didn't contain both fields or wrong formatting)
+- RNA-seq: quantifying with salmon will now also output a gene length table
+  - (gene lengths, tpms and gene counts can still be found together in the SingleCellExperiment object)
+
+### Changed
+
+- make use of pysradb for quering layout and SRR ids instead of API and web-scraping
+- markduplicates now removes duplicates as default
+- testing: clear genomepy caches between runs
+- add parallel-fastq-dump fallback to fasterq-dump
+- configuration rules split into more sections
+- DESeq2 options renamed (from `diffexp` to `deseq2` and `contrasts`)
+- DESeq2 will now generate batch corrected counts (and TPMs for Salmon) for all samples, based on the set condition column.
+  - (batch corrected output is still meant for downstream analysis that cannot model batch effects independently, e.g. plotting)
+
+### Fixed
+
+- issue with control and technical replicates
+- now also SRR numbers can be directly downloaded from ENA
+- python3.8 syntaxwarnings
+- chipseeker missing gtf input
+- bugs with explain
+- bwa-mem2 not working with less than 12 cores
+- batch corrected TPMs no longer break when samples/rows are subset.
+
+## [0.2.3] - 2020-09-01
+
 ### Changed
 
 - retry mechanic for genomepy functions
@@ -144,7 +239,11 @@ Many minor bug- and quality of life fixes.
 ## [0.0.0] - 2020-06-11
 First release of seq2science!
 
-[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/master...develop
+[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/master...v0.3.2
+[0.3.2]: https://github.com/vanheeringen-lab/seq2science/compare/v0.3.2...v0.3.1
+[0.3.1]: https://github.com/vanheeringen-lab/seq2science/compare/v0.3.1...v0.3.0
+[0.3.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.2.3...v0.3.0
+[0.2.3]: https://github.com/vanheeringen-lab/seq2science/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/vanheeringen-lab/seq2science/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/vanheeringen-lab/seq2science/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.1.0...v0.2.0

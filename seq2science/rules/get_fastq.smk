@@ -3,46 +3,33 @@ import os
 import re
 
 
-def gsm2srx(gsm):
-    url = f"https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={gsm}"
-
-    conn = urllib.request.urlopen(url)
-    html = conn.read()
-
-    soup = BeautifulSoup(html, features="html.parser")
-    links = soup.find_all('a')
-
-    for tag in links:
-        link = tag.get('href', None)
-        if link is not None and 'SRX' in link:
-            SRX = link[link.find("SRX"):]
-            return SRX
-    raise ValueError(f"Sample {gsm} has been put in wrongly in the SRA and "
-                     f"seq2science is not capable of downloading it...")
-
-
-rule id2sra:
+rule run2sra:
     """
     Download the SRA of a sample by its unique identifier.
 
-    Tries first downloading with the faster ascp protocol, if that fails it 
+    Tries first downloading with the faster ascp protocol, if that fails it
     falls back on the slower http protocol.
     """
     output:
-        temp(directory(expand("{sra_dir}/{{sample}}", **config))),
+        temp(expand("{sra_dir}/{{run}}/{{run}}/{{run}}.sra", **config)),
     log:
-        expand("{log_dir}/id2sra/{{sample}}.log", **config),
+        expand("{log_dir}/run2sra/{{run}}.log", **config),
     benchmark:
-        expand("{benchmark_dir}/id2sra/{{sample}}.benchmark.txt", **config)[0]
-    message: explain_rule("id2sra")
+        expand("{benchmark_dir}/run2sra/{{run}}.benchmark.txt", **config)[0]
+    message: explain_rule("run2sra")
     resources:
         parallel_downloads=1,
+    params: outdir= lambda wildcards: f"{config['sra_dir']}/{wildcards.run}"
     conda:
         "../envs/get_fastq.yaml"
     wildcard_constraints:
-        sample="(GSM|SRR|ERR|DRR)\d+",
+        run="SRR\d+",
     shell:
         """
+        # move to output dir since somehow prefetch sometimes puts files in the cwd...
+        # and remove the top level folder since prefetch will assume we are done otherwise
+        mkdir -p {params.outdir}; cd {params.outdir}; rm -r {wildcards.run}
+
         # three attempts
         for i in {{1..3}}
         do
@@ -50,14 +37,13 @@ rule id2sra:
             (
                 flock --timeout 30 200 || continue
                 sleep 2
-            ) 200>{layout_cachefile_lock}
-    
+            ) 200>{pysradb_cache_lock}
+
             # dump
-            prefetch --max-size 999999999999 --output-directory {output} --log-level debug --progress {wildcards.sample} >> {log} 2>&1 && break
+            prefetch --max-size 999999999999 --output-directory ./ --log-level debug --progress {wildcards.run} >> {log} 2>&1 && break
             sleep 10
         done
         """
-
 
 
 rule sra2fastq_SE:
@@ -65,35 +51,38 @@ rule sra2fastq_SE:
     Downloaded (raw) SRAs are converted to single-end fastq files.
     """
     input:
-        rules.id2sra.output,
+        rules.run2sra.output,
     output:
-        fastq=expand("{fastq_dir}/{{sample}}.{fqsuffix}.gz", **config),
-        tmp_dump=temp(directory(expand("{sra_dir}/tmp/{{sample}}", **config))),
-        tmp_fastq=temp(directory(expand("{sra_dir}/fastq/{{sample}}", **config))),
+        fastq=temp(expand("{fastq_dir}/runs/{{run}}.{fqsuffix}.gz", **config)),
+        tmpdir=temp(directory(expand("{fastq_dir}/runs/tmp/{{run}}", **config))),
     log:
-        expand("{log_dir}/sra2fastq_SE/{{sample}}.log", **config),
+        expand("{log_dir}/sra2fastq_SE/{{run}}.log", **config),
     benchmark:
-        expand("{benchmark_dir}/sra2fastq_SE/{{sample}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/sra2fastq_SE/{{run}}.benchmark.txt", **config)[0]
+    wildcard_constraints:
+        run="SRR\d+",
     threads: 8
     conda:
         "../envs/get_fastq.yaml"
     shell:
         """
-        # acquire a lock
+        # move to output dir since somehow parallel-fastq-dump sometimes puts files in the cwd...
+        mkdir -p {output.tmpdir}; cd {output.tmpdir}
+
+        # acquire the lock
         (
             flock --timeout 30 200 || exit 1
-            sleep 2
-        ) 200>{layout_cachefile_lock}
+            sleep 3
+        ) 200>{pysradb_cache_lock}
 
-        # dump
-        fasterq-dump -s {input}/* -O {output.tmp_fastq} -t {output.tmp_dump} --threads {threads} --split-spot >> {log} 2>&1
+        # dump to tmp dir
+        parallel-fastq-dump -s {input} -O {output.tmpdir} \
+        --threads {threads} --split-spot --skip-technical --dumpbase --readids \
+        --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' \
+        --defline-qual '+' --gzip >> {log} 2>&1
 
         # rename file and move to output dir
-        for f in $(ls -1q {output.tmp_fastq} | grep -oP "^[^_]+" | uniq); do
-            dst={config[fastq_dir]}/{wildcards.sample}.{config[fqsuffix]}
-            cat "{output.tmp_fastq}/${{f}}" >> $dst
-        done
-        pigz -p {threads} {config[fastq_dir]}/{wildcards.sample}.{config[fqsuffix]}
+        mv {output.tmpdir}/*.fastq.gz {output.fastq}
         """
 
 
@@ -103,45 +92,46 @@ rule sra2fastq_PE:
     Forward and reverse samples will be switched if forward/reverse names are not lexicographically ordered.
     """
     input:
-        rules.id2sra.output,
+        rules.run2sra.output,
     output:
-        fastq=expand("{fastq_dir}/{{sample}}_{fqext}.{fqsuffix}.gz", **config),
-        tmp_dump=temp(directory(expand("{sra_dir}/tmp/{{sample}}", **config))),
-        tmp_fastq=temp(directory(expand("{sra_dir}/fastq/{{sample}}", **config))),
+        fastq=temp(expand("{fastq_dir}/runs/{{run}}_{fqext}.{fqsuffix}.gz", **config)),
+        tmpdir=temp(directory(expand("{fastq_dir}/runs/tmp/{{run}}", **config))),
     log:
-        expand("{log_dir}/sra2fastq_PE/{{sample}}.log", **config),
+        expand("{log_dir}/sra2fastq_PE/{{run}}.log", **config),
     benchmark:
-        expand("{benchmark_dir}/sra2fastq_PE/{{sample}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/sra2fastq_PE/{{run}}.benchmark.txt", **config)[0]
     threads: 8
+    wildcard_constraints:
+        run="SRR\d+",
     conda:
         "../envs/get_fastq.yaml"
     shell:
         """
+        # move to output dir since somehow parallel-fastq-dump sometimes puts files in the cwd...
+        mkdir -p {output.tmpdir}; cd {output.tmpdir}
+
         # acquire the lock
         (
             flock --timeout 30 200 || exit 1
-            sleep 2
-        ) 200>{layout_cachefile_lock}
+            sleep 3
+        ) 200>{pysradb_cache_lock}
 
-        # dump
-        fasterq-dump -s {input}/* -O {output.tmp_fastq} -t {output.tmp_dump} --threads {threads} --split-3 >> {log} 2>&1
+        # dump to tmp dir
+        parallel-fastq-dump -s {input} -O {output.tmpdir} \
+        --threads {threads} --split-e --skip-technical --dumpbase \
+        --readids --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' \
+        --defline-qual '+' --gzip >> {log} 2>&1
 
-        # rename files and move to output dir
-        for f in $(ls -1q {output.tmp_fastq} | grep -oP "^[^_]+" | uniq); do
-            dst_1={config[fastq_dir]}/{wildcards.sample}_{config[fqext1]}.{config[fqsuffix]}
-            dst_2={config[fastq_dir]}/{wildcards.sample}_{config[fqext2]}.{config[fqsuffix]}
-            cat "{output.tmp_fastq}/${{f}}_1.fastq" >> $dst_1
-            cat "{output.tmp_fastq}/${{f}}_2.fastq" >> $dst_2
-        done
-        pigz -p {threads} {config[fastq_dir]}/{wildcards.sample}_{config[fqext1]}.{config[fqsuffix]}
-        pigz -p {threads} {config[fastq_dir]}/{wildcards.sample}_{config[fqext2]}.{config[fqsuffix]}
+        # rename file and move to output dir
+        mv {output.tmpdir}/*_1* {output.fastq[0]}
+        mv {output.tmpdir}/*_2* {output.fastq[1]}
         """
 
 
 # NOTE: if the workflow fails it tends to blame this rule.
 # Set "debug: True" in the config to see the root cause.
 if not config.get("debug"):
-    ruleorder: renamefastq_PE > sra2fastq_PE
+    ruleorder: renamefastq_PE > ena2fastq_PE > sra2fastq_PE
 
     def get_wrong_fqext(wildcards):
         """get all local samples with fqexts that do not match the config"""
@@ -185,28 +175,26 @@ rule ena2fastq_SE:
     Download single-end fastq files directly from the ENA.
     """
     output:
-        expand("{fastq_dir}/{{sample}}.{fqsuffix}.gz", **config),
+        temp(expand("{fastq_dir}/runs/{{run}}.{fqsuffix}.gz", **config)),
     resources:
         parallel_downloads=1,
     log:
-        expand("{log_dir}/ena2fastq_SE/{{sample}}.log", **config),
+        expand("{log_dir}/ena2fastq_SE/{{run}}.log", **config),
     benchmark:
-        expand("{benchmark_dir}/ena2fastq_SE/{{sample}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/ena2fastq_SE/{{run}}.benchmark.txt", **config)[0]
     wildcard_constraints:
-        sample="|".join(ena_single_end_urls.keys()) if len(ena_single_end_urls) else "$a"
+        run="|".join(ena_single_end) if len(ena_single_end) else "$a"
     run:
-        try:
-            shell("mkdir -p {config[fastq_dir]}/{wildcards.sample} >> {log} 2>&1")
-            for srr, url in ena_single_end_urls[wildcards.sample]:
-                if config.get('ascp_path') and config.get('ascp_key'):
-                    shell("{config[ascp_path]} -QT -l 1G -P33001 -i {config[ascp_key]} {url} {config[fastq_dir]}/{wildcards.sample}/{srr}.{config[fqsuffix]}.gz >> {log} 2>&1")
-                else:
-                    shell("wget {url} -O {config[fastq_dir]}/{wildcards.sample}/{srr}.{config[fqsuffix]}.gz >> {log} 2>&1")
-                shell("cat {config[fastq_dir]}/{wildcards.sample}/{srr}.{config[fqsuffix]}.gz >> {output} 2> {log}")
-        except:
-            pass
-        finally:
-            shell("rm -r {config[fastq_dir]}/{wildcards.sample}/ >> {log} 2>&1")
+        shell("mkdir -p {config[fastq_dir]}/tmp/ >> {log} 2>&1")
+        url = run2download[wildcards.run]
+        if config.get('ascp_path') and config.get('ascp_key'):
+            shell("{config[ascp_path]} -QT -l 1G -P33001 -i {config[ascp_key]} {url} {output} >> {log} 2>&1")
+        else:
+            shell("wget {url} -O {output} --waitretry 20 >> {log} 2>&1")
+
+        if not (os.path.exists(output[0]) and os.path.getsize(output[0]) > 0):
+            shell('echo \"Something went wrong.. The downloaded file was empty!\" >> {log} 2>&1')
+            shell('exit 1 >> {log} 2>&1')
 
 
 rule ena2fastq_PE:
@@ -214,28 +202,59 @@ rule ena2fastq_PE:
     Download paired-end fastq files directly from the ENA.
     """
     output:
-        expand("{fastq_dir}/{{sample}}_{fqext}.{fqsuffix}.gz", **config),
+        temp(expand("{fastq_dir}/runs/{{run}}_{fqext}.{fqsuffix}.gz", **config)),
     resources:
         parallel_downloads=1,
     log:
-        expand("{log_dir}/ena2fastq_PE/{{sample}}.log", **config),
+        expand("{log_dir}/ena2fastq_PE/{{run}}.log", **config),
     benchmark:
-        expand("{benchmark_dir}/ena2fastq_PE/{{sample}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/ena2fastq_PE/{{run}}.benchmark.txt", **config)[0]
     wildcard_constraints:
-        sample="|".join(ena_paired_end_urls.keys()) if len(ena_paired_end_urls) else "$a"
+        run="|".join(ena_paired_end) if len(ena_paired_end) else "$a"
     run:
-        try:
-            shell("mkdir -p {config[fastq_dir]}/{wildcards.sample}/ >> {log} 2>&1")
-            for srr, urls in ena_paired_end_urls[wildcards.sample]:
-                if config.get('ascp_path') and config.get('ascp_key'):
-                    shell("{config[ascp_path]} -QT -l 1G -P33001 -i {config[ascp_key]} {urls[0]} {config[fastq_dir]}/{wildcards.sample}/{srr}_{config[fqext1]}.{config[fqsuffix]}.gz >> {log} 2>&1")
-                    shell("{config[ascp_path]} -QT -l 1G -P33001 -i {config[ascp_key]} {urls[1]} {config[fastq_dir]}/{wildcards.sample}/{srr}_{config[fqext2]}.{config[fqsuffix]}.gz >> {log} 2>&1")
-                else:
-                    shell("wget {urls[0]} -O {config[fastq_dir]}/{wildcards.sample}/{srr}_{config[fqext1]}.{config[fqsuffix]}.gz >> {log} 2>&1")
-                    shell("wget {urls[1]} -O {config[fastq_dir]}/{wildcards.sample}/{srr}_{config[fqext2]}.{config[fqsuffix]}.gz >> {log} 2>&1")
-                shell("cat {config[fastq_dir]}/{wildcards.sample}/{srr}_{config[fqext1]}.{config[fqsuffix]}.gz >> {output[0]} 2> {log}")
-                shell("cat {config[fastq_dir]}/{wildcards.sample}/{srr}_{config[fqext2]}.{config[fqsuffix]}.gz >> {output[1]} 2> {log}")
-        except:
-            pass
-        finally:
-            shell("rm -r {config[fastq_dir]}/{wildcards.sample}/ >> {log} 2>&1")
+        shell("mkdir -p {config[fastq_dir]}/tmp >> {log} 2>&1")
+        urls = run2download[wildcards.run]
+        if config.get('ascp_path') and config.get('ascp_key'):
+            shell("{config[ascp_path]} -QT -l 1G -P33001 -i {config[ascp_key]} {urls[0]} {output[0]} >> {log} 2>&1")
+            shell("{config[ascp_path]} -QT -l 1G -P33001 -i {config[ascp_key]} {urls[1]} {output[1]} >> {log} 2>&1")
+        else:
+            shell("wget {urls[0]} -O {output[0]} --waitretry 20 >> {log} 2>&1")
+            shell("wget {urls[1]} -O {output[1]} --waitretry 20 >> {log} 2>&1")
+
+        if not (os.path.exists(output[0]) and (os.path.getsize(output[0]) > 0) and
+                os.path.exists(output[1]) and (os.path.getsize(output[1]) > 0)):
+            shell('echo \"Something went wrong.. The downloaded file(s) were empty!\" >> {log} 2>&1')
+            shell('exit 1 >> {log} 2>&1')
+
+
+def get_runs_from_sample(wildcards):
+    run_fastqs = []
+    for run in sampledict[wildcards.sample]["runs"]:
+        run_fastqs.append(f"{config['fastq_dir']}/runs/{run}{wildcards.suffix}")
+
+    return run_fastqs
+
+
+public_samples = [sample for sample, values in sampledict.items() if "runs" in values]
+
+rule runs2sample:
+    """
+    Concatenate a single run or multiple runs together into a fastq
+    """
+    input:
+        get_runs_from_sample
+    output:
+        expand("{fastq_dir}/{{sample}}{{suffix}}", **config),
+    log:
+        expand("{log_dir}/run2sample/{{sample}}{{suffix}}.log", **config),
+    benchmark:
+        expand("{benchmark_dir}/run2sample/{{sample}}{{suffix}}.benchmark.txt", **config)[0]
+    wildcard_constraints:
+        sample="|".join(public_samples) if len(public_samples) > 0 else "$a"
+    run:
+        shell("cp {input[0]} {output}")
+
+        # now append all the later ones
+        for i in range(1, len(input)):
+            inputfile = input[i]
+            shell("cat {inputfile} >> {output}")

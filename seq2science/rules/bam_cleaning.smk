@@ -1,3 +1,5 @@
+from seq2science.util import sieve_bam
+
 def get_blacklist_files(wildcards):
     files = {}
     # ideally get genome is a checkpoint, however there are quite some Snakemake
@@ -209,7 +211,15 @@ rule mark_duplicates:
         "../envs/picard.yaml"
     shell:
         """
-        picard MarkDuplicates {params} INPUT={input} \
+        # use the TMPDIR if set, and not given in the config
+        if [[ ${{TMPDIR:=F}} == "F" ]] || [[ "{params}" == *TMP_DIR* ]]
+        then
+            tmpdir=""
+        else 
+            tmpdir=TMP_DIR=$TMPDIR
+        fi
+
+        picard MarkDuplicates $tmpdir {params} INPUT={input} \
         OUTPUT={output.bam} METRICS_FILE={output.metrics} > {log} 2>&1
         """
 

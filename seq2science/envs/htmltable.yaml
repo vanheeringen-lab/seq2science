@@ -1,7 +1,7 @@
-name: get_genome
+name: htmltable
 channels:
   - conda-forge
   - bioconda
   - defaults
 dependencies:
-  - bioconda::genomepy=0.8.4
+  - conda-forge::pretty_html_table=0.9.dev0

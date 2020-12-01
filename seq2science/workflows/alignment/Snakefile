@@ -1,13 +1,12 @@
 # do onstart/onexit things
 sample_schemas = ['sample', 'assembly', 'replicate', 'strandedness']
 config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific', 'trackhub']
-include: "../../rules/configuration_generic.smk"
+include: "../../rules/configuration.smk"
 
 
 # load the remaining relevant rules
 include: f"{config['rule_dir']}/alignment.smk"
 include: f"{config['rule_dir']}/bam_cleaning.smk"
-include: f"{config['rule_dir']}/strandedness.smk"
 include: f"{config['rule_dir']}/bigfiles.smk"
 include: f"{config['rule_dir']}/get_genome.smk"
 include: f"{config['rule_dir']}/get_fastq.smk"

@@ -76,7 +76,7 @@ This will let seq2science to output an exon counts matrix per assembly, which ca
 Note: this utilizes scripts implemented by DEXseq, which are [built for Ensembl genomes](https://bioconductor.org/packages/devel/bioc/vignettes/DEXSeq/inst/doc/DEXSeq.html#24_Preparing_the_annotation).
 
 ***
-### Optional: Trackhub
+#### Trackhub
 A UCSC compatible trackhub can be generated for this workflow. See the [trackhub page](../results.html#trackhub)<!-- @IGNORE PREVIOUS: link --> for more information!
 
 ***
@@ -92,7 +92,7 @@ GSM890    danRer11    stage_9      stage_9             GSM234
 ```
 
 #### Sample column
-This column is necessary for all workflows, not just the atac-seq workflow. If you use the pipeline on public data this should be the name of the accession (e.g. GSM2837484), if you use the pipeline on local data this should be the *basename* of the file without the *extension*. For instance `/home/user/myfastqs/sample1.fastq.gz` would be `sample1`.
+This column is necessary for all workflows, not just the RNA-seq workflow. If you use the pipeline on public data this should be the name of the accession (e.g. GSM2837484). If you use the pipeline on local data this should be the *basename* of the file without the *extension(s)*. For instance, `/home/user/myfastqs/sample1.fastq.gz` would be `sample1` (for single-ended data). For paired-ended data `/home/user/myfastqs/sample2_R1.fastq.gz` and `/home/user/myfastqs/sample2_R2.fastq.gz` would be `sample2`.
 
 #### Assembly column
 This column is necessary for all workflows, except the *downloading samples* workflow. Here you simply add the name of the assembly you want your samples aligned against and the workflow will download it for you.
@@ -117,6 +117,10 @@ Using this file in the alignment workflow will output *heart.bam*, *stage8.bam* 
 If you are working with multiple assemblies in one workflow, replicate names have to be unique between assemblies (you will receive a warning if names overlap).
 
 Replicate merging is turned on by default. It can be turned off by setting `technical_replicates` in the `config.yaml` to `keep`.
+
+#### Colors column
+If you are visualizing your data on the UCSC trackhub you can optionally specify the colors of each track.
+To do so, you can add the color by name (google "matplotlib colors" for the options), or RGB values, in the "colors" column. Empty fields are considered black.
 
 ***
 ### DESeq2 contrast designs

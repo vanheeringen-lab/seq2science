@@ -1,10 +1,12 @@
+set -euxo pipefail
+
 dir=$(pwd)
 
 for f in seq2science/workflows/*; do
     (
     if [ -d "$f" ]; then
         cd "$dir/$f"
-        snakemake --configfile config.yaml --config rule_dir="${dir}/seq2science/rules" --quiet --rulegraph | dot -Tpng -Gbgcolor=transparent -Gdpi=450 > "$dir/docs/resources/$(basename $f).png"
+        $CONDA/bin/snakemake --configfile config.yaml --config rule_dir="${dir}/seq2science/rules" --quiet --rulegraph | $CONDA/bin/dot -Tpng -Gbgcolor=transparent -Gdpi=450 > "$dir/docs/resources/$(basename $f).png"
     fi
     )
 done
