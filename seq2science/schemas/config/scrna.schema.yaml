@@ -4,7 +4,7 @@ description: seq2science gene expression configuration
 
 properties:
   # paths to store results
-  fastq_cleaned_dir:
+  fastq_clean_dir:
     description: directory where to find the workflow rules
     default: fastq_cleaned
     type: string

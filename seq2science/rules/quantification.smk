@@ -173,15 +173,41 @@ elif config["quantifier"] == "kallistobus":
         read_id = get_bustools_rid(config.get("count"))
         #Determine mate for trimming
         if read_id == 0:
-            reads += expand(f"{{trimmed_dir}}/{sample}_R1_trimmed.{{fqsuffix}}.gz", **config)
-            reads += expand("{fastq_dir}/{{sample}}_R2.{fqsuffix}.gz", **config)
+            reads += expand("{fastq_clean_dir}/{{sample}}_clean_{fqext1}.{fqsuffix}.paired.fq", **config)
+            reads += expand("{fastq_clean_dir}/{{sample}}_clean_{fqext2}.{fqsuffix}.paired.fq", **config)
         elif read_id == 1:
-            reads += expand("{fastq_dir}/{{sample}}_R1.{fqsuffix}.gz", **config)
-            reads += expand(f"{{trimmed_dir}}/{sample}_R2_trimmed.{{fqsuffix}}.gz", **config)
+            reads += expand("{fastq_clean_dir}/{{sample}}_clean_{fqext1}.{fqsuffix}.paired.fq", **config)
+            reads += expand("{fastq_clean_dir}/{{sample}}_clean_{fqext2}.{fqsuffix}.paired.fq", **config)
         else:    
             raise NotImplementedError
 
         return reads
+        
+    rule fastq_pair:
+        """
+        Example
+        """
+        input:
+            r1=expand("{fastq_dir}/{{sample}}_{fqext1}.{fqsuffix}.gz", **config),
+            r2=expand("{trimmed_dir}/{{sample}}_{fqext2}_trimmed.{fqsuffix}.gz", **config),
+        output:
+            r1=expand("{fastq_clean_dir}/{{sample}}_clean_{fqext1}.{fqsuffix}.paired.fq", **config),
+            r2=expand("{fastq_clean_dir}/{{sample}}_clean_{fqext2}.{fqsuffix}.paired.fq", **config),
+        priority: 1
+        conda:
+            "../envs/kallistobus.yaml"
+        params:
+            clean_dir=config.get("fastq_clean_dir")
+        shell:
+            """
+            gunzip -c {input[0]} > {params.clean_dir}/{wildcards.sample}_clean_R1.fastq 
+            gunzip -c {input[1]} > {params.clean_dir}/{wildcards.sample}_clean_R2.fastq
+            fastq_pair -t 800003  {params.clean_dir}/{wildcards.sample}_clean_R1.fastq {params.clean_dir}/{wildcards.sample}_clean_R2.fastq
+            rm {params.clean_dir}/{wildcards.sample}_clean_R1.fastq
+            rm {params.clean_dir}/{wildcards.sample}_clean_R2.fastq
+            rm {params.clean_dir}/{wildcards.sample}_clean_R1.fastq.single.fq
+            rm {params.clean_dir}/{wildcards.sample}_clean_R2.fastq.single.fq
+            """
 
     rule kallistobus_count:
         """
