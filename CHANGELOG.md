@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Fixed
+
+- bug in chip/atac trackhub generation where peaks and bigwigs used the same name, resulting in collisions and a trackhub that does not want to load 
+
 ## [0.3.2] - 2020-11-26
 
 ### Added
