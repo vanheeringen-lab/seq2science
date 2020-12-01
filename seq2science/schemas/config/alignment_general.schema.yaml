@@ -186,3 +186,14 @@ properties:
     description: What to append to the assembly name to indicate that custom data has been added to either genome or assembly.
     default: '_custom'
     type: string
+
+  # deeptools qc plot
+  deeptools_plotcorrelation:
+    description: Deeptools plotCorrelation params
+    default: '--colorMap RdYlBu --plotNumbers'
+    type: string
+
+  deeptools_multibamsummary:
+    description: Deeptools multiBamSummary params
+    default: '--distanceBetweenBins 25000 --binSize 1000'
+    type: string

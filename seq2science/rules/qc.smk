@@ -366,15 +366,18 @@ rule multiBamSummary:
         expand("{benchmark_dir}/multiBamSummary/{{assembly}}.benchmark.txt", **config)[0]
     threads: 16
     params:
-        lambda wildcards, input: "--labels " + get_descriptive_names(wildcards, input.bams) if
-                                 get_descriptive_names(wildcards, input.bams) != "" else "",
+        names=lambda wildcards, input: "--labels " + get_descriptive_names(wildcards, input.bams) if
+                                       get_descriptive_names(wildcards, input.bams) != "" else "",
+        params=config["deeptools_multibamsummary"]
+    message: explain_rule("multiBamSummary")
     conda:
         "../envs/deeptools.yaml"
     resources:
         deeptools_limit=lambda wildcards, threads: threads
     shell:
         """
-        multiBamSummary bins --bamfiles {input.bams} -out {output} {params} -p {threads} > {log} 2>&1
+        multiBamSummary bins --bamfiles {input.bams} -out {output} {params.names} \
+        {params.params} -p {threads} > {log} 2>&1
         """
 
 
@@ -385,18 +388,24 @@ rule plotCorrelation:
     input:
         rules.multiBamSummary.output
     output:
-        expand("{qc_dir}/plotCorrelation/{{method}}-{{assembly}}_mqc.png", **config)
+        expand("{qc_dir}/plotCorrelation/{{assembly}}-{{method}}_mqc.png", **config)
     log:
-        expand("{log_dir}/plotCorrelation/{{method}}-{{assembly}}.log", **config)
+        expand("{log_dir}/plotCorrelation/{{assembly}}-{{method}}.log", **config)
     benchmark:
-        expand("{benchmark_dir}/plotCorrelation/{{method}}-{{assembly}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/plotCorrelation/{{assembly}}-{{method}}.benchmark.txt", **config)[0]
     conda:
         "../envs/deeptools.yaml"
     resources:
         deeptools_limit=lambda wildcards, threads: threads
+    params:
+        title=lambda wildcards: ('"Spearman Correlation of Read Counts"'
+                                 if wildcards.method == "spearman" else
+                                 '"Pearson Correlation of Read Counts"'),
+        params=config["deeptools_plotcorrelation"]
     shell:
         """
-        plotCorrelation --corData {input} --plotFile {output} -c {wildcards.method} -p heatmap > {log} 2>&1
+        plotCorrelation --corData {input} --plotFile {output} -c {wildcards.method} \
+        -p heatmap --plotTitle {params.title} {params.params} > {log} 2>&1
         """
 
 
@@ -673,8 +682,8 @@ def get_alignment_qc(sample):
     if get_workflow() in ["alignment", "chip_seq", "atac_seq", "scatac_seq"]:
         output.append("{qc_dir}/plotFingerprint/{{assembly}}.tsv")
     if len(breps[breps["assembly"] == treps.loc[sample, "assembly"]].index) > 1:
-        output.append("{qc_dir}/plotCorrelation/pearson-{{assembly}}_mqc.png")
-        output.append("{qc_dir}/plotCorrelation/spearman-{{assembly}}_mqc.png")
+        output.append("{qc_dir}/plotCorrelation/{{assembly}}-pearson_mqc.png")
+        output.append("{qc_dir}/plotCorrelation/{{assembly}}-spearman_mqc.png")
         output.append("{qc_dir}/plotPCA/{{assembly}}.tsv")
 
     return expand(output, **config)
