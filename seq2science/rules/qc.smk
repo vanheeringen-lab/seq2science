@@ -310,7 +310,6 @@ rule computeMatrix:
         expand("{qc_dir}/computeMatrix/{{assembly}}-{{peak_caller}}.mat.gz", **config)
     log:
         expand("{log_dir}/computeMatrix/{{assembly}}-{{peak_caller}}.log", **config)
-    message: explain_rule("computeMatrix")
     benchmark:
         expand("{benchmark_dir}/computeMatrix/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     conda:
@@ -369,7 +368,7 @@ rule multiBamSummary:
         names=lambda wildcards, input: "--labels " + get_descriptive_names(wildcards, input.bams) if
                                        get_descriptive_names(wildcards, input.bams) != "" else "",
         params=config["deeptools_multibamsummary"]
-    message: explain_rule("multiBamSummary")
+    message: explain_rule("computeMatrix")
     conda:
         "../envs/deeptools.yaml"
     resources:
@@ -388,7 +387,7 @@ rule plotCorrelation:
     input:
         rules.multiBamSummary.output
     output:
-        expand("{qc_dir}/plotCorrelation/{{assembly}}-{{method}}_mqc.png", **config)
+        expand("{qc_dir}/plotCorrelation/{{assembly}}-deeptools_{{method}}_mqc.png", **config)
     log:
         expand("{log_dir}/plotCorrelation/{{assembly}}-{{method}}.log", **config)
     benchmark:
@@ -682,8 +681,8 @@ def get_alignment_qc(sample):
     if get_workflow() in ["alignment", "chip_seq", "atac_seq", "scatac_seq"]:
         output.append("{qc_dir}/plotFingerprint/{{assembly}}.tsv")
     if len(breps[breps["assembly"] == treps.loc[sample, "assembly"]].index) > 1:
-        output.append("{qc_dir}/plotCorrelation/{{assembly}}-pearson_mqc.png")
-        output.append("{qc_dir}/plotCorrelation/{{assembly}}-spearman_mqc.png")
+        output.append("{qc_dir}/plotCorrelation/{{assembly}}-deeptools_pearson_mqc.png")
+        output.append("{qc_dir}/plotCorrelation/{{assembly}}-deeptools_spearman_mqc.png")
         output.append("{qc_dir}/plotPCA/{{assembly}}.tsv")
 
     return expand(output, **config)

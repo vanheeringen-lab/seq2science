@@ -46,9 +46,9 @@ module_order:
     - mtnucratio
 
 report_section_order: 
-  spearman:
+  deeptools_spearman:
     order: -898
-  pearson:
+  deeptools_pearson:
     order: -899
   macs2_img1:
     order: -900
