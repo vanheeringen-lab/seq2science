@@ -56,12 +56,13 @@ def rep_to_descriptive(rep, brep=False):
     """
     if "descriptive_name" in samples:
         if brep and "condition" in samples:
-            col = samples.condition
-        elif "replicate" in samples:
-            col = samples.replicate
+            rep = samples[samples.condition == rep].condition[0]
         else:
-            col = samples.index
-        rep = samples[col == rep].descriptive_name[0]
+            if "replicate" in samples:
+                col = samples.replicate
+            else:
+                col = samples.index
+            rep = samples[col == rep].descriptive_name[0]
     return rep
 
 
