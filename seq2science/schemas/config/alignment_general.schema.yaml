@@ -195,5 +195,5 @@ properties:
 
   deeptools_multibamsummary:
     description: Deeptools multiBamSummary params
-    default: '--distanceBetweenBins 25000 --binSize 1000'
+    default: '--distanceBetweenBins 9000 --binSize 1000'
     type: string
