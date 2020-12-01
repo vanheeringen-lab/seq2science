@@ -385,7 +385,7 @@ rule plotCorrelation:
     input:
         rules.multiBamSummary.output
     output:
-        expand("{qc_dir}/plotCorrelation/{{method}}-{{assembly}}.png", **config)
+        expand("{qc_dir}/plotCorrelation/{{method}}-{{assembly}}_mqc.png", **config)
     log:
         expand("{log_dir}/plotCorrelation/{{method}}-{{assembly}}.log", **config)
     benchmark:
@@ -673,8 +673,8 @@ def get_alignment_qc(sample):
     if get_workflow() in ["alignment", "chip_seq", "atac_seq", "scatac_seq"]:
         output.append("{qc_dir}/plotFingerprint/{{assembly}}.tsv")
     if len(breps[breps["assembly"] == treps.loc[sample, "assembly"]].index) > 1:
-        output.append("{qc_dir}/plotCorrelation/pearson-{{assembly}}.png")
-        output.append("{qc_dir}/plotCorrelation/spearman-{{assembly}}.png")
+        output.append("{qc_dir}/plotCorrelation/pearson-{{assembly}}_mqc.png")
+        output.append("{qc_dir}/plotCorrelation/spearman-{{assembly}}_mqc.png")
         output.append("{qc_dir}/plotPCA/{{assembly}}.tsv")
 
     return expand(output, **config)
