@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Changed
+
+- bwa-mem2 default aligner for genomic workflows, instead of bwa-mem
+
 ### Fixed
 
 - (literal) genome edge-case where taking the slop of peaks results in identical peaks. One of the duplicates is removed.
