@@ -190,7 +190,7 @@ properties:
   # deeptools qc plot
   deeptools_plotcorrelation:
     description: Deeptools plotCorrelation params
-    default: '--colorMap RdYlBu --plotNumbers'
+    default: '--colorMap RdYlBu_r --plotNumbers'
     type: string
 
   deeptools_multibamsummary:
