@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Changed
+
+- interactive deeptools correlation heatmaps with static dendrograms in multiqc report
+
 ### Fixed
 
 - (literal) genome edge-case where taking the slop of peaks results in identical peaks. One of the duplicates is removed.
