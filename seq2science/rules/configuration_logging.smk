@@ -58,41 +58,41 @@ def rmkeys(del_list, target_list):
             target_list.remove(element[0])
     return target_list
 
+if not config.get("no_config_log"):
+    # after all is done, log (print) the configuration
+    logger.info("CONFIGURATION VARIABLES:")
 
-# after all is done, log (print) the configuration
-logger.info("CONFIGURATION VARIABLES:")
+    # sort config: samples.tsv & directories first, alphabetized second
+    keys = sorted(config.keys())
+    dir_keys = []
+    other_keys = []
+    for key in keys:
+        if key.endswith("_dir"):
+            dir_keys.append(key)
+        else:
+            other_keys.append(key)
+    keys = dir_keys + other_keys
 
-# sort config: samples.tsv & directories first, alphabetized second
-keys = sorted(config.keys())
-dir_keys = []
-other_keys = []
-for key in keys:
-    if key.endswith("_dir"):
-        dir_keys.append(key)
-    else:
-        other_keys.append(key)
-keys = dir_keys + other_keys
+    # remove superfluous keys
+    keys_to_remove = ["fqext1", "fqext2", "macs2_types", "cpulimit",
+                      "genome_types", "genomepy_temp", "bam_sort_mem",
+                      ("biological_replicates", "condition" not in samples),
+                      ("filter_bam_by_strand", "strandedness" not in samples),
+                      ("technical_replicates", "replicates" not in samples),
+                      ("tximeta", config.get("quantifier") != "salmon"),
+                      ("deseq2", not config.get("contrasts")),
+                      ("dge_dir", not config.get("contrasts")),
+                      ("bigwig_dir", not config.get("create_trackhub")),
+                      ("qc_dir", not config.get("create_qc_report"))]
+    keys = rmkeys(["samples"] + keys_to_remove, keys)
+    keys = ["samples"] + keys
 
-# remove superfluous keys
-keys_to_remove = ["fqext1", "fqext2", "macs2_types", "cpulimit",
-                  "genome_types", "genomepy_temp", "bam_sort_mem",
-                  ("biological_replicates", "condition" not in samples),
-                  ("filter_bam_by_strand", "strandedness" not in samples),
-                  ("technical_replicates", "replicates" not in samples),
-                  ("tximeta", config.get("quantifier") != "salmon"),
-                  ("deseq2", not config.get("contrasts")),
-                  ("dge_dir", not config.get("contrasts")),
-                  ("bigwig_dir", not config.get("create_trackhub")),
-                  ("qc_dir", not config.get("create_qc_report"))]
-keys = rmkeys(["samples"] + keys_to_remove, keys)
-keys = ["samples"] + keys
+    for key in keys:
+        if config[key] not in ["", False, 0, "None", "none@provided.com", "yourmail@here.com", "_custom"]:
+            logger.info(f"{key: <23}: {config[key]}")
 
-for key in keys:
-    if config[key] not in ["", False, 0, "None", "none@provided.com", "yourmail@here.com", "_custom"]:
-        logger.info(f"{key: <23}: {config[key]}")
-
-layouts = {sample: values['layout'] for sample, values in sampledict.items()}
-logger.info(f"layout:                : {layouts}")
+    layouts = {sample: values['layout'] for sample, values in sampledict.items()}
+    logger.info(f"layout:                : {layouts}")
 
 
-logger.info("\n\n")
+    logger.info("\n\n")

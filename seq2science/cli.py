@@ -281,10 +281,37 @@ def _run(args, base_dir, workflows_dir, config_path):
 
     # run snakemake
     # 1. first check for ..
-    with seq2science.util.CaptureStdout() as targets:
-        exit_code = snakemake.snakemake(**{**parsed_args, **{"list_params_changes": True,
-                                                             "quiet": True}})
-        # TODO exit code
+    from snakemake.logging import logger, setup_logger
+    setup_logger()
+    from .logging import log_welcome
+    log_welcome(logger, parsed_args)
+    logger.info("Checking if something something")
+
+    stored = []
+    def log_wrapper(log):
+        stored.append(log)
+
+    def log_handler(logs):
+        for log in logs:
+            if log["level"] == "info":
+                if not "will be created" in log["msg"]:
+                    logger.info(log["msg"])
+            if log["level"] == "error":
+                logger.error(log["msg"])
+                if "KeyboardInterrupt" in log["msg"]:
+                    sys.exit(1)
+
+    with seq2science.util.CaptureStdout() as targets, seq2science.util.CaptureStderr() as errors:
+        exit_code = snakemake.snakemake(**{**parsed_args, **{
+                                                             "list_params_changes": True,
+                                                             "quiet": False,
+                                                             "log_handler": [log_wrapper],
+                                                             "keep_logger": True
+                                                             }})
+    if not exit_code:
+        sys.exit(1)
+
+    logger.info("Done. Now starting the real run.")
 
     if len(targets):
         # remove the targets
@@ -297,6 +324,7 @@ def _run(args, base_dir, workflows_dir, config_path):
         parsed_args["targets"] = targets
         parsed_args["forcetargets"] = True
 
+    parsed_args["config"]["no_config_log"] = True
     # 2. actually run pipeline
     exit_code = snakemake.snakemake(**parsed_args)
 
