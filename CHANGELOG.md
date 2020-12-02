@@ -8,6 +8,17 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Changed
+
+- interactive deeptools correlation heatmaps with static dendrograms in multiqc report
+
+### Fixed
+
+- bug in chip/atac trackhub generation where peaks and bigwigs used the same name, resulting in collisions and a trackhub that does not want to load 
+- (literal) genome edge-case where taking the slop of peaks results in identical peaks. One of the duplicates is removed.
+
+## [0.3.2] - 2020-11-26
+
 ### Added
 
 - a check to see if the downloaded fastq from ENA is not empty. Related to a recent internal error (guess) at the side of ENA sending empty fastq files
@@ -233,7 +244,8 @@ Many minor bug- and quality of life fixes.
 ## [0.0.0] - 2020-06-11
 First release of seq2science!
 
-[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/master...v0.3.1
+[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/master...v0.3.2
+[0.3.2]: https://github.com/vanheeringen-lab/seq2science/compare/v0.3.2...v0.3.1
 [0.3.1]: https://github.com/vanheeringen-lab/seq2science/compare/v0.3.1...v0.3.0
 [0.3.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.2.3...v0.3.0
 [0.2.3]: https://github.com/vanheeringen-lab/seq2science/compare/v0.2.2...v0.2.3

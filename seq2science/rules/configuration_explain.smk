@@ -95,7 +95,7 @@ else:
         "samtools_stats": "General alignment statistics were collected by samtools stats v@samtools[samtools] (https://doi.org/10.1093/bioinformatics/btp352).",
         "featureCounts_qc": "The fraction reads in peak score (frips) was calculated by featurecounts v@subread[subread] (https://doi.org/10.1093/bioinformatics/btt656).",
         "fastqc": "Fastq quality was measured by FastQC v@qc[fastqc] (http://www.bioinformatics.babraham.ac.uk/projects/fastqc).",
-        "computeMatrix": "Deeptools v@deeptools[deeptools] (https://doi.org/10.1093/nar/gkw257) was used for the fingerprint, profile, correlation and heatmap plots.",
+        "computeMatrix": "Deeptools v@deeptools[deeptools] (https://doi.org/10.1093/nar/gkw257) was used for the fingerprint, profile, correlation and dendrogram/heatmap plots, where the heatmap was made with options '{config[deeptools_multibamsummary]}'.",
         "decoy_transcripts": "Decoy transcript were generated in order improve improve Salmon indexing accuracy (using the script from https://github.com/COMBINE-lab/SalmonTools)",
         "salmon_quant": "Transcript abundances were quantified with Salmon v@salmon[salmon] (https://doi.org/10.1038/nmeth.4197) with options '{config[quantifier_flags]}'.",
         "htseq_count": "Read counting and summarizing to gene-level was performed on filtered bam using HTSeq-count v@gene_counts[htseq] (https://doi.org/10.1093/bioinformatics/btu638).",

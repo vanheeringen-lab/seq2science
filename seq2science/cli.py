@@ -2,15 +2,16 @@
 """
 This is the user's entry-point for the seq2science tool.
 """
+import os
 import sys
 import argparse
-import os
 import shutil
 import webbrowser
 import re
 import inspect
 import contextlib
 import yaml
+import psutil
 
 import xdg
 
@@ -127,7 +128,9 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         metavar="N",
         type=int,
         # required=True,  # --dryruns and --profile can overwrite None
-        help="Use at most N cores in parallel. Must be at least 2.",
+        help="Use at most N cores in parallel. Must be at least 2. When "
+             "executing on a cluster, this number controls the maximum number"
+             "of parallel jobs.",
     )
     run.add_argument(
         "-n", "--dryrun",
@@ -276,8 +279,13 @@ def _run(args, base_dir, workflows_dir, config_path):
     if parsed_args["cores"] < 2:
         subjectively_prettier_error(core_arg, "specify at least two cores.")
 
+    # when running on a cluster assume cores == nodes (just like snakemake does)
+    if "cluster" in parsed_args and not "nodes" in parsed_args:
+        parsed_args["nodes"] = parsed_args["cores"]
+
     core_parser(parsed_args)
     parsed_args["config"].update({"cores": parsed_args["cores"]})
+    resource_parser(parsed_args)
 
     # run snakemake
     # 1. first check for ..
@@ -485,3 +493,30 @@ def core_parser(parsed_args):
             for k, v in overwrite_threads.items():
                 if k not in parsed_args["overwrite_threads"]:
                     parsed_args["overwrite_threads"][k] = v
+
+
+def resource_parser(parsed_args):
+    """
+    Make sure to properly parse the resources.
+    Memory limit changes depending on local execution or cluster
+    """
+    # set some defaults
+    parsed_args["resources"] = {**{'parallel_downloads': 3, 'deeptools_limit': 16, 'R_scripts': 1},
+                                **parsed_args.get("resources", {})}
+
+    if "mem_mb" in parsed_args["resources"]:
+        # convert memory to gigabytes
+        parsed_args["resources"]["mem_gb"] = round(parsed_args["resources"]["mem_mb"] / 1024.)
+        del parsed_args["resources"]["mem_mb"]
+
+    # no need to get system limit when specified
+    if "mem_gb" in parsed_args["resources"]:
+        return
+
+    if "cluster" in parsed_args:
+        # if running on a cluster assume no limit on memory (unless specified)
+        parsed_args["resources"]["mem_gb"] = 999999
+    else:
+        # otherwise assume system memory
+        mem = psutil.virtual_memory().total / 1024 ** 3
+        parsed_args["resources"]["mem_gb"] = round(mem)

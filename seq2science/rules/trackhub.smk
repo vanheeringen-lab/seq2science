@@ -541,7 +541,7 @@ def create_trackhub():
                         file = f"{config['result_dir']}/{peak_caller}/{assembly}-{trep}.bw"
                         priority += 1.0
                         track = trackhub.Track(
-                            name            = trackhub.helpers.sanitize(f"{descriptive}{peak_caller_suffix} bw"),
+                            name            = trackhub.helpers.sanitize(f"{rep_to_descriptive(trep)}{peak_caller_suffix} bw"),
                             tracktype       = "bigWig",
                             short_label     = f"{shorten(rep_to_descriptive(trep), 14-len(pcs), ['signs', 'vowels', 'center'])}{pcs} bw",  # <= 17 characters suggested
                             long_label      = f"{rep_to_descriptive(trep)}{peak_caller_suffix} bigWig",

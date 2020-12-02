@@ -2,7 +2,6 @@ import contextlib
 import genomepy
 import math
 import os.path
-import psutil
 import pickle
 import re
 import time
@@ -461,38 +460,9 @@ wildcard_constraints:
     sample=any_given(*sample_constraints)
 
 
-# set default parameters (parallel downloads and memory)
-def convert_size(size_bytes, order=None):
-    # https://stackoverflow.com/questions/5194057/better-way-to-convert-file-sizes-in-python/14822210#14822210
-    size_name = ["b", "kb", "mb", "gb"]
-    if order is None:
-        order = int(math.floor(math.log(size_bytes, 1024)))
-    s = int(size_bytes // math.pow(1024, order))
-    return s, size_name[order]
-
 # make sure the snakemake version corresponds to version in environment
 min_version("5.18")
 
-# set some defaults
-workflow.global_resources = {**{'parallel_downloads': 3, 'deeptools_limit': 16, 'R_scripts': 1},
-                             **workflow.global_resources}
-
-# when the user specifies memory, use this and give a warning if it surpasses local memory
-# (surpassing does not always have to be an issue -> cluster execution)
-# if none specified set the memory to the max available on the computer
-mem = psutil.virtual_memory()
-if workflow.global_resources.get('mem_mb'):
-    if workflow.global_resources['mem_mb'] > convert_size(mem.total, 2)[0]:
-        logger.info(f"WARNING: The specified ram ({workflow.global_resources['mem_mb']} mb) surpasses the local machine\'s RAM ({convert_size(mem.total, 2)[0]} mb)")
-
-    workflow.global_resources = {**{'mem_mb': np.clip(workflow.global_resources['mem_mb'], 0, convert_size(mem.total, 2)[0])},
-                                 **workflow.global_resources}
-else:
-    if workflow.global_resources.get('mem_gb', 0) > convert_size(mem.total, 3)[0]:
-        logger.info(f"WARNING: The specified ram ({workflow.global_resources['mem_gb']} gb) surpasses the local machine\'s RAM ({convert_size(mem.total, 3)[0]} gb)")
-
-    workflow.global_resources = {**{'mem_gb': np.clip(workflow.global_resources.get('mem_gb', 9999), 0, convert_size(mem.total, 3)[0])},
-                                 **workflow.global_resources}
 
 # record which assembly trackhubs are found on UCSC
 if config.get("create_trackhub"):
