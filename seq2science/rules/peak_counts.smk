@@ -84,11 +84,12 @@ rule combine_peaks:
     conda:
         "../envs/gimme.yaml"
     params:
-        2 * config["peak_windowsize"],
+        windowsize=2 * config["peak_windowsize"],
+        reps=lambda wildcards, input: input  # help resolve changes in input files
     shell:
         """
         combine_peaks -i {input.summitfiles} -g {input.sizes} \
-        --window {params} > {output} 2> {log}
+        --window {params.windowsize} > {output} 2> {log}
         """
 
 
@@ -108,9 +109,12 @@ rule bedtools_slop:
         expand("{benchmark_dir}/bedtools_slop/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     conda:
         "../envs/bedtools.yaml"
+    params:
+        slop=config["slop"],
+        reps=lambda wildcards, input: input  # help resolve changes in input files
     shell:
         """
-        bedtools slop -i {input.bedfile} -g {input.sizes} -b {config[slop]} | uniq > {output} 2> {log}
+        bedtools slop -i {input.bedfile} -g {input.sizes} -b {params.slop} | uniq > {output} 2> {log}
         """
 
 
@@ -301,7 +305,7 @@ rule onehot_peaks:
     benchmark:
         expand("{benchmark_dir}/onehot_peaks/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     params:
-        peak_count=lambda wildcards, input: len(input.narrowpeaks)
+        reps=lambda wildcards, input: input  # help resolve changes in input files
     shell:
         """
         awk '{{print $1":"$2"-"$3}}' {input.combinedpeaks} > {output.real} 2> {log}

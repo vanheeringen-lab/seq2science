@@ -121,6 +121,7 @@ if config["quantifier"] == "salmon":
                 else ["-1", input.reads[0], "-2", input.reads[1]]
             ),
             params=config["quantifier_flags"],
+            reps=lambda wildcards, input: input  # help resolve changes in input files
         threads: 12
         resources:
             mem_gb=8,

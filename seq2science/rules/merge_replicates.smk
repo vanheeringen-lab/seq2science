@@ -105,6 +105,8 @@ if "replicate" in samples:
         wildcard_constraints:
             replicate="|".join(true_treps) if len(true_treps) else "$a",
             fqext=f"_{config['fqext1']}|_{config['fqext2']}|", # nothing (SE), or fqext with an underscore (PE)
+        params:
+            reps=lambda wildcards, input: input  # help resolve changes in input files
         log:
             expand("{log_dir}/merge_replicates/{{replicate}}{{fqext}}.log", **config),
         benchmark:

@@ -658,6 +658,8 @@ rule trackhub:
         expand("{log_dir}/trackhub/trackhub.log", **config),
     benchmark:
         expand("{benchmark_dir}/trackhub/trackhub.benchmark.txt", **config)[0]
+    params:
+        samples.__str__  # helps resolve changed params if e.g. descriptive names change
     run:
         import sys
         import trackhub
