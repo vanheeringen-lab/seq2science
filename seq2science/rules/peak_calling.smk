@@ -306,7 +306,11 @@ if "condition" in samples:
                     touch {output.temp}
                 else
                     idr --samples {input} {params.rank} --output-file {output.temp} > {log} 2>&1
-                    awk 'IFS="\t",OFS="\t" {{print $1, $2, $3, $4, 0}}' {output.temp} > {output.true} 2>> {log}
+                    if [ "{wildcards.ftype}" == "narrowPeak" ]; then
+                        awk 'IFS="\t",OFS="\t" {{$10=int(($2 + $3) / 2)}}' {output.temp} > {output.true} 2>> {log}
+                    else
+                        cp {output.temp} {output.true}
+                    fi
                 fi
                 """
 
