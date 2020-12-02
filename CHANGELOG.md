@@ -14,6 +14,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Fixed
 
+- bug in chip/atac trackhub generation where peaks and bigwigs used the same name, resulting in collisions and a trackhub that does not want to load 
 - (literal) genome edge-case where taking the slop of peaks results in identical peaks. One of the duplicates is removed.
 
 ## [0.3.2] - 2020-11-26
