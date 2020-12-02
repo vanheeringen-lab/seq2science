@@ -287,7 +287,8 @@ if "condition" in samples:
             input:
                 get_idr_replicates,
             output:
-                expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{condition}}_peaks.{{ftype}}", **config),
+                true=expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{condition}}_peaks.{{ftype}}", **config),
+                temp=temp(expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{condition}}_peaks.tmp.{{ftype}}", **config)),
             message: explain_rule("idr")
             log:
                 expand("{log_dir}/idr/{{assembly}}-{{condition}}-{{peak_caller}}-{{ftype}}.log", **config),
@@ -301,9 +302,11 @@ if "condition" in samples:
             shell:
                 """
                 if [ "{params.nr_reps}" == "1" ]; then
-                    cp {input} {output}
+                    cp {input} {output.true}
+                    touch {output.temp}
                 else
-                    idr --samples {input} {params.rank} --output-file {output} > {log} 2>&1
+                    idr --samples {input} {params.rank} --output-file {output.temp} > {log} 2>&1
+                    awk 'IFS="\t",OFS="\t" {{print $1, $2, $3, $4, 0}}' {output.temp} > {output.true} 2>> {log}
                 fi
                 """
 
