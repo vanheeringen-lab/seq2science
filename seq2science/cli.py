@@ -324,10 +324,15 @@ def _run(args, base_dir, workflows_dir, config_path):
     if len(targets):
         # remove the targets
         for f in targets:
-            if os.path.exists(f):
-                shutil.rmtree(f)
-        targets += ["seq2science"]
+            # skip genome assemblies
+            if not f.endswith((".fa", ".fa.sizes", ".gtf.gz", ".bed.gz")):
+                if os.path.exists(f):
+                    if os.path.isdir(f):
+                        shutil.rmtree(f)
+                    else:
+                        os.unlink(f)
 
+        targets += ["seq2science"]
         parsed_args["forcerun"] = targets
         parsed_args["targets"] = targets
         parsed_args["forcetargets"] = True

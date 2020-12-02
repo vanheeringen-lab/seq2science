@@ -11,7 +11,7 @@ rule get_genome:
     Also download a blacklist if it exists.
     """
     output:
-        ancient(expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa", **config)),
+        expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa", **config),
     log:
         expand("{log_dir}/get_genome/{{raw_assembly}}.genome.log", **config),
     benchmark:
