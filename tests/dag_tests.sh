@@ -154,9 +154,9 @@ if [ $1 = "alignment" ]; then
   assert_rulecount $1 merge_replicates 0
   seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={technical_replicates:keep,samples:tests/alignment/replicates.tsv} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 merge_replicates 0
-  assert_rulecount $1 bwa_mem 2
+  assert_rulecount $1 bwa_mem2 2
   seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={technical_replicates:merge,samples:tests/alignment/replicates.tsv} | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 bwa_mem 1
+  assert_rulecount $1 bwa_mem2 1
   assert_rulecount $1 fastp_PE 2
 
   printf "\nmultiple replicates - trackhubs\n"
@@ -170,11 +170,11 @@ if [ $1 = "alignment" ]; then
   printf "\nmultiple assemblies and replicates\n"
   seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={technical_replicates:keep,samples:tests/alignment/complex_samples.tsv} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bwa_mem2_index 2
-  assert_rulecount $1 bwa_mem 4
+  assert_rulecount $1 bwa_mem2 4
 
   seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={technical_replicates:merge,samples:tests/alignment/complex_samples.tsv} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bwa_mem2_index 2
-  assert_rulecount $1 bwa_mem 2
+  assert_rulecount $1 bwa_mem2 2
 
   printf "\nmultiple assemblies and replicates - trackhub\n"
   seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={technical_replicates:merge,create_trackhub:True,samples:tests/alignment/complex_samples.tsv} | tee tests/local_test_results/${1}_dag
@@ -314,7 +314,7 @@ if [ $1 = "scatac-seq" ]; then
   assert_rulecount $1 merge_replicates 0
   seq2science run scatac-seq -n --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/scatac_seq/replicates.tsv,technical_replicates:keep} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 merge_replicates 0
-  assert_rulecount $1 bwa_mem 2
+  assert_rulecount $1 bwa_mem2 2
   seq2science run scatac-seq -n --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/scatac_seq/replicates.tsv,technical_replicates:merge} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 merge_replicates 2
   assert_rulecount $1 bwa_mem2 1
