@@ -19,13 +19,13 @@ properties:
       kallistobus:
         properties:
           ref:
-            default: '--lamanno'
+            default: ''
           count:
-            default: '-x 0,8,16:0,0,8:1,0,0 --verbose --lamanno'
+            default: ''
     default:
       kallistobus:
-        ref: '--lamanno'
-        count: '-x 0,8,16:0,0,8:1,0,0 --verbose --lamanno'
+        ref: ''
+        count: ''
 
   barcodefile:
     type: string
