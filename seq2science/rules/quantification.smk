@@ -199,7 +199,7 @@ elif config["quantifier"] == "kallistobus":
                                                                                                         
         priority: 1
         conda:
-            "../envs/kallistobus.yaml"
+            "../envs/fastq-pair.yaml"
         params:
             clean_dir=config.get("fastq_clean_dir")
         shell:
