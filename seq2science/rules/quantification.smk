@@ -166,33 +166,35 @@ elif config["quantifier"] == "kallistobus":
             {params.options} > {log} 2>&1
             """
 
-    def get_kallistobus_reads(wildcards):
-        reads = []
-        sample = wildcards.sample
+    def get_fastq_pair_reads(wildcards):
+        reads = dict()
         assert sampledict[sample]["layout"] == "PAIRED"
         read_id = get_bustools_rid(config.get("count"))
         #Determine mate for trimming
         if read_id == 0:
-            reads += expand("{fastq_clean_dir}/{{sample}}_clean_{fqext1}.{fqsuffix}.paired.fq", **config)
-            reads += expand("{fastq_clean_dir}/{{sample}}_clean_{fqext2}.{fqsuffix}.paired.fq", **config)
+            reads["r1"] = expand("{trimmed_dir}/{{sample}}_{fqext1}_trimmed.{fqsuffix}.gz", **config)
+            reads["r2"] = expand("{fastq_dir}/{{sample}}_{fqext2}.{fqsuffix}.gz", **config)
         elif read_id == 1:
-            reads += expand("{fastq_clean_dir}/{{sample}}_clean_{fqext1}.{fqsuffix}.paired.fq", **config)
-            reads += expand("{fastq_clean_dir}/{{sample}}_clean_{fqext2}.{fqsuffix}.paired.fq", **config)
-        else:    
+            reads["r1"] = expand("{fastq_dir}/{{sample}}_{fqext1}.{fqsuffix}.gz", **config)
+            reads["r2"] = expand("{trimmed_dir}/{{sample}}_{fqext2}_trimmed.{fqsuffix}.gz", **config)
+        else:
             raise NotImplementedError
-
         return reads
         
-    rule fastq_pair:
+    rule fastq_pair:    
         """
         Example
         """
         input:
-            r1=expand("{fastq_dir}/{{sample}}_{fqext1}.{fqsuffix}.gz", **config),
-            r2=expand("{trimmed_dir}/{{sample}}_{fqext2}_trimmed.{fqsuffix}.gz", **config),
+            unpack(get_fastq_pair_reads)
         output:
             r1=expand("{fastq_clean_dir}/{{sample}}_clean_{fqext1}.{fqsuffix}.paired.fq", **config),
             r2=expand("{fastq_clean_dir}/{{sample}}_clean_{fqext2}.{fqsuffix}.paired.fq", **config),
+            intermediates1=temp(expand("{fastq_clean_dir}/{{sample}}_clean_{fqexts}.{fqsuffix}", fqexts=["R1", "R2"], **config)),
+            intermediates2=temp(expand("{fastq_clean_dir}/{{sample}}_clean_{fqexts}.{fqsuffix}{singles}.fq", fqexts=["R1", "R2"], **{**config,
+                                                                                                                            **{"singles": [".single"]}}))
+
+                                                                                                        
         priority: 1
         conda:
             "../envs/kallistobus.yaml"
@@ -200,13 +202,9 @@ elif config["quantifier"] == "kallistobus":
             clean_dir=config.get("fastq_clean_dir")
         shell:
             """
-            gunzip -c {input[0]} > {params.clean_dir}/{wildcards.sample}_clean_R1.fastq 
-            gunzip -c {input[1]} > {params.clean_dir}/{wildcards.sample}_clean_R2.fastq
-            fastq_pair -t 800003  {params.clean_dir}/{wildcards.sample}_clean_R1.fastq {params.clean_dir}/{wildcards.sample}_clean_R2.fastq
-            rm {params.clean_dir}/{wildcards.sample}_clean_R1.fastq
-            rm {params.clean_dir}/{wildcards.sample}_clean_R2.fastq
-            rm {params.clean_dir}/{wildcards.sample}_clean_R1.fastq.single.fq
-            rm {params.clean_dir}/{wildcards.sample}_clean_R2.fastq.single.fq
+            gunzip -c {input.r1} > {params.clean_dir}/{wildcards.sample}_clean_R1.fastq 
+            gunzip -c {input.r2} > {params.clean_dir}/{wildcards.sample}_clean_R2.fastq
+            fastq_pair -t 800003 {params.clean_dir}/{wildcards.sample}_clean_R1.fastq {params.clean_dir}/{wildcards.sample}_clean_R2.fastq
             """
 
     rule kallistobus_count:
@@ -216,7 +214,8 @@ elif config["quantifier"] == "kallistobus":
         input:
              barcodefile=config["barcodefile"],
              basedir=rules.kallistobus_ref.output,
-             reads=get_kallistobus_reads,
+             r1=rules.fastq_pair.output.r1,
+             r2=rules.fastq_pair.output.r2
         output:
             dir=directory(expand("{result_dir}/{quantifier}/{{assembly}}-{{sample}}", **config)),
         log:
@@ -237,7 +236,7 @@ elif config["quantifier"] == "kallistobus":
             -i {params.basename}.idx -w {input.barcodefile} \
             -t {threads} -g {params.basename}_t2g.txt \
             -o {output} -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
-            {params.options} {input.reads} > {log} 2>&1
+            {params.options} {input.r1} {input.r2} > {log} 2>&1
             """
 
             
