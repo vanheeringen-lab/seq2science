@@ -190,9 +190,11 @@ elif config["quantifier"] == "kallistobus":
         output:
             r1=expand("{fastq_clean_dir}/{{sample}}_clean_{fqext1}.{fqsuffix}.paired.fq", **config),
             r2=expand("{fastq_clean_dir}/{{sample}}_clean_{fqext2}.{fqsuffix}.paired.fq", **config),
-            intermediates1=temp(expand("{fastq_clean_dir}/{{sample}}_clean_{fqexts}.{fqsuffix}", fqexts=["R1", "R2"], **config)),
-            intermediates2=temp(expand("{fastq_clean_dir}/{{sample}}_clean_{fqexts}.{fqsuffix}{singles}.fq", fqexts=["R1", "R2"], **{**config,
-                                                                                                                            **{"singles": [".single"]}}))
+            intermediates1=temp(expand("{fastq_clean_dir}/{{sample}}_clean_{fqexts}.{fqsuffix}", **{**config,
+                                                                                                 **{"fqexts": ["R1","R2"]}})),             
+            intermediates2=temp(expand("{fastq_clean_dir}/{{sample}}_clean_{fqexts}.{fqsuffix}{singles}.fq", **{**config,
+                                                                                                                **{"singles": [".single"]},
+                                                                                                                **{"fqexts": ["R1","R2"]}}))
 
                                                                                                         
         priority: 1
