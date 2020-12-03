@@ -8,6 +8,10 @@ properties:
     description: directory where to find the workflow rules
     default: fastq_cleaned
     type: string
+  # fastq-pair
+  fastq-pair:
+      description: fastq synchronization
+      default: '-t 1200003 -p'
   # quantifier
   quantifier:
     description: which quantifier to use

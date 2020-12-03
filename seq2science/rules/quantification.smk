@@ -194,19 +194,18 @@ elif config["quantifier"] == "kallistobus":
                                                                                                  **{"fqexts": ["R1","R2"]}})),             
             intermediates2=temp(expand("{fastq_clean_dir}/{{sample}}_clean_{fqexts}.{fqsuffix}{singles}.fq", **{**config,
                                                                                                                 **{"singles": [".single"]},
-                                                                                                                **{"fqexts": ["R1","R2"]}}))
-
-                                                                                                        
+                                                                                                                **{"fqexts": ["R1","R2"]}}))                                                                               
         priority: 1
         conda:
             "../envs/fastq-pair.yaml"
         params:
-            clean_dir=config.get("fastq_clean_dir")
+            clean_dir=config.get("fastq_clean_dir"),
+            options=config.get("fastq-pair")
         shell:
             """
             gunzip -c {input.r1} > {params.clean_dir}/{wildcards.sample}_clean_R1.fastq 
             gunzip -c {input.r2} > {params.clean_dir}/{wildcards.sample}_clean_R2.fastq
-            fastq_pair -t 800003 {params.clean_dir}/{wildcards.sample}_clean_R1.fastq {params.clean_dir}/{wildcards.sample}_clean_R2.fastq
+            fastq_pair {params.options} {params.clean_dir}/{wildcards.sample}_clean_R1.fastq {params.clean_dir}/{wildcards.sample}_clean_R2.fastq
             """
 
     rule kallistobus_count:
