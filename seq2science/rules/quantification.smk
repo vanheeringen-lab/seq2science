@@ -172,7 +172,7 @@ elif config["quantifier"] == "kallistobus":
         based on Kallisto bustools settings.
         """
         reads = dict()
-        assert sampledict[sample]["layout"] == "PAIRED"
+        assert sampledict[sample]["layout"] == "Seq2science does not support scRNA-seq samples that are single-ended"
         read_id = get_bustools_rid(config.get("count"))
         #Determine mate for trimming
         if read_id == 0:
