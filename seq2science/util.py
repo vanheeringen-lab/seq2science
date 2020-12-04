@@ -238,6 +238,13 @@ def url_is_alive(url):
 
   
 def get_bustools_rid(params):
+    """
+    Extract the position of the fastq containig reads from the bustools -x argument.
+    The read_id is the first pos of the last triplet in the bc:umi:read string or hard-coded
+    for short-hand syntax.
+    In: -x 10xv3 -> read_id=1 
+    In: -x 0,0,16:0,16,26:1,0,0 -> read_id=1
+    """
     kb_tech_dict = {'10xv2': 1, '10xv3': 1, 'celseq': 1, 'celseq2': 1,
                     'dropseq': 1, 'scrubseq': 1}
     #Check for occurence of short-hand tech
