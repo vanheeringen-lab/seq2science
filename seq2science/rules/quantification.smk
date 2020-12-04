@@ -198,12 +198,12 @@ elif config["quantifier"] == "kallistobus":
             "../envs/fastq-pair.yaml"
         params:
             clean_dir=config.get("fastq_clean_dir"),
-            options=config.get("fastq-pair")
+            options=config.get("fastq-pair"),
         shell:
             """
-            gunzip -c {input.r1} > {params.clean_dir}/{wildcards.sample}_clean_R1.fastq 
-            gunzip -c {input.r2} > {params.clean_dir}/{wildcards.sample}_clean_R2.fastq
-            fastq_pair {params.options} {params.clean_dir}/{wildcards.sample}_clean_R1.fastq {params.clean_dir}/{wildcards.sample}_clean_R2.fastq
+            gunzip -c {input.r1} > {output.intermediates1[0]} 
+            gunzip -c {input.r2} > {output.intermediates1[1]}
+            fastq_pair {params.options} {output.intermediates1}
             """
 
     rule kallistobus_count:
