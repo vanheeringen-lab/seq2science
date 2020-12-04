@@ -21,11 +21,11 @@ properties:
           ref:
             default: ''
           count:
-            default: ''
+            default: '-x 10XV3 --verbose --h5ad --workflow lamanno'
     default:
       kallistobus:
         ref: ''
-        count: ''
+        count: '-x 10XV3 --verbose --h5ad --workflow lamanno'
 
   barcodefile:
     type: string
