@@ -11,7 +11,7 @@ properties:
   # fastq-pair
   fastq-pair:
       description: fastq synchronization
-      default: '-t 1200003 -p'
+      default: '-p'
   # quantifier
   quantifier:
     description: which quantifier to use

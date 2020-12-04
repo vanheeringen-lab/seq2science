@@ -203,7 +203,7 @@ elif config["quantifier"] == "kallistobus":
             "../envs/fastq-pair.yaml"
         params:
             clean_dir=config.get("fastq_clean_dir"),
-            options=config.get("fastq_pair")
+            options=lambda wildcards, input: config.get("fastq_pair", "") if "-t" in config.get("fastq_pair", "") else config.get("fastq_pair", "") + " " +  "-t 100003"
         shell:
             """
             gunzip -c {input.r1} > {output.intermediates1[0]}
