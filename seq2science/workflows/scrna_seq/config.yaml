@@ -17,12 +17,12 @@ technical_replicates: merge
 quantifier:
   kallistobus:
     ## Quantification example ##
-    # count: '-x 0,8,16:0,0,8:1,0,0 --h5ad --verbose'
-    # count: '-x 10XV3 --h5ad --verbose'
+    #count: '-x 0,8,16:0,0,8:1,0,0 --h5ad --verbose'
+    #count: '-x 10XV3 --h5ad --verbose'
 
     ## Velocity example ##
-    # ref: '--workflow lamanno'
-    # count: '-x 0,8,16:0,0,8:1,0,0 --h5ad --verbose --workflow lamanno'
-    # count: '-x 10XV3 --verbose --h5ad --workflow lamanno'
+    #ref: '--workflow lamanno'
+    #count: '-x 0,8,16:0,0,8:1,0,0 --h5ad --verbose --workflow lamanno'
+    count: '-x 10XV3 --verbose --h5ad --workflow lamanno'
 
 barcodefile: "barcodes.txt"
