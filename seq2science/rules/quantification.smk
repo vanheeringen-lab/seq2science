@@ -183,13 +183,14 @@ elif config["quantifier"] == "kallistobus":
         
     rule fastq_pair:    
         """
-        Example
+        fastq_pair re-writes paired-end fastq files to ensure that each read has a mate and 
+        dsicards singleton reads. This step is required after scRNA trimming since we only trim the fastq 
+        containing reads and not the barcode fastq. 
         """
         input:
             unpack(get_fastq_pair_reads)
         output:
-            r1=expand("{fastq_clean_dir}/{{sample}}_clean_{fqext1}.{fqsuffix}.paired.fq", **config),
-            r2=expand("{fastq_clean_dir}/{{sample}}_clean_{fqext2}.{fqsuffix}.paired.fq", **config),
+            reads=expand("{fastq_clean_dir}/{{sample}}_clean_{fqext}.{fqsuffix}.paired.fq", **config),
             intermediates1=temp(expand("{fastq_clean_dir}/{{sample}}_clean_{fqext}.{fqsuffix}", **config)),             
             intermediates2=temp(expand("{fastq_clean_dir}/{{sample}}_clean_{fqext}.{fqsuffix}{singles}.fq", **{**config,
                                                                                                             **{"singles": [".single"]}}))                                                                               
@@ -213,8 +214,7 @@ elif config["quantifier"] == "kallistobus":
         input:
              barcodefile=config["barcodefile"],
              basedir=rules.kallistobus_ref.output,
-             r1=rules.fastq_pair.output.r1,
-             r2=rules.fastq_pair.output.r2
+             reads=rules.fastq_pair.output.reads
         output:
             dir=directory(expand("{result_dir}/{quantifier}/{{assembly}}-{{sample}}", **config)),
         log:
@@ -235,7 +235,7 @@ elif config["quantifier"] == "kallistobus":
             -i {params.basename}.idx -w {input.barcodefile} \
             -t {threads} -g {params.basename}_t2g.txt \
             -o {output} -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
-            {params.options} {input.r1} {input.r2} > {log} 2>&1
+            {params.options} {input.reads} > {log} 2>&1
             """
 
             
