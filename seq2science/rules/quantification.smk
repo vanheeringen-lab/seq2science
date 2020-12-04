@@ -167,6 +167,10 @@ elif config["quantifier"] == "kallistobus":
             """
 
     def get_fastq_pair_reads(wildcards):
+        """
+        Extracts the correct combination of R1/R2 (trimmed and barcodes) for fastq_pair 
+        based on Kallisto bustools settings.
+        """
         reads = dict()
         assert sampledict[sample]["layout"] == "PAIRED"
         read_id = get_bustools_rid(config.get("count"))
