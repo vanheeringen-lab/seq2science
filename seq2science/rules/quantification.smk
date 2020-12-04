@@ -203,12 +203,20 @@ elif config["quantifier"] == "kallistobus":
             "../envs/fastq-pair.yaml"
         params:
             clean_dir=config.get("fastq_clean_dir"),
-            options=lambda wildcards, input: config.get("fastq_pair", "") if "-t" in config.get("fastq_pair", "") else config.get("fastq_pair", "") + " " +  "-t 100003"
+            options=config.get("fastq-pair",""),
+            tused=lambda wildcards, input: "true" if "-t" in config.get("fastq-pair", "") else "false"
         shell:
             """
             gunzip -c {input.r1} > {output.intermediates1[0]}
             gunzip -c {input.r2} > {output.intermediates1[1]}
-            fastq_pair {params.options} {output.reads}
+            if [ {params.tused} == true ]
+            then
+              opts="{params.options}"
+            else
+              opts="-p -t "$(wc -l {input.r1} | grep -Po '^\d+' | awk '{{print int($1/4)}}')
+            fi
+            fastq_pair $opts {output.intermediates1} 
+
             """
 
     rule kallistobus_count:
