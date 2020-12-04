@@ -172,7 +172,7 @@ elif config["quantifier"] == "kallistobus":
         based on Kallisto bustools settings.
         """
         reads = dict()
-        assert sampledict[sample]["layout"] == "Seq2science does not support scRNA-seq samples that are single-ended"
+        assert sampledict[sample]["layout"] == "PAIRED", "Seq2science does not support scRNA-seq samples that are single-ended"
         read_id = get_bustools_rid(config.get("count"))
         #Determine mate for trimming
         if read_id == 0:
@@ -203,12 +203,12 @@ elif config["quantifier"] == "kallistobus":
             "../envs/fastq-pair.yaml"
         params:
             clean_dir=config.get("fastq_clean_dir"),
-            options=config.get("fastq-pair"),
+            options=config.get("fastq_pair")
         shell:
             """
-            gunzip -c {input.r1} > {output.intermediates1[0]} 
+            gunzip -c {input.r1} > {output.intermediates1[0]}
             gunzip -c {input.r2} > {output.intermediates1[1]}
-            fastq_pair {params.options} {output.intermediates1}
+            fastq_pair {params.options} {output.reads}
             """
 
     rule kallistobus_count:
