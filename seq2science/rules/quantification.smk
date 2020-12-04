@@ -202,7 +202,6 @@ elif config["quantifier"] == "kallistobus":
         conda:
             "../envs/fastq-pair.yaml"
         params:
-            clean_dir=config.get("fastq_clean_dir"),
             options=config.get("fastq-pair",""),
             tused=lambda wildcards, input: "true" if "-t" in config.get("fastq-pair", "") else "false"
         shell:
