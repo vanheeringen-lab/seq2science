@@ -283,6 +283,9 @@ if "condition" in samples:
             """
             Combine replicates based on the irreproducible discovery rate (IDR). Can only handle two replicates.
             For more than two replicates use fisher's method.
+
+            When combining narrowpeak files we make the q-score zero, and the peak summit in the middle. This is
+            necessary for later downstream processing, but are not the "true" values.
             """
             input:
                 get_idr_replicates,
@@ -307,7 +310,7 @@ if "condition" in samples:
                 else
                     idr --samples {input} {params.rank} --output-file {output.temp} > {log} 2>&1
                     if [ "{wildcards.ftype}" == "narrowPeak" ]; then
-                        awk 'IFS="\t",OFS="\t" {{$10=int(($2 + $3) / 2)}}' {output.temp} > {output.true} 2>> {log}
+                        awk 'IFS="\t",OFS="\t" {{$9=0; $10=int(($3 - $2) / 2); print}}' {output.temp} > {output.true} 2>> {log}
                     else
                         cp {output.temp} {output.true}
                     fi
