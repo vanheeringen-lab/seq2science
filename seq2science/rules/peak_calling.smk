@@ -155,7 +155,7 @@ rule macs2_callpeak:
         expand("{benchmark_dir}/macs2_callpeak/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
     message: explain_rule("macs2_callpeak")
     wildcard_constraints:
-        sample=any_given("sample", "replicate")
+        sample=any_given("sample", "technical_replicate")
     params:
         name=(
             lambda wildcards, input: wildcards.sample
