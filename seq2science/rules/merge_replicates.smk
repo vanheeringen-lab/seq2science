@@ -1,12 +1,12 @@
 # dataframe with all technical replicates collapsed
 cols = ["sample", "assembly"]
 subset = ["sample", "assembly"]
-if "replicate" in samples:
-    cols = ["replicate", "assembly"]
-    subset = ["replicate", "assembly"]
-if "condition" in samples:
-    cols.append("condition")
-    subset.append("condition")
+if "technical_replicate" in samples:
+    cols = ["technical_replicate", "assembly"]
+    subset = ["technical_replicate", "assembly"]
+if "biological_replicate" in samples:
+    cols.append("biological_replicate")
+    subset.append("biological_replicate")
 if "control" in samples:
     cols.append("control")
 if "colors" in samples:
@@ -27,17 +27,17 @@ if "control" in samples.columns:
 
 # dataframe with all replicates collapsed
 breps = treps
-if "condition" in treps:
-    breps = treps.reset_index(drop=True).drop_duplicates(subset=subset[1:]).set_index("condition")
+if "biological_replicate" in treps:
+    breps = treps.reset_index(drop=True).drop_duplicates(subset=subset[1:]).set_index("biological_replicate")
 
 
 # make a dict that returns the treps that belong to a brep
 treps_from_brep = dict()
-if "condition" in treps:
+if "biological_replicate" in treps:
     for brep, row in breps.iterrows():
         assembly = row["assembly"]
         treps_from_brep[(brep, assembly)] = list(
-            treps[(treps["assembly"] == assembly) & (treps["condition"] == brep)].index
+            treps[(treps["assembly"] == assembly) & (treps["biological_replicate"] == brep)].index
         )
 else:
     for brep, row in breps.iterrows():
@@ -55,24 +55,24 @@ def rep_to_descriptive(rep, brep=False):
     Return the descriptive name for a replicate.
     """
     if "descriptive_name" in samples:
-        if brep and "condition" in samples:
-            rep = samples[samples.condition == rep].condition[0]
+        if brep and "biological_replicate" in samples:
+            rep = samples[samples.biological_replicate == rep].biological_replicate[0]
         else:
-            if "replicate" in samples:
-                col = samples.replicate
+            if "technical_replicate" in samples:
+                col = samples.technical_replicate
             else:
                 col = samples.index
             rep = samples[col == rep].descriptive_name[0]
     return rep
 
 
-if "replicate" in samples:
+if "technical_replicate" in samples:
 
     def get_merge_replicates(wildcards):
         input_files = expand(
             [
                 f"{{trimmed_dir}}/{sample}{wildcards.fqext}_trimmed.{{fqsuffix}}.gz"
-                for sample in samples[samples["replicate"] == wildcards.replicate].index
+                for sample in samples[samples["technical_replicate"] == wildcards.replicate].index
             ],
             **config,
         )

@@ -140,7 +140,7 @@ def get_coverage_table_replicates(file_ext):
 
 rule coverage_table:
     """
-    Use gimmemotif's coverage_table to generate a cpunt table with the nr of reads
+    Use gimmemotif's coverage_table to generate a count table with the nr of reads
     under each peak per sample.
     """
     input:
