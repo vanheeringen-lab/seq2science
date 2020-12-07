@@ -45,7 +45,7 @@ After removing all the completely empty fastq files, use the remainder to fill y
 As an example, the samples.tsv could look something like this:
 
 ```
-sample	assembly	replicate
+sample	assembly	technical_replicate
 GSM1596256	hg38	H1ESC
 GSM1596257	hg38	H1ESC
 GSM1596258	hg38	H1ESC
@@ -76,8 +76,8 @@ This column is necessary for all workflows, not just the atac-seq workflow. If y
 #### Assembly column
 This column is necessary for all workflows, except the *downloading samples* workflow. Here you simply add the name of the assembly you want your samples aligned against and the workflow will download it for you. 
 
-#### replicate column
-Here you put to which technical replica each cell correspons. E.g. the plate from which the cells were sequenced. Per technical replica QC will be generated. For public data you can put all cells under the same technical replica name.
+#### technical_replicate column
+Here you put to which technical replica each cell corresponds. E.g. the plate from which the cells were sequenced. Per technical replica QC will be generated. For public data you can put all cells under the same technical replica name.
 
 ### 2.6.2 Filling out the config.yaml
 Every workflow has many configurable options, and can be set in the `config.yaml` file. In each `config.yaml` we highlighted a couple options that we think are relevant for that specific workflow, and set (we think) **reasonable default** values.
