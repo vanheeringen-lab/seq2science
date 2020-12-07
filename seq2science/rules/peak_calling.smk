@@ -284,8 +284,9 @@ if "condition" in samples:
             Combine replicates based on the irreproducible discovery rate (IDR). Can only handle two replicates.
             For more than two replicates use fisher's method.
 
-            When combining narrowpeak files we make the q-score zero, and the peak summit in the middle. This is
-            necessary for later downstream processing, but are not the "true" values.
+            When combining narrowpeak files with IDR, the q-score and summit are set to -1 (means not set). However some
+            downstream tools require these to be set. So we set the q-score to zero, and place the summit of the peak in
+            the middle of the peak.
             """
             input:
                 get_idr_replicates,
