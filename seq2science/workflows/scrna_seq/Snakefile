@@ -1,6 +1,6 @@
 # do onstart/onexit things
 sample_schemas = ['sample', 'assembly']
-config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific', 'scrna']
+config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific', 'scrna', 'trackhub']
 include: "../../rules/configuration.smk"
 
 

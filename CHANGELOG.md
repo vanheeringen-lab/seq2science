@@ -8,6 +8,13 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed scRNA trimming issue
+- Added fastq_pair
+- Updated schemas
+- Added kallistobus examples
+
 ## [0.3.1] - 2020-11-16
 
 ### Added
