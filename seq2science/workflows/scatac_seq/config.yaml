@@ -24,7 +24,7 @@ only_primary_align: true
 trimmer: fastp
 
 # which aligner to use
-aligner: bwa-mem
+aligner: bwa-mem2
 
 # snaptools options
 # min-mapq & keep-chrm set by config options above
