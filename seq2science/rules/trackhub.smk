@@ -692,3 +692,9 @@ rule trackhub:
                         if line.startswith("compositeTrack"):
                             line = "autoScale group\n" + line
                         tf.write(line)
+
+            # make sure it readable for everyone (not writable)
+            for dirpath, dirnames, filenames in os.walk(output[0]):
+                shutil.chmod(dirpath, 0o777)
+                for filename in filenames:
+                    shutil.chmod(os.path.join(dirpath, filename), 0o777)
