@@ -695,6 +695,6 @@ rule trackhub:
 
             # make sure it readable for everyone (not writable)
             for dirpath, dirnames, filenames in os.walk(output[0]):
-                shutil.chmod(dirpath, 0o777)
+                os.chmod(dirpath, 0o755)
                 for filename in filenames:
-                    shutil.chmod(os.path.join(dirpath, filename), 0o777)
+                    os.chmod(os.path.join(dirpath, filename), 0o755)
