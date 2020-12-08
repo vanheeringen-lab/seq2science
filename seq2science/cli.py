@@ -336,6 +336,9 @@ def _run(args, base_dir, workflows_dir, config_path):
         parsed_args["forcerun"] = targets
         parsed_args["targets"] = targets
         parsed_args["forcetargets"] = True
+        parsed_args["keep_logger"] = True
+
+    logger.stream_handler.setStream(sys.stdout)
     parsed_args["config"]["no_config_log"] = True
     # 2. actually run pipeline
     exit_code = snakemake.snakemake(**parsed_args)

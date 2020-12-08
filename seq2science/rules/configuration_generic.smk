@@ -380,6 +380,8 @@ if not config.get("no_config_log"):
 # now check where to download which sample
 ena_single_end = [run for values in sampledict.values() if (values["layout"] == "SINGLE") and values.get("ena_fastq_ftp") is not None for run in values["runs"]]
 ena_paired_end = [run for values in sampledict.values() if (values["layout"] == "PAIRED") and values.get("ena_fastq_ftp") is not None for run in values["runs"]]
+sra_single_end = [run for values in sampledict.values() if (values["layout"] == "SINGLE") for run in values.get("runs", []) if run not in ena_single_end]
+sra_paired_end = [run for values in sampledict.values() if (values["layout"] == "PAIRED") for run in values.get("runs", []) if run not in ena_paired_end]
 
 # get download link per run
 run2download = dict()
