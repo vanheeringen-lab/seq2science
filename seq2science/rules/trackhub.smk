@@ -692,3 +692,6 @@ rule trackhub:
                         if line.startswith("compositeTrack"):
                             line = "autoScale group\n" + line
                         tf.write(line)
+
+            # make the trackhub readable for everyone (not writable)
+            shell("chmod -R 755 {output[0]}")
