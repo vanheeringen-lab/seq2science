@@ -693,8 +693,5 @@ rule trackhub:
                             line = "autoScale group\n" + line
                         tf.write(line)
 
-            # make sure it readable for everyone (not writable)
-            for dirpath, dirnames, filenames in os.walk(output[0]):
-                os.chmod(dirpath, 0o755)
-                for filename in filenames:
-                    os.chmod(os.path.join(dirpath, filename), 0o755)
+            # make the trackhub readable for everyone (not writable)
+            shell("chmod -R 755 {output[0]}")
