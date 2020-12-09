@@ -27,13 +27,13 @@ if "control" in samples.columns:
 
 # dataframe with all replicates collapsed
 breps = treps
-if "condition" in treps:
+if "condition" in treps and config.get("biological_replicates", "keep") != "keep":
     breps = treps.reset_index(drop=True).drop_duplicates(subset=subset[1:]).set_index("condition")
 
 
 # make a dict that returns the treps that belong to a brep
 treps_from_brep = dict()
-if "condition" in treps:
+if "condition" in treps and config.get("biological_replicates", "keep") != "keep":
     for brep, row in breps.iterrows():
         assembly = row["assembly"]
         treps_from_brep[(brep, assembly)] = list(
