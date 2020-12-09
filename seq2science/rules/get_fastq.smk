@@ -257,8 +257,10 @@ rule gunzip_fastq:
     unzip a fastq file
     """
     input:
-        f"{{file}}.{config['fqsuffix'}.gz"
+        f"{{file}}.{config['fqsuffix']}.gz"
     output:
-        temp(f"{{file}}.{config['fqsuffix'}")
+        temp(f"{{file}}.{config['fqsuffix']}")
     shell:
+        """
         gunzip -c {input} > {output}
+        """
