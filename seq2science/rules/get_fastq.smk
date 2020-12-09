@@ -228,6 +228,7 @@ def get_runs_from_sample(wildcards):
 
 public_samples = [sample for sample, values in sampledict.items() if "runs" in values]
 
+
 rule runs2sample:
     """
     Concatenate a single run or multiple runs together into a fastq
@@ -249,3 +250,15 @@ rule runs2sample:
         for i in range(1, len(input)):
             inputfile = input[i]
             shell("cat {inputfile} >> {output}")
+
+
+rule gunzip_fastq:
+    """
+    unzip a fastq file
+    """
+    input:
+        f"{{file}}.{config['fqsuffix'}.gz"
+    output:
+        temp(f"{{file}}.{config['fqsuffix'}")
+    shell:
+        gunzip -c {input} > {output}

@@ -1,5 +1,6 @@
 from seq2science.util import get_bustools_rid
 
+
 if config["quantifier"] == "salmon":
 
     rule get_transcripts:
@@ -166,6 +167,7 @@ elif config["quantifier"] == "kallistobus":
             {params.options} > {log} 2>&1
             """
 
+
     def get_fastq_pair_reads(wildcards):
         """
         Extracts the correct combination of R1/R2 (trimmed and barcodes) for fastq_pair 
@@ -176,15 +178,16 @@ elif config["quantifier"] == "kallistobus":
         read_id = get_bustools_rid(config.get("count"))
         #Determine mate for trimming
         if read_id == 0:
-            reads["r1"] = expand("{trimmed_dir}/{{sample}}_{fqext1}_trimmed.{fqsuffix}.gz", **config)
-            reads["r2"] = expand("{fastq_dir}/{{sample}}_{fqext2}.{fqsuffix}.gz", **config)
+            reads["r1"] = expand("{trimmed_dir}/{{sample}}_{fqext1}_trimmed.{fqsuffix}", **config)
+            reads["r2"] = expand("{fastq_dir}/{{sample}}_{fqext2}.{fqsuffix}", **config)
         elif read_id == 1:
-            reads["r1"] = expand("{fastq_dir}/{{sample}}_{fqext1}.{fqsuffix}.gz", **config)
-            reads["r2"] = expand("{trimmed_dir}/{{sample}}_{fqext2}_trimmed.{fqsuffix}.gz", **config)
+            reads["r1"] = expand("{fastq_dir}/{{sample}}_{fqext1}.{fqsuffix}", **config)
+            reads["r2"] = expand("{trimmed_dir}/{{sample}}_{fqext2}_trimmed.{fqsuffix}", **config)
         else:
             raise NotImplementedError
         return reads
-        
+
+
     rule fastq_pair:    
         """
         fastq_pair re-writes paired-end fastq files to ensure that each read has a mate and 
@@ -194,29 +197,29 @@ elif config["quantifier"] == "kallistobus":
         input:
             unpack(get_fastq_pair_reads)
         output:
-            reads=expand("{fastq_clean_dir}/{{sample}}_clean_{fqext}.{fqsuffix}.paired.fq", **config),
-            intermediates1=temp(expand("{fastq_clean_dir}/{{sample}}_clean_{fqext}.{fqsuffix}", **config)),             
-            intermediates2=temp(expand("{fastq_clean_dir}/{{sample}}_clean_{fqext}.{fqsuffix}{singles}.fq", **{**config,
-                                                                                                            **{"singles": [".single"]}}))                                                                               
+            reads_paired=expand("{fastq_clean_dir}/{{sample}}_clean_{fqext}.{fqsuffix}.paired.fq", **config),
+            reads_single=temp(expand("{fastq_clean_dir}/{{sample}}_clean_{fqext}.{fqsuffix}.single.fq", **config)),
         priority: 1
         conda:
             "../envs/fastq-pair.yaml"
         params:
             options=config.get("fastq-pair",""),
             tused=lambda wildcards, input: "true" if "-t" in config.get("fastq-pair", "") else "false"
+        log:
+            expand("{log_dir}/fastq_pair/{{sample}}.log", **config),
+        benchmark:
+            expand("{benchmark_dir}/fastq_pair/{{sample}}.benchmark.txt", **config)[0]
         shell:
             """
-            gunzip -c {input.r1} > {output.intermediates1[0]}
-            gunzip -c {input.r2} > {output.intermediates1[1]}
             if [ {params.tused} == true ]
             then
               opts="{params.options}"
             else
               opts="-p -t "$(wc -l {input.r1} | grep -Po '^\d+' | awk '{{print int($1/4)}}')
             fi
-            fastq_pair $opts {output.intermediates1} 
-
+            fastq_pair $opts {output.intermediates1} > {log}
             """
+
 
     rule kallistobus_count:
         """
@@ -225,7 +228,7 @@ elif config["quantifier"] == "kallistobus":
         input:
              barcodefile=config["barcodefile"],
              basedir=rules.kallistobus_ref.output,
-             reads=rules.fastq_pair.output.reads
+             reads=rules.fastq_pair.output.reads_paired
         output:
             dir=directory(expand("{result_dir}/{quantifier}/{{assembly}}-{{sample}}", **config)),
         log:
