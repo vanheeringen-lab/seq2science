@@ -5,12 +5,17 @@ import os
 import contextlib
 
 import genomepy
+from snakemake.logging import logger
 
 
 with open(snakemake.log[0], "w") as log:
     with contextlib.redirect_stdout(log), contextlib.redirect_stderr(log):
 
         provider = snakemake.params.providers[snakemake.wildcards.raw_assembly]["annotation"]
+        if provider not in ["ensembl", "ucsc", "ncbi"]:
+            logger.error("Seq2science database error. Please run 'seq2science --clean' and try again")
+            raise TerminatedException
+            
         p = genomepy.ProviderBase.create(provider)
 
         kwargs = dict()
