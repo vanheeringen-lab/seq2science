@@ -218,7 +218,7 @@ elif config["quantifier"] == "kallistobus":
             then
               opts="{params.options}"
             else
-              echo "\nsetting parameter t with the number of reads in the fastq\n"
+              echo "\nsetting parameter t with the number of reads in the fastq\n" >> {log}
               opts="-p -t "$(wc -l {input.r1} | grep -Po '^\d+' | awk '{{print int($1/4)}}')
             fi
             fastq_pair $opts {output.intermediates1} >> {log} 2>&1
@@ -232,7 +232,7 @@ elif config["quantifier"] == "kallistobus":
         input:
              barcodefile=config["barcodefile"],
              basedir=rules.kallistobus_ref.output,
-             reads=rules.fastq_pair.output.reads_paired
+             reads=rules.fastq_pair.output.reads
         output:
             dir=directory(expand("{result_dir}/{quantifier}/{{assembly}}-{{sample}}", **config)),
         log:
