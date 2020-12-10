@@ -212,8 +212,8 @@ elif config["quantifier"] == "kallistobus":
             tused=lambda wildcards, input: "true" if "-t" in config.get("fastq-pair", "") else "false"
         shell:
             """
-            gunzip -c {input.r1} > {output.intermediates1[0]} > {log} 2>&1
-            gunzip -c {input.r2} > {output.intermediates1[1]} >> {log} 2>&1
+            gunzip -c {input.r1} > {output.intermediates1[0]} 2> {log}
+            gunzip -c {input.r2} > {output.intermediates1[1]} 2>> {log}
             if [ {params.tused} == true ]
             then
               opts="{params.options}"
