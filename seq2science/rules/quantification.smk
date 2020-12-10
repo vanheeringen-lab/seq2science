@@ -201,6 +201,10 @@ elif config["quantifier"] == "kallistobus":
             intermediates1=temp(expand("{fastq_clean_dir}/{{sample}}_clean_{fqext}.{fqsuffix}", **config)),
             intermediates2=temp(expand("{fastq_clean_dir}/{{sample}}_clean_{fqext}.{fqsuffix}.single.fq", **config))
         priority: 1
+        log:
+            expand("{log_dir}/fastq_pair/{{sample}}.log", **config),
+        benchmark:
+            expand("{benchmark_dir}/fastq_pair/{{sample}}.benchmark.txt", **config)[0]
         conda:
             "../envs/fastq-pair.yaml"
         params:
@@ -208,15 +212,16 @@ elif config["quantifier"] == "kallistobus":
             tused=lambda wildcards, input: "true" if "-t" in config.get("fastq-pair", "") else "false"
         shell:
             """
-            gunzip -c {input.r1} > {output.intermediates1[0]}
-            gunzip -c {input.r2} > {output.intermediates1[1]}
+            gunzip -c {input.r1} > {output.intermediates1[0]} > {log} 2>&1
+            gunzip -c {input.r2} > {output.intermediates1[1]} >> {log} 2>&1
             if [ {params.tused} == true ]
             then
               opts="{params.options}"
             else
+              echo "\nsetting parameter t with the number of reads in the fastq\n"
               opts="-p -t "$(wc -l {input.r1} | grep -Po '^\d+' | awk '{{print int($1/4)}}')
             fi
-            fastq_pair $opts {output.intermediates1}
+            fastq_pair $opts {output.intermediates1} >> {log} 2>&1
             """
 
 
