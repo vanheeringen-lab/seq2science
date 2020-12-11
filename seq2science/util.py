@@ -1,6 +1,8 @@
 """
 Utility functions for seq2science
 """
+
+import re
 import colorsys
 from math import ceil, floor
 import os
@@ -242,6 +244,30 @@ def url_is_alive(url):
             continue
     return False
 
+  
+def get_bustools_rid(params):
+    """
+    Extract the position of the fastq containig reads from the bustools -x argument.
+    The read_id is the first pos of the last triplet in the bc:umi:read string or hard-coded
+    for short-hand syntax.
+    In: -x 10xv3 -> read_id=1 
+    In: -x 0,0,16:0,16,26:1,0,0 -> read_id=1
+    """
+    kb_tech_dict = {'10xv2': 1, '10xv3': 1, 'celseq': 1, 'celseq2': 1,
+                    'dropseq': 1, 'scrubseq': 1}
+    #Check for occurence of short-hand tech
+    bus_regex = "[0-1],\d*,\d*:[0-1],\d*,\d*:[0-1],\d*,\d*"
+    bus_regex_short = "\\b(?i)(10XV2|10XV3|CELSEQ|CELSEQ2|DROPSEQ|SCRUBSEQ)\\b"
+
+    if re.search(bus_regex, params) != None:
+        bus = re.findall(bus_regex, params)[0]
+        read_id = int(bus.split(":")[2].split(",")[0])
+    elif re.search(bus_regex_short, params) != None:
+        tech = re.findall(bus_regex_short, params)[0]
+        read_id = kb_tech_dict[tech.lower()]
+    else:
+        raise Exception("Not a valid scrna-seq platform. Please check -x parameter")
+    return read_id
 
 def hex_to_rgb(value):
     """In: hex(#ffffff). Out: tuple(255, 255, 255)"""

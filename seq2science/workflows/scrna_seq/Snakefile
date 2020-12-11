@@ -1,0 +1,29 @@
+# do onstart/onexit things
+sample_schemas = ['sample', 'assembly']
+config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific', 'scrna', 'trackhub']
+include: "../../rules/configuration.smk"
+
+
+# load all the relevant rules
+include: f"{config['rule_dir']}/alignment.smk"
+include: f"{config['rule_dir']}/get_fastq.smk"
+include: f"{config['rule_dir']}/get_genome.smk"
+include: f"{config['rule_dir']}/merge_replicates.smk"
+include: f"{config['rule_dir']}/qc.smk"
+include: f"{config['rule_dir']}/trimming.smk"
+include: f"{config['rule_dir']}/quantification.smk"
+
+
+# set the quality_control functions
+quality_control = [get_trimming_qc]
+
+
+rule scRNA_seq_all:
+    """
+    Make a QC report and map
+    """
+    input:
+        expand([f"{{result_dir}}/{{quantifier}}/{treps.loc[trep, 'assembly']}-{trep}" for trep in treps.index] +
+               (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []),
+               **{**config,
+                  **{'assemblies': set(samples['assembly'])}})

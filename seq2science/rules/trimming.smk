@@ -1,5 +1,10 @@
+from seq2science.util import get_bustools_rid
+
 if config["trimmer"] == "trimgalore":
-    ruleorder: trimgalore_PE > trimgalore_SE
+    if "scrna_seq" == get_workflow():
+        ruleorder: trimgalore_SE > trimgalore_PE
+    else:
+        ruleorder: trimgalore_PE > trimgalore_SE
 
 
     rule trimgalore_SE:
@@ -78,7 +83,27 @@ if config["trimmer"] == "trimgalore":
 
 
 elif config["trimmer"] == "fastp":
-    ruleorder: fastp_PE > fastp_SE
+    if "scrna_seq" == get_workflow():
+        ruleorder: fastp_SE > fastp_PE
+    else:
+        ruleorder: fastp_PE > fastp_SE
+
+    if get_workflow() == "scrna_seq":
+        all_single_samples = [sample for sample in all_samples if sampledict[sample]["layout"] == "SINGLE"]
+        assert len(all_single_samples) == 0, "Seq2science does not support scRNA-seq samples that are single-ended"
+        #Check kallisto bustools read id
+        read_id = get_bustools_rid(config.get("count"))
+        if read_id == 0:
+            all_single_samples = [sample + f"_{config['fqext1']}" for sample in all_samples if sampledict[sample]["layout"] == "PAIRED"]
+        elif read_id == 1:
+            all_single_samples = [sample + f"_{config['fqext2']}" for sample in all_samples if sampledict[sample]["layout"] == "PAIRED"]
+        else:
+            raise NotImplementedError
+
+        all_paired_samples = []
+    else:
+        all_single_samples = [sample for sample in all_samples if sampledict[sample]["layout"] == "SINGLE"]
+        all_paired_samples = [sample for sample in all_samples if sampledict[sample]["layout"] == "PAIRED"]
 
 
     rule fastp_SE:
@@ -96,7 +121,7 @@ elif config["trimmer"] == "fastp":
         threads: 4
         message: explain_rule("fastp_SE")
         wildcard_constraints:
-            sample="|".join([sample if sampledict[sample]["layout"] == "SINGLE" else "$a" for sample in all_samples])
+            sample="|".join(all_single_samples) if len(all_single_samples) else "$a"
         log:
             expand("{log_dir}/fastp_SE/{{sample}}.log", **config),
         benchmark:
@@ -128,7 +153,7 @@ elif config["trimmer"] == "fastp":
             "../envs/fastp.yaml"
         threads: 4
         wildcard_constraints:
-            sample="|".join([sample if sampledict[sample]["layout"] == "PAIRED" else "$a" for sample in all_samples])
+            sample="|".join(all_paired_samples) if len(all_paired_samples) else "$a"
         message: explain_rule("fastp_PE")
         log:
             expand("{log_dir}/fastp_PE/{{sample}}.log", **config),

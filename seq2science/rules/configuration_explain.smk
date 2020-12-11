@@ -99,6 +99,7 @@ else:
         "decoy_transcripts": "Decoy transcript were generated in order improve improve Salmon indexing accuracy (using the script from https://github.com/COMBINE-lab/SalmonTools)",
         "salmon_quant": "Transcript abundances were quantified with Salmon v@salmon[salmon] (https://doi.org/10.1038/nmeth.4197) with options '{config[quantifier_flags]}'.",
         "htseq_count": "Read counting and summarizing to gene-level was performed on filtered bam using HTSeq-count v@gene_counts[htseq] (https://doi.org/10.1093/bioinformatics/btu638).",
+        "kallistobus-count": "Reads were aligned and transformed to bus format with kb-python v@kallistobus[kb-python], a python wrapper for kallisto (https://doi.org/10.1038/nbt.3519) and bustools (doi.org/10.1101/673285).",
         "featurecounts_rna": "Read counting and summarizing to gene-level was performed on filtered bam using featureCounts v@gene_counts[subread] (https://doi.org/10.1093/bioinformatics/btt656).",
         "dexseq": "Additionally, exon usage was counted using [DEXSeq] v@dexseq[bioconductor-dexseq] (https://doi.org/doi:10.18129/B9.bioc.DEXSeq) for (potential) downstream analysis.",
         "create_bins_SNAP_object": "We used snaptools v@snaptools[snaptools] (https://doi.org/10.1101/615179) to create a snapobject with options '{config[snaptools_opt]}' and added a binned genome matrix with options '{config[bin_opt]}'.",

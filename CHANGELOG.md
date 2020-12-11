@@ -37,6 +37,21 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Fixed
 
+- Fixed scRNA trimming issue
+- Added fastq_pair
+- Updated schemas
+- Added kallistobus examples
+
+## [0.3.1] - 2020-11-16
+
+### Added
+
+- Added support for multiple scrna-seq platforms (Kallistobus)
+- Fastp detects the correct mate for trimming based on BUS settings.
+- Support for Kallistobus short-hand syntax.
+
+### Fixed
+
 - make a trackhub index when the gene_name is not present in gtf file
 - make a trackhub index when the gene_name is not present in gene all entries
 - update Salmon & salmon rules
