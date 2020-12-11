@@ -74,9 +74,9 @@ This will ensure that kallisto bustools generates the required files for RNA vel
 
 The `-x` argument indicates the read and file positions of UMIs and barcodes in the supplied R1/R2 fastq files. Kallisto bustools should auto-detect the correct settings if you use the short-hand syntax for your technology of choice, such as `-x 10xv2`. Internally, this is translated to the following `bc:umi:set` triplet:<br/>
 
-`0,0,16:0,16,26:1,0,0`.
+`0,0,16:0,16,26:1,0,0`
 
-which can be used as an alternative representation to the short-hand syntax. 
+The ` bc:umi:set` format can be supplied as an alternative to the short-hand syntax. 
 
 For more information on the BUS format, consider the [Kallisto](https://pachterlab.github.io/kallisto/manual) manual.
 
