@@ -50,7 +50,7 @@ The descriptive_name column is used for the multiqc report. In the multiqc repor
 
 Every workflow has many configurable options, and can be set in the config.yaml file. In each config.yaml we highlighted a couple options that we think are relevant for that specific workflow, and set (we think) reasonable default values.
 
-After initializing your working directory and editing the `samples.tsv` file, you have to decide if you either want to perform quantification or velocity analyis. For velocity analysis, add the `--workflow lamanno` settings to the ref and count property as shown below. 
+After initializing your working directory and editing the `samples.tsv` file, you have to decide if you either want to perform quantification or velocity analyis. For velocity analysis, add the `--workflow lamanno` settings to the ref and count property as shown below. For quantification, you can use the sample example with the `--workflow lamanno` argument.  
 
 ```
 quantifier:
@@ -60,7 +60,7 @@ quantifier:
     count: '-x 10XV3 --h5ad --verbose --workflow lamanno'
 ```
 
-
+This will ensure that kallisto bustools generate the necessary file for RNA velocity estimation and produces count matrices for unspliced/spliced mRNA.  
 
 
 
