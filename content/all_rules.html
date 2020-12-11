@@ -125,6 +125,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#fastp-se">fastp_SE</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#fastp-qc-pe">fastp_qc_PE</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#fastp-qc-se">fastp_qc_SE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#fastq-pair">fastq_pair</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#fastqc">fastqc</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#featurecounts">featureCounts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id1">featurecounts</a></li>
@@ -144,6 +145,8 @@
 <li class="toctree-l3"><a class="reference internal" href="#idr">idr</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#infer-strandedness">infer_strandedness</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#insert-size-metrics">insert_size_metrics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#kallistobus-count">kallistobus_count</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#kallistobus-ref">kallistobus_ref</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#keep-mates">keep_mates</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#linked-txome">linked_txome</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#log-normalization">log_normalization</a></li>
@@ -332,7 +335,7 @@ done
 <h2>bedtools_slop<a class="headerlink" href="#bedtools-slop" title="Permalink to this headline">¶</a></h2>
 <p>After combine_peaks we end up with just a bed file of summits. We extend all peaks
 to a total width of 200, for a fair comparison between peaks.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>bedtools slop -i {input.bedfile} -g {input.sizes} -b {config[slop]} &gt; {output} 2&gt; {log}
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>bedtools slop -i {input.bedfile} -g {input.sizes} -b {config[slop]} | uniq &gt; {output} 2&gt; {log}
 </pre></div>
 </div>
 </div>
@@ -581,6 +584,24 @@ genePredToBed {output.gp} {output.bed}
 </pre></div>
 </div>
 </div>
+<div class="section" id="fastq-pair">
+<h2>fastq_pair<a class="headerlink" href="#fastq-pair" title="Permalink to this headline">¶</a></h2>
+<p>fastq_pair re-writes paired-end fastq files to ensure that each read has a mate and
+dsicards singleton reads. This step is required after scRNA trimming since we only trim the fastq
+containing reads and not the barcode fastq.</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>gunzip -c {input.r1} &gt; {output.intermediates1[0]} 2&gt; {log}
+gunzip -c {input.r2} &gt; {output.intermediates1[1]} 2&gt;&gt; {log}
+if [ {params.tused} == true ]
+then
+  opts=&quot;{params.options}&quot;
+else
+  echo &quot;\nsetting parameter t with the number of reads in the fastq\n&quot; &gt;&gt; {log}
+  opts=&quot;-p -t &quot;$(wc -l {input.r1} | grep -Po &#39;^\d+&#39; | awk &#39;{{print int($1/4)}}&#39;)
+fi
+fastq_pair $opts {output.intermediates1} &gt;&gt; {log} 2&gt;&amp;1
+</pre></div>
+</div>
+</div>
 <div class="section" id="fastqc">
 <h2>fastqc<a class="headerlink" href="#fastqc" title="Permalink to this headline">¶</a></h2>
 <p>Generate quality control report for fastq files.</p>
@@ -711,10 +732,19 @@ paste {output.tmp1} {output.tmp2} &gt; {output.out} 2&gt; {log}
 <h2>idr<a class="headerlink" href="#idr" title="Permalink to this headline">¶</a></h2>
 <p>Combine replicates based on the irreproducible discovery rate (IDR). Can only handle two replicates.
 For more than two replicates use fisher’s method.</p>
+<p>When combining narrowpeak files with IDR, the q-score and summit are set to -1 (means not set). However some
+downstream tools require these to be set. So we set the q-score to zero, and place the summit of the peak in
+the middle of the peak.</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>                if [ &quot;{params.nr_reps}&quot; == &quot;1&quot; ]; then
-cp {input} {output}
+cp {input} {output.true}
+touch {output.temp}
                 else
-idr --samples {input} {params.rank} --output-file {output} &gt; {log} 2&gt;&amp;1
+idr --samples {input} {params.rank} --output-file {output.temp} &gt; {log} 2&gt;&amp;1
+if [ &quot;{wildcards.ftype}&quot; == &quot;narrowPeak&quot; ]; then
+    awk &#39;IFS=&quot;\t&quot;,OFS=&quot;\t&quot; {{$9=0; $10=int(($3 - $2) / 2); print}}&#39; {output.temp} &gt; {output.true} 2&gt;&gt; {log}
+else
+    cp {output.temp} {output.true}
+fi
                 fi
 </pre></div>
 </div>
@@ -732,6 +762,29 @@ idr --samples {input} {params.rank} --output-file {output} &gt; {log} 2&gt;&amp;
 MultiQC in the report.</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>picard CollectInsertSizeMetrics INPUT={input} \
 OUTPUT={output.tsv} H={output.pdf} &gt; {log} 2&gt;&amp;1
+</pre></div>
+</div>
+</div>
+<div class="section" id="kallistobus-count">
+<h2>kallistobus_count<a class="headerlink" href="#kallistobus-count" title="Permalink to this headline">¶</a></h2>
+<p>Align reads against a transcriptome (index) with kallistobus and output a quantification file per sample.</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>kb count \
+-i {params.basename}.idx -w {input.barcodefile} \
+-t {threads} -g {params.basename}_t2g.txt \
+-o {output} -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
+{params.options} {input.reads} &gt; {log} 2&gt;&amp;1
+</pre></div>
+</div>
+</div>
+<div class="section" id="kallistobus-ref">
+<h2>kallistobus_ref<a class="headerlink" href="#kallistobus-ref" title="Permalink to this headline">¶</a></h2>
+<p>Make a genome index for kallistobus. This index is required for counting.</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>kb ref \
+{input.fa} {input.gtf} \
+-i {params.basename}.idx -g {params.basename}_t2g.txt -f1 {params.basename}_cdna.fa \
+-f2 {params.basename}_intron.fa \
+-c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
+{params.options} &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
 </div>
@@ -842,7 +895,8 @@ against either “chrM” or “MT”.</p>
 <div class="section" id="multibamsummary">
 <h2>multiBamSummary<a class="headerlink" href="#multibamsummary" title="Permalink to this headline">¶</a></h2>
 <p>Pre-compute a bam summary with deeptools.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>multiBamSummary bins --bamfiles {input.bams} -out {output} {params} -p {threads} &gt; {log} 2&gt;&amp;1
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>multiBamSummary bins --bamfiles {input.bams} -out {output} {params.names} \
+{params.params} -p {threads} &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
 </div>
@@ -904,7 +958,8 @@ bedToBigBed -type={params.type} -as={params.schema} {output.tmp} \
 <div class="section" id="plotcorrelation">
 <h2>plotCorrelation<a class="headerlink" href="#plotcorrelation" title="Permalink to this headline">¶</a></h2>
 <p>Calculate the correlation between bams with deeptools.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>plotCorrelation --corData {input} --outFileCorMatrix {output} -c spearman -p heatmap &gt; {log} 2&gt;&amp;1
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>plotCorrelation --corData {input} --plotFile {output} -c {wildcards.method} \
+-p heatmap --plotTitle {params.title} {params.params} &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
 </div>
@@ -1309,7 +1364,7 @@ mv $report {output.qc}
   <div role="contentinfo">
     <p>
         
-        &copy; Copyright Maarten van der Sande, Siebren Frölich, Jos Smits, &amp; Simon van Heeringen.
+        &copy; Copyright Maarten van der Sande, Siebren Frölich, Jos Smits, Rebecca Snabel, Tilman Schaefers, &amp; Simon van Heeringen.
 
     </p>
   </div>

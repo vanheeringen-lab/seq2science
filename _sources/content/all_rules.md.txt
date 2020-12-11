@@ -53,7 +53,7 @@ done
 After combine_peaks we end up with just a bed file of summits. We extend all peaks
 to a total width of 200, for a fair comparison between peaks.
 ```
-bedtools slop -i {input.bedfile} -g {input.sizes} -b {config[slop]} > {output} 2> {log}
+bedtools slop -i {input.bedfile} -g {input.sizes} -b {config[slop]} | uniq > {output} 2> {log}
 ```
 
 #### blind_clustering
@@ -274,6 +274,23 @@ Get quality scores for (technical) replicates
 fastp -w {threads} --in1 {input} -h {output.qc_html} -j {output.qc_json} > {log} 2>&1
 ```
 
+#### fastq_pair
+fastq_pair re-writes paired-end fastq files to ensure that each read has a mate and 
+dsicards singleton reads. This step is required after scRNA trimming since we only trim the fastq 
+containing reads and not the barcode fastq. 
+```
+gunzip -c {input.r1} > {output.intermediates1[0]} 2> {log}
+gunzip -c {input.r2} > {output.intermediates1[1]} 2>> {log}
+if [ {params.tused} == true ]
+then
+  opts="{params.options}"
+else
+  echo "\nsetting parameter t with the number of reads in the fastq\n" >> {log}
+  opts="-p -t "$(wc -l {input.r1} | grep -Po '^\d+' | awk '{{print int($1/4)}}')
+fi
+fastq_pair $opts {output.intermediates1} >> {log} 2>&1
+```
+
 #### fastqc
 Generate quality control report for fastq files.
 ```
@@ -392,11 +409,21 @@ htseq-count {input.bam} {input.gtf} -r pos -s {params.strandedness} {params.user
 #### idr
 Combine replicates based on the irreproducible discovery rate (IDR). Can only handle two replicates.
 For more than two replicates use fisher's method.
+
+When combining narrowpeak files with IDR, the q-score and summit are set to -1 (means not set). However some
+downstream tools require these to be set. So we set the q-score to zero, and place the summit of the peak in
+the middle of the peak.
 ```
                 if [ "{params.nr_reps}" == "1" ]; then
-cp {input} {output}
+cp {input} {output.true}
+touch {output.temp}
                 else
-idr --samples {input} {params.rank} --output-file {output} > {log} 2>&1
+idr --samples {input} {params.rank} --output-file {output.temp} > {log} 2>&1
+if [ "{wildcards.ftype}" == "narrowPeak" ]; then
+    awk 'IFS="\t",OFS="\t" {{$9=0; $10=int(($3 - $2) / 2); print}}' {output.temp} > {output.true} 2>> {log}
+else
+    cp {output.temp} {output.true}
+fi
                 fi
                 
 ```
@@ -413,6 +440,27 @@ MultiQC in the report.
 ```
 picard CollectInsertSizeMetrics INPUT={input} \
 OUTPUT={output.tsv} H={output.pdf} > {log} 2>&1
+```
+
+#### kallistobus_count
+Align reads against a transcriptome (index) with kallistobus and output a quantification file per sample.
+```
+kb count \
+-i {params.basename}.idx -w {input.barcodefile} \
+-t {threads} -g {params.basename}_t2g.txt \
+-o {output} -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
+{params.options} {input.reads} > {log} 2>&1
+```
+
+#### kallistobus_ref
+Make a genome index for kallistobus. This index is required for counting.
+```
+kb ref \
+{input.fa} {input.gtf} \
+-i {params.basename}.idx -g {params.basename}_t2g.txt -f1 {params.basename}_cdna.fa \
+-f2 {params.basename}_intron.fa \
+-c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
+{params.options} > {log} 2>&1
 ```
 
 #### keep_mates
@@ -517,7 +565,8 @@ mtnucratio {input.bam} {params.mitochondria}
 #### multiBamSummary
 Pre-compute a bam summary with deeptools.
 ```
-multiBamSummary bins --bamfiles {input.bams} -out {output} {params} -p {threads} > {log} 2>&1
+multiBamSummary bins --bamfiles {input.bams} -out {output} {params.names} \
+{params.params} -p {threads} > {log} 2>&1
 ```
 
 #### multiqc_filter_buttons
@@ -572,7 +621,8 @@ bedToBigBed -type={params.type} -as={params.schema} {output.tmp} \
 #### plotCorrelation
 Calculate the correlation between bams with deeptools.
 ```
-plotCorrelation --corData {input} --outFileCorMatrix {output} -c spearman -p heatmap > {log} 2>&1
+plotCorrelation --corData {input} --plotFile {output} -c {wildcards.method} \
+-p heatmap --plotTitle {params.title} {params.params} > {log} 2>&1
 ```
 
 #### plotFingerprint

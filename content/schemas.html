@@ -125,6 +125,8 @@
 <li class="toctree-l4"><a class="reference internal" href="#custom-genome-extension">custom_genome_extension</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#custom-annotation-extension">custom_annotation_extension</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#custom-assembly-suffix">custom_assembly_suffix</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#deeptools-plotcorrelation">deeptools_plotcorrelation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#deeptools-multibamsummary">deeptools_multibamsummary</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#alignment-workflow-specific">alignment workflow specific</a><ul>
@@ -154,6 +156,13 @@
 <li class="toctree-l3"><a class="reference internal" href="#single-cell-atac">single-cell ATAC</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#snaptools-opt">snaptools_opt</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#bin-opt">bin_opt</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#single-cell-rna">single-cell RNA</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#fastq-clean-dir">fastq_clean_dir</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fastq-pair">fastq-pair</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id1">quantifier</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#barcodefile">barcodefile</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#trackhub">trackhub</a><ul>
@@ -457,8 +466,8 @@
 <span class="c">                align:</span>
 <span class="c">                    default: -M</span>
 <span class="c">            default:</span>
-<span class="c">                index: -a bwtsw</span>
-<span class="c">                align: -M</span>
+<span class="c">                index:</span>
+<span class="c">                align:</span>
 <span class="c">        hisat2:</span>
 <span class="c">            properties:</span>
 <span class="c">                index:</span>
@@ -487,9 +496,9 @@
 <span class="c">                index: --limitGenomeGenerateRAM 37000000000 --genomeSAsparseD 1</span>
 <span class="c">                align:</span>
 <span class="c">    default:</span>
-<span class="c">        bwa-mem:</span>
-<span class="c">            index: -a bwtsw</span>
-<span class="c">            align: -M</span>
+<span class="c">        bwa-mem2:</span>
+<span class="c">            index:</span>
+<span class="c">            align:</span>
 </pre></div>
 </div>
 </div>
@@ -593,6 +602,24 @@
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">custom_assembly_suffix:</span>
 <span class="c">    description: What to append to the assembly name to indicate that custom data has been added to either genome or assembly.</span>
 <span class="c">    default: _custom</span>
+<span class="c">    type: string</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="deeptools-plotcorrelation">
+<h3>deeptools_plotcorrelation<a class="headerlink" href="#deeptools-plotcorrelation" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">deeptools_plotcorrelation:</span>
+<span class="c">    description: Deeptools plotCorrelation params</span>
+<span class="c">    default: --colorMap RdYlBu_r --plotNumbers</span>
+<span class="c">    type: string</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="deeptools-multibamsummary">
+<h3>deeptools_multibamsummary<a class="headerlink" href="#deeptools-multibamsummary" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">deeptools_multibamsummary:</span>
+<span class="c">    description: Deeptools multiBamSummary params</span>
+<span class="c">    default: --distanceBetweenBins 9000 --binSize 1000</span>
 <span class="c">    type: string</span>
 </pre></div>
 </div>
@@ -823,6 +850,51 @@
 </div>
 </div>
 </div>
+<div class="section" id="single-cell-rna">
+<h2>single-cell RNA<a class="headerlink" href="#single-cell-rna" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="fastq-clean-dir">
+<h3>fastq_clean_dir<a class="headerlink" href="#fastq-clean-dir" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">fastq_clean_dir:</span>
+<span class="c">    description: directory where to find the workflow rules</span>
+<span class="c">    default: fastq_cleaned</span>
+<span class="c">    type: string</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="fastq-pair">
+<h3>fastq-pair<a class="headerlink" href="#fastq-pair" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">fastq-pair:</span>
+<span class="c">    description: fastq synchronization</span>
+<span class="c">    default:</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id1">
+<h3>quantifier<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">quantifier:</span>
+<span class="c">    description: which quantifier to use</span>
+<span class="c">    properties:</span>
+<span class="c">        kallistobus:</span>
+<span class="c">            properties:</span>
+<span class="c">                ref:</span>
+<span class="c">                    default:</span>
+<span class="c">                count:</span>
+<span class="c">                    default: -x 10XV3 --verbose --h5ad --workflow lamanno</span>
+<span class="c">    default:</span>
+<span class="c">        kallistobus:</span>
+<span class="c">            ref:</span>
+<span class="c">            count: -x 10XV3 --verbose --h5ad --workflow lamanno</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="barcodefile">
+<h3>barcodefile<a class="headerlink" href="#barcodefile" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">barcodefile:</span>
+<span class="c">    type: string</span>
+</pre></div>
+</div>
+</div>
+</div>
 <div class="section" id="trackhub">
 <h2>trackhub<a class="headerlink" href="#trackhub" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="create-trackhub">
@@ -875,7 +947,7 @@
   <div role="contentinfo">
     <p>
         
-        &copy; Copyright Maarten van der Sande, Siebren Frölich, Jos Smits, &amp; Simon van Heeringen.
+        &copy; Copyright Maarten van der Sande, Siebren Frölich, Jos Smits, Rebecca Snabel, Tilman Schaefers, &amp; Simon van Heeringen.
 
     </p>
   </div>
