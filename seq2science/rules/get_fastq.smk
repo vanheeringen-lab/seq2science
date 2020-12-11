@@ -228,6 +228,7 @@ def get_runs_from_sample(wildcards):
 
 public_samples = [sample for sample, values in sampledict.items() if "runs" in values]
 
+
 rule runs2sample:
     """
     Concatenate a single run or multiple runs together into a fastq

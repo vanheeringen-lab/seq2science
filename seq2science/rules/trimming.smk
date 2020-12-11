@@ -168,4 +168,3 @@ elif config["trimmer"] == "fastp":
             --out1 {output.r1} --out2 {output.r2} -h {output.qc_html} -j {output.qc_json} \
             {params.config} > {log} 2>&1
             """
-
