@@ -21,7 +21,7 @@ technical_replicates: merge    # change to "keep" to not combine them
 trimmer: fastp
 
 # which aligner to use
-aligner: bwa-mem
+aligner: bwa-mem2
 
 # filtering after alignment
 remove_blacklist: True

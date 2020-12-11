@@ -88,8 +88,8 @@ properties:
           align:
             default: '-M'
         default:
-          index: '-a bwtsw'
-          align: '-M'
+          index: ''
+          align: ''
       hisat2:
         properties:
           index:
@@ -118,9 +118,9 @@ properties:
           index: '--limitGenomeGenerateRAM 37000000000 --genomeSAsparseD 1'
           align: ''
     default:
-      bwa-mem:
-        index: '-a bwtsw'
-        align: '-M'
+      bwa-mem2:
+        index: ''
+        align: ''
 
   # samtools index
   samtools_index:
@@ -185,4 +185,15 @@ properties:
   custom_assembly_suffix:
     description: What to append to the assembly name to indicate that custom data has been added to either genome or assembly.
     default: '_custom'
+    type: string
+
+  # deeptools qc plot
+  deeptools_plotcorrelation:
+    description: Deeptools plotCorrelation params
+    default: '--colorMap RdYlBu_r --plotNumbers'
+    type: string
+
+  deeptools_multibamsummary:
+    description: Deeptools multiBamSummary params
+    default: '--distanceBetweenBins 9000 --binSize 1000'
     type: string

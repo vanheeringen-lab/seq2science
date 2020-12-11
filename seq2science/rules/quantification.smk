@@ -1,3 +1,6 @@
+from seq2science.util import get_bustools_rid
+
+
 if config["quantifier"] == "salmon":
 
     rule get_transcripts:
@@ -133,6 +136,127 @@ if config["quantifier"] == "salmon":
             """
 
 
+elif config["quantifier"] == "kallistobus":
+
+    rule kallistobus_ref:
+        """
+        Make a genome index for kallistobus. This index is required for counting.
+        """
+        input:
+            fa=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+            gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
+        output:
+            directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/", **config)),
+        log:
+            expand("{log_dir}/kallistobus_index/{{assembly}}.log", **config),
+        benchmark:
+            expand("{benchmark_dir}/kallistobus_index/{{assembly}}.benchmark.txt", **config)[0]
+        priority: 1
+        conda:
+            "../envs/kallistobus.yaml"
+        params:
+            basename=lambda wildcards, output: f"{output[0]}{wildcards.assembly}",
+            options=config.get("ref")
+        shell:
+            """
+            kb ref \
+            {input.fa} {input.gtf} \
+            -i {params.basename}.idx -g {params.basename}_t2g.txt -f1 {params.basename}_cdna.fa \
+            -f2 {params.basename}_intron.fa \
+            -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
+            {params.options} > {log} 2>&1
+            """
+
+
+    def get_fastq_pair_reads(wildcards):
+        """
+        Extracts the correct combination of R1/R2 (trimmed and barcodes) for fastq_pair 
+        based on Kallisto bustools settings.
+        """
+        reads = dict()
+        assert sampledict[sample]["layout"] == "PAIRED", "Seq2science does not support scRNA-seq samples that are single-ended"
+        read_id = get_bustools_rid(config.get("count"))
+        #Determine mate for trimming
+        if read_id == 0:
+            reads["r1"] = expand("{trimmed_dir}/{{sample}}_{fqext1}_trimmed.{fqsuffix}.gz", **config)
+            reads["r2"] = expand("{fastq_dir}/{{sample}}_{fqext2}.{fqsuffix}.gz", **config)
+        elif read_id == 1:
+            reads["r1"] = expand("{fastq_dir}/{{sample}}_{fqext1}.{fqsuffix}.gz", **config)
+            reads["r2"] = expand("{trimmed_dir}/{{sample}}_{fqext2}_trimmed.{fqsuffix}.gz", **config)
+        else:
+            raise NotImplementedError
+        return reads
+
+
+    rule fastq_pair:    
+        """
+        fastq_pair re-writes paired-end fastq files to ensure that each read has a mate and 
+        dsicards singleton reads. This step is required after scRNA trimming since we only trim the fastq 
+        containing reads and not the barcode fastq. 
+        """
+        input:
+            unpack(get_fastq_pair_reads)
+        output:
+            reads=temp(expand("{fastq_clean_dir}/{{sample}}_clean_{fqext}.{fqsuffix}.paired.fq", **config)),
+            intermediates1=temp(expand("{fastq_clean_dir}/{{sample}}_clean_{fqext}.{fqsuffix}", **config)),
+            intermediates2=temp(expand("{fastq_clean_dir}/{{sample}}_clean_{fqext}.{fqsuffix}.single.fq", **config))
+        priority: 1
+        log:
+            expand("{log_dir}/fastq_pair/{{sample}}.log", **config),
+        benchmark:
+            expand("{benchmark_dir}/fastq_pair/{{sample}}.benchmark.txt", **config)[0]
+        conda:
+            "../envs/fastq-pair.yaml"
+        params:
+            options=config.get("fastq-pair",""),
+            tused=lambda wildcards, input: "true" if "-t" in config.get("fastq-pair", "") else "false"
+        shell:
+            """
+            gunzip -c {input.r1} > {output.intermediates1[0]} 2> {log}
+            gunzip -c {input.r2} > {output.intermediates1[1]} 2>> {log}
+            if [ {params.tused} == true ]
+            then
+              opts="{params.options}"
+            else
+              echo "\nsetting parameter t with the number of reads in the fastq\n" >> {log}
+              opts="-p -t "$(wc -l {input.r1} | grep -Po '^\d+' | awk '{{print int($1/4)}}')
+            fi
+            fastq_pair $opts {output.intermediates1} >> {log} 2>&1
+            """
+
+
+    rule kallistobus_count:
+        """
+        Align reads against a transcriptome (index) with kallistobus and output a quantification file per sample.
+        """
+        input:
+             barcodefile=config["barcodefile"],
+             basedir=rules.kallistobus_ref.output,
+             reads=rules.fastq_pair.output.reads
+        output:
+            dir=directory(expand("{result_dir}/{quantifier}/{{assembly}}-{{sample}}", **config)),
+        log:
+            expand("{log_dir}/kallistobus_count/{{assembly}}-{{sample}}.log", **config),
+        benchmark:
+            expand("{benchmark_dir}/kallistobus_count/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
+        priority: 1
+        conda:
+            "../envs/kallistobus.yaml"
+        threads: 8
+        message: explain_rule("kallistobus-count")
+        params:
+            basename=lambda wildcards, input: f"{input.basedir[0]}/{wildcards.assembly}",
+            options=config.get("count")
+        shell:
+            """
+            kb count \
+            -i {params.basename}.idx -w {input.barcodefile} \
+            -t {threads} -g {params.basename}_t2g.txt \
+            -o {output} -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
+            {params.options} {input.reads} > {log} 2>&1
+            """
+
+            
 elif config["quantifier"] == "htseq":
 
     rule htseq_count:
