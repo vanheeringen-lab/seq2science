@@ -52,7 +52,7 @@ Every workflow has many configurable options, and can be set in the config.yaml 
 
 After initializing your working directory and editing the `samples.tsv` file, you have to decide if you either want to perform quantification or velocity analysis. For velocity analysis, add the `--workflow lamanno` argument to the ref and count properties as shown below.
 
-## Quantification 
+##### Quantification 
 
 ```
 quantifier:
@@ -60,7 +60,7 @@ quantifier:
     count: '-x 10XV3 --h5ad --verbose'
 ```
 
-## RNA velocity 
+##### RNA velocity 
 ```
 quantifier:
   kallistobus:
@@ -70,7 +70,7 @@ quantifier:
 
 This will ensure that kallisto bustools generate the necessary files for RNA velocity estimation and produces count matrices for unspliced/spliced mRNA.  
 
-## BUS (Barcode/UMI/Set) format
+##### BUS (Barcode/UMI/Set) format
 
 The `-x` argument indicates the read and file positions of UMIs and barcodes in the supplied R1/R2 fastq files. Kallisto bustools should auto-detect the correct settings if you use the short-hand syntax for your platform of choice, such as `-x 10xv2`. Internally, this is translated to the following bc:umi:set triplet: 
 `0,0,16:0,16,26:1,0,0` which can be used as an alternative to the short-hand syntax. For more information on the BUS format, consider the [Kallisto](https://pachterlab.github.io/kallisto/manual) manual.
