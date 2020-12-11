@@ -77,10 +77,3 @@ The `-x` argument indicates the read and file positions of UMIs and barcodes in 
 `0,0,16:0,16,26:1,0,0`
 
 The ` bc:umi:set` format can be supplied as an alternative to the short-hand syntax. For more information on the BUS format, consider the [Kallisto](https://pachterlab.github.io/kallisto/manual) manual.
-
-
-
-
-
-
-
