@@ -23,7 +23,7 @@ The pipeline starts by trimming the reads with fastp!. fastp automatically detec
 **Note**: fastp currently runs in single-end mode even if you provide paired-end fastq files. This is due to the fact that reads and barcode sequences are stored in separate fastq files. After trimming, the fastq containing the reads, usually R2, may contains less reads then R1. Therefore, we perform an intermediate step by running fastq-pair to remove singleton reads before proceeding any further. 
 
 ## Quantification
-Quantication is performed by running the kb-python wrapper for kallisto bustools. Kallisto bustools relies on pseudo-alignement of scRNA reads against a reference transcriptome. The resulting count matrices can further processed with scRNA toolkits, such as Seurat or Scanpy. 
+Quantification is performed by running the kb-python wrapper for kallisto bustools. Kallisto bustools relies on pseudo-alignement of scRNA reads against a reference transcriptome. The resulting count matrices can further processed with scRNA toolkits, such as Seurat or Scanpy.  
 
 ### best practices
 
