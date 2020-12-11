@@ -8,10 +8,6 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
-## Added
-
-- Added documentation for scRNA workflow and examples.
-
 ### Changed
 
 - bwa-mem2 default aligner for genomic workflows, instead of bwa-mem
