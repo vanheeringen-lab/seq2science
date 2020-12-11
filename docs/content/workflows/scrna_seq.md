@@ -25,7 +25,7 @@ The pipeline starts by trimming the reads with fastp!. fastp automatically detec
 ## Quantification
 Quantification is performed by running the kb-python wrapper for kallisto bustools. Kallisto bustools relies on pseudo-alignement of scRNA reads against a reference transcriptome. The resulting count matrices can further processed with scRNA toolkits, such as Seurat or Scanpy.  
 
-### best practices
+### Best practices
 
 ### How to get the pipeline started?
 
@@ -47,3 +47,20 @@ This column is necessary for all workflows, except the *downloading samples* wor
 The descriptive_name column is used for the multiqc report. In the multiqc report there will be a button to rename your samples after this column.
 
 #### 2.6.2 Filling out the config.yaml
+
+Every workflow has many configurable options, and can be set in the config.yaml file. In each config.yaml we highlighted a couple options that we think are relevant for that specific workflow, and set (we think) reasonable default values.
+
+After initializing your working directory and editing the `samples.tsv` file, you have to decide if you either want to perform quantification or velocity analyis. For velocity analysis, add the `--workflow lamanno` settings to the ref and count property as shown below. 
+
+```
+quantifier:
+  kallistobus:
+    ## Quantification example ##
+    ref: '--workflow lamanno'
+    count: '-x 10XV3 --h5ad --verbose --workflow lamanno'
+```
+
+
+
+
+
