@@ -9,7 +9,7 @@ for f in seq2science/workflows/*; do
         if [[ $f == *"scrna_seq"* ]]; then
             touch barcodes.txt
         fi
-        #$CONDA/bin/snakemake --configfile config.yaml --config rule_dir="${dir}/seq2science/rules" --quiet --rulegraph | $CONDA/bin/dot -Tpng -Gbgcolor=transparent -Gdpi=450 > "$dir/docs/resources/$(basename $f).png"
+        $CONDA/bin/snakemake --configfile config.yaml --config rule_dir="${dir}/seq2science/rules" --quiet --rulegraph | $CONDA/bin/dot -Tpng -Gbgcolor=transparent -Gdpi=450 > "$dir/docs/resources/$(basename $f).png"
     fi
     )
 done
