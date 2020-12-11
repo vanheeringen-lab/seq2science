@@ -31,4 +31,19 @@ Quantification is performed by running the kb-python wrapper for kallisto bustoo
 
 #### 2.6.1 Filling out the samples.tsv
 
+Before running a workflow you will have to specify which samples you want to run the workflow on. Each workflow starts with a `samples.tsv` as an example, and you should adapt it to your specific needs. As an example, the `samples.tsv` could look something like this:
+```
+sample  assembly        descriptive_name
+pbmc    GRCh38.p13      pbmc
+```
+
+#### Sample column
+This column is necessary for all workflows, not just the RNA-seq workflow. If you use the pipeline on public data this should be the name of the accession (e.g. GSM2837484). If you use the pipeline on local data this should be the *basename* of the file without the *extension(s)*. For example, for paired-ended data `/home/user/myfastqs/sample2_R1.fastq.gz` and `/home/user/myfastqs/sample2_R2.fastq.gz` would be `sample2`.
+
+#### Assembly column
+This column is necessary for all workflows, except the *downloading samples* workflow. Here you simply add the name of the assembly you want your samples aligned against and the workflow will download it for you.
+
+#### Descriptive_name column
+The descriptive_name column is used for the multiqc report. In the multiqc report there will be a button to rename your samples after this column.
+
 #### 2.6.2 Filling out the config.yaml
