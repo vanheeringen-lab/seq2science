@@ -8,6 +8,12 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+## [0.4.0] - 2020-12-11
+
+### Added
+
+- new workflow: (BETA) single cell RNA!
+
 ### Changed
 
 - bwa-mem2 default aligner for genomic workflows, instead of bwa-mem
@@ -34,13 +40,6 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - keep_mates for macs2 turned into a script with ts own environment ot make the base env smaller
 - seq2science cache now respects the xdg cache
 - moved genome downloading rules into scripts instead of run directives, should result in user-friendlier errors
-
-### Fixed
-
-- Fixed scRNA trimming issue
-- Added fastq_pair
-- Updated schemas
-- Added kallistobus examples
 
 ## [0.3.1] - 2020-11-16
 
@@ -262,7 +261,8 @@ Many minor bug- and quality of life fixes.
 ## [0.0.0] - 2020-06-11
 First release of seq2science!
 
-[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/master...v0.3.2
+[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/master...v0.4.0
+[0.4.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.4.0...v0.3.2
 [0.3.2]: https://github.com/vanheeringen-lab/seq2science/compare/v0.3.2...v0.3.1
 [0.3.1]: https://github.com/vanheeringen-lab/seq2science/compare/v0.3.1...v0.3.0
 [0.3.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.2.3...v0.3.0

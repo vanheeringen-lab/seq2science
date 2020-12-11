@@ -18,6 +18,7 @@ Our supported workflows:
 * [RNA-seq](https://vanheeringen-lab.github.io/seq2science/content/workflows/rna_seq.html)
 * [ChIP-seq](https://vanheeringen-lab.github.io/seq2science/content/workflows/chip_seq.html)
 * [scATAC-seq](https://vanheeringen-lab.github.io/seq2science/content/workflows/scatac_seq.html)
+* [scRNA-seq](https://vanheeringen-lab.github.io/seq2science/content/workflows/scrna_seq.html)
 
 ## New users
 Information for new users, such as how to install and configure can be found in our [getting started](https://vanheeringen-lab.github.io/seq2science/content/gettingstarted.html) page, and our [Frequently Asked Questions (FAQ)](https://vanheeringen-lab.github.io/seq2science/content/faq.html) section. 
