@@ -464,6 +464,31 @@ if [ $1 = "rna-seq" ]; then
   test_ran=1
 fi
 
+if [ $1 = "explain" ]; then
+  yes | seq2science init download-fastq
+  seq2science explain download-fastq
+
+  yes | seq2science init alignment
+  seq2science explain alignment
+
+  yes | seq2science init atac-seq
+  seq2science explain atac-seq
+
+  yes | seq2science init chip-seq
+  seq2science explain chip-seq
+
+  yes | seq2science init rna-seq
+  seq2science explain rna-seq
+
+  yes | seq2science init scrna-seq
+  seq2science explain scrna-seq
+
+  yes | seq2science init scatac-seq
+  seq2science explain scatac-seq
+
+  test_ran=1
+fi
+
 # check if any test has run
 if [ -z "$test_ran" ]; then
   printf "\nunrecognized input: ${1}\n"; exit
