@@ -321,6 +321,14 @@ def _run(args, base_dir, workflows_dir, config_path):
 
     logger.info("Done. Now starting the real run.")
 
+    # first remove unwanted targets
+    regex_patterns = [
+        "(\/.+){2}[^_custom]+\.(fa|gaps)",  # match genome fasta
+        "(\/.+){2}.+\.annotation.(bed|gtf)",  # match annotations
+    ]
+    targets = [target for target in targets if not any(re.match(pattern, target) for pattern in regex_patterns)]
+
+    # if we then still have targets left
     if len(targets):
         # # remove the targets
         # for f in targets:
