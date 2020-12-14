@@ -10,7 +10,6 @@
 ### Downloading of sample(s)
 
 Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples. Take a look at the downloading_fastq workflow for extensive documentation about downloading of public samples.
-Downloading and indexing of assembly(s)
 
 ### Downloading and indexing of assembly(s)
 
@@ -18,9 +17,9 @@ Depending on whether the assembly and its index you align your samples against a
 
 ## Read trimming
 
-The pipeline starts by trimming the reads with fastp!. fastp automatically detects sequencing adapters, removes short reads and performs quality filtering. The parameters of fastp! for the pipeline can be set in the configuration by the variable fastp. 
+The pipeline starts by trimming the reads with fastp. Fastp automatically detects sequencing adapters, removes short reads and performs quality filtering. The parameters of fastp for the pipeline can be set in the configuration by the variable fastp. 
 
-**Note**: fastp currently runs in single-end mode even if you provide paired-end fastq files. This is due to the fact that reads, barcode and umi sequences are stored in separate fastq files. After trimming, the fastq containing the reads, usually R2, may contains less reads then R1. Therefore, we perform an intermediate step by running fastq-pair to remove singleton reads before proceeding any further. 
+**Note**: fastp currently runs in single-end mode even if you provide paired-end fastq files. This is due to the fact that reads, barcode and umi sequences are stored in separate fastq files. After trimming, the fastq containing the reads, usually R2, may contains less reads then R1. Therefore, we perform an intermediate step by running `fastq-pair` to remove singleton reads before proceeding any further. 
 
 ## Quantification
 Quantification is performed by running the kb-python wrapper for Kallisto bustools. Kallisto bustools relies on pseudo-alignment of scRNA reads against a reference transcriptome index. The resulting count matrices can be further processed with scRNA toolkits, such as Seurat or Scanpy.  
