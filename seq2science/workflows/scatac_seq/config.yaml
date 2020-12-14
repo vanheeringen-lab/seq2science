@@ -14,17 +14,17 @@ email: yourmail@here.com
 technical_replicates: merge
 
 # filtering after alignment
-remove_blacklist: True
-remove_mito: True
-tn5_shift: True
+remove_blacklist: true
+remove_mito: true
+tn5_shift: true
 min_mapping_quality: 30
-only_primary_align: True
+only_primary_align: true
 
 # which trimmer to use
 trimmer: fastp
 
 # which aligner to use
-aligner: bwa-mem
+aligner: bwa-mem2
 
 # snaptools options
 # min-mapq & keep-chrm set by config options above

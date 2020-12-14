@@ -40,14 +40,6 @@ To install the latest (potentially unreleased) version of seq2science you can in
 (seq2science) user@comp:~/seq2science$ pip install .
 ```
 
-### Mamba
-
-We recommend you to install [mamba](https://github.com/QuantStack/mamba) in your seq2science environment to install dependencies faster:
-
-```console
-(seq2science) user@comp:~$ conda install mamba -c conda-forge
-```
-
 ## Running a workflow
 
 A typical setup and run of a workflow looks like this, where you start with activating the seq2science environment.

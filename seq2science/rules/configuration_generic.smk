@@ -416,6 +416,7 @@ if len(failed_samples):
         logger.error("\n")
     raise TerminatedException
 
+
 # workflow
 
 
@@ -500,4 +501,3 @@ if config.get("create_trackhub"):
     else:
         logger.error("There were some problems with locking the seq2science cache. Please try again in a bit.")
         raise TerminatedException
-

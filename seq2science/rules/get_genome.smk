@@ -32,7 +32,7 @@ rule get_genome_annotation:
     Download a gene annotation through genomepy.
     """
     input:
-        ancient(rules.get_genome.output),
+        rules.get_genome.output,
     output:
         gtf=expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.annotation.gtf.gz", **config),
         bed=expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.annotation.bed.gz", **config),
