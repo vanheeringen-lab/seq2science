@@ -93,9 +93,18 @@
 <li class="toctree-l2"><a class="reference internal" href="scatac_seq.html">scATAC-seq</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">scRNA-seq</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#pipeline-steps">Pipeline steps</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#best-practices">best practices</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#downloading-of-sample-s">Downloading of sample(s)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#downloading-and-indexing-of-assembly-s">Downloading and indexing of assembly(s)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#read-trimming">Read trimming</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#quantification">Quantification</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#best-practices">Best practices</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#how-to-get-the-pipeline-started">How to get the pipeline started?</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#filling-out-the-samples-tsv">2.6.1 Filling out the samples.tsv</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#sample-column">Sample column</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#assembly-column">Assembly column</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#descriptive-name-column">Descriptive_name column</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#filling-out-the-config-yaml">2.6.2 Filling out the config.yaml</a></li>
 </ul>
 </li>
@@ -183,16 +192,76 @@
 <p align="center">
   <img src="../../_static/scrna_seq.png">
 </p></div>
+<div class="section" id="downloading-of-sample-s">
+<h2>Downloading of sample(s)<a class="headerlink" href="#downloading-of-sample-s" title="Permalink to this headline">¶</a></h2>
+<p>Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples. Take a look at the downloading_fastq workflow for extensive documentation about downloading of public samples.</p>
+</div>
+<div class="section" id="downloading-and-indexing-of-assembly-s">
+<h2>Downloading and indexing of assembly(s)<a class="headerlink" href="#downloading-and-indexing-of-assembly-s" title="Permalink to this headline">¶</a></h2>
+<p>Depending on whether the assembly and its index you align your samples against already exist seq2science will start with downloading of the assembly through genomepy.</p>
+</div>
+</div>
+<div class="section" id="read-trimming">
+<h1>Read trimming<a class="headerlink" href="#read-trimming" title="Permalink to this headline">¶</a></h1>
+<p>The pipeline starts by trimming the reads with fastp. Fastp automatically detects sequencing adapters, removes short reads and performs quality filtering. The parameters of fastp for the pipeline can be set in the configuration by the variable fastp.</p>
+<p><strong>Note</strong>: fastp currently runs in single-end mode even if you provide paired-end fastq files. This is due to the fact that reads, barcode and umi sequences are stored in separate fastq files. After trimming, the fastq containing the reads, usually R2, may contains less reads then R1. Therefore, we perform an intermediate step by running <code class="docutils literal notranslate"><span class="pre">fastq-pair</span></code> to remove singleton reads before proceeding any further.</p>
+</div>
+<div class="section" id="quantification">
+<h1>Quantification<a class="headerlink" href="#quantification" title="Permalink to this headline">¶</a></h1>
+<p>Quantification is performed by running the kb-python wrapper for Kallisto bustools. Kallisto bustools relies on pseudo-alignment of scRNA reads against a reference transcriptome index. The resulting count matrices can be further processed with scRNA toolkits, such as Seurat or Scanpy.</p>
 <div class="section" id="best-practices">
-<h2>best practices<a class="headerlink" href="#best-practices" title="Permalink to this headline">¶</a></h2>
+<h2>Best practices<a class="headerlink" href="#best-practices" title="Permalink to this headline">¶</a></h2>
 </div>
 <div class="section" id="how-to-get-the-pipeline-started">
 <h2>How to get the pipeline started?<a class="headerlink" href="#how-to-get-the-pipeline-started" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="filling-out-the-samples-tsv">
 <h3>2.6.1 Filling out the samples.tsv<a class="headerlink" href="#filling-out-the-samples-tsv" title="Permalink to this headline">¶</a></h3>
+<p>Before running a workflow you will have to specify which samples you want to run the workflow on. Each workflow starts with a <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> as an example, and you should adapt it to your specific needs. As an example, the <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> could look something like this:</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>sample  assembly        descriptive_name
+pbmc    GRCh38.p13      pbmc
+</pre></div>
+</div>
+</div>
+<div class="section" id="sample-column">
+<h3>Sample column<a class="headerlink" href="#sample-column" title="Permalink to this headline">¶</a></h3>
+<p>This column is necessary for all workflows, not just the scRNA-seq workflow. If you use the pipeline on public data this should be the name of the accession (e.g. GSM2837484). If you use the pipeline on local data this should be the <em>basename</em> of the file without the <em>extension(s)</em>. For example, for paired-ended data <code class="docutils literal notranslate"><span class="pre">/home/user/myfastqs/sample2_R1.fastq.gz</span></code> and <code class="docutils literal notranslate"><span class="pre">/home/user/myfastqs/sample2_R2.fastq.gz</span></code> would be <code class="docutils literal notranslate"><span class="pre">sample2</span></code>.</p>
+</div>
+<div class="section" id="assembly-column">
+<h3>Assembly column<a class="headerlink" href="#assembly-column" title="Permalink to this headline">¶</a></h3>
+<p>This column is necessary for all workflows, except the <em>downloading samples</em> workflow. Here you simply add the name of the assembly you want your samples aligned against and the workflow will download it for you.</p>
+</div>
+<div class="section" id="descriptive-name-column">
+<h3>Descriptive_name column<a class="headerlink" href="#descriptive-name-column" title="Permalink to this headline">¶</a></h3>
+<p>The descriptive_name column is used for the multiqc report. In the multiqc report there will be a button to rename your samples after this column.</p>
 </div>
 <div class="section" id="filling-out-the-config-yaml">
 <h3>2.6.2 Filling out the config.yaml<a class="headerlink" href="#filling-out-the-config-yaml" title="Permalink to this headline">¶</a></h3>
+<p>Every workflow has many configurable options, and can be set in the config.yaml file. In each config.yaml we highlighted a couple options that we think are relevant for that specific workflow, and set (we think) reasonable default values.</p>
+<p>After initializing your working directory and editing the <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> file, you have to specify if you either want to perform quantification or RNA velocity analysis. For velocity analysis, add the <code class="docutils literal notranslate"><span class="pre">--workflow</span> <span class="pre">lamanno</span></code> argument to the ref and count properties as shown below.</p>
+<div class="section" id="id1">
+<h4>Quantification<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">quantifier:</span>
+<span class="c">  kallistobus:</span>
+<span class="c">    count: &#39;-x 10xv3 --h5ad --verbose&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="rna-velocity">
+<h4>RNA velocity<a class="headerlink" href="#rna-velocity" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">quantifier:</span>
+<span class="c">  kallistobus:</span>
+<span class="c">    ref: &#39;--workflow lamanno&#39;</span>
+<span class="c">    count: &#39;-x 10xv3 --h5ad --verbose --workflow lamanno&#39;</span>
+</pre></div>
+</div>
+<p>This will ensure that kallisto bustools generates the required files for RNA velocity estimation and produces count matrices for unspliced/spliced mRNA.</p>
+</div>
+<div class="section" id="bus-barcode-umi-set-format">
+<h4>BUS (Barcode/UMI/Set) format<a class="headerlink" href="#bus-barcode-umi-set-format" title="Permalink to this headline">¶</a></h4>
+<p>The <code class="docutils literal notranslate"><span class="pre">-x</span></code> argument indicates the read and file positions of UMIs and barcodes in the supplied R1/R2 fastq files. Kallisto bustools should auto-detect the correct settings if you use the short-hand syntax for your technology of choice, such as <code class="docutils literal notranslate"><span class="pre">-x</span> <span class="pre">10xv2</span></code>. Internally, this is translated to the following group of <code class="docutils literal notranslate"><span class="pre">bc:umi:set</span></code> triplets:<span class="raw-html-m2r"><br/></span></p>
+<p><code class="docutils literal notranslate"><span class="pre">0,0,16:0,16,26:1,0,0</span></code></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">bc:umi:set</span></code> format can be supplied as an alternative to the short-hand syntax. For more information on the BUS format, consider the <a class="reference external" href="https://pachterlab.github.io/kallisto/manual">Kallisto</a> manual.</p>
+</div>
 </div>
 </div>
 </div>
