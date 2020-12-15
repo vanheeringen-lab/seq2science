@@ -518,7 +518,7 @@ rule multiqc_samplesconfig:
         config_used=len(workflow.overwrite_configfiles) > 0,
         configfile=workflow.overwrite_configfiles[-1],
         sanitized_samples=sanitized_samples,
-        config=config if len(workflow.overwrite_configfiles) > 0 else ""
+        config={k: v for k, v in config.items() if k != "no_config_log"}
     conda:
         "../envs/htmltable.yaml"
     script:
