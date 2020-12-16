@@ -15,7 +15,7 @@ else:
         """
         Return a string explaining the workflow by parsing all messages
         """
-        string = messages.get(name, "")
+        string = messages[name]
 
         # clean our explanation
         string = string.replace("\n", "")
@@ -110,4 +110,7 @@ else:
         "fastp_SE": "We trimmed single-end reads with fastp v@fastp[fastp] (https://doi.org/10.1093/bioinformatics/bty560) with options '{config[trimoptions]}'.",
         "fastp_PE": "We trimmed paired-end reads with fastp v@fastp[fastp] (https://doi.org/10.1093/bioinformatics/bty560) with options '{config[trimoptions]}'.",
         "chipseeker": "A peak feature distribution plot and peak localization plot relative to TSS were made with chipseeker (https://doi.org/doi:10.18129/B9.bioc.ChIPseeker).",  # v@chipseeker[chipseeker]
+        "combine_peaks": "A consensus set of summits was made with gimmemotifs.combine_peaks v@gimme[gimmemotifs] (https://www.biorxiv.org/content/10.1101/474403v1.full).",
+        "bed_slop": "All summits were extended with 'config[slop]' to get a consensus peakset.",
+        "coverage_table": "And finally we made a count table from the conensus peakset with gimmemotifs.combine_peaks v@gimme[gimmemotifs] (https://www.biorxiv.org/content/10.1101/474403v1.full).",
     }
