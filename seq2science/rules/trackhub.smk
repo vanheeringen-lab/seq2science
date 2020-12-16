@@ -286,7 +286,7 @@ def get_colors(asmbly):
     return palletes
 
 
-def strandedness_to_trackhub(sample, strandedness_in_assembly=None):
+def strandedness_to_trackhub(sample):
     """
     translate strandedness to the name and number of bigwigs to include in the trackhub
     """
@@ -296,7 +296,8 @@ def strandedness_to_trackhub(sample, strandedness_in_assembly=None):
         strandedness = pd.read_csv(_strandedness_report(wildcards=None), sep='\t', dtype='str', index_col=0)
         s = strandedness[strandedness.index == sample].strandedness[0]
         return [".fwd", ".rev"] if s in ["yes", "forward", "reverse"] else [""]
-    
+
+
 def strandedness_in_assembly(assembly):
     """
     check if there are any stranded samples for this assembly. Returns bool.
@@ -309,6 +310,7 @@ def strandedness_in_assembly(assembly):
         strandedness_in_assembly = strandedness.filter(samples_in_assembly, axis=0).strandedness
         return not strandedness_in_assembly.str.fullmatch('no').all()
 
+    
 def create_trackhub():
     """
     Create a UCSC trackhub.
