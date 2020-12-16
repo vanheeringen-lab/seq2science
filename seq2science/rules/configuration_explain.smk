@@ -15,7 +15,7 @@ else:
         """
         Return a string explaining the workflow by parsing all messages
         """
-        string = messages.get(name, "")
+        string = messages[name]
 
         # clean our explanation
         string = string.replace("\n", "")
