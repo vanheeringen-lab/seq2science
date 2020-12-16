@@ -188,6 +188,11 @@ properties:
     type: string
 
   # deeptools qc plot
+  deeptools_qc:
+    description: Whether or not to perform deeptools QC. With many samples this can take a long time and might be undesirable
+    default: True
+    type: boolean
+
   deeptools_plotcorrelation:
     description: Deeptools plotCorrelation params
     default: '--colorMap RdYlBu_r --plotNumbers'
