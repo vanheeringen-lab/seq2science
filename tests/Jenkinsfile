@@ -109,6 +109,15 @@ pipeline {
                         bash ./tests/dag_tests.sh rna-seq
                         '''
                     },
+                    "5 explain functionality" : {
+                        sh '''#!/usr/bin/env bash
+                        set -e
+                        source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+                        conda activate s2s
+
+                        bash ./tests/dag_tests.sh explain
+                        '''
+                    },
                     "~ setup conda environments" : {
                         sh '''#!/usr/bin/env bash
                         set -e
