@@ -292,17 +292,22 @@ def strandedness_to_trackhub(sample, strandedness_in_assembly=None):
     """
     if get_workflow() != "rna_seq":
         return [""]
-
-    strandedness = pd.read_csv(_strandedness_report(wildcards=None), sep='\t', dtype='str', index_col=0)
-    if strandedness_in_assembly:
-        # check if there are any stranded samples for this assembly. Returns bool.
-        samples_in_assembly = treps[treps["assembly"] == strandedness_in_assembly].index
+    else:
+        strandedness = pd.read_csv(_strandedness_report(wildcards=None), sep='\t', dtype='str', index_col=0)
+        s = strandedness[strandedness.index == sample].strandedness[0]
+        return [".fwd", ".rev"] if s in ["yes", "forward", "reverse"] else [""]
+    
+def strandedness_in_assembly(assembly):
+    """
+    check if there are any stranded samples for this assembly. Returns bool.
+    """
+    if get_workflow() != "rna_seq":
+        return False
+    else:
+        strandedness = pd.read_csv(_strandedness_report(wildcards=None), sep='\t', dtype='str', index_col=0)
+        samples_in_assembly = treps[treps["assembly"] == assembly].index
         strandedness_in_assembly = strandedness.filter(samples_in_assembly, axis=0).strandedness
         return not strandedness_in_assembly.str.fullmatch('no').all()
-
-    s = strandedness[strandedness.index == sample].strandedness[0]
-    return [".fwd", ".rev"] if s in ["yes", "forward", "reverse"] else [""]
-
 
 def create_trackhub():
     """
@@ -590,7 +595,7 @@ def create_trackhub():
             composite.add_view(fwd_view)
 
             # ...one view to bring them all...
-            if strandedness_to_trackhub(None, asmbly):  # only added if there are reverse strand bams
+            if strandedness_in_assembly(asmbly):  # only added if there are reverse strand bams
                 rev_view_name = "reverse strand reads"
                 rev_view = trackhub.ViewTrack(
                         name=trackhub.helpers.sanitize(rev_view_name),
