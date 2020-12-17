@@ -23,7 +23,7 @@ rule scRNA_seq_all:
     Make a QC report and map
     """
     input:
-        expand([f"{{result_dir}}/{{quantifier}}/{treps.loc[trep, 'assembly']}-{trep}" for trep in treps.index] +
+        expand([f"{{result_dir}}/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}" for trep in treps.index] +
                (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []),
                **{**config,
-                  **{'assemblies': set(samples['assembly'])}})
+                  **{'assemblies': all_assemblies}})
