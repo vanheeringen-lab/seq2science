@@ -12,6 +12,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 - more explanations for rules
 
+### Fixed
+
+- trackhubs no longer looking for reversed strands if none are present
+
 ## [0.4.0] - 2020-12-11
 
 ### Added
