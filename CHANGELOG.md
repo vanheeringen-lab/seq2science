@@ -12,6 +12,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 - more explanations for rules
 
+### Fixed
+
+- custom genome annotations for single-cell RNA-seq workflow
+
 ## [0.4.0] - 2020-12-11
 
 ### Added
