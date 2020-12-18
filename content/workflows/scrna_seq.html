@@ -106,6 +106,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#assembly-column">Assembly column</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#descriptive-name-column">Descriptive_name column</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#filling-out-the-config-yaml">2.6.2 Filling out the config.yaml</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#custom-assembly-extensions">Custom assembly extensions</a></li>
 </ul>
 </li>
 </ul>
@@ -262,6 +263,10 @@ pbmc    GRCh38.p13      pbmc
 <p><code class="docutils literal notranslate"><span class="pre">0,0,16:0,16,26:1,0,0</span></code></p>
 <p>The <code class="docutils literal notranslate"><span class="pre">bc:umi:set</span></code> format can be supplied as an alternative to the short-hand syntax. For more information on the BUS format, consider the <a class="reference external" href="https://pachterlab.github.io/kallisto/manual">Kallisto</a> manual.</p>
 </div>
+</div>
+<div class="section" id="custom-assembly-extensions">
+<h3>Custom assembly extensions<a class="headerlink" href="#custom-assembly-extensions" title="Permalink to this headline">¶</a></h3>
+<p>The genome and/or gene annotation can be extended with custom files, such as ERCC spike-ins for scRNA-seq. To do so, add <code class="docutils literal notranslate"><span class="pre">custom_genome_extension:</span> <span class="pre">path/to/spike_in.fa</span></code> and <code class="docutils literal notranslate"><span class="pre">custom_annotation_extension:</span> <span class="pre">path/to/spike_in.gtf</span></code> to the config. Seq2science will place the customized assembly in a separate folder in the <code class="docutils literal notranslate"><span class="pre">genome_dir</span></code>. You can control the name of the customized assembly by setting <code class="docutils literal notranslate"><span class="pre">custom_assembly_suffix</span></code> in the config.</p>
 </div>
 </div>
 </div>

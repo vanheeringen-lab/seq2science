@@ -294,6 +294,13 @@ custom_assembly_suffix:
     default: _custom
     type: string
 ```
+#####deeptools_qc
+```
+deeptools_qc:
+    description: Whether or not to perform deeptools QC. With many samples this can take a long time and might be undesirable
+    default: True
+    type: boolean
+```
 #####deeptools_plotcorrelation
 ```
 deeptools_plotcorrelation:
