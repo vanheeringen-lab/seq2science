@@ -350,7 +350,7 @@ if "assembly" in samples:
         """
         add extension suffix to an assembly if is wasn't yet added.
         """
-        return assembly if assembly.endswith(config["custom_assembly_suffix"]) else \
+        return assembly if assembly.endswith(config["custom_assembly_suffix"]) or not modified else \
          (assembly + config["custom_assembly_suffix"])
 
 
