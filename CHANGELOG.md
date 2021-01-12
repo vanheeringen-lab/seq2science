@@ -8,7 +8,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
-## Changed
+### Changed
 
 - Updated kb-python to 0.25.1
 
