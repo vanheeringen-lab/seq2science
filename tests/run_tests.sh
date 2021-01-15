@@ -204,8 +204,8 @@ if [ $1 = "rna-seq" ]; then
   omit_from=[blind_clustering]  # <- remove when fixed
 
   printf "\nrna-seq default - counting deseq2\n"
-  seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/deseq2_config.yaml show_failed_logs=True \
-  --snakemakeOptions omit_from=[blind_clustering,deseq2]  # <- remove when fixed
+  seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/deseq2_config.yaml --snakemakeOptions show_failed_logs=True \
+  omit_from=[blind_clustering,deseq2]  # <- remove when fixed
 
   printf "\nrna-seq default - trackhub\n"
   seq2science run rna-seq --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions config={samples:tests/alignment/stranded_sample.tsv,genome_dir:tests,fastq_dir:../tinyfastq,aligner:star,create_trackhub:True,custom_genome_extension:tests/tinydata/tinyERCC92.fa,custom_annotation_extension:tests/tinydata/tinyERCC92.gtf} show_failed_logs=True
