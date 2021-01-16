@@ -10,6 +10,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [0.4.1] - 2020-12-18
 
+### Fixed
+
+- gimmemotifs not working with newest pandas, now a fixed pandas version
+
 ### Added
 
 - more explanations for rules
