@@ -8,11 +8,11 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
-## [0.4.1] - 2020-12-18
-
 ### Fixed
 
 - gimmemotifs not working with newest pandas, now a fixed pandas version
+
+## [0.4.1] - 2020-12-18
 
 ### Added
 
