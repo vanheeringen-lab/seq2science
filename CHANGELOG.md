@@ -18,7 +18,6 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [0.4.1] - 2020-12-18
 
-
 ### Added
 
 - more explanations for rules
