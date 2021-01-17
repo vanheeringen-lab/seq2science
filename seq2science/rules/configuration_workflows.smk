@@ -62,6 +62,14 @@ if config.get("peak_caller", False):
         else:
             config["macs2_types"].extend(["summits.bed", "peaks.narrowPeak"])
 
+# make sure that both maximum and minimum insert sizes are existing when one of them is used
+if config.get("min_insert_size") and not config.get("max_insert_size"):
+    config["max_insert_size"] = 1_000_000_000
+
+if config.get("max_insert_size") and not config.get("min_insert_size"):
+    config["min_insert_size"] = 0
+
+
 # ...for alignment and rna-seq
 for conf_dict in ["aligner", "quantifier", "trimmer"]:
     if config.get(conf_dict, False):

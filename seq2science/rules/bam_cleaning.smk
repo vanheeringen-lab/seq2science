@@ -81,7 +81,8 @@ rule sieve_bam:
         blacklist=rules.complement_blacklist.output,
         sizes=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
     output:
-        temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-sieved.bam", **config)),
+        allsizes=temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}_allsizes.samtools-coordinate-sieved.bam", **config)),
+        final=temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-sieved.bam", **config)),
     log:
         expand("{log_dir}/sieve_bam/{{assembly}}-{{sample}}.log", **config),
     benchmark:
@@ -96,13 +97,22 @@ rule sieve_bam:
         ),
         blacklist=lambda wildcards, input: f"-L {input.blacklist}",
         prim_align=f"-F 256" if config["only_primary_align"] else "",
+        sizesieve=(
+            lambda wildcards, input, output:
+            """ | awk 'substr($0,1,1)=="@" || ($9>={params.min_insert_size} && $9<={params.max_insert_size}) || ($9<=-{params.min_insert_size} && $9>=-{params.max_insert_size})' | """
+            if sampledict[wildcards.sample] == "PAIRED" and (config.get("min_insert_size") or config.get("max_insert_size"))
+            else ""
+        ),
+        minsize=config.get("min_insert_size", 0),
+        maxsize=config.get("max_insert_size", 1_000_000),
     conda:
         "../envs/samtools.yaml"
     threads: 2
     shell:
         """
         samtools view -h {params.prim_align} {params.minqual} {params.blacklist} \
-        {input.bam} {params.atacshift} | 
+        {input.bam} {params.atacshift} |
+        tee {output.allsizes} {params.sizesieve}
         samtools view -b > {output} 2> {log}
         """
 
@@ -209,6 +219,8 @@ rule mark_duplicates:
         mem_gb=5,
     conda:
         "../envs/picard.yaml"
+    wildcard_constraints:
+        sample=".+",
     shell:
         """
         # use the TMPDIR if set, and not given in the config

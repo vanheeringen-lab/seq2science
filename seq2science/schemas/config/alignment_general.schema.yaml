@@ -202,3 +202,11 @@ properties:
     description: Deeptools multiBamSummary params
     default: '--distanceBetweenBins 9000 --binSize 1000'
     type: string
+
+  min_insert_size:
+    description: the minimum insert size for paired-end reads
+    type: integer
+
+  max_insert_size:
+    description: the maximum insert size for paired-end reads
+    type: integer

@@ -182,6 +182,8 @@ rule insert_size_metrics:
         f"{config['log_dir']}/InsertSizeMetrics/{{assembly}}-{{sample}}.log"
     conda:
         "../envs/picard.yaml"
+    wildcard_constraints:
+        sample=".+",
     shell:
         """
         picard CollectInsertSizeMetrics INPUT={input} \
@@ -698,7 +700,11 @@ def get_alignment_qc(sample):
 
     # add insert size metrics
     if sampledict[sample]['layout'] == "PAIRED":
-        output.append(f"{{qc_dir}}/InsertSizeMetrics/{{{{assembly}}}}-{sample}.tsv")
+        # if we do any sieving, we use the
+        if sieve_bam(config):
+            output.append(f"{{qc_dir}}/InsertSizeMetrics/{{{{assembly}}}}-{sample}_allsizes.tsv")
+        else:
+            output.append(f"{{qc_dir}}/InsertSizeMetrics/{{{{assembly}}}}-{sample}.tsv")
 
     # get the ratio mitochondrial dna
     output.append(f"{{result_dir}}/{config['aligner']}/{{{{assembly}}}}-{sample}.samtools-coordinate-unsieved.bam.mtnucratiomtnuc.json")
