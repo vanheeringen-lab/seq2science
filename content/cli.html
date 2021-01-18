@@ -3,9 +3,9 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Command line interface &mdash; seq2science  documentation</title>
   
@@ -16,7 +16,10 @@
 
   
   
+
   
+  
+
   
 
   
@@ -51,7 +54,7 @@
           
 
           
-            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> seq2science
+            <a href="../index.html" class="icon icon-home"> seq2science
           
 
           
@@ -155,6 +158,8 @@
 
 
 
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
 
   <ul class="wy-breadcrumbs">
@@ -168,7 +173,7 @@
     
       <li class="wy-breadcrumbs-aside">
         
-            
+          
             
               <a href="https://github.com/vanheeringen-lab/seq2science/blob/master/docs/content/cli.rst" class="fa fa-github"> Edit on GitHub</a>
             
@@ -191,14 +196,14 @@
 <p><p>Each workflow requires a configuration and samples file to run. Running “seq2science init {workflow}” initialises a default configuration and samples file for the specific workflow.</p>
 </p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">seq2science</span> <span class="n">init</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="nb">dir</span> <span class="n">PATH</span><span class="p">]</span>
-                        <span class="p">{</span><span class="n">rna</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">scrna</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">scatac</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">chip</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">alignment</span><span class="p">,</span><span class="n">download</span><span class="o">-</span><span class="n">fastq</span><span class="p">,</span><span class="n">atac</span><span class="o">-</span><span class="n">seq</span><span class="p">}</span>
+                        <span class="p">{</span><span class="n">download</span><span class="o">-</span><span class="n">fastq</span><span class="p">,</span><span class="n">rna</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">scrna</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">alignment</span><span class="p">,</span><span class="n">chip</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">scatac</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">atac</span><span class="o">-</span><span class="n">seq</span><span class="p">}</span>
 </pre></div>
 </div>
 <div class="section" id="Positional Arguments">
 <h3>Positional Arguments<a class="headerlink" href="#Positional Arguments" title="Permalink to this headline">¶</a></h3>
 <dl class="option-list">
 <dt><kbd>workflow</kbd></dt>
-<dd><p>Possible choices: rna-seq, scrna-seq, scatac-seq, chip-seq, alignment, download-fastq, atac-seq</p>
+<dd><p>Possible choices: download-fastq, rna-seq, scrna-seq, alignment, chip-seq, scatac-seq, atac-seq</p>
 </dd>
 </dl>
 </div>
@@ -220,14 +225,14 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">seq2science</span> <span class="n">run</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">c</span> <span class="n">FILE</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">j</span> <span class="n">N</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">n</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">r</span><span class="p">]</span>
                        <span class="p">[</span><span class="o">--</span><span class="n">snakemakeOptions</span> <span class="n">KEY</span><span class="o">=</span><span class="n">VAL</span> <span class="p">[</span><span class="n">KEY</span><span class="o">=</span><span class="n">VAL</span> <span class="o">...</span><span class="p">]]</span>
                        <span class="p">[</span><span class="o">-</span><span class="n">p</span> <span class="n">PROFILE</span> <span class="n">NAME</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">k</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">rerun</span><span class="o">-</span><span class="n">incomplete</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">unlock</span><span class="p">]</span>
-                       <span class="p">{</span><span class="n">rna</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">scrna</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">scatac</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">chip</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">alignment</span><span class="p">,</span><span class="n">download</span><span class="o">-</span><span class="n">fastq</span><span class="p">,</span><span class="n">atac</span><span class="o">-</span><span class="n">seq</span><span class="p">}</span>
+                       <span class="p">{</span><span class="n">download</span><span class="o">-</span><span class="n">fastq</span><span class="p">,</span><span class="n">rna</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">scrna</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">alignment</span><span class="p">,</span><span class="n">chip</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">scatac</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">atac</span><span class="o">-</span><span class="n">seq</span><span class="p">}</span>
 </pre></div>
 </div>
 <div class="section" id="Positional Arguments">
 <h3>Positional Arguments<a class="headerlink" href="#Positional Arguments" title="Permalink to this headline">¶</a></h3>
 <dl class="option-list">
 <dt><kbd>workflow</kbd></dt>
-<dd><p>Possible choices: rna-seq, scrna-seq, scatac-seq, chip-seq, alignment, download-fastq, atac-seq</p>
+<dd><p>Possible choices: download-fastq, rna-seq, scrna-seq, alignment, chip-seq, scatac-seq, atac-seq</p>
 </dd>
 </dl>
 </div>
@@ -288,14 +293,14 @@ seq2science clean will clean up these files for you.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">seq2science</span> <span class="n">explain</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">c</span> <span class="n">FILE</span><span class="p">]</span>
                            <span class="p">[</span><span class="o">--</span><span class="n">snakemakeOptions</span> <span class="n">KEY</span><span class="o">=</span><span class="n">VAL</span> <span class="p">[</span><span class="n">KEY</span><span class="o">=</span><span class="n">VAL</span> <span class="o">...</span><span class="p">]]</span>
                            <span class="p">[</span><span class="o">-</span><span class="n">p</span> <span class="n">PROFILE</span> <span class="n">NAME</span><span class="p">]</span>
-                           <span class="p">{</span><span class="n">rna</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">scrna</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">scatac</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">chip</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">alignment</span><span class="p">,</span><span class="n">download</span><span class="o">-</span><span class="n">fastq</span><span class="p">,</span><span class="n">atac</span><span class="o">-</span><span class="n">seq</span><span class="p">}</span>
+                           <span class="p">{</span><span class="n">download</span><span class="o">-</span><span class="n">fastq</span><span class="p">,</span><span class="n">rna</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">scrna</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">alignment</span><span class="p">,</span><span class="n">chip</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">scatac</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">atac</span><span class="o">-</span><span class="n">seq</span><span class="p">}</span>
 </pre></div>
 </div>
 <div class="section" id="Positional Arguments">
 <h3>Positional Arguments<a class="headerlink" href="#Positional Arguments" title="Permalink to this headline">¶</a></h3>
 <dl class="option-list">
 <dt><kbd>workflow</kbd></dt>
-<dd><p>Possible choices: rna-seq, scrna-seq, scatac-seq, chip-seq, alignment, download-fastq, atac-seq</p>
+<dd><p>Possible choices: download-fastq, rna-seq, scrna-seq, alignment, chip-seq, scatac-seq, atac-seq</p>
 </dd>
 </dl>
 </div>
@@ -331,37 +336,29 @@ seq2science clean will clean up these files for you.</p>
            
           </div>
           <footer>
-  
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="all_rules.html" class="btn btn-neutral float-right" title="Per rule explanation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="extensive_docs.html" class="btn btn-neutral float-left" title="Extensive docs" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+        <a href="all_rules.html" class="btn btn-neutral float-right" title="Per rule explanation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="extensive_docs.html" class="btn btn-neutral float-left" title="Extensive docs" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        
-        &copy; Copyright Maarten van der Sande, Siebren Frölich, Jos Smits, Rebecca Snabel, Tilman Schäfers, &amp; Simon van Heeringen.
+        &#169; Copyright Maarten van der Sande, Siebren Frölich, Jos Smits, Rebecca Snabel, Tilman Schäfers, &amp; Simon van Heeringen..
 
     </p>
   </div>
     
     
     
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
     
     provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
-
         </div>
       </div>
 

@@ -3,9 +3,9 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Getting started &mdash; seq2science  documentation</title>
   
@@ -16,7 +16,10 @@
 
   
   
+
   
+  
+
   
 
   
@@ -51,7 +54,7 @@
           
 
           
-            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> seq2science
+            <a href="../index.html" class="icon icon-home"> seq2science
           
 
           
@@ -142,6 +145,8 @@
 
 
 
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
 
   <ul class="wy-breadcrumbs">
@@ -153,7 +158,7 @@
     
       <li class="wy-breadcrumbs-aside">
         
-            
+          
             
               <a href="https://github.com/vanheeringen-lab/seq2science/blob/master/docs/content/gettingstarted.md" class="fa fa-github"> Edit on GitHub</a>
             
@@ -176,40 +181,40 @@
 <div class="section" id="seq2science-requires-anaconda">
 <h3>seq2science requires anaconda<a class="headerlink" href="#seq2science-requires-anaconda" title="Permalink to this headline">¶</a></h3>
 <p>Download and install <a class="reference external" href="https://www.anaconda.com/">miniconda</a> if not yet installed:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">user@comp:~$</span> wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
-<span class="gp">user@comp:~$</span> bash miniconda.sh <span class="c1"># (make sure to say **yes** when asked to run conda init)</span>
-<span class="gp">user@comp:~$</span> <span class="nb">source</span> ~/.bashrc
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">user@comp:~$ </span>wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+<span class="gp">user@comp:~$ </span>bash miniconda.sh <span class="c1"># (make sure to say **yes** when asked to run conda init)</span>
+<span class="gp">user@comp:~$ </span><span class="nb">source</span> ~/.bashrc
 </pre></div>
 </div>
 <p>Set the correct channels (in this specific order) to use bioconda:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">user@comp:~$</span> conda config --add channels defaults
-<span class="gp">user@comp:~$</span> conda config --add channels bioconda
-<span class="gp">user@comp:~$</span> conda config --add channels conda-forge
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">user@comp:~$ </span>conda config --add channels defaults
+<span class="gp">user@comp:~$ </span>conda config --add channels bioconda
+<span class="gp">user@comp:~$ </span>conda config --add channels conda-forge
 </pre></div>
 </div>
 </div>
 <div class="section" id="easy-and-recommended-installation-bioconda">
 <h3>Easy and recommended installation (bioconda)<a class="headerlink" href="#easy-and-recommended-installation-bioconda" title="Permalink to this headline">¶</a></h3>
 <p>The most straightforward way to install seq2science is by using <a class="reference external" href="https://docs.continuum.io/anaconda/">conda</a> using the <a class="reference external" href="https://bioconda.github.io/">bioconda</a> channel. To install seq2science in a fresh environment using bioconda:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(base)</span> <span class="gp">user@comp:~$</span> conda create -n seq2science seq2science
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(base)</span> <span class="gp">user@comp:~$ </span>conda create -n seq2science seq2science
 </pre></div>
 </div>
 </div>
 <div class="section" id="install-from-source-not-recommended">
 <h3>Install from source (not recommended)<a class="headerlink" href="#install-from-source-not-recommended" title="Permalink to this headline">¶</a></h3>
 <p>To install the latest (potentially unreleased) version of seq2science you can install from source:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(base)</span> <span class="gp">user@comp:~$</span> git clone https://github.com/vanheeringen-lab/seq2science
-<span class="gp gp-VirtualEnv">(base)</span> <span class="gp">user@comp:~$</span> <span class="nb">cd</span> seq2science
-<span class="gp gp-VirtualEnv">(base)</span> <span class="gp">user@comp:~/seq2science$</span> conda env create --name seq2science -f requirements.yaml
-<span class="gp gp-VirtualEnv">(base)</span> <span class="gp">user@comp:~/seq2science$</span> conda activate seq2science
-<span class="gp gp-VirtualEnv">(seq2science)</span> <span class="gp">user@comp:~/seq2science$</span> pip install .
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(base)</span> <span class="gp">user@comp:~$ </span>git clone https://github.com/vanheeringen-lab/seq2science
+<span class="gp gp-VirtualEnv">(base)</span> <span class="gp">user@comp:~$ </span><span class="nb">cd</span> seq2science
+<span class="gp gp-VirtualEnv">(base)</span> <span class="gp">user@comp:~/seq2science$ </span>conda env create --name seq2science -f requirements.yaml
+<span class="gp gp-VirtualEnv">(base)</span> <span class="gp">user@comp:~/seq2science$ </span>conda activate seq2science
+<span class="gp gp-VirtualEnv">(seq2science)</span> <span class="gp">user@comp:~/seq2science$ </span>pip install .
 </pre></div>
 </div>
 </div>
 <div class="section" id="mamba">
 <h3>Mamba<a class="headerlink" href="#mamba" title="Permalink to this headline">¶</a></h3>
 <p>We recommend you to install <a class="reference external" href="https://github.com/QuantStack/mamba">mamba</a> in your seq2science environment to install dependencies faster:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(seq2science)</span> <span class="gp">user@comp:~$</span> conda install mamba -c conda-forge
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(seq2science)</span> <span class="gp">user@comp:~$ </span>conda install mamba -c conda-forge
 </pre></div>
 </div>
 </div>
@@ -217,26 +222,26 @@
 <div class="section" id="running-a-workflow">
 <h2>Running a workflow<a class="headerlink" href="#running-a-workflow" title="Permalink to this headline">¶</a></h2>
 <p>A typical setup and run of a workflow looks like this, where you start with activating the seq2science environment.</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(base)</span> <span class="gp">user@comp:~$</span> conda activate seq2science
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(base)</span> <span class="gp">user@comp:~$ </span>conda activate seq2science
 </pre></div>
 </div>
 <p>Then navigate to your project dir.</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(seq2science)</span> <span class="gp">user@comp:~$</span> <span class="nb">cd</span> my_project
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(seq2science)</span> <span class="gp">user@comp:~$ </span><span class="nb">cd</span> my_project
 </pre></div>
 </div>
 <p>Where you initialize the workflow with a configuration file and samples file, and edit those to your needs.</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(seq2science)</span> <span class="gp">user@comp:~/my_project$</span> seq2science init <span class="o">{</span>workflow<span class="o">}</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(seq2science)</span> <span class="gp">user@comp:~/my_project$ </span>seq2science init <span class="o">{</span>workflow<span class="o">}</span>
 </pre></div>
 </div>
 <p>And finally run the workflow. Note that the first time you run a workflow it will take longer as it will create the snakemake environments for all analysis steps.</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(seq2science)</span> <span class="gp">user@comp:~.my_project$</span> seq2science run <span class="o">{</span>workflow<span class="o">}</span> --cores <span class="m">24</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(seq2science)</span> <span class="gp">user@comp:~.my_project$ </span>seq2science run <span class="o">{</span>workflow<span class="o">}</span> --cores <span class="m">24</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="getting-an-explanation-of-what-seq2science-did">
 <h2>Getting an explanation of what seq2science did<a class="headerlink" href="#getting-an-explanation-of-what-seq2science-did" title="Permalink to this headline">¶</a></h2>
 <p>Seq2science has a function to write an explanation of what has/will be done with the configuration file for a workflow:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(seq2science)</span> <span class="gp">user@comp:~.my_project$</span> seq2science explain <span class="o">{</span>workflow<span class="o">}</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(seq2science)</span> <span class="gp">user@comp:~.my_project$ </span>seq2science explain <span class="o">{</span>workflow<span class="o">}</span>
 </pre></div>
 </div>
 <p>This will print an extensive (quite technical) explanation that can also serve as a starting point for a material and methods section. This is not a replacement for the documentation, which we definitely recommend you to always read!</p>
@@ -280,11 +285,11 @@ rule two:
 </pre></div>
 </div>
 <p>We can tell snakemake to generate for instance file1.txt like this:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(base)</span> <span class="gp">user@comp:~$</span> snakemake file1.txt
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(base)</span> <span class="gp">user@comp:~$ </span>snakemake file1.txt
 </pre></div>
 </div>
 <p>And snakemake will see that rule one can generate this output, sees that it requires no input, and executes the shell command. If we tell snakemake to generate file2.txt:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(base)</span> <span class="gp">user@comp:~$</span> snakemake file2.txt
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(base)</span> <span class="gp">user@comp:~$ </span>snakemake file2.txt
 </pre></div>
 </div>
 <p>It will see that rule two needs to be run, takes a look at the required input for this rule, and checks whether file1.txt already exists. If it does, it will immediatly execute rule two, if file1.txt does not already exist it will execute rule one first.</p>
@@ -297,37 +302,29 @@ rule two:
            
           </div>
           <footer>
-  
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="workflows.html" class="btn btn-neutral float-right" title="Workflows" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="../index.html" class="btn btn-neutral float-left" title="seq2science" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+        <a href="workflows.html" class="btn btn-neutral float-right" title="Workflows" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../index.html" class="btn btn-neutral float-left" title="seq2science" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        
-        &copy; Copyright Maarten van der Sande, Siebren Frölich, Jos Smits, Rebecca Snabel, Tilman Schäfers, &amp; Simon van Heeringen.
+        &#169; Copyright Maarten van der Sande, Siebren Frölich, Jos Smits, Rebecca Snabel, Tilman Schäfers, &amp; Simon van Heeringen..
 
     </p>
   </div>
     
     
     
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
     
     provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
-
         </div>
       </div>
 

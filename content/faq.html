@@ -3,9 +3,9 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <title>Frequently Asked Questions (FAQ) &mdash; seq2science  documentation</title>
   
@@ -16,7 +16,10 @@
 
   
   
+
   
+  
+
   
 
   
@@ -50,7 +53,7 @@
           
 
           
-            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> seq2science
+            <a href="../index.html" class="icon icon-home"> seq2science
           
 
           
@@ -138,6 +141,8 @@
 
 
 
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
 
   <ul class="wy-breadcrumbs">
@@ -149,7 +154,7 @@
     
       <li class="wy-breadcrumbs-aside">
         
-            
+          
             
               <a href="https://github.com/vanheeringen-lab/seq2science/blob/master/docs/content/faq.md" class="fa fa-github"> Edit on GitHub</a>
             
@@ -176,7 +181,7 @@
 <h2>The pipeline starts creating conda environments and crashes (CreateCondaEnvironmentException)<a class="headerlink" href="#the-pipeline-starts-creating-conda-environments-and-crashes-createcondaenvironmentexception" title="Permalink to this headline">¶</a></h2>
 <p>The first thing the pipeline does is making separate conda environments for the rules that will be run. One thing that causes this error is that there isn’t enough space available on the device to install these environments. Sometimes, even when there is enough space on the device, the installation still fails, and we haven’t been able to pinpoint exactly what is causing this. What usually seems to work is just to remove the installed environemnts (<code class="docutils literal notranslate"><span class="pre">seq2science</span> <span class="pre">clean</span></code>) and try again.</p>
 <p>A different type of CreateCondaEnvironmentException occurs when you have conda configured to strict, and this will give a UnsatisfiableError. We haven’t been able to solve all problems with this, and recommend to try again with conda set to flexible instead of strict:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">user@comp:~$</span> conda config --set channel_priority flexible
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">user@comp:~$ </span>conda config --set channel_priority flexible
 </pre></div>
 </div>
 </div>
@@ -227,35 +232,28 @@ You could try reducing the <code class="docutils literal notranslate"><span clas
            
           </div>
           <footer>
-  
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-      
-        <a href="scATAC_postprocessing.html" class="btn btn-neutral float-left" title="seq2science scATAC postprocessing" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+        <a href="scATAC_postprocessing.html" class="btn btn-neutral float-left" title="seq2science scATAC postprocessing" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        
-        &copy; Copyright Maarten van der Sande, Siebren Frölich, Jos Smits, Rebecca Snabel, Tilman Schäfers, &amp; Simon van Heeringen.
+        &#169; Copyright Maarten van der Sande, Siebren Frölich, Jos Smits, Rebecca Snabel, Tilman Schäfers, &amp; Simon van Heeringen..
 
     </p>
   </div>
     
     
     
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
     
     provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
-
         </div>
       </div>
 
