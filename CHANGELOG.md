@@ -11,6 +11,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Changed
 
 - Updated kb-python to 0.25.1
+- RNA-seq with Salmon will still use bam-related QC files if bams are generated (create_trackhub = True)
 
 ### Fixed
 
