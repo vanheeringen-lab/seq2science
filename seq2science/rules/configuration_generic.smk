@@ -1,26 +1,32 @@
+import contextlib
+import genomepy
 import math
 import os.path
-import psutil
 import pickle
 import re
-import shutil
-import subprocess
 import time
 import copy
 import json
 import requests
+from functools import lru_cache
+import yaml
 
-import norns
+import xdg
 import numpy as np
 import pandas as pd
 import urllib.request
-from bs4 import BeautifulSoup
-from multiprocessing.pool import ThreadPool
 from filelock import FileLock
+from pandas_schema import Column, Schema
+from pandas_schema.validation import MatchesPatternValidation, IsDistinctValidation
 
 from snakemake.logging import logger
 from snakemake.utils import validate
 from snakemake.utils import min_version
+from snakemake.exceptions import TerminatedException
+
+import seq2science
+from seq2science.util import samples2metadata, prep_filelock, url_is_alive, color_parser
+
 
 
 logger.info(
@@ -42,14 +48,14 @@ docs: https://vanheeringen-lab.github.io/seq2science
 """
 )
 
-include: f"{config['rule_dir']}/explain.smk"
-
 
 if workflow.conda_frontend == "conda":
     logger.info("NOTE: seq2science is using the conda frontend, for faster environment creation install mamba.")
 # give people a second to appreciate this beautiful ascii art
 time.sleep(1)
 
+# get the cache and config dirs
+CACHE_DIR = os.path.join(xdg.XDG_CACHE_HOME, "seq2science", seq2science.__version__)
 
 # config.yaml(s)
 
@@ -69,7 +75,7 @@ for key, value in config.items():
         config[key] = os.path.expanduser(value)
 
 # make sure that difficult data-types (yaml objects) are in correct data format
-for kw in ['aligner', 'quantifier', 'bam_sorter']:
+for kw in ['aligner', 'quantifier', 'bam_sorter', "trimmer"]:
     if isinstance(config.get(kw, None), str):
         config[kw] = {config[kw]: {}}
 
@@ -85,11 +91,15 @@ assert sorted(config['fqext'])[0] == config['fqext1'], \
      f"Your suffixes:    fqext1: {config['fqext1']}, fqext2: {config['fqext2']}\n")
 
 # read the config.yaml (not the profile)
-user_config = norns.config(config_file=workflow.overwrite_configfiles[0])
+with open(workflow.overwrite_configfiles[0], 'r') as stream:
+    user_config = yaml.safe_load(stream)
 
 # make absolute paths, nest default dirs in result_dir and cut off trailing slashes
 config['result_dir'] = re.split("\/$", os.path.abspath(config['result_dir']))[0]
-config['samples'] = os.path.abspath(config['samples'])
+
+if not url_is_alive(config['samples']):
+    config['samples'] = os.path.abspath(config['samples'])
+
 for key, value in config.items():
     if key.endswith("_dir"):
         if key in ['result_dir', 'genome_dir', 'rule_dir'] or key in user_config:
@@ -106,25 +116,29 @@ for key, value in config.items():
 samples = pd.read_csv(config["samples"], sep='\t', dtype='str', comment='#')
 samples.columns = samples.columns.str.strip()
 
-# check that the columns are named
 assert all([col[0:7] not in ["Unnamed", ''] for col in samples]), \
     (f"\nEncountered unnamed column in {config['samples']}.\n" +
      f"Column names: {str(', '.join(samples.columns))}.\n")
 
-# check that the columns contains no irregular characters
-assert not any(samples.columns.str.contains('[^A-Za-z0-9_.\-%]+', regex=True)), \
-    (f"\n{config['samples']} may only contain letters, numbers and " +
-    "percentage signs (%), underscores (_), periods (.), or minuses (-).\n")
+# use pandasschema for checking if samples file is filed out correctly
+allowed_pattern = r'[A-Za-z0-9_.\-%]+'
+distinct_columns = ["sample"]
+if "descriptive_name" in samples.columns:
+    distinct_columns.append("descriptive_name")
 
-# check that the file contains no irregular characters
-assert not any([any(samples[col].str.contains('[^A-Za-z0-9_.\-%]+', regex=True, na=False)) for col in samples if col != "control"]), \
-    (f"\n{config['samples']} may only contain letters, numbers and " +
-    "percentage signs (%), underscores (_), periods (.), or minuses (-).\n")
+distinct_schema = Schema(
+    [Column(col, [MatchesPatternValidation(allowed_pattern),
+                  IsDistinctValidation()] if col in distinct_columns else [MatchesPatternValidation(allowed_pattern)], allow_empty=True) for col in
+     samples.columns])
 
-# check that sample names are unique
-assert len(samples["sample"]) == len(set(samples["sample"])), \
-    (f"\nDuplicate samples found in {config['samples']}:\n" +
-     f"{samples[samples.duplicated(['sample'], keep=False)].to_string()}\n")
+errors = distinct_schema.validate(samples)
+
+if len(errors):
+    logger.error("\nThere are some issues with parsing the samples file:")
+    for error in errors:
+        logger.error(error)
+    logger.error("")  # empty line
+    raise TerminatedException
 
 # for each column, if found in samples.tsv:
 # 1) if it is incomplete, fill the blanks with replicate/sample names
@@ -147,8 +161,13 @@ if 'descriptive_name' in samples:
         samples = samples.drop(columns=['descriptive_name'])
 if 'strandedness' in samples:
     samples['strandedness'] = samples['strandedness'].mask(pd.isnull, 'nan')
-    if config['filter_bam_by_strand'] is False or not any([field in list(samples['strandedness']) for field in ['forward', 'yes', 'reverse']]):
+    if config.get('ignore_strandedness', True) or not any([field in list(samples['strandedness']) for field in ['yes', 'forward', 'reverse', 'no']]):
         samples = samples.drop(columns=['strandedness'])
+if 'colors' in samples:
+    samples['colors'] = samples['colors'].mask(pd.isnull, '0,0,0')  # nan -> black
+    samples['colors'] = [color_parser(c) for c in samples['colors']]  # convert input to HSV color
+    if not config.get('create_trackhub', False):
+        samples = samples.drop(columns=['colors'])
 
 if 'replicate' in samples:
     # check if replicate names are unique between assemblies
@@ -182,208 +201,288 @@ samples = samples.set_index('sample')
 samples.index = samples.index.map(str)
 
 
-# sample layouts
-# check if a sample is single-end or paired end, and store it
-logger.info("Checking if samples are single-end or paired-end...")
-layout_cachefile = os.path.expanduser('~/.config/seq2science/layouts.p')
-layout_cachefile_lock = os.path.expanduser('~/.config/seq2science/layouts.p.lock')
-
-def prep_filelock(lock_file, max_age=10):
-    """
-    create the directory for the lock_file if needed
-    and remove locks older than the max_age (in seconds)
-    """
-    os.makedirs(os.path.dirname(lock_file), exist_ok=True)
-
-    # sometimes two jobs start in parallel and try to delete at the same time
-    try:
-        # ignore locks that are older than the max_age
-        if os.path.exists(lock_file) and \
-                time.time() - os.stat(lock_file).st_mtime > max_age:
-            os.unlink(lock_file)
-    except FileNotFoundError:
-         pass
-
-
-def get_layout_eutils(sample):
-    """
-    Sends a request to ncbi checking whether a sample is single-end or paired-end.
-    Robust method (always returns result), however manually filled in by uploader, so can be wrong.
-    Complementary method of get_layout_trace
-    """
-    api_key = config.get('ncbi_key', "")
-    if api_key is not "":
-        api_key = f'-api_key {api_key}'
-
-    try:
-        layout = subprocess.check_output(
-            f'''esearch {api_key} -db sra -query {sample} | efetch {api_key} | grep -Po "(?<=<LIBRARY_LAYOUT><)[^ /><]*"''',
-            shell=True).decode('ascii').rstrip()
-        if layout not in ['PAIRED', 'SINGLE']:
-            raise ValueError(f"Sample {sample} was found to be {layout}-end, however the only"
-                             f"acceptable library layouts are SINGLE-end and PAIRED-end.")
-        return layout
-    except subprocess.CalledProcessError:
-        return None
-
-
-def get_layout_trace(sample):
-    """
-    Parse the ncbi trace website to check if a read has 1, 2, or 3 spots.
-    Will fail if sample is not on ncbi database, however does not have the problem that uploader
-    filled out the form wrongly.
-    Complementary method of get_layout_eutils
-    """
-    try:
-        url = f"https://www.ncbi.nlm.nih.gov/sra/?term={sample}"
-
-        conn = urllib.request.urlopen(url)
-        html = conn.read()
-
-        soup = BeautifulSoup(html, features="html5lib")
-        links = soup.find_all('a')
-
-        for tag in links:
-            link = tag.get('href', None)
-            if link is not None and 'SRR' in link:
-                trace_conn = urllib.request.urlopen("https:" + link)
-                trace_html = trace_conn.read()
-                x = re.search("This run has (\d) read", str(trace_html))
-
-                # if there are spots without info, then just ignore this sample
-                if len(re.findall(", average length: 0", str(trace_html))) > 0:
-                    break
-                elif x.group(1) == '1':
-                    return 'SINGLE'
-                elif x.group(1) == '2':
-                    return 'PAIRED'
-    except:
-        pass
-    return None
-
-# do this locked to avoid parallel ncbi requests with the same key, and to avoid
-# multiple writes/reads at the same time to layouts.p
-prep_filelock(layout_cachefile_lock, 5*60)
-
-with FileLock(layout_cachefile_lock):
-    # try to load the layout cache, otherwise defaults to empty dictionary
-    try:
-        layout_cache = pickle.load(open(layout_cachefile, "rb"))
-    except FileNotFoundError:
-        layout_cache = {}
-
-
-    trace_tp = ThreadPool(20)
-    eutils_tp = ThreadPool(config.get('ncbi_requests', 3) // 2)
-
-    trace_layout = {}
-    eutils_layout = {}
-    config['layout'] = {}
-
-    # now do a request for each sample that was not in the cache
-    all_samples = [sample for sample in samples.index if sample not in layout_cache]
-    if "control" in samples:
-        for control in set(samples["control"]):
-            if control not in layout_cache and isinstance(control, str):  # ignore nans
-                all_samples.append(control)
-
-    for sample in all_samples:
-        if os.path.exists(expand(f'{{fastq_dir}}/{sample}.{{fqsuffix}}.gz', **config)[0]):
-            config['layout'][sample] ='SINGLE'
-        elif all(os.path.exists(path) for path in expand(f'{{fastq_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz', **config)):
-            config['layout'][sample] ='PAIRED'
-        elif sample.startswith(('GSM', 'SRR', 'ERR', 'DRR')):
-            eutils_layout[sample] = eutils_tp.apply_async(get_layout_eutils, (sample,))
-            trace_layout[sample] = trace_tp.apply_async(get_layout_trace, (sample,))
-
-            # sleep 1.25 times the minimum required sleep time so eutils don't complain
-            time.sleep(1.25 / (config.get('ncbi_requests', 3) // 2))
-        else:
-            raise ValueError(f"\nsample {sample} was not found..\n"
-                             f"We checked for SE file:\n"
-                             f"\t{config['fastq_dir']}/{sample}.{config['fqsuffix']}.gz \n"
-                             f"and for PE files:\n"
-                             f"\t{config['fastq_dir']}/{sample}_{config['fqext1']}.{config['fqsuffix']}.gz \n"
-                             f"\t{config['fastq_dir']}/{sample}_{config['fqext2']}.{config['fqsuffix']}.gz \n"
-                             f"and since the sample did not start with either GSM, SRR, ERR, and DRR we couldn't find it online..\n")
-
-    # now parse the output and store the cache, the local files' layout, and the ones that were fetched online
-    config['layout'] = {**layout_cache,
-                        **{k: v for k, v in config['layout'].items()},
-                        **{k: v.get() for k, v in eutils_layout.items() if v.get() is not None},
-                        **{k: v.get() for k, v in trace_layout.items() if v.get() is not None}}
-
-    assert all(layout in ['SINGLE', 'PAIRED'] for sample, layout in config['layout'].items())
-
-    # if new samples were added, update the cache
-    if len([sample for sample in samples.index if sample not in layout_cache]) is not 0:
-        pickle.dump({**config['layout']}, open(layout_cachefile, "wb"))
-
-
-# now only keep the layout of samples that are in samples.tsv
-config['layout'] = {**{key: value for key, value in config['layout'].items() if key in samples.index},
-                    **{key: value for key, value in config['layout'].items() if "control" in samples and key in samples["control"].values}}
-
-for sample in samples.index:
-    if sample not in config["layout"]:
-        raise ValueError(f"The command to lookup sample {sample} online failed!\n"
-                         f"Are you sure this sample exists..? Downloading samples with restricted "
-                         f"access is currently not supported. We advise you to download the sample "
-                         f"manually, and continue the pipeline from there on.")
-
-
-logger.info("Done!\n\n")
-
-# if samples are merged add the layout of the technical replicate to the config
-if 'replicate' in samples:
-    for sample in samples.index:
-        replicate = samples.loc[sample, 'replicate']
-        config['layout'][replicate] = config['layout'][sample]
-
-
-# workflow
+# check availability of assembly genomes and annotations
 
 
 def get_workflow():
     return workflow.snakefile.split('/')[-2]
 
+sequencing_protocol = get_workflow()\
+    .replace('alignment',  'Alignment')\
+    .replace('atac_seq',   'ATAC-seq')\
+    .replace('chip_seq',   'ChIP-seq')\
+    .replace('rna_seq',    'RNA-seq')\
+    .replace('scatac_seq', 'scATAC-seq')
 
-def any_given(*args):
+
+if "assembly" in samples:
+    # control whether to custom extended assemblies
+    if isinstance(config.get("custom_genome_extension"), str):
+        config["custom_genome_extension"] = [config["custom_genome_extension"]]
+    if isinstance(config.get("custom_annotation_extension"), str):
+        config["custom_annotation_extension"] = [config["custom_annotation_extension"]]
+    modified = config.get("custom_genome_extension") or config.get("custom_annotation_extension")
+    all_assemblies = [assembly + config["custom_assembly_suffix"] if modified else assembly for assembly in set(samples['assembly'])]
+    suffix = config["custom_assembly_suffix"] if modified else ""
+
+    def list_providers(assembly):
+        """
+        Return a minimal list of providers to check
+        """
+        readme_file = os.path.join(config['genome_dir'], assembly, "README.txt")
+        readme_provider = None
+        if os.path.exists(readme_file):
+            metadata, _ = genomepy.utils.read_readme(readme_file)
+            readme_provider = metadata.get("provider", "").lower()
+
+        if readme_provider in ["ensembl", "ucsc", "ncbi"]:
+            providers = [readme_provider]
+        elif config.get("provider"):
+            providers = [config["provider"].lower()]
+        else:
+            providers = ["ensembl", "ucsc", "ncbi"]
+
+        return providers
+
+
+    def provider_with_file(file, assembly):
+        """
+        Returns the first provider which has the file for the assembly.
+        file: annotation or genome
+        """
+        with open(os.devnull, "w") as null:
+            with contextlib.redirect_stdout(null), contextlib.redirect_stderr(null):
+
+                for provider in list_providers(assembly):
+                    p = genomepy.ProviderBase.create(provider)
+                    if assembly in p.genomes:
+                        if (file == "annotation" and p.get_annotation_download_link(assembly)) \
+                                or (file == "genome" and p.get_genome_download_link(assembly)):
+                            return provider
+        return None
+
+
+    # determine provider for each new assembly
+    providersfile = f"{CACHE_DIR}/providers.p"
+    providersfile_lock = f"{CACHE_DIR}/providers.p.lock"
+    for _ in range(2):
+        # we get two tries, in case parallel executions are interfering with one another
+        try:
+            prep_filelock(providersfile_lock, 30)
+            with FileLock(providersfile_lock):
+                providers = dict()
+                if os.path.exists(providersfile):
+                    providers = pickle.load(open(providersfile, "rb"))
+
+                if any([assembly not in providers for assembly in set(samples["assembly"])]):
+                    logger.info("Determining assembly providers")
+
+                    for assembly in set(samples["assembly"]):
+                        if assembly not in providers:
+                            file = os.path.join(config['genome_dir'], assembly, assembly)
+                            providers[assembly] = {"genome": None, "annotation": None}
+
+                            # check if genome and annotations exist locally
+                            if os.path.exists(f"{file}.fa"):
+                                providers[assembly]["genome"] = "local"
+                            if any(os.path.exists(f) for f in [f"{file}.annotation.gtf", f"{file}.annotation.gtf.gz"]) and \
+                                any(os.path.exists(f) for f in [f"{file}.annotation.bed", f"{file}.annotation.bed.gz"]):
+                                providers[assembly]["annotation"] = "local"
+
+                            # check if the annotation can be downloaded
+                            if providers[assembly]["annotation"] is None:
+                                annotion_provider = provider_with_file("annotation", assembly)
+                                if annotion_provider:
+                                    providers[assembly]["genome"] = annotion_provider  # genome always exists if annotation does
+                                    providers[assembly]["annotation"] = annotion_provider
+
+                            # check if the genome can be downloaded
+                            if providers[assembly]["genome"] is None:
+                                genome_provider = provider_with_file("genome", assembly)
+                                providers[assembly]["genome"] = genome_provider
+
+                    pickle.dump(providers, open(providersfile, "wb"))
+                break
+        except FileNotFoundError:
+            time.sleep(1)
+    else:
+        logger.error("There were some problems with locking the seq2science cache. Please try again in a bit.")
+        raise TerminatedException
+
+    # check the providers for the required assemblies
+    annotation_required = "rna_seq" in get_workflow() or config["aligner"] == "star"
+    _has_annot = dict()
+    for assembly in set(samples["assembly"]):
+        file = os.path.join(config['genome_dir'], assembly, assembly)
+        if providers[assembly]["genome"] is None and not os.path.exists(f"{file}.fa"):
+            logger.info(
+                f"Could not download assembly {assembly}.\n"
+                f"Find alternative assemblies with `genomepy search {assembly}`"
+            )
+            exit(1)
+
+        if providers[assembly]["annotation"] is None and not (
+                any(os.path.exists(f) for f in [f"{file}.annotation.gtf", f"{file}.annotation.gtf.gz"]) and
+                any(os.path.exists(f) for f in [f"{file}.annotation.bed", f"{file}.annotation.bed.gz"])
+        ):
+            logger.info(
+                f"No annotation for assembly {assembly} can be downloaded. Another provider (and "
+                f"thus another assembly name) might have a gene annotation.\n"
+                f"Find alternative assemblies with `genomepy search {assembly}`\n"
+            )
+            if annotation_required:
+                exit(1)
+            _has_annot[assembly] = False
+            time.sleep(0 if config.get("debug") else 2)  # give some time to read the message
+        else:
+            _has_annot[assembly] = True
+
+
+    def ori_assembly(assembly):
+        """
+        remove the extension suffix from an assembly if is was added.
+        """
+        return assembly[:-len(config["custom_assembly_suffix"])] if \
+            assembly.endswith(config["custom_assembly_suffix"]) and modified else assembly
+
+
+    def custom_assembly(assembly):
+        """
+        add extension suffix to an assembly if is wasn't yet added.
+        """
+        return assembly if assembly.endswith(config["custom_assembly_suffix"]) or not modified else \
+         (assembly + config["custom_assembly_suffix"])
+
+
+    @lru_cache(maxsize=None)
+    def has_annotation(assembly):
+        """
+        Returns True/False on whether or not the assembly has an annotation.
+        """
+        return _has_annot[assembly]
+
+else:
+    modified = False
+
+
+# sample layouts
+
+
+# check if a sample is single-end or paired end, and store it
+logger.info("Checking if samples are available online...")
+logger.info("This can take some time.")
+
+# make a collection of all samples
+all_samples = [sample for sample in samples.index]
+if "control" in samples:
+    for control in set(samples["control"]):
+        if isinstance(control, str):  # ignore nans
+            all_samples.append(control)
+
+pysradb_cache = f"{CACHE_DIR}/pysradb.p"
+pysradb_cache_lock = f"{CACHE_DIR}/pysradb.p.lock"
+for _ in range(2):
+    # we get two tries, in case parallel executions are interfering with one another
+    try:
+        prep_filelock(pysradb_cache_lock, 30)
+        with FileLock(pysradb_cache_lock):
+            try:
+                sampledict = pickle.load(open(pysradb_cache, "rb"))
+            except FileNotFoundError:
+                sampledict = {}
+
+            missing_samples = [sample for sample in all_samples if sample not in sampledict.keys()]
+            if len(missing_samples) > 0:
+                sampledict.update(samples2metadata(missing_samples, config, logger))
+
+            pickle.dump(sampledict, open(pysradb_cache, "wb"))
+
+            # only keep samples for this run
+            sampledict = {sample: values for sample, values in sampledict.items() if sample in all_samples}
+        break
+    except FileNotFoundError:
+        time.sleep(1)
+else:
+    logger.error("There were some problems with locking the seq2science cache. Please try again in a bit.")
+    raise TerminatedException
+
+logger.info("Done!\n\n")
+
+# now check where to download which sample
+ena_single_end = [run for values in sampledict.values() if (values["layout"] == "SINGLE") and values.get("ena_fastq_ftp") is not None for run in values["runs"]]
+ena_paired_end = [run for values in sampledict.values() if (values["layout"] == "PAIRED") and values.get("ena_fastq_ftp") is not None for run in values["runs"]]
+
+# get download link per run
+run2download = dict()
+for sample, values in sampledict.items():
+    for run in values.get("runs", []):
+        if values["ena_fastq_ftp"] and values["ena_fastq_ftp"][run]:
+            if not (config.get("ascp_path") and config.get("ascp_key")):
+                run2download[run] = [url.replace("era-fasp@fasp", "ftp") for url in values["ena_fastq_ftp"][run]]
+            else:
+                run2download[run] = values["ena_fastq_ftp"][run]
+
+# if samples are merged add the layout of the technical replicate to the config
+failed_samples = dict()
+if 'replicate' in samples:
+    for sample in samples.index:
+        replicate = samples.loc[sample, 'replicate']
+        if replicate not in sampledict:
+            sampledict[replicate] = {'layout':  sampledict[sample]['layout']}
+        elif sampledict[replicate]['layout'] != sampledict[sample]['layout']:
+            assembly = samples.loc[sample, "assembly"]
+            treps = samples[(samples["assembly"] == assembly) & (samples["replicate"] == replicate)].index
+            failed_samples.setdefault(replicate, set()).update({trep for trep in treps}) 
+
+if len(failed_samples):
+    logger.error("Your technical replicates consist of a mix of single-end and paired-end samples!")
+    logger.error("This is not supported.\n")
+
+    for replicate, samples in failed_samples.items():
+        logger.error(f"{replicate}:")
+        for sample in samples:
+            logger.error(f"\t{sample}: {sampledict[sample]['layout']}")
+        logger.error("\n")
+    raise TerminatedException
+
+# workflow
+
+
+def any_given(*args, prefix="", suffix=""):
     """
     returns a regex compatible string of all elements in the samples.tsv column given by the input
     """
     elements = []
     for column_name in args:
-        if column_name in samples:
-            elements.extend(samples[column_name])
-        elif column_name is 'sample':
+        if column_name == 'sample':
             elements.extend(samples.index)
+        elif column_name in samples:
+            elements.extend(samples[column_name])
 
-    elements = [element for element in elements if isinstance(element, str)]
+    elements = [prefix + element + suffix for element in elements if isinstance(element, str)]
     return '|'.join(set(elements))
+
 
 # set global wildcard constraints (see workflow._wildcard_constraints)
 sample_constraints = ["sample"]
 wildcard_constraints:
     sorting='coordinate|queryname',
-    sorter='samtools|sambamba'
+    sorter='samtools|sambamba',
 
 if 'assembly' in samples:
     wildcard_constraints:
-        assembly=any_given('assembly'),
+        raw_assembly=any_given('assembly'),
+        assembly=any_given('assembly', suffix=config["custom_assembly_suffix"] if modified else ""),
 
 if 'replicate' in samples:
-    sample_constraints = ["sample", "replicate"]
+    sample_constraints.append("replicate")
     wildcard_constraints:
         replicate=any_given('replicate')
 
 if 'condition' in samples:
-    sample_constraints = ["sample", "condition"]
+    sample_constraints.append("condition")
     wildcard_constraints:
         condition=any_given('condition')
-
-if 'replicate' in samples and 'condition' in samples:
-    sample_constraints = ["sample", "replicate", "condition"]
 
 if "control" in samples:
     sample_constraints.append("control")
@@ -392,80 +491,42 @@ wildcard_constraints:
     sample=any_given(*sample_constraints)
 
 
-# set default parameters (parallel downloads and memory)
-def convert_size(size_bytes, order=None):
-    # https://stackoverflow.com/questions/5194057/better-way-to-convert-file-sizes-in-python/14822210#14822210
-    size_name = ["b", "kb", "mb", "gb"]
-    if order is None:
-        order = int(math.floor(math.log(size_bytes, 1024)))
-    s = int(size_bytes // math.pow(1024, order))
-    return s, size_name[order]
-
 # make sure the snakemake version corresponds to version in environment
 min_version("5.18")
 
-# set some defaults
-workflow.global_resources = {**{'parallel_downloads': 3, 'deeptools_limit': 16, 'R_scripts': 1},
-                             **workflow.global_resources}
-
-# when the user specifies memory, use this and give a warning if it surpasses local memory
-# (surpassing does not always have to be an issue -> cluster execution)
-# if none specified set the memory to the max available on the computer
-mem = psutil.virtual_memory()
-if workflow.global_resources.get('mem_mb'):
-    if workflow.global_resources['mem_mb'] > convert_size(mem.total, 2)[0]:
-        logger.info(f"WARNING: The specified ram ({workflow.global_resources['mem_mb']} mb) surpasses the local machine\'s RAM ({convert_size(mem.total, 2)[0]} mb)")
-
-    workflow.global_resources = {**{'mem_mb': np.clip(workflow.global_resources['mem_mb'], 0, convert_size(mem.total, 2)[0])},
-                                 **workflow.global_resources}
-else:
-    if workflow.global_resources.get('mem_gb', 0) > convert_size(mem.total, 3)[0]:
-        logger.info(f"WARNING: The specified ram ({workflow.global_resources['mem_gb']} gb) surpasses the local machine\'s RAM ({convert_size(mem.total, 3)[0]} gb)")
-
-    workflow.global_resources = {**{'mem_gb': np.clip(workflow.global_resources.get('mem_gb', 9999), 0, convert_size(mem.total, 3)[0])},
-                                 **workflow.global_resources}
 
 # record which assembly trackhubs are found on UCSC
 if config.get("create_trackhub"):
-    hubfile = os.path.expanduser('~/.config/seq2science/ucsc_trackhubs.p')
-    hubfile_lock = os.path.expanduser('~/.config/seq2science/ucsc_trackhubs.p.lock')
-    prep_filelock(hubfile_lock)
+    hubfile = f"{CACHE_DIR}/ucsc_trackhubs.p"
+    hubfile_lock = f"{CACHE_DIR}/ucsc_trackhubs.p.lock"
+    for _ in range(2):
+        # we get two tries, in case parallel executions are interfering with one another
+        try:
+            prep_filelock(hubfile_lock)
+            with FileLock(hubfile_lock):
+                if not os.path.exists(hubfile):
+                    # check for response of ucsc
+                    response = requests.get(f"https://genome.ucsc.edu/cgi-bin/hgGateway",
+                                            allow_redirects=True)
+                    assert response.ok, "Make sure you are connected to the internet"
 
-    with FileLock(hubfile_lock):
-        if not os.path.exists(hubfile):
-            # check for response of ucsc
-            response = requests.get(f"https://genome.ucsc.edu/cgi-bin/hgGateway",
-                                    allow_redirects=True)
-            assert response.ok, "Make sure you are connected to the internet"
+                    with urllib.request.urlopen("https://api.genome.ucsc.edu/list/ucscGenomes") as url:
+                        data = json.loads(url.read().decode())['ucscGenomes']
 
-            with urllib.request.urlopen("https://api.genome.ucsc.edu/list/ucscGenomes") as url:
-                data = json.loads(url.read().decode())['ucscGenomes']
+                    # generate a dict ucsc assemblies
+                    ucsc_assemblies = dict()
+                    for key, values in data.items():
+                        ucsc_assemblies[key.lower()] = [key, values.get("description", "")]
 
-            # generate a dict ucsc assemblies
-            ucsc_assemblies = dict()
-            for key, values in data.items():
-                ucsc_assemblies[key.lower()] = [key, values.get("description", "")]
+                    # save to file
+                    pickle.dump(ucsc_assemblies, open(hubfile, "wb"))
 
-            # save to file
-            pickle.dump(ucsc_assemblies, open(hubfile, "wb"))
+                # read hubfile
+                ucsc_assemblies = pickle.load(open(hubfile, "rb"))
+            break
+        except FileNotFoundError:
+            time.sleep(1)
+    else:
+        logger.error("There were some problems with locking the seq2science cache. Please try again in a bit.")
+        raise TerminatedException
 
-        # read hubfile
-        ucsc_assemblies = pickle.load(open(hubfile, "rb"))
-
-onstart:
-    # save a copy of the latest samples and config file(s) in the log_dir
-    # skip this step on Jenkins, as it runs in parallel
-    if os.getcwd() != config['log_dir'] and not os.getcwd().startswith('/var/lib/jenkins'):
-        os.makedirs(config['log_dir'], exist_ok=True)
-        for n, file in enumerate([config['samples']] + workflow.overwrite_configfiles):
-            src = os.path.join(os.getcwd(), file)
-            dst = os.path.join(config['log_dir'], os.path.basename(file) if n<2 else "profile.yaml")
-            shutil.copy(src, dst)
-onsuccess:
-    if config.get("email") not in ["none@provided.com", "yourmail@here.com", None]:
-        os.system(f"""echo "Succesful pipeline run! :)" | mail -s "The seq2science pipeline finished succesfully." {config["email"]} 2> /dev/null""")
-onerror:
-    if config.get("email") not in ["none@provided.com", "yourmail@here.com", None]:
-        os.system(f"""echo "Unsuccessful pipeline run! :(" | mail -s "The seq2science pipeline finished prematurely..." {config["email"]} 2> /dev/null """)
-
-include: "../rules/configuration_workflows.smk"

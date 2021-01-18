@@ -1,7 +1,7 @@
 # do onstart/onexit things
 sample_schemas = ['sample', 'assembly', 'replicate', 'strandedness']
 config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific', 'trackhub']
-include: "../../rules/configuration_generic.smk"
+include: "../../rules/configuration.smk"
 
 
 # load the remaining relevant rules
@@ -32,20 +32,21 @@ def get_bams():
     bamfiles['map'] = set(); bamfiles['ind'] = set()
 
     # get all the bams
-    if config.get('technical_replicates', '') == 'merge' and 'replicate' in samples:
-        for assembly in set(samples['assembly']):
-            for replicate in set(samples[samples['assembly'] == assembly]['replicate']):
+    if 'replicate' in samples:
+        for assembly in all_assemblies:
+            for replicate in set(samples[samples['assembly'] == ori_assembly(assembly)]['replicate']):
                 bamfiles['map'].update([expand(f"{{final_bam_dir}}/{assembly}-{replicate}.{{bam_sorter}}-{{bam_sort_order}}.{map_ext}", **config)[0]])
                 bamfiles['ind'].update([expand(f"{{final_bam_dir}}/{assembly}-{replicate}.{{bam_sorter}}-{{bam_sort_order}}.{map_ext}.{map_idx}", **config)[0]])
                 # always output samtools-coordinate
                 bamfiles['map'].update([expand(f"{{final_bam_dir}}/{assembly}-{replicate}.samtools-coordinate.{map_ext}", **config)[0]])
                 bamfiles['ind'].update([expand(f"{{final_bam_dir}}/{assembly}-{replicate}.samtools-coordinate.{map_ext}.{map_idx}", **config)[0]])
     else:
-        bamfiles['map'].update([expand(f"{{final_bam_dir}}/{samples.loc[sample]['assembly']}-{sample}.{{bam_sorter}}-{{bam_sort_order}}.{map_ext}", **config)[0] for sample in samples.index])
-        bamfiles['ind'].update([expand(f"{{final_bam_dir}}/{samples.loc[sample]['assembly']}-{sample}.{{bam_sorter}}-{{bam_sort_order}}.{map_ext}.{map_idx}", **config)[0] for sample in samples.index if config['bam_sort_order'] == 'coordinate'])
+        # suffix is defined in configuration_generic (noting or _custom)
+        bamfiles['map'].update([expand(f"{{final_bam_dir}}/{samples.loc[sample]['assembly']}{suffix}-{sample}.{{bam_sorter}}-{{bam_sort_order}}.{map_ext}", **config)[0] for sample in samples.index])
+        bamfiles['ind'].update([expand(f"{{final_bam_dir}}/{samples.loc[sample]['assembly']}{suffix}-{sample}.{{bam_sorter}}-{{bam_sort_order}}.{map_ext}.{map_idx}", **config)[0] for sample in samples.index if config['bam_sort_order'] == 'coordinate'])
         # always output samtools-coordinate
-        bamfiles['map'].update([expand(f"{{final_bam_dir}}/{samples.loc[sample]['assembly']}-{sample}.samtools-coordinate.{map_ext}", **config)[0] for sample in samples.index])
-        bamfiles['ind'].update([expand(f"{{final_bam_dir}}/{samples.loc[sample]['assembly']}-{sample}.samtools-coordinate.{map_ext}.{map_idx}", **config)[0] for sample in samples.index if config['bam_sort_order'] == 'coordinate'])
+        bamfiles['map'].update([expand(f"{{final_bam_dir}}/{samples.loc[sample]['assembly']}{suffix}-{sample}.samtools-coordinate.{map_ext}", **config)[0] for sample in samples.index])
+        bamfiles['ind'].update([expand(f"{{final_bam_dir}}/{samples.loc[sample]['assembly']}{suffix}-{sample}.samtools-coordinate.{map_ext}.{map_idx}", **config)[0] for sample in samples.index if config['bam_sort_order'] == 'coordinate'])
 
     return bamfiles
 
@@ -56,7 +57,7 @@ rule align_all:
     input:
          get_bams()['map'] if not config['create_trackhub'] else [],
          get_bams()['ind'] if not config['create_trackhub'] else [],
-         expand((["{result_dir}/trackhub"] if config['create_trackhub'] else []) +
-                (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []),
-                **{**config,
-                   **{'assemblies': set(samples['assembly'])}})
+         expand(
+             (["{result_dir}/trackhub"] if config['create_trackhub'] else []) +
+             (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []),
+             **{**config, **{'assemblies': all_assemblies}})

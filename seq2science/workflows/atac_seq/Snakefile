@@ -1,7 +1,7 @@
 # do onstart/onexit things
 sample_schemas = ['sample', 'assembly', 'replicate', 'condition', 'strandedness']
 config_schemas = ['general', 'download', 'alignment_general', 'peakcalling', 'trackhub']
-include: "../../rules/configuration_generic.smk"
+include: "../../rules/configuration.smk"
 
 
 # load all the relevant rules
@@ -27,8 +27,8 @@ rule call_peaks_all:
     call peaks for each sample (or condition if applies)
     """
     input:
-        expand((["{result_dir}/trackhub"] if config['create_trackhub'] else []) +
-               (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []),
-                **{**config,
-                   **{'assemblies': set(samples['assembly']), 'peak_caller': config['peak_caller'].keys()}})
+        expand(
+            (["{result_dir}/trackhub"] if config['create_trackhub'] else []) +
+            (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []),
+            **{**config, **{'assemblies': all_assemblies}})
         + count_table_output()

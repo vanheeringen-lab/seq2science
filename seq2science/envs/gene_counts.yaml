@@ -6,3 +6,4 @@ channels:
 dependencies:
   - bioconda::htseq=0.12.4
   - bioconda::subread=2.0.1
+  - bioconda::rseqc=4.0.0

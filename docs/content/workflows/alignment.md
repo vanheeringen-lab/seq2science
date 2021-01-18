@@ -6,8 +6,11 @@ Aligning samples has never been easier! See our [alignment](https://github.com/v
   <img src="../../_static/alignment.png">
 </p>
 
+#### Downloading of sample(s)
+Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples. Take a look at the [downloading_fastq](https://vanheeringen-lab.github.io/seq2science/content/workflows/download_fastq.html) workflow for extensive documentation about downloading of public samples. 
+
 #### Automated trimming
-The pipeline starts by trimming the reads with [trim galore!](https://github.com/FelixKrueger/TrimGalore/blob/master/Docs/Trim_Galore_User_Guide.md). Trim galore automatically first trims the low quality 3' ends of reads, and removes short reads. After the quality trimming trim galore automatically detects which adapter was used, and trims it. The parameters of trim galore! for the pipeline can be set in the configuration by variable *trim_galore*. 
+The pipeline starts by trimming the reads with either [trim galore!](https://github.com/FelixKrueger/TrimGalore/blob/master/Docs/Trim_Galore_User_Guide.md) or [fastp](https://github.com/OpenGene/fastp). Trim galore and fastp both automatically detect which adapter was used and remove those. In addition they trim the low quality 3' ends of reads, and remove short reads. Which trimmer should be used (and their params) can be set by the key `trimmer` in the config.yaml. 
 
 #### Alignment & Sorting
 After trimming the reads are aligned against an assembly. Currently we support *bowtie2*, *bwa*, *bwa-mem2*, *hisat2* and *STAR* as aligners. Choosing which aligner is as easy as setting the *aligner* variable in the `config.yaml`, for example: `aligner: bwa`. Sensible defaults have been set for every aligner, but can be overwritten for either (or both) the indexing and alignment by specifying them in the `config.yaml`:
@@ -22,6 +25,10 @@ The pipeline will check if the assembly you specified is present in the *genome_
 
 The outputted alignment.bam is immediately sorted by either samtools or sambamba (*bam_sorter*) either in *queryname* or *coordinate* (default) order. Take a look at our [Choosing an aligner](https://github.com/vanheeringen-lab/snakemake-workflows/wiki/3.-Alignment#choosing-an-appropriate-aligner) section for tips which aligner to use.
 
+#### Custom assembly extensions
+The genome and/or gene annotation can be extended with custom files, such as ERCC spike-ins for scRNA-seq. To do so, add `custom_genome_extension: path/to/spike_in.fa` and `custom_annotation_extension: path/to/spike_in.gtf` to the config.
+Seq2science will place the customized assembly in a separate folder in the `genome_dir`.
+
 #### Mark duplicates
 After aligning & sorting the bam duplicate reads are being 'marked' by picard Markduplicates. You can change the call by setting *markduplicates* in config.yaml.
 
@@ -31,8 +38,8 @@ Many downstream tools require an index of the deduplicated bam. The pipeline aut
 #### Quality report
 It is always a good idea to check the quality of your samples. Along the way different quality control steps are taken, and are outputted in a single [multiqc report](https://multiqc.info/) in the `qc` folder. Make sure to always check the report, and take a look at [interpreting the multiqc report](../results.html#multiqc-quality-report)!
 
-#### Trackhub ###
-A UCSC compatible trackhub is be generated for this workflow. See the [trackhub page](../results.html#trackhub) for more information!
+#### Trackhub
+A UCSC compatible trackhub can be generated for this workflow. See the [trackhub page](../results.html#trackhub)<!-- @IGNORE PREVIOUS: link --> for more information!
 
 ### Filling out the samples.tsv
 Before running a workflow you will have to specify which samples you want to run the workflow on. Each workflow starts with a `samples.tsv` as an example, and you should adapt it to your specific needs. As an example, the `samples.tsv` could look something like this:
@@ -46,7 +53,7 @@ GSM890    danRer11    stage_9      stage_9
 ```
 
 #### Sample column
-This column is necessary for all workflows, not just the atac-seq workflow. If you use the pipeline on public data this should be the name of the accession (e.g. GSM2837484), if you use the pipeline on local data this should be the *basename* of the file without the *extension*. For instance `/home/user/myfastqs/sample1.fastq.gz` would be `sample1`.
+This column is necessary for all workflows, not just the atac-seq workflow. If you use the pipeline on public data this should be the name of the accession (e.g. GSM2837484). If you use the pipeline on local data this should be the *basename* of the file without the *extension(s)*. For instance, `/home/user/myfastqs/sample1.fastq.gz` would be `sample1` (for single-ended data). For paired-ended data `/home/user/myfastqs/sample2_R1.fastq.gz` and `/home/user/myfastqs/sample2_R2.fastq.gz` would be `sample2`.
 
 #### Assembly column
 This column is necessary for all workflows, except the *downloading samples* workflow. Here you simply add the name of the assembly you want your samples aligned against and the workflow will download it for you.
@@ -72,6 +79,10 @@ If you are working with multiple assemblies in one workflow, replicate names hav
 
 Replicate merging is turned on by default. It can be turned off by setting `technical_replicates` in the `config.yaml` to `keep`.
 
+#### Colors column
+If you are visualizing your data on the UCSC trackhub you can optionally specify the colors of each track.
+To do so, you can add the color by name (google "matplotlib colors" for the options), or RGB values, in the "colors" column. Empty fields are considered black.
+
 #### Final notes
 - Make sure that the samples.tsv is a tab separated values file when running the pipeline.
 - Feel free to delete or add columns to your liking.
@@ -90,8 +101,9 @@ For the default aligners (BWA and STAR), a minimal quality score has been set to
 |Aligner|min. MAPQ scores for uniquely mapped reads|
 |---|---|
 |Bowtie2|41|
-|BWA|30|
+|Bwa-mem(2)|30|
 |Hisat2|44|
+|Minimap|0, but use `--secondary=no` as alignment option|
 |STAR|255|
 
 #### Cram support

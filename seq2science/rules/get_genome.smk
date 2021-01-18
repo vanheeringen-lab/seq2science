@@ -1,120 +1,179 @@
 import os
-import time
 import contextlib
+
 import genomepy
-from filelock import FileLock
-from functools import lru_cache
 
 
-# the filetypes genomepy will download
-config["genome_types"] = ["fa", "fa.fai", "fa.sizes", "gaps.bed"]
-config["genomepy_temp"] = ["annotation.bed.gz", "annotation.gff.gz"]
-
-# add annotation to the expected output if it is required
-if "rna_seq" in get_workflow() or config["aligner"] == "star":
-    config["genome_types"].append("annotation.gtf")
-
-
-# TODO: return to checkpoint get_genome when checkpoints are stable
-#  1) does the trackhub input update? 2) does ruleorder work?
 rule get_genome:
     """
     Download a genome through genomepy.
-    Additionally downloads the gene annotation if required downstream.
-
-    If assemblies with the same name can be downloaded from multiple providers, 
-    a provider may be specified in the config (example: provider: NCBI). Otherwise,
-    each provider will be tried in turn, stopping at the first success.
-
-    Automatically turns on/off plugins.
+    
+    Also download a blacklist if it exists.
     """
     output:
-        expand("{genome_dir}/{{assembly}}/{{assembly}}.{genome_types}", **config),
+        expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa", **config),
     log:
-        expand("{log_dir}/get_genome/{{assembly}}.genome.log", **config),
+        expand("{log_dir}/get_genome/{{raw_assembly}}.genome.log", **config),
     benchmark:
-        expand("{benchmark_dir}/get_genome/{{assembly}}.genome.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/get_genome/{{raw_assembly}}.genome.benchmark.txt", **config)[0]
     message: explain_rule("get_genome")
+    params:
+        providers=providers,
+        genome_dir=config["genome_dir"]
     resources:
         parallel_downloads=1,
     priority: 1
+    script:
+        f"{config['rule_dir']}/../scripts/get_genome.py"
+
+
+rule get_genome_annotation:
+    """
+    Download a gene annotation through genomepy.
+    """
+    input:
+        ancient(rules.get_genome.output),
+    output:
+        gtf=expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.annotation.gtf.gz", **config),
+        bed=expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.annotation.bed.gz", **config),
+    log:
+        expand("{log_dir}/get_annotation/{{raw_assembly}}.genome.log", **config),
+    benchmark:
+        expand("{benchmark_dir}/get_annotation/{{raw_assembly}}.genome.benchmark.txt", **config)[0]
+    resources:
+        parallel_downloads=1,
     params:
-        dir=config["genome_dir"],
-        provider=config.get("provider", None),
-        gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
-        temp=expand("{genome_dir}/{{assembly}}/{{assembly}}.{genomepy_temp}", **config),
-    conda:
-        "../envs/get_genome.yaml"
+        providers=providers,
+        genome_dir=config["genome_dir"]
+    priority: 1
+    script:
+        f"{config['rule_dir']}/../scripts/get_genome_annotation.py"
+
+
+rule extend_genome:
+    """
+    Append given file(s) to genome
+    """
+    input:
+        genome=expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa", **config),
+        extension=config.get("custom_genome_extension", []),
+    output:
+        genome=expand("{genome_dir}/{{raw_assembly}}{custom_assembly_suffix}/{{raw_assembly}}{custom_assembly_suffix}.fa", **config),
+    message: explain_rule("custom_extension")
     shell:
         """
-        # turn off plugins and reset on exit. delete temp files on exit.
-        active_plugins=$(genomepy config show | grep -Po '(?<=- ).*' | paste -s -d, -) || echo ""
-        trap "genomepy plugin enable {{$active_plugins,}} >> {log} 2>&1; rm -f {params.temp}" EXIT
-        genomepy plugin disable {{blacklist,bowtie2,bwa,star,gmap,hisat2,minimap2}} >> {log} 2>&1
-        genomepy plugin enable {{blacklist,}} >> {log} 2>&1
-
-        # download the genome and attempt to download the annotation and blacklist
-        if [[ ! {params.provider} = None  ]]; then
-            genomepy install --genomes_dir {params.dir} {wildcards.assembly} {params.provider} --annotation >> {log} 2>&1
-        else
-            genomepy install --genomes_dir {params.dir} {wildcards.assembly} Ensembl --annotation >> {log} 2>&1 ||
-            genomepy install --genomes_dir {params.dir} {wildcards.assembly} UCSC    --annotation >> {log} 2>&1 ||
-            genomepy install --genomes_dir {params.dir} {wildcards.assembly} NCBI    --annotation >> {log} 2>&1
-        fi
-
-        # unzip annotation if downloaded and gzipped
-        if [ -f {params.gtf}.gz ]; then
-            gunzip -f {params.gtf}.gz >> {log} 2>&1
-        fi
-
-        # if assembly has no annotation, or annotation has no genes, throw an warning
-        if [ ! -f {params.gtf} ] || $(grep -q "No genes found" {log}); then
-            echo '\nEmpty or no annotation found for {wildcards.assembly}.\n' | tee -a {log}
-
-            # if an annotation is required, make it an error and exit.
-            if $(echo {output} | grep -q annotation.gtf); then
-                echo'\nSelect a different assembly or provide an annotation file manually.\n\n' | tee -a {log}
-                exit 1
-            fi
-        fi
+        # extend the genome.fa
+        cp {input.genome} {output.genome}
+        
+        for FILE in {input.extension}; do
+            cat $FILE >> {output.genome}
+        done
         """
 
 
-@lru_cache(maxsize=None)
-def has_annotation(assembly):
+rule extend_genome_annotation:
     """
-    returns True/False on whether or not the assembly has an annotation.
+    Append given file(s) to genome annotation
     """
-    # check if genome is provided by user or already downloaded, if so check if the annotation came along
-    if all(os.path.exists(f"{config['genome_dir']}/{assembly}.{extension}") for extension in config["genome_types"]):
-        return os.path.exists(f"{config['genome_dir']}/{assembly}.annotation.gtf")
+    input:
+        gtf=expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.annotation.gtf", **config),
+        extension=config.get("custom_annotation_extension", [])
+    output:
+        gtf=expand("{genome_dir}/{{raw_assembly}}{custom_assembly_suffix}/{{raw_assembly}}{custom_assembly_suffix}.annotation.gtf", **config),
+        bed=expand("{genome_dir}/{{raw_assembly}}{custom_assembly_suffix}/{{raw_assembly}}{custom_assembly_suffix}.annotation.bed", **config),
+        gp=temp(expand("{genome_dir}/{{raw_assembly}}{custom_assembly_suffix}/{{raw_assembly}}{custom_assembly_suffix}.annotation.gp", **config)),
+    message: explain_rule("custom_extension")
+    shell:
+        """
+        # extend the genome.annotation.gtf
+        cp {input.gtf} {output.gtf}
+        
+        for FILE in {input.extension}; do
+            cat $FILE >> {output.gtf}
+        done
 
-    if "provider" in config:
-        providers = [config["provider"]]
-    else:
-        providers = ["Ensembl", "UCSC", "NCBI"]
+        # generate an extended genome.annotation.bed
+        gtfToGenePred {output.gtf} {output.gp}
+        genePredToBed {output.gp} {output.bed}
+        """
 
-    # check if we expect an annotation
-    # we do not want genomepy outputting to us that it is downloading stuff
-    with open(os.devnull, "w") as null:
-        with contextlib.redirect_stdout(null), contextlib.redirect_stderr(null):
-            for provider in providers:
-                annotation_lock = os.path.expanduser(f'~/.config/seq2science/genomepy_{provider}_annotations.lock')
-                prep_filelock(annotation_lock, 20)
 
-                with FileLock(annotation_lock):
-                    p = genomepy.ProviderBase.create(provider)
-                    if assembly in p.genomes:
-                        if p.get_annotation_download_link(assembly) is None:
-                            logger.info(
-                                f"No annotation for assembly {assembly} can be downloaded. Another provider (and "
-                                f"thus another assembly name) might have gene annotations.\n"
-                                f"Find alternative assemblies with `genomepy search {assembly}`"
-                            )
-                            time.sleep(2)
-                            return False
-                        else:
-                            return True
+rule get_genome_support_files:
+    """
+    Generate supporting files for a genome.
+    """
+    input:
+        expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+    output:
+        expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.fai", **config),
+        expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
+        expand("{genome_dir}/{{assembly}}/{{assembly}}.gaps.bed", **config),
+    params:
+        genome_dir=config["genome_dir"]
+    script:
+        f"{config['rule_dir']}/../scripts/genome_support.py"
 
-    # no download link found for assembly
-    return False
+
+rule gene_id2name:
+    """
+    Parse the gtf file to generate a gene_id to gene_name conversion table.
+    """
+    input:
+        expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
+    output:
+        expand("{genome_dir}/{{assembly}}/gene_id2name.tsv", **config),
+    run:
+        def can_convert():
+            """check if we can make a conversion table at all"""
+            with open(input[0]) as gtf:
+                for n, line in enumerate(gtf):
+                    line = line.lower()
+                    if "gene_id" in line and "gene_name" in line:
+                        return True
+                    if n > 100:
+                        break
+                return False
+
+        if not can_convert():
+            with open(output[0], "w") as out:
+                out.write("assembly does not contain both gene_ids and gene_names\n")
+        else:
+
+            # loop over the gtf and store the conversion in the table
+            table = dict()
+            with open(input[0]) as gtf:
+                for line in gtf:
+                    try:
+                        attributes = line.split("\t")[8].split(";")
+                        id = name = None
+                        for attribute in attributes:
+                            attribute = attribute.strip()
+                            if attribute.lower().startswith("gene_id"):
+                                id = attribute.split(" ")[1].strip('"')
+                            if attribute.lower().startswith("gene_name"):
+                                name = attribute.split(" ")[1].strip('"')
+                        if id and name:
+                            table[id] = name
+                    except IndexError:
+                        # skip lines that are too short/misformatted
+                        continue
+
+            # save the dict
+            with open(output[0], "w") as out:
+                for k,v in table.items():
+                    out.write(f"{k}\t{v}\n")
+
+
+rule unzip_annotation:
+    """
+    Unzip (b)gzipped files.
+    """
+    input:
+        "{filepath}.gz"
+    output:
+        "{filepath}"
+    wildcard_constraints:
+        filepath=".*(\.annotation)(\.gtf|\.bed)(?<!\.gz)$"  # filepath may not end with ".gz"
+    priority: 1
+    run:
+        genomepy.utils.gunzip_and_name(input[0])

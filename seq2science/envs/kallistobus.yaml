@@ -1,7 +1,8 @@
-name: get_genome
+name: kallistobus
 channels:
   - conda-forge
   - bioconda
   - defaults
 dependencies:
-  - bioconda::genomepy=0.8.3
+  - python>=3.7
+  - bioconda::kb-python=0.25.1

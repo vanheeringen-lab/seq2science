@@ -32,7 +32,7 @@ pipeline {
     environment {
         PATH = "$WORKSPACE/miniconda/bin:$PATH"
         CORES = "28"
-        MAMBA = "0.3.6"
+        MAMBA = "0.5.1"
     }
 
     stages {
@@ -62,6 +62,10 @@ pipeline {
                 source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                 conda activate s2s
                 pip install .
+
+                # remove old cache files
+                seq2science clean
+                genomepy clean
                 '''
             }
         }
@@ -103,6 +107,24 @@ pipeline {
                         conda activate s2s
 
                         bash ./tests/dag_tests.sh rna-seq
+                        '''
+                    },
+                    "5 scRNA-seq" : {
+                        sh '''#!/usr/bin/env bash
+                        set -e
+                        source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+                        conda activate s2s
+
+                        bash ./tests/dag_tests.sh scrna-seq
+                        '''
+                    },
+                    "6 explain functionality" : {
+                        sh '''#!/usr/bin/env bash
+                        set -e
+                        source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+                        conda activate s2s
+
+                        bash ./tests/dag_tests.sh explain
                         '''
                     },
                     "~ setup conda environments" : {
@@ -332,7 +354,7 @@ pipeline {
                     set -e
                     source $WORKSPACE/miniconda/etc/profile.d/conda.sh
                     conda activate s2s
-                    conda install -q --yes flake8
+                    mamba install -q --yes flake8
 
                     # flake8
                     printf "\nflake8\n\n"

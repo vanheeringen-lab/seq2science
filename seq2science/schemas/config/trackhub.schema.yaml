@@ -7,7 +7,7 @@ properties:
   create_trackhub:
     description: generate a trackhub (and required files)?
     default: True
-    enum: [True, False]
+    type: boolean
 
   bigwig_dir:
     description: directory where to store the bigwigs used by the trackhub (defaults inside the result dir)
@@ -16,9 +16,4 @@ properties:
 
   deeptools_flags:
     description: flags for bam to bigwig conversions with deeptools bamCoverage
-    default: --samFlagExclude 1024 # exclude duplicates marked by Picard
-
-  filter_bam_by_strand:
-    description: split bigwigs by strand (requires strandedness column in samples)?
-    default: True
-    enum: [True, False]
+    default: '--normalizeUsing BPM'  # Bins Per Million mapped reads, same as TPM in RNA-seq

@@ -10,9 +10,6 @@ genome_dir: ./genomes  # where to look for or download the genomes
 # contact info for multiqc report and trackhub
 email: yourmail@here.com
 
-# produce a UCSC trackhub?
-create_trackhub: True
-
 # how to handle plates ("technical replicates")
 technical_replicates: merge
 
@@ -23,8 +20,11 @@ tn5_shift: True
 min_mapping_quality: 30
 only_primary_align: True
 
-# use 'our' default parameters
-aligner: bwa-mem
+# which trimmer to use
+trimmer: fastp
+
+# which aligner to use
+aligner: bwa-mem2
 
 # snaptools options
 # min-mapq & keep-chrm set by config options above

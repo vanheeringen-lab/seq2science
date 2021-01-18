@@ -7,7 +7,7 @@ Running a ChIP-seq analysis has never been easier!
 </p>
 
 #### Downloading of sample(s)
-Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples. Take a look at the [downloading_fastq](download_fastq.md) workflow for extensive documentation about downloading of public samples. 
+Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples. Take a look at the [downloading_fastq](https://vanheeringen-lab.github.io/seq2science/content/workflows/download_fastq.html) workflow for extensive documentation about downloading of public samples. 
 
 #### Downloading and indexing of assembly(s)
 Depending on whether the assembly and its index you align your samples against already exist seq2science will start with downloading of the assembly through [genomepy](https://github.com/vanheeringen-lab/genomepy).
@@ -67,8 +67,8 @@ Seq2science currently supports four different normalisation methods: quantile no
 
 After these normalisations the counts are log normalised, and the base can be set with `logbase` and defaults to 2. As a final step the count tables are mean-centered. This final count table can be used for tools like [gimme maelstrom](https://gimmemotifs.readthedocs.io/en/master/reference.html#command-gimme-maelstrom) to scan for enriched transcription factor motifs. Note that this table contains **all** peaks, and no selection on differential peaks has been made. This is something that might be supported in the future, but for now you have to do this yourself.
 
-#### Trackhub ###
-A UCSC compatible trackhub is be generated for this workflow. See the [trackhub page](../results.html#trackhub) for more information!
+#### Trackhub
+A UCSC compatible trackhub can be generated for this workflow. See the [trackhub page](../results.html#trackhub)<!-- @IGNORE PREVIOUS: link --> for more information!
 
 ### Filling out the samples.tsv
 Before running a workflow you will have to specify which samples you want to run the workflow on. Each workflow starts with a `samples.tsv` as an example, and you should adapt it to your specific needs. As an example, the `samples.tsv` could look something like this:
@@ -82,7 +82,7 @@ GSM890    danRer11    stage_9      stage_9             GSM234
 ```
 
 #### Sample column
-This column is necessary for all workflows, not just the atac-seq workflow. If you use the pipeline on public data this should be the name of the accession (e.g. GSM2837484), if you use the pipeline on local data this should be the *basename* of the file without the *extension*. For instance `/home/user/myfastqs/sample1.fastq.gz` would be `sample1`.
+This column is necessary for all workflows, not just the ChIP-seq workflow. If you use the pipeline on public data this should be the name of the accession (e.g. GSM2837484). If you use the pipeline on local data this should be the *basename* of the file without the *extension(s)*. For instance, `/home/user/myfastqs/sample1.fastq.gz` would be `sample1` (for single-ended data). For paired-ended data `/home/user/myfastqs/sample2_R1.fastq.gz` and `/home/user/myfastqs/sample2_R2.fastq.gz` would be `sample2`.
 
 #### Assembly column
 This column is necessary for all workflows, except the *downloading samples* workflow. Here you simply add the name of the assembly you want your samples aligned against and the workflow will download it for you.
@@ -124,6 +124,10 @@ One of the more common methods to combine biological replicates is by the irrepr
 
 ##### Fisher's method
 [Fisher's method ](https://en.wikipedia.org/wiki/Fisher%27s_method) simply is a method to 'combine' multiple p-values. This method is built-in for genrich and macs2, and allows any number of replicates (`n >= 2`). However a 'disadvantage' of this method is that it assumes the p-values a method generates are actual p-values (and not a general indication of significance). MACS2 is slightly notorious for that its p-values are not true p-values. Genrich claims by fitting on a log-normal distribution that their p-values are true. Even though fisher's method might not be ideal, it's the only option you have (we provide) within this pipeline for more than 2 replicates.
+
+#### Colors column
+If you are visualizing your data on the UCSC trackhub you can optionally specify the colors of each main track. For ATAC- and ChIP-seq, each biological replicate is a main track.
+To do so, you can add the color by name (google "matplotlib colors" for the options), or RGB values, in the "colors" column. Empty fields are considered black.
 
 #### Final notes
 - Make sure that the samples.tsv is a tab separated values file when running the pipeline.

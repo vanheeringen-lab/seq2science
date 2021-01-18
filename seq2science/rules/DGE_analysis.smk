@@ -1,3 +1,5 @@
+from seq2science.util import parse_de_contrasts
+
 def get_contrasts():
     """
     splits contrasts that contain multiple comparisons
@@ -73,7 +75,7 @@ rule blind_clustering:
     input:
         expand("{counts_dir}/{{assembly}}-counts.tsv", **config),
     output:
-        expand("{dge_dir}/{{assembly}}-clustering.svg", **config),
+        expand("{qc_dir}/clustering/{{assembly}}-Sample_clustering_mqc.png", **config),
     conda:
         "../envs/deseq2.yaml"
     log:

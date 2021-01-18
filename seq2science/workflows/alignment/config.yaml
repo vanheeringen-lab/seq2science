@@ -16,8 +16,11 @@ create_trackhub: True
 # how to handle replicates
 technical_replicates: merge    # change to "keep" to not combine them
 
+# which trimmer to use
+trimmer: fastp
+
 # which aligner to use
-aligner: bwa-mem
+aligner: bwa-mem2
 
 # how to sort bam
 bam_sorter:

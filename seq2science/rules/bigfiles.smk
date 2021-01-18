@@ -134,20 +134,12 @@ rule peak_bigpeak:
         """
 
 
-def strand_direction(wildcards):
-    out = {
-        ".fwd": ["forward", "reverse"],
-        ".rev": ["reverse", "forward"]
-    }
-
-    col = samples.replicate if "replicate" in samples else samples.index
-    s = samples[col == wildcards.sample].strandedness[0]
-
-    n = 0
-    if s == "reverse":
-        n = 1
-
-    return out[wildcards.strand][n]
+def set_strand(wildcards):
+    if wildcards.strand == ".fwd":
+        return "--filterRNAstrand forward"
+    elif wildcards.strand == ".rev":
+        return "--filterRNAstrand reverse"
+    return ""
 
 
 rule bam_bigwig:
@@ -162,7 +154,7 @@ rule bam_bigwig:
         expand("{bigwig_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}{{strand}}.bw", **config),
     params:
         flags=config["deeptools_flags"],
-        strand=lambda wildcards: f"--filterRNAstrand {strand_direction(wildcards)}" if wildcards.strand else "",
+        strand_filter=set_strand,
     wildcard_constraints:
         sorting=config["bam_sort_order"] if config.get("bam_sort_order") else "",
         strand='|.fwd|.rev',
@@ -177,5 +169,5 @@ rule bam_bigwig:
         deeptools_limit=lambda wildcards, threads: threads,
     shell:
         """
-        bamCoverage --bam {input.bam} --outFileName {output} {params.strand} --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1
+        bamCoverage --bam {input.bam} --outFileName {output} {params.strand_filter} --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1
         """

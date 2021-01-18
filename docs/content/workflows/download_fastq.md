@@ -7,10 +7,7 @@ Downloading public data in bulk from the NCBI, ENA, and DDBJ databases has never
 </p>
 
 #### Download SRA file
-Most databases do not store the actual fastqs, but they do all store the raw data (as a sra file). For this reason for each sample submitted the sra is downloaded. To convert this data to a fastq it has to be *dumped*. 
-
-#### "Dump" the SRA file to a fastq file
-The second step is translating (dumping) the sra file to a fastq file.
+The three largest databases that store sequencing data are National Center for Biotechnology Information (NCBI), the European Nucleotide Archive (ENA) and the DNA Data Bank of Japan (DDBJ). Only the ENA stores the actual fastq files, but all three of them store the raw data (as a sra file) from which a fastq can be derived. For this reason for each sample will first be checked if it can be downloaded from ENA. Otherwise we will download the samples in its raw format. To convert this data to a fastq it has to be "*dumped*". 
 
 ### Filling out the samples.tsv
 Before running a workflow you will have to specify which samples you want to run the workflow on. Each workflow starts with a `samples.tsv` as an example, and you should adapt it to your specific needs. As an example, the `samples.tsv` could look something like this:
@@ -50,11 +47,3 @@ fqsuffix: fastq
 fqext1: R1
 fqext2: R2
 ```
-
-#### Downloading many samples
-Before the pipeline starts downloading it will first determine whether the samples are paired-end or single-end. This is done by doing two requests per sample with the ncbi tools. Unregistered accounts can only make 3 requests per second. This means that initialization takes +/- 0.66s per sample. If you are an extremely impatient person, like us, you can up these numbers a with a [ncbi api key](https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/) (their default one allows 10 request p/s). You can set the variables *ncbi_key* and *ncbi_requests* (the nr of requests per second) accordingly in the config.yaml.
-
-The results of these lookups get cached, so when re-running parts of the workflow with the same samples no lookup online is required.
-
-#### Fastq-dump options
-We made a selection of [reasonable parameters](https://edwards.sdsu.edu/research/fastq-dump/) for the dumping of SRAs to fastq. You can change these settings by changing the variable *splot* for single-end dumping, or the variable *split* for paired-end dumping, in the config.yaml, or on the command line. 

@@ -1,0 +1,58 @@
+{
+    "title": "seq2science",
+    "upload_type": "software",
+    "creators": [
+        {
+            "affiliation": "Radboud University",
+            "name": "Maarten van der Sande",
+            "orcid": "0000-0001-7803-1526"
+        },
+        {
+            "affiliation": "Radboud University",
+            "name": "Siebren Fr\u00f6lich",
+            "orcid": "0000-0001-6925-8446"
+        },
+        {
+            "affiliation": "Radboud University",
+            "name": "Jos Smits",
+            "orcid": "0000-0001-5858-3905"
+        },
+        {
+            "affiliation": "Radboud University",
+            "name": "Tilman Schäfers"
+        },
+        {
+            "affiliation": "Radboud University",
+            "name": "Rebecca Snabel",
+            "orcid": "0000-0001-8053-1191"
+        },
+        {
+            "affiliation": "Radboud University",
+            "name": "Simon van Heeringen",
+            "orcid": "0000-0002-0411-3219"
+        }
+    ],
+    "contributors": [
+        {
+            "affiliation": "Radboud University",
+            "name": "Quan Xu",
+            "orcid": "0000-0002-7659-1658",
+            "type": "ProjectMember"
+        },
+        {
+            "affiliation": "Radboud University",
+            "name": "Marlien Kolmus",
+            "type": "ProjectMember"
+        }
+    ],
+    "keywords": [
+    "snakemake",
+    "bioinformatics",
+    "bioinformatics-pipeline",
+    "atac-seq",
+    "rna-seq",
+    "chip-seq",
+    "reproducible-research",
+    "ngs"
+    ]
+}

@@ -18,11 +18,28 @@ properties:
     type: string
 
 
-  # trim_galore parameters
-  trim_galore:
-    description: trim_galore settings (note that the adapter is autodetected, so you do not have to set it here)
-    default: --quality 10 --length 20 --consider_already_trimmed 10
-    type: string
+  # trimming parameters
+  trimmer:
+    description: which adapter trimmer to use
+    properties:
+      trimgalore:
+        description: trim galore! settings (note that the adapter is autodetected, so you do not have to set it here)
+        properties:
+          trimoptions:
+            default: '--quality 10 --length 20 --consider_already_trimmed 10'
+        default:
+          trimoptions: '--quality 10 --length 20 --consider_already_trimmed 10'
+      fastp:
+        description: fastp settings (note that the adapter is autodetected, so you do not have to set it here)
+        properties:
+          trimoptions:
+            default: ''
+        default:
+          trimoptions: ''
+    default:
+      fastp:
+        trimoptions: ''
+    type: object
 
   # replicate handling
   technical_replicates:
@@ -34,6 +51,12 @@ properties:
     description: which method to use to combine replicates (fisher (n >=2), idr (n==2), or keep)
     default: keep
     enum: [fisher, idr, keep]
+    type: string
+
+  # genomepy
+  provider:
+    description: Specify provider to download new genomes from. Will try Ensembl > UCSC > NCBI if left blank.
+    enum: [Ensembl, UCSC, NCBI]
     type: string
 
   # aligner
@@ -65,14 +88,23 @@ properties:
           align:
             default: '-M'
         default:
-          index: '-a bwtsw'
-          align: '-M'
+          index: ''
+          align: ''
       hisat2:
         properties:
           index:
             default: ''
           align:
             default: ''
+        default:
+          index: ''
+          align: ''
+      minimap2:
+        properties:
+          index:
+            default: ''
+          align:
+            default: '-a sr --secondary=no'
         default:
           index: ''
           align: ''
@@ -86,10 +118,9 @@ properties:
           index: '--limitGenomeGenerateRAM 37000000000 --genomeSAsparseD 1'
           align: ''
     default:
-      bwa-mem:
-        index: '-a bwtsw'
-        align: '-M'
-
+      bwa-mem2:
+        index: ''
+        align: ''
 
   # samtools index
   samtools_index:
@@ -100,7 +131,7 @@ properties:
   # picard markduplicates
   markduplicates:
     description: the parameters of picard markduplicates
-    default: REMOVE_DUPLICATES=false -Xms4G -Xmx6G MAX_FILE_HANDLES_FOR_READ_ENDS_MAP=999
+    default: REMOVE_DUPLICATES=true -Xms4G -Xmx6G MAX_FILE_HANDLES_FOR_READ_ENDS_MAP=999
     type: string
 
   # only keep reads with a minimum mapping quality of..
@@ -143,3 +174,31 @@ properties:
     description: The max memory used in gigabytes by samtools/sambamba when sorting bams
     default: 2
     type: integer
+
+  # custom extensions to the assemblies
+  custom_genome_extension:
+    description: File(s) to append to the genome (must be in fasta format)
+
+  custom_annotation_extension:
+    description: File(s) to append to the gene annotations (must be in GTF format)
+
+  custom_assembly_suffix:
+    description: What to append to the assembly name to indicate that custom data has been added to either genome or assembly.
+    default: '_custom'
+    type: string
+
+  # deeptools qc plot
+  deeptools_qc:
+    description: Whether or not to perform deeptools QC. With many samples this can take a long time and might be undesirable
+    default: True
+    type: boolean
+
+  deeptools_plotcorrelation:
+    description: Deeptools plotCorrelation params
+    default: '--colorMap RdYlBu_r --plotNumbers'
+    type: string
+
+  deeptools_multibamsummary:
+    description: Deeptools multiBamSummary params
+    default: '--distanceBetweenBins 9000 --binSize 1000'
+    type: string

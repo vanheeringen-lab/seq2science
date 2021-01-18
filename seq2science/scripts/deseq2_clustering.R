@@ -46,7 +46,8 @@ if ("replicate" %in% colnames(samples) & isTRUE(replicates)) {
 }
 
 # filter for assembly, remove NAs and add random variables (not needed for blind clustering)
-coldata  <- samples[samples$assembly == assembly, 'assembly', drop = F]
+cols = if ("descriptive_name" %in% colnames(samples)) {c('assembly', 'descriptive_name')} else {c('assembly')}
+coldata  <- samples[samples$assembly == assembly, cols, drop = F]
 coldata[,1] <- factor(as.character(c(1:nrow(coldata))))
 
 
@@ -77,12 +78,38 @@ cat('\n')
 main = 'Sample distance clustering (blind)'
 log_counts <- varianceStabilizingTransformation(dds, blind = TRUE)
 sampleDistMatrix <- as.matrix(dist(t(assay(log_counts))))
-rownames(sampleDistMatrix) <- colnames(counts(dds))
+rownames(sampleDistMatrix) <- if (length(cols) == 1) {colnames(counts(dds))} else {coldata$descriptive_name}
+colnames(sampleDistMatrix) <- if (length(cols) == 1) {colnames(counts(dds))} else {coldata$descriptive_name}
 colors <- colorRampPalette( rev(brewer.pal(9, "Blues")) )(255)
 
-svg(file=out_plot)
+num_samples <- dim(coldata)[1]
+cell_dimensions = (if (num_samples < 16) {as.integer(160/num_samples)}              # minimal size to fit the legend
+                   else if (num_samples < 24) {10}                                  # pleasant size
+                   else if (num_samples < 32) {as.integer(25 - 0.625*num_samples)}  # linear shrink
+                   else {5})                                                        # minimal size
+
+# make heatmap and save as pdf (only pdfs can consistently save text properly)
+out_pdf <- sub(".png", ".pdf", out_plot)
 pheatmap(sampleDistMatrix,
          main = main,
          angle_col = 45,
-         col=colors)
-invisible(dev.off())
+         show_colnames = if (num_samples > 28) {TRUE} else {FALSE},  # show names underneath if the image gets to wide
+         show_rownames = if (num_samples > 28) {FALSE} else {TRUE},
+         fontsize = 8,
+         legend_breaks = c(min(sampleDistMatrix), max(sampleDistMatrix)),
+         legend_labels = c("high", "low"),
+         cellwidth  = cell_dimensions,
+         cellheight = cell_dimensions,
+         col=colors,
+         filename=out_pdf
+)
+
+# convert pdf to png (required for MULTIQC)
+pdftools::pdf_convert(
+  out_pdf,
+  format = "png",
+  filenames = out_plot,
+  dpi = 300,  # standard minimum
+  antialias = TRUE,
+  verbose = TRUE
+)

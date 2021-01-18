@@ -17,8 +17,11 @@ create_trackhub: True
 biological_replicates: fisher  # change to "keep" to not combine them
 technical_replicates: merge    # change to "keep" to not combine them
 
+# which trimmer to use
+trimmer: fastp
+
 # which aligner to use
-aligner: bwa-mem
+aligner: bwa-mem2
 
 # filtering after alignment
 remove_blacklist: True
