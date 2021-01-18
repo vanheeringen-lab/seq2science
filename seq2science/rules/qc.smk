@@ -551,7 +551,8 @@ def get_alignment_qc(sample):
     # get the ratio mitochondrial dna
     output.append(f"{{result_dir}}/{config['aligner']}/{{{{assembly}}}}-{sample}.samtools-coordinate-unsieved.bam.mtnucratiomtnuc.json")
 
-    if get_workflow() in ["alignment", "chip_seq", "atac_seq", "scatac_seq"]:
+    if get_workflow() in ["alignment", "chip_seq", "atac_seq", "scatac_seq"] or \
+            get_workflow() == "rna_seq" and (config.get('create_trackhub') or config.get('quantifier') != 'salmon'):
         output.append("{qc_dir}/plotFingerprint/{{assembly}}.tsv")
     if len(breps[breps["assembly"] == treps.loc[sample, "assembly"]].index) > 1:
         output.append("{qc_dir}/plotCorrelation/{{assembly}}.tsv")
