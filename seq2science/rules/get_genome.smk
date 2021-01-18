@@ -58,7 +58,7 @@ rule extend_genome:
         genome=expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa", **config),
         extension=config.get("custom_genome_extension", []),
     output:
-        genome=expand("{genome_dir}/{{raw_assembly}}_custom/{{raw_assembly}}_custom.fa", **config),
+        genome=expand("{genome_dir}/{{raw_assembly}}{custom_assembly_suffix}/{{raw_assembly}}{custom_assembly_suffix}.fa", **config),
     message: explain_rule("custom_extension")
     shell:
         """
@@ -79,9 +79,9 @@ rule extend_genome_annotation:
         gtf=expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.annotation.gtf", **config),
         extension=config.get("custom_annotation_extension", [])
     output:
-        gtf=expand("{genome_dir}/{{raw_assembly}}_custom/{{raw_assembly}}_custom.annotation.gtf", **config),
-        bed=expand("{genome_dir}/{{raw_assembly}}_custom/{{raw_assembly}}_custom.annotation.bed", **config),
-        gp=temp(expand("{genome_dir}/{{raw_assembly}}_custom/{{raw_assembly}}_custom.annotation.gp", **config)),
+        gtf=expand("{genome_dir}/{{raw_assembly}}{custom_assembly_suffix}/{{raw_assembly}}{custom_assembly_suffix}.annotation.gtf", **config),
+        bed=expand("{genome_dir}/{{raw_assembly}}{custom_assembly_suffix}/{{raw_assembly}}{custom_assembly_suffix}.annotation.bed", **config),
+        gp=temp(expand("{genome_dir}/{{raw_assembly}}{custom_assembly_suffix}/{{raw_assembly}}{custom_assembly_suffix}.annotation.gp", **config)),
     message: explain_rule("custom_extension")
     shell:
         """

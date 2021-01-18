@@ -85,6 +85,7 @@ rule combine_peaks:
         "../envs/gimme.yaml"
     params:
         2 * config["peak_windowsize"],
+    message: explain_rule("combine_peaks")
     shell:
         """
         combine_peaks -i {input.summitfiles} -g {input.sizes} \
@@ -108,9 +109,10 @@ rule bedtools_slop:
         expand("{benchmark_dir}/bedtools_slop/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     conda:
         "../envs/bedtools.yaml"
+    message: explain_rule("bed_slop")
     shell:
         """
-        bedtools slop -i {input.bedfile} -g {input.sizes} -b {config[slop]} > {output} 2> {log}
+        bedtools slop -i {input.bedfile} -g {input.sizes} -b {config[slop]} | uniq > {output} 2> {log}
         """
 
 
@@ -155,6 +157,7 @@ rule coverage_table:
         expand("{benchmark_dir}/coverage_table/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     conda:
         "../envs/gimme.yaml"
+    message: explain_rule("coverage_table")
     shell:
         """
         echo "# The number of reads under each peak" > {output} 

@@ -13,3 +13,4 @@ These are our currently supported workflows. These workflows generally overlap a
    RNA-seq <workflows/rna_seq.md>
    ChIP-seq <workflows/chip_seq.md>
    scATAC-seq <workflows/scatac_seq.md>
+   scRNA-seq <workflows/scrna_seq.md>

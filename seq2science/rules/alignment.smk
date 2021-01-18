@@ -410,7 +410,7 @@ elif config["aligner"] == "star":
             pipe=pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0]),
             dir=directory(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}", **config)),
         log:
-            expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}.log", **config),
+            directory(expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}", **config)),
         benchmark:
             expand("{benchmark_dir}/{aligner}_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
         message: explain_rule(f"{config['aligner']}_align")

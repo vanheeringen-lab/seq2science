@@ -45,6 +45,7 @@ touch tests/local_test_results/fastq/S7_1.fastq.gz
 touch tests/local_test_results/fastq/S8_1.fastq.gz
 touch tests/local_test_results/ERCC92.fa
 touch tests/local_test_results/ERCC92.gtf
+touch tests/local_test_results/barcodes.txt
 
 for assembly in assembly1 assembly2; do
   mkdir -p tests/local_test_results/${assembly}
@@ -70,7 +71,7 @@ if [ $1 = "alignment" ]; then
 
   printf "\nalignment default\n"
   seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 bwa_index 1
+  assert_rulecount $1 bwa_mem2_index 1
   assert_rulecount $1 mark_duplicates 1
 
   printf "\ntrimmers\n"
@@ -139,7 +140,7 @@ if [ $1 = "alignment" ]; then
 
   printf "\nmultiple assemblies\n"
   seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/alignment/assemblies.tsv} | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 bwa_index 2
+  assert_rulecount $1 bwa_mem2_index 2
 
   printf "\nmultiple assemblies - trackhub\n"
   seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/alignment/assemblies.tsv,create_trackhub:True} | tee tests/local_test_results/${1}_dag
@@ -154,9 +155,9 @@ if [ $1 = "alignment" ]; then
   assert_rulecount $1 merge_replicates 0
   seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={technical_replicates:keep,samples:tests/alignment/replicates.tsv} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 merge_replicates 0
-  assert_rulecount $1 bwa_mem 2
+  assert_rulecount $1 bwa_mem2 2
   seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={technical_replicates:merge,samples:tests/alignment/replicates.tsv} | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 bwa_mem 1
+  assert_rulecount $1 bwa_mem2 1
   assert_rulecount $1 fastp_PE 2
 
   printf "\nmultiple replicates - trackhubs\n"
@@ -169,12 +170,12 @@ if [ $1 = "alignment" ]; then
 
   printf "\nmultiple assemblies and replicates\n"
   seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={technical_replicates:keep,samples:tests/alignment/complex_samples.tsv} | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 bwa_index 2
-  assert_rulecount $1 bwa_mem 4
+  assert_rulecount $1 bwa_mem2_index 2
+  assert_rulecount $1 bwa_mem2 4
 
   seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={technical_replicates:merge,samples:tests/alignment/complex_samples.tsv} | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 bwa_index 2
-  assert_rulecount $1 bwa_mem 2
+  assert_rulecount $1 bwa_mem2_index 2
+  assert_rulecount $1 bwa_mem2 2
 
   printf "\nmultiple assemblies and replicates - trackhub\n"
   seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={technical_replicates:merge,create_trackhub:True,samples:tests/alignment/complex_samples.tsv} | tee tests/local_test_results/${1}_dag
@@ -213,12 +214,12 @@ if [ $1 = "atac-seq" ]; then
   printf "\ncustom assembly\n"
   seq2science run atac-seq -n --configfile tests/$WF/macs2.yaml --snakemakeOptions quiet=True config={custom_genome_extension:tests/local_test_results/ERCC92.fa} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 extend_genome 1
-  assert_rulecount $1 bwa_index 1
-  assert_rulecount $1 bwa_mem 1
+  assert_rulecount $1 bwa_mem2_index 1
+  assert_rulecount $1 bwa_mem2 1
   seq2science run atac-seq -n --configfile tests/$WF/genrich.yaml --snakemakeOptions quiet=True config={custom_genome_extension:tests/local_test_results/ERCC92.fa} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 extend_genome 1
-  assert_rulecount $1 bwa_index 1
-  assert_rulecount $1 bwa_mem 1
+  assert_rulecount $1 bwa_mem2_index 1
+  assert_rulecount $1 bwa_mem2 1
 
   printf "\nmultiple peak callers\n"
   seq2science run atac-seq -n --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
@@ -252,7 +253,7 @@ if [ $1 = "atac-seq" ]; then
 
   printf "\nmultiple peak callers & multiple replicates\n"
   seq2science run atac-seq -n --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions quiet=True config={samples:tests/alignment/replicates.tsv} | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 bwa_mem 1
+  assert_rulecount $1 bwa_mem2 1
 
   printf "\nmultiple peak callers & multiple replicates - trackhub\n"
   seq2science run atac-seq -n --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions quiet=True config={samples:tests/alignment/replicates.tsv,create_trackhub:True} | tee tests/local_test_results/${1}_dag
@@ -264,7 +265,7 @@ if [ $1 = "atac-seq" ]; then
 
   printf "\nmultiple peak callers, assemblies and replicates\n"
   seq2science run atac-seq -n --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions quiet=True config={samples:tests/atac_seq/complex_samples.tsv} | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 bwa_mem 8
+  assert_rulecount $1 bwa_mem2 8
   assert_rulecount $1 coverage_table 4
 
   printf "\nmultiple peak callers, assemblies and replicates - trackhub\n"
@@ -277,7 +278,7 @@ if [ $1 = "atac-seq" ]; then
 
   printf "\ncontrol and merging of tecnical replicates\n"
   seq2science run atac-seq -n --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions quiet=True config={samples:tests/atac_seq/control.tsv,create_qc_report:True} | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 bwa_mem 7
+  assert_rulecount $1 bwa_mem2 7
 
   printf "\ninput control different across same condition\n"
   seq2science run atac-seq -n --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions quiet=True config={samples:tests/atac_seq/complex_samples2.tsv,create_qc_report:True} | tee tests/local_test_results/${1}_dag
@@ -302,7 +303,7 @@ if [ $1 = "scatac-seq" ]; then
 
   printf "\nmultiple assemblies\n"
   seq2science run scatac-seq -n --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/scatac_seq/assemblies.tsv} | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 bwa_index 2
+  assert_rulecount $1 bwa_mem2_index 2
   assert_rulecount $1 create_SNAP_object 2
 
   printf "\nmultiple assemblies - multiqc\n"
@@ -314,10 +315,10 @@ if [ $1 = "scatac-seq" ]; then
   assert_rulecount $1 merge_replicates 0
   seq2science run scatac-seq -n --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/scatac_seq/replicates.tsv,technical_replicates:keep} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 merge_replicates 0
-  assert_rulecount $1 bwa_mem 2
+  assert_rulecount $1 bwa_mem2 2
   seq2science run scatac-seq -n --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/scatac_seq/replicates.tsv,technical_replicates:merge} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 merge_replicates 2
-  assert_rulecount $1 bwa_mem 1
+  assert_rulecount $1 bwa_mem2 1
 
   printf "\nmultiple replicates - multiqc report\n"
   seq2science run scatac-seq -n --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/scatac_seq/replicates.tsv,technical_replicates:merge,create_qc_report:True,trimmer:trimgalore} | tee tests/local_test_results/${1}_dag
@@ -326,13 +327,13 @@ if [ $1 = "scatac-seq" ]; then
   printf "\nmultiple assemblies and replicates\n"
   seq2science run scatac-seq -n --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/alignment/dag_sample.tsv,technical_replicates:keep} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 merge_replicates 0
-  assert_rulecount $1 bwa_mem 1
+  assert_rulecount $1 bwa_mem2 1
   seq2science run scatac-seq -n --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/scatac_seq/complex_samples.tsv,technical_replicates:keep} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 merge_replicates 0
-  assert_rulecount $1 bwa_mem 4
+  assert_rulecount $1 bwa_mem2 4
   seq2science run scatac-seq -n --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/scatac_seq/complex_samples.tsv,technical_replicates:merge} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 merge_replicates 3
-  assert_rulecount $1 bwa_mem 2
+  assert_rulecount $1 bwa_mem2 2
 
   printf "\nmultiple assemblies and replicates - multiqc report\n"
   seq2science run scatac-seq -n --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/scatac_seq/complex_samples.tsv,technical_replicates:merge,create_qc_report:True,trimmer:trimgalore} | tee tests/local_test_results/${1}_dag
@@ -460,6 +461,47 @@ if [ $1 = "rna-seq" ]; then
   printf "\nmultiple assemblies and replicates with DEA - multiqc report\n"
   seq2science run rna-seq -n --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={technical_replicates:merge,samples:tests/rna_seq/complex_samples.tsv,create_qc_report:True,trimmer:trimgalore} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 fastqc  24
+
+  test_ran=1
+fi
+
+if [ $1 = "scrna-seq" ]; then
+
+  # RNA-seq workflow
+  WF=scrna_seq
+
+  printf "\nscrna-seq default\n"
+  seq2science run scrna-seq -n --configfile tests/scrna_seq/config.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 fastp_SE 2
+  assert_rulecount $1 fastq_pair 2
+  assert_rulecount $1 kallistobus_ref 1
+  assert_rulecount $1 kallistobus_count 2
+  assert_rulecount $1 multiqc 1
+
+  test_ran=1
+fi
+
+if [ $1 = "explain" ]; then
+  yes | seq2science init download-fastq
+  seq2science explain download-fastq
+
+  yes | seq2science init alignment
+  seq2science explain alignment
+
+  yes | seq2science init atac-seq
+  seq2science explain atac-seq
+
+  yes | seq2science init chip-seq
+  seq2science explain chip-seq
+
+  yes | seq2science init rna-seq
+  seq2science explain rna-seq
+
+  yes | seq2science init scrna-seq
+  seq2science explain scrna-seq
+
+  yes | seq2science init scatac-seq
+  seq2science explain scatac-seq
 
   test_ran=1
 fi
