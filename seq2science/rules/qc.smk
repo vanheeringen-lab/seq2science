@@ -693,6 +693,8 @@ def get_alignment_qc(sample):
     # add samtools stats
     output.append(f"{{qc_dir}}/markdup/{{{{assembly}}}}-{sample}.samtools-coordinate.metrics.txt")
     output.append(f"{{qc_dir}}/samtools_stats/{{aligner}}/{{{{assembly}}}}-{sample}.samtools-coordinate.samtools_stats.txt")
+    
+    # if Salmon is used, the sieving does not effect the expression values, so adding it to the MultiQC is confusing
     if sieve_bam(config) and \
             not (get_workflow() == "rna_seq" and config.get('quantifier') == 'salmon'):
         output.append(f"{{qc_dir}}/samtools_stats/{os.path.basename(config['final_bam_dir'])}/{{{{assembly}}}}-{sample}.samtools-coordinate.samtools_stats.txt")
