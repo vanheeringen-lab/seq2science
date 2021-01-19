@@ -693,7 +693,10 @@ def get_alignment_qc(sample):
     # add samtools stats
     output.append(f"{{qc_dir}}/markdup/{{{{assembly}}}}-{sample}.samtools-coordinate.metrics.txt")
     output.append(f"{{qc_dir}}/samtools_stats/{{aligner}}/{{{{assembly}}}}-{sample}.samtools-coordinate.samtools_stats.txt")
-    if sieve_bam(config):
+    
+    # if Salmon is used, the sieving does not effect the expression values, so adding it to the MultiQC is confusing
+    if sieve_bam(config) and \
+            not (get_workflow() == "rna_seq" and config.get('quantifier') == 'salmon'):
         output.append(f"{{qc_dir}}/samtools_stats/{os.path.basename(config['final_bam_dir'])}/{{{{assembly}}}}-{sample}.samtools-coordinate.samtools_stats.txt")
 
     # add insert size metrics
@@ -703,7 +706,8 @@ def get_alignment_qc(sample):
     # get the ratio mitochondrial dna
     output.append(f"{{result_dir}}/{config['aligner']}/{{{{assembly}}}}-{sample}.samtools-coordinate-unsieved.bam.mtnucratiomtnuc.json")
 
-    if get_workflow() in ["alignment", "chip_seq", "atac_seq", "scatac_seq"]:
+    if get_workflow() in ["alignment", "chip_seq", "atac_seq", "scatac_seq"] or \
+            get_workflow() == "rna_seq" and (config.get('create_trackhub') or config.get('quantifier') != 'salmon'):
         output.append("{qc_dir}/plotFingerprint/{{assembly}}.tsv")
     if len(breps[breps["assembly"] == treps.loc[sample, "assembly"]].index) > 1 and config.get("deeptools_qc"):
         output.append("{qc_dir}/plotCorrelation/{{assembly}}-deeptools_pearson_mqc.png")
