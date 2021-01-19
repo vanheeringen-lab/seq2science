@@ -699,12 +699,14 @@ Genrich -X -t $input -f {output.log} {params.control} -k {output.bedgraphish} \
 <h2>hisat2_splice_aware_index<a class="headerlink" href="#hisat2-splice-aware-index" title="Permalink to this headline">¶</a></h2>
 <p>Make an exon-junction and splice aware index for hisat2.
 This index is required for alignment and quantification of RNA-seq data.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>hp=$(which hisat2)
-python3 ${{hp}}_extract_splice_sites.py {input.gtf} &gt; {output}/splice_sites.tsv
-python3 ${{hp}}_extract_exons.py {input.gtf} &gt; {output}/exons.tsv
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>mkdir -p {output}
+
+hp=$(which hisat2)
+python3 ${{hp}}_extract_splice_sites.py {input.gtf} &gt; {output}/splice_sites.tsv 2&gt;&gt; {log}
+python3 ${{hp}}_extract_exons.py {input.gtf} &gt; {output}/exons.tsv 2&gt;&gt; {log}
 
 hisat2-build {params} -p {threads} --ss {output}/splice_sites.tsv --exon {output}/exons.tsv \
-{input.fasta} {output}/part &gt; {log} 2&gt;&amp;1
+{input.fasta} {output}/part &gt;&gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
 </div>
