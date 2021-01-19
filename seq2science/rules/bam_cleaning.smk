@@ -220,7 +220,7 @@ rule mark_duplicates:
     conda:
         "../envs/picard.yaml"
     wildcard_constraints:
-        sample=".+",
+        sample=f"""{any_given("sample", "replicate")}(_allsizes)?""",
     shell:
         """
         # use the TMPDIR if set, and not given in the config
