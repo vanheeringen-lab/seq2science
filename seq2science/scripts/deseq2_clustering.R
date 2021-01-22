@@ -87,6 +87,9 @@ cell_dimensions = (if (num_samples < 16) {as.integer(160/num_samples)}          
                    else if (num_samples < 24) {10}                                  # pleasant size
                    else if (num_samples < 32) {as.integer(25 - 0.625*num_samples)}  # linear shrink
                    else {5})                                                        # minimal size
+fontsize = (if (num_samples < 16) {8}
+            else if (num_samples < 32) {8 - 0.15*num_samples}
+            else {3.2})                              
 
 # make heatmap and save as pdf (only pdfs can consistently save text properly)
 out_pdf <- sub(".png", ".pdf", out_plot)
@@ -95,7 +98,7 @@ pheatmap(sampleDistMatrix,
          angle_col = 45,
          show_colnames = if (num_samples > 28) {TRUE} else {FALSE},  # show names underneath if the image gets to wide
          show_rownames = if (num_samples > 28) {FALSE} else {TRUE},
-         fontsize = 8,
+         fontsize = fontsize,
          legend_breaks = c(min(sampleDistMatrix), max(sampleDistMatrix)),
          legend_labels = c("high", "low"),
          cellwidth  = cell_dimensions,
