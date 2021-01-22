@@ -147,13 +147,12 @@ cat('DE genes table saved\n\n')
 
 
 ## determine DE genes
-plot_res <- resLFC[resLFC$padj <= fdr & !is.na(resLFC$padj), ]
-plot_DEGs <- length(plot_res[,1])
-if(plot_DEGs == 0){
+n_DEGs <- length(resLFC[resLFC$padj <= fdr & !is.na(resLFC$padj), ][,1])
+if(n_DEGs == 0){
   cat("No differentially expressed genes found!\n")
   quit(save = "no" , status = 0)
 } else {
-  cat(plot_DEGs, "differentially expressed genes found!\n")
+  cat(n_DEGs, "differentially expressed genes found!\n")
 }
 
 ## generate additional files if DE genes are found
@@ -161,8 +160,8 @@ if(plot_DEGs == 0){
 # generate MA plot (log fold change vs mean gene counts)
 output_ma_plot <- sub(".diffexp.tsv", ".ma_plot.pdf", output)
 pdf(output_ma_plot)
-plotMA(plot_res, ylim=c(-2,2),
-       main = paste0(contrast, '\n', plot_DEGs, ' DE genes (a = ', fdr, ')'))
+plotMA(resLFC, alpha = fdr, ylab = 'log2 fold change',  # ylim=c(-2,2), 
+       main = paste0(groups[1], ' vs ', groups[2], '\n', n_DEGs, ' DE genes (a = ', fdr, ', ', nrow(reduced_counts), ' genes)'))
 invisible(dev.off())
 cat('-MA plot saved\n')
 
