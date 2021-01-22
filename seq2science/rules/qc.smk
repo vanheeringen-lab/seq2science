@@ -570,7 +570,8 @@ def get_qc_files(wildcards):
             qc['files'].update(get_peak_calling_qc(trep))
 
     if get_rna_qc in quality_control:
-        if not config.get("ignore_strandedness"):
+        # Skip if desired, or if no BAMs are made (no trackhub + Salmon)
+        if not (config.get("ignore_strandedness") or (config.get('quantifier', '') == 'salmon' and config.get('create_trackhub') == False)):
             for trep in treps[treps['assembly'] == ori_assembly(wildcards.assembly)].index:
                 qc['files'].update(get_rna_qc(trep))
 
