@@ -21,11 +21,11 @@ sink(log, type="message")
 
 # log all variables for debugging purposes
 cat('# variables used for this analysis:\n')
-cat('threads      <-',   threads, '\n')
+cat('threads      <- ',   threads,     '\n')
 cat('log_file     <- "', log_file,     '"\n', sep = "")
 cat('counts_file  <- "', counts_file,  '"\n', sep = "")
 cat('samples_file <- "', samples_file, '"\n', sep = "")
-cat('replicates   <- ',  replicates, '\n')
+cat('replicates   <- ',  replicates,   '\n')
 cat('assembly     <- "', assembly,     '"\n', sep = "")
 cat('out_plot     <- "', out_plot,     '"\n', sep = "")
 cat('\n')
