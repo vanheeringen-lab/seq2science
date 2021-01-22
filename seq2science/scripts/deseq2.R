@@ -159,9 +159,10 @@ if(n_DEGs == 0){
 
 # generate MA plot (log fold change vs mean gene counts)
 output_ma_plot <- sub(".diffexp.tsv", ".ma_plot.pdf", output)
+if (is.na(batch)) {b = ''} else {b = 'batch corrected, '}
 pdf(output_ma_plot)
 plotMA(resLFC, alpha = fdr, ylab = 'log2 fold change',  # ylim=c(-2,2), 
-       main = paste0(groups[1], ' vs ', groups[2], '\n', n_DEGs, ' DE genes (a = ', fdr, ', ', nrow(reduced_counts), ' genes)'))
+       main = paste0(groups[1], ' vs ', groups[2], '\n', n_DEGs, ' DE genes (a = ', fdr, ', ',b , nrow(reduced_counts), ' genes)'))
 invisible(dev.off())
 cat('-MA plot saved\n')
 
