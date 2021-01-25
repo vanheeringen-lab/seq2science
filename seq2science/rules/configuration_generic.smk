@@ -222,7 +222,7 @@ if "assembly" in samples:
     if isinstance(config.get("custom_annotation_extension"), str):
         config["custom_annotation_extension"] = [config["custom_annotation_extension"]]
     modified = config.get("custom_genome_extension") or config.get("custom_annotation_extension")
-    all_assemblies = [assembly + "_custom" if modified else assembly for assembly in set(samples['assembly'])]
+    all_assemblies = [assembly + config["custom_assembly_suffix"] if modified else assembly for assembly in set(samples['assembly'])]
     suffix = config["custom_assembly_suffix"] if modified else ""
 
     def list_providers(assembly):
@@ -344,6 +344,14 @@ if "assembly" in samples:
         """
         return assembly[:-len(config["custom_assembly_suffix"])] if \
             assembly.endswith(config["custom_assembly_suffix"]) and modified else assembly
+
+
+    def custom_assembly(assembly):
+        """
+        add extension suffix to an assembly if is wasn't yet added.
+        """
+        return assembly if assembly.endswith(config["custom_assembly_suffix"]) or not modified else \
+         (assembly + config["custom_assembly_suffix"])
 
 
     @lru_cache(maxsize=None)

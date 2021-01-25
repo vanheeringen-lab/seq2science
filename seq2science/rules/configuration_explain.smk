@@ -15,7 +15,7 @@ else:
         """
         Return a string explaining the workflow by parsing all messages
         """
-        string = messages.get(name, "")
+        string = messages[name]
 
         # clean our explanation
         string = string.replace("\n", "")
@@ -99,6 +99,7 @@ else:
         "decoy_transcripts": "Decoy transcript were generated in order improve improve Salmon indexing accuracy (using the script from https://github.com/COMBINE-lab/SalmonTools)",
         "salmon_quant": "Transcript abundances were quantified with Salmon v@salmon[salmon] (https://doi.org/10.1038/nmeth.4197) with options '{config[quantifier_flags]}'.",
         "htseq_count": "Read counting and summarizing to gene-level was performed on filtered bam using HTSeq-count v@gene_counts[htseq] (https://doi.org/10.1093/bioinformatics/btu638).",
+        "kallistobus-count": "Reads were aligned and transformed to bus format with kb-python v@kallistobus[kb-python], a python wrapper for kallisto (https://doi.org/10.1038/nbt.3519) and bustools (doi.org/10.1101/673285).",
         "featurecounts_rna": "Read counting and summarizing to gene-level was performed on filtered bam using featureCounts v@gene_counts[subread] (https://doi.org/10.1093/bioinformatics/btt656).",
         "dexseq": "Additionally, exon usage was counted using [DEXSeq] v@dexseq[bioconductor-dexseq] (https://doi.org/doi:10.18129/B9.bioc.DEXSeq) for (potential) downstream analysis.",
         "create_bins_SNAP_object": "We used snaptools v@snaptools[snaptools] (https://doi.org/10.1101/615179) to create a snapobject with options '{config[snaptools_opt]}' and added a binned genome matrix with options '{config[bin_opt]}'.",
@@ -109,4 +110,7 @@ else:
         "fastp_SE": "We trimmed single-end reads with fastp v@fastp[fastp] (https://doi.org/10.1093/bioinformatics/bty560) with options '{config[trimoptions]}'.",
         "fastp_PE": "We trimmed paired-end reads with fastp v@fastp[fastp] (https://doi.org/10.1093/bioinformatics/bty560) with options '{config[trimoptions]}'.",
         "chipseeker": "A peak feature distribution plot and peak localization plot relative to TSS were made with chipseeker (https://doi.org/doi:10.18129/B9.bioc.ChIPseeker).",  # v@chipseeker[chipseeker]
+        "combine_peaks": "A consensus set of summits was made with gimmemotifs.combine_peaks v@gimme[gimmemotifs] (https://www.biorxiv.org/content/10.1101/474403v1.full).",
+        "bed_slop": "All summits were extended with 'config[slop]' to get a consensus peakset.",
+        "coverage_table": "And finally we made a count table from the conensus peakset with gimmemotifs.combine_peaks v@gimme[gimmemotifs] (https://www.biorxiv.org/content/10.1101/474403v1.full).",
     }

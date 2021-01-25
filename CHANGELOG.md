@@ -10,8 +10,39 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Changed
 
+- updated tximeta to 1.6.3 and related packages to fit (now uses R 4)
+- Updated kb-python to 0.25.1
+- RNA-seq with Salmon will still use bam-related QC files if bams are generated (create_trackhub = True)
+- RNA-seq: sample distance matrix font scales with number of samples (should improve readability)
+
+### Fixed
+
+- RNA-seq: added sample distance matrix back to MulitQC
+- RNA-seq: sample distance matrix legend fixed
+- gimmemotifs not working with newest pandas, now a fixed pandas version
+
+## [0.4.1] - 2020-12-18
+
+### Added
+
+- more explanations for rules
+
+### Fixed
+
+- custom genome annotations for single-cell RNA-seq workflow
+- trackhubs no longer looking for reversed strands if none are present
+
+## [0.4.0] - 2020-12-11
+
+### Added
+
+- new workflow: (BETA) single cell RNA!
+
+### Changed
+
 - bwa-mem2 default aligner for genomic workflows, instead of bwa-mem
 - interactive deeptools correlation heatmaps with static dendrograms in multiqc report
+- trackhub file permissions are set to 755 so to host the files online you don't have to change those anymore
 
 ### Fixed
 
@@ -34,6 +65,14 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - keep_mates for macs2 turned into a script with ts own environment ot make the base env smaller
 - seq2science cache now respects the xdg cache
 - moved genome downloading rules into scripts instead of run directives, should result in user-friendlier errors
+
+## [0.3.1] - 2020-11-16
+
+### Added
+
+- Added support for multiple scrna-seq platforms (Kallistobus)
+- Fastp detects the correct mate for trimming based on BUS settings.
+- Support for Kallistobus short-hand syntax.
 
 ### Fixed
 
@@ -247,7 +286,9 @@ Many minor bug- and quality of life fixes.
 ## [0.0.0] - 2020-06-11
 First release of seq2science!
 
-[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/master...v0.3.2
+[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/master...v0.4.1
+[0.4.1]: https://github.com/vanheeringen-lab/seq2science/compare/v0.4.1...v0.4.0
+[0.4.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.4.0...v0.3.2
 [0.3.2]: https://github.com/vanheeringen-lab/seq2science/compare/v0.3.2...v0.3.1
 [0.3.1]: https://github.com/vanheeringen-lab/seq2science/compare/v0.3.1...v0.3.0
 [0.3.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.2.3...v0.3.0
