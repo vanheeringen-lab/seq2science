@@ -1,6 +1,6 @@
 from seq2science.util import get_bustools_rid
-
-
+import os
+import glob
 if config["quantifier"] == "salmon":
 
     rule get_transcripts:
@@ -234,7 +234,7 @@ elif config["quantifier"] == "kallistobus":
              basedir=rules.kallistobus_ref.output,
              reads=rules.fastq_pair.output.reads
         output:
-            dir=directory(expand("{result_dir}/{quantifier}/{{assembly}}-{{sample}}", **config)),
+            dir=directory(expand("{result_dir}/{quantifier}/{{assembly}}-{{sample}}",**config))
         log:
             expand("{log_dir}/kallistobus_count/{{assembly}}-{{sample}}.log", **config),
         benchmark:
@@ -255,7 +255,31 @@ elif config["quantifier"] == "kallistobus":
             -o {output} -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
             {params.options} {input.reads} > {log} 2>&1
             """
+    def list_files(wildcards):
+        dirs = glob.glob(f"{config['result_dir']}/kallistobus/{{wildcards.assembly}}-*")
+        return dirs
+    #kb_dirs=glob_wildcards("{config['result_dir']}/kallistobus/{{wildcards.assembly}}-{{wildcards.sample}}")
 
+    rule aggregate:
+        input:
+            expand([f"{{result_dir}}/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}" for trep in treps.index], **config)
+        output:
+            f"{config['result_dir']}/kallistobus/{{assembly}}/done.txt"
+        priority: 1
+        run:
+            with open(output[0], "w") as outfile:
+                for item in input:
+                    outfile.write("{}\n".format(item))
+                
+
+  
+     
+    
+
+
+
+
+            
             
 elif config["quantifier"] == "htseq":
 
