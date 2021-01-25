@@ -10,6 +10,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Changed
 
+- updated tximeta to 1.6.3 and related packages to fit (now uses R 4)
 - Updated kb-python to 0.25.1
 - RNA-seq with Salmon will still use bam-related QC files if bams are generated (create_trackhub = True)
 - RNA-seq: sample distance matrix font scales with number of samples (should improve readability)
