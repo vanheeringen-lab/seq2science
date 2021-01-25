@@ -81,7 +81,7 @@ rule sieve_bam:
         blacklist=rules.complement_blacklist.output,
         sizes=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
     output:
-        allsizes=temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}_allsizes.samtools-coordinate-sieved.bam", **config)),
+        allsizes=temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}_allsizes.samtools-coordinate-sieved.bam", **config)) if config["filter_on_size"] else "",
         final=temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-sieved.bam", **config)),
     log:
         expand("{log_dir}/sieve_bam/{{assembly}}-{{sample}}.log", **config),
@@ -100,7 +100,7 @@ rule sieve_bam:
         sizesieve=(
             lambda wildcards, input, output:
             """ | awk 'substr($0,1,1)=="@" || ($9>={params.min_insert_size} && $9<={params.max_insert_size}) || ($9<=-{params.min_insert_size} && $9>=-{params.max_insert_size})' | """
-            if sampledict[wildcards.sample] == "PAIRED" and (config.get("min_insert_size") or config.get("max_insert_size"))
+            if sampledict[wildcards.sample] == "PAIRED" and config["filter_on_size"]
             else ""
         ),
         minsize=config.get("min_insert_size", 0),

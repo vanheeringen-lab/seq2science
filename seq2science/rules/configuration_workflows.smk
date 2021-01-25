@@ -69,6 +69,9 @@ if config.get("min_insert_size") and not config.get("max_insert_size"):
 if config.get("max_insert_size") and not config.get("min_insert_size"):
     config["min_insert_size"] = 0
 
+config["filter_on_size"] = filter_size = config.get("min_insert_size") or config.get("max_insert_size")
+
+
 # ...for alignment and rna-seq
 for conf_dict in ["aligner", "quantifier", "trimmer"]:
     if config.get(conf_dict, False):
