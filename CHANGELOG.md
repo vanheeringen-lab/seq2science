@@ -8,23 +8,28 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
-### Fixed
-
-- combine peaks with biological_replicates: keep now uses the correct peaks
-
-## [0.4.2] - 2021-01-19
+## [0.4.3] - 2021-01-26
 
 ### Changed
 
 - updated tximeta to 1.6.3 and related packages to fit (now uses R 4)
-- Updated kb-python to 0.25.1
-- RNA-seq with Salmon will still use bam-related QC files if bams are generated (create_trackhub = True)
 - RNA-seq: sample distance matrix font scales with number of samples (should improve readability)
 
 ### Fixed
 
 - RNA-seq: added sample distance matrix back to MulitQC
 - RNA-seq: sample distance matrix legend fixed
+- combine peaks with biological_replicates: keep now uses the correct peaks
+
+## [0.4.2] - 2021-01-19
+
+### Changed
+
+- Updated kb-python to 0.25.1
+- RNA-seq with Salmon will still use bam-related QC files if bams are generated (create_trackhub = True)
+
+### Fixed
+
 - gimmemotifs not working with newest pandas, now a fixed pandas version
 
 ## [0.4.1] - 2020-12-18
@@ -293,7 +298,8 @@ Many minor bug- and quality of life fixes.
 First release of seq2science!
 
 [Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/master...v0.4.2
-[0.4.1]: https://github.com/vanheeringen-lab/seq2science/compare/v0.4.2...v0.4.1
+[0.4.3]: https://github.com/vanheeringen-lab/seq2science/compare/v0.4.3...v0.4.2
+[0.4.2]: https://github.com/vanheeringen-lab/seq2science/compare/v0.4.2...v0.4.1
 [0.4.1]: https://github.com/vanheeringen-lab/seq2science/compare/v0.4.1...v0.4.0
 [0.4.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.4.0...v0.3.2
 [0.3.2]: https://github.com/vanheeringen-lab/seq2science/compare/v0.3.2...v0.3.1
