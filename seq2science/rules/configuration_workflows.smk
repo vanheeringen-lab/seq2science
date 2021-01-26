@@ -69,7 +69,7 @@ if config.get("min_template_length") and not config.get("max_template_length"):
 if config.get("max_template_length") and not config.get("min_template_length"):
     config["min_template_length"] = 0
 
-config["filter_on_size"] = filter_size = config.get("min_template_length") or config.get("max_template_length")
+config["filter_on_size"] = filter_size = bool(config.get("min_template_length") or config.get("max_template_length"))
 
 
 # ...for alignment and rna-seq

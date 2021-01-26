@@ -201,8 +201,7 @@ def sieve_bam(configdict):
         configdict.get("min_mapping_quality", 0) > 0
         or configdict.get("tn5_shift", False)
         or configdict.get("remove_blacklist", False)
-        or configdict.get("min_template_length", False)
-        or configdict.get("max_template_length", False)
+        or configdict.get("filter_on_size", False)
         or configdict.get("remove_mito", False)
     )
 

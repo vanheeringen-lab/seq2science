@@ -197,7 +197,7 @@ def get_bam_mark_duplicates(wildcards):
     if sieve_bam(config):
         # when alignmentsieving but not shifting we do not have to re-sort samtools-coordinate
         if wildcards.sorter == "samtools" and wildcards.sorting == "coordinate" and not config.get("tn5_shift", False):
-            return rules.sieve_bam.output
+            return rules.sieve_bam.output.final
         else:
             return expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}-sievsort.bam", **config)
 
