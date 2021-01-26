@@ -197,16 +197,6 @@ if [ $1 = "atac-seq" ]; then
   seq2science run atac-seq -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 macs2_callpeak 1
 
-  printf "\natac-seq template length filter\n"
-  seq2science run atac-seq -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 mark_duplicates 1
-
-  seq2science run atac-seq -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={min_template_length:150} | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 mark_duplicates 2
-
-  seq2science run atac-seq -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={max_template_length:150} | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 mark_duplicates 2
-
   printf "\npeak callers\n"
   # seq2science run atac-seq -n --configfile tests/$WF/macs2.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag  # default
   # assert_rulecount $1 macs2_callpeak 1
@@ -220,6 +210,16 @@ if [ $1 = "atac-seq" ]; then
   printf "\nmultiqc report\n"
   seq2science run atac-seq -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={create_qc_report:True,trimmer:trimgalore} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 fastqc 4
+
+  printf "\natac-seq template length filter\n"
+  seq2science run atac-seq -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={create_qc_report:True} | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 mark_duplicates 1
+
+  seq2science run atac-seq -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={create_qc_report:True,min_template_length:150} | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 mark_duplicates 2
+
+  seq2science run atac-seq -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={create_qc_report:True,max_template_length:150} | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 mark_duplicates 2
 
   printf "\ncustom assembly\n"
   seq2science run atac-seq -n --configfile tests/$WF/macs2.yaml --snakemakeOptions quiet=True config={custom_genome_extension:tests/local_test_results/ERCC92.fa} | tee tests/local_test_results/${1}_dag
