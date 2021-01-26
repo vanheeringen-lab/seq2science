@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Fixed
+
+- combine peaks with biological_replicates: keep now uses the correct peaks
+
 ## [0.4.2] - 2021-01-19
 
 ### Changed

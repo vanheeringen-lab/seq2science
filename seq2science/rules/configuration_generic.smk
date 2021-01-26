@@ -149,9 +149,9 @@ if 'replicate' in samples:
     if samples['replicate'].tolist() == samples['sample'].tolist() or config.get('technical_replicates') == 'keep':
         samples = samples.drop(columns=['replicate'])
 if 'condition' in samples:
-    samples['condition'] = samples['condition'].mask(pd.isnull, samples['replicate']) if 'replicate' in samples else \
-        samples['condition'].mask(pd.isnull, samples['sample'])
-    if samples['condition'].tolist() == samples['sample'].tolist() or config.get('biological_replicates') == 'keep':
+    col = 'replicate' if 'replicate' in samples else 'sample'
+    samples['condition'] = samples['condition'].mask(pd.isnull, samples[col])
+    if samples['condition'].tolist() == samples[col].tolist() or config.get('biological_replicates') == 'keep':
         samples = samples.drop(columns=['condition'])
 if 'descriptive_name' in samples:
     samples['descriptive_name'] = samples['descriptive_name'].mask(pd.isnull, samples['replicate']) if \
