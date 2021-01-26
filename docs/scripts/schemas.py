@@ -25,6 +25,7 @@ order = {"general": "general",
          "peak calling (ChIP & ATAC)": "peakcalling",
          "gene expression (RNA-seq)": "gene_expression",
          "single-cell ATAC": "scatac",
+         "single-cell RNA": "scrna",
          "trackhub": "trackhub"}
 
 # we add 4 indentation as a start

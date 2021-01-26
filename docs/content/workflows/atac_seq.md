@@ -82,7 +82,7 @@ This column is necessary for all workflows, except the *downloading samples* wor
 In the `control` column you can (optionally) add the "sample name" of the input control, although it is not common to generate this for ATAC-seq. 
 
 #### Descriptive_name column
-The descriptive_name column is used for the trackhub and multiqc report. In the trackhub your tracks will be called after the descriptive name, and in the multiqc report there will be a button to rename your samples after this column.
+The descriptive_name column is used for the trackhub and multiqc report. In the trackhub your tracks will be called after the descriptive name, and in the multiqc report there will be a button to rename your samples after this column. The descriptive name can not contain '-' characters, but underscores '_' are allowed.
 
 #### Technical replicates
 Technical replicates, or any fastq file you may wish to merge, are set using the `technical_replicate` column in the samples.tsv file. All samples with the same name in the `technical_replicate` column will be concatenated into one file with the replicate name.

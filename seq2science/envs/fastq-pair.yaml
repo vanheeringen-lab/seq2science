@@ -1,0 +1,7 @@
+name: fastq-pair
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - bioconda::fastq-pair=1.0
