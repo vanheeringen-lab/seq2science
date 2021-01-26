@@ -118,7 +118,7 @@ rule sieve_bam:
     shell:
         """
         samtools view -h {params.prim_align} {params.minqual} {params.blacklist} \
-        {input.bam} {params.atacshift} {params.sizesieve}
+        {input.bam} | {params.atacshift} {params.sizesieve}
         samtools view -b > {output.final} 2> {log}
         """
 
