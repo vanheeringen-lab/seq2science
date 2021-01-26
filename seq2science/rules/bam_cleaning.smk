@@ -176,7 +176,7 @@ rule samtools_sort:
         out_dir=f"{config['result_dir']}/{config['aligner']}",
         memory=lambda wildcards, input, output, threads: f"-m {int(1000 * round(config['bam_sort_mem']/threads, 3))}M",
     wildcard_constraints:
-        sample=f"""({any_given("sample", "replicate")})(_allsizes)?""",
+        sample=f"""({any_given("sample", "replicate", "control")})(_allsizes)?""",
     threads: 2
     resources:
         mem_gb=config["bam_sort_mem"],
@@ -228,7 +228,7 @@ rule mark_duplicates:
     conda:
         "../envs/picard.yaml"
     wildcard_constraints:
-        sample=f"""({any_given("sample", "replicate")})(_allsizes)?""",
+        sample=f"""({any_given("sample", "replicate", "control")})(_allsizes)?""",
     shell:
         """
         # use the TMPDIR if set, and not given in the config
