@@ -203,10 +203,10 @@ properties:
     default: '--distanceBetweenBins 9000 --binSize 1000'
     type: string
 
-  min_insert_size:
-    description: the minimum insert size for paired-end reads
+  min_template_length:
+    description: the minimum template length for paired-end reads
     type: integer
 
-  max_insert_size:
-    description: the maximum insert size for paired-end reads
+  max_template_length:
+    description: the maximum template length for paired-end reads
     type: integer

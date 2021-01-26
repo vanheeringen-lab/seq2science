@@ -72,7 +72,6 @@ if config["filter_on_size"]:
 else:
     sieve_bam_output = {"final": temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-sieved.bam",**config))}
 
-print(sieve_bam_output)
 
 rule sieve_bam:
     """
@@ -83,6 +82,7 @@ rule sieve_bam:
         * tn5 shift adjustment
         * remove multimappers
         * remove reads inside the blacklist
+        * filter paired-end reads on transcript length
     """
     input:
         bam=rules.samtools_presort.output,
@@ -106,12 +106,12 @@ rule sieve_bam:
         prim_align=f"-F 256" if config["only_primary_align"] else "",
         sizesieve=(
             lambda wildcards, input, output:
-            """ tee {output.allsizes} | awk 'substr($0,1,1)=="@" || ($9>={params.min_insert_size} && $9<={params.max_insert_size}) || ($9<=-{params.min_insert_size} && $9>=-{params.max_insert_size})' | """
+            """ tee {output.allsizes} | awk 'substr($0,1,1)=="@" || ($9>={params.min_template_length} && $9<={params.max_template_length}) || ($9<=-{params.min_template_length} && $9>=-{params.max_template_length})' | """
             if sampledict[wildcards.sample] == "PAIRED" and config["filter_on_size"]
             else ""
         ),
-        minsize=config.get("min_insert_size", 0),
-        maxsize=config.get("max_insert_size", 1_000_000),
+        minsize=config.get("min_template_length", 0),
+        maxsize=config.get("max_template_length", 1_000_000),
     conda:
         "../envs/samtools.yaml"
     threads: 2

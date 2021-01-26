@@ -29,6 +29,7 @@ remove_mito: True
 tn5_shift: True
 min_mapping_quality: 30
 only_primary_align: True
+max_template_length: 150
 
 # peak callers (supported peak callers are macs2, and genrich)
 peak_caller:
