@@ -21,11 +21,11 @@ sink(log, type="message")
 
 # log all variables for debugging purposes
 cat('# variables used for this analysis:\n')
-cat('threads      <-',   threads, '\n')
+cat('threads      <- ',   threads,     '\n')
 cat('log_file     <- "', log_file,     '"\n', sep = "")
 cat('counts_file  <- "', counts_file,  '"\n', sep = "")
 cat('samples_file <- "', samples_file, '"\n', sep = "")
-cat('replicates   <- ',  replicates, '\n')
+cat('replicates   <- ',  replicates,   '\n')
 cat('assembly     <- "', assembly,     '"\n', sep = "")
 cat('out_plot     <- "', out_plot,     '"\n', sep = "")
 cat('\n')
@@ -37,10 +37,10 @@ cat('\n')
 
 ## obtain coldata, the metadata input for DESeq2
 samples <- read.delim(samples_file, sep = "\t", na.strings = "", comment.char = "#", stringsAsFactors = F)
-if ("replicate" %in% colnames(samples) & isTRUE(replicates)) {
-  samples$replicate[is.na(samples$replicate)] <- as.character(samples$sample[is.na(samples$replicate)])
-  samples <- subset(samples, !duplicated(replicate))
-  row.names(samples) <- samples$replicate
+if ("technical_replicate" %in% colnames(samples) & isTRUE(replicates)) {
+  samples$technical_replicate[is.na(samples$technical_replicate)] <- as.character(samples$sample[is.na(samples$technical_replicate)])
+  samples <- subset(samples, !duplicated(technical_replicate))
+  row.names(samples) <- samples$technical_replicate
 } else {
   row.names(samples) <- samples$sample
 }
@@ -87,6 +87,9 @@ cell_dimensions = (if (num_samples < 16) {as.integer(160/num_samples)}          
                    else if (num_samples < 24) {10}                                  # pleasant size
                    else if (num_samples < 32) {as.integer(25 - 0.625*num_samples)}  # linear shrink
                    else {5})                                                        # minimal size
+fontsize = (if (num_samples < 16) {8}
+            else if (num_samples < 32) {8 - 0.15*num_samples}
+            else {3.2})                              
 
 # make heatmap and save as pdf (only pdfs can consistently save text properly)
 out_pdf <- sub(".png", ".pdf", out_plot)
@@ -95,9 +98,9 @@ pheatmap(sampleDistMatrix,
          angle_col = 45,
          show_colnames = if (num_samples > 28) {TRUE} else {FALSE},  # show names underneath if the image gets to wide
          show_rownames = if (num_samples > 28) {FALSE} else {TRUE},
-         fontsize = 8,
-         legend_breaks = c(min(sampleDistMatrix), max(sampleDistMatrix)),
-         legend_labels = c("high", "low"),
+         fontsize = fontsize,
+         legend_breaks = c(min(sampleDistMatrix), mean(c(min(sampleDistMatrix), max(sampleDistMatrix))), max(sampleDistMatrix)),
+         legend_labels = c("low", "distance\n(euclidean)", "high"),
          cellwidth  = cell_dimensions,
          cellheight = cell_dimensions,
          col=colors,
