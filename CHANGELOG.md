@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Fixed
+
+- combine peaks with biological_replicates: keep now uses the correct peaks
+
 ## [0.4.2] - 2021-01-19
 
 ### Changed
@@ -51,7 +55,6 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - bug in chip/atac trackhub generation where peaks and bigwigs used the same name, resulting in collisions and a trackhub that does not want to load 
 - (literal) genome edge-case where taking the slop of peaks results in identical peaks. One of the duplicates is removed.
 - IDR should work again
-- combine peaks with biological_replicates: keep now uses the correct peaks
 
 ## [0.3.2] - 2020-11-26
 
