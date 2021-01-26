@@ -155,7 +155,7 @@ if 'biological_replicate' in samples:
         samples = samples.drop(columns=['biological_replicate'])
 if 'descriptive_name' in samples:
     samples['descriptive_name'] = samples['descriptive_name'].mask(pd.isnull, samples[col])
-    if samples['descriptive_name'].to_list() == samples[col].to_list()):
+    if samples['descriptive_name'].to_list() == samples[col].to_list():
         samples = samples.drop(columns=['descriptive_name'])
 if 'strandedness' in samples:
     samples['strandedness'] = samples['strandedness'].mask(pd.isnull, 'nan')
