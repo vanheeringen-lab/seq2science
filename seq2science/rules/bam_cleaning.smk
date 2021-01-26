@@ -66,6 +66,14 @@ rule complement_blacklist:
         """
 
 
+if config["filter_on_size"]:
+    sieve_bam_output = {"allsizes": temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}_allsizes.samtools-coordinate-sieved.bam",**config)),
+                        "final": temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-sieved.bam",**config))}
+else:
+    sieve_bam_output = {"final": temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-sieved.bam",**config))}
+
+print(sieve_bam_output)
+
 rule sieve_bam:
     """
     "Sieve" a bam.
@@ -81,8 +89,7 @@ rule sieve_bam:
         blacklist=rules.complement_blacklist.output,
         sizes=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
     output:
-        allsizes=temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}_allsizes.samtools-coordinate-sieved.bam", **config)) if config["filter_on_size"] else "",
-        final=temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-sieved.bam", **config)),
+        **sieve_bam_output
     log:
         expand("{log_dir}/sieve_bam/{{assembly}}-{{sample}}.log", **config),
     benchmark:
@@ -91,7 +98,7 @@ rule sieve_bam:
     params:
         minqual=f"-q {config['min_mapping_quality']}",
         atacshift=(
-            lambda wildcards, input: f"| {config['rule_dir']}/../scripts/atacshift.pl /dev/stdin {input.sizes}"
+            lambda wildcards, input: f"| {config['rule_dir']}/../scripts/atacshift.pl /dev/stdin {input.sizes} | "
             if config["tn5_shift"]
             else ""
         ),
@@ -99,7 +106,7 @@ rule sieve_bam:
         prim_align=f"-F 256" if config["only_primary_align"] else "",
         sizesieve=(
             lambda wildcards, input, output:
-            """ | awk 'substr($0,1,1)=="@" || ($9>={params.min_insert_size} && $9<={params.max_insert_size}) || ($9<=-{params.min_insert_size} && $9>=-{params.max_insert_size})' | """
+            """ tee {output.allsizes} | awk 'substr($0,1,1)=="@" || ($9>={params.min_insert_size} && $9<={params.max_insert_size}) || ($9<=-{params.min_insert_size} && $9>=-{params.max_insert_size})' | """
             if sampledict[wildcards.sample] == "PAIRED" and config["filter_on_size"]
             else ""
         ),
@@ -111,9 +118,8 @@ rule sieve_bam:
     shell:
         """
         samtools view -h {params.prim_align} {params.minqual} {params.blacklist} \
-        {input.bam} {params.atacshift} |
-        tee {output.allsizes} {params.sizesieve}
-        samtools view -b > {output} 2> {log}
+        {input.bam} {params.atacshift} {params.sizesieve}
+        samtools view -b > {output.final} 2> {log}
         """
 
 
@@ -158,7 +164,7 @@ rule samtools_sort:
     Sort the result of sieving with the samtools sorter.
     """
     input:
-        rules.sieve_bam.output,
+        rules.sieve_bam.output.final
     output:
         temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-{{sorting}}-sievsort.bam", **config)),
     log:
@@ -169,6 +175,8 @@ rule samtools_sort:
         sort_order=lambda wildcards: "-n" if wildcards.sorting == "queryname" else "",
         out_dir=f"{config['result_dir']}/{config['aligner']}",
         memory=lambda wildcards, input, output, threads: f"-m {int(1000 * round(config['bam_sort_mem']/threads, 3))}M",
+    wildcard_constraints:
+        sample=f"""({any_given("sample", "replicate")})(_allsizes)?""",
     threads: 2
     resources:
         mem_gb=config["bam_sort_mem"],
@@ -220,7 +228,7 @@ rule mark_duplicates:
     conda:
         "../envs/picard.yaml"
     wildcard_constraints:
-        sample=f"""{any_given("sample", "replicate")}(_allsizes)?""",
+        sample=f"""({any_given("sample", "replicate")})(_allsizes)?""",
     shell:
         """
         # use the TMPDIR if set, and not given in the config

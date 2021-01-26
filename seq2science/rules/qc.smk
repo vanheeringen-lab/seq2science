@@ -701,7 +701,7 @@ def get_alignment_qc(sample):
     # add insert size metrics
     if sampledict[sample]['layout'] == "PAIRED":
         # if we do any sieving, we use the
-        if config["filter_on_size"]
+        if config.get("filter_on_size"):
             output.append(f"{{qc_dir}}/InsertSizeMetrics/{{{{assembly}}}}-{sample}_allsizes.tsv")
         else:
             output.append(f"{{qc_dir}}/InsertSizeMetrics/{{{{assembly}}}}-{sample}.tsv")
