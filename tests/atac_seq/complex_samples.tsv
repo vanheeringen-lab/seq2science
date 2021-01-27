@@ -1,5 +1,5 @@
 # 2 (merged) samples per condition, 2 assemblies & incomplete fields
-sample	assembly	replicate	condition	descriptive_name
+sample	assembly	technical_replicate	biological_replicate	descriptive_name
 S1_1	assembly1	R1_1	A	sample1_1
 S1_2	assembly1	R1_1	A	sample1_2
 S2_1	assembly1	R2_1	A	sample2_1

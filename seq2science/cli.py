@@ -403,10 +403,13 @@ def _explain(args, base_dir, workflows_dir, config_path):
     # run snakemake (silently)
     with open(os.devnull, "w") as null:
         with contextlib.redirect_stdout(null), contextlib.redirect_stderr(null):
-            exit_code = snakemake.snakemake(**parsed_args)
-
-    print(" ".join(rules_used.values()))
-    sys.exit(0) if exit_code else sys.exit(1)
+            success = snakemake.snakemake(**parsed_args)
+    if success:
+        print(" ".join(rules_used.values()))
+        sys.exit(0)
+    else:
+        print("Oh no! Something went wrong... Please let us know: https://github.com/vanheeringen-lab/seq2science/issues ")
+        sys.exit(1)
 
 
 def _clean(base_dir):

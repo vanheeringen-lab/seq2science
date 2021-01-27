@@ -62,10 +62,10 @@ rm(contr)
 
 ## obtain coldata, the metadata input for DESeq2
 samples <- read.delim(samples_file, sep = "\t", na.strings = "", comment.char = "#", stringsAsFactors = F)
-if ("replicate" %in% colnames(samples) & isTRUE(replicates)) {
-  samples$replicate[is.na(samples$replicate)] <- as.character(samples$sample[is.na(samples$replicate)])
-  samples <- subset(samples, !duplicated(replicate))
-  row.names(samples) <- samples$replicate
+if ("technical_replicate" %in% colnames(samples) & isTRUE(replicates)) {
+  samples$technical_replicate[is.na(samples$technical_replicate)] <- as.character(samples$sample[is.na(samples$technical_replicate)])
+  samples <- subset(samples, !duplicated(technical_replicate))
+  row.names(samples) <- samples$technical_replicate
 } else {
   row.names(samples) <- samples$sample
 }
@@ -147,22 +147,22 @@ cat('DE genes table saved\n\n')
 
 
 ## determine DE genes
-plot_res <- resLFC[resLFC$padj <= fdr & !is.na(resLFC$padj), ]
-plot_DEGs <- length(plot_res[,1])
-if(plot_DEGs == 0){
+n_DEGs <- length(resLFC[resLFC$padj <= fdr & !is.na(resLFC$padj), ][,1])
+if(n_DEGs == 0){
   cat("No differentially expressed genes found!\n")
   quit(save = "no" , status = 0)
 } else {
-  cat(plot_DEGs, "differentially expressed genes found!\n")
+  cat(n_DEGs, "differentially expressed genes found!\n")
 }
 
 ## generate additional files if DE genes are found
 
 # generate MA plot (log fold change vs mean gene counts)
 output_ma_plot <- sub(".diffexp.tsv", ".ma_plot.pdf", output)
+if (is.na(batch)) {b = ''} else {b = 'batch corrected, '}
 pdf(output_ma_plot)
-plotMA(plot_res, ylim=c(-2,2),
-       main = paste0(contrast, '\n', plot_DEGs, ' DE genes (a = ', fdr, ')'))
+plotMA(resLFC, alpha = fdr, ylab = 'log2 fold change',  # ylim=c(-2,2), 
+       main = paste0(groups[1], ' vs ', groups[2], '\n', n_DEGs, ' DE genes (a = ', fdr, ', ',b , nrow(reduced_counts), ' genes)'))
 invisible(dev.off())
 cat('-MA plot saved\n')
 

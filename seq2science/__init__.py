@@ -1,4 +1,4 @@
 from . import util
 
 __all__ = ["util"]
-__version__ = "0.3.2"
+__version__ = "0.4.3"

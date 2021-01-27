@@ -20,7 +20,7 @@ user@comp:~$ conda config --add channels bioconda
 user@comp:~$ conda config --add channels conda-forge
 ```
 
-### Easy installation (bioconda)
+### Easy and recommended installation (bioconda)
 
 The most straightforward way to install seq2science is by using [conda](https://docs.continuum.io/anaconda/) using the [bioconda](https://bioconda.github.io/) channel. To install seq2science in a fresh environment using bioconda:
 
@@ -28,7 +28,7 @@ The most straightforward way to install seq2science is by using [conda](https://
 (base) user@comp:~$ conda create -n seq2science seq2science
 ```
 
-### Install from source
+### Install from source (not recommended)
 
 To install the latest (potentially unreleased) version of seq2science you can install from source:
 

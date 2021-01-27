@@ -299,6 +299,19 @@ def strandedness_to_trackhub(sample):
         return [".fwd", ".rev"] if s in ["yes", "forward", "reverse"] else [""]
 
 
+def strandedness_in_assembly(assembly):
+    """
+    check if there are any stranded samples for this assembly. Returns bool.
+    """
+    if get_workflow() != "rna_seq":
+        return False
+    else:
+        strandedness = pd.read_csv(_strandedness_report(wildcards=None), sep='\t', dtype='str', index_col=0)
+        samples_in_assembly = treps[treps["assembly"] == assembly].index
+        strandedness_in_assembly = strandedness.filter(samples_in_assembly, axis=0).strandedness
+        return not strandedness_in_assembly.str.fullmatch('no').all()
+
+    
 def create_trackhub():
     """
     Create a UCSC trackhub.
@@ -585,17 +598,18 @@ def create_trackhub():
             composite.add_view(fwd_view)
 
             # ...one view to bring them all...
-            rev_view_name = "reverse strand reads"
-            rev_view = trackhub.ViewTrack(
-                    name=trackhub.helpers.sanitize(rev_view_name),
-                    short_label="rev reads",    # <= 17 characters suggested
-                    long_label=rev_view_name,
-                    view="reverse",
-                    visibility="full",             # default
-                    maxHeightPixels = "100:50:8",  # with 50 the y-axis is visible
-                    tracktype="bigWig",
-                )
-            composite.add_view(rev_view)
+            if strandedness_in_assembly(asmbly):  # only added if there are reverse strand bams
+                rev_view_name = "reverse strand reads"
+                rev_view = trackhub.ViewTrack(
+                        name=trackhub.helpers.sanitize(rev_view_name),
+                        short_label="rev reads",    # <= 17 characters suggested
+                        long_label=rev_view_name,
+                        view="reverse",
+                        visibility="full",             # default
+                        maxHeightPixels = "100:50:8",  # with 50 the y-axis is visible
+                        tracktype="bigWig",
+                    )
+                composite.add_view(rev_view)
 
             # ...and in subgroup bind them.
             subgroup = trackhub.SubGroupDefinition(
@@ -695,3 +709,6 @@ rule trackhub:
                         if line.startswith("compositeTrack"):
                             line = "autoScale group\n" + line
                         tf.write(line)
+
+            # make the trackhub readable for everyone (not writable)
+            shell("chmod -R 755 {output[0]}")

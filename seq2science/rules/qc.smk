@@ -1,7 +1,7 @@
 import re
 
 import seq2science
-from seq2science.util import sieve_bam
+from seq2science.util import sieve_bam, get_bustools_rid
 
 
 def samtools_stats_input(wildcards):
@@ -575,7 +575,8 @@ def get_qc_files(wildcards):
             qc['files'].update(get_peak_calling_qc(trep))
 
     if get_rna_qc in quality_control:
-        if not config.get("ignore_strandedness"):
+        # Skip if desired, or if no BAMs are made (no trackhub + Salmon)
+        if not (config.get("ignore_strandedness") or (config.get('quantifier', '') == 'salmon' and config.get('create_trackhub') == False)):
             for trep in treps[treps['assembly'] == ori_assembly(wildcards.assembly)].index:
                 qc['files'].update(get_rna_qc(trep))
 
@@ -650,6 +651,23 @@ def get_trimming_qc(sample):
             # we (at least for now) do not was fastqc for each single cell before and after trimming (too much for MultiQC).
             # still something to think about to add later, since that might be a good quality check though.
             return expand(f"{{qc_dir}}/fastqc/{sample}_{{fqext}}_trimmed_fastqc.zip", **config)
+        elif get_workflow() == "scrna_seq":
+            # single-cell RNA seq does weird things with barcodes in the fastq file
+            # therefore we can not just always start trimming paired-end even though
+            # the samples are paired-end (ish)
+            read_id = get_bustools_rid(config.get("count"))
+            if read_id == 0:
+                return expand([f"{{qc_dir}}/fastqc/{sample}_R1_fastqc.zip",
+                               f"{{qc_dir}}/fastqc/{sample}_R1_trimmed_fastqc.zip",
+                               f"{{qc_dir}}/trimming/{sample}_R1.{{fqsuffix}}.gz_trimming_report.txt"],
+                              **config)
+            elif read_id == 1:
+                return expand([f"{{qc_dir}}/fastqc/{sample}_R2_fastqc.zip",
+                            f"{{qc_dir}}/fastqc/{sample}_R2_trimmed_fastqc.zip",
+                            f"{{qc_dir}}/trimming/{sample}_R2.{{fqsuffix}}.gz_trimming_report.txt"],
+                            **config)
+            else:
+                raise NotImplementedError
         else:
             if sampledict[sample]['layout'] == 'SINGLE':
                 return expand([f"{{qc_dir}}/fastqc/{sample}_fastqc.zip",
@@ -663,6 +681,14 @@ def get_trimming_qc(sample):
                                **config)
 
     elif config["trimmer"] == "fastp":
+        if get_workflow() == "scrna_seq": 
+            read_id = get_bustools_rid(config.get("count"))
+            if read_id == 0:
+                return expand(f"{{qc_dir}}/trimming/{sample}_R1.fastp.json", **config)
+            elif read_id == 1:
+                return expand(f"{{qc_dir}}/trimming/{sample}_R2.fastp.json", **config)
+            else:
+                raise NotImplementedError
         # not sure how fastp should work with scatac here
         return expand(f"{{qc_dir}}/trimming/{sample}.fastp.json", **config)
 
@@ -673,7 +699,10 @@ def get_alignment_qc(sample):
     # add samtools stats
     output.append(f"{{qc_dir}}/markdup/{{{{assembly}}}}-{sample}.samtools-coordinate.metrics.txt")
     output.append(f"{{qc_dir}}/samtools_stats/{{aligner}}/{{{{assembly}}}}-{sample}.samtools-coordinate.samtools_stats.txt")
-    if sieve_bam(config):
+    
+    # if Salmon is used, the sieving does not effect the expression values, so adding it to the MultiQC is confusing
+    if sieve_bam(config) and \
+            not (get_workflow() == "rna_seq" and config.get('quantifier') == 'salmon'):
         output.append(f"{{qc_dir}}/samtools_stats/{os.path.basename(config['final_bam_dir'])}/{{{{assembly}}}}-{sample}.samtools-coordinate.samtools_stats.txt")
 
     # add insert size metrics
@@ -683,9 +712,10 @@ def get_alignment_qc(sample):
     # get the ratio mitochondrial dna
     output.append(f"{{result_dir}}/{config['aligner']}/{{{{assembly}}}}-{sample}.samtools-coordinate-unsieved.bam.mtnucratiomtnuc.json")
 
-    if get_workflow() in ["alignment", "chip_seq", "atac_seq", "scatac_seq"]:
+    if get_workflow() in ["alignment", "chip_seq", "atac_seq", "scatac_seq"] or \
+            get_workflow() == "rna_seq" and (config.get('create_trackhub') or config.get('quantifier') != 'salmon'):
         output.append("{qc_dir}/plotFingerprint/{{assembly}}.tsv")
-    if len(breps[breps["assembly"] == treps.loc[sample, "assembly"]].index) > 1:
+    if len(breps[breps["assembly"] == treps.loc[sample, "assembly"]].index) > 1 and config.get("deeptools_qc"):
         output.append("{qc_dir}/plotCorrelation/{{assembly}}-deeptools_pearson_mqc.png")
         output.append("{qc_dir}/plotCorrelation/{{assembly}}-deeptools_spearman_mqc.png")
         output.append("{qc_dir}/plotPCA/{{assembly}}.tsv")
@@ -697,9 +727,9 @@ def get_rna_qc(sample):
     output = []
 
     # add infer experiment reports
-    col = samples.replicate if "replicate" in samples else samples.index
+    col = samples.technical_replicate if "technical_replicate" in samples else samples.index
     if "strandedness" not in samples or samples[col == sample].strandedness[0] == "nan":
-        output = expand(f"{{qc_dir}}/strandedness/{samples[col == sample].assembly[0]}-{sample}.strandedness.txt", **config)
+        output = expand(f"{{qc_dir}}/strandedness/{{{{assembly}}}}-{sample}.strandedness.txt", **config)
 
     return output
 
@@ -719,7 +749,8 @@ def get_peak_calling_qc(sample):
     # TODO: replace with genomepy checkpoint in the future
     if has_annotation(assembly):
         output.extend(expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config))  # added to be unzipped
-        output.extend(expand("{qc_dir}/plotProfile/{{assembly}}-{peak_caller}.tsv", **config))
+        if config.get("deeptools_qc"):
+            output.extend(expand("{qc_dir}/plotProfile/{{assembly}}-{peak_caller}.tsv", **config))
         if get_ftype(list(config["peak_caller"].keys())[0]) == "narrowPeak":
             output.extend(expand("{qc_dir}/chipseeker/{{assembly}}-{peak_caller}_img1_mqc.png", **config))
             output.extend(expand("{qc_dir}/chipseeker/{{assembly}}-{peak_caller}_img2_mqc.png", **config))
