@@ -255,23 +255,21 @@ elif config["quantifier"] == "kallistobus":
             -o {output} -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
             {params.options} {input.reads} > {log} 2>&1
             """
-    def list_files(wildcards):
-        dirs = glob.glob(f"{config['result_dir']}/kallistobus/{{wildcards.assembly}}-*")
-        return dirs
-    #kb_dirs=glob_wildcards("{config['result_dir']}/kallistobus/{{wildcards.assembly}}-{{wildcards.sample}}")
 
-    rule aggregate:
+    rule rmd_generate:
         input:
             expand([f"{{result_dir}}/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}" for trep in treps.index], **config)
         output:
-            f"{config['result_dir']}/kallistobus/{{assembly}}/done.txt"
+            f"{config['result_dir']}/kallistobus/{{assembly}}/hello_world.html"
         priority: 1
-        run:
-            with open(output[0], "w") as outfile:
-                for item in input:
-                    outfile.write("{}\n".format(item))
-                
-
+        conda:
+            "../envs/kb_scrna_R_seurat3.yaml"
+        params:
+            rmd_dir=f"{config['rule_dir']}/../scripts/rmd/hello_world.RMD"
+        shell:
+            "Rscript -e \"rmarkdown::render('{params.rmd_dir}',output_file='{output}')\""
+        
+  
   
      
     

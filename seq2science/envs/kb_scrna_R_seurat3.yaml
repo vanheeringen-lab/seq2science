@@ -4,8 +4,9 @@ channels:
   - conda-forge
   - bioconda
   - defaults
-dependencies:
+dependencies: 
   - r-base>=3
+  - r-rmarkdown
   - r-knitr>=1.20
   - bioconductor-biocinstaller>=1.30
   - r-devtools>=2

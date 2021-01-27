@@ -4,8 +4,7 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-#here::set_here()
-here::i_am("rmd/hello_world.RMD")
+here::set_here()
 knitr::opts_chunk$set(echo = TRUE)
 ```
 

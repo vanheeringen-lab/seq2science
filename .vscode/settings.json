@@ -1,0 +1,7 @@
+{
+    "python.pythonPath": "/vol/mbconda/tschaefers/bin/python",
+    "jupyter.jupyterServerType": "local",
+    "python.linting.pylintEnabled": false,
+    "python.linting.flake8Enabled": true,
+    "python.linting.enabled": true
+}
