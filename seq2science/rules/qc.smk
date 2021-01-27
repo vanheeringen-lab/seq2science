@@ -572,7 +572,8 @@ def get_qc_files(wildcards):
             qc['files'].update(get_peak_calling_qc(trep))
 
     if get_rna_qc in quality_control:
-        if not config.get("ignore_strandedness"):
+        # Skip if desired, or if no BAMs are made (no trackhub + Salmon)
+        if not (config.get("ignore_strandedness") or (config.get('quantifier', '') == 'salmon' and config.get('create_trackhub') == False)):
             for trep in treps[treps['assembly'] == ori_assembly(wildcards.assembly)].index:
                 qc['files'].update(get_rna_qc(trep))
 
@@ -695,7 +696,10 @@ def get_alignment_qc(sample):
     # add samtools stats
     output.append(f"{{qc_dir}}/markdup/{{{{assembly}}}}-{sample}.samtools-coordinate.metrics.txt")
     output.append(f"{{qc_dir}}/samtools_stats/{{aligner}}/{{{{assembly}}}}-{sample}.samtools-coordinate.samtools_stats.txt")
-    if sieve_bam(config):
+    
+    # if Salmon is used, the sieving does not effect the expression values, so adding it to the MultiQC is confusing
+    if sieve_bam(config) and \
+            not (get_workflow() == "rna_seq" and config.get('quantifier') == 'salmon'):
         output.append(f"{{qc_dir}}/samtools_stats/{os.path.basename(config['final_bam_dir'])}/{{{{assembly}}}}-{sample}.samtools-coordinate.samtools_stats.txt")
 
     # add insert size metrics
@@ -709,7 +713,8 @@ def get_alignment_qc(sample):
     # get the ratio mitochondrial dna
     output.append(f"{{result_dir}}/{config['aligner']}/{{{{assembly}}}}-{sample}.samtools-coordinate-unsieved.bam.mtnucratiomtnuc.json")
 
-    if get_workflow() in ["alignment", "chip_seq", "atac_seq", "scatac_seq"]:
+    if get_workflow() in ["alignment", "chip_seq", "atac_seq", "scatac_seq"] or \
+            get_workflow() == "rna_seq" and (config.get('create_trackhub') or config.get('quantifier') != 'salmon'):
         output.append("{qc_dir}/plotFingerprint/{{assembly}}.tsv")
     if len(breps[breps["assembly"] == treps.loc[sample, "assembly"]].index) > 1 and config.get("deeptools_qc"):
         output.append("{qc_dir}/plotCorrelation/{{assembly}}-deeptools_pearson_mqc.png")
@@ -723,7 +728,7 @@ def get_rna_qc(sample):
     output = []
 
     # add infer experiment reports
-    col = samples.replicate if "replicate" in samples else samples.index
+    col = samples.technical_replicate if "technical_replicate" in samples else samples.index
     if "strandedness" not in samples or samples[col == sample].strandedness[0] == "nan":
         output = expand(f"{{qc_dir}}/strandedness/{{{{assembly}}}}-{sample}.strandedness.txt", **config)
 

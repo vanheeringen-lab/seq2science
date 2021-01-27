@@ -42,7 +42,7 @@ samplenames <- gsub(paste0(assembly, '-'), '', basename(samples))
 coldata <- data.frame(names = samplenames, files = file.path(samples, 'quant.sf'), stringsAsFactors = F, check.names = F)
 
 ## import annotated abundances in transcript level
-st <- tximeta::tximeta(coldata, cleanDuplicateTxps = TRUE)
+st <- tximeta::tximeta(coldata, cleanDuplicateTxps = TRUE, useHub = FALSE)
 
 ## Summarize to gene level
 sg <- summarizeToGene(st)
