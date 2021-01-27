@@ -27,7 +27,6 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [0.4.2] - 2021-01-19
 
-
 ### Changed
 
 - Updated kb-python to 0.25.1
