@@ -11,7 +11,7 @@ genome_dir: ./genomes  # where to look for or download the genomes
 email: yourmail@here.com
 
 # produce a UCSC trackhub?
-create_trackhub: True
+create_trackhub: true
 
 # how to handle replicates
 biological_replicates: fisher  # change to "keep" to not combine them
@@ -24,9 +24,9 @@ trimmer: fastp
 aligner: bwa-mem2
 
 # filtering after alignment
-remove_blacklist: True
+remove_blacklist: true
 min_mapping_quality: 30
-only_primary_align: True
+only_primary_align: true
 
 # peak caller
 peak_caller:

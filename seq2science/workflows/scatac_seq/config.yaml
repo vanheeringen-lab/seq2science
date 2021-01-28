@@ -14,9 +14,9 @@ email: yourmail@here.com
 technical_replicates: merge
 
 # filtering after alignment
-remove_blacklist: True
-remove_mito: True
-tn5_shift: True
+remove_blacklist: true
+remove_mito: true
+tn5_shift: true
 min_mapping_quality: 30
 only_primary_align: True
 max_template_length: 1000

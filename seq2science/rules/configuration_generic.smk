@@ -28,7 +28,6 @@ import seq2science
 from seq2science.util import samples2metadata, prep_filelock, url_is_alive, color_parser
 
 
-
 logger.info(
 """\
                ____  ____   __              
@@ -443,6 +442,7 @@ if len(failed_samples):
         logger.error("\n")
     raise TerminatedException
 
+
 # workflow
 
 
@@ -527,4 +527,3 @@ if config.get("create_trackhub"):
     else:
         logger.error("There were some problems with locking the seq2science cache. Please try again in a bit.")
         raise TerminatedException
-
