@@ -51,6 +51,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Changed
 
+- replicate renamed to technical_replicate and condition renamed to biological_replicate
 - bwa-mem2 default aligner for genomic workflows, instead of bwa-mem
 - interactive deeptools correlation heatmaps with static dendrograms in multiqc report
 - trackhub file permissions are set to 755 so to host the files online you don't have to change those anymore
