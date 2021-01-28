@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Fixed
+
+- Chipseeker now works without defining descriptive name column
+
 ## [0.4.3] - 2021-01-26
 
 ### Changed
