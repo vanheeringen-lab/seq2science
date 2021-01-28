@@ -76,6 +76,8 @@ if config["quantifier"] == "salmon":
             "../envs/salmon.yaml"
         shell:
             """
+            mkdir -p {output}
+            
             salmon index -t {input.gentrome} -d {input.decoys} -i {output} {params} \
             --threads {threads} > {log} 2>&1
             """
@@ -100,6 +102,8 @@ if config["quantifier"] == "salmon":
             "../envs/salmon.yaml"
         shell:
             """
+            mkdir -p {output}
+            
             salmon index -t {input} -i {output} {params} --threads {threads} > {log} 2>&1
             """
 
