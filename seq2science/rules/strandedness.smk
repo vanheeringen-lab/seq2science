@@ -47,6 +47,8 @@ checkpoint strandedness_report:
         samples_to_infer
     output:
         expand("{qc_dir}/strandedness/inferred_strandedness.tsv", **config)
+    params:
+        reps=lambda wildcards, input: input  # help resolve changes in input files
     run:
         import pandas as pd
 
