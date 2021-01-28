@@ -262,20 +262,22 @@ rule samtools_index:
         samtools index {params} {input} {output}
         """
 
-rule sam2bam:
-    """
-    Convert a file in sam format into a bam format (binary)
-    """
-    input:
-        "{filepath}.sam"
-    output:
-        "{filepath}.bam"
-    conda:
-        "../envs/samtools.yaml"
-    shell:
+
+if config["filter_on_size"]:
+    rule sam2bam:
         """
-        samtools view -b {input} > {output}
+        Convert a file in sam format into a bam format (binary)
         """
+        input:
+            "{filepath}.sam"
+        output:
+            "{filepath}.bam"
+        conda:
+            "../envs/samtools.yaml"
+        shell:
+            """
+            samtools view -b {input} > {output}
+            """
 
 
 rule bam2cram:
