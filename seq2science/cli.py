@@ -18,11 +18,13 @@ import xdg
 # we need to be able to get the parser from the file without a valid seq2science installation
 try:
     import snakemake
-    import seq2science
+    from snakemake.logging import logger, setup_logger
 
-    full_import = True
+    import seq2science
+    from seq2science.logging import log_welcome
+
 except ImportError:
-    full_import = False
+    pass
 
 try:
     import mamba
@@ -113,15 +115,6 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         help="The path to the directory where to initialise the config and samples files.",
     )
 
-    # run/explain arguments
-    for subparser in [run, explain]:
-        subparser.add_argument(
-            "-c",
-            "--configfile",
-            default="./config.yaml",
-            metavar="FILE",
-            help="The path to the config file.",
-        )
     global core_arg
     core_arg = run.add_argument(
         "-j", "--cores",
@@ -142,6 +135,27 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         help="Print the reason for each executed rule.",
         action='store_true'
     )
+    run.add_argument(
+        "--skip-rerun",
+        help="Skip the check if samples or configuration has been changed.",
+        action="store_true"
+    )
+    run.add_argument(
+        "-k", "--keep-going",
+        help="Go on with independent jobs if a job fails.",
+        action='store_true'
+    )
+    run.add_argument(
+        "--rerun-incomplete",
+        help="Re-run all jobs the output of which is recognized as incomplete.",
+        action='store_true'
+    )
+    run.add_argument(
+        "--unlock",
+        help="Remove a lock on the working directory.",
+        action='store_true'
+    )
+    # run/explain arguments
     for subparser in [run, explain]:
         subparser.add_argument(
             "--snakemakeOptions",
@@ -160,21 +174,13 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
             metavar="PROFILE NAME",
             help="Use a seq2science profile. Profiles can be taken from: https://github.com/s2s-profiles",
         )
-    run.add_argument(
-        "-k", "--keep-going",
-        help="Go on with independent jobs if a job fails.",
-        action='store_true'
-    )
-    run.add_argument(
-        "--rerun-incomplete",
-        help="Re-run all jobs the output of which is recognized as incomplete.",
-        action='store_true'
-    )
-    run.add_argument(
-        "--unlock",
-        help="Remove a lock on the working directory.",
-        action='store_true'
-    )
+        subparser.add_argument(
+            "-c",
+            "--configfile",
+            default="./config.yaml",
+            metavar="FILE",
+            help="The path to the config file.",
+        )
 
     return parser
 
@@ -267,7 +273,7 @@ def _run(args, base_dir, workflows_dir, config_path):
         add_profile_args(profile_file, parsed_args)
 
     # cores
-    if args.cores:  # CLI
+    if args.cores:  # command-line interface
         parsed_args["cores"] = args.cores
     elif parsed_args.get("cores"):  # profile
         parsed_args["cores"] = int(parsed_args["cores"])
@@ -287,71 +293,51 @@ def _run(args, base_dir, workflows_dir, config_path):
     parsed_args["config"].update({"cores": parsed_args["cores"]})
     resource_parser(parsed_args)
 
-    # run snakemake
-    # 1. first check for ..
-    from snakemake.logging import logger, setup_logger
+    # run snakemake/seq2science
+    #   1. pretty welcome message
     setup_logger()
-    from .logging import log_welcome
     log_welcome(logger, parsed_args)
-    logger.info("Checking if something something")
+    if not args.skip_rerun:
+        #   2. start a dryrun checking which files need to be created, and check if
+        #      any params changed, which means we have to remove those files and
+        #      continue from there
+        logger.info("Checking if seq2science was run already, if something in the configuration was changed, and if so, if "
+                    "seq2science needs to re-run any jobs.")
 
-    stored = []
-    def log_wrapper(log):
-        stored.append(log)
+        with seq2science.util.CaptureStdout() as targets, seq2science.util.CaptureStderr() as errors:
+            exit_code = snakemake.snakemake(**{**parsed_args, **{
+                "list_params_changes": True,
+                "quiet": False,
+                "log_handler": lambda x: None,  # don't show any of the logs
+                "keep_logger": True
+            }})
+        if not exit_code:
+            sys.exit(1)
 
-    def log_handler(logs):
-        for log in logs:
-            if log["level"] == "info":
-                if not "will be created" in log["msg"]:
-                    logger.info(log["msg"])
-            if log["level"] == "error":
-                logger.error(log["msg"])
-                if "KeyboardInterrupt" in log["msg"]:
-                    sys.exit(1)
+        #   3. check which files would need a rerun, and clean remove files we do
+        #      not want to consider.
+        #      - genome files since provider will change to local
+        regex_patterns = [
+            "(\/.+){2}[^_custom]+\.(fa|gaps)",  # match genome fasta
+            "(\/.+){2}.+\.annotation.(bed|gtf)",  # match annotations
+        ]
+        targets = [target for target in targets if not any(re.match(pattern, target) for pattern in regex_patterns)]
 
-    with seq2science.util.CaptureStdout() as targets, seq2science.util.CaptureStderr() as errors:
-        exit_code = snakemake.snakemake(**{**parsed_args, **{
-                                                             "list_params_changes": True,
-                                                             "quiet": False,
-                                                             "log_handler": [log_wrapper],
-                                                             "keep_logger": True
-                                                             }})
-    if not exit_code:
-        sys.exit(1)
+        #   4. if there are any targets left, force to recreate those targets plus the final results (rule seq2science_
+        if len(targets):
+            targets += ["seq2science"]
+            parsed_args["forcerun"] = targets
+            parsed_args["targets"] = targets
+            parsed_args["forcetargets"] = True
+            parsed_args["keep_logger"] = True
 
     logger.info("Done. Now starting the real run.")
-
-    # first remove unwanted targets
-    regex_patterns = [
-        "(\/.+){2}[^_custom]+\.(fa|gaps)",  # match genome fasta
-        "(\/.+){2}.+\.annotation.(bed|gtf)",  # match annotations
-    ]
-    targets = [target for target in targets if not any(re.match(pattern, target) for pattern in regex_patterns)]
-
-    # if we then still have targets left
-    if len(targets):
-        # # remove the targets
-        # for f in targets:
-        #     # skip genome assemblies
-        #     if not f.endswith((".fa", ".fa.sizes", ".gtf.gz", ".bed.gz")):
-        #         if os.path.exists(f):
-        #             if os.path.isdir(f):
-        #                 shutil.rmtree(f)
-        #             else:
-        #                 os.unlink(f)
-
-        targets += ["seq2science"]
-        parsed_args["forcerun"] = targets
-        parsed_args["targets"] = targets
-        parsed_args["forcetargets"] = True
-        parsed_args["keep_logger"] = True
-
     logger.stream_handler.setStream(sys.stdout)
     parsed_args["config"]["no_config_log"] = True
-    # 2. actually run pipeline
+    #   5. start the "real" run where jobs actually get started
     exit_code = snakemake.snakemake(**parsed_args)
 
-    # 3. proper exit code
+    #   6. start the "real" run where jobs actually get started
     sys.exit(0) if exit_code else sys.exit(1)
 
 
