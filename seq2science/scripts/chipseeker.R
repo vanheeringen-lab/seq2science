@@ -37,10 +37,9 @@ txdb_from_gtf <- makeTxDbFromGFF(gtf)
 
 peaks_list = list()
 for (i in seq_along(narrowpeaks)) {
-    if (descriptive_names[[i]] == ''){
+    if (i > length(descriptive_names) || descriptive_names[[i]] == ''){
         sample_name <- narrowpeaks[[i]]
-        sample_name <- gsub("_peaks.narrowPeak", "",sample_name)
-        sample_name <- gsub(toString(assembly),"",sample_name)
+        sample_name <- gsub(".+-([^-]+)_summits\\.bed","\\1", sample_name)
     }
     else{
         sample_name = descriptive_names[[i]]

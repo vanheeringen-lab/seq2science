@@ -256,7 +256,10 @@ def get_descriptive_names(wildcards, input):
             raise ValueError
 
         if trep in breps.index:
-            labels += trep + " "
+            if len(treps_from_brep[(trep, wildcards.assembly)]) == 1 and trep in samples.index:
+                labels += samples.loc[trep, "descriptive_name"] + " "
+            else:
+                labels += trep + " "
         elif "control" in treps and trep not in treps.index:
             labels += f"control_{trep} "
         elif trep in samples.index:
