@@ -45,7 +45,7 @@ st <- tximeta::tximeta(
     txOut=TRUE,                # output transcripts (default)
     # skipMeta=TRUE,           # meta = required for transcript outputs
     # skipSeqinfo=TRUE,        # lookup sizes
-    # useHub=FALSE,            # lookup similar indexes
+    useHub=FALSE,              # lookup similar indexes
     # markDuplicateTxps=TRUE,  # mark and track
     cleanDuplicateTxps=TRUE,   # fix
 )

@@ -209,11 +209,11 @@ elif config["aligner"] == "hisat2":
             mkdir -p {output}
             
             hp=$(which hisat2)
-            python3 ${{hp}}_extract_splice_sites.py {input.gtf} > {output}/splice_sites.tsv
-            python3 ${{hp}}_extract_exons.py {input.gtf} > {output}/exons.tsv
+            python3 ${{hp}}_extract_splice_sites.py {input.gtf} > {output}/splice_sites.tsv 2>> {log}
+            python3 ${{hp}}_extract_exons.py {input.gtf} > {output}/exons.tsv 2>> {log}
             
             hisat2-build {params} -p {threads} --ss {output}/splice_sites.tsv --exon {output}/exons.tsv \
-            {input.fasta} {output}/part > {log} 2>&1
+            {input.fasta} {output}/part >> {log} 2>&1
             """
 
     rule hisat2_index:
@@ -422,7 +422,7 @@ elif config["aligner"] == "star":
             pipe=pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0]),
             dir=directory(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}", **config)),
         log:
-            expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}.log", **config),
+            directory(expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}", **config)),
         benchmark:
             expand("{benchmark_dir}/{aligner}_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
         message: explain_rule(f"{config['aligner']}_align")

@@ -91,39 +91,61 @@ This column is necessary for all workflows, except the *downloading samples* wor
 In the `control` column you can (optionally) add the "sample name" of the input control. It is generally a bad idea to add the input control as a sample in the sample since generally peak callers fail on these samples. 
 
 #### Descriptive_name column
-The descriptive_name column is used for the trackhub and multiqc report. In the trackhub your tracks will be called after the descriptive name, and in the multiqc report there will be a button to rename your samples after this column.
+The descriptive_name column is used for the trackhub and multiqc report. In the trackhub your tracks will be called after the descriptive name, and in the multiqc report there will be a button to rename your samples after this column. The descriptive name can not contain '-' characters, but underscores '_' are allowed.
 
 #### Technical replicates
-Technical replicates, or any fastq file you may wish to merge, are set using the `replicate` column in the samples.tsv file. All samples with the same name in the `replicate` column will be concatenated into one file with the replicate name.
+Technical replicates, or any fastq file you may wish to merge, are set using the `technical_replicate` column in the samples.tsv file. All samples with the same name in the `technical_replicate` column will be concatenated into one file with the replicate name.
 
 Example `samples.tsv` utilizing replicate merging:
 ```
-sample    assembly    replicate
+sample    assembly    technical_replicate
 GSM123    GRCh38      heart
 GSMabc    GRCh38      heart
-GSMxzy    danRer11    stage8
-GSM890    danRer11
+GSMxzy    GRCh38      stage8
+GSM890    GRCh38
 ```
 Using this file in the alignment workflow will output *heart.bam*, *stage8.bam* and *GSM890.bam*. The MultiQC will inform you of the trimming steps performed on all samples, and subsequent information of the 'replicate' files (of which only *heart* is merged).
 
 **Note:**
 If you are working with multiple assemblies in one workflow, replicate names have to be unique between assemblies (you will receive a warning if names overlap).
 
+#### keep
 Replicate merging is turned on by default. It can be turned off by setting `technical_replicates` in the `config.yaml` to `keep`.
 
 #### Biological replicates
-During ChIP-seq workflows, peak calling can be performed per biological condition, depending on your configuration setting. Biological conditions are determined by the `condition` column in the samples.tsv file. How these samples are handled is specified by configuration variable `biological_replicates`.
+During ATAC-seq workflows, peak calling can be performed per biological condition, depending on your configuration setting. Biological conditions are determined by the `biological_replicate` column in the samples.tsv file. How these samples are handled is specified by configuration variable `biological_replicates`.
 
-If you merge technical replicates *and* combine biological replicates, the technical replicates are merged first.
+```
+sample    assembly    biological_replicate
+GSM123    GRCh38      kidney
+GSMabc    GRCh38      liver
+GSMxzy    GRCh38      liver
+GSM890    GRCh38
+```
+
+In this case peaks of the two liver samples (GSMabc and GSMxzy) will be combined by e.g. IDR.
 
 ##### Keep
-The default setting. All samples/merged replicates are analyzed individually. The `condition` column is ignored.
+By setting `biological_replicates` to keep, all biological replicates are analyzed individually. The `biological_replicate` column is ignored.
 
 ##### Irreproducible Discovery Rate (IDR)
-One of the more common methods to combine biological replicates is by the irreproducible discovery rate ([idr](https://github.com/kundajelab/idr)). Shortly; idr sorts all the peaks of two replicates separately on their significance. Since true peaks should be very significant for both replicates these peaks will be one of the highest sorted peaks. As peaks get less and less true (and thus their significance) their ordering also becomes more random between the samples. The idr method then only keeps the peak that overlap *nonrandomly* between the samples. The idr method only works for two replicates, so can not be used when you have more than 2 (`n == 2`).
+One of the more common methods to combine biological replicates is by the irreproducible discovery rate ([idr](https://github.com/kundajelab/idr)). Shortly; idr sorts all the peaks of two replicates separately on their significance. Since true peaks should be very significant for both replicates these peaks will be one of the highest sorted peaks. As peaks get less and less true (and thus their significance) their ordering also becomes more random between the samples. The idr method then only keeps the peak that overlap *nonrandomly* between the samples. The idr method only works for two replicates, so can not be used when you have more than 2 (`n == 2`). IDR can be turned on by setting `biological_replicates` to idr.
 
 ##### Fisher's method
-[Fisher's method ](https://en.wikipedia.org/wiki/Fisher%27s_method) simply is a method to 'combine' multiple p-values. This method is built-in for genrich and macs2, and allows any number of replicates (`n >= 2`). However a 'disadvantage' of this method is that it assumes the p-values a method generates are actual p-values (and not a general indication of significance). MACS2 is slightly notorious for that its p-values are not true p-values. Genrich claims by fitting on a log-normal distribution that their p-values are true. Even though fisher's method might not be ideal, it's the only option you have (we provide) within this pipeline for more than 2 replicates.
+[Fisher's method ](https://en.wikipedia.org/wiki/Fisher%27s_method) simply is a method to 'combine' multiple p-values. This method is built-in for genrich and macs2, and allows any number of replicates (`n >= 2`). However a 'disadvantage' of this method is that it assumes the p-values a method generates are actual p-values (and not a general indication of significance). MACS2 is slightly notorious for that its p-values are not true p-values. Genrich claims by fitting on a log-normal distribution that their p-values are true. Even though fisher's method might not be ideal, it's the only option you have (we provide) within this pipeline for more than 2 replicates. Fisher's method can be turned on by setting `biological_replicates` to fisher.
+
+
+#### A mix of biological and technical replicates
+
+```
+sample    assembly    technical_replicate  biological_replicate
+GSM123    GRCh38      peter_kidney         kidney
+GSMabc    GRCh38      peter_liver          liver
+GSMxzy    GRCh38      lindsey_liver        liver
+GSM890    GRCh38      lindsey_liver        liver
+```
+
+In this example we have data from Peter and Lindsey. We have one liver sample and one kidney sample from Peter. Of Lindsey we only have a liver sample, which was sequenced across two different lanes. With this sample sheet, the samples of Lindsey get merged after trimming. Then peak calling is done separately on each of the three remaining technical replicates (peter_kidney, peter_liver, lindsey_liver), and afterwards all liver technical replicates belonging to the same biological replicate (in this case peter_liver and lindsey_liver) are combined through e.g. IDR.
 
 #### Colors column
 If you are visualizing your data on the UCSC trackhub you can optionally specify the colors of each main track. For ATAC- and ChIP-seq, each biological replicate is a main track.

@@ -46,6 +46,7 @@ touch tests/local_test_results/fastq/S7_1.fastq.gz
 touch tests/local_test_results/fastq/S8_1.fastq.gz
 touch tests/local_test_results/ERCC92.fa
 touch tests/local_test_results/ERCC92.gtf
+touch tests/local_test_results/barcodes.txt
 
 for assembly in assembly1 assembly2; do
   mkdir -p tests/local_test_results/${assembly}
@@ -461,6 +462,47 @@ if [ $1 = "rna-seq" ]; then
   printf "\nmultiple assemblies and replicates with DEA - multiqc report\n"
   seq2science run rna-seq -n --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={technical_replicates:merge,samples:tests/rna_seq/complex_samples.tsv,create_qc_report:True,trimmer:trimgalore} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 fastqc  24
+
+  test_ran=1
+fi
+
+if [ $1 = "scrna-seq" ]; then
+
+  # RNA-seq workflow
+  WF=scrna_seq
+
+  printf "\nscrna-seq default\n"
+  seq2science run scrna-seq -n --configfile tests/scrna_seq/config.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 fastp_SE 2
+  assert_rulecount $1 fastq_pair 2
+  assert_rulecount $1 kallistobus_ref 1
+  assert_rulecount $1 kallistobus_count 2
+  assert_rulecount $1 multiqc 1
+
+  test_ran=1
+fi
+
+if [ $1 = "explain" ]; then
+  yes | seq2science init download-fastq
+  seq2science explain download-fastq
+
+  yes | seq2science init alignment
+  seq2science explain alignment
+
+  yes | seq2science init atac-seq
+  seq2science explain atac-seq
+
+  yes | seq2science init chip-seq
+  seq2science explain chip-seq
+
+  yes | seq2science init rna-seq
+  seq2science explain rna-seq
+
+  yes | seq2science init scrna-seq
+  seq2science explain scrna-seq
+
+  yes | seq2science init scatac-seq
+  seq2science explain scatac-seq
 
   test_ran=1
 fi
