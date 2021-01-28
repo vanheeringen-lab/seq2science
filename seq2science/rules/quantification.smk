@@ -260,14 +260,17 @@ elif config["quantifier"] == "kallistobus":
         input:
             expand([f"{{result_dir}}/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}" for trep in treps.index], **config)
         output:
-            f"{config['result_dir']}/kallistobus/{{assembly}}/hello_world.html"
+            html=f"{config['result_dir']}/seurat/{{quantifier}}/{{assembly}}/kb_seurat_pp.html",
+            qc_dir=directory(f"{config['result_dir']}/seurat/{{quantifier}}/{{assembly}}/qc")
+            
         priority: 1
         conda:
             "../envs/kb_scrna_R_seurat3.yaml"
         params:
-            rmd_dir=f"{config['rule_dir']}/../scripts/rmd/hello_world.RMD"
+            kb_dir=f"{config['result_dir']}/kallistobus",
+            rmd_dir=f"{config['rule_dir']}/../scripts/rmd/kb_seurat_pp.rmd"            
         shell:
-            "Rscript -e \"rmarkdown::render('{params.rmd_dir}',output_file='{output}')\""
+            "Rscript -e \"rmarkdown::render('{params.rmd_dir}',params = list(kb.dir = '{params.kb_dir}', resultsdir = '{output.qc_dir}'), output_file='{output.html}')\""
         
   
   
