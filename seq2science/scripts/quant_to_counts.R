@@ -40,7 +40,15 @@ samplenames <- gsub(paste0(assembly, '-'), '', basename(samples))
 coldata <- data.frame(files = file.path(samples, 'quant.sf'), names = samplenames, stringsAsFactors = F, check.names = F)
 
 ## import annotated abundances in transcript level
-st <- tximeta::tximeta(coldata, cleanDuplicateTxps = TRUE, useHub = FALSE)
+st <- tximeta::tximeta(
+    coldata=coldata,
+    txOut=TRUE,                # output transcripts (default)
+    # skipMeta=TRUE,           # meta = required for transcript outputs
+    # skipSeqinfo=TRUE,        # lookup sizes
+    useHub=FALSE,              # lookup similar indexes
+    # markDuplicateTxps=TRUE,  # mark and track
+    cleanDuplicateTxps=TRUE,   # fix
+)
 
 ## Summarize to gene level
 sg <- tximeta::summarizeToGene(st)
