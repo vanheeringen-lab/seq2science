@@ -21,7 +21,7 @@ After trimming the reads are aligned against an assembly. Currently we support `
 The pipeline will check if the assembly you specified is present in the *genome_dir*, and otherwise will download it for you through [genomepy](https://github.com/vanheeringen-lab/genomepy). All these aligners require an index to be formed first for each assembly, but don't worry, the pipeline does this for you. 
 
 #### Bam sieving
-After aligning the bam you can choose to remove unmapped reads, low quality mappings, duplicates, and multimappers. It is also advisable to remove mitochondrially mapped reads for ATAC-seq analysis, plus to get slightly more acurate peaks you can set set the workflow to apply a tn5 shift.
+After aligning the bam you can choose to remove unmapped reads, low quality mappings, duplicates, and multimappers. It is also advisable to remove mitochondrially mapped reads for ATAC-seq analysis, plus to get slightly more accurate peaks you can set set the workflow to apply a tn5 shift. Finally you are probably interested in reads from the nucleosome-free region, so by selecting paired-end reads with a short insert-size (+/- 150 bp) you filter out reads from the mono-di-tri-etc nucleosomes.
 
 #### Peak calling
 Currently we support two peak callers for the ATAC-seq workflow, MACS2 and genrich.

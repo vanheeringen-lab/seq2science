@@ -202,3 +202,11 @@ properties:
     description: Deeptools multiBamSummary params
     default: '--distanceBetweenBins 9000 --binSize 1000'
     type: string
+
+  min_template_length:
+    description: the minimum template length for paired-end reads
+    type: integer
+
+  max_template_length:
+    description: the maximum template length for paired-end reads
+    type: integer

@@ -66,6 +66,13 @@ rule complement_blacklist:
         """
 
 
+if config["filter_on_size"]:
+    sieve_bam_output = {"allsizes": temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}_allsizes.samtools-coordinate-sieved.sam",**config)),
+                        "final": temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-sieved.bam",**config))}
+else:
+    sieve_bam_output = {"final": temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-sieved.bam",**config))}
+
+
 rule sieve_bam:
     """
     "Sieve" a bam.
@@ -75,35 +82,42 @@ rule sieve_bam:
         * tn5 shift adjustment
         * remove multimappers
         * remove reads inside the blacklist
+        * filter paired-end reads on transcript length
     """
     input:
         bam=rules.samtools_presort.output,
         blacklist=rules.complement_blacklist.output,
         sizes=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
     output:
-        temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-sieved.bam", **config)),
+        **sieve_bam_output
     log:
         expand("{log_dir}/sieve_bam/{{assembly}}-{{sample}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/sieve_bam/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
     message: explain_rule("sieve_bam")
+    conda:
+        "../envs/samtools.yaml"
+    threads: 2
     params:
         minqual=f"-q {config['min_mapping_quality']}",
         atacshift=(
-            lambda wildcards, input: f"| {config['rule_dir']}/../scripts/atacshift.pl /dev/stdin {input.sizes}"
+            lambda wildcards, input: f" {config['rule_dir']}/../scripts/atacshift.pl /dev/stdin {input.sizes} | "
             if config["tn5_shift"]
             else ""
         ),
         blacklist=lambda wildcards, input: f"-L {input.blacklist}",
         prim_align=f"-F 256" if config["only_primary_align"] else "",
-    conda:
-        "../envs/samtools.yaml"
-    threads: 2
+        sizesieve=(
+            lambda wildcards, input, output:
+            f""" tee {output.allsizes} | awk 'substr($0,1,1)=="@" || ($9>={config['min_template_length']} && $9<={config['max_template_length']}) || ($9<=-{config['min_template_length']} && $9>=-{config['max_template_length']})' | """
+            if sampledict[wildcards.sample]["layout"] == "PAIRED" and config["filter_on_size"]
+            else ""
+        )
     shell:
         """
         samtools view -h {params.prim_align} {params.minqual} {params.blacklist} \
-        {input.bam} {params.atacshift} | 
-        samtools view -b > {output} 2> {log}
+        {input.bam} | {params.atacshift} {params.sizesieve}
+        samtools view -b > {output.final} 2> {log}
         """
 
 
@@ -148,7 +162,7 @@ rule samtools_sort:
     Sort the result of sieving with the samtools sorter.
     """
     input:
-        rules.sieve_bam.output,
+        rules.sieve_bam.output.final
     output:
         temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-{{sorting}}-sievsort.bam", **config)),
     log:
@@ -159,6 +173,8 @@ rule samtools_sort:
         sort_order=lambda wildcards: "-n" if wildcards.sorting == "queryname" else "",
         out_dir=f"{config['result_dir']}/{config['aligner']}",
         memory=lambda wildcards, input, output, threads: f"-m {int(1000 * round(config['bam_sort_mem']/threads, 3))}M",
+    wildcard_constraints:
+        sample=f"""({any_given("sample", "technical_replicate", "control")})(_allsizes)?""",
     threads: 2
     resources:
         mem_gb=config["bam_sort_mem"],
@@ -179,7 +195,10 @@ def get_bam_mark_duplicates(wildcards):
     if sieve_bam(config):
         # when alignmentsieving but not shifting we do not have to re-sort samtools-coordinate
         if wildcards.sorter == "samtools" and wildcards.sorting == "coordinate" and not config.get("tn5_shift", False):
-            return rules.sieve_bam.output
+            if config["filter_on_size"] and wildcards.sample.endswith("_allsizes"):
+                return expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-sieved.bam",**config)
+            else:
+                return rules.sieve_bam.output.final
         else:
             return expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}-sievsort.bam", **config)
 
@@ -209,6 +228,8 @@ rule mark_duplicates:
         mem_gb=5,
     conda:
         "../envs/picard.yaml"
+    wildcard_constraints:
+        sample=f"""({any_given("sample", "technical_replicate", "control")})(_allsizes)?""",
     shell:
         """
         # use the TMPDIR if set, and not given in the config
@@ -240,6 +261,23 @@ rule samtools_index:
         """
         samtools index {params} {input} {output}
         """
+
+
+if config["filter_on_size"]:
+    rule sam2bam:
+        """
+        Convert a file in sam format into a bam format (binary)
+        """
+        input:
+            "{filepath}.sam"
+        output:
+            "{filepath}.bam"
+        conda:
+            "../envs/samtools.yaml"
+        shell:
+            """
+            samtools view -b {input} > {output}
+            """
 
 
 rule bam2cram:
