@@ -1,8 +1,3 @@
-suppressMessages({
-  library(R.utils)
-  library(tximeta)
-})
-
 # snakemake variables
 salmonindex <- snakemake@input$index_dir
 source      <- snakemake@params$source
@@ -40,17 +35,20 @@ cat('\n')
 ## create a symlink to the gtf with Ensembl naming scheme (required for tximeta)
 fake_gtf_path <- file.path(dirname(output), paste0(organism, '.', genome, '.', release, '.gtf'))
 cat('Renaming GTF:\n')
-createLink(fake_gtf_path, gtf)
+file.symlink(from=gtf, to=fake_gtf_path)
+# R.utils::createLink(fake_gtf_path, gtf) is more robust, but conda/Jenkins has issues with R.utils
 cat('\n')
 
 ## Creating linked transcriptome
 cat('Creating linked transcriptome:\n')
-makeLinkedTxome(indexDir = salmonindex,
-                source = source,
-                organism = organism,
-                release = release,
-                genome = genome,
-                fasta = fasta,
-                gtf = fake_gtf_path, # instead of the real gtf
-                write = TRUE,
-                jsonFile = output)
+tximeta::makeLinkedTxome(
+  indexDir = salmonindex,
+  source = source,
+  organism = organism,
+  release = release,
+  genome = genome,
+  fasta = fasta,
+  gtf = fake_gtf_path, # instead of the real gtf
+  write = TRUE,
+  jsonFile = output
+)

@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- Options to filter bams by minimum and maximum insert sizes (added to config of bulk/sc atac)
+
 ### Fixed
 
 - Chipseeker now works without defining descriptive name column

@@ -403,7 +403,11 @@ class _StoreDictKeyPair(argparse.Action):
                     f"\n'{v}' contains a broken key-value pair: '{pair}' (TIP: is there a space in there perhaps?)\n"
                 if pair[1].lower() == 'true':
                     pair[1] = True
-                v = {pair[0]: int(pair[1]) if isinstance(pair[1], str) and pair[1].isdigit() else pair[1]}
+                elif pair[1].lower() == 'false':
+                    pair[1] = False
+                elif isinstance(pair[1], str) and pair[1].isdigit():
+                    pair[1] = int(pair[1])
+                v = {pair[0]: pair[1]}
             elif "[" in v:
                 v = re.sub("\[|\]", "", v).split(",")
             else:

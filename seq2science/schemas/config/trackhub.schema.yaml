@@ -1,4 +1,4 @@
-$schema: "http://json-schema.org/draft-06/schema#"
+$schema: "http://json-schema.org/draft-07/schema#"
 
 description: seq2science trackhub configuration
 
@@ -6,7 +6,7 @@ properties:
   # scope of analysis: create a trackhub or only align and/or quantify (and create gene counts)
   create_trackhub:
     description: generate a trackhub (and required files)?
-    default: True
+    default: true
     type: boolean
 
   bigwig_dir:
