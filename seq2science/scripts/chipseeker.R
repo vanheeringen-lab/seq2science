@@ -5,6 +5,7 @@ suppressMessages({
 
 # snakemake variables
 narrowpeaks       <- snakemake@input$narrowpeaks
+assembly          <- snakemake@wildcards$assembly
 gtf               <- snakemake@input$gtf[[1]]
 descriptive_names <- strsplit(snakemake@params$names, "\\s+")[[1]]
 out1              <- snakemake@output$img1[[1]]
@@ -19,6 +20,7 @@ sink(log, type="message")
 # log all variables for debugging purposes
 cat('# variables used for this analysis:\n')
 cat('narrowpeaks      <-',   narrowpeaks,       '\n')
+cat('assembly         <-',   assembly,          '\n')
 cat('gtf              <-',   gtf,               '\n')
 cat('descriptive name <-',   descriptive_names, '\n')
 cat('out1             <-',   out1,              '\n')
@@ -35,9 +37,16 @@ txdb_from_gtf <- makeTxDbFromGFF(gtf)
 
 peaks_list = list()
 for (i in seq_along(narrowpeaks)) {
-    sample_name = descriptive_names[[i]]
+    if (i > length(descriptive_names) || descriptive_names[[i]] == ''){
+        sample_name <- narrowpeaks[[i]]
+        sample_name <- gsub(".+-([^-]+)_summits\\.bed","\\1", sample_name)
+    }
+    else{
+        sample_name = descriptive_names[[i]]
+    }
     peaks_list[[sample_name]] = readPeakFile(narrowpeaks[[i]])
 }
+
 
 peak_anno_list <- lapply(peaks_list, annotatePeak, TxDb=txdb_from_gtf,
                          tssRegion=c(-3000, 3000), verbose=FALSE)
