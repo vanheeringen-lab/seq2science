@@ -297,7 +297,7 @@ def _run(args, base_dir, workflows_dir, config_path):
     #   1. pretty welcome message
     setup_logger()
     log_welcome(logger, parsed_args)
-    if not args.skip_rerun:
+    if not args.skip_rerun or args.unlock:
         #   2. start a dryrun checking which files need to be created, and check if
         #      any params changed, which means we have to remove those files and
         #      continue from there
