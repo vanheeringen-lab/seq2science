@@ -182,6 +182,8 @@ rule insert_size_metrics:
         f"{config['log_dir']}/InsertSizeMetrics/{{assembly}}-{{sample}}.log"
     conda:
         "../envs/picard.yaml"
+    wildcard_constraints:
+        sample=".+",
     shell:
         """
         picard CollectInsertSizeMetrics INPUT={input} \
@@ -256,7 +258,10 @@ def get_descriptive_names(wildcards, input):
             raise ValueError
 
         if trep in breps.index:
-            labels += trep + " "
+            if len(treps_from_brep[(trep, wildcards.assembly)]) == 1 and trep in samples.index:
+                labels += samples.loc[trep, "descriptive_name"] + " "
+            else:
+                labels += trep + " "
         elif "control" in treps and trep not in treps.index:
             labels += f"control_{trep} "
         elif trep in samples.index:
@@ -641,6 +646,7 @@ rule multiqc:
         --cl_config "extra_fn_clean_exts: [                                        \
             {{'pattern': ^.*{wildcards.assembly}-, 'type': 'regex'}},              \
             {{'pattern': {params.fqext1},          'type': 'regex'}},              \
+            {{'pattern': _allsizes,                'type': 'regex'}},              \
             ]" > {log} 2>&1
         """
 
@@ -707,7 +713,11 @@ def get_alignment_qc(sample):
 
     # add insert size metrics
     if sampledict[sample]['layout'] == "PAIRED":
-        output.append(f"{{qc_dir}}/InsertSizeMetrics/{{{{assembly}}}}-{sample}.tsv")
+        # if we do any sieving, we use the
+        if config.get("filter_on_size"):
+            output.append(f"{{qc_dir}}/InsertSizeMetrics/{{{{assembly}}}}-{sample}_allsizes.tsv")
+        else:
+            output.append(f"{{qc_dir}}/InsertSizeMetrics/{{{{assembly}}}}-{sample}.tsv")
 
     # get the ratio mitochondrial dna
     output.append(f"{{result_dir}}/{config['aligner']}/{{{{assembly}}}}-{sample}.samtools-coordinate-unsieved.bam.mtnucratiomtnuc.json")

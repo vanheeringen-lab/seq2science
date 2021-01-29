@@ -39,10 +39,14 @@ if "biological_replicate" in treps:
         treps_from_brep[(brep, assembly)] = list(
             treps[(treps["assembly"] == assembly) & (treps["biological_replicate"] == brep)].index
         )
+        treps_from_brep[(brep, assembly + config.get("custom_assembly_suffix", ""))] = list(
+            treps[(treps["assembly"] == assembly) & (treps["biological_replicate"] == brep)].index
+        )
 else:
     for brep, row in breps.iterrows():
         assembly = row["assembly"]
         treps_from_brep[(brep, assembly)] = [brep]
+        treps_from_brep[(brep, assembly + config.get("custom_assembly_suffix", ""))] = [brep]
 
 # and vice versa
 brep_from_trep = dict()
