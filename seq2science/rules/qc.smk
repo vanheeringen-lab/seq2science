@@ -638,6 +638,7 @@ rule multiqc:
         --cl_config "extra_fn_clean_exts: [                                        \
             {{'pattern': ^.*{wildcards.assembly}-, 'type': 'regex'}},              \
             {{'pattern': {params.fqext1},          'type': 'regex'}},              \
+            {{'pattern': _allsizes,                'type': 'regex'}},              \
             ]" > {log} 2>&1
         """
 
