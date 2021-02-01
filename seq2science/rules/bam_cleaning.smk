@@ -25,8 +25,8 @@ rule setup_blacklist:
     output:
         temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.customblacklist.bed", **config)),
     params:
-        config.get("remove_blacklist"),
-        config.get("remove_mito"),
+        config.get("remove_blacklist"),  # helps resolve changed params
+        config.get("remove_mito"),  # helps resolve changed params
     run:
         newblacklist = ""
         if config.get("remove_blacklist") and wildcards.assembly.lower() in ["ce10", "dm3", "hg38", "hg19", "mm9", "mm10"]:
