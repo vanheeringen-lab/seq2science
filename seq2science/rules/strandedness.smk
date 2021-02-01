@@ -91,7 +91,12 @@ checkpoint strandedness_report:
 
 
 def _strandedness_report(wildcards):
-    return checkpoints.strandedness_report.get().output[0]
+    strandreport = checkpoints.strandedness_report.get().output
+    if len(strandreport):
+        return strandreport[0]
+    else:
+        raise FileNotFoundError
+
 
 def strandedness_to_quant(wildcards, tool):
     """
