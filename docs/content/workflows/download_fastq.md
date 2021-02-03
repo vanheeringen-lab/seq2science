@@ -11,13 +11,15 @@ The three largest databases that store sequencing data are National Center for B
 
 ### Filling out the samples.tsv
 Before running a workflow you will have to specify which samples you want to run the workflow on. Each workflow starts with a `samples.tsv` as an example, and you should adapt it to your specific needs. As an example, the `samples.tsv` could look something like this:
+
 ```
 sample
-GSM123
-GSM321
-GSMabc
-GSMxzy
-GSM890
+ERX123  <-- EBI ENA experiment
+ERR321  <-- EBI ENA run
+GSMabc  <-- GEO experiment
+SRRxzy  <-- SRA run
+DRX890  <-- DDBJ experiment
+DRR890  <-- DDBJ run
 ```
 
 #### Sample column

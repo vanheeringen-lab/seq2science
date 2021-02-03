@@ -11,6 +11,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Added
 
 - Options to filter bams by minimum and maximum insert sizes (added to config of bulk/sc atac)
+- Support experiment ids for EBI ENA and DDBJ for downloading public samples
 
 ### Fixed
 
