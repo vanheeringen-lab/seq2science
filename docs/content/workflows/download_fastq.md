@@ -16,7 +16,8 @@ Before running a workflow you will have to specify which samples you want to run
 sample
 ERX123  <-- EBI ENA experiment
 ERR321  <-- EBI ENA run
-GSMabc  <-- GEO experiment
+GSMabc  <-- GEO sample
+SRX456  <-- SRA experiment
 SRRxzy  <-- SRA run
 DRX890  <-- DDBJ experiment
 DRR890  <-- DDBJ run
