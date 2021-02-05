@@ -47,7 +47,7 @@ if config["quantifier"] == "salmon":
             expand("{benchmark_dir}/get_genome/{{assembly}}.decoy_transcripts.benchmark.txt", **config)[0]
         threads: 40
         resources:
-            mem_gb=65,
+            mem_gb=64,
         conda:
             "../envs/decoy.yaml"
         priority: 1

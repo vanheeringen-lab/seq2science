@@ -21,6 +21,8 @@ rule samtools_stats:
     log:
         expand("{log_dir}/samtools_stats/{{directory}}/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config)
     message: explain_rule("samtools_stats")
+    resources:
+        time="0-06:00:00"
     conda:
         "../envs/samtools.yaml"
     shell:
@@ -184,6 +186,8 @@ rule insert_size_metrics:
         "../envs/picard.yaml"
     wildcard_constraints:
         sample=".+",
+    resources:
+        time="0-06:00:00"
     shell:
         """
         picard CollectInsertSizeMetrics INPUT={input} \
@@ -218,6 +222,8 @@ rule mt_nuc_ratio_calculator:
         "../envs/mtnucratio.yaml"
     params:
         mitochondria=lambda wildcards, input: get_chrM_name(wildcards, input)
+    resources:
+        time="0-06:00:00"
     shell:
         """
         mtnucratio {input.bam} {params.mitochondria}
@@ -470,6 +476,8 @@ rule multiqc_header_info:
     """
     output:
         temp(expand('{qc_dir}/header_info.yaml', **config))
+    resources:
+        time="0-00:30:00"
     run:
         import os
         from datetime import date
@@ -491,6 +499,8 @@ rule multiqc_rename_buttons:
     """
     output:
         temp(expand('{qc_dir}/sample_names_{{assembly}}.tsv', **config))
+    resources:
+        time="0-00:30:00"
     run:
         newsamples = samples[samples["assembly"] == ori_assembly(wildcards.assembly)].reset_index(level=0, inplace=False)
         newsamples = newsamples.drop(["assembly"], axis=1)
@@ -503,6 +513,8 @@ rule multiqc_filter_buttons:
     """
     output:
         temp(expand('{qc_dir}/sample_filters_{{assembly}}.tsv', **config))
+    resources:
+        time="0-00:30:00"
     run:
         with open(output[0], "w") as f:
             f.write("Read Group 1 & Alignment\thide\t_R2\n"
@@ -521,6 +533,8 @@ rule multiqc_samplesconfig:
         sanitized_samples=sanitized_samples
     conda:
         "../envs/htmltable.yaml"
+    resources:
+        time="0-00:30:00"
     script:
         f"{config['rule_dir']}/../scripts/multiqc_samplesconfig.py"
 
@@ -530,6 +544,8 @@ rule multiqc_schema:
     """
     output:
         temp(expand('{qc_dir}/schema.yaml', **config))
+    resources:
+        time="0-00:30:00"
     run:
         with open(f'{config["rule_dir"]}/../schemas/multiqc_config.yaml') as cookie_schema:
             cookie = cookie_schema.read()
@@ -591,6 +607,8 @@ rule combine_qc_files:
         unpack(get_qc_files)
     output:
         expand("{qc_dir}/multiqc_{{assembly}}.tmp.files", **config),
+    resources:
+        time="0-00:30:00"
     run:
         with open(output[0], mode="w") as out:
             out.write('\n'.join(input.files))
