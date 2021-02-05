@@ -92,10 +92,7 @@ checkpoint strandedness_report:
 
 def _strandedness_report(wildcards):
     strandreport = checkpoints.strandedness_report.get().output
-    if len(strandreport):
-        return strandreport[0]
-    else:
-        raise FileNotFoundError
+    return strandreport[0]
 
 
 def strandedness_to_quant(wildcards, tool):
@@ -109,6 +106,8 @@ def strandedness_to_quant(wildcards, tool):
     }
 
     strandedness = pd.read_csv(_strandedness_report(wildcards), sep='\t', dtype='str', index_col=0)
+    if wildcards.sample not in strandedness.index:
+        return "new samples added, start rerun"
     s = strandedness[strandedness.index == wildcards.sample].strandedness[0]
     n = 1 if s in ["yes", "forward"] else (2 if s == "reverse" else 0)
     return out[tool][n]
