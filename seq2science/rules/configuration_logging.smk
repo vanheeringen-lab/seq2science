@@ -40,8 +40,7 @@ The easiest way would be to make an issue on our github page:
 https://github.com/vanheeringen-lab/seq2science/issues
 
 """
-                )
-
+    )
     if config.get("email") not in ["none@provided.com", "yourmail@here.com", None]:
         os.system(f"""echo "Unsuccessful pipeline run! :(" | mail -s "The seq2science pipeline finished prematurely..." {config["email"]} 2> /dev/null """)
 
@@ -73,12 +72,28 @@ for key in keys:
         other_keys.append(key)
 keys = dir_keys + other_keys
 
+# check if aligners are used at all
+no_aligners = config.get("quantifier") in ["salmon", "kallistobus"] and not config.get("create_trackhub")
+
 # remove superfluous keys
 keys_to_remove = ["fqext1", "fqext2", "macs2_types", "cpulimit",
                   "genome_types", "genomepy_temp", "bam_sort_mem",
+                  "benchmark_dir", "rule_dir",
                   ("biological_replicates", "condition" not in samples),
                   ("filter_bam_by_strand", "strandedness" not in samples),
                   ("technical_replicates", "replicates" not in samples),
+                  ("final_bam_dir", no_aligners),
+                  ("aligner", no_aligners),
+                  ("bam_sort_order", no_aligners),
+                  ("bam_sorter", no_aligners),
+                  ("deeptools_flags", no_aligners),
+                  ("deeptools_multibamsummary", no_aligners),
+                  ("deeptools_plotcorrelation", no_aligners),
+                  ("deeptools_qc", no_aligners),
+                  ("markduplicates", no_aligners),
+                  ("min_mapping_quality", no_aligners),
+                  ("only_primary_align", no_aligners),
+                  ("remove_blacklist", no_aligners),
                   ("tximeta", config.get("quantifier") != "salmon"),
                   ("deseq2", not config.get("contrasts")),
                   ("dge_dir", not config.get("contrasts")),
