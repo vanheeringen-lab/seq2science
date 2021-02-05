@@ -287,6 +287,8 @@ rule plotFingerprint:
     conda:
         "../envs/deeptools.yaml"
     threads: 16
+    resources:
+        mem_gb=4.5,
     params:
         lambda wildcards, input: "--labels " + get_descriptive_names(wildcards, input.bams) if
                                  get_descriptive_names(wildcards, input.bams) != "" else ""
@@ -321,7 +323,8 @@ rule computeMatrix:
         "../envs/deeptools.yaml"
     threads: 16
     resources:
-        deeptools_limit=lambda wildcards, threads: threads
+        deeptools_limit=lambda wildcards, threads: threads,
+        mem_gb=50,
     params:
         labels=lambda wildcards, input: "--samplesLabel " + get_descriptive_names(wildcards, input.bw) if
                                  get_descriptive_names(wildcards, input.bw) != "" else "",
@@ -377,7 +380,8 @@ rule multiBamSummary:
     conda:
         "../envs/deeptools.yaml"
     resources:
-        deeptools_limit=lambda wildcards, threads: threads
+        deeptools_limit=lambda wildcards, threads: threads,
+        mem_gb=4,
     shell:
         """
         multiBamSummary bins --bamfiles {input.bams} -out {output} {params.names} \

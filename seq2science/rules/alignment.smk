@@ -371,7 +371,7 @@ elif config["aligner"] == "star":
         priority: 1
         threads: 10
         resources:
-            mem_gb=37,
+            mem_gb=41,
         conda:
             "../envs/star.yaml"
         shell:

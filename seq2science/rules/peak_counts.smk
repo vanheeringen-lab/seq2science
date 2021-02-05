@@ -157,6 +157,8 @@ rule coverage_table:
         expand("{benchmark_dir}/coverage_table/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     conda:
         "../envs/gimme.yaml"
+    resources:
+        mem_gb=3,
     message: explain_rule("coverage_table")
     shell:
         """
