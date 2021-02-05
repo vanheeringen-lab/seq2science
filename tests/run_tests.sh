@@ -1,4 +1,5 @@
 # to run these tests locally:
+#   mamba install toml --yes
 #   python setup.py develop
 #   bash ./tests/run_tests.sh TEST
 
@@ -163,10 +164,10 @@ if [ $1 = "atac-seq" ]; then
 #  seq2science run atac-seq --cores $CORES --configfile tests/alignment/remote_genome_n_sample.yaml --snakemakeOptions config={aligner:bowtie2}
 
   printf "\natac-seq - multiqc report\n"
-  seq2science run atac-seq --cores $CORES --configfile tests/alignment/remote_genome_n_sample.yaml --snakemakeOptions config={aligner:bowtie2,create_qc_report:True,custom_genome_extension:tests/tinydata/tinyERCC92.fa} show_failed_logs=True
+  seq2science run atac-seq --cores $CORES --configfile tests/alignment/remote_genome_n_sample.yaml --snakemakeOptions config={aligner:bowtie2,create_qc_report:True,custom_genome_extension:tests/tinydata/tinyERCC92.fa,min_template_length:50} show_failed_logs=True
 
   printf "\natac-seq - trackhub\n"
-  seq2science run atac-seq --cores $CORES --configfile tests/alignment/remote_genome_n_sample.yaml --snakemakeOptions config={aligner:bowtie2,create_trackhub:True,custom_genome_extension:tests/tinydata/tinyERCC92.fa} show_failed_logs=True
+  seq2science run atac-seq --cores $CORES --configfile tests/alignment/remote_genome_n_sample.yaml --snakemakeOptions config={aligner:bowtie2,create_trackhub:True,custom_genome_extension:tests/tinydata/tinyERCC92.fa,max_template_length:150} show_failed_logs=True
 
   test_ran=1
 fi
@@ -208,7 +209,8 @@ if [ $1 = "rna-seq" ]; then
   omit_from=[blind_clustering,deseq2]  # <- remove when fixed
 
   printf "\nrna-seq default - trackhub\n"
-  seq2science run rna-seq --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions config={samples:tests/alignment/stranded_sample.tsv,genome_dir:tests,fastq_dir:../tinyfastq,aligner:star,create_trackhub:True,custom_genome_extension:tests/tinydata/tinyERCC92.fa,custom_annotation_extension:tests/tinydata/tinyERCC92.gtf} show_failed_logs=True
+  # deeptools: removed normalization due to test samples being too small
+  seq2science run rna-seq --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions config={samples:tests/alignment/stranded_sample.tsv,genome_dir:tests,fastq_dir:../tinyfastq,aligner:star,create_trackhub:True,custom_genome_extension:tests/tinydata/tinyERCC92.fa,custom_annotation_extension:tests/tinydata/tinyERCC92.gtf,deeptools_flags:-v} show_failed_logs=True
 
   printf "\nrna-seq default - multiqc report\n"
   seq2science run rna-seq --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions config={samples:tests/alignment/local_sample.tsv,genome_dir:tests,fastq_dir:../tinyfastq,aligner:star,create_qc_report:True,custom_genome_extension:tests/tinydata/tinyERCC92.fa,custom_annotation_extension:tests/tinydata/tinyERCC92.gtf} show_failed_logs=True

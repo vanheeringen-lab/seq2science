@@ -28,21 +28,20 @@ import seq2science
 from seq2science.util import samples2metadata, prep_filelock, url_is_alive, color_parser
 
 
-
 logger.info(
 """\
-               ____  ____   __              
-              / ___)(  __) /  \             
-              \___ \ ) _) (  O )            
-              (____/(____) \__\)            
-                     ____                   
-                    (___ \                  
-                     / __/                  
-                    (____)                  
-   ____   ___   __   ____  __ _   ___  ____ 
-  / ___) / __) (  ) (  __)(  ( \ / __)(  __)
-  \___ \( (__   )(   ) _) /    /( (__  ) _) 
-  (____/ \___) (__) (____)\_)__) \___)(____)
+             ____  ____   __              
+            / ___)(  __) /  \             
+            \___ \ ) _) (  O )            
+            (____/(____) \__\)            
+                   ____                   
+                  (___ \                  
+                   / __/                  
+                  (____)                  
+   ____   ___  __  ____  __ _   ___  ____ 
+  / ___) / __)(  )(  __)(  ( \ / __)(  __)
+  \___ \( (__  )(  ) _) /    /( (__  ) _) 
+  (____/ \___)(__)(____)\_)__) \___)(____)
 
 docs: https://vanheeringen-lab.github.io/seq2science
 """
@@ -144,20 +143,18 @@ if len(errors):
 # 1) if it is incomplete, fill the blanks with replicate/sample names
 # (sample names if replicates are not found/applicable)
 # 2) drop column if it is identical to the replicate/sample column, or if not needed
-if 'replicate' in samples:
-    samples['replicate'] = samples['replicate'].mask(pd.isnull, samples['sample'])
-    if samples['replicate'].tolist() == samples['sample'].tolist() or config.get('technical_replicates') == 'keep':
-        samples = samples.drop(columns=['replicate'])
-if 'condition' in samples:
-    samples['condition'] = samples['condition'].mask(pd.isnull, samples['replicate']) if 'replicate' in samples else \
-        samples['condition'].mask(pd.isnull, samples['sample'])
-    if samples['condition'].tolist() == samples['sample'].tolist() or config.get('biological_replicates') == 'keep':
-        samples = samples.drop(columns=['condition'])
+if 'technical_replicate' in samples:
+    samples['technical_replicate'] = samples['technical_replicate'].mask(pd.isnull, samples['sample'])
+    if samples['technical_replicate'].tolist() == samples['sample'].tolist() or config.get('technical_replicates') == 'keep':
+        samples = samples.drop(columns=['technical_replicate'])
+col = 'technical_replicate' if 'technical_replicate' in samples else 'sample'
+if 'biological_replicate' in samples:
+    samples['biological_replicate'] = samples['biological_replicate'].mask(pd.isnull, samples[col])
+    if samples['biological_replicate'].tolist() == samples[col].tolist() or config.get('biological_replicates') == 'keep':
+        samples = samples.drop(columns=['biological_replicate'])
 if 'descriptive_name' in samples:
-    samples['descriptive_name'] = samples['descriptive_name'].mask(pd.isnull, samples['replicate']) if \
-        'replicate' in samples else samples['descriptive_name'].mask(pd.isnull, samples['sample'])
-    if ('replicate' in samples and samples['descriptive_name'].to_list() == samples['replicate'].to_list()) or \
-        samples['descriptive_name'].to_list() == samples['sample'].to_list():
+    samples['descriptive_name'] = samples['descriptive_name'].mask(pd.isnull, samples[col])
+    if samples['descriptive_name'].to_list() == samples[col].to_list():
         samples = samples.drop(columns=['descriptive_name'])
 if 'strandedness' in samples:
     samples['strandedness'] = samples['strandedness'].mask(pd.isnull, 'nan')
@@ -169,9 +166,9 @@ if 'colors' in samples:
     if not config.get('create_trackhub', False):
         samples = samples.drop(columns=['colors'])
 
-if 'replicate' in samples:
+if 'technical_replicate' in samples:
     # check if replicate names are unique between assemblies
-    r = samples[['assembly', 'replicate']].drop_duplicates().set_index('replicate')
+    r = samples[['assembly', 'technical_replicate']].drop_duplicates().set_index('technical_replicate')
     for replicate in r.index:
         assert len(r[r.index == replicate]) == 1, \
             ("\nReplicate names must be different between assemblies.\n" +
@@ -179,17 +176,17 @@ if 'replicate' in samples:
 
 # check if sample, replicate and condition names are unique between the columns
 for idx in samples.index:
-    if "condition" in samples:
-        assert idx not in samples["condition"].values, f"sample names, conditions, and replicates can not overlap. " \
-                                                       f"Sample {idx} can not also occur as a condition"
-    if "replicate" in samples:
-        assert idx not in samples["replicate"].values, f"sample names, conditions, and replicates can not overlap. " \
-                                                       f"Sample {idx} can not also occur as a replicate"
+    if "biological_replicate" in samples:
+        assert idx not in samples["biological_replicate"].values, f"sample names, conditions, and replicates can not overlap. " \
+                                                                  f"Sample {idx} can not also occur as a condition"
+    if "technical_replicate" in samples:
+        assert idx not in samples["technical_replicate"].values, f"sample names, conditions, and replicates can not overlap. " \
+                                                                 f"Sample {idx} can not also occur as a replicate"
 
-if "condition" in samples and "replicate" in samples:
-    for cond in samples["condition"]:
-        assert cond not in samples["replicate"].values, f"sample names, conditions, and replicates can not overlap. " \
-                                                        f"Condition {cond} can not also occur as a replicate"
+if "biological_replicate" in samples and "technical_replicate" in samples:
+    for cond in samples["biological_replicate"]:
+        assert cond not in samples["technical_replicate"].values, f"sample names, conditions, and replicates can not overlap. " \
+                                                                  f"Condition {cond} can not also occur as a replicate"
 
 # validate samples file
 for schema in sample_schemas:
@@ -424,9 +421,9 @@ for sample, values in sampledict.items():
 
 # if samples are merged add the layout of the technical replicate to the config
 failed_samples = dict()
-if 'replicate' in samples:
+if 'technical_replicate' in samples:
     for sample in samples.index:
-        replicate = samples.loc[sample, 'replicate']
+        replicate = samples.loc[sample, 'technical_replicate']
         if replicate not in sampledict:
             sampledict[replicate] = {'layout':  sampledict[sample]['layout']}
         elif sampledict[replicate]['layout'] != sampledict[sample]['layout']:
@@ -444,6 +441,7 @@ if len(failed_samples):
             logger.error(f"\t{sample}: {sampledict[sample]['layout']}")
         logger.error("\n")
     raise TerminatedException
+
 
 # workflow
 
@@ -474,15 +472,15 @@ if 'assembly' in samples:
         raw_assembly=any_given('assembly'),
         assembly=any_given('assembly', suffix=config["custom_assembly_suffix"] if modified else ""),
 
-if 'replicate' in samples:
-    sample_constraints.append("replicate")
+if 'technical_replicate' in samples:
+    sample_constraints.append("technical_replicate")
     wildcard_constraints:
-        replicate=any_given('replicate')
+        replicate=any_given('technical_replicate')
 
-if 'condition' in samples:
-    sample_constraints.append("condition")
+if 'biological_replicate' in samples:
+    sample_constraints.append("biological_replicate")
     wildcard_constraints:
-        condition=any_given('condition')
+        condition=any_given('biological_replicate')
 
 if "control" in samples:
     sample_constraints.append("control")
@@ -529,4 +527,3 @@ if config.get("create_trackhub"):
     else:
         logger.error("There were some problems with locking the seq2science cache. Please try again in a bit.")
         raise TerminatedException
-

@@ -10,15 +10,41 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Changed
 
+- slimmed down the config printed at the start of a run
+
+### Added
+
+- Options to filter bams by minimum and maximum insert sizes (added to config of bulk/sc atac)
+- More robust expression handling for BUS format detection from kb-python arguments
+- Short-hand BUS syntax for indrop v1/v2
+
+### Fixed
+
+- Chipseeker now works without defining descriptive name column
+- fix bug in resources parsing of profiles
+
+## [0.4.3] - 2021-01-26
+
+### Changed
+
 - updated tximeta to 1.6.3 and related packages to fit (now uses R 4)
-- Updated kb-python to 0.25.1
-- RNA-seq with Salmon will still use bam-related QC files if bams are generated (create_trackhub = True)
 - RNA-seq: sample distance matrix font scales with number of samples (should improve readability)
 
 ### Fixed
 
 - RNA-seq: added sample distance matrix back to MulitQC
 - RNA-seq: sample distance matrix legend fixed
+- combine peaks with biological_replicates: keep now uses the correct peaks
+
+## [0.4.2] - 2021-01-19
+
+### Changed
+
+- Updated kb-python to 0.25.1
+- RNA-seq with Salmon will still use bam-related QC files if bams are generated (create_trackhub = True)
+
+### Fixed
+
 - gimmemotifs not working with newest pandas, now a fixed pandas version
 
 ## [0.4.1] - 2020-12-18
@@ -40,6 +66,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Changed
 
+- replicate renamed to technical_replicate and condition renamed to biological_replicate
 - bwa-mem2 default aligner for genomic workflows, instead of bwa-mem
 - interactive deeptools correlation heatmaps with static dendrograms in multiqc report
 - trackhub file permissions are set to 755 so to host the files online you don't have to change those anymore
@@ -285,7 +312,9 @@ Many minor bug- and quality of life fixes.
 ## [0.0.0] - 2020-06-11
 First release of seq2science!
 
-[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/master...v0.4.1
+[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/master...v0.4.2
+[0.4.3]: https://github.com/vanheeringen-lab/seq2science/compare/v0.4.3...v0.4.2
+[0.4.2]: https://github.com/vanheeringen-lab/seq2science/compare/v0.4.2...v0.4.1
 [0.4.1]: https://github.com/vanheeringen-lab/seq2science/compare/v0.4.1...v0.4.0
 [0.4.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.4.0...v0.3.2
 [0.3.2]: https://github.com/vanheeringen-lab/seq2science/compare/v0.3.2...v0.3.1

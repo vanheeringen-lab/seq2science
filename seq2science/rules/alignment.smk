@@ -29,6 +29,8 @@ if config["aligner"] == "bowtie2":
             config["index"],
         shell:
             """
+            mkdir -p {output}
+            
             bowtie2-build {params} --threads {threads} {input} {output}/{wildcards.assembly} > {log} 2>&1
             """
 
@@ -59,7 +61,7 @@ if config["aligner"] == "bowtie2":
             "../envs/bowtie2.yaml"
         shell:
             """
-            bowtie2 {params.params} --threads {threads} -x {input.index}{wildcards.assembly} {params.input} 2> {log} | tee {output} 1> /dev/null 2>> {log}
+            bowtie2 {params.params} --threads {threads} -x {input.index}/{wildcards.assembly} {params.input} 2> {log} | tee {output} 1> /dev/null 2>> {log}
             """
 
 
@@ -87,6 +89,8 @@ elif config["aligner"] == "bwa-mem":
             "../envs/bwa.yaml"
         shell:
             """
+            mkdir -p {output}
+            
             bwa index -p {params.prefix} {params.params} {input} > {log} 2>&1
             """
 
@@ -141,6 +145,8 @@ elif config["aligner"] == "bwa-mem2":
             "../envs/bwamem2.yaml"
         shell:
             """
+            mkdir -p {output}
+            
             bwa-mem2 index -p {params.prefix} {input} > {log} 2>&1
             """
 
@@ -232,6 +238,8 @@ elif config["aligner"] == "hisat2":
             config["index"],
         shell:
             """
+            mkdir -p {output}
+            
             hisat2-build {params} -p {threads} {input} {output}/part > {log} 2>&1
             """
 
@@ -296,6 +304,8 @@ elif config["aligner"] == "minimap2":
             "../envs/minimap2.yaml"
         shell:
             """
+            mkdir -p $(dirname {output})
+            
             minimap2 -t {threads} -d {output} {input} {params} > {log} 2>&1
             """
 

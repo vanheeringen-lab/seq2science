@@ -20,7 +20,7 @@ module_order:
     - picard
     - samtools:
         name: 'SamTools pre-sieve'
-        extra: 'The pre-sieve statistics are quality metrics measured before applying (optional) minimum mapping quality, blacklist removal, mitochondrial read removal, and tn5 shift.'
+        extra: 'The pre-sieve statistics are quality metrics measured before applying (optional) minimum mapping quality, blacklist removal, mitochondrial read removal, read length filtering, and tn5 shift.'
         path_filters_exclude:
             - '*{{os.path.basename(config["final_bam_dir"])}}*.samtools_stats.txt'
     - samtools:
