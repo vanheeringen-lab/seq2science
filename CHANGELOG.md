@@ -11,6 +11,8 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Added
 
 - Options to filter bams by minimum and maximum insert sizes (added to config of bulk/sc atac)
+- More robust expression handling for BUS format detection from kb-python arguments
+- Short-hand BUS syntax for indrop v1/v2
 
 ### Fixed
 
