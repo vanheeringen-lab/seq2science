@@ -9,7 +9,7 @@ def count_table_output():
         return []
 
     return expand(
-        ["{result_dir}/count_table/{peak_caller}/{assemblies}_{normalization}.tsv", 
+        ["{counts_dir}/{peak_caller}/{assemblies}_{normalization}.tsv",
          "{result_dir}/{peak_caller}/{assemblies}_onehotpeaks.tsv"],
         **{
             **config,
@@ -150,7 +150,7 @@ rule coverage_table:
         replicates=get_coverage_table_replicates("bam"),
         replicate_bai=get_coverage_table_replicates("bam.bai"),
     output:
-        expand("{result_dir}/count_table/{{peak_caller}}/{{assembly}}_raw.tsv", **config),
+        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_raw.tsv", **config),
     log:
         expand("{log_dir}/coverage_table/{{assembly}}-{{peak_caller}}.log", **config),
     benchmark:
@@ -181,7 +181,7 @@ rule quantile_normalization:
     input:
         rules.coverage_table.output,
     output:
-        expand("{result_dir}/count_table/{{peak_caller}}/{{assembly}}_quantilenorm.tsv", **config),
+        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_quantilenorm.tsv", **config),
     log:
         expand("{log_dir}/quantile_normalization/{{assembly}}-{{peak_caller}}-quantilenorm.log", **config),
     benchmark:
@@ -207,7 +207,7 @@ rule edgeR_normalization:
     input:
         rules.coverage_table.output,
     output:
-        expand("{result_dir}/count_table/{{peak_caller}}/{{assembly}}_{{normalisation,(TMM|RLE|upperquartile)}}.tsv", **config),
+        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_{{normalisation,(TMM|RLE|upperquartile)}}.tsv", **config),
     log:
         expand("{log_dir}/edgeR_normalization/{{assembly}}-{{peak_caller}}-{{normalisation}}.log", **config),
     benchmark:
@@ -225,9 +225,9 @@ rule log_normalization:
     Log1p normalization of a count table.
     """
     input:
-        expand("{result_dir}/count_table/{{peak_caller}}/{{assembly}}_{{normalisation}}.tsv", **config),
+        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_{{normalisation}}.tsv", **config),
     output:
-        expand("{result_dir}/count_table/{{peak_caller}}/{{assembly}}_log{{base}}_{{normalisation}}.tsv", **config),
+        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_log{{base}}_{{normalisation}}.tsv", **config),
     run:
         import pandas as pd
         import numpy as np
@@ -258,9 +258,9 @@ rule mean_center:
     Mean centering of a count table.
     """
     input:
-        expand("{result_dir}/count_table/{{peak_caller}}/{{assembly}}_log{{base}}_{{normalisation}}.tsv", **config),
+        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_log{{base}}_{{normalisation}}.tsv", **config),
     output:
-        expand("{result_dir}/count_table/{{peak_caller}}/{{assembly}}_meancenter_log{{base}}_{{normalisation}}.tsv", **config),
+        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_meancenter_log{{base}}_{{normalisation}}.tsv", **config),
     run:
         import pandas as pd
 

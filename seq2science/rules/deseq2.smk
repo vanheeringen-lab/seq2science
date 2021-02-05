@@ -41,6 +41,15 @@ active issue: https://github.com/conda-forge/r-base-feedstock/issues/67
 active PR: https://github.com/conda/conda/pull/8776
 """
 
+def deseq_input(wildcards):
+    if "rna" in get_workflow():
+        return expand("{counts_dir}/{{assembly}}-counts.tsv", **config)
+    elif "atac"  in get_workflow():
+        # only uses a single peak caller ------------------------------------------v
+        return expand("{counts_dir}/{peak_caller}/{{assembly}}_raw.tsv", **config)[0],
+    else:
+        raise NotImplementedError
+
 
 # TODO once fixed the resource R_scripts can be removed
 rule deseq2:
@@ -48,9 +57,9 @@ rule deseq2:
     Differential gene expression analysis with DESeq2.
     """
     input:
-        expand("{counts_dir}/{{assembly}}-counts.tsv", **config),
+        deseq_input
     output:
-        expand("{dge_dir}/{{assembly}}-{{contrast}}.diffexp.tsv", **config),
+        expand("{deseq2_dir}/{{assembly}}-{{contrast}}.diffexp.tsv", **config),
     conda:
         "../envs/deseq2.yaml"
     log:
