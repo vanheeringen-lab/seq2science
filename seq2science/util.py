@@ -257,8 +257,8 @@ def get_bustools_rid(params):
     kb_tech_dict = {'10xv2': 1, '10xv3': 1, 'celseq': 1, 'celseq2': 1,
                     'dropseq': 1, 'scrubseq': 1, 'indropsv1': 1, 'indropsv2': 0 }   
     #Check for occurence of short-hand tech
-    bus_regex = "\\b([0-1],\d*,\d*:){2,3}([0-1],0,0)\\b"
-    bus_regex_short = "(?i)\\b\s(10XV2|10XV3|CELSEQ|CELSEQ2|DROPSEQ|SCRUBSEQ|INDROPSV1|INDROPSV2)\\b"
+    bus_regex = "\\b\s([0-1],\d*,\d*:){2,3}([0-1],0,0)\\b"
+    bus_regex_short = "(?i)\\b(10XV2|10XV3|CELSEQ|CELSEQ2|DROPSEQ|SCRUBSEQ|INDROPSV1|INDROPSV2)\\b"
     
     if re.search(bus_regex, params) != None:
         match = re.search(bus_regex, params).group(0)
