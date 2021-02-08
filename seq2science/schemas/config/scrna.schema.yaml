@@ -139,7 +139,7 @@ properties:
         combined_variables_to_id: Method,Lineage,Timepoint,Library
         confounders_to_test: Library,Lineage,Timepoint
         vars_to_regress: nCount_sf,nFeature_sf
-        pcs_for_overview: '10,20,30,40,50'
+        pcs_for_overview: 10,20,30,40,50
         explore_violin: SOX2,GAPDH
         amount_cells_expr: 0  
         total_counts_tresh: 1000
@@ -151,5 +151,5 @@ properties:
         pcs_max: 70
         gene_tresh: 0 
         remove_bc: true
-        filtering: 'no'
+        filtering: no
         subset_ids: '' 
