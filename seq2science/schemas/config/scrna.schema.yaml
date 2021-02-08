@@ -124,7 +124,6 @@ properties:
         type: string
         
       default:
-        filtering: no
         MT_genes_file: MT_genes.txt
         dual_col_barcodes: 2col_barcode_384.tab 
         spike_in_qc: true
@@ -151,5 +150,5 @@ properties:
         pcs_max: 70
         gene_tresh: 0 
         remove_bc: true
-        filtering: no
+        filtering: 'no'
         subset_ids: '' 
