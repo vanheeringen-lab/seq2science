@@ -29,5 +29,123 @@ properties:
 
   barcodefile:
     type: string
-
-  
+    
+  # Exploratory data analysis for in-house Celseq2
+  seurat:
+    description: Seurat rmd for exploratory data analysis
+    properties:
+      total_feat_tresh: 
+        description: "Total features theshold"
+        type: integer
+      total_counts_tresh: 
+        description: "Total counts theshold"
+        type: integer
+      gene_tresh: 
+        description: "Gene treshold"
+        type: integer
+      remove_bc:
+        description: "Remove barcodes"
+        type: boolean
+      filtering:
+        description: "Lower expression bound"
+        type: string
+      amount_cells_expr:  
+        description: "Lower expression bound"
+        type: integer
+      nHVG:
+        description: "Number highly variables genes"
+        type: integer
+      n_bc:
+        description: "Number barcodes"
+        type: integer  
+      MT_genes_file: 
+        description: MT_genes.txt
+        type: string
+      mt_pct_max:
+        description: "Max percentage mitochondrial genes"
+        type: integer
+      ercc_pct_max:
+        description: "Max percentage ERCC genes"
+        type: integer
+      pcs_max: 
+        description: "Max number principal components"
+        type: integer
+      pcs_for_overview: 
+        description: "PCs for overview"
+        type: string
+      dual_col_barcodes:
+        description: 2col_barcode_384.tab
+        type: string
+      spike_in_qc:
+        description: "Use spike in QC (use if present)"
+        type: boolean
+      mt_qc:
+        description: "Use mt genes for qc (use if present)"
+        type: boolean
+      plate_qc:
+        description: "QC plot for plate readouts"
+        type: boolean
+      extract_phenotypes:
+        description: "Extracts phenotypes/meta data from filename"
+        type: boolean
+      plate_variables:
+        description: "Comma seperated list of plate variables to extract"
+        type: string
+      combined_variables_to_id:
+        description: "Comma seperated list of plate variables to include in sample_id"
+        type: string
+      confounding_variables:
+        description: "Comma seperated list of variables to test for confounding"
+        type: string
+      vars_to_regress:
+        description: "Comma seperated list of variables for regeression analysis"
+        type: string
+      explore_violin:
+        description: "Marker genes for violin plots"
+        type: string
+      old_col_pattern:
+        description: "old column pattern"
+        type: string  
+      new_col_pattern:
+        description: "New column pattern"
+        type: string
+      lab_col: 
+        description: "Library meta column name"
+        type: string
+      umap_col:
+        description: "Umap meta column name"
+        type: string
+      subset_id:
+        description: "id subset to filter"
+        type: string
+        
+      default:
+        filtering: no
+        MT_genes_file: MT_genes.txt
+        dual_col_barcodes: 2col_barcode_384.tab 
+        spike_in_qc: true
+        mt_qc: true
+        plate_qc: true
+        extract_phenotypes: true      
+        new_col_pattern: -S
+        old_col_pattern: _S
+        lab_col: Library
+        umap_col: Method
+        plate_variables: Genome,Method,Lineage,Timepoint,Replicate,Library,Well
+        combined_variables_to_id: Method,Lineage,Timepoint,Library
+        confounders_to_test: Library,Lineage,Timepoint
+        vars_to_regress: nCount_sf,nFeature_sf
+        pcs_for_overview: '10,20,30,40,50'
+        explore_violin: SOX2,GAPDH
+        amount_cells_expr: 0  
+        total_counts_tresh: 1000
+        total_feat_tresh: 500
+        mt_pct_max: 50
+        ercc_pct_max: 20 
+        nHVG: 2000
+        n_bc: 384
+        pcs_max: 70
+        gene_tresh: 0 
+        remove_bc: true
+        filtering: 'no'
+        subset_ids: '' 

@@ -1,63 +1,49 @@
 ---
 title: "SORT-seq dataset with velocity preparations"
+params:
+  ERCC_pct_max: 20
+  MT_genes_file: /Users/tilman_work/Documents/Projects/R/scRNA-seq/data/MT_genes.txt
+  add.qc.ERCC: yes
+  add.qc.MT: yes
+  amount_cells_expr: 0
+  barcode_file: /Users/tilman_work/Documents/Projects/R/scRNA-seq/data/barcode_384.tab
+  combined_variables_to_id: Method,Lineage,Timepoint,Library
+  confounders_to_test: Library,Lineage,Timepoint
+  explore_violin: SOX2,GAPDH
+  extract_phenotypes: yes
+  filtering: 'no'
+  gene_tresh: 0
+  kb.dir: /Users/tilman_work/Documents/Projects/R/testset/kallistobus
+  lab_col: Library
+  mt_pct_max: 50
+  nHVG: 2000
+  n_bc: 384
+  new_col_pattern: -S
+  old_col_pattern: _S
+  pcs_for_overview: '10,20,30,40,50'
+  pcs_max: 70
+  plate_variables: Genome,Method,Lineage,Timepoint,Replicate,Library,Well
+  resultsdir: /Users/tilman_work/Documents/Projects/R/scRNA-seq/output
+  run.plate_qc: no
+  remove_bc: TRUE
+  subset_id: ''
+  total_counts_tresh: 1000
+  total_feat_tresh: 500
+  umap_col: Method
+  vars_to_regress: nCount_sf,nFeature_sf
 output:
   pdf_document:
     toc: true
-    toc_depth: 2
-params:
-  #rm.dir: "/Users/tilman_work/Documents/Projects/R/scRNA-seq/analysis"
-  kb.dir : ""
-  resultsdir: ""
-  # if regression is performed: this will already be included in the folder name
-  result_descript : "_results_PreprocessingDataset_complete_clean"
-  #Necessary files
-  barcode_file: "barcode_384.tab"
-  MT_genes_file: "MT_genes.txt"
-  old_col_pattern: "_S"
-  new_col_pattern: "-S" # Retrieve the variables from the platenames (fields seperated with "_")
-  # Gene filter settings for genes
-  gene_tresh: 0
-  amount_cells_expr: 0
-  # Settings for cells
-  total_counts_tresh: 1000
-  total_feat_tresh: 500
-  ERCC_pct_max: 20
-  mt_pct_max: 50
-  ## Subsetting the dataset ##
-  subset_id: "" # Specify a specific (sub)string to select the cells on (selection happens on the colnames)
-  # Select the type of filtering: keep cells with the substring (set "in") or remove (set "out")
-  filtering: "no"  # if NO filtering is wanted, leave empty (set "" or "no")
-  n_bc: 384
-  nHVG: 2000  ## Seurat Normalization, HVG selection (vst) & Scaling (and Regression) ##
-  ## Dimensionality reduction ##
-  pcs_max: 70 # For PCA to run on
-  ## Visualization ##
-  lab_col: "Library" # label from phenodata to color in Scater and Seurat plots
-  umap_col: "Method"
-  # Checking variability explained by confounding factors
-  #QC settings
-  run.plate_qc: TRUE
-  extract_phenotypes: TRUE
-  add.qc.ERCC: TRUE
-  add.qc.MT: TRUE
-  plate_variables: !r c("Genome","Method", "Lineage", "Timepoint", "Replicate" , "Library", "Well")  # Unique combined ID per plate, for visualization purposes
-  combined_variables_to_id: !r c("Method", "Lineage", "Timepoint", "Library")
-  pcs_for_overview: !r c(10, 20, 30, 40, 50) # PCs used for different UMAP representations
-  #Checking variability explained by confounding factors
-  confounders_to_test: !r c("Library", "Lineage","Timepoint")
-  # Marker genes for violin plots
-  explore_violin: !r c("SOX2", "GAPDH")
-  vars_to_regress: !r c("nCount_sf", "nFeature_sf") # Regression performed on the following variables:"
+    number_sections: true
 ---
     
-    ```{r include = FALSE}
+    ```{r include = TRUE}
     here::set_here()
-    knitr::opts_chunk$set(root.dir = here::here(), echo = TRUE)
+    knitr::opts_chunk$set(echo = TRUE)
     source(here::here("../read_kb_dataset_s2s.R"),local = knitr::knit_global())
     source(here::here("../plate_QC.R"), local = knitr::knit_global())
     source(here::here("../get_pheno_data.R"), local = knitr::knit_global())
     system(paste("mkdir -p ", params$resultsdir))
-
     ```
     ## *Setting Parameters:* 
     To keep in mind: 
@@ -79,17 +65,18 @@ params:
     library(RColorBrewer)
     library(plot3D)
     
-    ## Location of scripts ##
-
-    # options(stringsAsFactors = FALSE)
-    # plate_variables = c("Genome","Method", "Lineage", "Timepoint", "Replicate" , "Library", "Well")  # Unique combined ID per plate, for visualization purposes
-    # combined_variables_to_id = c("Method", "Lineage", "Timepoint", "Library")
-    # pcs_for_overview = c(10, 20, 30, 40, 50) # PCs used for different UMAP representations
+    ## unlist parameters ##
+    # Unique combined ID per plate, for visualization purposes
+    plate_variables = unlist(strsplit(params$plate_variables,","))
+    combined_variables_to_id = unlist(strsplit(params$combined_variables_to_id,","))
+    # PCs used for different UMAP representations
+    pcs_for_overview = as.integer(unlist(strsplit(params$pcs_for_overview,",")))
     #Checking variability explained by confounding factors
-    # confounders_to_test = c("Library", "Lineage","Timepoint")
+    confounders_to_test = unlist(strsplit(params$confounders_to_test,","))
     # Marker genes for violin plots
-    # explore_violin = c("SOX2", "GAPDH")
-    # vars_to_regress = c("nCount_sf", "nFeature_sf") # Regression performed on the following variables:"
+    explore_violin = unlist(strsplit(params$explore_violin,",")) 
+    # Regression performed on the following variables:"
+    vars_to_regress = unlist(strsplit(params$vars_to_regress,",")) 
     ```
 ## *Cleaning up the counts table, for subset: `r params$subset_id`*
 
@@ -102,8 +89,8 @@ The counts table is loaded along with the metadata of the cells within an Scater
 Location of the file:
 ```{r loading dataset, echo = TRUE, warning = FALSE}
 ## Splice seperated dataset:
-spliced.data.df = read_kb_counts(params$kb.dir, "spliced", barcode_file = params$barcode_file)
-unspliced.data.df = read_kb_counts(params$kb.dir, "unspliced", barcode_file = params$barcode_file)
+spliced.data.df = read_kb_counts(params$kb.dir, "spliced", barcode_file = params$barcode_file, remove_bc=params$remove_bc)
+unspliced.data.df = read_kb_counts(params$kb.dir, "unspliced", barcode_file = params$barcode_file,remove_bc=params$remove_bc)
 
 ## Optional edits on cell names:
 # This only runs if a substring that needs replacement was defined in parameters (old_col_pattern):
@@ -160,7 +147,7 @@ length(colnames(spliced.data.df))/params$n_bc
 ```{r phenotable}
 ## Setting up the phenotable ##
 if (params$extract_phenotypes) {
-  phenodata_all <- get_pheno_data(data.df = data.df, combined_variables_to_id = params$combined_variables_to_id, plate_variables= params$plate_variables)
+  phenodata_all <- get_pheno_data(data.df = data.df, combined_variables_to_id = combined_variables_to_id, plate_variables= plate_variables)
   phenodata <- phenodata_all[[1]]
   pheno_matched <- phenodata_all[[2]]
   identical(rownames(phenodata), colnames(spliced.data.df))
@@ -482,7 +469,7 @@ Make the seurat object, 'seuset'.
 In this step you could filter the cells again, these however already have been filtered before in 'table clean-up', where the genes were taken that have >2 cells that have an expression >1.
 
 ```{r create seurat object}
-seuset <- CreateSeuratObject(counts = counts(sce_endo), assay = "sf", meta.data = as.data.frame(colData(sce_endo)[,1:(length(params$plate_variables)+1)]))
+seuset <- CreateSeuratObject(counts = counts(sce_endo), assay = "sf", meta.data = as.data.frame(colData(sce_endo)[,1:(length(plate_variables)+1)]))
 ```
 
 ```{r}
@@ -499,7 +486,7 @@ VlnPlot(
 )
 VlnPlot(
   object = seuset, 
-    features = params$explore_violin, 
+    features = explore_violin, 
     group.by = params$lab_col
 )
 FeatureScatter(
@@ -531,7 +518,7 @@ VlnPlot(
 )
 VlnPlot(
   object = seuset, 
-    features = params$explore_violin, 
+    features = explore_violin, 
     group.by = params$lab_col
 )
 FeatureScatter(
@@ -568,7 +555,7 @@ sce_seunorm <- calculateQCMetrics(
 
 ```{r check confounders in raw dataset}
 
-explanatory_variables <- as.factor(c(params$confounders_to_test, "total_features_by_counts", "total_counts"))
+explanatory_variables <- as.factor(c(confounders_to_test, "total_features_by_counts", "total_counts"))
 #explanatory_variables_seu <- c("total_features_by_counts", "total_counts", confounders_to_test)
 
 # This function and visualization performs a PCA analysis in the data object and checks to what extend the variables that are put in, are explaining the variance.
@@ -750,12 +737,12 @@ seu[["sf"]]@var.features[1:10]
 # Optional regression is performed here.
 all.genes <- rownames(seuset)
 seu <- ScaleData(
-    object = seu,  vars.to.regress = params$vars_to_regress,
+    object = seu,  vars.to.regress = vars_to_regress,
     assay = "sf",
     features = all.genes
 )
 seu <- ScaleData(
-    object = seu,  vars.to.regress = params$vars_to_regress,
+    object = seu,  vars.to.regress = vars_to_regress,
     assay = "uf",
     features = all.genes
 )
@@ -834,9 +821,9 @@ ElbowPlot(object = seuset, ndims = 35)
 # Generating a combined UMAP plot with various defined settings. 
 # Only a legend in the first plotted (since this will be the same for the others).
 plot.list <- list()
-for (i in (1:length(params$pcs_for_overview))){
-  seuset <- RunUMAP(seuset, dims = 1:params$pcs_for_overview[i])
-  dimnr <- as.character(params$pcs_for_overview[i])
+for (i in (1:length(pcs_for_overview))){
+  seuset <- RunUMAP(seuset, dims = 1:pcs_for_overview[i])
+  dimnr <- as.character(pcs_for_overview[i])
   print(dimnr)
   if (i == 1){
     plot.list[[dimnr]] <- DimPlot(seuset, reduction = "umap", group.by = params$umap_col, combine = TRUE) + ggtitle(paste0("UMAP 1:", dimnr))
@@ -847,8 +834,8 @@ for (i in (1:length(params$pcs_for_overview))){
   i = i + 1
   }
 }
-pdf(paste(params$resultsdir, paste0("UMAPdiffsettings_lineages_", paste(as.character(params$pcs_for_overview), collapse = "-"),".pdf"),sep="/"), width = 20, height = 15)
-CombinePlots(plot.list, nrows = round(length(params$pcs_for_overview)/3))
+pdf(paste(params$resultsdir, paste0("UMAPdiffsettings_lineages_", paste(as.character(pcs_for_overview), collapse = "-"),".pdf"),sep="/"), width = 20, height = 15)
+CombinePlots(plot.list, nrows = round(length(pcs_for_overview)/3))
 dev.off()
 ```
 
@@ -856,6 +843,8 @@ Based on the heatmaps, elbow (as well as the JackStraw indicating these are sign
 
 ```{r}
 # Saving the dataset with the normalized, scaled and identified HVGs (stored in seuset.scnorm@var.genes).
+write.csv(Cells(seuset), file = file.path(params$resultsdir,"cellID_obs.csv"), row.names = FALSE)
+write.csv(Embeddings(seuset, reduction = "umap"), file = file.path(params$resultsdir,"cell_embeddings.csv"))
 saveRDS(seuset, file= paste(params$resultsdir,"seusetv3_scnormHVG_velocity.rds", sep="/"))
 ```
 

@@ -271,11 +271,11 @@ elif config["quantifier"] == "kallistobus":
         conda:
             "../envs/kb_scrna_R_seurat3.yaml"
         params:
-            kb_dir=f"{config['result_dir']}/kallistobus",
-            rmd_dir=f"{config['rule_dir']}/../scripts/rmd/kb_seurat_pp.rmd"            
-        shell:
-            "Rscript -e \"rmarkdown::render('{params.rmd_dir}',params = list(kb.dir = '{params.kb_dir}', resultsdir = '{output.qc_dir}'), output_file='{output.pdf}')\""
-        
+            kb_dir=f"{config['result_dir']}/kallistobus"
+        resources:
+            R_scripts=1, # conda's R can have issues when starting multiple times
+        script:
+            f"{config['rule_dir']}/../scripts/run_seurat_rmd.R"
   
   
      
