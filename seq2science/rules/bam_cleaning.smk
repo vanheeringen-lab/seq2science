@@ -1,4 +1,7 @@
+import hashlib
+
 from seq2science.util import sieve_bam
+
 
 def get_blacklist_files(wildcards):
     files = {}
@@ -45,7 +48,6 @@ rule setup_blacklist:
             f.write(newblacklist)
 
 
-
 rule complement_blacklist:
     """
     Take the complement of the blacklist. We need this complement to tell samtools
@@ -55,7 +57,7 @@ rule complement_blacklist:
         blacklist=rules.setup_blacklist.output,
         sizes=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
     output:
-        temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.customblacklist_complement.bed", **config)),
+        temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.customblacklist_{blacklist_sha}_complement.bed", **config)),
     log:
         expand("{log_dir}/complement_blacklist/{{assembly}}.log", **config),
     benchmark:

@@ -323,7 +323,7 @@ def _run(args, base_dir, workflows_dir, config_path):
         ]
         targets = [target for target in targets if not any(re.match(pattern, target) for pattern in regex_patterns)]
 
-        #   4. if there are any targets left, force to recreate those targets plus the final results (rule seq2science_
+        #   4. if there are any targets left, force to recreate those targets plus the final results (rule seq2science)
         if len(targets):
             targets += ["seq2science"]
             parsed_args["forcerun"] = targets

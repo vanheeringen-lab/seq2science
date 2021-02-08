@@ -75,7 +75,7 @@ if not config.get("no_config_log"):
 
     # remove superfluous keys
     keys_to_remove = ["fqext1", "fqext2", "macs2_types", "cpulimit",
-                      "genome_types", "genomepy_temp", "bam_sort_mem",
+                      "genome_types", "genomepy_temp", "bam_sort_mem", "blacklist_sha",
                       ("biological_replicates", "condition" not in samples),
                       ("filter_bam_by_strand", "strandedness" not in samples),
                       ("technical_replicates", "replicates" not in samples),
