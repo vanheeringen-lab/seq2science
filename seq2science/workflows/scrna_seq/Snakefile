@@ -24,6 +24,7 @@ rule scRNA_seq_all:
     """
     input:
         expand([f"{{result_dir}}/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}" for trep in treps.index] +
-               (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []) + ["{result_dir}/seurat/kallistobus/{assemblies}/kb_seurat_pp.pdf", "{result_dir}/seurat/kallistobus/{assemblies}/qc"],
+               (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []) + 
+               (["{result_dir}/seurat/kallistobus/{assemblies}/kb_seurat_pp.pdf", "{result_dir}/seurat/kallistobus/{assemblies}/qc"] if config['run_seurat_rmd'] else []),
                **{**config,
                   **{'assemblies': all_assemblies}})

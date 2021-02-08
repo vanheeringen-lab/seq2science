@@ -30,6 +30,10 @@ properties:
   barcodefile:
     type: string
     
+  run_seurat_rmd:
+    default: false
+    type: boolean
+      
   # Exploratory data analysis for in-house Celseq2
   seurat:
     description: Seurat rmd for exploratory data analysis
