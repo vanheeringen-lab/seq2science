@@ -55,7 +55,7 @@ rule complement_blacklist:
         blacklist=rules.setup_blacklist.output,
         sizes=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
     output:
-        temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.customblacklist_{blacklist_sha}_complement.bed", **config)),
+        expand("{genome_dir}/{{assembly}}/{{assembly}}.customblacklist_{blacklist_sha}_complement.bed", **config),
     log:
         expand("{log_dir}/complement_blacklist/{{assembly}}.log", **config),
     benchmark:

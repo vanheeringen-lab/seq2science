@@ -102,8 +102,7 @@ if get_workflow() == "rna_seq":
 
 # ...for alignment
 if config.get("bam_sorter", False):
-    config["blacklist_sha"] = hashlib.sha1(f"{config.get('remove_blacklist')},{config.get('remove_mito')}",
-        usedforsecurity=False)
+    config["blacklist_sha"] = hashlib.sha1(f"{config.get('remove_blacklist')},{config.get('remove_mito')}".encode('utf-8')).hexdigest()[:8]
     config["bam_sort_order"] = list(config["bam_sorter"].values())[0]
     config["bam_sorter"] = list(config["bam_sorter"].keys())[0]
 
