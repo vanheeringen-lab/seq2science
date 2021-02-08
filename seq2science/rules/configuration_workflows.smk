@@ -88,14 +88,6 @@ if get_workflow() == "rna_seq":
     assert config["aligner"] in ["star", "hisat2"], \
         f"\nPlease select a splice aware aligner for the RNA-seq (STAR or HISAT2)\n"
 
-    # delete the old strandedness report if samples.tsv was updated
-    strandedness_report = f"{config['qc_dir']}/strandedness/inferred_strandedness.tsv"
-    if os.path.exists(strandedness_report) and not config['ignore_strandedness']:
-        strandedness = pd.read_csv(strandedness_report, sep='\t', dtype='str', index_col=0)
-        col = samples.replicate if "replicate" in samples else samples.index
-        if len(strandedness.index) != len(set(col)) or not all(s in set(col) for s in strandedness.index):
-            os.unlink(strandedness_report)
-
     # regular dict is prettier in the log
     config["deseq2"] = dict(config["deseq2"])
 
