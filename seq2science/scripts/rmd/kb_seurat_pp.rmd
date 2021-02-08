@@ -1,8 +1,9 @@
 ---
 title: "SORT-seq dataset with velocity preparations"
 output:
-  html_document:
-    df_print: paged
+  pdf_document:
+    toc: true
+    toc_depth: 2
 params:
   #rm.dir: "/Users/tilman_work/Documents/Projects/R/scRNA-seq/analysis"
   kb.dir : ""
