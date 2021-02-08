@@ -39,89 +39,90 @@ properties:
     description: Seurat rmd for exploratory data analysis
     properties:
       total_feat_tresh: 
-        description: "Total features theshold"
+        description: filter cell feature counts >= total feature threshold
         type: integer
       total_counts_tresh: 
-        description: "Total counts theshold"
+        description: filter total cell counts >= total counts threshold 
         type: integer
       gene_tresh: 
-        description: "Gene treshold"
+        description: filter by gene expression > gene expression threshold
+        type: integer
+      amount_cells_expr:  
+        description: filter by number of cells expressed >  amount of cells expressed
         type: integer
       remove_bc:
-        description: "Remove barcodes"
+        description: replace samples barcode with plate id
         type: boolean
       filtering:
-        description: "Lower expression bound"
+        description: filter cells by id (in) or exclude cells with id (out)
+        enum: [in,out]  
+      subset_id:
+        description: subset of cell ids to filter
         type: string
-      amount_cells_expr:  
-        description: "Lower expression bound"
-        type: integer
       nHVG:
-        description: "Number highly variables genes"
+        description: number highly variables genes
         type: integer
       n_bc:
-        description: "Number barcodes"
+        description: number barcodes
         type: integer  
       MT_genes_file: 
-        description: MT_genes.txt
+        description: 1-column txt file with mitchondrial gene names (QC) 
         type: string
       mt_pct_max:
-        description: "Max percentage mitochondrial genes"
+        description: filter cells by percentage of mitchondrial genes  
         type: integer
       ercc_pct_max:
-        description: "Max percentage ERCC genes"
+        description: filter cells by percentage of ercc genes
         type: integer
       pcs_max: 
-        description: "Max number principal components"
+        description: max number of pca's for Seurat RunPCA.
         type: integer
       pcs_for_overview: 
-        description: "PCs for overview"
+        description: max number of pca;s for Seurat RunUMAP plots. 
         type: string
       dual_col_barcodes:
-        description: 2col_barcode_384.tab
+        description: 2-column tab delimited file with plate ids(col 1) and barcodes (col 2)
         type: string
       spike_in_qc:
-        description: "Use spike in QC (use if present)"
+        description: perform Seurat spike-in QC
         type: boolean
       mt_qc:
-        description: "Use mt genes for qc (use if present)"
+        description: perform Seurat mitchondrial QC
         type: boolean
       plate_qc:
-        description: "QC plot for plate readouts"
+        description: qc plot for plate read counts.
         type: boolean
       extract_phenotypes:
-        description: "Extracts phenotypes/meta data from filename"
+        description: extract meta-data from sample name seperated by _.
         type: boolean
       plate_variables:
-        description: "Comma seperated list of plate variables to extract"
+        description: comma seperated list of plate-variable names to extract from sample name. 
         type: string
       combined_variables_to_id:
-        description: "Comma seperated list of plate variables to include in sample_id"
+        description: comma seperated list of plate-variables to include in sample name
         type: string
       confounding_variables:
-        description: "Comma seperated list of variables to test for confounding"
+        description: comma seperated list of variables for confounding check.
         type: string
       vars_to_regress:
-        description: "Comma seperated list of variables for regeression analysis"
+        description: comma seperated list of variables for regeression analysis
         type: string
       explore_violin:
-        description: "Marker genes for violin plots"
+        description: comma seperated list of gene names for violin plot
         type: string
       old_col_pattern:
-        description: "old column pattern"
+        description: old column pattern to replace
         type: string  
       new_col_pattern:
-        description: "New column pattern"
+        description: new column pattern to replce old column pattern
         type: string
       lab_col: 
-        description: "Library meta column name"
+        description: meta data column name for sequencing library
         type: string
       umap_col:
-        description: "Umap meta column name"
+        description: umap column name for umap
         type: string
-      subset_id:
-        description: "id subset to filter"
-        type: string
+   
         
       default:
         MT_genes_file: MT_genes.txt
