@@ -55,7 +55,7 @@ properties:
         type: boolean
       filtering:
         description: filter cells by id (in) or exclude cells with id (out)
-        enum: [in,out]  
+        enum: [in,out,ignore]  
       subset_id:
         description: subset of cell ids to filter
         type: string
@@ -151,5 +151,5 @@ properties:
         pcs_max: 70
         gene_tresh: 0 
         remove_bc: true
-        filtering: 'no'
+        filtering: ignore
         subset_ids: '' 
