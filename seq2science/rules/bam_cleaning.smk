@@ -1,5 +1,3 @@
-import hashlib
-
 from seq2science.util import sieve_bam
 
 
