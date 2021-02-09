@@ -288,7 +288,7 @@ rule plotFingerprint:
         "../envs/deeptools.yaml"
     threads: 16
     resources:
-        mem_gb=4.5,
+        mem_gb=5,
     params:
         lambda wildcards, input: "--labels " + get_descriptive_names(wildcards, input.bams) if
                                  get_descriptive_names(wildcards, input.bams) != "" else ""
