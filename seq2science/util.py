@@ -50,7 +50,7 @@ def samples2metadata_local(samples: List[str], config: dict, logger) -> dict:
         elif all(os.path.exists(path) for path in expand(f'{{fastq_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz', **config)):
             sampledict[sample] = dict()
             sampledict[sample]["layout"] = "PAIRED"
-        elif sample.startswith(("GSM", "SRX", "SRR", "ERR", "DRR", "ERX")):
+        elif sample.startswith(("GSM", "DRX", "ERX", "SRX", "DRR", "ERR", "SRR")):
             continue
         else:
             logger.error(f"\nsample {sample} was not found..\n"
