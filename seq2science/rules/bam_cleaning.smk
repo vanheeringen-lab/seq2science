@@ -225,7 +225,7 @@ rule mark_duplicates:
     params:
         config["markduplicates"],
     resources:
-        mem_gb=7,
+        mem_gb=8,
     conda:
         "../envs/picard.yaml"
     wildcard_constraints:
