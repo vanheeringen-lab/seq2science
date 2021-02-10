@@ -29,7 +29,7 @@ def _sample_to_idxs(df: pd.DataFrame, sample: str) -> List[int]:
     if sample.startswith(("SRR", "DRR", "ERR")):
         idxs = df.index[df.run_accession == sample].tolist()
         assert len(idxs) == 1, f"sample {sample} with idxs: {idxs}"
-    elif sample.startswith("SRX"):
+    elif sample.startswith(("SRX", "ERX", "DRX")):
         idxs = df.index[df.experiment_accession == sample].tolist()
         assert len(idxs) >= 1, len(idxs)
     else:
@@ -50,7 +50,7 @@ def samples2metadata_local(samples: List[str], config: dict, logger) -> dict:
         elif all(os.path.exists(path) for path in expand(f'{{fastq_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz', **config)):
             sampledict[sample] = dict()
             sampledict[sample]["layout"] = "PAIRED"
-        elif sample.startswith(('GSM', 'SRX', 'SRR', 'ERR', 'DRR')):
+        elif sample.startswith(("GSM", "DRX", "ERX", "SRX", "DRR", "ERR", "SRR")):
             continue
         else:
             logger.error(f"\nsample {sample} was not found..\n"
