@@ -29,7 +29,7 @@ rule call_peaks_all:
     input:
         expand(
             (["{result_dir}/trackhub"] if config['create_trackhub'] else []) +
-            (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []),
-            ([f"{{deseq2_dir}}/{{assemblies}}-{{contrasts}}.diffexp.tsv"] if config.get('contrasts',False) else []),
+            (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []) +
+            (["{deseq2_dir}/{assemblies}-{contrasts}.diffexp.tsv"] if config.get('contrasts',False) else []),
             **{**config, **{'assemblies': all_assemblies}})
         + count_table_output()
