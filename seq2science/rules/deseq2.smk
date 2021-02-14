@@ -44,8 +44,9 @@ active PR: https://github.com/conda/conda/pull/8776
 def deseq_input(wildcards):
     if "rna" in get_workflow():
         return expand("{counts_dir}/{{assembly}}-counts.tsv", **config)
-    elif "atac"  in get_workflow():
+    elif "atac"  in get_workflow() or "chip" in get_workflow():
         # only uses a single peak caller ------------------------------------------v
+        # TODO different peak callers can probably be supported with wildcard_constraint peak_caller (.*) <-- empty allowed
         return expand("{counts_dir}/{peak_caller}/{{assembly}}_raw.tsv", **config)[0],
     else:
         raise NotImplementedError
