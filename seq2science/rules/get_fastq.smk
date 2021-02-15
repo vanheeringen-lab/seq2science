@@ -102,7 +102,7 @@ rule sra2fastq_PE:
         expand("{benchmark_dir}/sra2fastq_PE/{{run}}.benchmark.txt", **config)[0]
     threads: 8
     wildcard_constraints:
-        run="|".join(sra_single_end) if len(sra_paired_end) else "$a",  # only try to dump (paired-end) SRA samples
+        run="|".join(sra_paired_end) if len(sra_paired_end) else "$a",  # only try to dump (paired-end) SRA samples
     conda:
         "../envs/get_fastq.yaml"
     shell:
