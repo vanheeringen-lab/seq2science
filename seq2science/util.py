@@ -226,6 +226,8 @@ def parse_de_contrasts(de_contrast):
 
     # parse contrast column and groups
     parsed_contrast = de_contrast.split("_")
+    if "biological_replicate" in de_contrast:
+        parsed_contrast = [parsed_contrast[0] + "_" + parsed_contrast[1]] + [*parsed_contrast[2:]]
     return parsed_contrast, batch
 
 
