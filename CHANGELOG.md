@@ -8,13 +8,21 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Changed
+
+- slimmed down the config printed at the start of a run
+
 ### Added
 
 - Options to filter bams by minimum and maximum insert sizes (added to config of bulk/sc atac)
+- Support experiment ids for EBI ENA and DDBJ for downloading public samples
+- More robust expression handling for BUS format detection from kb-python arguments
+- Short-hand BUS syntax for indrop v1/v2
 
 ### Fixed
 
 - Chipseeker now works without defining descriptive name column
+- fix bug in resources parsing of profiles
 
 ## [0.4.3] - 2021-01-26
 
