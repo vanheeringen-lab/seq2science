@@ -60,7 +60,7 @@ rule sra2fastq_SE:
     benchmark:
         expand("{benchmark_dir}/sra2fastq_SE/{{run}}.benchmark.txt", **config)[0]
     wildcard_constraints:
-        run="[DES]RR\d+",
+        run="|".join(sra_single_end) if len(sra_single_end) else "$a",  # only try to dump (single-end) SRA samples
     threads: 8
     conda:
         "../envs/get_fastq.yaml"
@@ -102,7 +102,7 @@ rule sra2fastq_PE:
         expand("{benchmark_dir}/sra2fastq_PE/{{run}}.benchmark.txt", **config)[0]
     threads: 8
     wildcard_constraints:
-        run="[DES]RR\d+",
+        run="|".join(sra_single_end) if len(sra_paired_end) else "$a",  # only try to dump (paired-end) SRA samples
     conda:
         "../envs/get_fastq.yaml"
     shell:
