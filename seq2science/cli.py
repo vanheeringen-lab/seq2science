@@ -38,7 +38,6 @@ def main():
     workflows_dir = os.path.join(base_dir, "workflows")
 
     parser = seq2science_parser(workflows_dir)
-    argcomplete.autocomplete(parser)
     args = parser.parse_args()
 
     # now run the command
@@ -177,6 +176,9 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         help="Remove a lock on the working directory.",
         action='store_true'
     )
+
+    # enable tab completion
+    argcomplete.autocomplete(parser)
 
     return parser
 
