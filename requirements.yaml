@@ -17,3 +17,4 @@ dependencies:
   - bioconda::pysradb=0.11.1
   - conda-forge::matplotlib=3.3.2
   - conda-forge::xdg=5.0.1
+  - conda-forge::argcomplete=1.12.2
