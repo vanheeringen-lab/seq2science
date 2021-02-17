@@ -8,9 +8,10 @@ import logging
 
 # remove the logger created by trackhub (in trackhub.upload)
 # (it adds global logging of all stdout messages, duplicating snakemake's logging)
-th_handler = logging.root.handlers[-1]  # assumption: the last logger was added by trackhub
-logging.root.removeHandler(th_handler)
-del logging
+if len(logging.root.handlers):
+    th_handler = logging.root.handlers[-1]  # assumption: the last logger was added by trackhub
+    logging.root.removeHandler(th_handler)
+    del logging
 
 
 rule twobit:
@@ -671,6 +672,8 @@ rule trackhub:
         expand("{log_dir}/trackhub/trackhub.log", **config),
     benchmark:
         expand("{benchmark_dir}/trackhub/trackhub.benchmark.txt", **config)[0]
+    params:
+        samples  # helps resolve changed params if e.g. descriptive names change
     run:
         import sys
         import trackhub
