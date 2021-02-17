@@ -5,6 +5,7 @@ This is the user's entry-point for the seq2science tool.
 import os
 import sys
 import argparse
+import argcomplete
 import shutil
 import webbrowser
 import re
@@ -37,6 +38,7 @@ def main():
     workflows_dir = os.path.join(base_dir, "workflows")
 
     parser = seq2science_parser(workflows_dir)
+    argcomplete.autocomplete(parser)
     args = parser.parse_args()
 
     # now run the command
