@@ -47,6 +47,9 @@ checkpoint strandedness_report:
         samples_to_infer
     output:
         expand("{qc_dir}/strandedness/inferred_strandedness.tsv", **config)
+    params:
+        input=lambda wildcards, input: input,  # help resolve changes in input files
+        reps=treps
     run:
         import pandas as pd
 
@@ -89,7 +92,9 @@ checkpoint strandedness_report:
 
 
 def _strandedness_report(wildcards):
-    return checkpoints.strandedness_report.get().output[0]
+    strandreport = checkpoints.strandedness_report.get().output
+    return strandreport[0]
+
 
 def strandedness_to_quant(wildcards, tool):
     """
@@ -102,6 +107,8 @@ def strandedness_to_quant(wildcards, tool):
     }
 
     strandedness = pd.read_csv(_strandedness_report(wildcards), sep='\t', dtype='str', index_col=0)
+    if wildcards.sample not in strandedness.index:
+        return "new samples added, start rerun"
     s = strandedness[strandedness.index == wildcards.sample].strandedness[0]
     n = 1 if s in ["yes", "forward"] else (2 if s == "reverse" else 0)
     return out[tool][n]

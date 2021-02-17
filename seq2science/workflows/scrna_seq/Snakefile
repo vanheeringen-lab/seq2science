@@ -18,7 +18,7 @@ include: f"{config['rule_dir']}/quantification.smk"
 quality_control = [get_trimming_qc]
 
 
-rule scRNA_seq_all:
+rule seq2science:
     """
     Make a QC report and map
     """
