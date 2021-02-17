@@ -4,6 +4,8 @@ import seq2science
 from seq2science.util import sieve_bam, get_bustools_rid
 
 
+localrules: multiqc_header_info, multiqc_rename_buttons, multiqc_filter_buttons, multiqc_samplesconfig, multiqc_schema, combine_qc_files
+
 def samtools_stats_input(wildcards):
     if wildcards.directory == config["aligner"]:
         return expand("{result_dir}/{{directory}}/{{assembly}}-{{sample}}.samtools-coordinate-unsieved.bam", **config)
@@ -476,8 +478,6 @@ rule multiqc_header_info:
     """
     output:
         temp(expand('{qc_dir}/header_info.yaml', **config))
-    resources:
-        time="0-00:30:00"
     run:
         import os
         from datetime import date
@@ -499,8 +499,6 @@ rule multiqc_rename_buttons:
     """
     output:
         temp(expand('{qc_dir}/sample_names_{{assembly}}.tsv', **config))
-    resources:
-        time="0-00:30:00"
     run:
         newsamples = samples[samples["assembly"] == ori_assembly(wildcards.assembly)].reset_index(level=0, inplace=False)
         newsamples = newsamples.drop(["assembly"], axis=1)
@@ -513,8 +511,6 @@ rule multiqc_filter_buttons:
     """
     output:
         temp(expand('{qc_dir}/sample_filters_{{assembly}}.tsv', **config))
-    resources:
-        time="0-00:30:00"
     run:
         with open(output[0], "w") as f:
             f.write("Read Group 1 & Alignment\thide\t_R2\n"
@@ -533,8 +529,6 @@ rule multiqc_samplesconfig:
         sanitized_samples=sanitized_samples
     conda:
         "../envs/htmltable.yaml"
-    resources:
-        time="0-00:30:00"
     script:
         f"{config['rule_dir']}/../scripts/multiqc_samplesconfig.py"
 
@@ -544,8 +538,6 @@ rule multiqc_schema:
     """
     output:
         temp(expand('{qc_dir}/schema.yaml', **config))
-    resources:
-        time="0-00:30:00"
     run:
         with open(f'{config["rule_dir"]}/../schemas/multiqc_config.yaml') as cookie_schema:
             cookie = cookie_schema.read()
@@ -607,8 +599,6 @@ rule combine_qc_files:
         unpack(get_qc_files)
     output:
         expand("{qc_dir}/multiqc_{{assembly}}.tmp.files", **config),
-    resources:
-        time="0-00:30:00"
     run:
         with open(output[0], mode="w") as out:
             out.write('\n'.join(input.files))
