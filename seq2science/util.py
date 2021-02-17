@@ -1,14 +1,15 @@
 """
 Utility functions for seq2science
 """
-
 import re
-import colorsys
-from math import ceil, floor
 import os
+import sys
 import time
-from typing import List
+import colorsys
 import urllib.request
+from io import StringIO
+from typing import List
+from math import ceil, floor
 
 import matplotlib.colors as mcolors
 import numpy as np
@@ -29,7 +30,7 @@ def _sample_to_idxs(df: pd.DataFrame, sample: str) -> List[int]:
     if sample.startswith(("SRR", "DRR", "ERR")):
         idxs = df.index[df.run_accession == sample].tolist()
         assert len(idxs) == 1, f"sample {sample} with idxs: {idxs}"
-    elif sample.startswith("SRX"):
+    elif sample.startswith(("SRX", "ERX", "DRX")):
         idxs = df.index[df.experiment_accession == sample].tolist()
         assert len(idxs) >= 1, len(idxs)
     else:
@@ -50,7 +51,7 @@ def samples2metadata_local(samples: List[str], config: dict, logger) -> dict:
         elif all(os.path.exists(path) for path in expand(f'{{fastq_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz', **config)):
             sampledict[sample] = dict()
             sampledict[sample]["layout"] = "PAIRED"
-        elif sample.startswith(('GSM', 'SRX', 'SRR', 'ERR', 'DRR')):
+        elif sample.startswith(("GSM", "DRX", "ERX", "SRX", "DRR", "ERR", "SRR")):
             continue
         else:
             logger.error(f"\nsample {sample} was not found..\n"
@@ -255,19 +256,19 @@ def get_bustools_rid(params):
     In: -x 0,0,16:0,16,26:1,0,0 -> read_id=1
     """
     kb_tech_dict = {'10xv2': 1, '10xv3': 1, 'celseq': 1, 'celseq2': 1,
-                    'dropseq': 1, 'scrubseq': 1}
+                    'dropseq': 1, 'scrubseq': 1, 'indropsv1': 1, 'indropsv2': 0 }   
     #Check for occurence of short-hand tech
-    bus_regex = "[0-1],\d*,\d*:[0-1],\d*,\d*:[0-1],\d*,\d*"
-    bus_regex_short = "\\b(?i)(10XV2|10XV3|CELSEQ|CELSEQ2|DROPSEQ|SCRUBSEQ)\\b"
-
+    bus_regex = "(?<!\S)([0-1],\d*,\d*:){2}([0-1],0,0)(?!\S)"
+    bus_regex_short = "(?i)\\b(10XV2|10XV3|CELSEQ|CELSEQ2|DROPSEQ|SCRUBSEQ|INDROPSV1|INDROPSV2)\\b"
+    
     if re.search(bus_regex, params) != None:
-        bus = re.findall(bus_regex, params)[0]
-        read_id = int(bus.split(":")[2].split(",")[0])
+        match = re.search(bus_regex, params).group(0)
+        read_id = int(match.split(":")[-1].split(",")[0])
     elif re.search(bus_regex_short, params) != None:
-        tech = re.findall(bus_regex_short, params)[0]
+        tech = re.search(bus_regex_short, params).group(0)
         read_id = kb_tech_dict[tech.lower()]
     else:
-        raise Exception("Not a valid scrna-seq platform. Please check -x parameter")
+        raise Exception("Not a valid BUS(barcode:umi:set) string. Please check -x argument")
     return read_id
 
 def hex_to_rgb(value):
@@ -407,3 +408,35 @@ def shorten(string, max_length, methods="right"):
         string = string[:ceil(max_length/2)] + string[len(string)-floor(max_length/2):]
 
     return string
+
+
+class CaptureStdout(list):
+    """
+    Context manager that somehow manages to capture prints,
+    and not snakemake log
+    """
+    def __enter__(self):
+        self._stdout = sys.stdout
+        sys.stdout = self._stringio = StringIO()
+        return self
+
+    def __exit__(self, *args):
+        self.extend(self._stringio.getvalue().splitlines())
+        del self._stringio  # free up some memory
+        sys.stdout = self._stdout
+
+
+class CaptureStderr(list):
+    """
+    Context manager that somehow manages to capture prints,
+    and not snakemake log
+    """
+    def __enter__(self):
+        self._stderr = sys.stderr
+        sys.stderr = self._stringio = StringIO()
+        return self
+
+    def __exit__(self, *args):
+        self.extend(self._stringio.getvalue().splitlines())
+        del self._stringio  # free up some memory
+        sys.stderr = self._stderr
