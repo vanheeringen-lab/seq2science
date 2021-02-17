@@ -491,6 +491,8 @@ rule multiqc_rename_buttons:
     """
     output:
         temp(expand('{qc_dir}/sample_names_{{assembly}}.tsv', **config))
+    params:
+        samples  # helps resolve changed params if e.g. descriptive names change
     run:
         newsamples = samples[samples["assembly"] == ori_assembly(wildcards.assembly)].reset_index(level=0, inplace=False)
         newsamples = newsamples.drop(["assembly"], axis=1)
@@ -503,6 +505,8 @@ rule multiqc_filter_buttons:
     """
     output:
         temp(expand('{qc_dir}/sample_filters_{{assembly}}.tsv', **config))
+    params:
+        samples  # helps resolve changed params if e.g. descriptive names change
     run:
         with open(output[0], "w") as f:
             f.write("Read Group 1 & Alignment\thide\t_R2\n"
@@ -518,7 +522,8 @@ rule multiqc_samplesconfig:
     params:
         config_used=len(workflow.overwrite_configfiles) > 0,
         configfile=workflow.overwrite_configfiles[-1],
-        sanitized_samples=sanitized_samples
+        sanitized_samples=sanitized_samples,  # helps resolve changed config options
+        config={k: v for k, v in config.items() if k != "no_config_log"}  # helps resolve changed config options, ignore no_config_log
     conda:
         "../envs/htmltable.yaml"
     script:

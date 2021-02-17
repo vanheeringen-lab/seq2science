@@ -8,7 +8,7 @@ include: "../../rules/configuration.smk"
 include: f"{config['rule_dir']}/get_fastq.smk"
 
 
-rule download_all:
+rule seq2science:
     """
     download all samples
     """
