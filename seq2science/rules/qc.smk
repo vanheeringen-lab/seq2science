@@ -4,6 +4,8 @@ import seq2science
 from seq2science.util import sieve_bam, get_bustools_rid
 
 
+localrules: multiqc_header_info, multiqc_rename_buttons, multiqc_filter_buttons, multiqc_samplesconfig, multiqc_schema, combine_qc_files
+
 def samtools_stats_input(wildcards):
     if wildcards.directory == config["aligner"]:
         return expand("{result_dir}/{{directory}}/{{assembly}}-{{sample}}.samtools-coordinate-unsieved.bam", **config)
@@ -21,6 +23,8 @@ rule samtools_stats:
     log:
         expand("{log_dir}/samtools_stats/{{directory}}/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config)
     message: explain_rule("samtools_stats")
+    resources:
+        time="0-06:00:00"
     conda:
         "../envs/samtools.yaml"
     shell:
@@ -184,6 +188,8 @@ rule insert_size_metrics:
         "../envs/picard.yaml"
     wildcard_constraints:
         sample=".+",
+    resources:
+        time="0-06:00:00"
     shell:
         """
         picard CollectInsertSizeMetrics INPUT={input} \
@@ -218,6 +224,8 @@ rule mt_nuc_ratio_calculator:
         "../envs/mtnucratio.yaml"
     params:
         mitochondria=lambda wildcards, input: get_chrM_name(wildcards, input)
+    resources:
+        time="0-06:00:00"
     shell:
         """
         mtnucratio {input.bam} {params.mitochondria}

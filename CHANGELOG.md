@@ -11,6 +11,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Changed
 
 - slimmed down the config printed at the start of a run
+- Changed some rules into localrules when executed on a cluster
 
 ### Added
 
