@@ -21,6 +21,7 @@ def _import():
     """
     this function serves that we can do imports as late as possible, for faster auto-completion
     """
+    global webbrowser, re, contextlib, yaml, psutil, snakemake, logger, setup_logger, xdg
     import webbrowser
     import re
     import contextlib
