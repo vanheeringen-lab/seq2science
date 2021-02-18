@@ -7,6 +7,7 @@ import sys
 import argparse
 import argcomplete
 import shutil
+import inspect
 
 
 def _import():
@@ -15,7 +16,6 @@ def _import():
     """
     import webbrowser
     import re
-    import inspect
     import contextlib
     import yaml
     import psutil
