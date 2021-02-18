@@ -188,7 +188,9 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         )
 
     # enable tab completion
-    argcomplete.autocomplete(parser)
+    # exclusion only works on the main parser unfortunately, but it's better than nothing,
+    # plus it might be supported later?
+    argcomplete.autocomplete(parser, exclude=['-c', '-p', '-k' '-r' '-n', '-j', '-h', '-v'])
 
     return parser
 
