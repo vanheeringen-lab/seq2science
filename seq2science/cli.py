@@ -3,34 +3,36 @@
 This is the user's entry-point for the seq2science tool.
 """
 import os
+import re
 import sys
 import argparse
+import argcomplete
 import shutil
-import webbrowser
-import re
 import inspect
-import contextlib
-import yaml
-import psutil
-
-import xdg
 
 # we need to be able to get the parser from the file without a valid seq2science installation
 try:
-    import snakemake
-    from snakemake.logging import logger, setup_logger
-
     import seq2science
     from seq2science.logging import log_welcome
-
 except ImportError:
     pass
 
-try:
-    import mamba
-    conda_frontend = "mamba"
-except ImportError:
-    conda_frontend = "conda"
+
+
+
+def _import():
+    """
+    this function serves that we can do imports as late as possible, for faster auto-completion
+    """
+    global webbrowser, contextlib, yaml, psutil, snakemake, logger, setup_logger, xdg
+    import yaml
+    import psutil
+    import webbrowser
+    import contextlib
+
+    import snakemake
+    from snakemake.logging import logger, setup_logger
+    import xdg
 
 
 def main():
@@ -40,6 +42,9 @@ def main():
 
     parser = seq2science_parser(workflows_dir)
     args = parser.parse_args()
+
+    # most imports after argparsing for faster tab-completion
+    _import()
 
     # now run the command
     if args.command == "init":
@@ -105,7 +110,7 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
 
     # init, run and explain can use all workflows
     for subparser in [init, run, explain]:
-        subparser.add_argument("workflow", choices=[dir.replace("_", "-") for dir in os.listdir(workflows_dir)])
+        subparser.add_argument("workflow", metavar="WORKFLOW", choices=[dir.replace("_", "-") for dir in os.listdir(workflows_dir)])
 
     # init arguments
     init.add_argument(
@@ -182,6 +187,11 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
             help="The path to the config file.",
         )
 
+    # enable tab completion
+    # exclusion only works on the main parser unfortunately, but it's better than nothing,
+    # plus it might be supported later?
+    argcomplete.autocomplete(parser, exclude=['-c', '-p', '-k' '-r' '-n', '-j', '-h', '-v'])
+
     return parser
 
 
@@ -255,7 +265,7 @@ def _run(args, base_dir, workflows_dir, config_path):
     # parse the args
     parsed_args = {"snakefile": os.path.join(workflows_dir, args.workflow.replace("-", "_"), "Snakefile"),
                    "use_conda": True,
-                   "conda_frontend": conda_frontend,
+                   "conda_frontend": "mamba",
                    "conda_prefix": os.path.join(base_dir, ".snakemake"),
                    "dryrun": args.dryrun,
                    "printreason": args.reason,
