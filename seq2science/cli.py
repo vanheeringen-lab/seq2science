@@ -11,9 +11,6 @@ import inspect
 
 # we need to be able to get the parser from the file without a valid seq2science installation
 try:
-    import snakemake
-    from snakemake.logging import logger, setup_logger
-
     import seq2science
     from seq2science.logging import log_welcome
 except ImportError:
@@ -30,6 +27,8 @@ def _import():
     import yaml
     import psutil
 
+    import snakemake
+    from snakemake.logging import logger, setup_logger
     import xdg
 
 
