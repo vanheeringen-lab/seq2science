@@ -22,7 +22,7 @@ include: f"{config['rule_dir']}/trimming.smk"
 quality_control = [get_trimming_qc, get_alignment_qc, get_peak_calling_qc]
 
 
-rule call_peaks_all:
+rule seq2science:
     """
     call peaks for each sample (or condition if applies)
     """

@@ -4,6 +4,9 @@ import contextlib
 import genomepy
 
 
+localrules: extend_genome, get_genome_support_files, unzip_annotation
+
+
 rule get_genome:
     """
     Download a genome through genomepy.

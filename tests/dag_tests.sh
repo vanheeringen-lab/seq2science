@@ -19,7 +19,6 @@ fi
 function assert_rulecount {
   # check if the DAG (stored with  | tee tests/local_test_results/${1}_dag  ) ran rule $2 exactly $3 times
   val=$(cat tests/local_test_results/${1}_dag | grep -w $2 | cut -f2);
-
   # check if the rule was found in the DAG at all
   if [ -z "$val" ]; then
     # if specified count is zero, that's OK

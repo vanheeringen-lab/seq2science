@@ -11,6 +11,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Changed
 
 - slimmed down the config printed at the start of a run
+- Changed some rules into localrules when executed on a cluster
 
 ### Added
 
@@ -18,6 +19,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - Support experiment ids for EBI ENA and DDBJ for downloading public samples
 - More robust expression handling for BUS format detection from kb-python arguments
 - Short-hand BUS syntax for indrop v1/v2
+- Seq2science now supports tab-completion
 
 ### Fixed
 
