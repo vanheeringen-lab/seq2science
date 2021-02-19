@@ -2,7 +2,7 @@ import math
 import os
 import pandas as pd
 
-from seq2science.util import parse_de_contrasts
+from seq2science.util import parse_de_contrasts, split_de_contrast
 
 
 # apply workflow specific changes...
@@ -130,10 +130,10 @@ if config.get("contrasts"):
     # check differential gene expression contrasts
     for contrast in list(config["contrasts"]):
         parsed_contrast, batch = parse_de_contrasts(contrast)
-        column_name = parsed_contrast[0]
+        column_name, groups = split_de_contrast(parsed_contrast, contrast, samples)
 
         # Check if the column names can be recognized in the contrast
-        assert column_name in samples.columns and column_name not in ["sample", "assembly"], (
+        assert column_name not in ["sample", "assembly"], (
             f'\nIn contrast design "{contrast}", "{column_name} '
             + f'does not match any valid column name in {config["samples"]}.\n'
         )
@@ -143,21 +143,8 @@ if config.get("contrasts"):
                 + f'does not match any valid column name in {config["samples"]}.\n'
             )
 
-        # Check if the contrast contains the number of components we can parse
-        components = len(parsed_contrast)
-        assert components > 1, (
-            f"\nA differential expression contrast is too short: '{contrast}'.\n"
-            "Specify at least one reference group to compare against.\n"
-        )
-        assert components < 4, (
-            "\nA differential expression contrast couldn't be parsed correctly.\n"
-            + f"{str(components-1)} groups were found in '{contrast}' "
-            + f"(groups: {', '.join(parsed_contrast[1:])}).\n\n"
-            + f'Tip: do not use underscores in the columns of {config["samples"]} referenced by your contrast.\n'
-        )
-
         # Check if the groups in the contrast can be found in the right column of the samples.tsv
-        for group in parsed_contrast[1:]:
+        for group in groups:
             if group != "all":
                 assert str(group) in [str(i) for i in samples[column_name].tolist()], (
                     f"\nYour contrast design contains group {group} which cannot be found "

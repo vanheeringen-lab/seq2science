@@ -226,9 +226,25 @@ def parse_de_contrasts(de_contrast):
 
     # parse contrast column and groups
     parsed_contrast = de_contrast.split("_")
-    if "biological_replicate" in de_contrast:
-        parsed_contrast = [parsed_contrast[0] + "_" + parsed_contrast[1]] + [*parsed_contrast[2:]]
     return parsed_contrast, batch
+
+
+def split_de_contrast(parsed_contrast, contrast, samples):
+    # get column name (regardless of underscores usage)
+    column_name = parsed_contrast[:-2]
+    groups = parsed_contrast[-2:]
+    if len(column_name) == 1 and column_name[0] in samples:
+        column_name = column_name[0]
+    else:
+        for column_name in samples:
+            if all([substr in column_name for substr in parsed_contrast[:-2]]):
+                break
+        else:
+            raise IndexError(
+                f"The DESeq2 contrast '{contrast}'\n"
+                f"references a column not found in the samples file.\n"
+            )
+    return column_name, groups
 
 
 def url_is_alive(url):
@@ -271,6 +287,7 @@ def get_bustools_rid(params):
     else:
         raise Exception("Not a valid BUS(barcode:umi:set) string. Please check -x argument")
     return read_id
+
 
 def hex_to_rgb(value):
     """In: hex(#ffffff). Out: tuple(255, 255, 255)"""

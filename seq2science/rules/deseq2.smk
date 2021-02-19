@@ -1,4 +1,4 @@
-from seq2science.util import parse_de_contrasts
+from seq2science.util import parse_de_contrasts, split_de_contrast
 
 def get_contrasts():
     """
@@ -10,22 +10,17 @@ def get_contrasts():
     new_contrasts = []
     for contrast in list(config["contrasts"]):
         parsed_contrast, batch = parse_de_contrasts(contrast)
-        components = len(parsed_contrast)
+        column_name, groups = split_de_contrast(parsed_contrast, contrast, samples)
 
-        # check the contrast column
-        column_name = parsed_contrast[0]
-        if column_name not in samples:
-            raise IndexError(f"the DESeq2 contrast '{contrast}'\nreferences a column not found in the samples file: '{column_name}'.")
-
-        if components == 2 or (components == 3 and "all" in contrast[1:]):
-            # all vs 1 comparison ("A" or "all vs A")
-            reflvl = str(parsed_contrast[2]) if parsed_contrast[1] == "all" else str(parsed_contrast[1])
-            lvls = [str(lvl) for lvl in samples[column_name].dropna().unique()]
+        if "all" in groups:
+            # all vs 1 comparison ("all vs A")
+            reflvl = groups[0] if groups[0] != "all" else groups[1]
+            lvls = [str(group) for group in samples[column_name].dropna().unique()]
             lvls.remove(reflvl)
         else:
             # 1 vs 1 comparison ("A vs B")
-            reflvl = parsed_contrast[2]
-            lvls = [parsed_contrast[1]]
+            reflvl = groups[1]
+            lvls = [groups[0]]
 
         for lvl in lvls:
             new_contrast = f"{column_name}_{lvl}_{reflvl}"

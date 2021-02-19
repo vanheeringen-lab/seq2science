@@ -53,18 +53,30 @@ if (grepl('\\+', contrast)) {
   contr <- strsplit(contrast, '\\+')[[1]][2]
 }
 contr <- strsplit(contr, '_')[[1]]
-if (startsWith(contrast, "biological_replicate")){
-  condition <- "biological_replicate"
-  groups <- contr[3:4]
-} else {
-  condition <- contr[1]
-  groups <- contr[2:3]
-}
-rm(contr)
+groups <- tail(contr,2)
 
 
 ## obtain coldata, the metadata input for DESeq2
 samples <- read.delim(samples_file, sep = "\t", na.strings = "", comment.char = "#", stringsAsFactors = F)
+
+# get the condition column name
+if (length(contr) == 3){
+  condition <- contr[1]
+} else {
+  #  condition has underscores, e.g. "technical_replicate" or "biological_replicate"
+  for (col in colnames(samples)){
+    l <- list()
+    n <- 1
+    for (substr in contr){
+      l[n] <- grepl(substr, col, fixed = TRUE)
+      n <- n+1
+    }
+    if (all(l)) {
+      condition <- col
+      break
+    }
+  }
+}
 
 # set row names (samples/replicates)
 if ("technical_replicate" %in% colnames(samples) & isTRUE(replicates)) {
