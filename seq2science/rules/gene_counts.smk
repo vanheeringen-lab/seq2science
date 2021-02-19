@@ -61,6 +61,8 @@ if config["quantifier"] == "salmon":
         message: explain_rule("count_matrix_txi")
         conda:
             "../envs/tximeta.yaml"
+        params:
+            reps=lambda wildcards, input: input  # help resolve changes in input files
         resources:
             R_scripts=1, # conda's R can have issues when starting multiple times
         script:
@@ -82,6 +84,8 @@ else:
             cts=get_counts
         output:
             expand("{counts_dir}/{{assembly}}-counts.tsv", **config),
+        params:
+            reps=lambda wildcards, input: input  # help resolve changes in input files
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-counts_matrix.log", **config),
         run:
@@ -128,6 +132,8 @@ if config.get("dexseq"):
             cts=get_DEXSeq_counts
         output:
             expand("{counts_dir}/{{assembly}}-DEXSeq_counts.tsv", **config),
+        params:
+            reps=lambda wildcards, input: input  # help resolve changes in input files
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-DEXSeq_counts_matrix.log", **config),
         run:
