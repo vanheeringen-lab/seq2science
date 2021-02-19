@@ -4,20 +4,26 @@ def get_contrasts():
     """
     splits contrasts that contain multiple comparisons
     """
-    if "contrasts" not in config:
+    if not config.get("contrasts"):
         return []
 
     new_contrasts = []
     for contrast in list(config["contrasts"]):
         parsed_contrast, batch = parse_de_contrasts(contrast)
-        column_name = parsed_contrast[0]
         components = len(parsed_contrast)
+
+        # check the contrast column
+        column_name = parsed_contrast[0]
+        if column_name not in samples:
+            raise IndexError(f"the DESeq2 contrast '{contrast}'\nreferences a column not found in the samples file: '{column_name}'.")
+
         if components == 2 or (components == 3 and "all" in contrast[1:]):
-            # create a list of all contrasts designed by the 'groupA vs all' design
+            # all vs 1 comparison ("A" or "all vs A")
             reflvl = str(parsed_contrast[2]) if parsed_contrast[1] == "all" else str(parsed_contrast[1])
-            lvls = [str(lvl) for lvl in samples[column_name].dropna().unique().tolist()]
+            lvls = [str(lvl) for lvl in samples[column_name].dropna().unique()]
             lvls.remove(reflvl)
         else:
+            # 1 vs 1 comparison ("A vs B")
             reflvl = parsed_contrast[2]
             lvls = [parsed_contrast[1]]
 
@@ -72,6 +78,7 @@ rule deseq2:
     params:
         samples=os.path.abspath(config["samples"]),
         replicates=True if "technical_replicate" in samples else False,
+        salmon=config.get("quantifier","") == "salmon",
     resources:
         R_scripts=1, # conda's R can have issues when starting multiple times
     script:
