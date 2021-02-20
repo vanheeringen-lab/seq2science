@@ -130,7 +130,7 @@ The following section will guide you through the process of creating a DESeq2 co
 A contrast contains a **condition**, which is the variable you wish to analyse, and which contains 2 or more states. Optionally, a contrast can contain a **batch** effect, which you want to correct for.
 
 #### Conditions
-In samples.tsv, add a column for every property of your samples.
+In the samples.tsv, add a column for every property of your samples.
 Examples:
 * a column named 'conditions' with values ‘control’ and ‘treated’.
 * a column named 'conditions' with values ‘control’, ‘treatmentA’ and ‘treatmentB’.
@@ -138,9 +138,9 @@ Examples:
 
 Next, in the `config.yaml` add one or more contrasts.
 
-In order to compare two groups from a list (e.a. stage 1 vs stage 3), the contrast condition is the column name, followed by the groups (`stages_3_1`). Note that the *last* group (stage 1 in this example) is the reference group.
+In order to compare two groups from a list (e.a. stage 1 vs stage 3), the contrast condition is the column name, followed by the target group and finally the reference group (`stages_3_1`). Note that the *last* group (stage `1` in this example) is always the reference group.
 
-To compare all groups against a reference (e.a. control vs both treatments A and B), the contrast condition is the column name, followed by the reference group (`condition_control`). Alternatively, group ‘all’ may also be added (`condition_all_control`).
+To compare all groups against a reference (e.a. control vs treatment A and control vs treatment B), the contrast condition is the column name, followed by target group "all" and finally the reference group (`condition_all_control`).
 
 #### Batches
 If your data has batch effects, these can be accounted for. Note that this can only be done if the batch effects are spread over different conditions.

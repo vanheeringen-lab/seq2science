@@ -1,4 +1,4 @@
-from seq2science.util import parse_de_contrasts, split_de_contrast
+from seq2science.util import parse_contrast
 
 def get_contrasts():
     """
@@ -9,21 +9,18 @@ def get_contrasts():
 
     new_contrasts = []
     for contrast in list(config["contrasts"]):
-        parsed_contrast, batch = parse_de_contrasts(contrast)
-        column_name, groups = split_de_contrast(parsed_contrast, contrast, samples)
+        batch, column, target, reference = parse_contrast(contrast, samples, check=False)
 
-        if "all" in groups:
+        if target == "all":
             # all vs 1 comparison ("all vs A")
-            reflvl = groups[0] if groups[0] != "all" else groups[1]
-            lvls = [str(group) for group in samples[column_name].dropna().unique()]
-            lvls.remove(reflvl)
+            targets = set(samples[column].dropna().astype(str))
+            targets.remove(reference)
         else:
             # 1 vs 1 comparison ("A vs B")
-            reflvl = groups[1]
-            lvls = [groups[0]]
+            targets = [target]
 
-        for lvl in lvls:
-            new_contrast = f"{column_name}_{lvl}_{reflvl}"
+        for target in targets:
+            new_contrast = f"{column}_{target}_{reference}"
             if batch:
                 new_contrast = f"{batch}+{new_contrast}"
             new_contrasts.append(new_contrast)

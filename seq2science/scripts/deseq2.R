@@ -48,35 +48,23 @@ cat('\n')
 # a contrast is always in the form 'batch+condition_group1_group2', where batch(+) is optional
 batch <- NA
 contr <- contrast
+
+# batch name
 if (grepl('\\+', contrast)) {
   batch <- strsplit(contrast, '\\+')[[1]][1]
   contr <- strsplit(contrast, '\\+')[[1]][2]
 }
+
+# group names
 contr <- strsplit(contr, '_')[[1]]
 groups <- tail(contr,2)
 
+# column name
+n <- gregexpr(pattern=paste0("_", groups[1], "_", groups[2]), contrast)[[1]][1] -1
+column <- substr(contrast, 1, n)
 
 ## obtain coldata, the metadata input for DESeq2
 samples <- read.delim(samples_file, sep = "\t", na.strings = "", comment.char = "#", stringsAsFactors = F)
-
-# get the condition column name
-if (length(contr) == 3){
-  condition <- contr[1]
-} else {
-  #  condition has underscores, e.g. "technical_replicate" or "biological_replicate"
-  for (col in colnames(samples)){
-    l <- list()
-    n <- 1
-    for (substr in contr){
-      l[n] <- grepl(substr, col, fixed = TRUE)
-      n <- n+1
-    }
-    if (all(l)) {
-      condition <- col
-      break
-    }
-  }
-}
 
 # set row names (samples/replicates)
 if ("technical_replicate" %in% colnames(samples) & isTRUE(replicates)) {

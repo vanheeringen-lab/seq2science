@@ -4,7 +4,7 @@ import hashlib
 
 import pandas as pd
 
-from seq2science.util import parse_de_contrasts, split_de_contrast
+from seq2science.util import parse_contrast
 
 
 # apply workflow specific changes...
@@ -123,24 +123,4 @@ if "condition" in samples:
 if config.get("contrasts"):
     # check differential gene expression contrasts
     for contrast in list(config["contrasts"]):
-        parsed_contrast, batch = parse_de_contrasts(contrast)
-        column_name, groups = split_de_contrast(parsed_contrast, contrast, samples)
-
-        # Check if the column names can be recognized in the contrast
-        assert column_name not in ["sample", "assembly"], (
-            f'\nIn contrast design "{contrast}", "{column_name} '
-            + f'does not match any valid column name in {config["samples"]}.\n'
-        )
-        if batch is not None:
-            assert batch in samples.columns and batch not in ["sample", "assembly"], (
-                f'\nIn contrast design "{contrast}", the batch effect "{batch}" '
-                + f'does not match any valid column name in {config["samples"]}.\n'
-            )
-
-        # Check if the groups in the contrast can be found in the right column of the samples.tsv
-        for group in groups:
-            if group != "all":
-                assert str(group) in [str(i) for i in samples[column_name].tolist()], (
-                    f"\nYour contrast design contains group {group} which cannot be found "
-                    f'in column {column_name} of {config["samples"]}.\n'
-                )
+        _,_,_,_ = parse_contrast(contrast, samples, check=True)
