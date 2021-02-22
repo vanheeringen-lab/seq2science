@@ -83,7 +83,7 @@ A UCSC compatible trackhub can be generated for this workflow. See the [trackhub
 ### Filling out the samples.tsv
 Before running a workflow you will have to specify which samples you want to run the workflow on. Each workflow starts with a `samples.tsv` as an example, and you should adapt it to your specific needs. As an example, the `samples.tsv` could look something like this:
 ```
-sample    assembly    replicate    descriptive_name    control
+sample    assembly    technical_replicate    descriptive_name    control
 GSM123    GRCh38      heart_1      heart_merged        GSM234
 GSM321    GRCh38      heart_1      heart_merged        GSM234
 GSMabc    GRCh38      heart_2      heart_not_merged    GSM234
@@ -135,13 +135,12 @@ In the samples.tsv, add a column for every property you wish to test in your sam
 Next, add labels to the samples involved in the test. You can leave labels empty, or add labels and not use them. 
 For example:
 
-* a column named 'conditions' with values ‘wildtype’ and ‘knockout’.
-* a column named 'treatments' with values ‘control’, ‘treatmentA’ and ‘treatmentB’.
-* a column named 'stages' with values 1, 2 and 3.
+1. a column named 'conditions' with values ‘wildtype’ and ‘knockout’.
+2. a column named 'treatments' with values ‘control’, ‘treatmentA’ and ‘treatmentB’.
+3. a column named 'stages' with values 1, 2 and 3.
 
 <table>
-<tr><th>Example 1: samples.tsv </th><th> Example 2: samples.tsv </th><th>Example 3: samples.tsv</th></tr>
-
+<tr><th>Example 1</th><th>Example 2</th><th>Example 3</th></tr>
 <tr><td>
 
 |sample|assembly|conditions|
@@ -154,8 +153,6 @@ For example:
 |sample_6|hg38|unused|
 
 </td><td>
-
-<tr><td>
 
 |sample|assembly|stages|
 |---|---|---|
@@ -188,6 +185,14 @@ For example, to compare stage 1 to stage 3 from the examples above, the contrast
 To compare all groups against one reference, the contrast condition is the column name, followed by target group "all" and finally the reference group.
 For example, to compare all treatments to the control from the examples above, the contrast would be `treatments_all_control`.
 
+```
+# contrasts for examples 1-3 in the config.yaml
+contrasts:
+  - 'conditions_knockout_wildtype'
+  - 'stages_3_1'
+  - 'treatments_all_control'
+```
+
 Note: the reference group in the design determines the direction of the expression fold change.
 In the example `stages_3_1`, a gene upregulated at stage 3 has a positive expression fold change.
 In contrast `stages_1_3`, a gene upregulated at stage 3 has a negative expression fold change.
@@ -215,8 +220,7 @@ The contrast design to do this would be `sequencing_month + conditions_treatment
 The example design `sequencing_month + conditions_treatment_control` may also be written as `sequencing_month + conditions_all_control`.
 In each case, seq2science will understand "control" is the reference group, and compare it against the other groups in the "conditions" columns.
 
-In the conditions examples, 'conditions_knockout_wildtype'.
-
-For consistency with regular DESeq2 contrast designs, designs may start with `~`, example: `~ sequencing_month + conditions_treatment_control`.
+For consistency with regular DESeq2 contrast designs, designs may start with `~`, examples: 
+`~conditions_knockout_wildtype` and `~ sequencing_month + conditions_treatment_control`.
 
 Our gremlins will carefully unpack all of your input and pass the unique designs to DESeq2. 
