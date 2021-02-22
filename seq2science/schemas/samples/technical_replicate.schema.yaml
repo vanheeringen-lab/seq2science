@@ -5,4 +5,4 @@ description: an entry in the sample sheet
 properties:
   technical_replicate:
     type: string
-    description: All samples with the same replicate name with be concatenated (unless 'technical_replicate' is set to 'False').
+    description: All samples with the same replicate name with be concatenated (unless 'technical_replicates' is set to 'False').
