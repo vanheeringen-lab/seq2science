@@ -128,22 +128,73 @@ To do so, you can add the color by name (google "matplotlib colors" for the opti
 The following section will guide you through the process of creating a DESeq2 contrast using only the samples.tsv and the config.yaml.
 
 A contrast contains a **condition**, which is the variable you wish to analyse, and which contains 2 or more states. Optionally, a contrast can contain a **batch** effect, which you want to correct for.
+To determine differentially expressed genes, DESeq2 requires at least two samples per states. A design contrast therefore requires at least 2x2 samples.
 
 #### Conditions
-In the samples.tsv, add a column for every property of your samples.
-Examples:
-* a column named 'conditions' with values ‘control’ and ‘treated’.
-* a column named 'conditions' with values ‘control’, ‘treatmentA’ and ‘treatmentB’.
+In the samples.tsv, add a column for every property you wish to test in your samples. 
+Next, add labels to the samples involved in the test. You can leave labels empty, or add labels and not use them. 
+For example:
+
+* a column named 'conditions' with values ‘wildtype’ and ‘knockout’.
+* a column named 'treatments' with values ‘control’, ‘treatmentA’ and ‘treatmentB’.
 * a column named 'stages' with values 1, 2 and 3.
 
-Next, in the `config.yaml` add one or more contrasts.
+<table>
+<tr><th>Example 1: samples.tsv </th><th> Example 2: samples.tsv </th><th>Example 3: samples.tsv</th></tr>
 
-In order to compare two groups from a list (e.a. stage 1 vs stage 3), the contrast condition is the column name, followed by the target group and finally the reference group (`stages_3_1`). Note that the *last* group (stage `1` in this example) is always the reference group.
+<tr><td>
 
-To compare all groups against a reference (e.a. control vs treatment A and control vs treatment B), the contrast condition is the column name, followed by target group "all" and finally the reference group (`condition_all_control`).
+|sample|assembly|conditions|
+|---|---|---|
+|sample_1|hg38|wildtype|
+|sample_2|hg38|knockout|
+|sample_3|hg38|wildtype|
+|sample_4|hg38|knockout|
+|sample_5|hg38||
+|sample_6|hg38|unused|
+
+</td><td>
+
+<tr><td>
+
+|sample|assembly|stages|
+|---|---|---|
+|sample_1|hg38|1|
+|sample_2|hg38|1|
+|sample_3|hg38|2|
+|sample_4|hg38|2|
+|sample_5|hg38|3|
+|sample_6|hg38|3|
+
+</td><td>
+
+|sample|assembly|treatments|
+|---|---|---|
+|sample_1|hg38|control|
+|sample_2|hg38|control|
+|sample_3|hg38|treatmentA|
+|sample_4|hg38|treatmentA|
+|sample_5|hg38|treatmentB|
+|sample_6|hg38|treatmentB|
+
+</td></tr>
+</table>
+
+Next, in the `config.yaml` add one or more contrasts:
+
+In order to compare two groups, the contrast condition is the column name, followed by the target group and finally the reference group.
+For example, to compare stage 1 to stage 3 from the examples above, the contrast would be `stages_3_1`.
+
+To compare all groups against one reference, the contrast condition is the column name, followed by target group "all" and finally the reference group.
+For example, to compare all treatments to the control from the examples above, the contrast would be `treatments_all_control`.
+
+Note: the reference group in the design determines the direction of the expression fold change.
+In the example `stages_3_1`, a gene upregulated at stage 3 has a positive expression fold change.
+In contrast `stages_1_3`, a gene upregulated at stage 3 has a negative expression fold change.
+Other values are unaffected.
 
 #### Batches
-If your data has batch effects, these can be accounted for. Note that this can only be done if the batch effects are spread over different conditions.
+If your data has batch effects, DESEq2 can try to account for these. Note that this can only be done if the batch effects are spread over different conditions.
 
 Similar to conditions, add a column to samples.tsv and note the batch of each sample:
 
@@ -155,11 +206,16 @@ Similar to conditions, add a column to samples.tsv and note the batch of each sa
 |sample_4|feb|treatment|
 
 
-In this example, the sequencing_month may have caused a batch effect. Since the (potential) batch effect is spread over the test conditions (control vs treatment) it can be taken into account during DE analysis. The contrast design to do this would be `sequencing_month + conditions_treatment_control`
+In this example, the sequencing_month may have caused a batch effect.
+Since the (potential) batch effect is spread over the test conditions (control vs treatment) it can be taken into account during DE analysis.
+The contrast design to do this would be `sequencing_month + conditions_treatment_control`.
 
 ##### More design contrast examples
 
-The example design `sequencing_month + conditions_treatment_control` may also be written as `sequencing_month + conditions_all_control`, `sequencing_month + conditions_control_all` or `sequencing_month + conditions_control`. In each case, seq2science will understand "control" is the reference group, and compare it against the other groups in the "conditions" columns.
+The example design `sequencing_month + conditions_treatment_control` may also be written as `sequencing_month + conditions_all_control`.
+In each case, seq2science will understand "control" is the reference group, and compare it against the other groups in the "conditions" columns.
+
+In the conditions examples, 'conditions_knockout_wildtype'.
 
 For consistency with regular DESeq2 contrast designs, designs may start with `~`, example: `~ sequencing_month + conditions_treatment_control`.
 

@@ -123,4 +123,7 @@ if "condition" in samples:
 if config.get("contrasts"):
     # check differential gene expression contrasts
     for contrast in list(config["contrasts"]):
+        assert len(contrast.split("_")) >= 3, (
+            f"\nCould not parse DESeq2 contrast '{contrast}'.\n"
+            "A DESeq2 design contrast must be in the form '(batch+)column_target_reference'. See the docs for examples.\n")
         _,_,_,_ = parse_contrast(contrast, samples, check=True)
