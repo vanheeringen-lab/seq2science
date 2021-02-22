@@ -125,7 +125,7 @@ if 'technical_replicate' in samples:
 col = 'technical_replicate' if 'technical_replicate' in samples else 'sample'
 if 'biological_replicate' in samples:
     samples['biological_replicate'] = samples['biological_replicate'].mask(pd.isnull, samples[col])
-    if len(samples['technical_replicate'].unique()) == len(samples[col].unique()) or config.get('biological_replicates') == 'keep':
+    if len(samples['biological_replicate'].unique()) == len(samples[col].unique()) or config.get('biological_replicates') == 'keep':
         samples = samples.drop(columns=['biological_replicate'])
 if 'descriptive_name' in samples:
     samples['descriptive_name'] = samples['descriptive_name'].mask(pd.isnull, samples[col])
