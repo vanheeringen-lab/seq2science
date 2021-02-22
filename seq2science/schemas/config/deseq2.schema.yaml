@@ -6,7 +6,7 @@ properties:
   # paths to store results
   counts_dir:
     description: directory where to store the counts for DESeq2 analysis (defaults inside the result dir)
-    default: gene_counts
+    default: counts
     type: string
   deseq2_dir:
     description: directory where to store the DESeq2 output (defaults inside the result dir)
