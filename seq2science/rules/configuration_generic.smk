@@ -120,12 +120,12 @@ if len(errors):
 # 2) drop column if it is identical to the replicate/sample column, or if not needed
 if 'technical_replicate' in samples:
     samples['technical_replicate'] = samples['technical_replicate'].mask(pd.isnull, samples['sample'])
-    if samples['technical_replicate'].tolist() == samples['sample'].tolist() or config.get('technical_replicates') == 'keep':
+    if len(samples['technical_replicate'].unique()) == len(samples['sample'].unique()) or config.get('technical_replicates') == 'keep':
         samples = samples.drop(columns=['technical_replicate'])
 col = 'technical_replicate' if 'technical_replicate' in samples else 'sample'
 if 'biological_replicate' in samples:
     samples['biological_replicate'] = samples['biological_replicate'].mask(pd.isnull, samples[col])
-    if samples['biological_replicate'].tolist() == samples[col].tolist() or config.get('biological_replicates') == 'keep':
+    if len(samples['biological_replicate'].unique()) == len(samples[col].unique()) or config.get('biological_replicates') == 'keep':
         samples = samples.drop(columns=['biological_replicate'])
 if 'descriptive_name' in samples:
     samples['descriptive_name'] = samples['descriptive_name'].mask(pd.isnull, samples[col])
@@ -136,9 +136,10 @@ if 'strandedness' in samples:
     if config.get('ignore_strandedness', True) or not any([field in list(samples['strandedness']) for field in ['yes', 'forward', 'reverse', 'no']]):
         samples = samples.drop(columns=['strandedness'])
 if 'colors' in samples:
-    samples['colors'] = samples['colors'].mask(pd.isnull, '0,0,0')  # nan -> black
-    samples['colors'] = [color_parser(c) for c in samples['colors']]  # convert input to HSV color
-    if not config.get('create_trackhub', False):
+    if config.get('create_trackhub', False):
+        samples['colors'] = samples['colors'].mask(pd.isnull, '0,0,0')  # nan -> black
+        samples['colors'] = [color_parser(c) for c in samples['colors']]  # convert input to HSV color
+    else:
         samples = samples.drop(columns=['colors'])
 
 if 'technical_replicate' in samples:
