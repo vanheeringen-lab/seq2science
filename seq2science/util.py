@@ -151,7 +151,7 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
                     df_sra.run_accession == run].ena_fastq_ftp_2.tolist()
 
         # if any run from a sample is not found on ENA, better be safe, and assume that sample as a whole is not on ENA
-        if any(["N/A" in urls for run, urls in sampledict[sample]["ena_fastq_ftp"].items()]):
+        if any([pd.NA in urls for run, urls in sampledict[sample]["ena_fastq_ftp"].items()]):
             sampledict[sample]["ena_fastq_ftp"] = None
 
     return sampledict
