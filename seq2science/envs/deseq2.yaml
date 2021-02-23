@@ -15,3 +15,4 @@ dependencies:
   - r::r-ggplot2=3.1.1
   - r::r-pheatmap=1.0.12
   - r::r-pdftools=2.2
+  - r::libiconv  # no idea why, but it fixes issue 644
