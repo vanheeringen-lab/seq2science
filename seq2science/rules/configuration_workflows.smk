@@ -100,18 +100,18 @@ if config.get("bam_sorter", False):
 
 # make sure that our samples.tsv and configuration work together...
 # ...on biological replicates
-if "condition" in samples:
+if "biological_replicate" in samples:
     if "peak_caller" in config and "hmmratac" in config.get("peak_caller"):
         assert config.get("biological_replicates", "") == "idr", f"HMMRATAC peaks can only be combined through idr"
 
-    for condition in set(samples["condition"]):
-        for assembly in set(samples[samples["condition"] == condition]["assembly"]):
+    for condition in set(samples["biological_replicate"]):
+        for assembly in set(samples[samples["biological_replicate"] == condition]["assembly"]):
             if "replicate" in samples:
                 nr_samples = len(
-                    set(samples[(samples["condition"] == condition) & (samples["assembly"] == assembly)]["replicate"])
+                    set(samples[(samples["biological_replicate"] == condition) & (samples["assembly"] == assembly)]["technical_replicate"])
                 )
             else:
-                nr_samples = len(samples[(samples["condition"] == condition) & (samples["assembly"] == assembly)])
+                nr_samples = len(samples[(samples["biological_replicate"] == condition) & (samples["assembly"] == assembly)])
 
             if config.get("biological_replicates", "") == "idr":
                 assert nr_samples <= 2, (
