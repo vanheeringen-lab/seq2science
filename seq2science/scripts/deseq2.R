@@ -56,11 +56,11 @@ if (grepl('\\+', contrast)) {
 }
 
 # group names
-contr <- strsplit(contr, '_')[[1]]
-groups <- tail(contr,2)
+groups <- strsplit(contr, '_')[[1]]
+groups <- tail(groups,2)
 
 # column name
-n <- gregexpr(pattern=paste0("_", groups[1], "_", groups[2]), contrast)[[1]][1] -1
+n <- gregexpr(pattern=paste0("_", groups[1], "_", groups[2]), contr)[[1]][1] -1
 column <- substr(contrast, 1, n)
 
 ## obtain coldata, the metadata input for DESeq2
@@ -171,10 +171,10 @@ if(n_DEGs == 0){
 
 # generate MA plot (log fold change vs mean gene counts)
 output_ma_plot <- sub(".diffexp.tsv", ".ma_plot.pdf", output)
-if (is.na(batch)) {b <- ''} else {b <- 'batch corrected, '}
+if (is.na(batch)) {b <- ''} else {b <- ', batch corrected'}
 pdf(output_ma_plot)
 plotMA(resLFC, alpha = fdr, ylab = 'log2 fold change',
-       main = paste0(groups[1], ' vs ', groups[2], '\n', n_DEGs, ' DE genes (a = ', fdr, ', ',b , nrow(reduced_counts), ' total)'))
+       main = paste0(groups[1], ' vs ', groups[2], '\n', n_DEGs, ' of ', nrow(reduced_counts), ' DE (a = ', fdr, b, ')'))
 invisible(dev.off())
 cat('-MA plot saved\n')
 
