@@ -61,30 +61,25 @@ groups <- tail(groups,2)
 
 # column name
 n <- gregexpr(pattern=paste0("_", groups[1], "_", groups[2]), contr)[[1]][1] -1
-column <- substr(contrast, 1, n)
+condition <- substr(contr, 1, n)
 
 ## obtain coldata, the metadata input for DESeq2
-samples <- read.delim(samples_file, sep = "\t", na.strings = "", comment.char = "#", stringsAsFactors = F)
+samples <- read.delim(samples_file, sep = "\t", na.strings = "", comment.char = "#", stringsAsFactors = F, row.names = "sample")
+samples <- samples[samples$assembly == assembly, ]
 
-# set row names (samples/replicates)
+# collapse technical replicates
 if ("technical_replicate" %in% colnames(samples) & isTRUE(replicates)) {
-  samples$technical_replicate[is.na(samples$technical_replicate)] <- as.character(samples$sample[is.na(samples$technical_replicate)])
+  to_rename <- is.na(samples$technical_replicate)
+  samples$technical_replicate[to_rename] <- as.character(rownames(samples)[to_rename])
   samples <- subset(samples, !duplicated(technical_replicate))
   row.names(samples) <- samples$technical_replicate
-} else {
-  row.names(samples) <- samples$sample
-}
-
-# filter out unused assemblies
-if ("assembly" %in% colnames(samples) && length(unique(samples$assembly)) > 1){
-  coldata <- samples[samples$assembly == assembly]
-} else {
-  coldata <- samples
 }
 
 # rename batch and condition (required as DESeq's design cannot accept variables)
+coldata <- samples
 coldata[,"condition"] <- coldata[condition]
 coldata[,"batch"]     <- ifelse(!is.na(batch), coldata[batch], NA)
+coldata <- coldata[c("condition", "batch")]
 
 # determine if we need to run batch correction on the whole assembly
 output_batch_corr_counts <- sub(paste0(contrast, ".diffexp.tsv"), paste0(batch, "+", condition, ".batch_corr_counts.tsv"), output, fixed=TRUE)
@@ -93,11 +88,11 @@ no_batch_correction_required <- is.na(batch) | (file.exists(output_batch_corr_co
 
 # filter out unused conditions & order data for DESeq
 if (no_batch_correction_required) {
-  coldata <- coldata[coldata$condition %in% c(groups[1], groups[2]), c("condition", "batch")]
+  coldata <- coldata[coldata$condition %in% c(groups[1], groups[2])]
 } else {
   cat('\nbatch correction dataset selected\n\n')
   # for batch corrected counts we want all samples marked in the batch column
-  coldata <- coldata[!is.na(coldata$batch), c("condition", "batch")]
+  coldata <- coldata[!is.na(coldata$batch)]
 }
 coldata$condition <- factor(coldata$condition)
 coldata$condition <- relevel(coldata$condition, ref = groups[2])
