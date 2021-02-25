@@ -102,11 +102,11 @@ if config.get("bam_sorter", False):
 # ...on biological replicates
 if "biological_replicate" in samples:
     if "peak_caller" in config and "hmmratac" in config.get("peak_caller"):
-        assert config.get("biological_replicates", "") == "idr", f"HMMRATAC peaks can only be combined through idr"
+        assert config.get("biological_replicates", "") in ["idr", "keep"], f"HMMRATAC peaks can only be combined through idr"
 
     for condition in set(samples["biological_replicate"]):
         for assembly in set(samples[samples["biological_replicate"] == condition]["assembly"]):
-            if "replicate" in samples:
+            if "technical_replicate" in samples:
                 nr_samples = len(
                     set(samples[(samples["biological_replicate"] == condition) & (samples["assembly"] == assembly)]["technical_replicate"])
                 )
