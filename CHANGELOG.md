@@ -25,6 +25,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 - Chipseeker now works without defining descriptive name column
 - fix bug in resources parsing of profiles
+- small bug when naming a column condition in non peak-calling workflows
 
 ## [0.4.3] - 2021-01-26
 
