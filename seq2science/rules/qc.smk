@@ -580,8 +580,6 @@ def get_qc_files(wildcards):
         for replicate in treps[treps['assembly'] == ori_assembly(wildcards.assembly)].index:
             for function in [func for func in quality_control if
                              func.__name__ not in ['get_peak_calling_qc', 'get_trimming_qc']]:
-                print(function)
-                print(replicate)
                 qc['files'].update(function(replicate))
             # scatac seq only on treps, not on single samples
             # and fastp also on treps
