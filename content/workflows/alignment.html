@@ -220,10 +220,10 @@
 <div class="section" id="alignment-sorting">
 <h3>Alignment &amp; Sorting<a class="headerlink" href="#alignment-sorting" title="Permalink to this headline">¶</a></h3>
 <p>After trimming the reads are aligned against an assembly. Currently we support <em>bowtie2</em>, <em>bwa</em>, <em>bwa-mem2</em>, <em>hisat2</em> and <em>STAR</em> as aligners. Choosing which aligner is as easy as setting the <em>aligner</em> variable in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>, for example: <code class="docutils literal notranslate"><span class="pre">aligner:</span> <span class="pre">bwa</span></code>. Sensible defaults have been set for every aligner, but can be overwritten for either (or both) the indexing and alignment by specifying them in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>:</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">aligner:</span>
-<span class="c">  star:</span>
-<span class="c">    index: &#39;--limitGenomeGenerateRAM 55000000000`  # give STAR 55 GB RAM during indexing (default is 31 GB)</span>
-<span class="c">    align: &#39;--readFilesCommand gunzip -c&#39;          # unzips fastqs before aligning</span>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>aligner:
+  star:
+    index: &#39;--limitGenomeGenerateRAM 55000000000`  # give STAR 55 GB RAM during indexing (default is 31 GB)
+    align: &#39;--readFilesCommand gunzip -c&#39;          # unzips fastqs before aligning
 </pre></div>
 </div>
 <p>The pipeline will check if the assembly you specified is present in the <em>genome_dir</em>, and otherwise will download it for you through <a class="reference external" href="https://github.com/vanheeringen-lab/genomepy">genomepy</a>. All these aligners require an index to be formed first for each assembly, but don’t worry, the pipeline does this for you.</p>

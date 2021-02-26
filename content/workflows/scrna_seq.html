@@ -246,18 +246,18 @@ pbmc    GRCh38.p13      pbmc
 <p>After initializing your working directory and editing the <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> file, you have to specify if you either want to perform quantification or RNA velocity analysis. For velocity analysis, add the <code class="docutils literal notranslate"><span class="pre">--workflow</span> <span class="pre">lamanno</span></code> argument to the ref and count properties as shown below.</p>
 <div class="section" id="id1">
 <h4>Quantification<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">quantifier:</span>
-<span class="c">  kallistobus:</span>
-<span class="c">    count: &#39;-x 10xv3 --h5ad --verbose&#39;</span>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>quantifier:
+  kallistobus:
+    count: &#39;-x 10xv3 --h5ad --verbose&#39;
 </pre></div>
 </div>
 </div>
 <div class="section" id="rna-velocity">
 <h4>RNA velocity<a class="headerlink" href="#rna-velocity" title="Permalink to this headline">¶</a></h4>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="c">quantifier:</span>
-<span class="c">  kallistobus:</span>
-<span class="c">    ref: &#39;--workflow lamanno&#39;</span>
-<span class="c">    count: &#39;-x 10xv3 --h5ad --verbose --workflow lamanno&#39;</span>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>quantifier:
+  kallistobus:
+    ref: &#39;--workflow lamanno&#39;
+    count: &#39;-x 10xv3 --h5ad --verbose --workflow lamanno&#39;
 </pre></div>
 </div>
 <p>This will ensure that kallisto bustools generates the required files for RNA velocity estimation and produces count matrices for unspliced/spliced mRNA.</p>
