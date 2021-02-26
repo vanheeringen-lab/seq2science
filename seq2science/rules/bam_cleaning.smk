@@ -1,5 +1,9 @@
 from seq2science.util import sieve_bam
 
+
+localrules: setup_blacklist, complement_blacklist
+
+
 def get_blacklist_files(wildcards):
     files = {}
     # ideally get genome is a checkpoint, however there are quite some Snakemake
@@ -24,6 +28,9 @@ rule setup_blacklist:
         unpack(get_blacklist_files),
     output:
         temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.customblacklist.bed", **config)),
+    params:
+        config.get("remove_blacklist"),  # helps resolve changed params
+        config.get("remove_mito"),  # helps resolve changed params
     run:
         newblacklist = ""
         if config.get("remove_blacklist") and wildcards.assembly.lower() in ["ce10", "dm3", "hg38", "hg19", "mm9", "mm10"]:
@@ -42,7 +49,6 @@ rule setup_blacklist:
             f.write(newblacklist)
 
 
-
 rule complement_blacklist:
     """
     Take the complement of the blacklist. We need this complement to tell samtools
@@ -52,7 +58,10 @@ rule complement_blacklist:
         blacklist=rules.setup_blacklist.output,
         sizes=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
     output:
-        temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.customblacklist_complement.bed", **config)),
+        expand("{genome_dir}/{{assembly}}/{{assembly}}.customblacklist_complement.bed", **config),
+    params:
+        config.get("remove_blacklist"),  # helps resolve changed params
+        config.get("remove_mito"),  # helps resolve changed params
     log:
         expand("{log_dir}/complement_blacklist/{{assembly}}.log", **config),
     benchmark:

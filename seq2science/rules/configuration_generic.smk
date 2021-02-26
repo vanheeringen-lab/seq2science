@@ -28,31 +28,6 @@ import seq2science
 from seq2science.util import samples2metadata, prep_filelock, url_is_alive, color_parser
 
 
-logger.info(
-"""\
-             ____  ____   __              
-            / ___)(  __) /  \             
-            \___ \ ) _) (  O )            
-            (____/(____) \__\)            
-                   ____                   
-                  (___ \                  
-                   / __/                  
-                  (____)                  
-   ____   ___  __  ____  __ _   ___  ____ 
-  / ___) / __)(  )(  __)(  ( \ / __)(  __)
-  \___ \( (__  )(  ) _) /    /( (__  ) _) 
-  (____/ \___)(__)(____)\_)__) \___)(____)
-
-docs: https://vanheeringen-lab.github.io/seq2science
-"""
-)
-
-
-if workflow.conda_frontend == "conda":
-    logger.info("NOTE: seq2science is using the conda frontend, for faster environment creation install mamba.")
-# give people a second to appreciate this beautiful ascii art
-time.sleep(1)
-
 # get the cache and config dirs
 CACHE_DIR = os.path.join(xdg.XDG_CACHE_HOME, "seq2science", seq2science.__version__)
 
@@ -145,12 +120,12 @@ if len(errors):
 # 2) drop column if it is identical to the replicate/sample column, or if not needed
 if 'technical_replicate' in samples:
     samples['technical_replicate'] = samples['technical_replicate'].mask(pd.isnull, samples['sample'])
-    if samples['technical_replicate'].tolist() == samples['sample'].tolist() or config.get('technical_replicates') == 'keep':
+    if len(samples['technical_replicate'].unique()) == len(samples['sample'].unique()) or config.get('technical_replicates') == 'keep':
         samples = samples.drop(columns=['technical_replicate'])
 col = 'technical_replicate' if 'technical_replicate' in samples else 'sample'
 if 'biological_replicate' in samples:
     samples['biological_replicate'] = samples['biological_replicate'].mask(pd.isnull, samples[col])
-    if samples['biological_replicate'].tolist() == samples[col].tolist() or config.get('biological_replicates') == 'keep':
+    if len(samples['biological_replicate'].unique()) == len(samples[col].unique()) or config.get('biological_replicates') == 'keep':
         samples = samples.drop(columns=['biological_replicate'])
 if 'descriptive_name' in samples:
     samples['descriptive_name'] = samples['descriptive_name'].mask(pd.isnull, samples[col])
@@ -161,9 +136,10 @@ if 'strandedness' in samples:
     if config.get('ignore_strandedness', True) or not any([field in list(samples['strandedness']) for field in ['yes', 'forward', 'reverse', 'no']]):
         samples = samples.drop(columns=['strandedness'])
 if 'colors' in samples:
-    samples['colors'] = samples['colors'].mask(pd.isnull, '0,0,0')  # nan -> black
-    samples['colors'] = [color_parser(c) for c in samples['colors']]  # convert input to HSV color
-    if not config.get('create_trackhub', False):
+    if config.get('create_trackhub', False):
+        samples['colors'] = samples['colors'].mask(pd.isnull, '0,0,0')  # nan -> black
+        samples['colors'] = [color_parser(c) for c in samples['colors']]  # convert input to HSV color
+    else:
         samples = samples.drop(columns=['colors'])
 
 if 'technical_replicate' in samples:
@@ -322,11 +298,12 @@ if "assembly" in samples:
                 any(os.path.exists(f) for f in [f"{file}.annotation.gtf", f"{file}.annotation.gtf.gz"]) and
                 any(os.path.exists(f) for f in [f"{file}.annotation.bed", f"{file}.annotation.bed.gz"])
         ):
-            logger.info(
-                f"No annotation for assembly {assembly} can be downloaded. Another provider (and "
-                f"thus another assembly name) might have a gene annotation.\n"
-                f"Find alternative assemblies with `genomepy search {assembly}`\n"
-            )
+            if not config.get("no_config_log"):
+                logger.info(
+                    f"No annotation for assembly {assembly} can be downloaded. Another provider (and "
+                    f"thus another assembly name) might have a gene annotation.\n"
+                    f"Find alternative assemblies with `genomepy search {assembly}`\n"
+                )
             if annotation_required:
                 exit(1)
             _has_annot[assembly] = False
@@ -366,8 +343,9 @@ else:
 
 
 # check if a sample is single-end or paired end, and store it
-logger.info("Checking if samples are available online...")
-logger.info("This can take some time.")
+if not config.get("no_config_log"):
+    logger.info("Checking if samples are available online...")
+    logger.info("This can take some time.")
 
 # make a collection of all samples
 all_samples = [sample for sample in samples.index]
@@ -403,11 +381,14 @@ else:
     logger.error("There were some problems with locking the seq2science cache. Please try again in a bit.")
     raise TerminatedException
 
-logger.info("Done!\n\n")
+if not config.get("no_config_log"):
+    logger.info("Done!\n\n")
 
 # now check where to download which sample
 ena_single_end = [run for values in sampledict.values() if (values["layout"] == "SINGLE") and values.get("ena_fastq_ftp") is not None for run in values["runs"]]
 ena_paired_end = [run for values in sampledict.values() if (values["layout"] == "PAIRED") and values.get("ena_fastq_ftp") is not None for run in values["runs"]]
+sra_single_end = [run for values in sampledict.values() if (values["layout"] == "SINGLE") for run in values.get("runs", []) if run not in ena_single_end]
+sra_paired_end = [run for values in sampledict.values() if (values["layout"] == "PAIRED") for run in values.get("runs", []) if run not in ena_paired_end]
 
 # get download link per run
 run2download = dict()

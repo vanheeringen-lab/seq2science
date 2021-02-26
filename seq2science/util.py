@@ -1,14 +1,15 @@
 """
 Utility functions for seq2science
 """
-
 import re
-import colorsys
-from math import ceil, floor
 import os
+import sys
 import time
-from typing import List
+import colorsys
 import urllib.request
+from io import StringIO
+from typing import List
+from math import ceil, floor
 
 import matplotlib.colors as mcolors
 import numpy as np
@@ -29,7 +30,7 @@ def _sample_to_idxs(df: pd.DataFrame, sample: str) -> List[int]:
     if sample.startswith(("SRR", "DRR", "ERR")):
         idxs = df.index[df.run_accession == sample].tolist()
         assert len(idxs) == 1, f"sample {sample} with idxs: {idxs}"
-    elif sample.startswith("SRX"):
+    elif sample.startswith(("SRX", "ERX", "DRX")):
         idxs = df.index[df.experiment_accession == sample].tolist()
         assert len(idxs) >= 1, len(idxs)
     else:
@@ -50,7 +51,7 @@ def samples2metadata_local(samples: List[str], config: dict, logger) -> dict:
         elif all(os.path.exists(path) for path in expand(f'{{fastq_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz', **config)):
             sampledict[sample] = dict()
             sampledict[sample]["layout"] = "PAIRED"
-        elif sample.startswith(('GSM', 'SRX', 'SRR', 'ERR', 'DRR')):
+        elif sample.startswith(("GSM", "DRX", "ERX", "SRX", "DRR", "ERR", "SRR")):
             continue
         else:
             logger.error(f"\nsample {sample} was not found..\n"
@@ -150,7 +151,7 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
                     df_sra.run_accession == run].ena_fastq_ftp_2.tolist()
 
         # if any run from a sample is not found on ENA, better be safe, and assume that sample as a whole is not on ENA
-        if any(["N/A" in urls for run, urls in sampledict[sample]["ena_fastq_ftp"].items()]):
+        if any([any(pd.isna(urls)) for urls in sampledict[sample]["ena_fastq_ftp"].values()]):
             sampledict[sample]["ena_fastq_ftp"] = None
 
     return sampledict
@@ -407,3 +408,35 @@ def shorten(string, max_length, methods="right"):
         string = string[:ceil(max_length/2)] + string[len(string)-floor(max_length/2):]
 
     return string
+
+
+class CaptureStdout(list):
+    """
+    Context manager that somehow manages to capture prints,
+    and not snakemake log
+    """
+    def __enter__(self):
+        self._stdout = sys.stdout
+        sys.stdout = self._stringio = StringIO()
+        return self
+
+    def __exit__(self, *args):
+        self.extend(self._stringio.getvalue().splitlines())
+        del self._stringio  # free up some memory
+        sys.stdout = self._stdout
+
+
+class CaptureStderr(list):
+    """
+    Context manager that somehow manages to capture prints,
+    and not snakemake log
+    """
+    def __enter__(self):
+        self._stderr = sys.stderr
+        sys.stderr = self._stringio = StringIO()
+        return self
+
+    def __exit__(self, *args):
+        self.extend(self._stringio.getvalue().splitlines())
+        del self._stringio  # free up some memory
+        sys.stderr = self._stderr

@@ -1,5 +1,7 @@
 import math
 import os
+import hashlib
+
 import pandas as pd
 
 from seq2science.util import parse_de_contrasts
@@ -86,14 +88,6 @@ if get_workflow() == "rna_seq":
     assert config["aligner"] in ["star", "hisat2"], \
         f"\nPlease select a splice aware aligner for the RNA-seq (STAR or HISAT2)\n"
 
-    # delete the old strandedness report if samples.tsv was updated
-    strandedness_report = f"{config['qc_dir']}/strandedness/inferred_strandedness.tsv"
-    if os.path.exists(strandedness_report) and not config['ignore_strandedness']:
-        strandedness = pd.read_csv(strandedness_report, sep='\t', dtype='str', index_col=0)
-        col = samples.replicate if "replicate" in samples else samples.index
-        if len(strandedness.index) != len(set(col)) or not all(s in set(col) for s in strandedness.index):
-            os.unlink(strandedness_report)
-
     # regular dict is prettier in the log
     config["deseq2"] = dict(config["deseq2"])
 
@@ -106,18 +100,18 @@ if config.get("bam_sorter", False):
 
 # make sure that our samples.tsv and configuration work together...
 # ...on biological replicates
-if "condition" in samples:
-    if "hmmratac" in config.get("peak_caller"):
-        assert config.get("biological_replicates", "") == "idr", f"HMMRATAC peaks can only be combined through idr"
+if "biological_replicate" in samples:
+    if "peak_caller" in config and "hmmratac" in config.get("peak_caller"):
+        assert config.get("biological_replicates", "") in ["idr", "keep"], f"HMMRATAC peaks can only be combined through idr"
 
-    for condition in set(samples["condition"]):
-        for assembly in set(samples[samples["condition"] == condition]["assembly"]):
-            if "replicate" in samples:
+    for condition in set(samples["biological_replicate"]):
+        for assembly in set(samples[samples["biological_replicate"] == condition]["assembly"]):
+            if "technical_replicate" in samples:
                 nr_samples = len(
-                    set(samples[(samples["condition"] == condition) & (samples["assembly"] == assembly)]["replicate"])
+                    set(samples[(samples["biological_replicate"] == condition) & (samples["assembly"] == assembly)]["technical_replicate"])
                 )
             else:
-                nr_samples = len(samples[(samples["condition"] == condition) & (samples["assembly"] == assembly)])
+                nr_samples = len(samples[(samples["biological_replicate"] == condition) & (samples["assembly"] == assembly)])
 
             if config.get("biological_replicates", "") == "idr":
                 assert nr_samples <= 2, (

@@ -4,6 +4,8 @@ import seq2science
 from seq2science.util import sieve_bam, get_bustools_rid
 
 
+localrules: multiqc_header_info, multiqc_rename_buttons, multiqc_filter_buttons, multiqc_samplesconfig, multiqc_schema, combine_qc_files
+
 def samtools_stats_input(wildcards):
     if wildcards.directory == config["aligner"]:
         return expand("{result_dir}/{{directory}}/{{assembly}}-{{sample}}.samtools-coordinate-unsieved.bam", **config)
@@ -21,6 +23,8 @@ rule samtools_stats:
     log:
         expand("{log_dir}/samtools_stats/{{directory}}/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config)
     message: explain_rule("samtools_stats")
+    resources:
+        time="0-06:00:00"
     conda:
         "../envs/samtools.yaml"
     shell:
@@ -184,6 +188,8 @@ rule insert_size_metrics:
         "../envs/picard.yaml"
     wildcard_constraints:
         sample=".+",
+    resources:
+        time="0-06:00:00"
     shell:
         """
         picard CollectInsertSizeMetrics INPUT={input} \
@@ -218,6 +224,8 @@ rule mt_nuc_ratio_calculator:
         "../envs/mtnucratio.yaml"
     params:
         mitochondria=lambda wildcards, input: get_chrM_name(wildcards, input)
+    resources:
+        time="0-06:00:00"
     shell:
         """
         mtnucratio {input.bam} {params.mitochondria}
@@ -495,6 +503,8 @@ rule multiqc_rename_buttons:
     """
     output:
         temp(expand('{qc_dir}/sample_names_{{assembly}}.tsv', **config))
+    params:
+        samples  # helps resolve changed params if e.g. descriptive names change
     run:
         newsamples = samples[samples["assembly"] == ori_assembly(wildcards.assembly)].reset_index(level=0, inplace=False)
         newsamples = newsamples.drop(["assembly"], axis=1)
@@ -507,6 +517,8 @@ rule multiqc_filter_buttons:
     """
     output:
         temp(expand('{qc_dir}/sample_filters_{{assembly}}.tsv', **config))
+    params:
+        samples  # helps resolve changed params if e.g. descriptive names change
     run:
         with open(output[0], "w") as f:
             f.write("Read Group 1 & Alignment\thide\t_R2\n"
@@ -522,7 +534,8 @@ rule multiqc_samplesconfig:
     params:
         config_used=len(workflow.overwrite_configfiles) > 0,
         configfile=workflow.overwrite_configfiles[-1],
-        sanitized_samples=sanitized_samples
+        sanitized_samples=sanitized_samples,  # helps resolve changed config options
+        config={k: v for k, v in config.items() if k != "no_config_log"}  # helps resolve changed config options, ignore no_config_log
     conda:
         "../envs/htmltable.yaml"
     script:
