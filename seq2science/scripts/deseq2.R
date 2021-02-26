@@ -88,11 +88,11 @@ no_batch_correction_required <- is.na(batch) | (file.exists(output_batch_corr_co
 
 # filter out unused conditions & order data for DESeq
 if (no_batch_correction_required) {
-  coldata <- coldata[coldata$condition %in% c(groups[1], groups[2])]
+  coldata <- coldata[coldata$condition %in% c(groups[1], groups[2]),]
 } else {
   cat('\nbatch correction dataset selected\n\n')
   # for batch corrected counts we want all samples marked in the batch column
-  coldata <- coldata[!is.na(coldata$batch)]
+  coldata <- coldata[!is.na(coldata$batch),]
 }
 coldata$condition <- factor(coldata$condition)
 coldata$condition <- relevel(coldata$condition, ref = groups[2])
