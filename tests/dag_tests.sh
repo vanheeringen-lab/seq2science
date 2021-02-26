@@ -203,6 +203,11 @@ if [ $1 = "atac-seq" ]; then
   seq2science run atac-seq -n --configfile tests/$WF/genrich.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 call_peak_genrich 1
 
+  printf "\ndifferential peak analysis\n"
+  seq2science run atac-seq --skip-rerun -n --configfile tests/rna_seq/deseq2_config.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 coverage_table 1
+  assert_rulecount $1 deseq2 1
+
   printf "\ntrackhub\n"
   seq2science run atac-seq -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={create_trackhub:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bedgraph_bigwig 1
