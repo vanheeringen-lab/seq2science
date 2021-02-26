@@ -169,6 +169,28 @@ if [ $1 = "atac-seq" ]; then
   printf "\natac-seq - trackhub\n"
   seq2science run atac-seq --cores $CORES --configfile tests/alignment/remote_genome_n_sample.yaml --snakemakeOptions config={aligner:bowtie2,create_trackhub:True,custom_genome_extension:tests/tinydata/tinyERCC92.fa,max_template_length:150} show_failed_logs=True
 
+  # fake input data & fix timestamps
+  mkdir -p tests/local_test_results/GRCh38.p13
+  touch tests/local_test_results/GRCh38.p13/GRCh38.p13.fa
+  touch tests/local_test_results/GRCh38.p13/GRCh38.p13.annotation.gtf
+  touch tests/local_test_results/GRCh38.p13/GRCh38.p13.annotation.bed
+  mkdir -p tests/local_test_results/fastq
+  for ext in R1 R2; do
+    for n in 1 2 3 4 5 6 7 8; do
+      touch tests/local_test_results/fastq/sample${n}_${ext}.fastq.gz
+    done
+    touch tests/local_test_results/fastq/replicate_${ext}.fastq.gz
+  done
+  touch -m tests/deseq2/atac/macs2/GRCh38.p13_raw.tsv  # update timestamps
+  touch -m tests/deseq2/atac/macs2/GRCh38.p13_onehotpeaks.tsv
+  touch -m tests/deseq2/atac/macs2/GRCh38.p13_meancenter_log2_quantilenorm.tsv
+  touch -m tests/deseq2/atac/macs2/GRCh38.p13_meancenter_log2_TMM.tsv
+  touch -m tests/deseq2/atac/macs2/GRCh38.p13_meancenter_log2_RLE.tsv
+  touch -m tests/deseq2/atac/macs2/GRCh38.p13_meancenter_log2_upperquartile.tsv
+
+  # run DESeq2
+  seq2science run atac-seq --skip-rerun --cores $CORES --configfile tests/deseq2/atac/config.yaml --snakemakeOptions config={deseq2_dir:deseq_atac} show_failed_logs=True
+
   test_ran=1
 fi
 
@@ -193,8 +215,30 @@ if [ $1 = "rna-seq" ]; then
   omit_from=[blind_clustering]  # <- remove when fixed
 
   printf "\nrna-seq default - quantification deseq2\n"
-  seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/deseq2_config.yaml --snakemakeOptions config={counts_dir:salmon_counts} show_failed_logs=True \
-  omit_from=[blind_clustering,deseq2]  # <- remove when fixed
+#  seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/deseq2_config.yaml --snakemakeOptions config={counts_dir:salmon_counts} show_failed_logs=True \
+#  omit_from=[blind_clustering,deseq2]  # <- remove when fixed
+
+  # fake input data & fix timestamps
+  mkdir -p tests/local_test_results/GRCh38.p13
+  touch tests/local_test_results/GRCh38.p13/GRCh38.p13.fa
+  touch tests/local_test_results/GRCh38.p13/GRCh38.p13.annotation.gtf
+  touch tests/local_test_results/GRCh38.p13/GRCh38.p13.annotation.bed
+  touch tests/local_test_results/GRCh38.p13/gene_id2name.tsv
+  mkdir -p tests/local_test_results/fastq
+  for ext in R1 R2; do
+    for n in 1 2 3 4 5 6 7 8; do
+      touch tests/local_test_results/fastq/sample${n}_${ext}.fastq.gz
+    done
+    touch tests/local_test_results/fastq/replicate_${ext}.fastq.gz
+  done
+  touch -m tests/deseq2/rna/counts/GRCh38.p13-counts.tsv  # update timestamp
+
+  # run blind clustering
+  seq2science run rna-seq --skip-rerun --cores $CORES --configfile tests/deseq2/rna/config.yaml --snakemakeOptions config={deseq2_dir:deseq_rna,create_qc_report:true} show_failed_logs=True \
+  targets=[$(pwd)/tests/local_test_results/qc/clustering/GRCh38.p13-Sample_clustering_mqc.png]
+
+  # run DESeq2
+  seq2science run rna-seq --skip-rerun --cores $CORES --configfile tests/deseq2/rna/config.yaml --snakemakeOptions config={deseq2_dir:deseq_rna} show_failed_logs=True
 
   printf "\nrna-seq default - counting\n"
   seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions config={quantifier:htseq,dexseq:True,custom_genome_extension:tests/tinydata/tinyERCC92.fa,custom_annotation_extension:tests/tinydata/tinyERCC92.gtf} show_failed_logs=True \

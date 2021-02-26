@@ -410,7 +410,7 @@ if 'technical_replicate' in samples:
             sampledict[replicate] = {'layout':  sampledict[sample]['layout']}
         elif sampledict[replicate]['layout'] != sampledict[sample]['layout']:
             assembly = samples.loc[sample, "assembly"]
-            treps = samples[(samples["assembly"] == assembly) & (samples["replicate"] == replicate)].index
+            treps = samples[(samples["assembly"] == assembly) & (samples["technical_replicate"] == replicate)].index
             failed_samples.setdefault(replicate, set()).update({trep for trep in treps}) 
 
 if len(failed_samples):

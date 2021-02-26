@@ -10,7 +10,7 @@ def count_table_output():
 
     return expand(
         ["{counts_dir}/{peak_caller}/{assemblies}_{normalization}.tsv",
-         "{result_dir}/{peak_caller}/{assemblies}_onehotpeaks.tsv"],
+         "{counts_dir}/{peak_caller}/{assemblies}_onehotpeaks.tsv"],
         **{
             **config,
             **{
@@ -299,8 +299,8 @@ rule onehot_peaks:
         narrowpeaks=get_all_narrowpeaks,
         combinedpeaks=rules.combine_peaks.output
     output:
-        real=expand("{result_dir}/{{peak_caller}}/{{assembly}}_onehotpeaks.tsv", **config),
-        tmp=temp(expand("{result_dir}/{{peak_caller}}/{{assembly}}_onehotpeaks.tsv.tmp", **config))
+        real=expand("{counts_dir}/{{peak_caller}}/{{assembly}}_onehotpeaks.tsv", **config),
+        tmp=temp(expand("{counts_dir}/{{peak_caller}}/{{assembly}}_onehotpeaks.tsv.tmp", **config))
     conda:
         "../envs/bedtools.yaml"
     log:
