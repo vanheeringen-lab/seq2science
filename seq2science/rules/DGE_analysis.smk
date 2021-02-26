@@ -64,6 +64,7 @@ rule deseq2:
         replicates=True if "technical_replicate" in samples else False,
     resources:
         R_scripts=1, # conda's R can have issues when starting multiple times
+        mem_gb=4,
     script:
         f"{config['rule_dir']}/../scripts/deseq2.R"
 
