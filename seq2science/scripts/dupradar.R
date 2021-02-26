@@ -1,5 +1,3 @@
-"assess the fraction of artifactual reads to normal read duplication (due to natural over-sequencing of highly expressed genes)."
-
 suppressMessages({
   library(dupRadar)
 })
@@ -8,7 +6,7 @@ suppressMessages({
 log_file       <- snakemake@log[[1]]
 bam_file       <- snakemake@input$bam
 gtf_file       <- snakemake@input$gtf
-strandedness   <- snakemake@params$strandedness
+strandedness   <- as.numeric(snakemake@params$strandedness)
 paired         <- snakemake@params$paired
 sample         <- snakemake@wildcards$sample
 threads        <- snakemake@threads[[1]]
@@ -24,8 +22,8 @@ cat('# variables used for this analysis:\n')
 cat('log_file     <- "', log_file,      '"\n', sep = "")
 cat('bam_file     <- "', bam_file,      '"\n', sep = "")
 cat('gtf_file     <- "', gtf_file,      '"\n', sep = "")
-cat('strandedness <- "', strandedness,  '"\n', sep = "")
-cat('paired       <- "', paired,        '"\n', sep = "")
+cat('strandedness <- ',  strandedness,   '\n', sep = "")
+cat('paired       <- ',  paired,         '\n', sep = "")
 cat('sample       <- "', sample,        '"\n', sep = "")
 cat('threads      <- ',  threads,        '\n', sep = "")
 cat('out_plot     <- "', out_plot,      '"\n', sep = "")
@@ -60,7 +58,7 @@ cat('\n')
 dm <- analyzeDuprates(bam_file, gtf_file, strandedness, paired, threads, verbose = TRUE)
 
 # Plot
-png(file=out_png, width=3000,  height=1000)
+png(file=out_plot, width=3000,  height=1000)
 par(mfrow=c(1,3), oma=c(0, 0, 2, 0))
 duprateExpDensPlot(dm)
 title("Density plot")
