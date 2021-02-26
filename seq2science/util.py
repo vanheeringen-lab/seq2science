@@ -247,14 +247,18 @@ def parse_contrast(contrast, samples, check=True):
 
     if check:
         # check if columns exists and are valid
+        valid_columns = [col for col in samples.columns if col not in ["sample", "assembly"]]
+        # columns that may have been dropped, if so, these backups have been saved
+        backup_columns = {"technical_replicate": "_trep", "biological_replicate": "_brep", "descriptive_name": "_dname"}
         for col in [batch, column]:
             if col:
-                assert col in samples.columns and col not in ["sample", "assembly"], (
+                assert col in valid_columns + list(backup_columns.keys()), (
                     f'\nIn DESeq2 contrast design "{contrast}", '
                     f'column "{col}" does not match any valid column name.\n'
                 )
-        # check if group is in {column}
-        all_groups = set(samples[column].dropna().astype(str))
+        # check if group is element of column
+        c = column if column in samples else backup_columns[column]  # column/backup column
+        all_groups = set(samples[c].dropna().astype(str))
         for group in [target, reference]:
             if group != "all":
                 assert group in all_groups, (
