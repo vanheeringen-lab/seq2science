@@ -580,6 +580,8 @@ def get_qc_files(wildcards):
         for replicate in treps[treps['assembly'] == ori_assembly(wildcards.assembly)].index:
             for function in [func for func in quality_control if
                              func.__name__ not in ['get_peak_calling_qc', 'get_trimming_qc']]:
+                print(function)
+                print(replicate)
                 qc['files'].update(function(replicate))
             # scatac seq only on treps, not on single samples
             # and fastp also on treps
@@ -751,7 +753,10 @@ def get_rna_qc(sample):
     # add infer experiment reports
     col = samples.technical_replicate if "technical_replicate" in samples else samples.index
     if "strandedness" not in samples or samples[col == sample].strandedness[0] == "nan":
-        output = expand(f"{{qc_dir}}/strandedness/{{{{assembly}}}}-{sample}.strandedness.txt", **config)
+        output += expand(f"{{qc_dir}}/strandedness/{{{{assembly}}}}-{sample}.strandedness.txt",**config)
+
+    # add dupRadar plots
+    output += expand(f"{{qc_dir}}/dupRadar/{{{{assembly}}}}-{sample}_mqc.png",**config)
 
     return output
 
