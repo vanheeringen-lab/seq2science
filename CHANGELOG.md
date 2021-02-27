@@ -10,11 +10,17 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Changed
 
-- slimmed down the config printed at the start of a run
+- Slimmed down the config printed at the start of a run
 - Changed some rules into localrules when executed on a cluster
+- moved onehot peaks to counts_dir
+- DESeq2 contrasts now accept any column names
+  - groups still cannot contain underscores
+  - no longer accepts one group name
+  - more examples added to the docs!
 
 ### Added
 
+- Differential peak analysis for ATAC- and ChIP-seq!
 - Options to filter bams by minimum and maximum insert sizes (added to config of bulk/sc atac)
 - Support experiment ids for EBI ENA and DDBJ for downloading public samples
 - More robust expression handling for BUS format detection from kb-python arguments
@@ -23,6 +29,8 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Fixed
 
+- renamed more old "replicate" variables to the new "technical_replicate"
+- minor logging tweak
 - Chipseeker now works without defining descriptive name column
 - fix bug in resources parsing of profiles
 - small bug when naming a column condition in non peak-calling workflows
