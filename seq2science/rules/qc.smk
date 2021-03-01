@@ -754,7 +754,7 @@ def get_rna_qc(sample):
         output += expand(f"{{qc_dir}}/strandedness/{{{{assembly}}}}-{sample}.strandedness.txt",**config)
 
     # add dupRadar plots
-    output += expand(f"{{qc_dir}}/dupRadar/{{{{assembly}}}}-{sample}_mqc.png",**config)
+    output += expand(f"{{qc_dir}}/dupRadar/{{{{assembly}}}}-dupRadar_{sample}_mqc.png",**config)
 
     return output
 

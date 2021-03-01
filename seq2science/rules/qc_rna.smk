@@ -8,7 +8,7 @@ rule dupRadar:
         gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf",**config),
         required=_strandedness_report,
     output:
-        expand("{qc_dir}/dupRadar/{{assembly}}-{{sample}}_mqc.png", **config)
+        expand("{qc_dir}/dupRadar/{{assembly}}-dupRadar_{{sample}}_mqc.png", **config),
     log:
         expand("{log_dir}/dupRadar/{{assembly}}-{{sample}}.log", **config)
     benchmark:
