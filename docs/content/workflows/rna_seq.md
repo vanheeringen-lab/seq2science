@@ -139,43 +139,14 @@ For example:
 2. a column named 'treatments' with values ‘control’, ‘treatmentA’ and ‘treatmentB’.
 3. a column named 'stages' with values 1, 2 and 3.
 
-<table>
-<tr><th>Example 1</th><th>Example 2</th><th>Example 3</th></tr>
-<tr><td>
-
-|sample|assembly|conditions|
+|sample|assembly|conditions|stages|treatments|
 |---|---|---|
-|sample_1|hg38|wildtype|
-|sample_2|hg38|knockout|
-|sample_3|hg38|wildtype|
-|sample_4|hg38|knockout|
-|sample_5|hg38||
-|sample_6|hg38|unused|
-
-</td><td>
-
-|sample|assembly|stages|
-|---|---|---|
-|sample_1|hg38|1|
-|sample_2|hg38|1|
-|sample_3|hg38|2|
-|sample_4|hg38|2|
-|sample_5|hg38|3|
-|sample_6|hg38|3|
-
-</td><td>
-
-|sample|assembly|treatments|
-|---|---|---|
-|sample_1|hg38|control|
-|sample_2|hg38|control|
-|sample_3|hg38|treatmentA|
-|sample_4|hg38|treatmentA|
-|sample_5|hg38|treatmentB|
-|sample_6|hg38|treatmentB|
-
-</td></tr>
-</table>
+|sample_1|hg38|wildtype|1|control|
+|sample_2|hg38|knockout|1|control|
+|sample_3|hg38|wildtype|2|treatmentA|
+|sample_4|hg38|knockout|2|treatmentA|
+|sample_5|hg38||3|treatmentB|
+|sample_6|hg38|unused|3|treatmentB|
 
 Next, in the `config.yaml` add one or more contrasts:
 
