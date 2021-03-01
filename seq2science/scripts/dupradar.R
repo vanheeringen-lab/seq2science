@@ -69,12 +69,12 @@ dm <- analyzeDuprates(bam_file, gtf_file, strandedness, paired, threads, verbose
 
 # Plot
 png(file=out_plot, width=1344,  height=672)  # same dimensions as their vignette
-par(mfrow=c(1,2), oma=c(0, 0, 2, 0))
+par(mfrow=c(1,2))  # , oma=c(0, 0, 2, 0))
 duprateExpDensPlot(dm)
 title("Density plot")
 # expressionHist(dm)
 # title("Boxplot")
 duprateExpBoxplot(dm)
 title("Histplot")
-mtext(sample, outer = TRUE, cex = 1.5)
+#mtext(sample, outer = TRUE, cex = 1.5)
 dev.off()
