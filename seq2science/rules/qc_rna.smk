@@ -11,10 +11,12 @@ rule dupRadar:
         expand("{qc_dir}/dupRadar/{{assembly}}-{{sample}}_mqc.png", **config)
     log:
         expand("{log_dir}/dupRadar/{{assembly}}-{{sample}}.log", **config)
-    # message: explain_rule("dupradar")  # TODO
+    benchmark:
+        expand("{benchmark_dir}/dupRadar/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
+    message: explain_rule("dupradar")
     params:
         strandedness=lambda wildcards: strandedness_to_quant(wildcards,"featurecounts"),
-        paired=True  # TODO
+        paired=lambda wildcards: sampledict[wildcards.sample]["layout"] == "PAIRED",
     resources:
         R_scripts=1, # conda's R can have issues when starting multiple times
         mem_gb=4,

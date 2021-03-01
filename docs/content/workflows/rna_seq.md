@@ -21,15 +21,23 @@ RNA-seq can be performed using gene counting methods or gene quantification meth
 ##### Alignment
 Reads are aligned using `STAR` or `HISAT2` (default `STAR`). Sensible defaults have been set, but can be overwritten for either (or both) the indexing and alignment by specifying them in the `config.yaml`.
 
-The pipeline will check if the assembly you specified is present in the *genome_dir*, and otherwise will download it for you through [genomepy](https://github.com/vanheeringen-lab/genomepy). All these aligners require an index to be formed first for each assembly, but don't worry, the pipeline does this for you.
+The pipeline will check if the assembly you specified is present in the *genome_dir*, and otherwise will download it for you through [genomepy](https://github.com/vanheeringen-lab/genomepy).
+All these aligners require an index to be formed first for each assembly, but don't worry, the pipeline does this for you.
 
 ##### Bam sieving
-After aligning the bam you can choose to remove unmapped reads, low quality mappings, duplicates, and multimappers. Again, sensible defaults have been set, but can be overwritten.
+After aligning the bam you can choose to remove unmapped reads, low quality mappings, duplicates, and multimappers.
+By default, duplicate reads are [not easy to tell apart from normal read duplication due to natural over-sequencing of highly expressed genes](https://doi.org/10.1186/s12859-016-1276-2).
+To determine if duplicate reads should be removed, check the dupRadar output in the MultiQC.
 
 ##### Strandedness
-Most sequencing protocols at present are strand-specific. This specificity can be used to help identify pseudogenes originating from antisense DNA, or genes with overlapping regions on opposite strands without ambiguity.
-Strandedness is inferred automatically for all RNA-seq samples. For aligners it is inferred by RSeQC, the results of which can be reviewed in the MultiQC.
-RSeQC inference can be overwritten by column `strandedness` in the samples.tsv. This column may contain identifiers `no`, `forward` or `reverse`. If strandedness is unknown (for some samples), fields may be left blank or filled with `nan`.
+Most sequencing protocols at present are strand-specific.
+This specificity can be used to help identify pseudogenes originating from antisense DNA, or genes with overlapping regions on opposite strands without ambiguity.
+Strandedness is inferred automatically for all RNA-seq samples.
+For quantifier Salmon this occurs internally, with no configuration available.
+For aligners it is inferred by RSeQC, the results of which can be reviewed in the MultiQC.
+RSeQC inference can be overwritten by column `strandedness` in the samples.tsv.
+This column may contain identifiers `no`, `forward` or `reverse`.
+If strandedness is unknown (for some samples), fields may be left blank or filled with `nan`.
 Setting `ignore_strandedness` in the config.yaml will resulting in gene counting to assume all reads are unstranded.
 
 ##### Gene counts
