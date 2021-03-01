@@ -189,7 +189,7 @@ if [ $1 = "atac-seq" ]; then
   touch -m tests/deseq2/atac/macs2/GRCh38.p13_meancenter_log2_upperquartile.tsv
 
   # run DESeq2
-  seq2science run atac-seq --skip-rerun --cores $CORES --configfile tests/deseq2/atac/config.yaml --snakemakeOptions config={deseq2_dir:deseq_atac} show_failed_logs=True
+  seq2science run atac-seq --skip-rerun --cores $CORES --configfile tests/deseq2/atac/config.yaml --snakemakeOptions config={deseq2_dir:deseq_atac} show_failed_logs=True until=[deseq2]
 
   test_ran=1
 fi

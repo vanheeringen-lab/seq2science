@@ -1,5 +1,6 @@
 suppressMessages({
   library(DESeq2)
+  library(BiocParallel)
   library(IHW)
   library(ggplot2)
 })
@@ -35,7 +36,7 @@ cat('mtp          <- "', mtp,          '"\n', sep = "")
 cat('fdr          <-',   fdr, '\n')
 cat('se           <- "', se,           '"\n', sep = "")
 cat('assembly     <- "', assembly,     '"\n', sep = "")
-cat('salmon       <- "', salmon,       '"\n', sep = "")
+cat('salmon       <- ', salmon,       '\n', sep = "")
 cat('output       <- "', output,       '"\n', sep = "")
 cat('\n')
 
