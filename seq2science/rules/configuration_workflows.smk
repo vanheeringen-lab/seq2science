@@ -4,7 +4,7 @@ import hashlib
 
 import pandas as pd
 
-from seq2science.util import parse_de_contrasts
+from seq2science.util import parse_contrast
 
 
 # apply workflow specific changes...
@@ -123,37 +123,7 @@ if "biological_replicate" in samples:
 if config.get("contrasts"):
     # check differential gene expression contrasts
     for contrast in list(config["contrasts"]):
-        parsed_contrast, batch = parse_de_contrasts(contrast)
-        column_name = parsed_contrast[0]
-
-        # Check if the column names can be recognized in the contrast
-        assert column_name in samples.columns and column_name not in ["sample", "assembly"], (
-            f'\nIn contrast design "{contrast}", "{column_name} '
-            + f'does not match any valid column name in {config["samples"]}.\n'
-        )
-        if batch is not None:
-            assert batch in samples.columns and batch not in ["sample", "assembly"], (
-                f'\nIn contrast design "{contrast}", the batch effect "{batch}" '
-                + f'does not match any valid column name in {config["samples"]}.\n'
-            )
-
-        # Check if the contrast contains the number of components we can parse
-        components = len(parsed_contrast)
-        assert components > 1, (
-            f"\nA differential expression contrast is too short: '{contrast}'.\n"
-            "Specify at least one reference group to compare against.\n"
-        )
-        assert components < 4, (
-            "\nA differential expression contrast couldn't be parsed correctly.\n"
-            + f"{str(components-1)} groups were found in '{contrast}' "
-            + f"(groups: {', '.join(parsed_contrast[1:])}).\n\n"
-            + f'Tip: do not use underscores in the columns of {config["samples"]} referenced by your contrast.\n'
-        )
-
-        # Check if the groups in the contrast can be found in the right column of the samples.tsv
-        for group in parsed_contrast[1:]:
-            if group != "all":
-                assert str(group) in [str(i) for i in samples[column_name].tolist()], (
-                    f"\nYour contrast design contains group {group} which cannot be found "
-                    f'in column {column_name} of {config["samples"]}.\n'
-                )
+        assert len(contrast.split("_")) >= 3, (
+            f"\nCould not parse DESeq2 contrast '{contrast}'.\n"
+            "A DESeq2 design contrast must be in the form '(batch+)column_target_reference'. See the docs for examples.\n")
+        _,_,_,_ = parse_contrast(contrast, samples, check=True)
