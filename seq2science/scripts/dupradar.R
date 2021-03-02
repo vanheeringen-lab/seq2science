@@ -33,48 +33,48 @@ cat('Sessioninfo:\n')
 sessionInfo()
 cat('\n')
 
-# # Good and bad example bam
-# good_example = file.path(dirname(out_plot), "dupRadar_good_example_mpq.png")
-# bad_example = file.path(dirname(out_plot), "dupRadar_bad_example_mpq.png")
-# if (!file.exists(good_example)){
-#   attach(dupRadar_examples)
-#
-#   png(file=good_example, width=1000,  height=333)
-#   par(mfrow=c(1,3), oma=c(0, 0, 2, 0))
-#   duprateExpDensPlot(dm)
-#   title("Density plot")
-#   expressionHist(dm)
-#   title("Boxplot")
-#   duprateExpBoxplot(dm)
-#   title("Histplot")
-#   mtext(sample, outer = TRUE, cex = 1.5)
-#   dev.off()
-#
-#   png(file=bad_example, width=1000,  height=333)
-#   par(mfrow=c(1,3), oma=c(0, 0, 2, 0))
-#   duprateExpDensPlot(dm.bad)
-#   title("Density plot")
-#   expressionHist(dm.bad)
-#   title("Boxplot")
-#   duprateExpBoxplot(dm.bad)
-#   title("Histplot")
-#   mtext(sample, outer = TRUE, cex = 1.5)
-#   dev.off()
-#
-#   rm(dm)
-# }
+# Add examples
+good_example = file.path(dirname(out_plot), "good_example.png")
+bad_example = file.path(dirname(out_plot), "bad_example.png")
+if (!file.exists(good_example)){
+  attach(dupRadar_examples)
+
+  png(file=good_example, width=1344,  height=672)
+  par(mfrow=c(1,2), oma=c(0, 0, 2, 0))
+  duprateExpDensPlot(dm)
+  title("Density plot")
+  # expressionHist(dm)
+  # title("Boxplot")
+  duprateExpBoxplot(dm)
+  title("Histplot")
+  mtext("good example", outer = TRUE, cex = 1.5)
+  dev.off()
+
+  png(file=bad_example, width=1344,  height=672)
+  par(mfrow=c(1,2), oma=c(0, 0, 2, 0))
+  duprateExpDensPlot(dm.bad)
+  title("Density plot")
+  # expressionHist(dm.bad)
+  # title("Boxplot")
+  duprateExpBoxplot(dm.bad)
+  title("Histplot")
+  mtext("bad example", outer = TRUE, cex = 1.5)
+  dev.off()
+
+  rm(dm)
+}
 
 # Analysis
 dm <- analyzeDuprates(bam_file, gtf_file, strandedness, paired, threads, verbose = TRUE)
 
 # Plot
 png(file=out_plot, width=1344,  height=672)  # same dimensions as their vignette
-par(mfrow=c(1,2))  # , oma=c(0, 0, 2, 0))
+par(mfrow=c(1,2), oma=c(0, 0, 2, 0))
 duprateExpDensPlot(dm)
 title("Density plot")
 # expressionHist(dm)
 # title("Boxplot")
 duprateExpBoxplot(dm)
 title("Histplot")
-#mtext(sample, outer = TRUE, cex = 1.5)
+mtext(sample, outer = TRUE, cex = 1.5)
 dev.off()
