@@ -6,36 +6,31 @@ Running an RNA-seq analysis has never been easier!
   <img src="../../_static/rna_seq.png">
 </p>
 
-##### Downloading of sample(s)
+#### Downloading of sample(s)
 Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples.
 Take a look at the [downloading_fastq](./download_fastq.html) workflow for extensive documentation about downloading of public samples.
 
-##### Downloading and indexing of assembly(s)
+#### Downloading and indexing of assembly(s)
 Depending on whether the assembly and its index you align your samples against already exist seq2science will start with downloading of the assembly through [genomepy](https://github.com/vanheeringen-lab/genomepy).
 
-##### Read trimming
+#### Read trimming
 The pipeline starts by trimming the reads with Trim galore or Fastp.
 The trimmer will automatically trims the low quality 3' ends of reads, and removes short reads.
 After the quality trimming it automatically detects which adapter was used, and trims it.
 Trimming parameters for the pipeline can be set in the configuration.
 
-#### Gene quantification methods
-RNA-seq can be performed using gene counting or abundance estimation methods.
-Gene counting methods require BAM files, which are generated and processed in the Alignment, Bam sieving and Strandedness steps.
-Gene abundances require trimmed fastqs, and are therefore not influenced by the aforementioned steps.
-
-##### Alignment
+#### Alignment
 Reads are aligned using `STAR` or `HISAT2` (default `STAR`).
 Sensible defaults have been set, but can be overwritten for either (or both) the indexing and alignment by specifying them in the `config.yaml`.
 
 The pipeline will check if the assembly you specified is present in the *genome_dir*, and otherwise will download it for you through [genomepy](https://github.com/vanheeringen-lab/genomepy).
 All these aligners require an index to be formed first for each assembly, but don't worry, the pipeline does this for you.
 
-##### Bam sieving
+#### Bam sieving
 After aligning the bam you can choose to remove unmapped reads, low quality mappings, duplicates, and multimappers.
 Again, sensible defaults have been set, but can be overwritten.
 
-##### Strandedness
+#### Strandedness
 Most sequencing protocols at present are strand-specific.
 This specificity can be used to help identify pseudogenes originating from antisense DNA, or genes with overlapping regions on opposite strands without ambiguity.
 Strandedness is inferred automatically for all RNA-seq samples.
@@ -44,6 +39,11 @@ RSeQC inference can be overwritten by column `strandedness` in the samples.tsv.
 This column may contain identifiers `no`, `forward` or `reverse`.
 If strandedness is unknown (for some samples), fields may be left blank or filled with `nan`.
 Setting `ignore_strandedness` in the config.yaml will resulting in gene counting to assume all reads are unstranded.
+
+#### Gene quantification methods
+RNA-seq can be performed using gene counting or abundance estimation methods.
+Gene counting methods require BAM files, which are generated and processed in the Alignment, Bam sieving and Strandedness steps.
+Gene abundances require trimmed fastqs, and are therefore not influenced by the aforementioned steps.
 
 ##### Gene counts  (with HTSeq/featureCounts)
 Gene counts are obtained from the filtered BAM files using either `HTSeq` or `featureCounts` (default `HTSeq`).
@@ -55,10 +55,9 @@ Reads are aligned against the transcriptome to obtain transcript abundances (seq
 The Gene-level counts matrix are output similar to the gene counts method.
 Additionally, `Salmon` generates a gene-level TPM matrix and a SingleCellExperiment object which can be opened in *R*, containing the transcript- and gene-level summaries.
 
-***
 #### Differential gene expression analysis
 Seq2science outputs gene counts matrices for each assembly.
-Additionally, it can also perform differential expression analysis automatically.
+Additionally, it can perform differential expression analysis automatically.
 See the [DESeq2 page](../DESeq2.html) for more information!
 
 #### Differential transcript usage
@@ -70,11 +69,10 @@ This will let seq2science to output an exon counts matrix per assembly, which ca
 
 Note: this utilizes scripts implemented by DEXseq, which are [built for Ensembl genomes](https://bioconductor.org/packages/devel/bioc/vignettes/DEXSeq/inst/doc/DEXSeq.html#24_Preparing_the_annotation).
 
-***
 #### Trackhub
-A UCSC compatible trackhub can be generated for this workflow. See the [trackhub page](../results.html#trackhub)<!-- @IGNORE PREVIOUS: link --> for more information!
+A UCSC compatible trackhub can be generated for this workflow.
+See the [trackhub page](../results.html#trackhub)<!-- @IGNORE PREVIOUS: link --> for more information!
 
-***
 ### Filling out the samples.tsv
 Before running a workflow you will have to specify which samples you want to run the workflow on.
 Each workflow starts with a `samples.tsv` as an example, and you should adapt it to your specific needs.
@@ -131,3 +129,37 @@ If you are producing a UCSC trackhub, seq2science will assign an alternating col
 You can optionally specify the colors of each track by adding this column.
 Colors can be added by name (google "matplotlib colors" for the options), or RGB values.
 Empty fields are considered black.
+
+### Filling out the config.yaml
+Every workflow has many configurable options, and can be set in the `config.yaml` file.
+In each `config.yaml` we highlighted a couple options that we think are relevant for that specific workflow, and set (we think) **reasonable default** values.
+
+When a workflow starts it prints the configuration variables influencing the workflow, and (almost) all these values can be added in the `config.yaml` and changed to your liking.
+You can see the complete set of configurable options in the [extensive docs](../schemas.html).
+
+### Best practices
+#### Genome assembly and gene annotation
+The choice of genome assembly and gene annotation is of significant influence to the downstream analysis.
+To explore available options, you could use [genomepy](https://github.com/vanheeringen-lab/genomepy), which comes installed in the seq2science conda environment.
+Installing the desired genome and gene annotation in the {genomes_dir} will cause seq2science to use these files.
+
+If the genome/annotation is missing from the {genomes_dir}, seq2science will attempt to download the named assembly from Ensembl, UCSC and the NCBI (in that order).
+
+#### Aligners: STAR vs HISAT2
+Both aligners have been found to perform well.
+Selection should be dependent on familiarity and configuration options.
+
+#### Quantifier: counts vs quantification
+Both methods have been found valid for differential gene expression analysis, although results vary somewhat.
+Caution is advised for the genes found by only one of the two methods.
+
+#### Genome/Aligner/Quantifier
+The most significant choice to be made is the genome assembly and gene annotation.
+
+#### Reviewing the results
+Unless configured not to, Seq2science makes several assumptions on your data which may be incorrect:
+- that strandedness of each sample can be determined automatically.
+- that duplicate reads are mostly caused by natural overexpression, not by library artifacts.
+
+These assumptions can be tested by inspecting the MultiQC.
+Should the results be disappointing, they can be overwritten using the `strandedness` column in the `samples.tsv` and the `markduplicates` variable in the `config.yaml` respectively.

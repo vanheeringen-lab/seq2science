@@ -7,13 +7,17 @@ Running an ATAC-seq analysis has never been easier!
 </p>
 
 #### Downloading of sample(s)
-Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples. Take a look at the [downloading_fastq](https://vanheeringen-lab.github.io/seq2science/content/workflows/download_fastq.html) workflow for extensive documentation about downloading of public samples. 
+Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples.
+Take a look at the [downloading_fastq](./download_fastq.html) workflow for extensive documentation about downloading of public samples.
 
 #### Downloading and indexing of assembly(s)
 Depending on whether the assembly and its index you align your samples against already exist seq2science will start with downloading of the assembly through [genomepy](https://github.com/vanheeringen-lab/genomepy).
 
 #### Read trimming
-The pipeline starts by trimming the reads with [trim galore!](https://github.com/FelixKrueger/TrimGalore/blob/master/Docs/Trim_Galore_User_Guide.md). Trim galore automatically first trims the low quality 3' ends of reads, and removes short reads. After the quality trimming trim galore automatically detects which adapter was used, and trims it. The parameters of trim galore! for the pipeline can be set in the configuration by variable *trim_galore*. 
+The pipeline starts by trimming the reads with Trim galore or Fastp.
+The trimmer will automatically trims the low quality 3' ends of reads, and removes short reads.
+After the quality trimming it automatically detects which adapter was used, and trims it.
+Trimming parameters for the pipeline can be set in the configuration.
 
 #### Alignment
 After trimming the reads are aligned against an assembly. Currently we support `bowtie2`, `bwa-mem`, `hisat2` and `star` as aligners. Choosing which aligner is as easy as setting the *aligner* variable in the `config.yaml`, for example: `aligner: bwa`. Sensible defaults have been set for every aligner, but can be overwritten for either (or both) the indexing and alignment by specifying them in the `config.yaml`.

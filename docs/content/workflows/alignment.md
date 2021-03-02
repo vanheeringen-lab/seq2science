@@ -1,5 +1,5 @@
 ## Alignment
-Aligning samples has never been easier! See our [alignment](https://github.com/vanheeringen-lab/snakemake-workflows/tree/master/workflows/alignment) workflow.
+Aligning samples has never been easier!
 
 ### Pipeline steps
 <p align="center">
@@ -7,10 +7,14 @@ Aligning samples has never been easier! See our [alignment](https://github.com/v
 </p>
 
 #### Downloading of sample(s)
-Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples. Take a look at the [downloading_fastq](https://vanheeringen-lab.github.io/seq2science/content/workflows/download_fastq.html) workflow for extensive documentation about downloading of public samples. 
+Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples.
+Take a look at the [downloading_fastq](./download_fastq.html) workflow for extensive documentation about downloading of public samples.
 
-#### Automated trimming
-The pipeline starts by trimming the reads with either [trim galore!](https://github.com/FelixKrueger/TrimGalore/blob/master/Docs/Trim_Galore_User_Guide.md) or [fastp](https://github.com/OpenGene/fastp). Trim galore and fastp both automatically detect which adapter was used and remove those. In addition they trim the low quality 3' ends of reads, and remove short reads. Which trimmer should be used (and their params) can be set by the key `trimmer` in the config.yaml. 
+#### Read trimming
+The pipeline starts by trimming the reads with Trim galore or Fastp.
+The trimmer will automatically trims the low quality 3' ends of reads, and removes short reads.
+After the quality trimming it automatically detects which adapter was used, and trims it.
+Trimming parameters for the pipeline can be set in the configuration.
 
 #### Alignment & Sorting
 After trimming the reads are aligned against an assembly. Currently we support *bowtie2*, *bwa*, *bwa-mem2*, *hisat2* and *STAR* as aligners. Choosing which aligner is as easy as setting the *aligner* variable in the `config.yaml`, for example: `aligner: bwa`. Sensible defaults have been set for every aligner, but can be overwritten for either (or both) the indexing and alignment by specifying them in the `config.yaml`:
@@ -39,7 +43,8 @@ Many downstream tools require an index of the deduplicated bam. The pipeline aut
 It is always a good idea to check the quality of your samples. Along the way different quality control steps are taken, and are outputted in a single [multiqc report](https://multiqc.info/) in the `qc` folder. Make sure to always check the report, and take a look at [interpreting the multiqc report](../results.html#multiqc-quality-report)!
 
 #### Trackhub
-A UCSC compatible trackhub can be generated for this workflow. See the [trackhub page](../results.html#trackhub)<!-- @IGNORE PREVIOUS: link --> for more information!
+A UCSC compatible trackhub can be generated for this workflow.
+See the [trackhub page](../results.html#trackhub)<!-- @IGNORE PREVIOUS: link --> for more information!
 
 ### Filling out the samples.tsv
 Before running a workflow you will have to specify which samples you want to run the workflow on. Each workflow starts with a `samples.tsv` as an example, and you should adapt it to your specific needs. As an example, the `samples.tsv` could look something like this:

@@ -1,15 +1,14 @@
 ## Differential gene/peak analysis
-Seq2science outputs counts matrices for each assembly in any bulk-sequencing workflow (ATAC-/ChIP- and RNA-seq).
-These matrices can be used for differential gene/peak analysis, which can optionally be perform with [DESeq2](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-014-0550-8) by Seq2science!
+Seq2science outputs counts matrices for each assembly in any bulk-sequencing workflow, which can optionally can be used for differential gene/peak analysis with [DESeq2](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-014-0550-8).
 To do so, add one or more contrast design(s) in the `config.yaml` file, with matching identifiers in the `samples.tsv` file.
 
 This section details how the contrast designs are created.
-Examples are given [below](./DESeq2.html#deseq2-contrast-designs), and `config.yaml` contains a commented-out set of examples at the bottom.
+Examples are given [below](./DESeq2.html#deseq2-contrast-designs), and each `config.yaml` contains a commented-out example contrast design at the bottom.
 
 Note: (additional) design contrasts can be added at any time.
 After completing the workflow, rerunning Seq2science with new contrasts will only perform the new analyses.
 
-##### DESeq2 method
+##### Method
 DESeq2 automatically performs library bias correction when loading your data, and batch correction is performed if it is included in the contrast design.
 After calculating differentially expressed genes/peaks, a multiple testing procedure is applied, which is either the Benjamini-Hochberg procedure (the default) or Independent Hypothesis Weighing.
 The False Discovery Rate cutoff is set by alpha, which is 0.1 by default.
@@ -18,20 +17,20 @@ These defaults can be changed in the [config.yaml](./schemas.html#deseq2), under
 
 For more information, check out the steps in this [vignette](www.bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html), which Seq2science follows.
 
-##### DESeq2 output
-For each contrast design, the list of *all genes/peaks* is saved to file, with analysis results for expressed genes. Briefly, these include:
-- The column `padj` contains the adjusted p-values after multiple testing. These should be used to identify DE genes.
-- The column `log2FoldChange` contains the fold change of each gene between the two conditions. The reference condition is the one _last mentioned_ in the contrast design, so use `conditions_treatment_control`. If you use `conditions_control_treatment` the fold change is _inverted_.
+##### Output
+For each contrast design, the list of *all* genes/peaks is saved to file, with analysis results for expressed genes. Briefly, these include:
+- The column `padj` contains the adjusted p-values after multiple testing. **(These should be used to identify DE genes/peaks)**.
+- The column `log2FoldChange` contains the fold change of each gene between the two conditions. (The reference group is the one _last mentioned_ in the contrast design, so use `condition_treatment_control`. If you use `condition_control_treatment` the fold change is _inverted_.)
 - Several other columns were kept for sake of completion, such as column `pvalue`, which contains _non-adjusted_ p-values.
 
 In addition, MA and PCA plots are generated for each contrast design.
 
 If the design includes a batch effect, several PCA plots are generated to visualize the effect of the batch correction.
 
-DESeq2 models the batch effect in their package, but downstream methods may not. For this reason, seq2science will produce a batch-corrected counts matrix (and a batch corrected TPM matrix if quantified with Salmon).
+DESeq2 models the batch effect in their package, but downstream methods may not.
+For this reason, seq2science will produce a batch-corrected counts matrix (and a batch corrected TPM matrix if quantified with Salmon).
 
-***
-### DESeq2 contrast designs
+##### Contrast designs
 The following section will guide you through the process of creating a DESeq2 contrast using only the samples.tsv and the config.yaml.
 
 A contrast contains a **condition**, which is the variable you wish to analyse, and which contains 2 or more **groups.**

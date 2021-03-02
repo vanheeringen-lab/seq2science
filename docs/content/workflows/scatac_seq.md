@@ -1,5 +1,5 @@
 ## scATAC-seq
-Running a scATAC-seq pipeline has never been easier! See our [scATAC-seq](https://github.com/vanheeringen-lab/snakemake-workflows/tree/master/workflows/scATAC_seq) workflow.
+Running a scATAC-seq pipeline has never been easier!
 
 Does your scATAC protocol generate single cell fastq files? And do they need to be mapped and analysed? Then this pipeline is for your! This pipeline takes single cell fastq files, performs extensive (plate based) QC steps, and generates a binned  SNAP-object that can be used for further downstream analysis following the tutorials on: https://github.com/r3fang/SnapATAC
 
@@ -12,8 +12,9 @@ Alternatively instead you have a large FASTQ file containing a cell specific ID 
   <img src="../../_static/scatac_seq.png">
 </p>
 
-#### (Automated) downloading of fastq
-scATAC-seq can be done with local fastq files, downloaded files, or a mix of those. Make sure to take a look at our downloading fastq [best practices](https://vanheeringen-lab.github.io/seq2science/content/workflows/download_fastq.html#best-practices) when making use of the downloading functionality.
+#### Downloading of sample(s)
+Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples.
+Take a look at the [downloading_fastq](./download_fastq.html) workflow for extensive documentation about downloading of public samples.
 
 #### merge cell fastq files based on processing  
 Single cell fastq files get a barcode id corresponding to the sample name. This is added to the fastq header, after which each single cell fastq is merged to a large FASTQ file with all the technical replica's (for example all cells from a plate). This results in a multi-QC report containing QC per technical replica's. This makes lower plate quality easy to spot.

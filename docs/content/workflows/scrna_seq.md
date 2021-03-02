@@ -1,15 +1,14 @@
 ## scRNA-seq
+Running a scRNA-seq pipeline has never been easier!
 
 ### Pipeline steps
 <p align="center">
   <img src="../../_static/scrna_seq.png">
 </p>
 
-
 #### Downloading of sample(s)
-
 Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples.
-Take a look at the downloading_fastq workflow for extensive documentation about downloading of public samples.
+Take a look at the [downloading_fastq](./download_fastq.html) workflow for extensive documentation about downloading of public samples.
 
 ### Downloading and indexing of assembly(s)
 
@@ -68,7 +67,7 @@ In each config.yaml we highlighted a couple options that we think are relevant f
 After initializing your working directory and editing the `samples.tsv` file, you have to specify if you either want to perform quantification or RNA velocity analysis.
 For velocity analysis, add the `--workflow lamanno` argument to the ref and count properties as shown below.
 
-##### Quantificatier
+##### Quantifier
 
 ```
 quantifier:
