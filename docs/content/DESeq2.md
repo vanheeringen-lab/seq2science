@@ -8,12 +8,12 @@ Examples are given [below](./DESeq2.html#deseq2-contrast-designs), and each `con
 Note: (additional) design contrasts can be added at any time.
 After completing the workflow, rerunning Seq2science with new contrasts will only perform the new analyses.
 
-##### Method
+##### Overview of the DESeq2 method
 DESeq2 automatically performs library bias correction when loading your data, and batch correction is performed if it is included in the contrast design.
 After calculating differentially expressed genes/peaks, a multiple testing procedure is applied, which is either the Benjamini-Hochberg procedure (the default) or Independent Hypothesis Weighing.
 The False Discovery Rate cutoff is set by alpha, which is 0.1 by default.
 Finally, count values are log transformed and shrunk (by default using the apeglm method).
-These defaults can be changed in the [config.yaml](./schemas.html#deseq2), under the `deseq2` variables, using the `multiple_testing_procedure`, `alpha_value` and `shrinkage_estimator` options respectively.
+These defaults can be changed in the [config.yaml](./schemas.html#deseq2), under the `deseq2` variables using the `multiple_testing_procedure`, `alpha_value` and `shrinkage_estimator` options respectively.
 
 For more information, check out the steps in this [vignette](www.bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html), which Seq2science follows.
 
@@ -21,7 +21,7 @@ For more information, check out the steps in this [vignette](www.bioconductor.or
 For each contrast design, the list of *all* genes/peaks is saved to file, with analysis results for expressed genes. Briefly, these include:
 - The column `padj` contains the adjusted p-values after multiple testing. **(These should be used to identify DE genes/peaks)**.
 - The column `log2FoldChange` contains the fold change of each gene between the two conditions. (The reference group is the one _last mentioned_ in the contrast design, so use `condition_treatment_control`. If you use `condition_control_treatment` the fold change is _inverted_.)
-- Several other columns were kept for sake of completion, such as column `pvalue`, which contains _non-adjusted_ p-values.
+- Several other columns were kept for sake of completion, such as column `pvalue`, which contains p-values not adjusted for multiple testing.
 
 In addition, MA and PCA plots are generated for each contrast design.
 
@@ -44,8 +44,8 @@ Next, add labels to the samples involved in the test. You can leave labels empty
 For example:
 
 1. a column named 'conditions' with values ‘wildtype’ and ‘knockout’.
-2. a column named 'treatments' with values ‘control’, ‘treatmentA’ and ‘treatmentB’.
-3. a column named 'stages' with values 1, 2 and 3.
+2. a column named 'stages' with values 1, 2 and 3.
+3. a column named 'treatments' with values ‘control’, ‘treatmentA’ and ‘treatmentB’.
 
 |sample|assembly|conditions|stages|treatments|
 |---|---|---|

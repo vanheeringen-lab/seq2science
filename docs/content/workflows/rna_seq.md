@@ -58,7 +58,7 @@ Additionally, `Salmon` generates a gene-level TPM matrix and a SingleCellExperim
 #### Differential gene expression analysis
 Seq2science outputs gene counts matrices for each assembly.
 Additionally, it can perform differential expression analysis automatically.
-See the [DESeq2 page](../DESeq2.html) for more information!
+See the [Differential gene/peak analysis page](../DESeq2.html) for more information!
 
 #### Differential transcript usage
 Quantifying with `Salmon`, the transcript-level summaries in the SingleCellExperiment object *should* be usable for differential transcript analysis with `DEXseq`, as described [here](http://www.bioconductor.org/packages/devel/workflows/vignettes/rnaseqDTU/inst/doc/rnaseqDTU.html#dexseq).
@@ -102,7 +102,7 @@ The descriptive_name column is used for the trackhub and multiqc report.
 In the trackhub your tracks will be called after the descriptive name, and in the multiqc report there will be a button to rename your samples after this column.
 The descriptive name can not contain '-' characters, but underscores '_' are allowed.
 
-#### Technical replicates
+#### Technical_replicate column
 Technical replicates, or any fastq file you may wish to merge, are set using the `technical_replicate` column in the samples.tsv file.
 All samples with the same name in the `technical_replicate` column will be concatenated into one file with the replicate name.
 
@@ -120,7 +120,7 @@ The MultiQC will inform you of the trimming steps performed on all samples, and 
 
 Note: If you are working with multiple assemblies in one workflow, replicate names have to be unique between assemblies (you will receive a warning if names overlap).
 
-#### keep
+##### keep
 Replicate merging is turned on by default.
 It can be turned off by setting `technical_replicates` in the `config.yaml` to `keep`.
 

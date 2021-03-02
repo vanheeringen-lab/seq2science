@@ -32,7 +32,7 @@ After clustering peaks can be called on the aggregated cluster signals. This mak
 ### best practices
 TODO: Make sure to take a look at: [example preprocessing](../scATAC_postprocessing.html)
 
-### 2.6.1 Filling out the samples.tsv
+### Filling out the samples.tsv
 
 Before running a workflow you will have to specify which samples you want to run the workflow on. Each workflow starts with a samples.tsv as an example, and you should adapt it to your specific needs. One thing you need to check before filling a sample into your sample.tsv file, is that the fastq file is not completely empty! If a fastq file has a size of 0 it will crash the pipeline.
 You can run bash code to automatically remove completely empty fastq files from a directory, e.g. run: 
@@ -80,7 +80,7 @@ This column is necessary for all workflows, except the *downloading samples* wor
 #### technical_replicate column
 Here you put to which technical replica each cell corresponds. E.g. the plate from which the cells were sequenced. Per technical replica QC will be generated. For public data you can put all cells under the same technical replica name.
 
-### 2.6.2 Filling out the config.yaml
+### Filling out the config.yaml
 Every workflow has many configurable options, and can be set in the `config.yaml` file. In each `config.yaml` we highlighted a couple options that we think are relevant for that specific workflow, and set (we think) **reasonable default** values.
 
 When a workflow starts it prints the complete configuration, and (almost) all these values can be added in the `config.yaml` and changed to your liking. You can see the complete set of configurable options in the [extensive docs](../schemas.html).

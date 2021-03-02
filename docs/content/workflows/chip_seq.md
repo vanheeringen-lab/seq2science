@@ -79,7 +79,7 @@ Note that this table contains **all** peaks, and no selection on differential pe
 
 #### Differential peak analysis
 Seq2science can optionally use the raw peak counts table to perform differential peak analysis.
-See the [DESeq2 page](../DESeq2.html) for more information!
+See the [Differential gene/peak analysis page](../DESeq2.html) for more information!
 
 #### Trackhub
 A UCSC compatible trackhub can be generated for this workflow. See the [trackhub page](../results.html#trackhub)<!-- @IGNORE PREVIOUS: link --> for more information!
@@ -107,8 +107,9 @@ In the `control` column you can (optionally) add the "sample name" of the input 
 #### Descriptive_name column
 The descriptive_name column is used for the trackhub and multiqc report. In the trackhub your tracks will be called after the descriptive name, and in the multiqc report there will be a button to rename your samples after this column. The descriptive name can not contain '-' characters, but underscores '_' are allowed.
 
-#### Technical replicates
-Technical replicates, or any fastq file you may wish to merge, are set using the `technical_replicate` column in the samples.tsv file. All samples with the same name in the `technical_replicate` column will be concatenated into one file with the replicate name.
+#### Technical_replicate column
+Technical replicates, or any fastq file you may wish to merge, are set using the `technical_replicate` column in the samples.tsv file.
+All samples with the same name in the `technical_replicate` column will be concatenated into one file with the replicate name.
 
 Example `samples.tsv` utilizing replicate merging:
 ```
@@ -118,12 +119,13 @@ GSMabc    GRCh38      heart
 GSMxzy    GRCh38      stage8
 GSM890    GRCh38
 ```
-Using this file in the alignment workflow will output *heart.bam*, *stage8.bam* and *GSM890.bam*. The MultiQC will inform you of the trimming steps performed on all samples, and subsequent information of the 'replicate' files (of which only *heart* is merged).
 
-**Note:**
-If you are working with multiple assemblies in one workflow, replicate names have to be unique between assemblies (you will receive a warning if names overlap).
+Using this file in the alignment workflow will output *heart.bam*, *stage8.bam* and *GSM890.bam*.
+The MultiQC will inform you of the trimming steps performed on all samples, and subsequent information of the 'replicate' files (of which only *heart* is merged).
 
-#### keep
+Note: If you are working with multiple assemblies in one workflow, replicate names have to be unique between assemblies (you will receive a warning if names overlap).
+
+##### keep
 Replicate merging is turned on by default. It can be turned off by setting `technical_replicates` in the `config.yaml` to `keep`.
 
 #### Biological replicates

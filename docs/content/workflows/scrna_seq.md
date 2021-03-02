@@ -34,7 +34,7 @@ The resulting count matrices can be further processed with scRNA toolkits, such 
 
 ### How to get the pipeline started?
 
-### 2.6.1 Filling out the samples.tsv
+### Filling out the samples.tsv
 
 Before running a workflow you will have to specify which samples you want to run the workflow on.
 Each workflow starts with a `samples.tsv` as an example, and you should adapt it to your specific needs.
@@ -59,7 +59,7 @@ Here you simply add the name of the assembly you want your samples aligned again
 The descriptive_name column is used for the multiqc report.
 In the multiqc report there will be a button to rename your samples after this column.
 
-#### 2.6.2 Filling out the config.yaml
+#### Filling out the config.yaml
 
 Every workflow has many configurable options, and can be set in the config.yaml file.
 In each config.yaml we highlighted a couple options that we think are relevant for that specific workflow, and set (we think) reasonable default values.
