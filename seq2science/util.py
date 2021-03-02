@@ -207,27 +207,66 @@ def sieve_bam(configdict):
     )
 
 
-def parse_de_contrasts(de_contrast):
+def parse_contrast(contrast, samples, check=True):
     """
-    Extract contrast column, groups and batch effect column from a DE contrast design
+    Extract contrast batch and column, target and reference groups from a DE contrast design.
+    Check for contrast validity if check = True.
 
-    Accepts a string containing a DESeq2 contrast design
+    If "all" is in the contrast groups, it is always assumed to be the target
+    (and expanded to mean all groups in the column in function `get_contrasts()`).
+
+    Accepts a string containing a DESeq2 contrast design.
 
     Returns
-    parsed_contrast, lst: the contrast components
-    batch, str: the batch effect column or None
+        batch: the batch column, or None
+        column: the contrast column
+        target: the group of interest
+        reference: the control group
     """
-    # remove whitespaces (and '~'s if used)
-    de_contrast = de_contrast.replace(" ", "").replace("~", "")
+    # clean contrast
+    de_contrast = contrast.strip().replace(" ", "").replace("~", "")
 
-    # split and store batch effect
+    # parse batch effect
     batch = None
     if "+" in de_contrast:
-        batch, de_contrast = de_contrast.split("+")[0:2]
+        batch, de_contrast = de_contrast.split("+")
+        if len(de_contrast) > 1:
+            ValueError(f"DE contrast {contrast} can only contain a '+' to denote the batch effect column.")
 
-    # parse contrast column and groups
-    parsed_contrast = de_contrast.split("_")
-    return parsed_contrast, batch
+    # parse groups
+    target, reference = de_contrast.split("_")[-2:]
+
+    # parse column
+    n = de_contrast.find(f"_{target}_{reference}")
+    column = de_contrast[:n]
+
+    # "all" is never the reference
+    if reference == "all":
+        reference = target
+        target = "all"
+
+    if check:
+        # check if columns exists and are valid
+        valid_columns = [col for col in samples.columns if col not in ["sample", "assembly"]]
+        # columns that may have been dropped, if so, these backups have been saved
+        backup_columns = {"technical_replicate": "_trep", "biological_replicate": "_brep", "descriptive_name": "_dname"}
+        for col in [batch, column]:
+            if col:
+                assert col in valid_columns + list(backup_columns.keys()), (
+                    f'\nIn DESeq2 contrast design "{contrast}", '
+                    f'column "{col}" does not match any valid column name.\n'
+                )
+        # check if group is element of column
+        c = column if column in samples else backup_columns[column]  # column/backup column
+        all_groups = set(samples[c].dropna().astype(str))
+        for group in [target, reference]:
+            if group != "all":
+                assert group in all_groups, (
+                    f'\nIn DESeq2 contrast design "{contrast}", '
+                    f'group {group} cannot be found in column {column}.\n'
+                )
+
+    return batch, column, target, reference
 
 
 def url_is_alive(url):
@@ -270,6 +309,7 @@ def get_bustools_rid(params):
     else:
         raise Exception("Not a valid BUS(barcode:umi:set) string. Please check -x argument")
     return read_id
+
 
 def hex_to_rgb(value):
     """In: hex(#ffffff). Out: tuple(255, 255, 255)"""

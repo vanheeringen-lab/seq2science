@@ -97,7 +97,7 @@ if not config.get("no_config_log"):
                       ("remove_blacklist", no_aligners),
                       ("tximeta", config.get("quantifier") != "salmon"),
                       ("deseq2", not config.get("contrasts")),
-                      ("dge_dir", not config.get("contrasts")),
+                      ("deseq2_dir", not config.get("contrasts")),
                       ("bigwig_dir", not config.get("create_trackhub")),
                       ("qc_dir", not config.get("create_qc_report"))]
     keys = rmkeys(["samples"] + keys_to_remove,keys)
