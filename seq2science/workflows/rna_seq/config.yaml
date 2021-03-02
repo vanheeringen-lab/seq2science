@@ -26,6 +26,7 @@ quantifier: htseq  # or salmon or featurecounts
 aligner: star
 
 # filtering after alignment (not used for the gene counts matrix if the quantifier is Salmon)
+markduplicates: -Xms4G -Xmx6G MAX_FILE_HANDLES_FOR_READ_ENDS_MAP=999  # keep duplicates (check dupRadar in the MultiQC)
 remove_blacklist: true
 min_mapping_quality: 255  # (only keep uniquely mapped reads from STAR alignments)
 only_primary_align: true

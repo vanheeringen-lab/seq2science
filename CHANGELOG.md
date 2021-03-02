@@ -10,6 +10,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Changed
 
+- Keep all duplicate reads in RNA-seq by default
 - Slimmed down the config printed at the start of a run
 - Changed some rules into localrules when executed on a cluster
 - moved onehot peaks to counts_dir
@@ -20,6 +21,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Added
 
+- dupRadar module to analyse read duplication types in RNA-seq
 - Differential peak analysis for ATAC- and ChIP-seq!
 - Options to filter bams by minimum and maximum insert sizes (added to config of bulk/sc atac)
 - Support experiment ids for EBI ENA and DDBJ for downloading public samples

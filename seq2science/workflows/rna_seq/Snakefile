@@ -18,6 +18,7 @@ include: f"{config['rule_dir']}/trackhub.smk"
 include: f"{config['rule_dir']}/trimming.smk"
 include: f"{config['rule_dir']}/quantification.smk"
 include: f"{config['rule_dir']}/qc.smk"
+include: f"{config['rule_dir']}/qc_rna.smk"
 
 
 # load the quality control files
