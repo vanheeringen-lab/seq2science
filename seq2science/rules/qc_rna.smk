@@ -19,7 +19,7 @@ rule dupRadar:
         paired=lambda wildcards: sampledict[wildcards.sample]["layout"] == "PAIRED",
     resources:
         R_scripts=1, # conda's R can have issues when starting multiple times
-        mem_gb=0.6,
+        mem_gb=1,
     threads: 4
     conda:
         "../envs/dupradar.yaml"
@@ -46,9 +46,9 @@ rule dupRadar_combine:
         expand("{log_dir}/dupRadar/combine_{{assembly}}.log", **config)
     params:
         # created by the first dupRadar rule
-        good_example=expand(f"{qc_dir}/dupRadar/good_example.png",**config),
-        bad_example=expand(f"{qc_dir}/dupRadar/bad_example.png",**config)
+        good_example=expand("{qc_dir}/dupRadar/good_example.png",**config),
+        bad_example=expand("{qc_dir}/dupRadar/bad_example.png",**config)
     shell:
         """
-        convert {params.good_example} {params.bad_example} {input} -append {output}
+        convert {params.good_example} {params.bad_example} {input} -append {output} 2> {log}
         """

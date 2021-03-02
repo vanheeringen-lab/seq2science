@@ -47,7 +47,7 @@ module_order:
 
 report_section_order:
   dupRadar:
-    after: "picard"
+    order: -897
   deeptools_spearman:
     order: -898
   deeptools_pearson:
