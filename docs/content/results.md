@@ -32,9 +32,13 @@ The general statistics table shows a quick summary of your data. The table is in
 
 ***
 ## Trackhub
-It is often good to 'eyeball' the data, and check if e.g. peak calling went alright. One of the features of the pipeline is that it can generate a trackhub. You can host the trackhub yourself on a web accessible location, and visualize on the [UCSC genome browser](https://genome.ucsc.edu/cgi-bin/hgHubConnect). Alternatively, you can visualize the files locally in [IGV](https://software.broadinstitute.org/software/igv/).
+It is often good to 'eyeball' the data, and check if e.g. peak calling went alright.
+One of the features of the pipeline is that it can generate a trackhub.
+You can host the trackhub yourself on a web accessible location, and visualize on the [UCSC genome browser](https://genome.ucsc.edu/cgi-bin/hgHubConnect).
+Alternatively, you can visualize the files locally in [IGV](https://software.broadinstitute.org/software/igv/).
 
-Generation of the trackhub files is optional for all workflows that support it, and is turned off by default. Set `create_trackhub: True` in the config to start generating your hub.
+Generation of the trackhub files is optional for all workflows that support it, and is turned off by default.
+Set `create_trackhub: True` in the config to start generating your hub.
 
 ### UCSC genome browser
 If you move the *trackhub* folder to a web-accessible location, you can upload the URL to the `hub.txt` file on the [UCSC genome browser](https://genome-euro.ucsc.edu/cgi-bin/hgHubConnect#unlistedHubs) to gain access to your personalized hub!
@@ -42,7 +46,8 @@ If you move the *trackhub* folder to a web-accessible location, you can upload t
 If you don't have access to a web-accessible location, the bigwig files can be manually uploaded on a UCSC trackhub, as long as the assembly used is recognized by UCSC. 
 
 ### Integrative Genomics Viewer
-[IGV](https://software.broadinstitute.org/software/igv/) is a locally run genome browser with baseline functionalities for read and sequence inspection. It is an excellent alternative for quick jobs or if you do not have access to a (large enough) web-accessible location.
+[IGV](https://software.broadinstitute.org/software/igv/) is a locally run genome browser with baseline functionalities for read and sequence inspection.
+It is an excellent alternative for quick jobs or if you do not have access to a (large enough) web-accessible location.
 
 ### BigWigs
 Bigwigs visualize the sequencing depth per base and form the core of the trackhub. Bigwigs are stored in workflow-dependent locations, and linked in the *trackhub* folder.
@@ -52,10 +57,14 @@ Bigwigs visualize the sequencing depth per base and form the core of the trackhu
 See the [replicate handling page](https://vanheeringen-lab.github.io/seq2science/content/workflows/atac_seq.html#technical-replicates) for more information on sample replicates and conditions.
 
 ### Genome
-If your genome assembly is not recognized on UCSC, a number of files must be generated to map your bigwigs to. Seq2science does this for you! It creates the required *genome.2bit*, as well as a *cytobands* file. With just these files you can search your assembly by coordinates.
+If your genome assembly is not recognized on UCSC, a number of files must be generated to map your bigwigs to.
+Seq2science does this for you!
+It creates the required *genome.2bit*, as well as a *cytobands* file.
+With just these files you can search your assembly by coordinates.
 
 ### Gene annotations
-If gene annotations are available, these are added as *annotations.bigBed*. This a visible as a separate track containing genes.
+If gene annotations are available, these are added as *annotations.bigBed*.
+This a visible as a separate track containing genes.
 Additionally, the *genome.2bit* is indexed to allow you to search your assembly by gene name (if the annotation file was formatted properly).
 
 ### Supporting tracks
