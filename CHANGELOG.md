@@ -28,6 +28,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - More robust expression handling for BUS format detection from kb-python arguments
 - Short-hand BUS syntax for indrop v1/v2
 - Seq2science now supports tab-completion
+- Seq2science now outputs a logfile in the directory it is run
 
 ### Fixed
 
