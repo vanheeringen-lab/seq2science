@@ -73,7 +73,7 @@ else:
                       end=" and finally were tn5 bias shifted by seq2science." if config.get("tn5_shift", 0) > 0 else "."),
         # "samtools_sort": "Bam files were sorted with samtools v@samtools[samtools].",
         "sambamba_sort": "Bam files were sorted with sambamba v@sambamba[sambamba] (https://doi.org/10.1093/bioinformatics/btv098).",
-        "mark_duplicates": "Afterwards, duplicate reads were removed with picard MarkDuplicates v@picard[picard] (http://broadinstitute.github.io/picard).",
+        "mark_duplicates": "Afterwards, duplicate reads were " + ("removed" if "REMOVE_DUPLICATES=true" in config.get("markduplicates", "") else "marked") + " with picard MarkDuplicates v@picard[picard] (http://broadinstitute.github.io/picard).",
         "bam2cram": "Bam files were converted to cram format with samtools v@samtools[samtools].",
         "deseq2":
             text_join(start="Differential gene expression analysis was performed using DESeq2 v@deseq2[bioconductor-deseq2] (https://dx.doi.org/10.1186%2Fs13059-014-0550-8). To adjust for multiple testing ",
@@ -97,6 +97,7 @@ else:
         "featureCounts_qc": "The fraction reads in peak score (frips) was calculated by featurecounts v@subread[subread] (https://doi.org/10.1093/bioinformatics/btt656).",
         "fastqc": "Fastq quality was measured by FastQC v@qc[fastqc] (http://www.bioinformatics.babraham.ac.uk/projects/fastqc).",
         "computeMatrix": "Deeptools v@deeptools[deeptools] (https://doi.org/10.1093/nar/gkw257) was used for the fingerprint, profile, correlation and dendrogram/heatmap plots, where the heatmap was made with options '{config[deeptools_multibamsummary]}'.",
+        "dupradar": "RNA-seq read duplication types were analyzed using dupRadar v@dupradar[bioconductor-dupradar] (https://doi.org/10.1186/s12859-016-1276-2).",
         "decoy_transcripts": "Decoy transcript were generated in order improve improve Salmon indexing accuracy (using the script from https://github.com/COMBINE-lab/SalmonTools)",
         "salmon_quant": "Transcript abundances were quantified with Salmon v@salmon[salmon] (https://doi.org/10.1038/nmeth.4197) with options '{config[quantifier_flags]}'.",
         "htseq_count": "Read counting and summarizing to gene-level was performed on filtered bam using HTSeq-count v@gene_counts[htseq] (https://doi.org/10.1093/bioinformatics/btu638).",

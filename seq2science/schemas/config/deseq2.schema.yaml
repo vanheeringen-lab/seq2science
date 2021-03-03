@@ -1,0 +1,36 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+
+description: seq2science gene expression configuration
+
+properties:
+  # paths to store results
+  counts_dir:
+    description: directory where to store the counts for DESeq2 analysis (defaults inside the result dir)
+    default: counts
+    type: string
+  deseq2_dir:
+    description: directory where to store the DESeq2 output (defaults inside the result dir)
+    default: deseq2
+    type: string
+
+  deseq2:
+    description: DESeq2 settings. See the DESeq2 vignette for details
+    properties:
+      multiple_testing_procedure:
+        default: BH
+        enum: [BH, IHW]
+        type: string
+      alpha_value:
+        default: 0.1
+        type: number
+      shrinkage_estimator:
+        default: apeglm
+        enum: [apeglm, ashr, normal]
+        type: string
+    default:
+      multiple_testing_procedure: BH
+      alpha_value: 0.1
+      shrinkage_estimator: apeglm
+
+  contrasts:
+    description: deseq2 design contrast(s)

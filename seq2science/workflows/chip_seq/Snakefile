@@ -1,6 +1,6 @@
 # do onstart/onexit things
 sample_schemas = ['sample', 'assembly', 'strandedness', 'biological_replicate', 'technical_replicate']
-config_schemas = ['general', 'download', 'alignment_general', 'peakcalling', 'trackhub']
+config_schemas = ['general', 'download', 'alignment_general', 'peakcalling', 'deseq2', 'trackhub']
 include: "../../rules/configuration.smk"
 
 
@@ -29,6 +29,7 @@ rule seq2science:
     input:
         expand(
             (["{result_dir}/trackhub"] if config['create_trackhub'] else []) +
-            (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []),
+            (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []) +
+            (["{deseq2_dir}/{assemblies}-{contrasts}.diffexp.tsv"] if config.get('contrasts',False) else []),
             **{**config, **{'assemblies': all_assemblies}})
         + count_table_output()

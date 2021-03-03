@@ -1,6 +1,6 @@
 # do onstart/onexit things
 sample_schemas = ['sample', 'assembly', 'technical_replicate', 'strandedness']
-config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific', 'gene_expression', 'trackhub']
+config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific', 'gene_expression', 'deseq2', 'trackhub']
 include: "../../rules/configuration.smk"
 
 
@@ -8,7 +8,7 @@ include: "../../rules/configuration.smk"
 include: f"{config['rule_dir']}/alignment.smk"
 include: f"{config['rule_dir']}/bam_cleaning.smk"
 include: f"{config['rule_dir']}/bigfiles.smk"
-include: f"{config['rule_dir']}/DGE_analysis.smk"
+include: f"{config['rule_dir']}/deseq2.smk"
 include: f"{config['rule_dir']}/gene_counts.smk"
 include: f"{config['rule_dir']}/get_genome.smk"
 include: f"{config['rule_dir']}/get_fastq.smk"
@@ -18,6 +18,7 @@ include: f"{config['rule_dir']}/trackhub.smk"
 include: f"{config['rule_dir']}/trimming.smk"
 include: f"{config['rule_dir']}/quantification.smk"
 include: f"{config['rule_dir']}/qc.smk"
+include: f"{config['rule_dir']}/qc_rna.smk"
 
 
 # load the quality control files
@@ -36,5 +37,5 @@ rule seq2science:
              (["{counts_dir}/{assemblies}-DEXSeq_counts.tsv"] if config['dexseq'] else []) +
              (["{genome_dir}/{assemblies}/gene_id2name.tsv"]) +
 
-             ([f"{{dge_dir}}/{{assemblies}}-{{contrasts}}.diffexp.tsv"] if config.get('contrasts', False) else []),
+             (["{deseq2_dir}/{assemblies}-{contrasts}.diffexp.tsv"] if config.get('contrasts', False) else []),
              **{**config, **{'assemblies': all_assemblies, 'contrasts': get_contrasts()}})

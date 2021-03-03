@@ -4,5 +4,6 @@ Extra resources
 .. toctree::
    :maxdepth: 2
 
-   scATAC_postprocessing.rst
-   seq2science_profiles.md
+   Differential analysis with DESeq2 <DESeq2.md>
+   scATAC postprocessing <scATAC_postprocessing.rst>
+   seq2science profiles <seq2science_profiles.md>

@@ -1,7 +1,8 @@
 Workflows
 #########
 
-These are our currently supported workflows. These workflows generally overlap a lot, so once you understand the logic of one of these, learning another should be easy!
+These are our currently supported workflows.
+These workflows generally overlap a lot, so once you understand the logic of one of these, learning another should be easy!
 
 
 .. toctree::
