@@ -346,6 +346,7 @@ def _run(args, base_dir, workflows_dir, config_path):
             parsed_args["keep_logger"] = True
 
     logger.info("Done. Now starting the real run.")
+    logger.printreason = parsed_args["printreason"]
     logger.stream_handler.setStream(sys.stdout)
     parsed_args["config"]["no_config_log"] = True
     #   5. start the "real" run where jobs actually get started
