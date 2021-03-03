@@ -25,7 +25,7 @@ def samples_to_infer(wildcards):
     """
     list all samples for which strandedness must be inferred
     """
-    col = samples.replicate if "replicate" in samples else samples.index
+    col = samples.technical_replicate if "technical_replicate" in samples else samples.index
     if config['ignore_strandedness'] or \
             ("strandedness" in samples and "nan" not in set(samples.strandedness)):
         files = []
@@ -47,6 +47,9 @@ checkpoint strandedness_report:
         samples_to_infer
     output:
         expand("{qc_dir}/strandedness/inferred_strandedness.tsv", **config)
+    params:
+        input=lambda wildcards, input: input,  # help resolve changes in input files
+        reps=treps
     run:
         import pandas as pd
 
@@ -70,7 +73,7 @@ checkpoint strandedness_report:
 
         strands = []
         method = []
-        col = samples.replicate if "replicate" in samples else samples.index
+        col = samples.technical_replicate if "technical_replicate" in samples else samples.index
         for sample in set(col):
             s = samples[col == sample].strandedness[0] if "strandedness" in samples else "nan"
             m = "user_specification"
@@ -89,7 +92,9 @@ checkpoint strandedness_report:
 
 
 def _strandedness_report(wildcards):
-    return checkpoints.strandedness_report.get().output[0]
+    strandreport = checkpoints.strandedness_report.get().output
+    return strandreport[0]
+
 
 def strandedness_to_quant(wildcards, tool):
     """
@@ -102,6 +107,8 @@ def strandedness_to_quant(wildcards, tool):
     }
 
     strandedness = pd.read_csv(_strandedness_report(wildcards), sep='\t', dtype='str', index_col=0)
+    if wildcards.sample not in strandedness.index:
+        return "new samples added, start rerun"
     s = strandedness[strandedness.index == wildcards.sample].strandedness[0]
     n = 1 if s in ["yes", "forward"] else (2 if s == "reverse" else 0)
     return out[tool][n]

@@ -4,6 +4,8 @@ import seq2science
 from seq2science.util import sieve_bam, get_bustools_rid
 
 
+localrules: multiqc_header_info, multiqc_rename_buttons, multiqc_filter_buttons, multiqc_samplesconfig, multiqc_schema, combine_qc_files
+
 def samtools_stats_input(wildcards):
     if wildcards.directory == config["aligner"]:
         return expand("{result_dir}/{{directory}}/{{assembly}}-{{sample}}.samtools-coordinate-unsieved.bam", **config)
@@ -21,6 +23,8 @@ rule samtools_stats:
     log:
         expand("{log_dir}/samtools_stats/{{directory}}/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config)
     message: explain_rule("samtools_stats")
+    resources:
+        time="0-06:00:00"
     conda:
         "../envs/samtools.yaml"
     shell:
@@ -182,6 +186,10 @@ rule insert_size_metrics:
         f"{config['log_dir']}/InsertSizeMetrics/{{assembly}}-{{sample}}.log"
     conda:
         "../envs/picard.yaml"
+    wildcard_constraints:
+        sample=".+",
+    resources:
+        time="0-06:00:00"
     shell:
         """
         picard CollectInsertSizeMetrics INPUT={input} \
@@ -216,6 +224,8 @@ rule mt_nuc_ratio_calculator:
         "../envs/mtnucratio.yaml"
     params:
         mitochondria=lambda wildcards, input: get_chrM_name(wildcards, input)
+    resources:
+        time="0-06:00:00"
     shell:
         """
         mtnucratio {input.bam} {params.mitochondria}
@@ -256,7 +266,10 @@ def get_descriptive_names(wildcards, input):
             raise ValueError
 
         if trep in breps.index:
-            labels += trep + " "
+            if len(treps_from_brep[(trep, wildcards.assembly)]) == 1 and trep in samples.index:
+                labels += samples.loc[trep, "descriptive_name"] + " "
+            else:
+                labels += trep + " "
         elif "control" in treps and trep not in treps.index:
             labels += f"control_{trep} "
         elif trep in samples.index:
@@ -282,6 +295,8 @@ rule plotFingerprint:
     conda:
         "../envs/deeptools.yaml"
     threads: 16
+    resources:
+        mem_gb=5,
     params:
         lambda wildcards, input: "--labels " + get_descriptive_names(wildcards, input.bams) if
                                  get_descriptive_names(wildcards, input.bams) != "" else ""
@@ -316,7 +331,8 @@ rule computeMatrix:
         "../envs/deeptools.yaml"
     threads: 16
     resources:
-        deeptools_limit=lambda wildcards, threads: threads
+        deeptools_limit=lambda wildcards, threads: threads,
+        mem_gb=50,
     params:
         labels=lambda wildcards, input: "--samplesLabel " + get_descriptive_names(wildcards, input.bw) if
                                  get_descriptive_names(wildcards, input.bw) != "" else "",
@@ -372,7 +388,8 @@ rule multiBamSummary:
     conda:
         "../envs/deeptools.yaml"
     resources:
-        deeptools_limit=lambda wildcards, threads: threads
+        deeptools_limit=lambda wildcards, threads: threads,
+        mem_gb=4,
     shell:
         """
         multiBamSummary bins --bamfiles {input.bams} -out {output} {params.names} \
@@ -486,6 +503,8 @@ rule multiqc_rename_buttons:
     """
     output:
         temp(expand('{qc_dir}/sample_names_{{assembly}}.tsv', **config))
+    params:
+        samples  # helps resolve changed params if e.g. descriptive names change
     run:
         newsamples = samples[samples["assembly"] == ori_assembly(wildcards.assembly)].reset_index(level=0, inplace=False)
         newsamples = newsamples.drop(["assembly"], axis=1)
@@ -498,6 +517,8 @@ rule multiqc_filter_buttons:
     """
     output:
         temp(expand('{qc_dir}/sample_filters_{{assembly}}.tsv', **config))
+    params:
+        samples  # helps resolve changed params if e.g. descriptive names change
     run:
         with open(output[0], "w") as f:
             f.write("Read Group 1 & Alignment\thide\t_R2\n"
@@ -513,7 +534,8 @@ rule multiqc_samplesconfig:
     params:
         config_used=len(workflow.overwrite_configfiles) > 0,
         configfile=workflow.overwrite_configfiles[-1],
-        sanitized_samples=sanitized_samples
+        sanitized_samples=sanitized_samples,  # helps resolve changed config options
+        config={k: v for k, v in config.items() if k != "no_config_log"}  # helps resolve changed config options, ignore no_config_log
     conda:
         "../envs/htmltable.yaml"
     script:
@@ -574,6 +596,10 @@ def get_qc_files(wildcards):
         if not (config.get("ignore_strandedness") or (config.get('quantifier', '') == 'salmon' and config.get('create_trackhub') == False)):
             for trep in treps[treps['assembly'] == ori_assembly(wildcards.assembly)].index:
                 qc['files'].update(get_rna_qc(trep))
+
+        # add dupRadar plots
+        if "REMOVE_DUPLICATES=true" not in config.get("markduplicates",""):
+            qc['files'].update(expand("{qc_dir}/dupRadar/{{assembly}}-dupRadar_mqc.png",**config))
 
         if len(treps.index) > 2:
             qc['files'].update(expand("{qc_dir}/clustering/{{assembly}}-Sample_clustering_mqc.png", **config))
@@ -636,6 +662,7 @@ rule multiqc:
         --cl_config "extra_fn_clean_exts: [                                        \
             {{'pattern': ^.*{wildcards.assembly}-, 'type': 'regex'}},              \
             {{'pattern': {params.fqext1},          'type': 'regex'}},              \
+            {{'pattern': _allsizes,                'type': 'regex'}},              \
             ]" > {log} 2>&1
         """
 
@@ -702,7 +729,11 @@ def get_alignment_qc(sample):
 
     # add insert size metrics
     if sampledict[sample]['layout'] == "PAIRED":
-        output.append(f"{{qc_dir}}/InsertSizeMetrics/{{{{assembly}}}}-{sample}.tsv")
+        # if we do any sieving, we use the
+        if config.get("filter_on_size"):
+            output.append(f"{{qc_dir}}/InsertSizeMetrics/{{{{assembly}}}}-{sample}_allsizes.tsv")
+        else:
+            output.append(f"{{qc_dir}}/InsertSizeMetrics/{{{{assembly}}}}-{sample}.tsv")
 
     # get the ratio mitochondrial dna
     output.append(f"{{result_dir}}/{config['aligner']}/{{{{assembly}}}}-{sample}.samtools-coordinate-unsieved.bam.mtnucratiomtnuc.json")
@@ -722,9 +753,9 @@ def get_rna_qc(sample):
     output = []
 
     # add infer experiment reports
-    col = samples.replicate if "replicate" in samples else samples.index
+    col = samples.technical_replicate if "technical_replicate" in samples else samples.index
     if "strandedness" not in samples or samples[col == sample].strandedness[0] == "nan":
-        output = expand(f"{{qc_dir}}/strandedness/{{{{assembly}}}}-{sample}.strandedness.txt", **config)
+        output += expand(f"{{qc_dir}}/strandedness/{{{{assembly}}}}-{sample}.strandedness.txt",**config)
 
     return output
 

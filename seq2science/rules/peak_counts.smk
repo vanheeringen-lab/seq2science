@@ -9,8 +9,8 @@ def count_table_output():
         return []
 
     return expand(
-        ["{result_dir}/count_table/{peak_caller}/{assemblies}_{normalization}.tsv", 
-         "{result_dir}/{peak_caller}/{assemblies}_onehotpeaks.tsv"],
+        ["{counts_dir}/{peak_caller}/{assemblies}_{normalization}.tsv",
+         "{counts_dir}/{peak_caller}/{assemblies}_onehotpeaks.tsv"],
         **{
             **config,
             **{
@@ -84,12 +84,13 @@ rule combine_peaks:
     conda:
         "../envs/gimme.yaml"
     params:
-        2 * config["peak_windowsize"],
+        windowsize=2 * config["peak_windowsize"],
+        reps=lambda wildcards, input: input  # help resolve changes in input files
     message: explain_rule("combine_peaks")
     shell:
         """
         combine_peaks -i {input.summitfiles} -g {input.sizes} \
-        --window {params} > {output} 2> {log}
+        --window {params.windowsize} > {output} 2> {log}
         """
 
 
@@ -109,10 +110,13 @@ rule bedtools_slop:
         expand("{benchmark_dir}/bedtools_slop/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     conda:
         "../envs/bedtools.yaml"
+    params:
+        slop=config["slop"],
+        reps=lambda wildcards, input: input  # help resolve changes in input files
     message: explain_rule("bed_slop")
     shell:
         """
-        bedtools slop -i {input.bedfile} -g {input.sizes} -b {config[slop]} | uniq > {output} 2> {log}
+        bedtools slop -i {input.bedfile} -g {input.sizes} -b {params.slop} | uniq > {output} 2> {log}
         """
 
 
@@ -142,7 +146,7 @@ def get_coverage_table_replicates(file_ext):
 
 rule coverage_table:
     """
-    Use gimmemotif's coverage_table to generate a cpunt table with the nr of reads
+    Use gimmemotif's coverage_table to generate a count table with the nr of reads
     under each peak per sample.
     """
     input:
@@ -150,13 +154,15 @@ rule coverage_table:
         replicates=get_coverage_table_replicates("bam"),
         replicate_bai=get_coverage_table_replicates("bam.bai"),
     output:
-        expand("{result_dir}/count_table/{{peak_caller}}/{{assembly}}_raw.tsv", **config),
+        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_raw.tsv", **config),
     log:
         expand("{log_dir}/coverage_table/{{assembly}}-{{peak_caller}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/coverage_table/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     conda:
         "../envs/gimme.yaml"
+    resources:
+        mem_gb=3,
     message: explain_rule("coverage_table")
     shell:
         """
@@ -181,7 +187,7 @@ rule quantile_normalization:
     input:
         rules.coverage_table.output,
     output:
-        expand("{result_dir}/count_table/{{peak_caller}}/{{assembly}}_quantilenorm.tsv", **config),
+        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_quantilenorm.tsv", **config),
     log:
         expand("{log_dir}/quantile_normalization/{{assembly}}-{{peak_caller}}-quantilenorm.log", **config),
     benchmark:
@@ -207,7 +213,7 @@ rule edgeR_normalization:
     input:
         rules.coverage_table.output,
     output:
-        expand("{result_dir}/count_table/{{peak_caller}}/{{assembly}}_{{normalisation,(TMM|RLE|upperquartile)}}.tsv", **config),
+        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_{{normalisation,(TMM|RLE|upperquartile)}}.tsv", **config),
     log:
         expand("{log_dir}/edgeR_normalization/{{assembly}}-{{peak_caller}}-{{normalisation}}.log", **config),
     benchmark:
@@ -225,9 +231,9 @@ rule log_normalization:
     Log1p normalization of a count table.
     """
     input:
-        expand("{result_dir}/count_table/{{peak_caller}}/{{assembly}}_{{normalisation}}.tsv", **config),
+        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_{{normalisation}}.tsv", **config),
     output:
-        expand("{result_dir}/count_table/{{peak_caller}}/{{assembly}}_log{{base}}_{{normalisation}}.tsv", **config),
+        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_log{{base}}_{{normalisation}}.tsv", **config),
     run:
         import pandas as pd
         import numpy as np
@@ -258,9 +264,9 @@ rule mean_center:
     Mean centering of a count table.
     """
     input:
-        expand("{result_dir}/count_table/{{peak_caller}}/{{assembly}}_log{{base}}_{{normalisation}}.tsv", **config),
+        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_log{{base}}_{{normalisation}}.tsv", **config),
     output:
-        expand("{result_dir}/count_table/{{peak_caller}}/{{assembly}}_meancenter_log{{base}}_{{normalisation}}.tsv", **config),
+        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_meancenter_log{{base}}_{{normalisation}}.tsv", **config),
     run:
         import pandas as pd
 
@@ -295,8 +301,8 @@ rule onehot_peaks:
         narrowpeaks=get_all_narrowpeaks,
         combinedpeaks=rules.combine_peaks.output
     output:
-        real=expand("{result_dir}/{{peak_caller}}/{{assembly}}_onehotpeaks.tsv", **config),
-        tmp=temp(expand("{result_dir}/{{peak_caller}}/{{assembly}}_onehotpeaks.tsv.tmp", **config))
+        real=expand("{counts_dir}/{{peak_caller}}/{{assembly}}_onehotpeaks.tsv", **config),
+        tmp=temp(expand("{counts_dir}/{{peak_caller}}/{{assembly}}_onehotpeaks.tsv.tmp", **config))
     conda:
         "../envs/bedtools.yaml"
     log:
@@ -304,7 +310,7 @@ rule onehot_peaks:
     benchmark:
         expand("{benchmark_dir}/onehot_peaks/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     params:
-        peak_count=lambda wildcards, input: len(input.narrowpeaks)
+        reps=lambda wildcards, input: input  # help resolve changes in input files
     shell:
         """
         awk '{{print $1":"$2"-"$3}}' {input.combinedpeaks} > {output.real} 2> {log}

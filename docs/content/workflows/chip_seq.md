@@ -7,13 +7,17 @@ Running a ChIP-seq analysis has never been easier!
 </p>
 
 #### Downloading of sample(s)
-Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples. Take a look at the [downloading_fastq](https://vanheeringen-lab.github.io/seq2science/content/workflows/download_fastq.html) workflow for extensive documentation about downloading of public samples. 
+Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples.
+Take a look at the [downloading_fastq](./download_fastq.html) workflow for extensive documentation about downloading of public samples.
 
 #### Downloading and indexing of assembly(s)
 Depending on whether the assembly and its index you align your samples against already exist seq2science will start with downloading of the assembly through [genomepy](https://github.com/vanheeringen-lab/genomepy).
 
 #### Read trimming
-The pipeline starts by trimming the reads with [trim galore!](https://github.com/FelixKrueger/TrimGalore/blob/master/Docs/Trim_Galore_User_Guide.md). Trim galore automatically first trims the low quality 3' ends of reads, and removes short reads. After the quality trimming trim galore automatically detects which adapter was used, and trims it. The parameters of trim galore! for the pipeline can be set in the configuration by variable *trim_galore*. 
+The pipeline starts by trimming the reads with Trim galore or Fastp.
+The trimmer will automatically trims the low quality 3' ends of reads, and removes short reads.
+After the quality trimming it automatically detects which adapter was used, and trims it.
+Trimming parameters for the pipeline can be set in the configuration.
 
 #### Alignment
 After trimming the reads are aligned against an assembly. Currently we support `bowtie2`, `bwa-mem`, `hisat2` and `star` as aligners. Choosing which aligner is as easy as setting the *aligner* variable in the `config.yaml`, for example: `aligner: bwa`. Sensible defaults have been set for every aligner, but can be overwritten for either (or both) the indexing and alignment by specifying them in the `config.yaml`.
@@ -48,7 +52,10 @@ peak_caller:
 It is always a good idea to check the quality of your samples. Along the way different quality control steps are taken, and are outputted in a single [multiqc report](https://multiqc.info/) in the `qc` folder. Make sure to always check the report, and take a look at [interpreting the multiqc report](../results.html#multiqc-quality-report)!
 
 #### Count table
-A useful result the pipeline outputs is the count table, located at {result_dir}/count_table/{peak_caller}/. For each narrowpeak (across all samples) its summit is taken, and all other summits within range `peak_windowsize` (default 100) are taken together, and the summit with the highest q-value is taken as the "true" peak. The remaining peaks are extended by `slop` on each side and for each sample the number of reads are counted under this peak. This file is stored as {assembly}_raw.tsv, and looks something like this:
+A useful result the pipeline outputs is the count table, located at {counts_dir}/{peak_caller}/.
+For each narrowpeak (across all samples) its summit is taken, and all other summits within range `peak_windowsize` (default 100) are taken together, and the summit with the highest q-value is taken as the "true" peak.
+The remaining peaks are extended by `slop` on each side and for each sample the number of reads are counted under this peak.
+This file is stored as {assembly}_raw.tsv, and looks something like this:
 
 ```
                 sample1		sample2
@@ -65,7 +72,14 @@ Seq2science currently supports four different normalisation methods: quantile no
 - **RLE** is the scaling factor method proposed by Anders and Huber (2010). DEseq2's standard normalisation is based on this.
 - **Upper quartile** is the upper-quartile normalization method of Bullard et al (2010).
 
-After these normalisations the counts are log normalised, and the base can be set with `logbase` and defaults to 2. As a final step the count tables are mean-centered. This final count table can be used for tools like [gimme maelstrom](https://gimmemotifs.readthedocs.io/en/master/reference.html#command-gimme-maelstrom) to scan for enriched transcription factor motifs. Note that this table contains **all** peaks, and no selection on differential peaks has been made. This is something that might be supported in the future, but for now you have to do this yourself.
+After these normalisations the counts are log normalised, and the base can be set with `logbase` and defaults to 2.
+As a final step the count tables are mean-centered.
+This final count table can be used for tools like [gimme maelstrom](https://gimmemotifs.readthedocs.io/en/master/reference.html#command-gimme-maelstrom) to scan for enriched transcription factor motifs.
+Note that this table contains **all** peaks, and no selection on differential peaks has been made.
+
+#### Differential peak analysis
+Seq2science can optionally use the raw peak counts table to perform differential peak analysis.
+See the [Differential gene/peak analysis page](../DESeq2.html) for more information!
 
 #### Trackhub
 A UCSC compatible trackhub can be generated for this workflow. See the [trackhub page](../results.html#trackhub)<!-- @IGNORE PREVIOUS: link --> for more information!
@@ -93,37 +107,61 @@ In the `control` column you can (optionally) add the "sample name" of the input 
 #### Descriptive_name column
 The descriptive_name column is used for the trackhub and multiqc report. In the trackhub your tracks will be called after the descriptive name, and in the multiqc report there will be a button to rename your samples after this column. The descriptive name can not contain '-' characters, but underscores '_' are allowed.
 
-#### Technical replicates
-Technical replicates, or any fastq file you may wish to merge, are set using the `replicate` column in the samples.tsv file. All samples with the same name in the `replicate` column will be concatenated into one file with the replicate name.
+#### Technical_replicate column
+Technical replicates, or any fastq file you may wish to merge, are set using the `technical_replicate` column in the samples.tsv file.
+All samples with the same name in the `technical_replicate` column will be concatenated into one file with the replicate name.
 
 Example `samples.tsv` utilizing replicate merging:
 ```
-sample    assembly    replicate
+sample    assembly    technical_replicate
 GSM123    GRCh38      heart
 GSMabc    GRCh38      heart
-GSMxzy    danRer11    stage8
-GSM890    danRer11
+GSMxzy    GRCh38      stage8
+GSM890    GRCh38
 ```
-Using this file in the alignment workflow will output *heart.bam*, *stage8.bam* and *GSM890.bam*. The MultiQC will inform you of the trimming steps performed on all samples, and subsequent information of the 'replicate' files (of which only *heart* is merged).
 
-**Note:**
-If you are working with multiple assemblies in one workflow, replicate names have to be unique between assemblies (you will receive a warning if names overlap).
+Using this file in the alignment workflow will output *heart.bam*, *stage8.bam* and *GSM890.bam*.
+The MultiQC will inform you of the trimming steps performed on all samples, and subsequent information of the 'replicate' files (of which only *heart* is merged).
 
+Note: If you are working with multiple assemblies in one workflow, replicate names have to be unique between assemblies (you will receive a warning if names overlap).
+
+##### keep
 Replicate merging is turned on by default. It can be turned off by setting `technical_replicates` in the `config.yaml` to `keep`.
 
 #### Biological replicates
-During ChIP-seq workflows, peak calling can be performed per biological condition, depending on your configuration setting. Biological conditions are determined by the `condition` column in the samples.tsv file. How these samples are handled is specified by configuration variable `biological_replicates`.
+During ATAC-seq workflows, peak calling can be performed per biological condition, depending on your configuration setting. Biological conditions are determined by the `biological_replicate` column in the samples.tsv file. How these samples are handled is specified by configuration variable `biological_replicates`.
 
-If you merge technical replicates *and* combine biological replicates, the technical replicates are merged first.
+```
+sample    assembly    biological_replicate
+GSM123    GRCh38      kidney
+GSMabc    GRCh38      liver
+GSMxzy    GRCh38      liver
+GSM890    GRCh38
+```
+
+In this case peaks of the two liver samples (GSMabc and GSMxzy) will be combined by e.g. IDR.
 
 ##### Keep
-The default setting. All samples/merged replicates are analyzed individually. The `condition` column is ignored.
+By setting `biological_replicates` to keep, all biological replicates are analyzed individually. The `biological_replicate` column is ignored.
 
 ##### Irreproducible Discovery Rate (IDR)
-One of the more common methods to combine biological replicates is by the irreproducible discovery rate ([idr](https://github.com/kundajelab/idr)). Shortly; idr sorts all the peaks of two replicates separately on their significance. Since true peaks should be very significant for both replicates these peaks will be one of the highest sorted peaks. As peaks get less and less true (and thus their significance) their ordering also becomes more random between the samples. The idr method then only keeps the peak that overlap *nonrandomly* between the samples. The idr method only works for two replicates, so can not be used when you have more than 2 (`n == 2`).
+One of the more common methods to combine biological replicates is by the irreproducible discovery rate ([idr](https://github.com/kundajelab/idr)). Shortly; idr sorts all the peaks of two replicates separately on their significance. Since true peaks should be very significant for both replicates these peaks will be one of the highest sorted peaks. As peaks get less and less true (and thus their significance) their ordering also becomes more random between the samples. The idr method then only keeps the peak that overlap *nonrandomly* between the samples. The idr method only works for two replicates, so can not be used when you have more than 2 (`n == 2`). IDR can be turned on by setting `biological_replicates` to idr.
 
 ##### Fisher's method
-[Fisher's method ](https://en.wikipedia.org/wiki/Fisher%27s_method) simply is a method to 'combine' multiple p-values. This method is built-in for genrich and macs2, and allows any number of replicates (`n >= 2`). However a 'disadvantage' of this method is that it assumes the p-values a method generates are actual p-values (and not a general indication of significance). MACS2 is slightly notorious for that its p-values are not true p-values. Genrich claims by fitting on a log-normal distribution that their p-values are true. Even though fisher's method might not be ideal, it's the only option you have (we provide) within this pipeline for more than 2 replicates.
+[Fisher's method ](https://en.wikipedia.org/wiki/Fisher%27s_method) simply is a method to 'combine' multiple p-values. This method is built-in for genrich and macs2, and allows any number of replicates (`n >= 2`). However a 'disadvantage' of this method is that it assumes the p-values a method generates are actual p-values (and not a general indication of significance). MACS2 is slightly notorious for that its p-values are not true p-values. Genrich claims by fitting on a log-normal distribution that their p-values are true. Even though fisher's method might not be ideal, it's the only option you have (we provide) within this pipeline for more than 2 replicates. Fisher's method can be turned on by setting `biological_replicates` to fisher.
+
+
+#### A mix of biological and technical replicates
+
+```
+sample    assembly    technical_replicate  biological_replicate
+GSM123    GRCh38      peter_kidney         kidney
+GSMabc    GRCh38      peter_liver          liver
+GSMxzy    GRCh38      lindsey_liver        liver
+GSM890    GRCh38      lindsey_liver        liver
+```
+
+In this example we have data from Peter and Lindsey. We have one liver sample and one kidney sample from Peter. Of Lindsey we only have a liver sample, which was sequenced across two different lanes. With this sample sheet, the samples of Lindsey get merged after trimming. Then peak calling is done separately on each of the three remaining technical replicates (peter_kidney, peter_liver, lindsey_liver), and afterwards all liver technical replicates belonging to the same biological replicate (in this case peter_liver and lindsey_liver) are combined through e.g. IDR.
 
 #### Colors column
 If you are visualizing your data on the UCSC trackhub you can optionally specify the colors of each main track. For ATAC- and ChIP-seq, each biological replicate is a main track.

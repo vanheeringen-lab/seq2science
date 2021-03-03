@@ -1,4 +1,5 @@
 # to run these tests locally:
+#   mamba install toml --yes
 #   python setup.py develop
 #   bash ./tests/dag_tests.sh TEST
 
@@ -18,7 +19,6 @@ fi
 function assert_rulecount {
   # check if the DAG (stored with  | tee tests/local_test_results/${1}_dag  ) ran rule $2 exactly $3 times
   val=$(cat tests/local_test_results/${1}_dag | grep -w $2 | cut -f2);
-
   # check if the rule was found in the DAG at all
   if [ -z "$val" ]; then
     # if specified count is zero, that's OK
@@ -203,6 +203,11 @@ if [ $1 = "atac-seq" ]; then
   seq2science run atac-seq -n --configfile tests/$WF/genrich.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 call_peak_genrich 1
 
+  printf "\ndifferential peak analysis\n"
+  seq2science run atac-seq --skip-rerun -n --configfile tests/rna_seq/deseq2_config.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 coverage_table 1
+  assert_rulecount $1 deseq2 1
+
   printf "\ntrackhub\n"
   seq2science run atac-seq -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={create_trackhub:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bedgraph_bigwig 1
@@ -210,6 +215,16 @@ if [ $1 = "atac-seq" ]; then
   printf "\nmultiqc report\n"
   seq2science run atac-seq -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={create_qc_report:True,trimmer:trimgalore} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 fastqc 4
+
+  printf "\natac-seq template length filter\n"
+  seq2science run atac-seq -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={create_qc_report:True} | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 mark_duplicates 1
+
+  seq2science run atac-seq -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={create_qc_report:True,min_template_length:150} | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 mark_duplicates 2
+
+  seq2science run atac-seq -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={create_qc_report:True,max_template_length:150} | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 mark_duplicates 2
 
   printf "\ncustom assembly\n"
   seq2science run atac-seq -n --configfile tests/$WF/macs2.yaml --snakemakeOptions quiet=True config={custom_genome_extension:tests/local_test_results/ERCC92.fa} | tee tests/local_test_results/${1}_dag
@@ -348,7 +363,7 @@ if [ $1 = "rna-seq" ]; then
   WF=rna_seq
 
   printf "\nrna-seq default\n"
-  seq2science run rna-seq -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={aligner:star,dexseq:True} | tee tests/local_test_results/${1}_dag
+  seq2science run rna-seq --skip-rerun -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={aligner:star,dexseq:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 gene_id2name 1
   assert_rulecount $1 htseq_count 1
   assert_rulecount $1 dexseq_count 1
@@ -357,109 +372,117 @@ if [ $1 = "rna-seq" ]; then
 #  seq2science run rna-seq -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={aligner:star,dexseq:True} | tee tests/local_test_results/${1}_dag  # default
 #  assert_rulecount $1 star_align 1
 #  assert_rulecount $1 dexseq_count 1
-  seq2science run rna-seq -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={aligner:hisat2,dexseq:True} | tee tests/local_test_results/${1}_dag
+  seq2science run rna-seq --skip-rerun -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={aligner:hisat2,dexseq:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 hisat2_align 1
   assert_rulecount $1 dexseq_count 1
 
   printf "\nquantifiers\n"
-  seq2science run rna-seq -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={aligner:star,quantifier:salmon,dexseq:True} | tee tests/local_test_results/${1}_dag
+  seq2science run rna-seq --skip-rerun -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={aligner:star,quantifier:salmon,dexseq:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 salmon_quant 1
   assert_rulecount $1 dexseq_count 1
   # seq2science run rna-seq -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={aligner:star,quantifier:htseq,dexseq:True} | tee tests/local_test_results/${1}_dag  # default
   # assert_rulecount $1 htseq_count 1
   # assert_rulecount $1 dexseq_count 1
-  seq2science run rna-seq -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=False config={aligner:star,quantifier:featurecounts,dexseq:True} | tee tests/local_test_results/${1}_dag
+  seq2science run rna-seq --skip-rerun -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=False config={aligner:star,quantifier:featurecounts,dexseq:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 featurecounts 1
   assert_rulecount $1 dexseq_count 1
 
   printf "\ndecoy aware salmon index\n"
-  seq2science run rna-seq -n --configfile tests/$WF/salmon_config.yaml --snakemakeOptions quiet=True config={samples:tests/alignment/dag_sample.tsv,fastq_dir:tests/local_test_results/fastq} | tee tests/local_test_results/${1}_dag
+  seq2science run rna-seq --skip-rerun -n --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions quiet=True config={samples:tests/alignment/dag_sample.tsv,fastq_dir:tests/local_test_results/fastq} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 decoy_transcripts 1
 
   printf "\ntrackhub\n"
-  seq2science run rna-seq -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={aligner:star,create_trackhub:True} | tee tests/local_test_results/${1}_dag
+  seq2science run rna-seq --skip-rerun -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={aligner:star,create_trackhub:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 salmon_quant 0
   assert_rulecount $1 trackhub 1
-  seq2science run rna-seq -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={aligner:star,quantifier:salmon,create_trackhub:True} | tee tests/local_test_results/${1}_dag
+  seq2science run rna-seq --skip-rerun -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={aligner:star,quantifier:salmon,create_trackhub:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 salmon_quant 1
   assert_rulecount $1 trackhub 1
 
   printf "\nmultiqc report\n"
-  seq2science run rna-seq -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={aligner:star,create_qc_report:True,trimmer:trimgalore} | tee tests/local_test_results/${1}_dag
+  seq2science run rna-seq --skip-rerun -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={aligner:star,create_qc_report:True,trimmer:trimgalore} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 fastqc 4
 
   printf "\ncustom assembly\n"
-  seq2science run rna-seq -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={aligner:star,quantifier:salmon,custom_genome_extension:tests/local_test_results/ERCC92.fa,custom_annotation_extension:tests/local_test_results/ERCC92.gtf} | tee tests/local_test_results/${1}_dag
+  seq2science run rna-seq --skip-rerun -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={aligner:star,quantifier:salmon,custom_genome_extension:tests/local_test_results/ERCC92.fa,custom_annotation_extension:tests/local_test_results/ERCC92.gtf} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 extend_genome 1
   assert_rulecount $1 extend_genome_annotation 1
   assert_rulecount $1 salmon_index 1
-  seq2science run rna-seq -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={aligner:star,quantifier:htseq,custom_genome_extension:tests/local_test_results/ERCC92.fa} | tee tests/local_test_results/${1}_dag
+  seq2science run rna-seq --skip-rerun -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={aligner:star,quantifier:htseq,custom_genome_extension:tests/local_test_results/ERCC92.fa} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 extend_genome 1
   assert_rulecount $1 extend_genome_annotation 1
   assert_rulecount $1 star_index 1
-  seq2science run rna-seq -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={aligner:hisat2,quantifier:htseq,custom_annotation_extension:tests/local_test_results/ERCC92.gtf} | tee tests/local_test_results/${1}_dag
+  seq2science run rna-seq --skip-rerun -n --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={aligner:hisat2,quantifier:htseq,custom_annotation_extension:tests/local_test_results/ERCC92.gtf} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 extend_genome 1
   assert_rulecount $1 extend_genome_annotation 1
   assert_rulecount $1 hisat2_splice_aware_index 1
 
   printf "\ndifferential expression analysis\n"
-  seq2science run rna-seq -n --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={technical_replicates:keep} | tee tests/local_test_results/${1}_dag
+  seq2science run rna-seq --skip-rerun -n --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={technical_replicates:keep} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 htseq_count 10
-  seq2science run rna-seq -n --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={quantifier:salmon,technical_replicates:keep} | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 deseq2 1
+  seq2science run rna-seq --skip-rerun -n --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={quantifier:salmon,technical_replicates:keep} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 salmon_quant 10
+  assert_rulecount $1 deseq2 1
 
-  printf "\nmultiple assemblies with DEA\n"
-  seq2science run rna-seq -n --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={technical_replicates:keep,samples:tests/rna_seq/complex_samples.tsv,dexseq:True} | tee tests/local_test_results/${1}_dag
+  printf "\nmultiple assemblies - DEA\n"
+  seq2science run rna-seq --skip-rerun -n --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={technical_replicates:keep,samples:tests/rna_seq/complex_samples.tsv,dexseq:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 star_index 2
   assert_rulecount $1 star_align 10
   assert_rulecount $1 dexseq_count 10
+  assert_rulecount $1 deseq2 2  # TODO: it should only run once, since the contrast doesn't work in assembly2
 
-  printf "\nmultiple assemblies with DEA - trackhubs\n"
-  seq2science run rna-seq -n --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={technical_replicates:keep,samples:tests/rna_seq/complex_samples.tsv,create_trackhub:True} | tee tests/local_test_results/${1}_dag
+  printf "\nmultiple assemblies - trackhubs\n"
+  seq2science run rna-seq --skip-rerun -n --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={technical_replicates:keep,samples:tests/rna_seq/complex_samples.tsv,create_trackhub:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 trackhub 1
 
-  printf "\nmultiple assemblies with DEA - multiqc\n"
-  seq2science run rna-seq -n --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={technical_replicates:keep,samples:tests/rna_seq/complex_samples.tsv,create_qc_report:True,trimmer:trimgalore} | tee tests/local_test_results/${1}_dag
+  printf "\nmultiple assemblies - multiqc\n"
+  seq2science run rna-seq --skip-rerun -n --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={technical_replicates:keep,samples:tests/rna_seq/complex_samples.tsv,create_qc_report:True,trimmer:trimgalore} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 fastqc 24
   assert_rulecount $1 multiqc 2
 
-  printf "\nmultiple replicates with DEA \n"
-  seq2science run rna-seq -n --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={technical_replicates:keep} | tee tests/local_test_results/${1}_dag
+  printf "\nmultiple replicates - DEA \n"
+  seq2science run rna-seq --skip-rerun -n --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={technical_replicates:keep} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 merge_replicates 0
   assert_rulecount $1 htseq_count 10
-  seq2science run rna-seq -n --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={technical_replicates:merge,dexseq:True} | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 deseq2 1
+  seq2science run rna-seq --skip-rerun -n --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={technical_replicates:merge,dexseq:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 htseq_count 8
   assert_rulecount $1 dexseq_count 8
+  assert_rulecount $1 deseq2 1
 
-  printf "\nmultiple replicates with DEA - trackhubs\n"
-  seq2science run rna-seq -n --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={technical_replicates:merge,create_trackhub:True} | tee tests/local_test_results/${1}_dag
+  printf "\nmultiple replicates - trackhubs\n"
+  seq2science run rna-seq --skip-rerun -n --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={technical_replicates:merge,create_trackhub:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 trackhub 1
 
-  printf "\nmultiple replicates with DEA - multiqc\n"
-  seq2science run rna-seq -n --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={technical_replicates:merge,create_qc_report:True,trimmer:trimgalore} | tee tests/local_test_results/${1}_dag
+  printf "\nmultiple replicates - multiqc\n"
+  seq2science run rna-seq --skip-rerun -n --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={technical_replicates:merge,create_qc_report:True,trimmer:trimgalore} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 fastqc 24
   assert_rulecount $1 htseq_count 8
 
-  printf "\nmultiple assemblies and replicates with DEA \n"
-  seq2science run rna-seq -n --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={technical_replicates:keep,samples:tests/rna_seq/complex_samples.tsv} | tee tests/local_test_results/${1}_dag
+  printf "\nmultiple assemblies and replicates - DEA \n"
+  seq2science run rna-seq --skip-rerun -n --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={technical_replicates:keep,samples:tests/rna_seq/complex_samples.tsv} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 merge_replicates 0
   assert_rulecount $1 htseq_count 10
-  seq2science run rna-seq -n --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={technical_replicates:merge,samples:tests/rna_seq/complex_samples.tsv,dexseq:True} | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 deseq2 2  # TODO: it should only run once, since the contrast doesn't work in assembly2
+  seq2science run rna-seq --skip-rerun -n --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={technical_replicates:merge,samples:tests/rna_seq/complex_samples.tsv,dexseq:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 htseq_count 8
   assert_rulecount $1 dexseq_count 8
   assert_rulecount $1 count_matrix_DEXseq 2
-  seq2science run rna-seq -n --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={quantifier:salmon,technical_replicates:merge,samples:tests/rna_seq/complex_samples.tsv} | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 deseq2 2  # TODO: it should only run once, since the contrast doesn't work in assembly2
+  seq2science run rna-seq --skip-rerun -n --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={quantifier:salmon,technical_replicates:merge,samples:tests/rna_seq/complex_samples.tsv} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 salmon_quant 8
   assert_rulecount $1 linked_txome 2
+  assert_rulecount $1 deseq2 2  # TODO: it should only run once, since the contrast doesn't work in assembly2
 
-  printf "\nmultiple assemblies and replicates with DEA - trackhub\n"
-  seq2science run rna-seq -n --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={quantifier:salmon,technical_replicates:merge,samples:tests/rna_seq/complex_samples.tsv,create_trackhub:True} | tee tests/local_test_results/${1}_dag
+  printf "\nmultiple assemblies and replicates - trackhub\n"
+  seq2science run rna-seq --skip-rerun -n --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={quantifier:salmon,technical_replicates:merge,samples:tests/rna_seq/complex_samples.tsv,create_trackhub:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 salmon_quant 8
   assert_rulecount $1 star_align 8
   assert_rulecount $1 trackhub 1
 
-  printf "\nmultiple assemblies and replicates with DEA - multiqc report\n"
-  seq2science run rna-seq -n --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={technical_replicates:merge,samples:tests/rna_seq/complex_samples.tsv,create_qc_report:True,trimmer:trimgalore} | tee tests/local_test_results/${1}_dag
+  printf "\nmultiple assemblies and replicates - multiqc report\n"
+  seq2science run rna-seq --skip-rerun -n --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={technical_replicates:merge,samples:tests/rna_seq/complex_samples.tsv,create_qc_report:True,trimmer:trimgalore} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 fastqc  24
 
   test_ran=1

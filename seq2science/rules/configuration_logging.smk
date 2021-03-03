@@ -40,8 +40,7 @@ The easiest way would be to make an issue on our github page:
 https://github.com/vanheeringen-lab/seq2science/issues
 
 """
-                )
-
+    )
     if config.get("email") not in ["none@provided.com", "yourmail@here.com", None]:
         os.system(f"""echo "Unsuccessful pipeline run! :(" | mail -s "The seq2science pipeline finished prematurely..." {config["email"]} 2> /dev/null """)
 
@@ -59,40 +58,56 @@ def rmkeys(del_list, target_list):
     return target_list
 
 
-# after all is done, log (print) the configuration
-logger.info("CONFIGURATION VARIABLES:")
+if not config.get("no_config_log"):
+    # after all is done, log (print) the configuration
+    logger.info("CONFIGURATION VARIABLES:")
 
-# sort config: samples.tsv & directories first, alphabetized second
-keys = sorted(config.keys())
-dir_keys = []
-other_keys = []
-for key in keys:
-    if key.endswith("_dir"):
-        dir_keys.append(key)
-    else:
-        other_keys.append(key)
-keys = dir_keys + other_keys
+    # sort config: samples.tsv & directories first, alphabetized second
+    keys = sorted(config.keys())
+    dir_keys = []
+    other_keys = []
+    for key in keys:
+        if key.endswith("_dir"):
+            dir_keys.append(key)
+        else:
+            other_keys.append(key)
+    keys = dir_keys + other_keys
 
-# remove superfluous keys
-keys_to_remove = ["fqext1", "fqext2", "macs2_types", "cpulimit",
-                  "genome_types", "genomepy_temp", "bam_sort_mem",
-                  ("biological_replicates", "condition" not in samples),
-                  ("filter_bam_by_strand", "strandedness" not in samples),
-                  ("technical_replicates", "replicates" not in samples),
-                  ("tximeta", config.get("quantifier") != "salmon"),
-                  ("deseq2", not config.get("contrasts")),
-                  ("dge_dir", not config.get("contrasts")),
-                  ("bigwig_dir", not config.get("create_trackhub")),
-                  ("qc_dir", not config.get("create_qc_report"))]
-keys = rmkeys(["samples"] + keys_to_remove, keys)
-keys = ["samples"] + keys
+    # check if aligners are used at all
+    no_aligners = config.get("quantifier") in ["salmon", "kallistobus"] and not config.get("create_trackhub")
 
-for key in keys:
-    if config[key] not in ["", False, 0, "None", "none@provided.com", "yourmail@here.com", "_custom"]:
-        logger.info(f"{key: <23}: {config[key]}")
+    # remove superfluous keys
+    keys_to_remove = ["fqext1", "fqext2", "macs2_types", "cpulimit",
+                      "genome_types", "genomepy_temp", "bam_sort_mem",
+                      "benchmark_dir", "rule_dir",
+                      ("biological_replicates", "condition" not in samples),
+                      ("filter_bam_by_strand", "strandedness" not in samples),
+                      ("technical_replicates", "replicates" not in samples),
+                      ("final_bam_dir", no_aligners),
+                      ("aligner", no_aligners),
+                      ("bam_sort_order", no_aligners),
+                      ("bam_sorter", no_aligners),
+                      ("deeptools_flags", no_aligners),
+                      ("deeptools_multibamsummary", no_aligners),
+                      ("deeptools_plotcorrelation", no_aligners),
+                      ("deeptools_qc", no_aligners),
+                      ("markduplicates", no_aligners),
+                      ("min_mapping_quality", no_aligners),
+                      ("only_primary_align", no_aligners),
+                      ("remove_blacklist", no_aligners),
+                      ("tximeta", config.get("quantifier") != "salmon"),
+                      ("deseq2", not config.get("contrasts")),
+                      ("deseq2_dir", not config.get("contrasts")),
+                      ("bigwig_dir", not config.get("create_trackhub")),
+                      ("qc_dir", not config.get("create_qc_report"))]
+    keys = rmkeys(["samples"] + keys_to_remove,keys)
+    keys = ["samples"] + keys
 
-layouts = {sample: values['layout'] for sample, values in sampledict.items()}
-logger.info(f"layout:                : {layouts}")
+    for key in keys:
+        if config[key] not in ["", False, 0, "None", "none@provided.com", "yourmail@here.com", "_custom"]:
+            logger.info(f"{key: <23}: {config[key]}")
 
+    layouts = {sample: values['layout'] for sample, values in sampledict.items()}
+    logger.info(f"layout:                : {layouts}")
 
-logger.info("\n\n")
+    logger.info("\n\n")

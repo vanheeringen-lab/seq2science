@@ -28,32 +28,6 @@ import seq2science
 from seq2science.util import samples2metadata, prep_filelock, url_is_alive, color_parser
 
 
-
-logger.info(
-"""\
-               ____  ____   __              
-              / ___)(  __) /  \             
-              \___ \ ) _) (  O )            
-              (____/(____) \__\)            
-                     ____                   
-                    (___ \                  
-                     / __/                  
-                    (____)                  
-   ____   ___   __   ____  __ _   ___  ____ 
-  / ___) / __) (  ) (  __)(  ( \ / __)(  __)
-  \___ \( (__   )(   ) _) /    /( (__  ) _) 
-  (____/ \___) (__) (____)\_)__) \___)(____)
-
-docs: https://vanheeringen-lab.github.io/seq2science
-"""
-)
-
-
-if workflow.conda_frontend == "conda":
-    logger.info("NOTE: seq2science is using the conda frontend, for faster environment creation install mamba.")
-# give people a second to appreciate this beautiful ascii art
-time.sleep(1)
-
 # get the cache and config dirs
 CACHE_DIR = os.path.join(xdg.XDG_CACHE_HOME, "seq2science", seq2science.__version__)
 
@@ -140,38 +114,38 @@ if len(errors):
     logger.error("")  # empty line
     raise TerminatedException
 
-# for each column, if found in samples.tsv:
+# for each of these functional columns, if found in samples.tsv:
 # 1) if it is incomplete, fill the blanks with replicate/sample names
-# (sample names if replicates are not found/applicable)
-# 2) drop column if it is identical to the replicate/sample column, or if not needed
-if 'replicate' in samples:
-    samples['replicate'] = samples['replicate'].mask(pd.isnull, samples['sample'])
-    if samples['replicate'].tolist() == samples['sample'].tolist() or config.get('technical_replicates') == 'keep':
-        samples = samples.drop(columns=['replicate'])
-if 'condition' in samples:
-    col = 'replicate' if 'replicate' in samples else 'sample'
-    samples['condition'] = samples['condition'].mask(pd.isnull, samples[col])
-    if samples['condition'].tolist() == samples[col].tolist() or config.get('biological_replicates') == 'keep':
-        samples = samples.drop(columns=['condition'])
+#    (sample names if replicates are not found/applicable)
+# 2) drop column if it provides no information
+#    (renamed in case it's used in a DE contrast)
+if 'technical_replicate' in samples:
+    samples['technical_replicate'] = samples['technical_replicate'].mask(pd.isnull, samples['sample'])
+    if len(samples['technical_replicate'].unique()) == len(samples['sample'].unique()) or config.get('technical_replicates') == 'keep':
+        samples.rename(columns={'technical_replicate': '_trep'}, inplace=True)
+col = 'technical_replicate' if 'technical_replicate' in samples else 'sample'
+if 'biological_replicate' in samples:
+    samples['biological_replicate'] = samples['biological_replicate'].mask(pd.isnull, samples[col])
+    if len(samples['biological_replicate'].unique()) == len(samples[col].unique()) or config.get('biological_replicates') == 'keep':
+        samples.rename(columns={'biological_replicate': '_brep'}, inplace=True)
 if 'descriptive_name' in samples:
-    samples['descriptive_name'] = samples['descriptive_name'].mask(pd.isnull, samples['replicate']) if \
-        'replicate' in samples else samples['descriptive_name'].mask(pd.isnull, samples['sample'])
-    if ('replicate' in samples and samples['descriptive_name'].to_list() == samples['replicate'].to_list()) or \
-        samples['descriptive_name'].to_list() == samples['sample'].to_list():
-        samples = samples.drop(columns=['descriptive_name'])
+    samples['descriptive_name'] = samples['descriptive_name'].mask(pd.isnull, samples[col])
+    if samples['descriptive_name'].to_list() == samples[col].to_list():
+        samples.rename(columns={'descriptive_name': '_dname'}, inplace=True)
 if 'strandedness' in samples:
     samples['strandedness'] = samples['strandedness'].mask(pd.isnull, 'nan')
     if config.get('ignore_strandedness', True) or not any([field in list(samples['strandedness']) for field in ['yes', 'forward', 'reverse', 'no']]):
         samples = samples.drop(columns=['strandedness'])
 if 'colors' in samples:
-    samples['colors'] = samples['colors'].mask(pd.isnull, '0,0,0')  # nan -> black
-    samples['colors'] = [color_parser(c) for c in samples['colors']]  # convert input to HSV color
-    if not config.get('create_trackhub', False):
+    if config.get('create_trackhub', False):
+        samples['colors'] = samples['colors'].mask(pd.isnull, '0,0,0')  # nan -> black
+        samples['colors'] = [color_parser(c) for c in samples['colors']]  # convert input to HSV color
+    else:
         samples = samples.drop(columns=['colors'])
 
-if 'replicate' in samples:
+if 'technical_replicate' in samples:
     # check if replicate names are unique between assemblies
-    r = samples[['assembly', 'replicate']].drop_duplicates().set_index('replicate')
+    r = samples[['assembly', 'technical_replicate']].drop_duplicates().set_index('technical_replicate')
     for replicate in r.index:
         assert len(r[r.index == replicate]) == 1, \
             ("\nReplicate names must be different between assemblies.\n" +
@@ -179,17 +153,17 @@ if 'replicate' in samples:
 
 # check if sample, replicate and condition names are unique between the columns
 for idx in samples.index:
-    if "condition" in samples:
-        assert idx not in samples["condition"].values, f"sample names, conditions, and replicates can not overlap. " \
-                                                       f"Sample {idx} can not also occur as a condition"
-    if "replicate" in samples:
-        assert idx not in samples["replicate"].values, f"sample names, conditions, and replicates can not overlap. " \
-                                                       f"Sample {idx} can not also occur as a replicate"
+    if "biological_replicate" in samples:
+        assert idx not in samples["biological_replicate"].values, f"sample names, conditions, and replicates can not overlap. " \
+                                                                  f"Sample {idx} can not also occur as a condition"
+    if "technical_replicate" in samples:
+        assert idx not in samples["technical_replicate"].values, f"sample names, conditions, and replicates can not overlap. " \
+                                                                 f"Sample {idx} can not also occur as a replicate"
 
-if "condition" in samples and "replicate" in samples:
-    for cond in samples["condition"]:
-        assert cond not in samples["replicate"].values, f"sample names, conditions, and replicates can not overlap. " \
-                                                        f"Condition {cond} can not also occur as a replicate"
+if "biological_replicate" in samples and "technical_replicate" in samples:
+    for cond in samples["biological_replicate"]:
+        assert cond not in samples["technical_replicate"].values, f"sample names, conditions, and replicates can not overlap. " \
+                                                                  f"Condition {cond} can not also occur as a replicate"
 
 # validate samples file
 for schema in sample_schemas:
@@ -325,11 +299,12 @@ if "assembly" in samples:
                 any(os.path.exists(f) for f in [f"{file}.annotation.gtf", f"{file}.annotation.gtf.gz"]) and
                 any(os.path.exists(f) for f in [f"{file}.annotation.bed", f"{file}.annotation.bed.gz"])
         ):
-            logger.info(
-                f"No annotation for assembly {assembly} can be downloaded. Another provider (and "
-                f"thus another assembly name) might have a gene annotation.\n"
-                f"Find alternative assemblies with `genomepy search {assembly}`\n"
-            )
+            if not config.get("no_config_log"):
+                logger.info(
+                    f"No annotation for assembly {assembly} can be downloaded. Another provider (and "
+                    f"thus another assembly name) might have a gene annotation.\n"
+                    f"Find alternative assemblies with `genomepy search {assembly}`\n"
+                )
             if annotation_required:
                 exit(1)
             _has_annot[assembly] = False
@@ -369,8 +344,9 @@ else:
 
 
 # check if a sample is single-end or paired end, and store it
-logger.info("Checking if samples are available online...")
-logger.info("This can take some time.")
+if not config.get("no_config_log"):
+    logger.info("Checking if samples are available online...")
+    logger.info("This can take some time.")
 
 # make a collection of all samples
 all_samples = [sample for sample in samples.index]
@@ -406,11 +382,14 @@ else:
     logger.error("There were some problems with locking the seq2science cache. Please try again in a bit.")
     raise TerminatedException
 
-logger.info("Done!\n\n")
+if not config.get("no_config_log"):
+    logger.info("Done!\n\n")
 
 # now check where to download which sample
 ena_single_end = [run for values in sampledict.values() if (values["layout"] == "SINGLE") and values.get("ena_fastq_ftp") is not None for run in values["runs"]]
 ena_paired_end = [run for values in sampledict.values() if (values["layout"] == "PAIRED") and values.get("ena_fastq_ftp") is not None for run in values["runs"]]
+sra_single_end = [run for values in sampledict.values() if (values["layout"] == "SINGLE") for run in values.get("runs", []) if run not in ena_single_end]
+sra_paired_end = [run for values in sampledict.values() if (values["layout"] == "PAIRED") for run in values.get("runs", []) if run not in ena_paired_end]
 
 # get download link per run
 run2download = dict()
@@ -424,14 +403,14 @@ for sample, values in sampledict.items():
 
 # if samples are merged add the layout of the technical replicate to the config
 failed_samples = dict()
-if 'replicate' in samples:
+if 'technical_replicate' in samples:
     for sample in samples.index:
-        replicate = samples.loc[sample, 'replicate']
+        replicate = samples.loc[sample, 'technical_replicate']
         if replicate not in sampledict:
             sampledict[replicate] = {'layout':  sampledict[sample]['layout']}
         elif sampledict[replicate]['layout'] != sampledict[sample]['layout']:
             assembly = samples.loc[sample, "assembly"]
-            treps = samples[(samples["assembly"] == assembly) & (samples["replicate"] == replicate)].index
+            treps = samples[(samples["assembly"] == assembly) & (samples["technical_replicate"] == replicate)].index
             failed_samples.setdefault(replicate, set()).update({trep for trep in treps}) 
 
 if len(failed_samples):
@@ -444,6 +423,7 @@ if len(failed_samples):
             logger.error(f"\t{sample}: {sampledict[sample]['layout']}")
         logger.error("\n")
     raise TerminatedException
+
 
 # workflow
 
@@ -474,15 +454,15 @@ if 'assembly' in samples:
         raw_assembly=any_given('assembly'),
         assembly=any_given('assembly', suffix=config["custom_assembly_suffix"] if modified else ""),
 
-if 'replicate' in samples:
-    sample_constraints.append("replicate")
+if 'technical_replicate' in samples:
+    sample_constraints.append("technical_replicate")
     wildcard_constraints:
-        replicate=any_given('replicate')
+        replicate=any_given('technical_replicate')
 
-if 'condition' in samples:
-    sample_constraints.append("condition")
+if 'biological_replicate' in samples:
+    sample_constraints.append("biological_replicate")
     wildcard_constraints:
-        condition=any_given('condition')
+        condition=any_given('biological_replicate')
 
 if "control" in samples:
     sample_constraints.append("control")
@@ -529,4 +509,3 @@ if config.get("create_trackhub"):
     else:
         logger.error("There were some problems with locking the seq2science cache. Please try again in a bit.")
         raise TerminatedException
-

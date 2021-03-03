@@ -11,7 +11,7 @@ genome_dir: ./genomes  # where to look for or download the genomes
 email: yourmail@here.com
 
 # produce a UCSC trackhub?
-create_trackhub: True
+create_trackhub: true
 
 # how to handle replicates
 technical_replicates: merge    # change to "keep" to not combine them
@@ -22,23 +22,15 @@ trimmer: fastp
 # which quantifier to use
 quantifier: htseq  # or salmon or featurecounts
 
-##### aligner and filter options are not used for the gene counts matrix if the quantifier is Salmon
-
-# which aligner to use
+# which aligner to use (not used for the gene counts matrix if the quantifier is Salmon)
 aligner: star
 
-# filtering after alignment
-remove_blacklist: True
+# filtering after alignment (not used for the gene counts matrix if the quantifier is Salmon)
+markduplicates: -Xms4G -Xmx6G MAX_FILE_HANDLES_FOR_READ_ENDS_MAP=999  # keep duplicates (check dupRadar in the MultiQC)
+remove_blacklist: true
 min_mapping_quality: 255  # (only keep uniquely mapped reads from STAR alignments)
-only_primary_align: True
+only_primary_align: true
 
-##### differential gene expression analysis (optional) #####
-
-#deseq2:
-#  multiple_testing_procedure: BH
-#  alpha_value: 0.1
-#  shrinkage_estimator: apeglm
-
+## differential gene expression analysis
 #contrasts:
 #  - 'stage_2_1'
-#  - 'stage_all_1'

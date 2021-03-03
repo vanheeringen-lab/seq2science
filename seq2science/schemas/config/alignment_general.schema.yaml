@@ -1,4 +1,4 @@
-$schema: "http://json-schema.org/draft-06/schema#"
+$schema: "http://json-schema.org/draft-07/schema#"
 
 description: seq2science general alignment configuration
 
@@ -167,7 +167,7 @@ properties:
   # whether or not to generate a multiqc report
   create_qc_report:
     description: whether or not to generate a multiqc report
-    default: True
+    default: true
     type: boolean
 
   bam_sort_mem:
@@ -202,3 +202,11 @@ properties:
     description: Deeptools multiBamSummary params
     default: '--distanceBetweenBins 9000 --binSize 1000'
     type: string
+
+  min_template_length:
+    description: the minimum template length for paired-end reads
+    type: integer
+
+  max_template_length:
+    description: the maximum template length for paired-end reads
+    type: integer

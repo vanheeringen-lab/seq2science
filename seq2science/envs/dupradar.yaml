@@ -1,0 +1,9 @@
+name: dupradar
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - conda-forge::r-base=4.0.3
+  - bioconda::bioconductor-dupradar=1.20.0
+  - conda-forge::r-kernsmooth=2.23_18

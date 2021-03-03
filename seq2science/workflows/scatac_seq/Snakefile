@@ -1,5 +1,5 @@
 # do onstart/onexit things
-sample_schemas = ['sample', 'assembly']
+sample_schemas = ['sample', 'assembly', 'technical_replicate']
 config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific', 'scatac']
 include: "../../rules/configuration.smk"
 
@@ -18,7 +18,7 @@ include: f"{config['rule_dir']}/trimming.smk"
 quality_control = [get_trimming_qc, get_alignment_qc]
 
 
-rule snapATAC_all:
+rule seq2science:
     """
     """
     input:

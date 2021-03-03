@@ -47,7 +47,7 @@ if config["quantifier"] == "salmon":
             expand("{benchmark_dir}/get_genome/{{assembly}}.decoy_transcripts.benchmark.txt", **config)[0]
         threads: 40
         resources:
-            mem_gb=65,
+            mem_gb=64,
         conda:
             "../envs/decoy.yaml"
         priority: 1
@@ -76,6 +76,8 @@ if config["quantifier"] == "salmon":
             "../envs/salmon.yaml"
         shell:
             """
+            mkdir -p {output}
+            
             salmon index -t {input.gentrome} -d {input.decoys} -i {output} {params} \
             --threads {threads} > {log} 2>&1
             """
@@ -100,6 +102,8 @@ if config["quantifier"] == "salmon":
             "../envs/salmon.yaml"
         shell:
             """
+            mkdir -p {output}
+            
             salmon index -t {input} -i {output} {params} --threads {threads} > {log} 2>&1
             """
 
@@ -124,6 +128,7 @@ if config["quantifier"] == "salmon":
                 else ["-1", input.reads[0], "-2", input.reads[1]]
             ),
             params=config["quantifier_flags"],
+            reps=lambda wildcards, input: input  # help resolve changes in input files
         threads: 12
         resources:
             mem_gb=8,

@@ -69,6 +69,7 @@ rule genrich_pileup:
     params:
         params=config["peak_caller"].get("genrich", " "),
         control=lambda wildcards, input: f"-c {input.control}" if "control" in input else "",
+        reps=lambda wildcards, input: input  # help resolve changes in input files
     resources:
         mem_gb=8,
     shell:
@@ -155,7 +156,7 @@ rule macs2_callpeak:
         expand("{benchmark_dir}/macs2_callpeak/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
     message: explain_rule("macs2_callpeak")
     wildcard_constraints:
-        sample=any_given("sample", "replicate")
+        sample=any_given("sample", "technical_replicate")
     params:
         name=(
             lambda wildcards, input: wildcards.sample
@@ -265,14 +266,14 @@ rule hmmratac:
         """
 
 
-if "condition" in samples:
+if "biological_replicate" in samples:
     if config["biological_replicates"] == "idr":
         ruleorder: idr > macs2_callpeak > call_peak_genrich
 
         def get_idr_replicates(wildcards):
             reps = []
             for replicate in treps[
-                (treps["assembly"] == ori_assembly(wildcards.assembly)) & (treps["condition"] == wildcards.condition)
+                (treps["assembly"] == ori_assembly(wildcards.assembly)) & (treps["biological_replicate"] == wildcards.condition)
             ].index:
                 reps.append(
                     f"{config['result_dir']}/{wildcards.peak_caller}/{wildcards.assembly}-{replicate}_peaks.{wildcards.ftype}"
@@ -301,6 +302,7 @@ if "condition" in samples:
             params:
                 rank=lambda wildcards: "--rank 13" if wildcards.peak_caller == "hmmratac" else "",
                 nr_reps=lambda wildcards, input: len(input),
+                reps=lambda wildcards, input: input  # help resolve changes in input files
             conda:
                 "../envs/idr.yaml"
             shell:
@@ -338,6 +340,8 @@ if "condition" in samples:
                     expand("{benchmark_dir}/macs_bdgcmp/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
                 resources:
                     mem_gb=4,
+                params:
+                    reps=lambda wildcards, input: input  # help resolve changes in input files
                 conda:
                     "../envs/macs2.yaml"
                 shell:
@@ -351,7 +355,7 @@ if "condition" in samples:
                     [
                         f"{{result_dir}}/macs2/{wildcards.assembly}-{replicate}_qvalues.bdg"
                         for replicate in treps[
-                            (treps["assembly"] == ori_assembly(wildcards.assembly)) & (treps["condition"] == wildcards.condition)
+                            (treps["assembly"] == ori_assembly(wildcards.assembly)) & (treps["biological_replicate"] == wildcards.condition)
                         ].index
                     ],
                     **config,
@@ -360,7 +364,7 @@ if "condition" in samples:
             def get_macs_replicate(wildcards):
                 """the original peakfile, to link if there is only 1 sample for a condition"""
                 replicate = treps[
-                    (treps['assembly'] == ori_assembly(wildcards.assembly)) & (treps['condition'] == wildcards.condition)
+                    (treps['assembly'] == ori_assembly(wildcards.assembly)) & (treps['biological_replicate'] == wildcards.condition)
                 ].index
                 return expand(
                     f"{{result_dir}}/macs2/{wildcards.assembly}-{replicate[0]}_peaks.{wildcards.ftype}",
@@ -369,7 +373,7 @@ if "condition" in samples:
 
             rule macs_cmbreps:
                 """
-                Combine replicates through Fisher's method
+                Combine biological replicates through Fisher's method
 
                 (Link original peakfile in replicate_processed if there is only 1 sample for a condition)
                 """
@@ -391,6 +395,7 @@ if "condition" in samples:
                     nr_reps=lambda wildcards, input: len(input.bdgcmp),
                     function="bdgpeakcall" if "--broad" not in config["peak_caller"].get("macs2", "") else "bdgbroadcall",
                     config=config["macs_cmbreps"],
+                    reps=lambda wildcards, input: input  # help resolve changes in input files
                 resources:
                     mem_gb=4,
                 shell:

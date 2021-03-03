@@ -1,17 +1,16 @@
 name: deseq2
 channels:
   - bioconda
-  - r
   - conda-forge
   - defaults
 dependencies:
-  - r::r-base=3.6.1
-  - bioconda::bioconductor-deseq2=1.26.0
-  - bioconda::bioconductor-ihw=1.14.0
-  - bioconda::bioconductor-apeglm=1.8.0
-  - bioconda::bioconductor-biocparallel=1.20.0
-  - bioconda::bioconductor-limma=3.42.0
-  - r::r-rcolorbrewer=1.1_2
-  - r::r-ggplot2=3.1.1
-  - r::r-pheatmap=1.0.12
-  - r::r-pdftools=2.2
+  - conda-forge::r-base=4.0.2
+  - bioconda::bioconductor-deseq2=1.30
+  - bioconda::bioconductor-biocparallel=1.24.0
+  - bioconda::bioconductor-ihw=1.18.0
+  - bioconda::bioconductor-apeglm=1.12.0
+  - bioconda::bioconductor-limma=3.46.0
+  - conda-forge::r-rcolorbrewer=1.1_2
+  - conda-forge::r-ggplot2=3.3.3
+  - conda-forge::r-pheatmap=1.0.12
+  - conda-forge::r-pdftools=2.3.1

@@ -1,5 +1,5 @@
 # do onstart/onexit things
-sample_schemas = ['sample', 'assembly', 'replicate', 'strandedness']
+sample_schemas = ['sample', 'assembly', 'technical_replicate', 'strandedness']
 config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific', 'trackhub']
 include: "../../rules/configuration.smk"
 
@@ -32,9 +32,9 @@ def get_bams():
     bamfiles['map'] = set(); bamfiles['ind'] = set()
 
     # get all the bams
-    if 'replicate' in samples:
+    if 'technical_replicate' in samples:
         for assembly in all_assemblies:
-            for replicate in set(samples[samples['assembly'] == ori_assembly(assembly)]['replicate']):
+            for replicate in set(samples[samples['assembly'] == ori_assembly(assembly)]['technical_replicate']):
                 bamfiles['map'].update([expand(f"{{final_bam_dir}}/{assembly}-{replicate}.{{bam_sorter}}-{{bam_sort_order}}.{map_ext}", **config)[0]])
                 bamfiles['ind'].update([expand(f"{{final_bam_dir}}/{assembly}-{replicate}.{{bam_sorter}}-{{bam_sort_order}}.{map_ext}.{map_idx}", **config)[0]])
                 # always output samtools-coordinate
@@ -50,7 +50,7 @@ def get_bams():
 
     return bamfiles
 
-rule align_all:
+rule seq2science:
     """
     align each sample against its assembly
     """

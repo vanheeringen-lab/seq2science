@@ -14,7 +14,5 @@ create_qc_report: False
 aligner: star
 
 # differential expression analysis
-diffexp: # which analysis to use (DESeq2 or None, default: None)
-  deseq2:
-    contrasts:
-      - batch + stage_2_1
+contrasts:
+  - batch + stage_2_1
