@@ -8,6 +8,36 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Changed
+
+- Keep all duplicate reads in RNA-seq by default
+- Slimmed down the config printed at the start of a run
+- Changed some rules into localrules when executed on a cluster
+- moved onehot peaks to counts_dir
+- DESeq2 contrasts now accept any column names
+  - groups still cannot contain underscores
+  - no longer accepts one group name
+  - more examples added to the docs!
+
+### Added
+
+- dupRadar module to analyse read duplication types in RNA-seq
+- Differential peak analysis for ATAC- and ChIP-seq!
+- Options to filter bams by minimum and maximum insert sizes (added to config of bulk/sc atac)
+- Support experiment ids for EBI ENA and DDBJ for downloading public samples
+- More robust expression handling for BUS format detection from kb-python arguments
+- Short-hand BUS syntax for indrop v1/v2
+- Seq2science now supports tab-completion
+- Seq2science now outputs a logfile in the directory it is run
+
+### Fixed
+
+- renamed more old "replicate" variables to the new "technical_replicate"
+- minor logging tweak
+- Chipseeker now works without defining descriptive name column
+- fix bug in resources parsing of profiles
+- small bug when naming a column condition in non peak-calling workflows
+
 ## [0.4.3] - 2021-01-26
 
 ### Changed
@@ -51,6 +81,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Changed
 
+- replicate renamed to technical_replicate and condition renamed to biological_replicate
 - bwa-mem2 default aligner for genomic workflows, instead of bwa-mem
 - interactive deeptools correlation heatmaps with static dendrograms in multiqc report
 - trackhub file permissions are set to 755 so to host the files online you don't have to change those anymore

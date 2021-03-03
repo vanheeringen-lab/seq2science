@@ -195,14 +195,13 @@
 <h2>init<a class="headerlink" href="#init" title="Permalink to this headline">¶</a></h2>
 <p><p>Each workflow requires a configuration and samples file to run. Running “seq2science init {workflow}” initialises a default configuration and samples file for the specific workflow.</p>
 </p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">seq2science</span> <span class="n">init</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="nb">dir</span> <span class="n">PATH</span><span class="p">]</span>
-                        <span class="p">{</span><span class="n">rna</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">scatac</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">scrna</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">atac</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">alignment</span><span class="p">,</span><span class="n">download</span><span class="o">-</span><span class="n">fastq</span><span class="p">,</span><span class="n">chip</span><span class="o">-</span><span class="n">seq</span><span class="p">}</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">seq2science</span> <span class="n">init</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="nb">dir</span> <span class="n">PATH</span><span class="p">]</span> <span class="n">WORKFLOW</span>
 </pre></div>
 </div>
 <div class="section" id="Positional Arguments">
 <h3>Positional Arguments<a class="headerlink" href="#Positional Arguments" title="Permalink to this headline">¶</a></h3>
 <dl class="option-list">
-<dt><kbd>workflow</kbd></dt>
+<dt><kbd>WORKFLOW</kbd></dt>
 <dd><p>Possible choices: rna-seq, scatac-seq, scrna-seq, atac-seq, alignment, download-fastq, chip-seq</p>
 </dd>
 </dl>
@@ -222,16 +221,17 @@
 <h2>run<a class="headerlink" href="#run" title="Permalink to this headline">¶</a></h2>
 <p><p>Run a complete workflow. This requires that a config and samples file are either present in the current directory, or passed as an argument.</p>
 </p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">seq2science</span> <span class="n">run</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">c</span> <span class="n">FILE</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">j</span> <span class="n">N</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">n</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">r</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">seq2science</span> <span class="n">run</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">j</span> <span class="n">N</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">n</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">r</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">skip</span><span class="o">-</span><span class="n">rerun</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">k</span><span class="p">]</span>
+                       <span class="p">[</span><span class="o">--</span><span class="n">rerun</span><span class="o">-</span><span class="n">incomplete</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">unlock</span><span class="p">]</span>
                        <span class="p">[</span><span class="o">--</span><span class="n">snakemakeOptions</span> <span class="n">KEY</span><span class="o">=</span><span class="n">VAL</span> <span class="p">[</span><span class="n">KEY</span><span class="o">=</span><span class="n">VAL</span> <span class="o">...</span><span class="p">]]</span>
-                       <span class="p">[</span><span class="o">-</span><span class="n">p</span> <span class="n">PROFILE</span> <span class="n">NAME</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">k</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">rerun</span><span class="o">-</span><span class="n">incomplete</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">unlock</span><span class="p">]</span>
-                       <span class="p">{</span><span class="n">rna</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">scatac</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">scrna</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">atac</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">alignment</span><span class="p">,</span><span class="n">download</span><span class="o">-</span><span class="n">fastq</span><span class="p">,</span><span class="n">chip</span><span class="o">-</span><span class="n">seq</span><span class="p">}</span>
+                       <span class="p">[</span><span class="o">-</span><span class="n">p</span> <span class="n">PROFILE</span> <span class="n">NAME</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">c</span> <span class="n">FILE</span><span class="p">]</span>
+                       <span class="n">WORKFLOW</span>
 </pre></div>
 </div>
 <div class="section" id="Positional Arguments">
 <h3>Positional Arguments<a class="headerlink" href="#Positional Arguments" title="Permalink to this headline">¶</a></h3>
 <dl class="option-list">
-<dt><kbd>workflow</kbd></dt>
+<dt><kbd>WORKFLOW</kbd></dt>
 <dd><p>Possible choices: rna-seq, scatac-seq, scrna-seq, atac-seq, alignment, download-fastq, chip-seq</p>
 </dd>
 </dl>
@@ -239,10 +239,6 @@
 <div class="section" id="Named Arguments">
 <h3>Named Arguments<a class="headerlink" href="#Named Arguments" title="Permalink to this headline">¶</a></h3>
 <dl class="option-list">
-<dt><kbd>-c, --configfile</kbd></dt>
-<dd><p>The path to the config file.</p>
-<p>Default: “./config.yaml”</p>
-</dd>
 <dt><kbd>-j, --cores</kbd></dt>
 <dd><p>Use at most N cores in parallel. Must be at least 2. When executing on a cluster, this number controls the maximum numberof parallel jobs.</p>
 </dd>
@@ -254,11 +250,9 @@
 <dd><p>Print the reason for each executed rule.</p>
 <p>Default: False</p>
 </dd>
-<dt><kbd>--snakemakeOptions</kbd></dt>
-<dd><p>Extra arguments to pass along to snakemake. An example could be seq2science run alignment –cores 12 –snakemakeOptions resources={mem_gb:100} local_cores=3. Here we pass local_cores as KEY=VALUE and additional resources can even be passed along in a dictionary. Take a look at the snakemake API  for a complete list of all possible options: <a class="reference external" href="https://snakemake.readthedocs.io/en/latest/api_reference/snakemake.html">https://snakemake.readthedocs.io/en/latest/api_reference/snakemake.html</a></p>
-</dd>
-<dt><kbd>-p, --profile</kbd></dt>
-<dd><p>Use a seq2science profile. Profiles can be taken from: <a class="reference external" href="https://github.com/s2s-profiles">https://github.com/s2s-profiles</a></p>
+<dt><kbd>--skip-rerun</kbd></dt>
+<dd><p>Skip the check if samples or configuration has been changed.</p>
+<p>Default: False</p>
 </dd>
 <dt><kbd>-k, --keep-going</kbd></dt>
 <dd><p>Go on with independent jobs if a job fails.</p>
@@ -271,6 +265,16 @@
 <dt><kbd>--unlock</kbd></dt>
 <dd><p>Remove a lock on the working directory.</p>
 <p>Default: False</p>
+</dd>
+<dt><kbd>--snakemakeOptions</kbd></dt>
+<dd><p>Extra arguments to pass along to snakemake. An example could be seq2science run alignment –cores 12 –snakemakeOptions resources={mem_gb:100} local_cores=3. Here we pass local_cores as KEY=VALUE and additional resources can even be passed along in a dictionary. Take a look at the snakemake API  for a complete list of all possible options: <a class="reference external" href="https://snakemake.readthedocs.io/en/latest/api_reference/snakemake.html">https://snakemake.readthedocs.io/en/latest/api_reference/snakemake.html</a></p>
+</dd>
+<dt><kbd>-p, --profile</kbd></dt>
+<dd><p>Use a seq2science profile. Profiles can be taken from: <a class="reference external" href="https://github.com/s2s-profiles">https://github.com/s2s-profiles</a></p>
+</dd>
+<dt><kbd>-c, --configfile</kbd></dt>
+<dd><p>The path to the config file.</p>
+<p>Default: “./config.yaml”</p>
 </dd>
 </dl>
 </div>
@@ -290,16 +294,15 @@ seq2science clean will clean up these files for you.</p>
 <h2>explain<a class="headerlink" href="#explain" title="Permalink to this headline">¶</a></h2>
 <p><p>Explains what has/will be done for the workflow. This prints a string which can serve as a skeleton for your material &amp; methods section.</p>
 </p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">seq2science</span> <span class="n">explain</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">c</span> <span class="n">FILE</span><span class="p">]</span>
-                           <span class="p">[</span><span class="o">--</span><span class="n">snakemakeOptions</span> <span class="n">KEY</span><span class="o">=</span><span class="n">VAL</span> <span class="p">[</span><span class="n">KEY</span><span class="o">=</span><span class="n">VAL</span> <span class="o">...</span><span class="p">]]</span>
-                           <span class="p">[</span><span class="o">-</span><span class="n">p</span> <span class="n">PROFILE</span> <span class="n">NAME</span><span class="p">]</span>
-                           <span class="p">{</span><span class="n">rna</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">scatac</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">scrna</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">atac</span><span class="o">-</span><span class="n">seq</span><span class="p">,</span><span class="n">alignment</span><span class="p">,</span><span class="n">download</span><span class="o">-</span><span class="n">fastq</span><span class="p">,</span><span class="n">chip</span><span class="o">-</span><span class="n">seq</span><span class="p">}</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">seq2science</span> <span class="n">explain</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">snakemakeOptions</span> <span class="n">KEY</span><span class="o">=</span><span class="n">VAL</span> <span class="p">[</span><span class="n">KEY</span><span class="o">=</span><span class="n">VAL</span> <span class="o">...</span><span class="p">]]</span>
+                           <span class="p">[</span><span class="o">-</span><span class="n">p</span> <span class="n">PROFILE</span> <span class="n">NAME</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">c</span> <span class="n">FILE</span><span class="p">]</span>
+                           <span class="n">WORKFLOW</span>
 </pre></div>
 </div>
 <div class="section" id="Positional Arguments">
 <h3>Positional Arguments<a class="headerlink" href="#Positional Arguments" title="Permalink to this headline">¶</a></h3>
 <dl class="option-list">
-<dt><kbd>workflow</kbd></dt>
+<dt><kbd>WORKFLOW</kbd></dt>
 <dd><p>Possible choices: rna-seq, scatac-seq, scrna-seq, atac-seq, alignment, download-fastq, chip-seq</p>
 </dd>
 </dl>
@@ -307,15 +310,15 @@ seq2science clean will clean up these files for you.</p>
 <div class="section" id="Named Arguments">
 <h3>Named Arguments<a class="headerlink" href="#Named Arguments" title="Permalink to this headline">¶</a></h3>
 <dl class="option-list">
-<dt><kbd>-c, --configfile</kbd></dt>
-<dd><p>The path to the config file.</p>
-<p>Default: “./config.yaml”</p>
-</dd>
 <dt><kbd>--snakemakeOptions</kbd></dt>
 <dd><p>Extra arguments to pass along to snakemake. An example could be seq2science run alignment –cores 12 –snakemakeOptions resources={mem_gb:100} local_cores=3. Here we pass local_cores as KEY=VALUE and additional resources can even be passed along in a dictionary. Take a look at the snakemake API  for a complete list of all possible options: <a class="reference external" href="https://snakemake.readthedocs.io/en/latest/api_reference/snakemake.html">https://snakemake.readthedocs.io/en/latest/api_reference/snakemake.html</a></p>
 </dd>
 <dt><kbd>-p, --profile</kbd></dt>
 <dd><p>Use a seq2science profile. Profiles can be taken from: <a class="reference external" href="https://github.com/s2s-profiles">https://github.com/s2s-profiles</a></p>
+</dd>
+<dt><kbd>-c, --configfile</kbd></dt>
+<dd><p>The path to the config file.</p>
+<p>Default: “./config.yaml”</p>
 </dd>
 </dl>
 </div>

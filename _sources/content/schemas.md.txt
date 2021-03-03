@@ -315,6 +315,18 @@ deeptools_multibamsummary:
     default: --distanceBetweenBins 9000 --binSize 1000
     type: string
 ```
+#####min_template_length
+```
+min_template_length:
+    description: the minimum template length for paired-end reads
+    type: integer
+```
+#####max_template_length
+```
+max_template_length:
+    description: the maximum template length for paired-end reads
+    type: integer
+```
 
 ## alignment workflow specific
 #####bam_sorter
@@ -385,20 +397,6 @@ logbase:
 ```
 
 ## gene expression (RNA-seq)
-#####counts_dir
-```
-counts_dir:
-    description: directory where to store the gene counts for DGE analysis (defaults inside the result dir)
-    default: gene_counts
-    type: string
-```
-#####dge_dir
-```
-dge_dir:
-    description: directory where to store the workflow differential gene analysis output (defaults inside the result dir)
-    default: deseq2
-    type: string
-```
 #####quantifier
 ```
 quantifier:
@@ -435,16 +433,20 @@ quantifier:
 #####tximeta
 ```
 tximeta:
-    description: tximeta is used to convert salmon output (estimated transcript abundances) to a gene counts matrix. Currently, these values can be ignored.
+    description: tximeta is used to convert salmon output to gene counts. If you are using an assembly from Ensembl or GENCODE, you can refine the output by specifying these fields.
     properties:
         source:
-            default: Ensembl
+            description: the source of transcriptome
+            enum: ['Ensembl', 'GENCODE', 'de-novo']
+            default: de-novo
         organism:
+            description: organism (e.g. "Homo sapiens")
             default: tximeta_file
         release:
+            description: release number of the source database (e.g. "101")
             default: 42
     default:
-        source: Ensembl
+        source: de-novo
         organism: tximeta_file
         release: 42
 ```
@@ -461,32 +463,6 @@ dexseq:
     description: output an exon counts matrix for use in DEXSeq.
     default: False
     type: boolean
-```
-#####deseq2
-```
-deseq2:
-    description: DESeq2 settings. See the DESeq2 vignette for details
-    properties:
-        multiple_testing_procedure:
-            default: BH
-            enum: ['BH', 'IHW']
-            type: string
-        alpha_value:
-            default: 0.1
-            type: number
-        shrinkage_estimator:
-            default: apeglm
-            enum: ['apeglm', 'ashr', 'normal']
-            type: string
-    default:
-        multiple_testing_procedure: BH
-        alpha_value: 0.1
-        shrinkage_estimator: apeglm
-```
-#####contrasts
-```
-contrasts:
-    description: deseq2 design contrast(s)
 ```
 
 ## single-cell ATAC

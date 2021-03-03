@@ -1,0 +1,398 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Differential gene/peak analysis &mdash; seq2science  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="seq2science scATAC postprocessing" href="scATAC_postprocessing.html" />
+    <link rel="prev" title="Extra resources" href="extracontent.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> seq2science
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="gettingstarted.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workflows.html">Workflows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="results.html">Using the results</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extensive_docs.html">Extensive docs</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="extracontent.html">Extra resources</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Differential analysis with DESeq2</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#overview-of-the-deseq2-method">Overview of the DESeq2 method</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#output">Output</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#contrast-designs">Contrast designs</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#conditions">Conditions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#batches">Batches</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#more-design-contrast-examples">More design contrast examples</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="scATAC_postprocessing.html">scATAC postprocessing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="seq2science_profiles.html">seq2science profiles</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions (FAQ)</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">seq2science</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="extracontent.html">Extra resources</a> &raquo;</li>
+        
+      <li>Differential gene/peak analysis</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            
+              <a href="https://github.com/vanheeringen-lab/seq2science/blob/master/docs/content/DESeq2.md" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="differential-gene-peak-analysis">
+<h1>Differential gene/peak analysis<a class="headerlink" href="#differential-gene-peak-analysis" title="Permalink to this headline">¶</a></h1>
+<p>Seq2science outputs counts matrices for each assembly in any bulk-sequencing workflow, which can optionally can be used for differential gene/peak analysis with <a class="reference external" href="https://genomebiology.biomedcentral.com/articles/10.1186/s13059-014-0550-8">DESeq2</a>.
+To do so, add one or more contrast design(s) in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file, with matching identifiers in the <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> file.</p>
+<p>This section details how the contrast designs are created.
+Examples are given <a class="reference external" href="./DESeq2.html#deseq2-contrast-designs">below</a>, and each <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> contains a commented-out example contrast design at the bottom.</p>
+<p>Note: (additional) design contrasts can be added at any time.
+After completing the workflow, rerunning Seq2science with new contrasts will only perform the new analyses.</p>
+<div class="section" id="overview-of-the-deseq2-method">
+<h2>Overview of the DESeq2 method<a class="headerlink" href="#overview-of-the-deseq2-method" title="Permalink to this headline">¶</a></h2>
+<p>DESeq2 automatically performs library bias correction when loading your data, and batch correction is performed if it is included in the contrast design.
+After calculating differentially expressed genes/peaks, a multiple testing procedure is applied, which is either the Benjamini-Hochberg procedure (the default) or Independent Hypothesis Weighing.
+The False Discovery Rate cutoff is set by alpha, which is 0.1 by default.
+Finally, count values are log transformed and shrunk (by default using the apeglm method).
+These defaults can be changed in the <a class="reference external" href="./schemas.html#deseq2">config.yaml</a>, under the <code class="docutils literal notranslate"><span class="pre">deseq2</span></code> variables using the <code class="docutils literal notranslate"><span class="pre">multiple_testing_procedure</span></code>, <code class="docutils literal notranslate"><span class="pre">alpha_value</span></code> and <code class="docutils literal notranslate"><span class="pre">shrinkage_estimator</span></code> options respectively.</p>
+<p>For more information, check out the steps in this <a class="reference external" href="www.bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html">vignette</a>, which Seq2science follows.</p>
+</div>
+<div class="section" id="output">
+<h2>Output<a class="headerlink" href="#output" title="Permalink to this headline">¶</a></h2>
+<p>For each contrast design, the list of <em>all</em> genes/peaks is saved to file, with analysis results for expressed genes. Briefly, these include:</p>
+<ul class="simple">
+<li><p>The column <code class="docutils literal notranslate"><span class="pre">padj</span></code> contains the adjusted p-values after multiple testing. <strong>(These should be used to identify DE genes/peaks)</strong>.</p></li>
+<li><p>The column <code class="docutils literal notranslate"><span class="pre">log2FoldChange</span></code> contains the fold change of each gene between the two conditions. (The reference group is the one <em>last mentioned</em> in the contrast design, so use <code class="docutils literal notranslate"><span class="pre">condition_treatment_control</span></code>. If you use <code class="docutils literal notranslate"><span class="pre">condition_control_treatment</span></code> the fold change is <em>inverted</em>.)</p></li>
+<li><p>Several other columns were kept for sake of completion, such as column <code class="docutils literal notranslate"><span class="pre">pvalue</span></code>, which contains p-values not adjusted for multiple testing.</p></li>
+</ul>
+<p>In addition, MA and PCA plots are generated for each contrast design.</p>
+<p>If the design includes a batch effect, several PCA plots are generated to visualize the effect of the batch correction.</p>
+<p>DESeq2 models the batch effect in their package, but downstream methods may not.
+For this reason, seq2science will produce a batch-corrected counts matrix (and a batch corrected TPM matrix if quantified with Salmon).</p>
+</div>
+<div class="section" id="contrast-designs">
+<h2>Contrast designs<a class="headerlink" href="#contrast-designs" title="Permalink to this headline">¶</a></h2>
+<p>The following section will guide you through the process of creating a DESeq2 contrast using only the samples.tsv and the config.yaml.</p>
+<p>A contrast contains a <strong>condition</strong>, which is the variable you wish to analyse, and which contains 2 or more <strong>groups.</strong>
+Additionally, a contrast can optionally contain a <strong>batch</strong> effect, which you want to correct for.
+To determine differentially expressed genes/accessible peaks, DESeq2 requires at least two samples per group.
+A design contrast therefore requires at least 2x2 samples.</p>
+<div class="section" id="conditions">
+<h3>Conditions<a class="headerlink" href="#conditions" title="Permalink to this headline">¶</a></h3>
+<p>In the samples.tsv, add a column for every property you wish to test in your samples.
+Next, add labels to the samples involved in the test. You can leave labels empty, or add labels and not use them.
+For example:</p>
+<ol class="arabic simple">
+<li><p>a column named ‘conditions’ with values ‘wildtype’ and ‘knockout’.</p></li>
+<li><p>a column named ‘stages’ with values 1, 2 and 3.</p></li>
+<li><p>a column named ‘treatments’ with values ‘control’, ‘treatmentA’ and ‘treatmentB’.</p></li>
+</ol>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>sample</p></th>
+<th class="head"><p>assembly</p></th>
+<th class="head"><p>conditions</p></th>
+<th class="head"><p>stages</p></th>
+<th class="head"><p>treatments</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>sample_1</p></td>
+<td><p>hg38</p></td>
+<td><p>wildtype</p></td>
+<td><p>1</p></td>
+<td><p>control</p></td>
+</tr>
+<tr class="row-odd"><td><p>sample_2</p></td>
+<td><p>hg38</p></td>
+<td><p>knockout</p></td>
+<td><p>1</p></td>
+<td><p>control</p></td>
+</tr>
+<tr class="row-even"><td><p>sample_3</p></td>
+<td><p>hg38</p></td>
+<td><p>wildtype</p></td>
+<td><p>2</p></td>
+<td><p>treatmentA</p></td>
+</tr>
+<tr class="row-odd"><td><p>sample_4</p></td>
+<td><p>hg38</p></td>
+<td><p>knockout</p></td>
+<td><p>2</p></td>
+<td><p>treatmentA</p></td>
+</tr>
+<tr class="row-even"><td><p>sample_5</p></td>
+<td><p>hg38</p></td>
+<td></td>
+<td><p>3</p></td>
+<td><p>treatmentB</p></td>
+</tr>
+<tr class="row-odd"><td><p>sample_6</p></td>
+<td><p>hg38</p></td>
+<td><p>unused</p></td>
+<td><p>3</p></td>
+<td><p>treatmentB</p></td>
+</tr>
+</tbody>
+</table>
+<p>Next, in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> add one or more contrasts:</p>
+<p>In order to compare two groups, the contrast condition is the column name, followed by the target group and finally the reference group.
+For example, to compare stage 1 to stage 3 from the examples above, the contrast would be <code class="docutils literal notranslate"><span class="pre">stages_3_1</span></code>.</p>
+<p>To compare all groups against one reference, the contrast condition is the column name, followed by target group “all” and finally the reference group.
+For example, to compare all treatments to the control from the examples above, the contrast would be <code class="docutils literal notranslate"><span class="pre">treatments_all_control</span></code>.</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span># contrasts for examples 1-3 in the config.yaml
+contrasts:
+  - &#39;conditions_knockout_wildtype&#39;
+  - &#39;stages_3_1&#39;
+  - &#39;treatments_all_control&#39;
+</pre></div>
+</div>
+<p>Note: the reference group in the design determines the direction of the expression fold change.
+In the example <code class="docutils literal notranslate"><span class="pre">stages_3_1</span></code>, a gene upregulated at stage 3 has a positive expression fold change.
+In contrast <code class="docutils literal notranslate"><span class="pre">stages_1_3</span></code>, a gene upregulated at stage 3 has a negative expression fold change.
+Other values are unaffected.</p>
+</div>
+<div class="section" id="batches">
+<h3>Batches<a class="headerlink" href="#batches" title="Permalink to this headline">¶</a></h3>
+<p>If your data has batch effects, DESeq2 can try to account for these. Note that this can only be done if the batch effects are spread over different conditions.</p>
+<p>Similar to conditions, add a column to samples.tsv and note the batch of each sample:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>sample</p></th>
+<th class="head"><p>sequencing_month</p></th>
+<th class="head"><p>conditions</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>sample_1</p></td>
+<td><p>jan</p></td>
+<td><p>control</p></td>
+</tr>
+<tr class="row-odd"><td><p>sample_2</p></td>
+<td><p>feb</p></td>
+<td><p>control</p></td>
+</tr>
+<tr class="row-even"><td><p>sample_3</p></td>
+<td><p>jan</p></td>
+<td><p>treatment</p></td>
+</tr>
+<tr class="row-odd"><td><p>sample_4</p></td>
+<td><p>feb</p></td>
+<td><p>treatment</p></td>
+</tr>
+</tbody>
+</table>
+<p>In this example, the sequencing_month may have caused a batch effect.
+Since the (potential) batch effect is spread over the test conditions (control vs treatment) it can be taken into account during DE analysis.
+The contrast design to do this would be <code class="docutils literal notranslate"><span class="pre">sequencing_month</span> <span class="pre">+</span> <span class="pre">conditions_treatment_control</span></code>.</p>
+</div>
+</div>
+<div class="section" id="more-design-contrast-examples">
+<h2>More design contrast examples<a class="headerlink" href="#more-design-contrast-examples" title="Permalink to this headline">¶</a></h2>
+<p>The example design <code class="docutils literal notranslate"><span class="pre">sequencing_month</span> <span class="pre">+</span> <span class="pre">conditions_treatment_control</span></code> may also be written as <code class="docutils literal notranslate"><span class="pre">sequencing_month</span> <span class="pre">+</span> <span class="pre">conditions_all_control</span></code>.
+In each case, seq2science will understand “control” is the reference group, and compare it against the other groups in the “conditions” columns.</p>
+<p>For consistency with regular DESeq2 contrast designs, designs may start with <code class="docutils literal notranslate"><span class="pre">~</span></code>, examples:
+<code class="docutils literal notranslate"><span class="pre">~conditions_knockout_wildtype</span></code> and <code class="docutils literal notranslate"><span class="pre">~</span> <span class="pre">sequencing_month</span> <span class="pre">+</span> <span class="pre">conditions_treatment_control</span></code>.</p>
+<p>Our gremlins will carefully unpack all of your input and pass only unique designs to DESeq2.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="scATAC_postprocessing.html" class="btn btn-neutral float-right" title="seq2science scATAC postprocessing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="extracontent.html" class="btn btn-neutral float-left" title="Extra resources" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright Maarten van der Sande, Siebren Frölich, Jos Smits, Rebecca Snabel, Tilman Schäfers, &amp; Simon van Heeringen..
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -131,6 +131,8 @@
 <li class="toctree-l4"><a class="reference internal" href="#deeptools-qc">deeptools_qc</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#deeptools-plotcorrelation">deeptools_plotcorrelation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#deeptools-multibamsummary">deeptools_multibamsummary</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#min-template-length">min_template_length</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#max-template-length">max_template_length</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#alignment-workflow-specific">alignment workflow specific</a><ul>
@@ -147,14 +149,10 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#gene-expression-rna-seq">gene expression (RNA-seq)</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#counts-dir">counts_dir</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#dge-dir">dge_dir</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#quantifier">quantifier</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#tximeta">tximeta</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ignore-strandedness">ignore_strandedness</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#dexseq">dexseq</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#deseq2">deseq2</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#contrasts">contrasts</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#single-cell-atac">single-cell ATAC</a><ul>
@@ -639,6 +637,22 @@
 </pre></div>
 </div>
 </div>
+<div class="section" id="min-template-length">
+<h3>min_template_length<a class="headerlink" href="#min-template-length" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>min_template_length:
+    description: the minimum template length for paired-end reads
+    type: integer
+</pre></div>
+</div>
+</div>
+<div class="section" id="max-template-length">
+<h3>max_template_length<a class="headerlink" href="#max-template-length" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>max_template_length:
+    description: the maximum template length for paired-end reads
+    type: integer
+</pre></div>
+</div>
+</div>
 </div>
 <div class="section" id="alignment-workflow-specific">
 <h2>alignment workflow specific<a class="headerlink" href="#alignment-workflow-specific" title="Permalink to this headline">¶</a></h2>
@@ -726,24 +740,6 @@
 </div>
 <div class="section" id="gene-expression-rna-seq">
 <h2>gene expression (RNA-seq)<a class="headerlink" href="#gene-expression-rna-seq" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="counts-dir">
-<h3>counts_dir<a class="headerlink" href="#counts-dir" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>counts_dir:
-    description: directory where to store the gene counts for DGE analysis (defaults inside the result dir)
-    default: gene_counts
-    type: string
-</pre></div>
-</div>
-</div>
-<div class="section" id="dge-dir">
-<h3>dge_dir<a class="headerlink" href="#dge-dir" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>dge_dir:
-    description: directory where to store the workflow differential gene analysis output (defaults inside the result dir)
-    default: deseq2
-    type: string
-</pre></div>
-</div>
-</div>
 <div class="section" id="quantifier">
 <h3>quantifier<a class="headerlink" href="#quantifier" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>quantifier:
@@ -782,16 +778,20 @@
 <div class="section" id="tximeta">
 <h3>tximeta<a class="headerlink" href="#tximeta" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>tximeta:
-    description: tximeta is used to convert salmon output (estimated transcript abundances) to a gene counts matrix. Currently, these values can be ignored.
+    description: tximeta is used to convert salmon output to gene counts. If you are using an assembly from Ensembl or GENCODE, you can refine the output by specifying these fields.
     properties:
         source:
-            default: Ensembl
+            description: the source of transcriptome
+            enum: [&#39;Ensembl&#39;, &#39;GENCODE&#39;, &#39;de-novo&#39;]
+            default: de-novo
         organism:
+            description: organism (e.g. &quot;Homo sapiens&quot;)
             default: tximeta_file
         release:
+            description: release number of the source database (e.g. &quot;101&quot;)
             default: 42
     default:
-        source: Ensembl
+        source: de-novo
         organism: tximeta_file
         release: 42
 </pre></div>
@@ -812,36 +812,6 @@
     description: output an exon counts matrix for use in DEXSeq.
     default: False
     type: boolean
-</pre></div>
-</div>
-</div>
-<div class="section" id="deseq2">
-<h3>deseq2<a class="headerlink" href="#deseq2" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>deseq2:
-    description: DESeq2 settings. See the DESeq2 vignette for details
-    properties:
-        multiple_testing_procedure:
-            default: BH
-            enum: [&#39;BH&#39;, &#39;IHW&#39;]
-            type: string
-        alpha_value:
-            default: 0.1
-            type: number
-        shrinkage_estimator:
-            default: apeglm
-            enum: [&#39;apeglm&#39;, &#39;ashr&#39;, &#39;normal&#39;]
-            type: string
-    default:
-        multiple_testing_procedure: BH
-        alpha_value: 0.1
-        shrinkage_estimator: apeglm
-</pre></div>
-</div>
-</div>
-<div class="section" id="contrasts">
-<h3>contrasts<a class="headerlink" href="#contrasts" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>contrasts:
-    description: deseq2 design contrast(s)
 </pre></div>
 </div>
 </div>

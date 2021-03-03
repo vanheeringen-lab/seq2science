@@ -1,5 +1,5 @@
 ## scATAC-seq
-Running a scATAC-seq pipeline has never been easier! See our [scATAC-seq](https://github.com/vanheeringen-lab/snakemake-workflows/tree/master/workflows/scATAC_seq) workflow.
+Running a scATAC-seq pipeline has never been easier!
 
 Does your scATAC protocol generate single cell fastq files? And do they need to be mapped and analysed? Then this pipeline is for your! This pipeline takes single cell fastq files, performs extensive (plate based) QC steps, and generates a binned  SNAP-object that can be used for further downstream analysis following the tutorials on: https://github.com/r3fang/SnapATAC
 
@@ -12,8 +12,9 @@ Alternatively instead you have a large FASTQ file containing a cell specific ID 
   <img src="../../_static/scatac_seq.png">
 </p>
 
-#### (Automated) downloading of fastq
-scATAC-seq can be done with local fastq files, downloaded files, or a mix of those. Make sure to take a look at our downloading fastq [best practices](https://vanheeringen-lab.github.io/seq2science/content/workflows/download_fastq.html#best-practices) when making use of the downloading functionality.
+#### Downloading of sample(s)
+Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples.
+Take a look at the [downloading_fastq](./download_fastq.html) workflow for extensive documentation about downloading of public samples.
 
 #### merge cell fastq files based on processing  
 Single cell fastq files get a barcode id corresponding to the sample name. This is added to the fastq header, after which each single cell fastq is merged to a large FASTQ file with all the technical replica's (for example all cells from a plate). This results in a multi-QC report containing QC per technical replica's. This makes lower plate quality easy to spot.
@@ -31,7 +32,7 @@ After clustering peaks can be called on the aggregated cluster signals. This mak
 ### best practices
 TODO: Make sure to take a look at: [example preprocessing](../scATAC_postprocessing.html)
 
-### 2.6.1 Filling out the samples.tsv
+### Filling out the samples.tsv
 
 Before running a workflow you will have to specify which samples you want to run the workflow on. Each workflow starts with a samples.tsv as an example, and you should adapt it to your specific needs. One thing you need to check before filling a sample into your sample.tsv file, is that the fastq file is not completely empty! If a fastq file has a size of 0 it will crash the pipeline.
 You can run bash code to automatically remove completely empty fastq files from a directory, e.g. run: 
@@ -45,7 +46,7 @@ After removing all the completely empty fastq files, use the remainder to fill y
 As an example, the samples.tsv could look something like this:
 
 ```
-sample	assembly	replicate
+sample	assembly	technical_replicate
 GSM1596256	hg38	H1ESC
 GSM1596257	hg38	H1ESC
 GSM1596258	hg38	H1ESC
@@ -76,10 +77,10 @@ This column is necessary for all workflows, not just the atac-seq workflow. If y
 #### Assembly column
 This column is necessary for all workflows, except the *downloading samples* workflow. Here you simply add the name of the assembly you want your samples aligned against and the workflow will download it for you. 
 
-#### replicate column
-Here you put to which technical replica each cell correspons. E.g. the plate from which the cells were sequenced. Per technical replica QC will be generated. For public data you can put all cells under the same technical replica name.
+#### technical_replicate column
+Here you put to which technical replica each cell corresponds. E.g. the plate from which the cells were sequenced. Per technical replica QC will be generated. For public data you can put all cells under the same technical replica name.
 
-### 2.6.2 Filling out the config.yaml
+### Filling out the config.yaml
 Every workflow has many configurable options, and can be set in the `config.yaml` file. In each `config.yaml` we highlighted a couple options that we think are relevant for that specific workflow, and set (we think) **reasonable default** values.
 
 When a workflow starts it prints the complete configuration, and (almost) all these values can be added in the `config.yaml` and changed to your liking. You can see the complete set of configurable options in the [extensive docs](../schemas.html).

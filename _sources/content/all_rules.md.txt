@@ -53,7 +53,7 @@ done
 After combine_peaks we end up with just a bed file of summits. We extend all peaks
 to a total width of 200, for a fair comparison between peaks.
 ```
-bedtools slop -i {input.bedfile} -g {input.sizes} -b {config[slop]} | uniq > {output} 2> {log}
+bedtools slop -i {input.bedfile} -g {input.sizes} -b {params.slop} | uniq > {output} 2> {log}
 ```
 
 #### blind_clustering
@@ -62,18 +62,22 @@ Create a sample distance matrix plot per assembly
 #### bowtie2_align
 Align reads against a genome (index) with bowtie2, and pipe the output to the required sorter(s).
 ```
-bowtie2 {params.params} --threads {threads} -x {input.index}{wildcards.assembly} {params.input} 2> {log} | tee {output} 1> /dev/null 2>> {log}
+bowtie2 {params.params} --threads {threads} -x {input.index}/{wildcards.assembly} {params.input} 2> {log} | tee {output} 1> /dev/null 2>> {log}
 ```
 
 #### bowtie2_index
 Make a genome index for bowtie2. This index is required for alignment.
 ```
+mkdir -p {output}
+
 bowtie2-build {params} --threads {threads} {input} {output}/{wildcards.assembly} > {log} 2>&1
 ```
 
 #### bwa_index
 Make a genome index for bwa (mem). This index is required for alignment.
 ```
+mkdir -p {output}
+
 bwa index -p {params.prefix} {params.params} {input} > {log} 2>&1
 ```
 
@@ -92,6 +96,8 @@ bwa-mem2 mem {params.params} -t {threads} {params.index_dir} {input.reads} 2> {l
 #### bwa_mem2_index
 Make a genome index for bwa-mem2. This index is required for alignment.
 ```
+mkdir -p {output}
+
 bwa-mem2 index -p {params.prefix} {input} > {log} 2>&1
 ```
 
@@ -109,7 +115,7 @@ Uses gimmemotifs' combine_peaks to "combine" peaks. This finds all peaks close
 together and takes the most significant one as the true peak.
 ```
 combine_peaks -i {input.summitfiles} -g {input.sizes} \
---window {params} > {output} 2> {log}
+--window {params.windowsize} > {output} 2> {log}
 ```
 
 #### combine_qc_files
@@ -143,7 +149,7 @@ Combine DEXSeq counts into one count matrix per assembly
 for use in function `DEXSeqDataSet()`
 
 #### coverage_table
-Use gimmemotif's coverage_table to generate a cpunt table with the nr of reads
+Use gimmemotif's coverage_table to generate a count table with the nr of reads
 under each peak per sample.
 ```
 echo "# The number of reads under each peak" > {output} 
@@ -201,6 +207,16 @@ current_conda_env=$(conda env list | grep \* | cut -d "*" -f2-)
 DEXseq_path=${{current_conda_env}}/lib/R/library/DEXSeq/python_scripts
 
 python ${{DEXseq_path}}/dexseq_count.py -f bam -r pos {params.endedness} -s {params.strandedness} {input.gff} {input.bam} {output} > {log} 2>&1
+```
+
+#### dupRadar
+visualize fraction of artifactual reads to normal read duplication
+(due to natural over-sequencing of highly expressed genes).
+
+#### dupRadar_combine
+Combine the individual images (so we can group them nicely in the MultiQC).
+```
+convert {params.good_example} {params.bad_example} {input} -append {output} 2> {log}
 ```
 
 #### edgeR_normalization
@@ -368,6 +384,8 @@ hisat2 {params.params} --threads {threads} -x {input.index}/part {params.input} 
 #### hisat2_index
 Make a genome index for hisat2. This index is required for alignment.
 ```
+mkdir -p {output}
+
 hisat2-build {params} -p {threads} {input} {output}/part > {log} 2>&1
 ```
 
@@ -500,7 +518,7 @@ macs2 bdgcmp -t {input.treatment} -c {input.control} -m qpois -o {output} > {log
 ```
 
 #### macs_cmbreps
-Combine replicates through Fisher's method
+Combine biological replicates through Fisher's method
 
 (Link original peakfile in replicate_processed if there is only 1 sample for a condition)
 ```
@@ -550,6 +568,8 @@ minimap2 -t {threads} -a {input.index} {input.reads} {params} > {output} 2> {log
 #### minimap2_index
 Make a genome index for minimap2. This index is required for alignment.
 ```
+mkdir -p $(dirname {output})
+
 minimap2 -t {threads} -d {output} {input} {params} > {log} 2>&1
 ```
 
@@ -707,6 +727,8 @@ Generate a decoy aware transcriptome index for Salmon.
 #### salmon_index
 Generate a transcriptome index for Salmon.
 ```
+mkdir -p {output}
+
 salmon index -t {input} -i {output} {params} --threads {threads} > {log} 2>&1
 ```
 
@@ -715,6 +737,12 @@ Align reads against a transcriptome (index) with Salmon (mapping-based mode) and
 ```
 salmon quant -i {input.index} -l A {params.input} {params.params} -o {output.dir} \
 --threads {threads} > {log} 2>&1
+```
+
+#### sam2bam
+Convert a file in sam format into a bam format (binary)
+```
+samtools view -b {input} > {output}
 ```
 
 #### sambamba_sort
@@ -772,10 +800,11 @@ This rule does (at least) one of these:
 * tn5 shift adjustment
 * remove multimappers
 * remove reads inside the blacklist
+* filter paired-end reads on transcript length
 ```
 samtools view -h {params.prim_align} {params.minqual} {params.blacklist} \
-{input.bam} {params.atacshift} | 
-samtools view -b > {output} 2> {log}
+{input.bam} | {params.atacshift} {params.sizesieve}
+samtools view -b > {output.final} 2> {log}
 ```
 
 #### softmask_track_1

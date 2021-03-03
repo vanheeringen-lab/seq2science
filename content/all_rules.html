@@ -119,6 +119,8 @@
 <li class="toctree-l3"><a class="reference internal" href="#decoy-transcripts">decoy_transcripts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#deseq2">deseq2</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dexseq-count">dexseq_count</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dupradar">dupRadar</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dupradar-combine">dupRadar_combine</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#edger-normalization">edgeR_normalization</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ena2fastq-pe">ena2fastq_PE</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ena2fastq-se">ena2fastq_SE</a></li>
@@ -182,6 +184,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#salmon-decoy-aware-index">salmon_decoy_aware_index</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#salmon-index">salmon_index</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#salmon-quant">salmon_quant</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sam2bam">sam2bam</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#sambamba-sort">sambamba_sort</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#samtools-index">samtools_index</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#samtools-index-cram">samtools_index_cram</a></li>
@@ -340,7 +343,7 @@ done
 <h2>bedtools_slop<a class="headerlink" href="#bedtools-slop" title="Permalink to this headline">¶</a></h2>
 <p>After combine_peaks we end up with just a bed file of summits. We extend all peaks
 to a total width of 200, for a fair comparison between peaks.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>bedtools slop -i {input.bedfile} -g {input.sizes} -b {config[slop]} | uniq &gt; {output} 2&gt; {log}
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>bedtools slop -i {input.bedfile} -g {input.sizes} -b {params.slop} | uniq &gt; {output} 2&gt; {log}
 </pre></div>
 </div>
 </div>
@@ -351,21 +354,25 @@ to a total width of 200, for a fair comparison between peaks.</p>
 <div class="section" id="bowtie2-align">
 <h2>bowtie2_align<a class="headerlink" href="#bowtie2-align" title="Permalink to this headline">¶</a></h2>
 <p>Align reads against a genome (index) with bowtie2, and pipe the output to the required sorter(s).</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>bowtie2 {params.params} --threads {threads} -x {input.index}{wildcards.assembly} {params.input} 2&gt; {log} | tee {output} 1&gt; /dev/null 2&gt;&gt; {log}
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>bowtie2 {params.params} --threads {threads} -x {input.index}/{wildcards.assembly} {params.input} 2&gt; {log} | tee {output} 1&gt; /dev/null 2&gt;&gt; {log}
 </pre></div>
 </div>
 </div>
 <div class="section" id="bowtie2-index">
 <h2>bowtie2_index<a class="headerlink" href="#bowtie2-index" title="Permalink to this headline">¶</a></h2>
 <p>Make a genome index for bowtie2. This index is required for alignment.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>bowtie2-build {params} --threads {threads} {input} {output}/{wildcards.assembly} &gt; {log} 2&gt;&amp;1
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>mkdir -p {output}
+
+bowtie2-build {params} --threads {threads} {input} {output}/{wildcards.assembly} &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
 </div>
 <div class="section" id="bwa-index">
 <h2>bwa_index<a class="headerlink" href="#bwa-index" title="Permalink to this headline">¶</a></h2>
 <p>Make a genome index for bwa (mem). This index is required for alignment.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>bwa index -p {params.prefix} {params.params} {input} &gt; {log} 2&gt;&amp;1
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>mkdir -p {output}
+
+bwa index -p {params.prefix} {params.params} {input} &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
 </div>
@@ -386,7 +393,9 @@ to a total width of 200, for a fair comparison between peaks.</p>
 <div class="section" id="bwa-mem2-index">
 <h2>bwa_mem2_index<a class="headerlink" href="#bwa-mem2-index" title="Permalink to this headline">¶</a></h2>
 <p>Make a genome index for bwa-mem2. This index is required for alignment.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>bwa-mem2 index -p {params.prefix} {input} &gt; {log} 2&gt;&amp;1
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>mkdir -p {output}
+
+bwa-mem2 index -p {params.prefix} {input} &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
 </div>
@@ -406,7 +415,7 @@ to a total width of 200, for a fair comparison between peaks.</p>
 <p>Uses gimmemotifs’ combine_peaks to “combine” peaks. This finds all peaks close
 together and takes the most significant one as the true peak.</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>combine_peaks -i {input.summitfiles} -g {input.sizes} \
---window {params} &gt; {output} 2&gt; {log}
+--window {params.windowsize} &gt; {output} 2&gt; {log}
 </pre></div>
 </div>
 </div>
@@ -446,7 +455,7 @@ for use in function <code class="docutils literal notranslate"><span class="pre"
 </div>
 <div class="section" id="coverage-table">
 <h2>coverage_table<a class="headerlink" href="#coverage-table" title="Permalink to this headline">¶</a></h2>
-<p>Use gimmemotif’s coverage_table to generate a cpunt table with the nr of reads
+<p>Use gimmemotif’s coverage_table to generate a count table with the nr of reads
 under each peak per sample.</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>echo &quot;# The number of reads under each peak&quot; &gt; {output}
 coverage_table -p {input.peaks} -d {input.replicates} 2&gt; {log} | grep -vE &quot;^#&quot; 2&gt;&gt; {log} |
@@ -506,6 +515,18 @@ bedToBigBed -type=bed4 {output.cytoband_bd} -as={params.schema} \
 DEXseq_path=${{current_conda_env}}/lib/R/library/DEXSeq/python_scripts
 
 python ${{DEXseq_path}}/dexseq_count.py -f bam -r pos {params.endedness} -s {params.strandedness} {input.gff} {input.bam} {output} &gt; {log} 2&gt;&amp;1
+</pre></div>
+</div>
+</div>
+<div class="section" id="dupradar">
+<h2>dupRadar<a class="headerlink" href="#dupradar" title="Permalink to this headline">¶</a></h2>
+<p>visualize fraction of artifactual reads to normal read duplication
+(due to natural over-sequencing of highly expressed genes).</p>
+</div>
+<div class="section" id="dupradar-combine">
+<h2>dupRadar_combine<a class="headerlink" href="#dupradar-combine" title="Permalink to this headline">¶</a></h2>
+<p>Combine the individual images (so we can group them nicely in the MultiQC).</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>convert {params.good_example} {params.bad_example} {input} -append {output} 2&gt; {log}
 </pre></div>
 </div>
 </div>
@@ -691,7 +712,9 @@ Genrich -X -t $input -f {output.log} {params.control} -k {output.bedgraphish} \
 <div class="section" id="hisat2-index">
 <h2>hisat2_index<a class="headerlink" href="#hisat2-index" title="Permalink to this headline">¶</a></h2>
 <p>Make a genome index for hisat2. This index is required for alignment.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>hisat2-build {params} -p {threads} {input} {output}/part &gt; {log} 2&gt;&amp;1
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>mkdir -p {output}
+
+hisat2-build {params} -p {threads} {input} {output}/part &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
 </div>
@@ -834,7 +857,7 @@ macs2 callpeak --bdg -t {input.bam} {params.control} --outdir {config[result_dir
 </div>
 <div class="section" id="macs-cmbreps">
 <h2>macs_cmbreps<a class="headerlink" href="#macs-cmbreps" title="Permalink to this headline">¶</a></h2>
-<p>Combine replicates through Fisher’s method</p>
+<p>Combine biological replicates through Fisher’s method</p>
 <p>(Link original peakfile in replicate_processed if there is only 1 sample for a condition)</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>                    if [ &quot;{params.nr_reps}&quot; == &quot;1&quot; ]; then
 touch {output.tmpbdg} {output.tmppeaks}
@@ -884,7 +907,9 @@ contain the name of the original replicate.</p>
 <div class="section" id="minimap2-index">
 <h2>minimap2_index<a class="headerlink" href="#minimap2-index" title="Permalink to this headline">¶</a></h2>
 <p>Make a genome index for minimap2. This index is required for alignment.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>minimap2 -t {threads} -d {output} {input} {params} &gt; {log} 2&gt;&amp;1
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>mkdir -p $(dirname {output})
+
+minimap2 -t {threads} -d {output} {input} {params} &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
 </div>
@@ -1057,7 +1082,9 @@ done
 <div class="section" id="salmon-index">
 <h2>salmon_index<a class="headerlink" href="#salmon-index" title="Permalink to this headline">¶</a></h2>
 <p>Generate a transcriptome index for Salmon.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>salmon index -t {input} -i {output} {params} --threads {threads} &gt; {log} 2&gt;&amp;1
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>mkdir -p {output}
+
+salmon index -t {input} -i {output} {params} --threads {threads} &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
 </div>
@@ -1066,6 +1093,13 @@ done
 <p>Align reads against a transcriptome (index) with Salmon (mapping-based mode) and output a quantification file per sample.</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>salmon quant -i {input.index} -l A {params.input} {params.params} -o {output.dir} \
 --threads {threads} &gt; {log} 2&gt;&amp;1
+</pre></div>
+</div>
+</div>
+<div class="section" id="sam2bam">
+<h2>sam2bam<a class="headerlink" href="#sam2bam" title="Permalink to this headline">¶</a></h2>
+<p>Convert a file in sam format into a bam format (binary)</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>samtools view -b {input} &gt; {output}
 </pre></div>
 </div>
 </div>
@@ -1131,11 +1165,12 @@ samtools sort {params.sort_order} -@ {threads} {params.memory} {input} -o {outpu
 <li><p>filtering on minimum mapping quality</p></li>
 <li><p>tn5 shift adjustment</p></li>
 <li><p>remove multimappers</p></li>
-<li><p>remove reads inside the blacklist
+<li><p>remove reads inside the blacklist</p></li>
+<li><p>filter paired-end reads on transcript length
 .. code-block:: guess</p>
 <blockquote>
-<div><p>samtools view -h {params.prim_align} {params.minqual} {params.blacklist} {input.bam} {params.atacshift} |
-samtools view -b &gt; {output} 2&gt; {log}</p>
+<div><p>samtools view -h {params.prim_align} {params.minqual} {params.blacklist} {input.bam} | {params.atacshift} {params.sizesieve}
+samtools view -b &gt; {output.final} 2&gt; {log}</p>
 </div></blockquote>
 </li>
 </ul>

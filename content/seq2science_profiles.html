@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Workflows &mdash; seq2science  documentation</title>
+  <title>Seq2science profiles &mdash; seq2science  documentation</title>
   
 
   
@@ -39,8 +39,8 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Downloading fastqs" href="workflows/download_fastq.html" />
-    <link rel="prev" title="Getting started" href="gettingstarted.html" /> 
+    <link rel="next" title="Frequently Asked Questions (FAQ)" href="faq.html" />
+    <link rel="prev" title="seq2science scATAC postprocessing" href="scATAC_postprocessing.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -87,19 +87,15 @@
             
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="gettingstarted.html">Getting started</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Workflows</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="workflows/download_fastq.html">Downloading fastqs</a></li>
-<li class="toctree-l2"><a class="reference internal" href="workflows/alignment.html">Alignment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="workflows/atac_seq.html">ATAC-seq</a></li>
-<li class="toctree-l2"><a class="reference internal" href="workflows/rna_seq.html">RNA-seq</a></li>
-<li class="toctree-l2"><a class="reference internal" href="workflows/chip_seq.html">ChIP-seq</a></li>
-<li class="toctree-l2"><a class="reference internal" href="workflows/scatac_seq.html">scATAC-seq</a></li>
-<li class="toctree-l2"><a class="reference internal" href="workflows/scrna_seq.html">scRNA-seq</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="workflows.html">Workflows</a></li>
 <li class="toctree-l1"><a class="reference internal" href="results.html">Using the results</a></li>
 <li class="toctree-l1"><a class="reference internal" href="extensive_docs.html">Extensive docs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="extracontent.html">Extra resources</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="extracontent.html">Extra resources</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="DESeq2.html">Differential analysis with DESeq2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="scATAC_postprocessing.html">scATAC postprocessing</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">seq2science profiles</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions (FAQ)</a></li>
 </ul>
 
@@ -149,14 +145,16 @@
     
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
         
-      <li>Workflows</li>
+          <li><a href="extracontent.html">Extra resources</a> &raquo;</li>
+        
+      <li>Seq2science profiles</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
           
             
-              <a href="https://github.com/vanheeringen-lab/seq2science/blob/master/docs/content/workflows.rst" class="fa fa-github"> Edit on GitHub</a>
+              <a href="https://github.com/vanheeringen-lab/seq2science/blob/master/docs/content/seq2science_profiles.md" class="fa fa-github"> Edit on GitHub</a>
             
           
         
@@ -170,20 +168,13 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="workflows">
-<h1>Workflows<a class="headerlink" href="#workflows" title="Permalink to this headline">¶</a></h1>
-<p>These are our currently supported workflows.
-These workflows generally overlap a lot, so once you understand the logic of one of these, learning another should be easy!</p>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="workflows/download_fastq.html">Downloading fastqs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="workflows/alignment.html">Alignment</a></li>
-<li class="toctree-l1"><a class="reference internal" href="workflows/atac_seq.html">ATAC-seq</a></li>
-<li class="toctree-l1"><a class="reference internal" href="workflows/rna_seq.html">RNA-seq</a></li>
-<li class="toctree-l1"><a class="reference internal" href="workflows/chip_seq.html">ChIP-seq</a></li>
-<li class="toctree-l1"><a class="reference internal" href="workflows/scatac_seq.html">scATAC-seq</a></li>
-<li class="toctree-l1"><a class="reference internal" href="workflows/scrna_seq.html">scRNA-seq</a></li>
-</ul>
+  <div class="section" id="seq2science-profiles">
+<h1>Seq2science profiles<a class="headerlink" href="#seq2science-profiles" title="Permalink to this headline">¶</a></h1>
+<p>It is possible that you have your own custom settings you always use, e.g. when running seq2science on a cluster.
+For these cases we made generic profiles, and can be found here: <a class="reference external" href="https://github.com/vanheeringen-lab/seq2science-profiles">https://github.com/vanheeringen-lab/seq2science-profiles</a></p>
+<p>Running seq2science after installation of a profile is as easy as:</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>seq2science run {workflow} --profile slurm
+</pre></div>
 </div>
 </div>
 
@@ -193,8 +184,8 @@ These workflows generally overlap a lot, so once you understand the logic of one
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="workflows/download_fastq.html" class="btn btn-neutral float-right" title="Downloading fastqs" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="gettingstarted.html" class="btn btn-neutral float-left" title="Getting started" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="faq.html" class="btn btn-neutral float-right" title="Frequently Asked Questions (FAQ)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="scATAC_postprocessing.html" class="btn btn-neutral float-left" title="seq2science scATAC postprocessing" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>
