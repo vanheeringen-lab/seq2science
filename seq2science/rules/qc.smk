@@ -597,6 +597,10 @@ def get_qc_files(wildcards):
             for trep in treps[treps['assembly'] == ori_assembly(wildcards.assembly)].index:
                 qc['files'].update(get_rna_qc(trep))
 
+        # add dupRadar plots
+        if "REMOVE_DUPLICATES=true" not in config.get("markduplicates",""):
+            qc['files'].update(expand("{qc_dir}/dupRadar/{{assembly}}-dupRadar_mqc.png",**config))
+
         if len(treps.index) > 2:
             qc['files'].update(expand("{qc_dir}/clustering/{{assembly}}-Sample_clustering_mqc.png", **config))
 
@@ -751,7 +755,7 @@ def get_rna_qc(sample):
     # add infer experiment reports
     col = samples.technical_replicate if "technical_replicate" in samples else samples.index
     if "strandedness" not in samples or samples[col == sample].strandedness[0] == "nan":
-        output = expand(f"{{qc_dir}}/strandedness/{{{{assembly}}}}-{sample}.strandedness.txt", **config)
+        output += expand(f"{{qc_dir}}/strandedness/{{{{assembly}}}}-{sample}.strandedness.txt",**config)
 
     return output
 

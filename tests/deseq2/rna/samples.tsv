@@ -1,0 +1,11 @@
+# RNA-test						
+sample	assembly	technical_replicate	biological_replicate	condition	batch	note
+sample1	GRCh38.p13	C0_1	C0	day0	C
+sample2	GRCh38.p13	C0_2	C0	day0	C
+sample3	GRCh38.p13	C2_1	C2	day2	C
+sample4	GRCh38.p13	C2_2	C2	day2	C
+sample5	GRCh38.p13	H0_1	H0	day0	H
+sample6	GRCh38.p13	H0_2	H0	day0	H
+sample7	GRCh38.p13	H2_1	H2	day2	H
+sample8	GRCh38.p13	H2_2	H2	day2	H	these will be merged
+replicate	GRCh38.p13	H2_2	H2	day2	H	these will be merged

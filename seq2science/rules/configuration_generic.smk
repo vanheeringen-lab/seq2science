@@ -114,23 +114,24 @@ if len(errors):
     logger.error("")  # empty line
     raise TerminatedException
 
-# for each column, if found in samples.tsv:
+# for each of these functional columns, if found in samples.tsv:
 # 1) if it is incomplete, fill the blanks with replicate/sample names
-# (sample names if replicates are not found/applicable)
-# 2) drop column if it is identical to the replicate/sample column, or if not needed
+#    (sample names if replicates are not found/applicable)
+# 2) drop column if it provides no information
+#    (renamed in case it's used in a DE contrast)
 if 'technical_replicate' in samples:
     samples['technical_replicate'] = samples['technical_replicate'].mask(pd.isnull, samples['sample'])
     if len(samples['technical_replicate'].unique()) == len(samples['sample'].unique()) or config.get('technical_replicates') == 'keep':
-        samples = samples.drop(columns=['technical_replicate'])
+        samples.rename(columns={'technical_replicate': '_trep'}, inplace=True)
 col = 'technical_replicate' if 'technical_replicate' in samples else 'sample'
 if 'biological_replicate' in samples:
     samples['biological_replicate'] = samples['biological_replicate'].mask(pd.isnull, samples[col])
     if len(samples['biological_replicate'].unique()) == len(samples[col].unique()) or config.get('biological_replicates') == 'keep':
-        samples = samples.drop(columns=['biological_replicate'])
+        samples.rename(columns={'biological_replicate': '_brep'}, inplace=True)
 if 'descriptive_name' in samples:
     samples['descriptive_name'] = samples['descriptive_name'].mask(pd.isnull, samples[col])
     if samples['descriptive_name'].to_list() == samples[col].to_list():
-        samples = samples.drop(columns=['descriptive_name'])
+        samples.rename(columns={'descriptive_name': '_dname'}, inplace=True)
 if 'strandedness' in samples:
     samples['strandedness'] = samples['strandedness'].mask(pd.isnull, 'nan')
     if config.get('ignore_strandedness', True) or not any([field in list(samples['strandedness']) for field in ['yes', 'forward', 'reverse', 'no']]):
@@ -409,7 +410,7 @@ if 'technical_replicate' in samples:
             sampledict[replicate] = {'layout':  sampledict[sample]['layout']}
         elif sampledict[replicate]['layout'] != sampledict[sample]['layout']:
             assembly = samples.loc[sample, "assembly"]
-            treps = samples[(samples["assembly"] == assembly) & (samples["replicate"] == replicate)].index
+            treps = samples[(samples["assembly"] == assembly) & (samples["technical_replicate"] == replicate)].index
             failed_samples.setdefault(replicate, set()).update({trep for trep in treps}) 
 
 if len(failed_samples):
