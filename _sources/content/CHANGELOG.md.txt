@@ -12,7 +12,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 Version 0.5.0 brings many quality of life improvements, such as seq2science automatically inferring what needs to be re-run when changing the samples.tsv and/or the config.yaml, differential peak analysis for chip/atac workflows and tab-completion!
 
-To (hopefully) clear things up we changed the way technical and biological replicates are called, now technical and biological replicate, before technical replicate and condition.
+To (hopefully) clear things up we changed the way technical and biological replicates are called, now technical and biological replicate, before replicate and condition.
 
 It is important to note that the RNA-seq workflow DOES NOT remove duplicate reads anymore as a *default*, and that the sc/bulk ATAC-seq workflows now filters reads on the nucleosome-free region as a *default*.  
 
