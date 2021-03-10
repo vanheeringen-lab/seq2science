@@ -5,8 +5,6 @@ import re
 import os
 import sys
 import glob
-import gzip
-import shutil
 import time
 import colorsys
 import urllib.request
@@ -19,7 +17,6 @@ import numpy as np
 import pandas as pd
 import pysradb
 from snakemake.exceptions import TerminatedException
-from snakemake.io import expand
 from snakemake.logging import logger
 
 # default colors in matplotlib. Order dictates the priority.
@@ -42,61 +39,36 @@ def _sample_to_idxs(df: pd.DataFrame, sample: str) -> List[int]:
     return idxs
 
 
-def _gzip(file):
-    with open(file, 'rb') as f_in, gzip.open(f'{file}.gz', 'wb') as f_out:
-        shutil.copyfileobj(f_in, f_out)
-    return f'{file}.gz'
-
-
-def standardize_local_samples(sample: str, config: dict):
-    """rename fastqs to fit the workflow format"""
-    local_fastqs = glob.glob(os.path.join(config["fastq_dir"], f'{sample}*{config["fqsuffix"]}*'))
-    if not local_fastqs:
-        return False  # no sample found
-
-    # gzip
-    for n, fastq in enumerate(local_fastqs):
-        if not fastq.endswith(".gz"):
-            local_fastqs[n] = _gzip(fastq)
-
-    expected_fastqs = []
-    if len(local_fastqs) == 1:
-        expected_fastqs = [os.path.join(config["fastq_dir"], f'{sample}.{config["fqsuffix"]}.gz')]
-    elif len(local_fastqs) == 2:
-        expected_fastqs = [os.path.join(config["fastq_dir"], f'{sample}_{ext}.{config["fqsuffix"]}.gz') for ext in config["fqext"]]
-
-    for n, expected_fastq in enumerate(expected_fastqs):
-        if local_fastqs[n] != expected_fastq:
-            os.rename(local_fastqs[n], expected_fastq)
-
-    return True  # sample found. will now have correct format
-
-
 def samples2metadata_local(samples: List[str], config: dict, logger) -> dict:
     """
     (try to) get the metadata of local samples
     """
     sampledict = dict()
     for sample in samples:
-        if standardize_local_samples(sample, config):
-            if os.path.exists(expand(f'{{fastq_dir}}/{sample}.{{fqsuffix}}.gz', **config)[0]):
-                sampledict[sample] = dict()
-                sampledict[sample]["layout"] = "SINGLE"
-            elif all(os.path.exists(path) for path in expand(f'{{fastq_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz', **config)):
-                sampledict[sample] = dict()
-                sampledict[sample]["layout"] = "PAIRED"
-            elif sample.startswith(("GSM", "DRX", "ERX", "SRX", "DRR", "ERR", "SRR")):
-                continue
-            else:
-                logger.error(f"\nsample {sample} was not found..\n"
-                             f"We checked for SE file:\n"
-                             f"\t{config['fastq_dir']}/{sample}.{config['fqsuffix']}.gz \n"
-                             f"and for PE files:\n"
-                             f"\t{config['fastq_dir']}/{sample}_{config['fqext1']}.{config['fqsuffix']}.gz \n"
-                             f"\t{config['fastq_dir']}/{sample}_{config['fqext2']}.{config['fqsuffix']}.gz \n"
-                             f"and since the sample did not start with either GSM, SRX, SRR, ERR, and DRR we "
-                             f"couldn't find it online..\n")
-                raise TerminatedException
+        local_fastqs = glob.glob(os.path.join(config["fastq_dir"], f'{sample}*{config["fqsuffix"]}*'))
+        if len(local_fastqs) == 1:
+            sampledict[sample] = dict()
+            sampledict[sample]["layout"] = "SINGLE"
+        elif len(local_fastqs) == 2 \
+                and any([config["fqext1"] in os.path.basename(f) for f in local_fastqs]) \
+                and any([config["fqext2"] in os.path.basename(f) for f in local_fastqs]):
+            sampledict[sample] = dict()
+            sampledict[sample]["layout"] = "PAIRED"
+        elif sample.startswith(("GSM", "DRX", "ERX", "SRX", "DRR", "ERR", "SRR")):
+            continue
+        else:
+            extend_msg = ""
+            if len(local_fastqs) > 2:
+                extend_msg = f"We found too many files matching ({len(local_fastqs)}) and could not distinguish them:\n" + \
+                             ", ".join([os.path.basename(f) for f in local_fastqs]) + "\n"
+
+            logger.error(f"\nsample {sample} was not found..\n"
+                         f"We checked in directory {config['fastq_dir']}\n"
+                         f"for files starting with {sample} and containing {config['fqsuffix']}.\n"
+                         + extend_msg +
+                         f"Since the sample did not start with either GSM, SRX, SRR, ERR, and DRR we "
+                         f"couldn't find it online..\n")
+            raise TerminatedException
 
     return sampledict
 

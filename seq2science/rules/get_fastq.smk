@@ -1,4 +1,5 @@
 import os
+import glob
 
 
 rule run2sra:
@@ -42,6 +43,14 @@ rule run2sra:
             sleep 10
         done
         """
+
+
+# ENA > SRA
+ruleorder: ena2fastq_SE > sra2fastq_SE
+ruleorder: ena2fastq_PE > sra2fastq_PE
+# PE > SE
+ruleorder: ena2fastq_PE > ena2fastq_SE
+ruleorder: sra2fastq_PE > sra2fastq_SE
 
 
 rule sra2fastq_SE:
@@ -126,11 +135,6 @@ rule sra2fastq_PE:
         """
 
 
-ruleorder: ena2fastq_SE > sra2fastq_SE
-ruleorder: ena2fastq_PE > sra2fastq_PE
-ruleorder: ena2fastq_PE > ena2fastq_SE
-
-
 rule ena2fastq_SE:
     """
     Download single-end fastq files directly from the ENA.
@@ -188,6 +192,9 @@ rule ena2fastq_PE:
             shell('exit 1 >> {log} 2>&1')
 
 
+ruleorder: rename_sample > runs2sample
+
+
 def get_runs_from_sample(wildcards):
     run_fastqs = []
     for run in sampledict[wildcards.sample]["runs"]:
@@ -220,3 +227,30 @@ rule runs2sample:
         for i in range(1, len(input)):
             inputfile = input[i]
             shell("cat {inputfile} >> {output}")
+
+
+def sample_to_rename(wildcards):
+    local_fastqs = glob.glob(os.path.join(config["fastq_dir"],f'{wildcards.sample}*{config["fqsuffix"]}*'))
+
+    if len(local_fastqs) not in [1,2]:
+        # <1: no local sample fastqs found
+        # >2: too many files match the sample name: can't distinguish
+        return "$a"  # do not use this rule
+
+    # assumption: misnamed Paired-Ended samples are also lexicographically ordered
+    local_fastq = local_fastqs[0]
+    if len(local_fastqs) == 2 and config["fqext2"] in wildcards.suffix:
+        local_fastq = local_fastqs[1]
+    return local_fastq
+
+
+rule rename_sample:
+    """rename existing local samples with incompatible naming formats"""
+    input:
+        sample_to_rename
+    output:
+        expand("{fastq_dir}/{{sample}}{{suffix}}",**config),
+    shell:
+        """
+        mv {input[0]} {output[0]}
+        """
