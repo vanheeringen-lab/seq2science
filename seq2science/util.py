@@ -45,7 +45,7 @@ def samples2metadata_local(samples: List[str], config: dict, logger) -> dict:
     """
     sampledict = dict()
     for sample in samples:
-        local_fastqs = glob.glob(os.path.join(config["fastq_dir"], f'{sample}*{config["fqsuffix"]}*'))
+        local_fastqs = glob.glob(os.path.join(config["fastq_dir"], f'{sample}*{config["fqsuffix"]}*.gz'))
         if len(local_fastqs) == 1:
             sampledict[sample] = dict()
             sampledict[sample]["layout"] = "SINGLE"

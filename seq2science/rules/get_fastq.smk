@@ -1,5 +1,5 @@
-import os
 import glob
+import os
 
 
 rule run2sra:
@@ -230,7 +230,7 @@ rule runs2sample:
 
 
 def sample_to_rename(wildcards):
-    local_fastqs = glob.glob(os.path.join(config["fastq_dir"],f'{wildcards.sample}*{config["fqsuffix"]}*'))
+    local_fastqs = glob.glob(os.path.join(config["fastq_dir"],f'{wildcards.sample}*{config["fqsuffix"]}*.gz'))
 
     if len(local_fastqs) not in [1,2]:
         # <1: no local sample fastqs found
