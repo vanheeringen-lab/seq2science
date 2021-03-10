@@ -310,7 +310,8 @@ def _run(args, base_dir, workflows_dir, config_path):
 
     # run snakemake/seq2science
     #   1. pretty welcome message
-    setup_seq2science_logger()
+    if not parsed_args["dryrun"]:
+        setup_seq2science_logger()
     log_welcome(logger, parsed_args)
     if not args.skip_rerun or args.unlock:
         #   2. start a dryrun checking which files need to be created, and check if
@@ -350,10 +351,9 @@ def _run(args, base_dir, workflows_dir, config_path):
     logger.printreason = parsed_args["printreason"]
     logger.stream_handler.setStream(sys.stdout)
     parsed_args["config"]["no_config_log"] = True
+
     #   5. start the "real" run where jobs actually get started
     exit_code = snakemake.snakemake(**parsed_args)
-
-    #   6. start the "real" run where jobs actually get started
     sys.exit(0) if exit_code else sys.exit(1)
 
 
