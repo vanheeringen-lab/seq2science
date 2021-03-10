@@ -64,7 +64,7 @@ def samples2metadata_local(samples: List[str], config: dict, logger) -> dict:
 
             logger.error(f"\nsample {sample} was not found..\n"
                          f"We checked in directory {config['fastq_dir']}\n"
-                         f"for files starting with {sample} and containing {config['fqsuffix']}.\n"
+                         f"for gzipped files starting with {sample} and containing {config['fqsuffix']}.\n"
                          + extend_msg +
                          f"Since the sample did not start with either GSM, SRX, SRR, ERR, and DRR we "
                          f"couldn't find it online..\n")
