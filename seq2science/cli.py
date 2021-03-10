@@ -310,7 +310,7 @@ def _run(args, base_dir, workflows_dir, config_path):
 
     # run snakemake/seq2science
     #   1. pretty welcome message
-    setup_seq2science_logger(parsed_args["dryrun"])
+    setup_seq2science_logger(parsed_args)
     log_welcome(logger, parsed_args)
     if not args.skip_rerun or args.unlock:
         #   2. start a dryrun checking which files need to be created, and check if
@@ -545,9 +545,9 @@ def resource_parser(parsed_args):
         parsed_args["resources"]["mem_gb"] = round(mem)
 
 
-def setup_seq2science_logger(dryrun):
+def setup_seq2science_logger(parsed_args):
     setup_logger()
-    if not dryrun:
+    if not parsed_args["dryrun"]:
         seq2science_logfile = os.path.abspath(
             "seq2science."
             + datetime.datetime.now().isoformat().replace(":", "")
