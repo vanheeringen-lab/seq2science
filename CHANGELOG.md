@@ -8,6 +8,14 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+## [0.5.0] - 2021-03-03
+
+Version 0.5.0 brings many quality of life improvements, such as seq2science automatically inferring what needs to be re-run when changing the samples.tsv and/or the config.yaml, differential peak analysis for chip/atac workflows and tab-completion!
+
+To (hopefully) clear things up we changed the way technical and biological replicates are called, now technical and biological replicate, before replicate and condition.
+
+It is important to note that the RNA-seq workflow DOES NOT remove duplicate reads anymore as a *default*, and that the sc/bulk ATAC-seq workflows now filters reads on the nucleosome-free region as a *default*.  
+
 ### Changed
 
 - Keep all duplicate reads in RNA-seq by default
@@ -328,6 +336,7 @@ Many minor bug- and quality of life fixes.
 First release of seq2science!
 
 [Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/master...v0.4.2
+[0.5.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.0...v0.4.3
 [0.4.3]: https://github.com/vanheeringen-lab/seq2science/compare/v0.4.3...v0.4.2
 [0.4.2]: https://github.com/vanheeringen-lab/seq2science/compare/v0.4.2...v0.4.1
 [0.4.1]: https://github.com/vanheeringen-lab/seq2science/compare/v0.4.1...v0.4.0
