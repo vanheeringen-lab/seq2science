@@ -67,6 +67,7 @@ report_section_order:
 table_columns_placement:
     MACS2:
         treatment_redundant_rate: 1020
+        peak_count: 1019
 
 table_columns_visible:
     fastp:
@@ -113,6 +114,7 @@ table_columns_visible:
     MACS2:
         treatment_redundant_rate: True
         d: False
+        peak_count: True
     macs2_frips:
         percent_assigned: True
         Assigned: False
