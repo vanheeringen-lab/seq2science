@@ -482,19 +482,35 @@ rule multiqc_header_info:
     """
     output:
         temp(expand('{qc_dir}/header_info.yaml', **config))
+    params:
+        config={k: v for k, v in config.items() if k not in ["no_config_log", "cli_call"]}  # helps resolve changed config options, ignore no_config_log
     run:
         import os
+        import subprocess
         from datetime import date
 
         cwd = os.getcwd().split('/')[-1]
         mail = config.get('email', 'none@provided.com')
         date = date.today().strftime("%B %d, %Y")
 
+        cli_call = config["cli_call"][:]
+        # convert run into explain
+        cli_call[1] = "explain"
+
+        # remove run specific commands
+        cli_call = [arg for arg in cli_call if arg not in {"--unlock", "--rerun-incomplete", "-k", "--keep-going", "--skip-rerun", "--reason", "-r", "--dryrun", "-n"}]
+        cores_index = cli_call.index("--cores" if "--cores" in cli_call else "-j")
+        del cli_call[cores_index:cores_index+2]
+
+        result = subprocess.run(cli_call, stdout=subprocess.PIPE)
+        explanation = result.stdout.decode('utf-8')
+
         with open(output[0], "w") as f:
             f.write(f"report_header_info:\n"
                     f"    - Contact E-mail: '{mail}'\n"
                     f"    - Workflow: '{cwd}'\n"
-                    f"    - Date: '{date}'\n")
+                    f"    - Date: '{date}'\n"
+                    f"    - Explanation: '{explanation}'")
 
 
 rule multiqc_rename_buttons:
@@ -535,7 +551,7 @@ rule multiqc_samplesconfig:
         config_used=len(workflow.overwrite_configfiles) > 0,
         configfile=workflow.overwrite_configfiles[-1],
         sanitized_samples=sanitized_samples,  # helps resolve changed config options
-        config={k: v for k, v in config.items() if k != "no_config_log"}  # helps resolve changed config options, ignore no_config_log
+        config={k: v for k, v in config.items() if k not in ["no_config_log", "cli_call"]}  # helps resolve changed config options, ignore no_config_log
     conda:
         "../envs/htmltable.yaml"
     script:
