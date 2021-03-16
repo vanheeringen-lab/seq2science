@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Changed
+
+- MultiQC updated to v1.10
+
 ## [0.5.0] - 2021-03-03
 
 Version 0.5.0 brings many quality of life improvements, such as seq2science automatically inferring what needs to be re-run when changing the samples.tsv and/or the config.yaml, differential peak analysis for chip/atac workflows and tab-completion!
