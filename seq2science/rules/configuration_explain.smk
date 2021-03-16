@@ -69,7 +69,7 @@ else:
                       lst=["did not have a minimum mapping quality of {config[min_mapping_quality]}" if config.get("min_mapping_quality", 0) > 0 else "",
                            "were a (secondary) multimapper" if config.get("only_primary_align") else "",
                            "aligned inside the ENCODE blacklist (https://doi.org/10.1038/s41598-019-45839-z)" if config.get("remove_blacklist") else "",
-                           "had a template length longer than {params.minsize} and shorter than {params.maxsize}" if config.get("filter_on_size") else ""],
+                           "had a template length longer than {config[max_template_length]} and shorter than {config[max_template_length]}" if config.get("filter_on_size") else ""],
                       end=" and finally were tn5 bias shifted by seq2science." if config.get("tn5_shift", 0) > 0 else "."),
         # "samtools_sort": "Bam files were sorted with samtools v@samtools[samtools].",
         "sambamba_sort": "Bam files were sorted with sambamba v@sambamba[sambamba] (https://doi.org/10.1093/bioinformatics/btv098).",
