@@ -69,7 +69,7 @@ else:
                       lst=["did not have a minimum mapping quality of {config[min_mapping_quality]}" if config.get("min_mapping_quality", 0) > 0 else "",
                            "were a (secondary) multimapper" if config.get("only_primary_align") else "",
                            "aligned inside the ENCODE blacklist (https://doi.org/10.1038/s41598-019-45839-z)" if config.get("remove_blacklist") else "",
-                           "had a template length longer than {config[max_template_length]} and shorter than {config[max_template_length]}" if config.get("filter_on_size") else ""],
+                           "had a template length longer than {config[max_template_length]} and shorter than {config[min_template_length]}" if config.get("filter_on_size") else ""],
                       end=" and finally were tn5 bias shifted by seq2science." if config.get("tn5_shift", 0) > 0 else "."),
         # "samtools_sort": "Bam files were sorted with samtools v@samtools[samtools].",
         "sambamba_sort": "Bam files were sorted with sambamba v@sambamba[sambamba] (https://doi.org/10.1093/bioinformatics/btv098).",
@@ -88,7 +88,7 @@ else:
         "get_genome": "Genome assembly {wildcards.raw_assembly} was downloaded with genomepy {genomepy.__version__} (https://doi.org/10.21105/joss.00320).",
         "custom_extension": "The genome and gene annotations was extended with custom regions.",
         "call_peak_genrich":"Peaks were called with genrich v@genrich[genrich] (https://github.com/jsh58/Genrich) with options '{config[peak_caller][genrich]}'.",
-        "macs2_callpeak": "Peaks were called with macs2 v@macs2[macs2] (https://doi.org/10.1186/gb-2008-9-9-r137) with options '{config[peak_caller][macs2]}' in {params.format} mode. The effective genome size was estimated by taking the number of unique kmers in the assembly of the same length as the average read length for each sample/",
+        "macs2_callpeak": "Peaks were called with macs2 v@macs2[macs2] (https://doi.org/10.1186/gb-2008-9-9-r137) with options '{config[peak_caller][macs2]}' in {params.format} mode. The effective genome size was estimated by taking the number of unique kmers in the assembly of the same length as the average read length for each sample.",
         "keep_mates": "After alignment we removed paired-end info from reads with seq2science to utilize both mates in the paired-end reads.",
         "idr": "Narrowpeak files of biological replicates belonging to the same condition were merged with the irreproducible discovery rate v@idr[idr] (http://dx.doi.org/10.1214/11-AOAS466).",
         "macs_cmbreps": "Narrowpeak files of biological replicates belonging to the same condition were merged with fisher's method in macs2 v@macs2[macs2].",
@@ -113,6 +113,6 @@ else:
         "fastp_PE": "We trimmed paired-end reads with fastp v@fastp[fastp] (https://doi.org/10.1093/bioinformatics/bty560) with options '{config[trimoptions]}'.",
         "chipseeker": "A peak feature distribution plot and peak localization plot relative to TSS were made with chipseeker (https://doi.org/doi:10.18129/B9.bioc.ChIPseeker).",  # v@chipseeker[chipseeker]
         "combine_peaks": "A consensus set of summits was made with gimmemotifs.combine_peaks v@gimme[gimmemotifs] (https://www.biorxiv.org/content/10.1101/474403v1.full).",
-        "bed_slop": "All summits were extended with 'config[slop]' to get a consensus peakset.",
+        "bed_slop": "All summits were extended with '{config[slop]}' to get a consensus peakset.",
         "coverage_table": "And finally we made a count table from the conensus peakset with gimmemotifs.combine_peaks v@gimme[gimmemotifs] (https://www.biorxiv.org/content/10.1101/474403v1.full).",
     }
