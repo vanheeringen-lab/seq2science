@@ -510,7 +510,7 @@ rule multiqc_header_info:
                     f"    - Contact E-mail: '{mail}'\n"
                     f"    - Workflow: '{cwd}'\n"
                     f"    - Date: '{date}'\n"
-                    f"    - Explanation: '{explanation}'")
+                    f"    - Explanation: \"{explanation}\"")
 
 
 rule multiqc_rename_buttons:
