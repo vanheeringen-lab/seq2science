@@ -18,7 +18,7 @@ fi
 
 function assert_rulecount {
   # check if the DAG (stored with  | tee tests/local_test_results/${1}_dag  ) ran rule $2 exactly $3 times
-  val=$(cat tests/local_test_results/${1}_dag | grep -w $2 | cut -f2);
+  val=$(cat tests/local_test_results/${1}_dag | grep -wE $2 | cut -f2);
   # check if the rule was found in the DAG at all
   if [ -z "$val" ]; then
     # if specified count is zero, that's OK
@@ -63,8 +63,8 @@ if [ $1 = "alignment" ]; then
   printf "\ndownload default\n"
   seq2science run download-fastq -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 runs2sample 3
-  assert_rulecount $1 ena2fastq_SE 5
-  assert_rulecount $1 ena2fastq_PE 1
+  assert_rulecount $1 'ena2fastq_SE|sra2fastq_SE' 5
+  assert_rulecount $1 'ena2fastq_PE|sra2fastq_PE' 1
 
   # alignment workflow
   WF=alignment
