@@ -4,7 +4,7 @@
 #   bash ./tests/dag_tests.sh TEST
 
 # for lazy asses:
-# bash ./tests/dag_tests.sh alignment && bash ./tests/dag_tests.sh atac-seq && bash ./tests/dag_tests.sh scatac-seq && bash ./tests/dag_tests.sh rna-seq
+# bash ./tests/dag_tests.sh alignment && bash ./tests/dag_tests.sh atac-seq && bash ./tests/dag_tests.sh scatac-seq && bash ./tests/dag_tests.sh rna-seq && bash ./tests/dag_tests.sh scrna-seq
 
 # check if an argument was passed
 if [ -z "$1" ]; then
@@ -18,7 +18,7 @@ fi
 
 function assert_rulecount {
   # check if the DAG (stored with  | tee tests/local_test_results/${1}_dag  ) ran rule $2 exactly $3 times
-  val=$(cat tests/local_test_results/${1}_dag | grep -wE $2 | cut -f2);
+  val=$(cat tests/local_test_results/${1}_dag | grep -wE $2$ | cut -f2);
   # check if the rule was found in the DAG at all
   if [ -z "$val" ]; then
     # if specified count is zero, that's OK
@@ -35,8 +35,10 @@ touch tests/local_test_results/fastq/S1_1_R1.fastq.gz
 touch tests/local_test_results/fastq/S1_1_R2.fastq.gz
 touch tests/local_test_results/fastq/S1_2_R1.fastq.gz
 touch tests/local_test_results/fastq/S1_2_R2.fastq.gz
-touch tests/local_test_results/fastq/S2_1.fastq.gz
-touch tests/local_test_results/fastq/S2_2.fastq.gz
+touch tests/local_test_results/fastq/S2_1_R1.fastq.gz
+touch tests/local_test_results/fastq/S2_1_R2.fastq.gz
+touch tests/local_test_results/fastq/S2_2_R1.fastq.gz
+touch tests/local_test_results/fastq/S2_2_R2.fastq.gz
 touch tests/local_test_results/fastq/S3_1.fastq.gz
 touch tests/local_test_results/fastq/S4_1.fastq.gz
 touch tests/local_test_results/fastq/S5_1.fastq.gz
@@ -347,7 +349,7 @@ if [ $1 = "scatac-seq" ]; then
   assert_rulecount $1 merge_replicates 0
   assert_rulecount $1 bwa_mem2 4
   seq2science run scatac-seq -n --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/scatac_seq/complex_samples.tsv,technical_replicates:merge} | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 merge_replicates 3
+  assert_rulecount $1 merge_replicates 4
   assert_rulecount $1 bwa_mem2 2
 
   printf "\nmultiple assemblies and replicates - multiqc report\n"
@@ -438,7 +440,7 @@ if [ $1 = "rna-seq" ]; then
 
   printf "\nmultiple assemblies - multiqc\n"
   seq2science run rna-seq --skip-rerun -n --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={technical_replicates:keep,samples:tests/rna_seq/complex_samples.tsv,create_qc_report:True,trimmer:trimgalore} | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 fastqc 24
+  assert_rulecount $1 fastqc 28
   assert_rulecount $1 multiqc 2
 
   printf "\nmultiple replicates - DEA \n"
@@ -457,7 +459,7 @@ if [ $1 = "rna-seq" ]; then
 
   printf "\nmultiple replicates - multiqc\n"
   seq2science run rna-seq --skip-rerun -n --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={technical_replicates:merge,create_qc_report:True,trimmer:trimgalore} | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 fastqc 24
+  assert_rulecount $1 fastqc 28
   assert_rulecount $1 htseq_count 8
 
   printf "\nmultiple assemblies and replicates - DEA \n"
@@ -483,7 +485,7 @@ if [ $1 = "rna-seq" ]; then
 
   printf "\nmultiple assemblies and replicates - multiqc report\n"
   seq2science run rna-seq --skip-rerun -n --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={technical_replicates:merge,samples:tests/rna_seq/complex_samples.tsv,create_qc_report:True,trimmer:trimgalore} | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 fastqc  24
+  assert_rulecount $1 fastqc  28
 
   test_ran=1
 fi
