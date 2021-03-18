@@ -103,7 +103,7 @@ if config["trimmer"] == "trimgalore":
         params:
             f"{config['qc_dir']}/fastqc/"
         conda:
-            "../envs/qc.yaml"
+            "../envs/fastqc.yaml"
         priority: -10
         shell:
             """
@@ -651,7 +651,7 @@ rule multiqc:
     log:
         expand("{log_dir}/multiqc_{{assembly}}.log", **config)
     conda:
-        "../envs/qc.yaml"
+        "../envs/multiqc.yaml"
     shell:
         """
         multiqc $(< {input.files}) -o {params.dir} -n multiqc_{wildcards.assembly}.html \
