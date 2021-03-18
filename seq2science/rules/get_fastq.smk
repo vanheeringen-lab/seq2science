@@ -241,6 +241,16 @@ def sample_to_rename(wildcards):
     local_fastq = local_fastqs[0]
     if len(local_fastqs) == 2 and config["fqext2"] in wildcards.suffix:
         local_fastq = local_fastqs[1]
+
+    # only rename incompatible naming formats
+    correctly_named_fastqs = [
+        os.path.join(config["fastq_dir"],f'{wildcards.sample}.{config["fqsuffix"]}.gz'),
+        os.path.join(config["fastq_dir"],f'{wildcards.sample}_{config["fqext1"]}.{config["fqsuffix"]}.gz'),
+        os.path.join(config["fastq_dir"],f'{wildcards.sample}_{config["fqext2"]}.{config["fqsuffix"]}.gz'),
+    ]
+    if local_fastq in correctly_named_fastqs:
+        return "$a"  # do not use this rule
+
     return local_fastq
 
 
