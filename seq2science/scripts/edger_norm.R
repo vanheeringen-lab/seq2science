@@ -23,8 +23,8 @@ tryCatch(
         norm_counts <- cpm(dgelist)
     },
     error = function(e){
-        norm_counts <<- data.frame(counts)
-        norm_counts[] <<- "NA"
+        norm_counts <- data.frame(counts)
+        norm_counts[norm_counts >= 0] <- "NA"
         print(paste("Something went wrong when converting the count table with method", method, "."))
     }
 )
