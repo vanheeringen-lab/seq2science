@@ -37,10 +37,6 @@ touch tests/local_test_results/fastq/S1_2_R1.fastq.gz
 touch tests/local_test_results/fastq/S1_2_R2.fastq.gz
 touch tests/local_test_results/fastq/S2_1.fastq.gz
 touch tests/local_test_results/fastq/S2_2.fastq.gz
-#touch tests/local_test_results/fastq/S2_1_R1.fastq.gz
-#touch tests/local_test_results/fastq/S2_1_R2.fastq.gz
-#touch tests/local_test_results/fastq/S2_2_R1.fastq.gz
-#touch tests/local_test_results/fastq/S2_2_R2.fastq.gz
 touch tests/local_test_results/fastq/S3_1.fastq.gz
 touch tests/local_test_results/fastq/S4_1.fastq.gz
 touch tests/local_test_results/fastq/S5_1.fastq.gz
@@ -355,9 +351,8 @@ if [ $1 = "scatac-seq" ]; then
   assert_rulecount $1 bwa_mem2 2
 
   printf "\nmultiple assemblies and replicates - multiqc report\n"
-#  seq2science run scatac-seq -n --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/scatac_seq/complex_samples.tsv,technical_replicates:merge,create_qc_report:True,trimmer:trimgalore} | tee tests/local_test_results/${1}_dag
-#  assert_rulecount $1 fastqc 4  # none for sample and twice for trep
-  echo "error occurs when adding the qc_report"
+  seq2science run scatac-seq -n --configfile tests/scatac_seq/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/scatac_seq/complex_samples.tsv,technical_replicates:merge,create_qc_report:True,trimmer:trimgalore} | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 fastqc 3  # twice for PE trep, once for SE trep
 
   test_ran=1
 fi
