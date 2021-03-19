@@ -237,7 +237,7 @@ def sample_to_rename(wildcards):
         # >2: too many files match the sample name: can't distinguish
         return "$a"  # do not use this rule
 
-    # assumption: misnamed Paired-Ended samples are also lexicographically ordered
+    # assumption: incompatible paired-ended samples are lexicographically ordered (R1>R2)
     local_fastq = local_fastqs[0]
     if len(local_fastqs) == 2 and config["fqext2"] in wildcards.suffix:
         local_fastq = local_fastqs[1]
@@ -255,7 +255,9 @@ def sample_to_rename(wildcards):
 
 
 rule rename_sample:
-    """rename existing local samples with incompatible naming formats"""
+    """
+    Rename local samples with incompatible naming formats
+    """
     input:
         sample_to_rename
     output:
