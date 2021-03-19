@@ -22,6 +22,8 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - scATAC can properly use SE fastqs
 - scRNA can use fqexts other than R1/R2
 - fastq renaming works again
+- added missing schemas to extended docs
+- broken hyperlinks in docs
 
 ## [0.5.0] - 2021-03-03
 
