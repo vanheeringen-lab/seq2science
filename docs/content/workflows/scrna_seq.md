@@ -46,13 +46,19 @@ pbmc    GRCh38.p13      pbmc
 ```
 
 #### Sample column
-This column is necessary for all workflows, not just the scRNA-seq workflow.
 If you use the pipeline on public data this should be the name of the accession (e.g. GSM2837484).
+(Accepted formats start with "GSM", "SRR", "SRX", "DRR", "DRX", "ERR" or "ERX")
+
 If you use the pipeline on local data this should be the *basename* of the file without the *extension(s)*.
-For example, for paired-ended data `/home/user/myfastqs/sample2_R1.fastq.gz` and `/home/user/myfastqs/sample2_R2.fastq.gz` would be `sample2`.
+For instance, `/home/user/myfastqs/sample1.fastq.gz` would be `sample1` (for single-ended data).
+For paired-ended data `/home/user/myfastqs/sample2_R1.fastq.gz` and `/home/user/myfastqs/sample2_R2.fastq.gz` would be `sample2`.
+
+Some local fastq files may have slightly different naming formats.
+Illumina's sample for instance may produce a paired-ended sample with these fastqs: `sample3_S1_L001_R1_001.fastq.gz` and `sample3_S1_L001_R2_001.fastq.gz`.
+Seq2science will attempt to recognize these files based on the sample name (in this case `sample3`).
+Other identifiers used are the fastq read extensions (`R1` and `R2` by default) and the fastq suffix (`fastq` by default), which can be changed in the config.
 
 #### Assembly column
-This column is necessary for all workflows, except the *downloading samples* workflow.
 Here you simply add the name of the assembly you want your samples aligned against and the workflow will download it for you.
 
 #### Descriptive_name column

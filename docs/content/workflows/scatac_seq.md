@@ -72,10 +72,20 @@ iPSC-2-KC-diff-plate2-plate2-16718m701m517	hg38	plate2
 ```
 
 #### Sample column
-This column is necessary for all workflows, not just the atac-seq workflow. If you use the pipeline on public data this should be the name of the accession (e.g. GSM2837484), if you use the pipeline on local data this should be the *basename* of the file without the *extension*. For instance `/home/user/myfastqs/sample1.fastq.gz` would be `sample1`. For the scATAC files, the sample name should correspond to a single cell Fastq file! If instead its a fastq file containing data from multiple cells, the pipeline will need alterations before you can use it.
+If you use the pipeline on public data this should be the name of the accession (e.g. GSM2837484).
+(Accepted formats start with "GSM", "SRR", "SRX", "DRR", "DRX", "ERR" or "ERX")
+
+If you use the pipeline on local data this should be the *basename* of the file without the *extension(s)*.
+For instance, `/home/user/myfastqs/sample1.fastq.gz` would be `sample1` (for single-ended data).
+For paired-ended data `/home/user/myfastqs/sample2_R1.fastq.gz` and `/home/user/myfastqs/sample2_R2.fastq.gz` would be `sample2`.
+
+Some local fastq files may have slightly different naming formats.
+Illumina's sample for instance may produce a paired-ended sample with these fastqs: `sample3_S1_L001_R1_001.fastq.gz` and `sample3_S1_L001_R2_001.fastq.gz`.
+Seq2science will attempt to recognize these files based on the sample name (in this case `sample3`).
+Other identifiers used are the fastq read extensions (`R1` and `R2` by default) and the fastq suffix (`fastq` by default), which can be changed in the config.
 
 #### Assembly column
-This column is necessary for all workflows, except the *downloading samples* workflow. Here you simply add the name of the assembly you want your samples aligned against and the workflow will download it for you. 
+Here you simply add the name of the assembly you want your samples aligned against and the workflow will download it for you.
 
 #### technical_replicate column
 Here you put to which technical replica each cell corresponds. E.g. the plate from which the cells were sequenced. Per technical replica QC will be generated. For public data you can put all cells under the same technical replica name.

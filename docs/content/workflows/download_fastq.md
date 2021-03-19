@@ -24,7 +24,8 @@ DRR890  <-- DDBJ run
 ```
 
 #### Sample column
-This column is necessary for all workflows, not just the atac-seq workflow. If you use the pipeline on public data this should be the name of the accession (e.g. GSM2837484), if you use the pipeline on local data this should be the *basename* of the file without the *extension*. For instance `/home/user/myfastqs/sample1.fastq.gz` would be `sample1`.
+If you use the pipeline on public data this should be the name of the accession (e.g. GSM2837484).
+(Accepted formats start with "GSM", "SRR", "SRX", "DRR", "DRX", "ERR" or "ERX")
 
 #### Final notes
 - Make sure that the samples.tsv is a tab separated values file when running the pipeline.
