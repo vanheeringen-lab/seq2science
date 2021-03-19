@@ -8,19 +8,20 @@ Running an RNA-seq analysis has never been easier!
 
 #### Downloading of sample(s)
 Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples.
-Take a look at the [downloading_fastq](./download_fastq.html) workflow for extensive documentation about downloading of public samples.
+You control which samples are used in the [samples.tsv](#filling-out-the-samples-tsv).
+Background on public data can be found [here](./download_fastq.html#download-sra-file).
 
 #### Downloading and indexing of assembly(s)
 Depending on whether the assembly and its index you align your samples against already exist seq2science will start with downloading of the assembly through [genomepy](https://github.com/vanheeringen-lab/genomepy).
 
 #### Read trimming
-The pipeline starts by trimming the reads with Trim galore or Fastp.
-The trimmer will automatically trims the low quality 3' ends of reads, and removes short reads.
-After the quality trimming it automatically detects which adapter was used, and trims it.
+The pipeline starts by trimming the reads with Trim Galore! or Fastp (the default).
+The trimmer will automatically trim the low quality 3' ends of reads, and removes short reads.
+After the quality trimming it automatically detects which adapter was used, and trims this as well.
 Trimming parameters for the pipeline can be set in the configuration.
 
 #### Alignment
-Reads are aligned using `STAR` or `HISAT2` (default `STAR`).
+Reads are aligned using `HISAT2` or `STAR` (the default).
 Sensible defaults have been set, but can be overwritten for either (or both) the indexing and alignment by specifying them in the `config.yaml`.
 
 The pipeline will check if the assembly you specified is present in the *genome_dir*, and otherwise will download it for you through [genomepy](https://github.com/vanheeringen-lab/genomepy).
