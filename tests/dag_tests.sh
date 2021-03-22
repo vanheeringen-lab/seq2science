@@ -508,8 +508,9 @@ if [ $1 = "scrna-seq" ]; then
 fi
 
 if [ $1 = "explain" ]; then
+  explain=tests/local_test_results/explain.txt
   function assert_explain {
-    val=$(cat tests/local_test_results/explain.txt);
+    val=$(cat $explain);
 
     # exit if an error occurred
     if [[ $val == *"Oh no! Something went wrong..."* ]]; then
@@ -525,38 +526,38 @@ if [ $1 = "explain" ]; then
 
   printf "\n  Download-fastq: \n"
   seq2science init download-fastq --force
-  seq2science explain download-fastq | tee tests/local_test_results/explain.txt
-  assert_explain $1
+  seq2science explain download-fastq | tee $explain
+  assert_explain
 
   printf "\n  Alignment: \n"
   seq2science init alignment --force
-  seq2science explain alignment | tee tests/local_test_results/explain.txt
-  assert_explain $1
+  seq2science explain alignment | tee $explain
+  assert_explain
 
   printf "\n  ATAC-seq: \n"
   seq2science init atac-seq --force
-  seq2science explain atac-seq | tee tests/local_test_results/explain.txt
-  assert_explain $1
+  seq2science explain atac-seq | tee $explain
+  assert_explain
 
   printf "\n  ChIP-seq: \n"
   seq2science init chip-seq --force
-  seq2science explain chip-seq | tee tests/local_test_results/explain.txt
-  assert_explain $1
+  seq2science explain chip-seq | tee $explain
+  assert_explain
 
   printf "\n  RNA-seq: \n"
   seq2science init rna-seq --force
-  seq2science explain rna-seq | tee tests/local_test_results/explain.txt
-  assert_explain $1
+  seq2science explain rna-seq | tee $explain
+  assert_explain
 
   printf "\n  scATAC-seq: \n"
   seq2science init scatac-seq --force
-  seq2science explain scatac-seq | tee tests/local_test_results/explain.txt
-  assert_explain $1
+  seq2science explain scatac-seq | tee $explain
+  assert_explain
 
   printf "\n  scRNA-seq: \n"
   seq2science init scrna-seq --force
-  seq2science explain scrna-seq --snakemakeOptions config={barcodefile:tests/local_test_results/barcodes.txt} | tee tests/local_test_results/explain.txt
-  assert_explain $1
+  seq2science explain scrna-seq --snakemakeOptions config={barcodefile:tests/local_test_results/barcodes.txt} | tee $explain
+  assert_explain
 
   test_ran=1
 fi
