@@ -10,7 +10,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Added
 
-- --yes flag to seq2science init to automatically overwrite existing samples.tsv and config.yaml
+- --force flag to seq2science init to automatically overwrite existing samples.tsv and config.yaml
 - local fastqs with Illumina's '_100' are now recognized
 
 ### Changed
@@ -20,6 +20,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Fixed
 
+- explain functionality testing
 - scATAC can properly use SE fastqs
 - scRNA can use fqexts other than R1/R2
 - fastq renaming works again

@@ -508,33 +508,55 @@ if [ $1 = "scrna-seq" ]; then
 fi
 
 if [ $1 = "explain" ]; then
+  function assert_explain {
+    val=$(cat tests/local_test_results/explain.txt);
+
+    # exit if an error occurred
+    if [[ $val == *"Oh no! Something went wrong..."* ]]; then
+      exit 1;
+    fi;
+
+    # exit if only the default line is returned
+    if [[ $val == *"(https://doi.org/10.5281/zenodo.3921913)." ]]; then
+      printf "\nExplain message appears truncated! Exiting.\n"
+      exit 1;
+    fi;
+  }
+
   printf "\n  Download-fastq: \n"
   seq2science init download-fastq --force
-  seq2science explain download-fastq
+  seq2science explain download-fastq | tee tests/local_test_results/explain.txt
+  assert_explain $1
 
   printf "\n  Alignment: \n"
   seq2science init alignment --force
-  seq2science explain alignment
+  seq2science explain alignment | tee tests/local_test_results/explain.txt
+  assert_explain $1
 
   printf "\n  ATAC-seq: \n"
   seq2science init atac-seq --force
-  seq2science explain atac-seq
+  seq2science explain atac-seq | tee tests/local_test_results/explain.txt
+  assert_explain $1
 
   printf "\n  ChIP-seq: \n"
   seq2science init chip-seq --force
-  seq2science explain chip-seq
+  seq2science explain chip-seq | tee tests/local_test_results/explain.txt
+  assert_explain $1
 
   printf "\n  RNA-seq: \n"
   seq2science init rna-seq --force
-  seq2science explain rna-seq
+  seq2science explain rna-seq | tee tests/local_test_results/explain.txt
+  assert_explain $1
 
   printf "\n  scATAC-seq: \n"
   seq2science init scatac-seq --force
-  seq2science explain scatac-seq
+  seq2science explain scatac-seq | tee tests/local_test_results/explain.txt
+  assert_explain $1
 
   printf "\n  scRNA-seq: \n"
   seq2science init scrna-seq --force
-  seq2science explain scrna-seq --snakemakeOptions config={barcodefile:tests/local_test_results/barcodes.txt}
+  seq2science explain scrna-seq --snakemakeOptions config={barcodefile:tests/local_test_results/barcodes.txt} | tee tests/local_test_results/explain.txt
+  assert_explain $1
 
   test_ran=1
 fi
