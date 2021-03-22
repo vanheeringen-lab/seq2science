@@ -20,12 +20,12 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Fixed
 
+- Issue when filtering a combination of single-end and paired-end reads on template length
 - explain functionality testing
 - scATAC can properly use SE fastqs
 - scRNA can use fqexts other than R1/R2
 - fastq renaming works again
 - added missing schemas to extended docs
-- broken hyperlinks in docs
 
 ### Fixed
 
