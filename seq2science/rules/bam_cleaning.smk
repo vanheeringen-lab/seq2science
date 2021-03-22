@@ -75,6 +75,13 @@ rule complement_blacklist:
         """
 
 
+if config["filter_on_size"]:
+    sieve_bam_output = {"allsizes": temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}_allsizes.samtools-coordinate-sieved.sam",**config)),
+                        "final": temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-sieved.bam",**config))}
+else:
+    sieve_bam_output = {"final": temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-sieved.bam",**config))}
+
+
 rule sieve_bam:
     """
     "Sieve" a bam.
@@ -91,8 +98,7 @@ rule sieve_bam:
         blacklist=rules.complement_blacklist.output,
         sizes=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
     output:
-        allsizes=temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}_allsizes.samtools-coordinate-sieved.sam", **config)),
-        final=temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-sieved.bam", **config))
+        **sieve_bam_output
     log:
         expand("{log_dir}/sieve_bam/{{assembly}}-{{sample}}.log", **config),
     benchmark:
@@ -115,15 +121,16 @@ rule sieve_bam:
             f""" tee {output.allsizes} | awk 'substr($0,1,1)=="@" || ($9>={config['min_template_length']} && $9<={config['max_template_length']}) || ($9<=-{config['min_template_length']} && $9>=-{config['max_template_length']})' | """
             if sampledict[wildcards.sample]["layout"] == "PAIRED" and config["filter_on_size"]
             else ""
-        )
+        ),
+        sizesieve_touch="touch {output.allsizes}" if config["filter_on_size"] else ""
     shell:
         """
         samtools view -h {params.prim_align} {params.minqual} {params.blacklist} \
         {input.bam} | {params.atacshift} {params.sizesieve}
         samtools view -b > {output.final} 2> {log}
         
-        # single-end reads never output allsizes so just touch the file so it's actually output
-        touch {output.allsizes}
+        # single-end reads never output allsizes so just touch the file when filtering on size
+        {params.sizesieve_touch}
         """
 
 
