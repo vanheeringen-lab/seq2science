@@ -508,25 +508,25 @@ if [ $1 = "scrna-seq" ]; then
 fi
 
 if [ $1 = "explain" ]; then
-  seq2science init download-fastq --yes
+  seq2science init download-fastq --force
   seq2science explain download-fastq
 
-  seq2science init alignment --yes
+  seq2science init alignment --force
   seq2science explain alignment
 
-  seq2science init atac-seq --yes
+  seq2science init atac-seq --force
   seq2science explain atac-seq
 
-  seq2science init chip-seq --yes
+  seq2science init chip-seq --force
   seq2science explain chip-seq
 
-  seq2science init rna-seq --yes
+  seq2science init rna-seq --force
   seq2science explain rna-seq
 
-  seq2science init scrna-seq --yes
+  seq2science init scrna-seq --force
   seq2science explain scrna-seq
 
-  seq2science init scatac-seq --yes
+  seq2science init scatac-seq --force
   seq2science explain scatac-seq
 
   test_ran=1
