@@ -78,7 +78,8 @@ if [ $1 = "alignment" ]; then
   printf "\tfastp\n"
   seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={trimmer:fastp,create_qc_report:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 fastp_PE 1
-  seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/alignment/replicates.tsv,trimmer:fastp,create_qc_report:True,technical_replicates:merge} | tee tests/local_test_results/${1}_dag
+  # quiet=True
+  seq2science run alignment -n --configfile tests/$WF/default_config.yaml --snakemakeOptions config={samples:tests/alignment/replicates.tsv,trimmer:fastp,create_qc_report:True,technical_replicates:merge} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 rename_sample 2
   assert_rulecount $1 fastp_PE 2
   assert_rulecount $1 fastp_qc_PE 1
