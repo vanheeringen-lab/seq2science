@@ -16,6 +16,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Changed
 
 - MultiQC updated to v1.10
+- Link to seq2science log instead of snakemake log in final message
 
 ### Fixed
 
