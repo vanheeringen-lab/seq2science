@@ -14,7 +14,7 @@ Background on public data can be found [here](./download_fastq.html#download-sra
 #### Read trimming
 The pipeline starts by trimming the reads with Trim Galore! or Fastp (the default).
 The trimmer will automatically trim the low quality 3' ends of reads, and removes short reads.
-After the quality trimming it automatically detects which adapter was used, and trims this as well.
+During the quality trimming it automatically detects which adapter was used, and trims this as well.
 Trimming parameters for the pipeline can be set in the configuration.
 
 #### Alignment & Sorting
