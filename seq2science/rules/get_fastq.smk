@@ -262,6 +262,13 @@ rule rename_sample:
         sample_to_rename
     output:
         expand("{fastq_dir}/{{sample}}{{suffix}}",**config),
+    wildcard_constraints:
+        # only rename to compatible naming formats
+        suffix="|".join([
+            f'.{config["fqsuffix"]}.gz',
+            f'_{config["fqext1"]}.{config["fqsuffix"]}.gz',
+            f'_{config["fqext2"]}.{config["fqsuffix"]}.gz',
+        ])
     shell:
         """
         mv {input[0]} {output[0]}
