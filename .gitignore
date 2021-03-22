@@ -4,6 +4,7 @@ slurm*.out
 report.html
 samples.tsv
 config.yaml
+seq2science.*.log
 build/
 *.egg*
 .idea/

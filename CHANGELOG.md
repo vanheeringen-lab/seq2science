@@ -8,9 +8,24 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- --force flag to seq2science init to automatically overwrite existing samples.tsv and config.yaml
+- local fastqs with Illumina's '_100' are now recognized
+
 ### Changed
 
 - MultiQC updated to v1.10
+- Link to seq2science log instead of snakemake log in final message
+
+### Fixed
+
+- explain functionality testing
+- scATAC can properly use SE fastqs
+- scRNA can use fqexts other than R1/R2
+- fastq renaming works again
+- added missing schemas to extended docs
+- broken hyperlinks in docs
 
 ### Fixed
 

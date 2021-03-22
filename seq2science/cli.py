@@ -121,6 +121,13 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         help="The path to the directory where to initialise the config and samples files.",
     )
 
+    init.add_argument(
+        "-f", "--force",
+        default=False,
+        help="Overwrite existing samples.tsv and config.yaml silently.",
+        action="store_true",
+    )
+
     global core_arg
     core_arg = run.add_argument(
         "-j", "--cores",
@@ -205,7 +212,7 @@ def _init(args, workflows_dir, config_path):
         dest = os.path.join(os.path.dirname(config_path), file)
 
         copy_file = True
-        if os.path.exists(dest):
+        if os.path.exists(dest) and args.force is False:
             choices = {"yes": True, "y": True, "no": False, "n": False}
 
             sys.stdout.write(
@@ -409,7 +416,10 @@ def _explain(args, base_dir, workflows_dir, config_path):
         print(" ".join(rules_used.values()))
         sys.exit(0)
     else:
-        print("Oh no! Something went wrong... Please let us know: https://github.com/vanheeringen-lab/seq2science/issues ")
+        print(
+            "\nOh no! Something went wrong... "
+            "Please let us know: https://github.com/vanheeringen-lab/seq2science/issues "
+        )
         sys.exit(1)
 
 
@@ -554,5 +564,6 @@ def setup_seq2science_logger(parsed_args):
             + ".log"
         )
         logger.logfile = seq2science_logfile
+        logger.get_logfile = lambda: seq2science_logfile
         logger.logfile_handler = _logging.FileHandler(seq2science_logfile)
         logger.logger.addHandler(logger.logfile_handler)
