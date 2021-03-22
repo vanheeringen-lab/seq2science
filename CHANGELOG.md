@@ -8,6 +8,11 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- --force flag to seq2science init to automatically overwrite existing samples.tsv and config.yaml
+- local fastqs with Illumina's '_100' are now recognized
+
 ### Changed
 
 - MultiQC updated to v1.10
@@ -16,6 +21,11 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Fixed
 
 - Issue when filtering a combination of single-end and paired-end reads on template length
+- explain functionality testing
+- scATAC can properly use SE fastqs
+- scRNA can use fqexts other than R1/R2
+- fastq renaming works again
+- added missing schemas to extended docs
 
 ## [0.5.0] - 2021-03-03
 
