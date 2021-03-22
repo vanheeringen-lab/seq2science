@@ -8,21 +8,59 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- --force flag to seq2science init to automatically overwrite existing samples.tsv and config.yaml
+- local fastqs with Illumina's '_100' are now recognized
+
 ### Changed
 
-- slimmed down the config printed at the start of a run
+- MultiQC updated to v1.10
+- Link to seq2science log instead of snakemake log in final message
+
+### Fixed
+
+- explain functionality testing
+- scATAC can properly use SE fastqs
+- scRNA can use fqexts other than R1/R2
+- fastq renaming works again
+- added missing schemas to extended docs
+- broken hyperlinks in docs
+
+## [0.5.0] - 2021-03-03
+
+Version 0.5.0 brings many quality of life improvements, such as seq2science automatically inferring what needs to be re-run when changing the samples.tsv and/or the config.yaml, differential peak analysis for chip/atac workflows and tab-completion!
+
+To (hopefully) clear things up we changed the way technical and biological replicates are called, now technical and biological replicate, before replicate and condition.
+
+It is important to note that the RNA-seq workflow DOES NOT remove duplicate reads anymore as a *default*, and that the sc/bulk ATAC-seq workflows now filters reads on the nucleosome-free region as a *default*.  
+
+### Changed
+
+- Keep all duplicate reads in RNA-seq by default
+- Slimmed down the config printed at the start of a run
 - Changed some rules into localrules when executed on a cluster
+- moved onehot peaks to counts_dir
+- DESeq2 contrasts now accept any column names
+  - groups still cannot contain underscores
+  - no longer accepts one group name
+  - more examples added to the docs!
 
 ### Added
 
+- dupRadar module to analyse read duplication types in RNA-seq
+- Differential peak analysis for ATAC- and ChIP-seq!
 - Options to filter bams by minimum and maximum insert sizes (added to config of bulk/sc atac)
 - Support experiment ids for EBI ENA and DDBJ for downloading public samples
 - More robust expression handling for BUS format detection from kb-python arguments
 - Short-hand BUS syntax for indrop v1/v2
 - Seq2science now supports tab-completion
+- Seq2science now outputs a logfile in the directory it is run
 
 ### Fixed
 
+- renamed more old "replicate" variables to the new "technical_replicate"
+- minor logging tweak
 - Chipseeker now works without defining descriptive name column
 - fix bug in resources parsing of profiles
 - small bug when naming a column condition in non peak-calling workflows
@@ -317,6 +355,7 @@ Many minor bug- and quality of life fixes.
 First release of seq2science!
 
 [Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/master...v0.4.2
+[0.5.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.0...v0.4.3
 [0.4.3]: https://github.com/vanheeringen-lab/seq2science/compare/v0.4.3...v0.4.2
 [0.4.2]: https://github.com/vanheeringen-lab/seq2science/compare/v0.4.2...v0.4.1
 [0.4.1]: https://github.com/vanheeringen-lab/seq2science/compare/v0.4.1...v0.4.0

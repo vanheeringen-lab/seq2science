@@ -24,14 +24,15 @@ def _import():
     """
     this function serves that we can do imports as late as possible, for faster auto-completion
     """
-    global webbrowser, contextlib, yaml, psutil, snakemake, logger, setup_logger, xdg
+    global webbrowser, contextlib, yaml, psutil, snakemake, logger, setup_logger, xdg, datetime, _logging
     import yaml
     import psutil
     import webbrowser
     import contextlib
+    import datetime
 
     import snakemake
-    from snakemake.logging import logger, setup_logger
+    from snakemake.logging import logger, setup_logger, _logging
     import xdg
 
 
@@ -120,6 +121,13 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         help="The path to the directory where to initialise the config and samples files.",
     )
 
+    init.add_argument(
+        "-f", "--force",
+        default=False,
+        help="Overwrite existing samples.tsv and config.yaml silently.",
+        action="store_true",
+    )
+
     global core_arg
     core_arg = run.add_argument(
         "-j", "--cores",
@@ -204,7 +212,7 @@ def _init(args, workflows_dir, config_path):
         dest = os.path.join(os.path.dirname(config_path), file)
 
         copy_file = True
-        if os.path.exists(dest):
+        if os.path.exists(dest) and args.force is False:
             choices = {"yes": True, "y": True, "no": False, "n": False}
 
             sys.stdout.write(
@@ -309,7 +317,7 @@ def _run(args, base_dir, workflows_dir, config_path):
 
     # run snakemake/seq2science
     #   1. pretty welcome message
-    setup_logger()
+    setup_seq2science_logger(parsed_args)
     log_welcome(logger, parsed_args)
     if not args.skip_rerun or args.unlock:
         #   2. start a dryrun checking which files need to be created, and check if
@@ -344,14 +352,14 @@ def _run(args, base_dir, workflows_dir, config_path):
             parsed_args["targets"] = targets
             parsed_args["forcetargets"] = True
             parsed_args["keep_logger"] = True
+        logger.info("Done. Now starting the real run.")
 
-    logger.info("Done. Now starting the real run.")
+    logger.printreason = parsed_args["printreason"]
     logger.stream_handler.setStream(sys.stdout)
     parsed_args["config"]["no_config_log"] = True
+
     #   5. start the "real" run where jobs actually get started
     exit_code = snakemake.snakemake(**parsed_args)
-
-    #   6. start the "real" run where jobs actually get started
     sys.exit(0) if exit_code else sys.exit(1)
 
 
@@ -408,7 +416,10 @@ def _explain(args, base_dir, workflows_dir, config_path):
         print(" ".join(rules_used.values()))
         sys.exit(0)
     else:
-        print("Oh no! Something went wrong... Please let us know: https://github.com/vanheeringen-lab/seq2science/issues ")
+        print(
+            "\nOh no! Something went wrong... "
+            "Please let us know: https://github.com/vanheeringen-lab/seq2science/issues "
+        )
         sys.exit(1)
 
 
@@ -542,3 +553,17 @@ def resource_parser(parsed_args):
         # otherwise assume system memory
         mem = psutil.virtual_memory().total / 1024 ** 3
         parsed_args["resources"]["mem_gb"] = round(mem)
+
+
+def setup_seq2science_logger(parsed_args):
+    setup_logger()
+    if not parsed_args["dryrun"]:
+        seq2science_logfile = os.path.abspath(
+            "seq2science."
+            + datetime.datetime.now().isoformat().replace(":", "")
+            + ".log"
+        )
+        logger.logfile = seq2science_logfile
+        logger.get_logfile = lambda: seq2science_logfile
+        logger.logfile_handler = _logging.FileHandler(seq2science_logfile)
+        logger.logger.addHandler(logger.logfile_handler)

@@ -4,12 +4,19 @@ slurm*.out
 report.html
 samples.tsv
 config.yaml
+seq2science.*.log
 build/
 *.egg*
 .idea/
 .snakemake/
 tinydata/
 tests/tinydata_custom/
+
+docs/resources/*.png
+docs/content/CHANGELOG.md
+docs/content/all_rules.md
+docs/content/schemas.md
+seq2science/workflows/scrna_seq/barcodes.txt
 
 *results/
 *benchmark/

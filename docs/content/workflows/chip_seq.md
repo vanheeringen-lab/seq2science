@@ -7,13 +7,18 @@ Running a ChIP-seq analysis has never been easier!
 </p>
 
 #### Downloading of sample(s)
-Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples. Take a look at the [downloading_fastq](https://vanheeringen-lab.github.io/seq2science/content/workflows/download_fastq.html) workflow for extensive documentation about downloading of public samples. 
+Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples.
+You control which samples are used in the [samples.tsv](#filling-out-the-samples-tsv).
+Background on public data can be found [here](./download_fastq.html#download-sra-file).
 
 #### Downloading and indexing of assembly(s)
 Depending on whether the assembly and its index you align your samples against already exist seq2science will start with downloading of the assembly through [genomepy](https://github.com/vanheeringen-lab/genomepy).
 
 #### Read trimming
-The pipeline starts by trimming the reads with [trim galore!](https://github.com/FelixKrueger/TrimGalore/blob/master/Docs/Trim_Galore_User_Guide.md). Trim galore automatically first trims the low quality 3' ends of reads, and removes short reads. After the quality trimming trim galore automatically detects which adapter was used, and trims it. The parameters of trim galore! for the pipeline can be set in the configuration by variable *trim_galore*. 
+The pipeline starts by trimming the reads with Trim Galore! or Fastp (the default).
+The trimmer will automatically trim the low quality 3' ends of reads, and removes short reads.
+During the quality trimming it automatically detects which adapter was used, and trims this as well.
+Trimming parameters for the pipeline can be set in the configuration.
 
 #### Alignment
 After trimming the reads are aligned against an assembly. Currently we support `bowtie2`, `bwa-mem`, `hisat2` and `star` as aligners. Choosing which aligner is as easy as setting the *aligner* variable in the `config.yaml`, for example: `aligner: bwa`. Sensible defaults have been set for every aligner, but can be overwritten for either (or both) the indexing and alignment by specifying them in the `config.yaml`.
@@ -48,7 +53,10 @@ peak_caller:
 It is always a good idea to check the quality of your samples. Along the way different quality control steps are taken, and are outputted in a single [multiqc report](https://multiqc.info/) in the `qc` folder. Make sure to always check the report, and take a look at [interpreting the multiqc report](../results.html#multiqc-quality-report)!
 
 #### Count table
-A useful result the pipeline outputs is the count table, located at {result_dir}/count_table/{peak_caller}/. For each narrowpeak (across all samples) its summit is taken, and all other summits within range `peak_windowsize` (default 100) are taken together, and the summit with the highest q-value is taken as the "true" peak. The remaining peaks are extended by `slop` on each side and for each sample the number of reads are counted under this peak. This file is stored as {assembly}_raw.tsv, and looks something like this:
+A useful result the pipeline outputs is the count table, located at {counts_dir}/{peak_caller}/.
+For each narrowpeak (across all samples) its summit is taken, and all other summits within range `peak_windowsize` (default 100) are taken together, and the summit with the highest q-value is taken as the "true" peak.
+The remaining peaks are extended by `slop` on each side and for each sample the number of reads are counted under this peak.
+This file is stored as {assembly}_raw.tsv, and looks something like this:
 
 ```
                 sample1		sample2
@@ -65,7 +73,14 @@ Seq2science currently supports four different normalisation methods: quantile no
 - **RLE** is the scaling factor method proposed by Anders and Huber (2010). DEseq2's standard normalisation is based on this.
 - **Upper quartile** is the upper-quartile normalization method of Bullard et al (2010).
 
-After these normalisations the counts are log normalised, and the base can be set with `logbase` and defaults to 2. As a final step the count tables are mean-centered. This final count table can be used for tools like [gimme maelstrom](https://gimmemotifs.readthedocs.io/en/master/reference.html#command-gimme-maelstrom) to scan for enriched transcription factor motifs. Note that this table contains **all** peaks, and no selection on differential peaks has been made. This is something that might be supported in the future, but for now you have to do this yourself.
+After these normalisations the counts are log normalised, and the base can be set with `logbase` and defaults to 2.
+As a final step the count tables are mean-centered.
+This final count table can be used for tools like [gimme maelstrom](https://gimmemotifs.readthedocs.io/en/master/reference.html#command-gimme-maelstrom) to scan for enriched transcription factor motifs.
+Note that this table contains **all** peaks, and no selection on differential peaks has been made.
+
+#### Differential peak analysis
+Seq2science can optionally use the raw peak counts table to perform differential peak analysis.
+See the [Differential gene/peak analysis page](../DESeq2.html) for more information!
 
 #### Trackhub
 A UCSC compatible trackhub can be generated for this workflow. See the [trackhub page](../results.html#trackhub)<!-- @IGNORE PREVIOUS: link --> for more information!
@@ -82,19 +97,37 @@ GSM890    danRer11    stage_9      stage_9             GSM234
 ```
 
 #### Sample column
-This column is necessary for all workflows, not just the ChIP-seq workflow. If you use the pipeline on public data this should be the name of the accession (e.g. GSM2837484). If you use the pipeline on local data this should be the *basename* of the file without the *extension(s)*. For instance, `/home/user/myfastqs/sample1.fastq.gz` would be `sample1` (for single-ended data). For paired-ended data `/home/user/myfastqs/sample2_R1.fastq.gz` and `/home/user/myfastqs/sample2_R2.fastq.gz` would be `sample2`.
+If you use the pipeline on **public data** this should be the name of the accession (e.g. GSM2837484).
+Accepted formats start with "GSM", "SRR", "SRX", "DRR", "DRX", "ERR" or "ERX".
+
+If you use the pipeline on **local data** this should be the *basename* of the file without the *extension(s)*.
+For example:
+- `/home/user/myfastqs/sample1.fastq.gz` -------> `sample1` for single-ended data
+- `/home/user/myfastqs/sample2_R1.fastq.gz` ┬> `sample2` for paired-ended data <br> `/home/user/myfastqs/sample2_R2.fastq.gz` ┘
+
+For **local data**, some fastq files may have slightly different naming formats.
+For instance, Illumina may produce a sample named `sample3_S1_L001_R1_001.fastq.gz` (and the `R2` fastq).
+Seq2science will attempt to recognize these files based on the sample name `sample3`.
+
+For **both local and public data**, identifiers used to recognize fastq files are the fastq read extensions (`R1` and `R2` by default) and the fastq suffix (`fastq` by default).
+The directory where seq2science will store (or look for) fastqs is determined by the `fastq_dir` config option.
+In the example above, the `fastq_dir` should be set to `/home/user/myfastqs`.
+These setting can be changed in the `config.yaml`.
 
 #### Assembly column
-This column is necessary for all workflows, except the *downloading samples* workflow. Here you simply add the name of the assembly you want your samples aligned against and the workflow will download it for you.
+Here you simply add the name of the assembly you want your samples aligned against and the workflow will download it for you.
 
 #### Control column
 In the `control` column you can (optionally) add the "sample name" of the input control. It is generally a bad idea to add the input control as a sample in the sample since generally peak callers fail on these samples. 
 
 #### Descriptive_name column
-The descriptive_name column is used for the trackhub and multiqc report. In the trackhub your tracks will be called after the descriptive name, and in the multiqc report there will be a button to rename your samples after this column. The descriptive name can not contain '-' characters, but underscores '_' are allowed.
+The descriptive\_name column is used for the trackhub and multiqc report.
+In the trackhub your tracks will be called after the descriptive name, and in the multiqc report there will be a button to rename your samples after this column.
+The descriptive name can not contain '-' characters, but underscores '\_' are allowed.
 
-#### Technical replicates
-Technical replicates, or any fastq file you may wish to merge, are set using the `technical_replicate` column in the samples.tsv file. All samples with the same name in the `technical_replicate` column will be concatenated into one file with the replicate name.
+#### Technical_replicate column
+Technical replicates, or any fastq file you may wish to merge, are set using the `technical_replicate` column in the samples.tsv file.
+All samples with the same name in the `technical_replicate` column will be concatenated into one file with the replicate name.
 
 Example `samples.tsv` utilizing replicate merging:
 ```
@@ -104,12 +137,13 @@ GSMabc    GRCh38      heart
 GSMxzy    GRCh38      stage8
 GSM890    GRCh38
 ```
-Using this file in the alignment workflow will output *heart.bam*, *stage8.bam* and *GSM890.bam*. The MultiQC will inform you of the trimming steps performed on all samples, and subsequent information of the 'replicate' files (of which only *heart* is merged).
 
-**Note:**
-If you are working with multiple assemblies in one workflow, replicate names have to be unique between assemblies (you will receive a warning if names overlap).
+Using this file in the alignment workflow will output *heart.bam*, *stage8.bam* and *GSM890.bam*.
+The MultiQC will inform you of the trimming steps performed on all samples, and subsequent information of the 'replicate' files (of which only *heart* is merged).
 
-#### keep
+Note: If you are working with multiple assemblies in one workflow, replicate names have to be unique between assemblies (you will receive a warning if names overlap).
+
+##### keep
 Replicate merging is turned on by default. It can be turned off by setting `technical_replicates` in the `config.yaml` to `keep`.
 
 #### Biological replicates
@@ -162,4 +196,4 @@ When a workflow starts it prints the complete configuration, and (almost) all th
 
 ### Best practices
 #### Irreproducible Discovery Rate
-For idr to work properly, it needs a large portion of peaks that are actually not true peaks. Therefore we recommend to call peaks 'loosely'. One way of doing this is setting the [peak threshold q-value](https://github.com/taoliu/MACS#-q--pvalue) low for macs2 in the configuration.
+For idr to work properly, it needs a large portion of peaks that are actually not true peaks. Therefore we recommend to call peaks 'loosely'. One way of doing this is setting the [peak threshold q-value](https://github.com/taoliu/MACS#-q--pvalue) low for macs2 in the configuration.  The q-value controls the ratio of `false positives / (false positives + true positives)`. Setting a q-value of 1 guarantees you have plenty of false positives in your dataset for IDR to work properly.

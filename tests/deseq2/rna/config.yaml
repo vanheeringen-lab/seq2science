@@ -1,0 +1,31 @@
+# tab-separated file of the samples
+samples: tests/deseq2/rna/samples.tsv
+
+# pipeline file locations
+result_dir: tests/local_test_results  # where to store results
+counts_dir: tests/deseq2/rna/counts
+genome_dir: tests/local_test_results
+fastq_dir: tests/local_test_results/fastq
+
+
+# produce a UCSC trackhub?
+create_trackhub: false
+create_qc_report: false
+
+# how to handle replicates
+technical_replicates: merge    # change to "keep" to not combine them
+
+# which trimmer to use
+trimmer: fastp
+
+# which quantifier to use
+quantifier: salmon
+
+##### aligner and filter options are not used for the gene counts matrix if the quantifier is Salmon
+
+# which aligner to use
+aligner: star
+
+contrasts:
+  - batch + condition_day2_day0
+  - biological_replicate_H2_H0

@@ -1,6 +1,5 @@
 import glob
 import os
-import re
 
 
 rule run2sra:
@@ -44,6 +43,14 @@ rule run2sra:
             sleep 10
         done
         """
+
+
+# ENA > SRA
+ruleorder: ena2fastq_SE > sra2fastq_SE
+ruleorder: ena2fastq_PE > sra2fastq_PE
+# PE > SE
+ruleorder: ena2fastq_PE > ena2fastq_SE
+ruleorder: sra2fastq_PE > sra2fastq_SE
 
 
 rule sra2fastq_SE:
@@ -128,48 +135,6 @@ rule sra2fastq_PE:
         """
 
 
-# NOTE: if the workflow fails it tends to blame this rule.
-# Set "debug: True" in the config to see the root cause.
-if not config.get("debug"):
-    ruleorder: renamefastq_PE > ena2fastq_PE > sra2fastq_PE
-
-    def get_wrong_fqext(wildcards):
-        """get all local samples with fqexts that do not match the config"""
-        fastqs = glob.glob(os.path.join(config["fastq_dir"], wildcards.sample + "*" + config["fqsuffix"] + ".gz"))
-        # exclude samples with the correct fqext
-        r1 = wildcards.sample + "_" + config["fqext1"] + "." + config["fqsuffix"] + ".gz"
-        r2 = wildcards.sample + "_" + config["fqext2"] + "." + config["fqsuffix"] + ".gz"
-        fastqs = [f for f in fastqs if not re.match(r1 + "|" + r2, f)]
-        if len(fastqs) == 0:
-            fastqs.append(
-                f"If you can read this, seq2science is looking for non-existing files (for sample {wildcards}) or in the wrong location. "
-                "Tip: Try removing the seq2science cache with 'seq2science clean'"
-            )
-        return sorted(fastqs)
-
-
-    rule renamefastq_PE:
-        """
-        Create symlinks to fastqs with incorrect fqexts (default R1/R2).
-        Forward and reverse samples will be switched if forward/reverse names are not 
-        lexicographically ordered.
-        """
-        input:
-            get_wrong_fqext,
-        output:
-            temp(expand("{fastq_dir}/{{sample}}_{fqext}.{fqsuffix}.gz", **config)),
-        shell:
-            """
-            ln {input[0]} {output[0]}
-            ln {input[1]} {output[1]}
-            """
-
-
-ruleorder: ena2fastq_SE > sra2fastq_SE
-ruleorder: ena2fastq_PE > sra2fastq_PE
-ruleorder: ena2fastq_PE > ena2fastq_SE
-
-
 rule ena2fastq_SE:
     """
     Download single-end fastq files directly from the ENA.
@@ -227,6 +192,9 @@ rule ena2fastq_PE:
             shell('exit 1 >> {log} 2>&1')
 
 
+ruleorder: rename_sample > runs2sample
+
+
 def get_runs_from_sample(wildcards):
     run_fastqs = []
     for run in sampledict[wildcards.sample]["runs"]:
@@ -259,3 +227,49 @@ rule runs2sample:
         for i in range(1, len(input)):
             inputfile = input[i]
             shell("cat {inputfile} >> {output}")
+
+
+def sample_to_rename(wildcards):
+    local_fastqs = glob.glob(os.path.join(config["fastq_dir"],f'{wildcards.sample}*{config["fqsuffix"]}*.gz'))
+
+    if len(local_fastqs) not in [1,2]:
+        # <1: no local sample fastqs found
+        # >2: too many files match the sample name: can't distinguish
+        return "$a"  # do not use this rule
+
+    # assumption: incompatible paired-ended samples are lexicographically ordered (R1>R2)
+    local_fastq = local_fastqs[0]
+    if len(local_fastqs) == 2 and config["fqext2"] in wildcards.suffix:
+        local_fastq = local_fastqs[1]
+
+    # only rename incompatible naming formats
+    correctly_named_fastqs = [
+        os.path.join(config["fastq_dir"],f'{wildcards.sample}.{config["fqsuffix"]}.gz'),
+        os.path.join(config["fastq_dir"],f'{wildcards.sample}_{config["fqext1"]}.{config["fqsuffix"]}.gz'),
+        os.path.join(config["fastq_dir"],f'{wildcards.sample}_{config["fqext2"]}.{config["fqsuffix"]}.gz'),
+    ]
+    if local_fastq in correctly_named_fastqs:
+        return "$a"  # do not use this rule
+
+    return local_fastq
+
+
+rule rename_sample:
+    """
+    Rename local samples with incompatible naming formats
+    """
+    input:
+        sample_to_rename
+    output:
+        expand("{fastq_dir}/{{sample}}{{suffix}}",**config),
+    wildcard_constraints:
+        # only rename to compatible naming formats
+        suffix="|".join([
+            f'.{config["fqsuffix"]}.gz',
+            f'_{config["fqext1"]}.{config["fqsuffix"]}.gz',
+            f'_{config["fqext2"]}.{config["fqsuffix"]}.gz',
+        ])
+    shell:
+        """
+        mv {input[0]} {output[0]}
+        """
