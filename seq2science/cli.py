@@ -564,5 +564,6 @@ def setup_seq2science_logger(parsed_args):
             + ".log"
         )
         logger.logfile = seq2science_logfile
+        logger.get_logfile = lambda: seq2science_logfile
         logger.logfile_handler = _logging.FileHandler(seq2science_logfile)
         logger.logger.addHandler(logger.logfile_handler)
