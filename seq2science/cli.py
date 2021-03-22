@@ -416,7 +416,10 @@ def _explain(args, base_dir, workflows_dir, config_path):
         print(" ".join(rules_used.values()))
         sys.exit(0)
     else:
-        print("Oh no! Something went wrong... Please let us know: https://github.com/vanheeringen-lab/seq2science/issues ")
+        print(
+            "\nOh no! Something went wrong... "
+            "Please let us know: https://github.com/vanheeringen-lab/seq2science/issues "
+        )
         sys.exit(1)
 
 

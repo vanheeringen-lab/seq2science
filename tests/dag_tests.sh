@@ -428,7 +428,7 @@ if [ $1 = "rna-seq" ]; then
   assert_rulecount $1 deseq2 1
 
   printf "\nmultiple assemblies - DEA\n"
-  seq2science run rna-seq --skip-rerun -n --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={technical_replicates:keep,samples:tests/rna_seq/complex_samples.tsv,dexseq:True} | tee tests/local_test_results/${1}_dag
+  seq2science run rna-seq --skip-rerun -n --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={technical_replicates:keep,samples:tests/rna_seq/complex_samples.tsv,dexseq:True} show_failed_logs=True | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 rename_sample 3
   assert_rulecount $1 star_index 2
   assert_rulecount $1 star_align 10
@@ -508,26 +508,33 @@ if [ $1 = "scrna-seq" ]; then
 fi
 
 if [ $1 = "explain" ]; then
+  printf "\n  Download-fastq: \n"
   seq2science init download-fastq --force
   seq2science explain download-fastq
 
+  printf "\n  Alignment: \n"
   seq2science init alignment --force
   seq2science explain alignment
 
+  printf "\n  ATAC-seq: \n"
   seq2science init atac-seq --force
   seq2science explain atac-seq
 
+  printf "\n  ChIP-seq: \n"
   seq2science init chip-seq --force
   seq2science explain chip-seq
 
+  printf "\n  RNA-seq: \n"
   seq2science init rna-seq --force
   seq2science explain rna-seq
 
-  seq2science init scrna-seq --force
-  seq2science explain scrna-seq
-
+  printf "\n  scATAC-seq: \n"
   seq2science init scatac-seq --force
   seq2science explain scatac-seq
+
+  printf "\n  scRNA-seq: \n"
+  seq2science init scrna-seq --force
+  seq2science explain scrna-seq --snakemakeOptions config={barcodefile:tests/local_test_results/barcodes.txt}
 
   test_ran=1
 fi
