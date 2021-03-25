@@ -71,11 +71,12 @@ rule deseq2:
         samples=os.path.abspath(config["samples"]),
         replicates=True if "technical_replicate" in samples else False,
         salmon=config.get("quantifier","") == "salmon",
+        script_dir=f"{config['rule_dir']}/../scripts"
     resources:
         R_scripts=1, # conda's R can have issues when starting multiple times
         mem_gb=4,
     script:
-        f"{config['rule_dir']}/../scripts/deseq2.R"
+        f"{config['rule_dir']}/../scripts/deseq2_rule.R"
 
 
 rule blind_clustering:
