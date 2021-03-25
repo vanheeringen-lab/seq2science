@@ -144,12 +144,15 @@ cat('\n')
 expressed_genes <- as.data.frame(resLFC[order(resLFC$padj),])
 
 missing_genes <- rownames(counts)[!(rownames(counts) %in% rownames(expressed_genes))]
-unexpressed_genes <- as.data.frame(matrix(data = NA, ncol = ncol(expressed_genes), nrow = length(missing_genes)))
-rownames(unexpressed_genes) <- missing_genes
-colnames(unexpressed_genes) <- colnames(expressed_genes)
-unexpressed_genes[,'baseMean'] <- 0
-
-all_genes <- rbind(expressed_genes, unexpressed_genes)
+if (length(missing_genes) > 0){
+    unexpressed_genes <- as.data.frame(matrix(data = NA, ncol = ncol(expressed_genes), nrow = length(missing_genes)))
+    rownames(unexpressed_genes) <- missing_genes
+    colnames(unexpressed_genes) <- colnames(expressed_genes)
+    unexpressed_genes[,'baseMean'] <- 0
+    all_genes <- rbind(expressed_genes, unexpressed_genes)
+} else {
+    all_genes <- expressed_genes
+}
 write.table(all_genes, file=output, quote = F, sep = '\t', col.names=NA)
 cat('DE genes table saved\n\n')
 
