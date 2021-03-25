@@ -48,10 +48,6 @@ if (!dir.exists(out_dir)){
 }
 
 # variables required in the core script
-all_args    <- commandArgs(trailingOnly=F)
-this_script <- sub("--file=", "", all_args[grep("--file=", all_args)])
-scripts_dir <- dirname(this_script)
-
 samples     <- read.delim(samples_file, sep = "\t", na.strings = "", comment.char = "#", stringsAsFactors = F, row.names = "sample")
 replicates  <- "technical_replicate" %in% colnames(samples)  # always merge replicates if "technical_replicate" exists
 assembly    <- samples$assembly[1]                           # always use the first assembly
@@ -69,8 +65,3 @@ suppressMessages({
   library(IHW)
   library(ggplot2)
 })
-
-
-# run the core script
-deseq_script <- file.path(scripts_dir, "deseq2.R")
-source(deseq_script)

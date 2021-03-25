@@ -1,6 +1,18 @@
 #!/usr/bin/env Rscript
 
-# IMPORTANT: This script should be called from deseq2_standalone.R or deseq2_rule.R
+# input method
+if (exists("snakemake")){
+  # parse seq2science input
+  scripts_dir <- snakemake@params$scripts_dir
+  deseq_wrapper <- file.path(scripts_dir, "deseq2_rule.R")
+} else {
+  # parse command line input
+  cli_args    <- commandArgs(trailingOnly=F)
+  this_script <- sub("--file=", "", cli_args[grep("--file=", cli_args)])
+  scripts_dir <- dirname(this_script)
+  deseq_wrapper <- file.path(scripts_dir, "deseq2_standalone.R")
+}
+source(deseq_wrapper)
 
 ## parse the design contrast
 # a contrast is always in the form 'batch+condition_group1_group2', where batch(+) is optional
