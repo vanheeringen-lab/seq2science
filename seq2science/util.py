@@ -32,7 +32,7 @@ class UniqueKeyLoader(yaml.SafeLoader):
     def construct_mapping(self, node, deep=False):
         mapping = []
         for key_node, value_node in node.value:
-            key = self.construct_object(key_node, deep=deep)
+            key = self.construct_object(key_node, deep=deep).lower()
             if key in mapping:
                 logger.error(f"Duplicate key found in the config.yaml: {key}\n")
                 raise TerminatedException
