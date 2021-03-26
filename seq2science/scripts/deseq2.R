@@ -1,49 +1,18 @@
-suppressMessages({
-  library(DESeq2)
-  library(BiocParallel)
-  library(IHW)
-  library(ggplot2)
-})
+#!/usr/bin/env Rscript
 
-# snakemake variables
-threads         <- snakemake@threads[[1]]
-log_file        <- snakemake@log[[1]]
-counts_file     <- snakemake@input[[1]]
-samples_file    <- snakemake@params$samples
-replicates      <- snakemake@params$replicates
-contrast        <- snakemake@wildcards$contrast
-mtp             <- snakemake@config$deseq2$multiple_testing_procedure
-fdr             <- snakemake@config$deseq2$alpha_value
-se              <- snakemake@config$deseq2$shrinkage_estimator
-assembly        <- snakemake@wildcards$assembly
-salmon          <- snakemake@params$salmon
-output          <- snakemake@output[[1]]
-
-# log all console output
-log <- file(log_file, open="wt")
-sink(log)
-sink(log, type="message")
-
-# log all variables for debugging purposes
-cat('# variables used for this analysis:\n')
-cat('threads      <-',   threads, '\n')
-cat('log_file     <- "', log_file,     '"\n', sep = "")
-cat('counts_file  <- "', counts_file,  '"\n', sep = "")
-cat('samples_file <- "', samples_file, '"\n', sep = "")
-cat('replicates   <- ',  replicates, '\n')
-cat('contrast     <- "', contrast,     '"\n', sep = "")
-cat('mtp          <- "', mtp,          '"\n', sep = "")
-cat('fdr          <-',   fdr, '\n')
-cat('se           <- "', se,           '"\n', sep = "")
-cat('assembly     <- "', assembly,     '"\n', sep = "")
-cat('salmon       <- ', salmon,       '\n', sep = "")
-cat('output       <- "', output,       '"\n', sep = "")
-cat('\n')
-
-cat('Sessioninfo:\n')
-sessionInfo()
-cat('\n')
-
+# input method
+if (exists("snakemake")){
+  # parse seq2science input
+  scripts_dir <- snakemake@params$scripts_dir
+  deseq_wrapper <- file.path(scripts_dir, "deseq2_rule.R")
+} else {
+  # parse command line input
+  cli_args    <- commandArgs(trailingOnly=F)
+  this_script <- sub("--file=", "", cli_args[grep("--file=", cli_args)])
+  scripts_dir <- dirname(this_script)
+  deseq_wrapper <- file.path(scripts_dir, "deseq2_standalone.R")
+}
+source(deseq_wrapper)
 
 ## parse the design contrast
 # a contrast is always in the form 'batch+condition_group1_group2', where batch(+) is optional
@@ -144,12 +113,15 @@ cat('\n')
 expressed_genes <- as.data.frame(resLFC[order(resLFC$padj),])
 
 missing_genes <- rownames(counts)[!(rownames(counts) %in% rownames(expressed_genes))]
-unexpressed_genes <- as.data.frame(matrix(data = NA, ncol = ncol(expressed_genes), nrow = length(missing_genes)))
-rownames(unexpressed_genes) <- missing_genes
-colnames(unexpressed_genes) <- colnames(expressed_genes)
-unexpressed_genes[,'baseMean'] <- 0
-
-all_genes <- rbind(expressed_genes, unexpressed_genes)
+if (length(missing_genes) > 0){
+    unexpressed_genes <- as.data.frame(matrix(data = NA, ncol = ncol(expressed_genes), nrow = length(missing_genes)))
+    rownames(unexpressed_genes) <- missing_genes
+    colnames(unexpressed_genes) <- colnames(expressed_genes)
+    unexpressed_genes[,'baseMean'] <- 0
+    all_genes <- rbind(expressed_genes, unexpressed_genes)
+} else {
+    all_genes <- expressed_genes
+}
 write.table(all_genes, file=output, quote = F, sep = '\t', col.names=NA)
 cat('DE genes table saved\n\n')
 
