@@ -8,6 +8,7 @@ import glob
 import time
 import colorsys
 import urllib.request
+import yaml
 from io import StringIO
 from typing import List
 from math import ceil, floor
@@ -21,6 +22,22 @@ from snakemake.logging import logger
 
 # default colors in matplotlib. Order dictates the priority.
 DEFAULT_COLOR_DICTS = [mcolors.BASE_COLORS, mcolors.TABLEAU_COLORS, mcolors.CSS4_COLORS, mcolors.XKCD_COLORS]
+
+
+class UniqueKeyLoader(yaml.SafeLoader):
+    """
+    YAML loader with duplicate key checking
+    source: https://stackoverflow.com/questions/33490870/parsing-yaml-in-python-detect-duplicated-keys
+    """
+    def construct_mapping(self, node, deep=False):
+        mapping = []
+        for key_node, value_node in node.value:
+            key = self.construct_object(key_node, deep=deep).lower()
+            if key in mapping:
+                logger.error(f"Duplicate key found in the config.yaml: {key}\n")
+                raise TerminatedException
+            mapping.append(key)
+        return super().construct_mapping(node, deep)
 
 
 def _sample_to_idxs(df: pd.DataFrame, sample: str) -> List[int]:
