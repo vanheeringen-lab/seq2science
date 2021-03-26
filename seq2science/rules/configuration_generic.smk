@@ -25,7 +25,7 @@ from snakemake.utils import min_version
 from snakemake.exceptions import TerminatedException
 
 import seq2science
-from seq2science.util import samples2metadata, prep_filelock, url_is_alive, color_parser
+from seq2science.util import UniqueKeyLoader, samples2metadata, prep_filelock, url_is_alive, color_parser
 
 
 # get the cache and config dirs
@@ -33,6 +33,8 @@ CACHE_DIR = os.path.join(xdg.XDG_CACHE_HOME, "seq2science", seq2science.__versio
 
 # config.yaml(s)
 
+# convert all config keys to lower case (upper case = user typo)
+config =  {k.lower(): v for k, v in config.items()}
 
 # check config file for correct directory names
 for key, value in config.items():
@@ -66,7 +68,8 @@ assert sorted(config['fqext'])[0] == config['fqext1'], \
 
 # read the config.yaml (not the profile)
 with open(workflow.overwrite_configfiles[0], 'r') as stream:
-    user_config = yaml.safe_load(stream)
+    # safe_load() with exception on duplicate keys
+    user_config = yaml.load(stream, Loader=UniqueKeyLoader)
 
 # make absolute paths, nest default dirs in result_dir and cut off trailing slashes
 config['result_dir'] = re.split("\/$", os.path.abspath(config['result_dir']))[0]
