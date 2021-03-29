@@ -486,14 +486,31 @@ rule multiqc_header_info:
         config={k: v for k, v in config.items() if k not in ["no_config_log", "cli_call"]}  # helps resolve changed config options, ignore no_config_log
     run:
         import os
-        import subprocess
         from datetime import date
 
         cwd = os.getcwd().split('/')[-1]
         mail = config.get('email', 'none@provided.com')
         date = date.today().strftime("%B %d, %Y")
 
+        with open(output[0], "w") as f:
+            f.write(f"report_header_info:\n"
+                    f"    - Contact E-mail: '{mail}'\n"
+                    f"    - Workflow: '{cwd}'\n"
+                    f"    - Date: '{date}'\n"
+            )
+
+
+rule multiqc_explain:
+    output:
+        temp(expand('{log_dir}/workflow_explanation.yaml', **config))
+    params:
+        config={k: v for k, v in config.items() if k not in ["no_config_log", "cli_call"]}  # helps resolve changed config options, ignore no_config_log
+    run:
+        import subprocess
+
+        # make a copy of the cli_call
         cli_call = config["cli_call"][:]
+
         # convert run into explain
         cli_call[1] = "explain"
 
@@ -506,11 +523,11 @@ rule multiqc_header_info:
         explanation = result.stdout.decode('utf-8')
 
         with open(output[0], "w") as f:
-            f.write(f"report_header_info:\n"
-                    f"    - Contact E-mail: '{mail}'\n"
-                    f"    - Workflow: '{cwd}'\n"
-                    f"    - Date: '{date}'\n"
-                    f"    - Explanation: \"{explanation}\"")
+            f.write("<!--\n" 
+                    "id: 'explanation'\n" 
+                    "section_name: 'Workflow explanation'\n" 
+                    "-->\n"
+                    f"{explanation}")
 
 
 rule multiqc_rename_buttons:

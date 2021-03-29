@@ -3,6 +3,13 @@ import os.path
 import yaml
 
 
+def hyperref(text, link):
+    if config.get("hyperref", False):
+        return f"""<a href="{link}">{text}</a>"""
+    else:
+        return f"{text} ({link})"
+
+
 if not config.get("explain_rule"):
     def explain_rule(name):
         """
@@ -43,6 +50,12 @@ else:
 
             # replace the placeholder with the actual version
             string = string[:match.span()[0]] + version + string[match.span()[1]:]
+
+        parser = re.compile("(hyperref\(.+\))")
+        while len(parser.findall(string)):
+            match = next(parser.finditer(string))
+            string = string[:match.span()[0]] + eval(match.group(0)) + string[match.span()[1]:]
+
         return string
 
 
@@ -60,7 +73,7 @@ else:
     messages={
         "bowtie2_align": "Reads were aligned with bowtie2 v@bowtie2[bowtie2] (https://dx.doi.org/10.1038%2Fnmeth.1923) with options '{config[align]}'.",
         "bwa-mem_align": "Reads were aligned with bwa-mem v@bwa[bwa] (http://arxiv.org/abs/1303.3997) with options '{config[align]}'.",
-        "bwa-mem2_align": "Reads were aligned with bwa-mem2 v@bwamem2[bwa-mem2] (https://arxiv.org/abs/1907.12931) with options '{config[align]}'.",
+        "bwa-mem2_align": "Reads were aligned with hyperref('bwa-mem2 v@bwamem2[bwa-mem2]','test') with options '{config[align]}'.",
         "hisat_splice_aware": "An exon and splice-aware index was generated for HISAT2.",
         "hisat2_align": "Reads were aligned with HISAT2 v@hisat2[hisat2] (https://doi.org/10.1038/s41587-019-0201-4) with options '{config[align]}'.",
         "star_align": "Reads were aligned with STAR v@star[star] (https://dx.doi.org/10.1093%2Fbioinformatics%2Fbts635) with options '{config[align]}'.",

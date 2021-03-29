@@ -159,6 +159,11 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         help="Remove a lock on the working directory.",
         action='store_true'
     )
+    explain.add_argument(
+        "--hyperref",
+        help="Print urls as html hyperref",
+        action='store_true'
+    )
     # run/explain arguments
     for subparser in [run, explain]:
         subparser.add_argument(
@@ -390,6 +395,7 @@ def _explain(args, base_dir, workflows_dir, config_path):
 
     # cores
     parsed_args["cores"] = 999
+    parsed_args["config"]["hyperref"] = args.hyperref
 
     # starting message
     rules_used = {"start": f"\nPreprocessing of reads was done automatically with workflow tool "

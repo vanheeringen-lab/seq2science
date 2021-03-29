@@ -46,6 +46,8 @@ module_order:
     - mtnucratio
 
 report_section_order:
+  explanation:
+    order: 1000
   dupRadar:
     order: -897
   deeptools_spearman:
