@@ -599,7 +599,8 @@ def get_qc_files(wildcards):
     assert 'quality_control' in globals(), "When trying to generate multiqc output, make sure that the "\
                                            "variable 'quality_control' exists and contains all the "\
                                            "relevant quality control functions."
-    qc['files'] = set([expand('{qc_dir}/samplesconfig_mqc.html', **config)[0]])
+    qc['files'] = set([expand(['{qc_dir}/samplesconfig_mqc.html',
+                               '{log_dir}/workflow_explanation.yaml'], **config)[0]])
 
     # trimming qc on individual samples
     if get_trimming_qc in quality_control:
