@@ -600,7 +600,7 @@ def get_qc_files(wildcards):
                                            "variable 'quality_control' exists and contains all the "\
                                            "relevant quality control functions."
     qc['files'] = set([expand(['{qc_dir}/samplesconfig_mqc.html',
-                               '{log_dir}/workflow_explanation.yaml'], **config)[0]])
+                               '{log_dir}/workflow_explanation.yaml'], **config)])
 
     # trimming qc on individual samples
     if get_trimming_qc in quality_control:
