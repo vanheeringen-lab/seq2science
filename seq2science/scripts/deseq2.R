@@ -1,91 +1,68 @@
-suppressMessages({
-  library(DESeq2)
-  library(IHW)
-  library(ggplot2)
-})
+#!/usr/bin/env Rscript
 
-# snakemake variables
-threads         <- snakemake@threads[[1]]
-log_file        <- snakemake@log[[1]]
-counts_file     <- snakemake@input[[1]]
-samples_file    <- snakemake@params$samples
-replicates      <- snakemake@params$replicates
-contrast        <- snakemake@wildcards$contrast
-mtp             <- snakemake@config$deseq2$multiple_testing_procedure
-fdr             <- snakemake@config$deseq2$alpha_value
-se              <- snakemake@config$deseq2$shrinkage_estimator
-assembly        <- snakemake@wildcards$assembly
-salmon          <- snakemake@config$quantifier == "salmon"
-counts_dir      <- snakemake@config$counts_dir
-output          <- snakemake@output[[1]]
-
-# log all console output
-log <- file(log_file, open="wt")
-sink(log)
-sink(log, type="message")
-
-# log all variables for debugging purposes
-cat('# variables used for this analysis:\n')
-cat('threads      <-',   threads, '\n')
-cat('log_file     <- "', log_file,     '"\n', sep = "")
-cat('counts_file  <- "', counts_file,  '"\n', sep = "")
-cat('samples_file <- "', samples_file, '"\n', sep = "")
-cat('replicates   <- ',  replicates, '\n')
-cat('contrast     <- "', contrast,     '"\n', sep = "")
-cat('mtp          <- "', mtp,          '"\n', sep = "")
-cat('fdr          <-',   fdr, '\n')
-cat('se           <- "', se,           '"\n', sep = "")
-cat('assembly     <- "', assembly,     '"\n', sep = "")
-cat('salmon       <- "', salmon,       '"\n', sep = "")
-cat('counts_dir   <- "', counts_dir,   '"\n', sep = "")
-cat('output       <- "', output,       '"\n', sep = "")
-cat('\n')
-
-cat('Sessioninfo:\n')
-sessionInfo()
-cat('\n')
-
+# input method
+if (exists("snakemake")){
+  # parse seq2science input
+  scripts_dir <- snakemake@params$scripts_dir
+  deseq_wrapper <- file.path(scripts_dir, "deseq2_rule.R")
+} else {
+  # parse command line input
+  cli_args    <- commandArgs(trailingOnly=F)
+  this_script <- sub("--file=", "", cli_args[grep("--file=", cli_args)])
+  scripts_dir <- dirname(this_script)
+  deseq_wrapper <- file.path(scripts_dir, "deseq2_standalone.R")
+}
+source(deseq_wrapper)
 
 ## parse the design contrast
 # a contrast is always in the form 'batch+condition_group1_group2', where batch(+) is optional
 batch <- NA
 contr <- contrast
+
+# batch name
 if (grepl('\\+', contrast)) {
   batch <- strsplit(contrast, '\\+')[[1]][1]
   contr <- strsplit(contrast, '\\+')[[1]][2]
 }
-contr <- strsplit(contr, '_')[[1]]
-condition <- contr[1]
-groups <- contr[-1]
-rm(contr)
 
+# group names
+groups <- strsplit(contr, '_')[[1]]
+groups <- tail(groups,2)
+
+# column name
+n <- gregexpr(pattern=paste0("_", groups[1], "_", groups[2]), contr)[[1]][1] -1
+condition <- substr(contr, 1, n)
 
 ## obtain coldata, the metadata input for DESeq2
-samples <- read.delim(samples_file, sep = "\t", na.strings = "", comment.char = "#", stringsAsFactors = F)
+samples <- read.delim(samples_file, sep = "\t", na.strings = "", comment.char = "#", stringsAsFactors = F, row.names = "sample")
+samples <- samples[samples$assembly == assembly, ]
+
+# collapse technical replicates
 if ("technical_replicate" %in% colnames(samples) & isTRUE(replicates)) {
-  samples$technical_replicate[is.na(samples$technical_replicate)] <- as.character(samples$sample[is.na(samples$technical_replicate)])
+  to_rename <- is.na(samples$technical_replicate)
+  samples$technical_replicate[to_rename] <- as.character(rownames(samples)[to_rename])
   samples <- subset(samples, !duplicated(technical_replicate))
   row.names(samples) <- samples$technical_replicate
-} else {
-  row.names(samples) <- samples$sample
 }
-coldata <- samples
 
 # rename batch and condition (required as DESeq's design cannot accept variables)
+coldata <- samples
 coldata[,"condition"] <- coldata[condition]
 coldata[,"batch"]     <- ifelse(!is.na(batch), coldata[batch], NA)
+coldata <- coldata[c("condition", "batch")]
 
 # determine if we need to run batch correction on the whole assembly
 output_batch_corr_counts <- sub(paste0(contrast, ".diffexp.tsv"), paste0(batch, "+", condition, ".batch_corr_counts.tsv"), output, fixed=TRUE)
 output_batch_corr_tpm <- sub(paste0(contrast, ".diffexp.tsv"), paste0(batch, "+", condition, ".batch_corr_tpm.tsv"), output, fixed=TRUE)
 no_batch_correction_required <- is.na(batch) | (file.exists(output_batch_corr_counts) & (!salmon | file.exists(output_batch_corr_tpm)))
 
-# filter for assembly and condition & order data for DESeq
+# filter out unused conditions & order data for DESeq
 if (no_batch_correction_required) {
-  coldata <- coldata[coldata$assembly == assembly & coldata$condition %in% c(groups[1], groups[2]), c("condition", "batch")]
+  coldata <- coldata[coldata$condition %in% c(groups[1], groups[2]),]
 } else {
   cat('\nbatch correction dataset selected\n\n')
-  coldata <- coldata[coldata$assembly == assembly & !is.na(coldata$batch), c("condition", "batch")]  # for batch corrected counts output
+  # for batch corrected counts we want all samples marked in the batch column
+  coldata <- coldata[!is.na(coldata$batch),]
 }
 coldata$condition <- factor(coldata$condition)
 coldata$condition <- relevel(coldata$condition, ref = groups[2])
@@ -136,12 +113,15 @@ cat('\n')
 expressed_genes <- as.data.frame(resLFC[order(resLFC$padj),])
 
 missing_genes <- rownames(counts)[!(rownames(counts) %in% rownames(expressed_genes))]
-unexpressed_genes <- as.data.frame(matrix(data = NA, ncol = ncol(expressed_genes), nrow = length(missing_genes)))
-rownames(unexpressed_genes) <- missing_genes
-colnames(unexpressed_genes) <- colnames(expressed_genes)
-unexpressed_genes[,'baseMean'] <- 0
-
-all_genes <- rbind(expressed_genes, unexpressed_genes)
+if (length(missing_genes) > 0){
+    unexpressed_genes <- as.data.frame(matrix(data = NA, ncol = ncol(expressed_genes), nrow = length(missing_genes)))
+    rownames(unexpressed_genes) <- missing_genes
+    colnames(unexpressed_genes) <- colnames(expressed_genes)
+    unexpressed_genes[,'baseMean'] <- 0
+    all_genes <- rbind(expressed_genes, unexpressed_genes)
+} else {
+    all_genes <- expressed_genes
+}
 write.table(all_genes, file=output, quote = F, sep = '\t', col.names=NA)
 cat('DE genes table saved\n\n')
 
@@ -159,10 +139,10 @@ if(n_DEGs == 0){
 
 # generate MA plot (log fold change vs mean gene counts)
 output_ma_plot <- sub(".diffexp.tsv", ".ma_plot.pdf", output)
-if (is.na(batch)) {b = ''} else {b = 'batch corrected, '}
+if (is.na(batch)) {b <- ''} else {b <- ', batch corrected'}
 pdf(output_ma_plot)
-plotMA(resLFC, alpha = fdr, ylab = 'log2 fold change',  # ylim=c(-2,2), 
-       main = paste0(groups[1], ' vs ', groups[2], '\n', n_DEGs, ' DE genes (a = ', fdr, ', ',b , nrow(reduced_counts), ' genes)'))
+plotMA(resLFC, alpha = fdr, ylab = 'log2 fold change',
+       main = paste0(groups[1], ' vs ', groups[2], '\n', n_DEGs, ' of ', nrow(reduced_counts), ' DE (a = ', fdr, b, ')'))
 invisible(dev.off())
 cat('-MA plot saved\n')
 
@@ -171,7 +151,7 @@ if (is.na(batch)){
 
   blind_vst <- varianceStabilizingTransformation(dds, blind = TRUE)
 
-  g = plotPCA(blind_vst, intgroup="condition")
+  g <- plotPCA(blind_vst, intgroup="condition")
 
   output_pca_plot <- sub(".diffexp.tsv", ".pca_plot.pdf", output)
   pdf(output_pca_plot)
@@ -190,8 +170,8 @@ if (is.na(batch)){
   batchcorr_vst <- nonblind_vst
   assay(batchcorr_vst) <- mat
 
-  g1 = plotPCA(blind_vst, intgroup=c("condition", "batch"))
-  g2 = plotPCA(batchcorr_vst, intgroup=c("condition", "batch"))
+  g1 <- plotPCA(blind_vst, intgroup=c("condition", "batch"))
+  g2 <- plotPCA(batchcorr_vst, intgroup=c("condition", "batch"))
 
   output_pca_plots <- sub(".diffexp.tsv", ".pca_plot_%01d.pdf", output)
   pdf(output_pca_plots)

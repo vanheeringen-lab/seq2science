@@ -3,16 +3,6 @@ $schema: "http://json-schema.org/draft-07/schema#"
 description: seq2science gene expression configuration
 
 properties:
-  # paths to store results
-  counts_dir:
-    description: directory where to store the gene counts for DGE analysis (defaults inside the result dir)
-    default: gene_counts
-    type: string
-  dge_dir:
-    description: directory where to store the workflow differential gene analysis output (defaults inside the result dir)
-    default: deseq2
-    type: string
-
   quantifier:
     description: which quantifier to use
     properties:
@@ -72,26 +62,3 @@ properties:
     description: output an exon counts matrix for use in DEXSeq.
     default: False
     type: boolean
-
-  # differential gene expression analysis
-  deseq2:
-    description: DESeq2 settings. See the DESeq2 vignette for details
-    properties:
-      multiple_testing_procedure:
-        default: BH
-        enum: [BH, IHW]
-        type: string
-      alpha_value:
-        default: 0.1
-        type: number
-      shrinkage_estimator:
-        default: apeglm
-        enum: [apeglm, ashr, normal]
-        type: string
-    default:
-      multiple_testing_procedure: BH
-      alpha_value: 0.1
-      shrinkage_estimator: apeglm
-
-  contrasts:
-    description: deseq2 design contrast(s)

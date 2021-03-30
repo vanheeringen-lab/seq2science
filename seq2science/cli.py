@@ -3,32 +3,37 @@
 This is the user's entry-point for the seq2science tool.
 """
 import os
+import re
 import sys
 import argparse
+import argcomplete
 import shutil
-import webbrowser
-import re
 import inspect
-import contextlib
-import yaml
-import psutil
-
-import xdg
 
 # we need to be able to get the parser from the file without a valid seq2science installation
 try:
-    import snakemake
     import seq2science
-
-    full_import = True
+    from seq2science.logging import log_welcome
 except ImportError:
-    full_import = False
+    pass
 
-try:
-    import mamba
-    conda_frontend = "mamba"
-except ImportError:
-    conda_frontend = "conda"
+
+
+
+def _import():
+    """
+    this function serves that we can do imports as late as possible, for faster auto-completion
+    """
+    global webbrowser, contextlib, yaml, psutil, snakemake, logger, setup_logger, xdg, datetime, _logging
+    import yaml
+    import psutil
+    import webbrowser
+    import contextlib
+    import datetime
+
+    import snakemake
+    from snakemake.logging import logger, setup_logger, _logging
+    import xdg
 
 
 def main():
@@ -38,6 +43,9 @@ def main():
 
     parser = seq2science_parser(workflows_dir)
     args = parser.parse_args()
+
+    # most imports after argparsing for faster tab-completion
+    _import()
 
     # now run the command
     if args.command == "init":
@@ -103,7 +111,7 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
 
     # init, run and explain can use all workflows
     for subparser in [init, run, explain]:
-        subparser.add_argument("workflow", choices=[dir.replace("_", "-") for dir in os.listdir(workflows_dir)])
+        subparser.add_argument("workflow", metavar="WORKFLOW", choices=[dir.replace("_", "-") for dir in os.listdir(workflows_dir)])
 
     # init arguments
     init.add_argument(
@@ -113,15 +121,13 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         help="The path to the directory where to initialise the config and samples files.",
     )
 
-    # run/explain arguments
-    for subparser in [run, explain]:
-        subparser.add_argument(
-            "-c",
-            "--configfile",
-            default="./config.yaml",
-            metavar="FILE",
-            help="The path to the config file.",
-        )
+    init.add_argument(
+        "-f", "--force",
+        default=False,
+        help="Overwrite existing samples.tsv and config.yaml silently.",
+        action="store_true",
+    )
+
     global core_arg
     core_arg = run.add_argument(
         "-j", "--cores",
@@ -142,6 +148,27 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         help="Print the reason for each executed rule.",
         action='store_true'
     )
+    run.add_argument(
+        "--skip-rerun",
+        help="Skip the check if samples or configuration has been changed.",
+        action="store_true"
+    )
+    run.add_argument(
+        "-k", "--keep-going",
+        help="Go on with independent jobs if a job fails.",
+        action='store_true'
+    )
+    run.add_argument(
+        "--rerun-incomplete",
+        help="Re-run all jobs the output of which is recognized as incomplete.",
+        action='store_true'
+    )
+    run.add_argument(
+        "--unlock",
+        help="Remove a lock on the working directory.",
+        action='store_true'
+    )
+    # run/explain arguments
     for subparser in [run, explain]:
         subparser.add_argument(
             "--snakemakeOptions",
@@ -160,21 +187,18 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
             metavar="PROFILE NAME",
             help="Use a seq2science profile. Profiles can be taken from: https://github.com/s2s-profiles",
         )
-    run.add_argument(
-        "-k", "--keep-going",
-        help="Go on with independent jobs if a job fails.",
-        action='store_true'
-    )
-    run.add_argument(
-        "--rerun-incomplete",
-        help="Re-run all jobs the output of which is recognized as incomplete.",
-        action='store_true'
-    )
-    run.add_argument(
-        "--unlock",
-        help="Remove a lock on the working directory.",
-        action='store_true'
-    )
+        subparser.add_argument(
+            "-c",
+            "--configfile",
+            default="./config.yaml",
+            metavar="FILE",
+            help="The path to the config file.",
+        )
+
+    # enable tab completion
+    # exclusion only works on the main parser unfortunately, but it's better than nothing,
+    # plus it might be supported later?
+    argcomplete.autocomplete(parser, exclude=['-c', '-p', '-k' '-r' '-n', '-j', '-h', '-v'])
 
     return parser
 
@@ -188,7 +212,7 @@ def _init(args, workflows_dir, config_path):
         dest = os.path.join(os.path.dirname(config_path), file)
 
         copy_file = True
-        if os.path.exists(dest):
+        if os.path.exists(dest) and args.force is False:
             choices = {"yes": True, "y": True, "no": False, "n": False}
 
             sys.stdout.write(
@@ -249,7 +273,7 @@ def _run(args, base_dir, workflows_dir, config_path):
     # parse the args
     parsed_args = {"snakefile": os.path.join(workflows_dir, args.workflow.replace("-", "_"), "Snakefile"),
                    "use_conda": True,
-                   "conda_frontend": conda_frontend,
+                   "conda_frontend": "mamba",
                    "conda_prefix": os.path.join(base_dir, ".snakemake"),
                    "dryrun": args.dryrun,
                    "printreason": args.reason,
@@ -271,7 +295,7 @@ def _run(args, base_dir, workflows_dir, config_path):
         add_profile_args(profile_file, parsed_args)
 
     # cores
-    if args.cores:  # CLI
+    if args.cores:  # command-line interface
         parsed_args["cores"] = args.cores
     elif parsed_args.get("cores"):  # profile
         parsed_args["cores"] = int(parsed_args["cores"])
@@ -291,7 +315,50 @@ def _run(args, base_dir, workflows_dir, config_path):
     parsed_args["config"].update({"cores": parsed_args["cores"]})
     resource_parser(parsed_args)
 
-    # run snakemake
+    # run snakemake/seq2science
+    #   1. pretty welcome message
+    setup_seq2science_logger(parsed_args)
+    log_welcome(logger, parsed_args)
+    if not args.skip_rerun or args.unlock:
+        #   2. start a dryrun checking which files need to be created, and check if
+        #      any params changed, which means we have to remove those files and
+        #      continue from there
+        logger.info("Checking if seq2science was run already, if something in the configuration was changed, and if so, if "
+                    "seq2science needs to re-run any jobs.")
+
+        with seq2science.util.CaptureStdout() as targets, seq2science.util.CaptureStderr() as errors:
+            exit_code = snakemake.snakemake(**{**parsed_args, **{
+                "list_params_changes": True,
+                "quiet": False,
+                "log_handler": lambda x: None,  # don't show any of the logs
+                "keep_logger": True
+            }})
+        if not exit_code:
+            sys.exit(1)
+
+        #   3. check which files would need a rerun, and clean remove files we do
+        #      not want to consider.
+        #      - genome files since provider will change to local
+        regex_patterns = [
+            "(\/.+){2}[^_custom]+\.(fa|gaps)",  # match genome fasta
+            "(\/.+){2}.+\.annotation.(bed|gtf)",  # match annotations
+        ]
+        targets = [target for target in targets if not any(re.match(pattern, target) for pattern in regex_patterns)]
+
+        #   4. if there are any targets left, force to recreate those targets plus the final results (rule seq2science)
+        if len(targets):
+            targets += ["seq2science"]
+            parsed_args["forcerun"] = targets
+            parsed_args["targets"] = targets
+            parsed_args["forcetargets"] = True
+            parsed_args["keep_logger"] = True
+        logger.info("Done. Now starting the real run.")
+
+    logger.printreason = parsed_args["printreason"]
+    logger.stream_handler.setStream(sys.stdout)
+    parsed_args["config"]["no_config_log"] = True
+
+    #   5. start the "real" run where jobs actually get started
     exit_code = snakemake.snakemake(**parsed_args)
     sys.exit(0) if exit_code else sys.exit(1)
 
@@ -349,7 +416,10 @@ def _explain(args, base_dir, workflows_dir, config_path):
         print(" ".join(rules_used.values()))
         sys.exit(0)
     else:
-        print("Oh no! Something went wrong... Please let us know: https://github.com/vanheeringen-lab/seq2science/issues ")
+        print(
+            "\nOh no! Something went wrong... "
+            "Please let us know: https://github.com/vanheeringen-lab/seq2science/issues "
+        )
         sys.exit(1)
 
 
@@ -483,3 +553,17 @@ def resource_parser(parsed_args):
         # otherwise assume system memory
         mem = psutil.virtual_memory().total / 1024 ** 3
         parsed_args["resources"]["mem_gb"] = round(mem)
+
+
+def setup_seq2science_logger(parsed_args):
+    setup_logger()
+    if not parsed_args["dryrun"]:
+        seq2science_logfile = os.path.abspath(
+            "seq2science."
+            + datetime.datetime.now().isoformat().replace(":", "")
+            + ".log"
+        )
+        logger.logfile = seq2science_logfile
+        logger.get_logfile = lambda: seq2science_logfile
+        logger.logfile_handler = _logging.FileHandler(seq2science_logfile)
+        logger.logger.addHandler(logger.logfile_handler)

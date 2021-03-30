@@ -1,8 +1,10 @@
 import math
 import os
+import hashlib
+
 import pandas as pd
 
-from seq2science.util import parse_de_contrasts
+from seq2science.util import parse_contrast
 
 
 # apply workflow specific changes...
@@ -86,14 +88,6 @@ if get_workflow() == "rna_seq":
     assert config["aligner"] in ["star", "hisat2"], \
         f"\nPlease select a splice aware aligner for the RNA-seq (STAR or HISAT2)\n"
 
-    # delete the old strandedness report if samples.tsv was updated
-    strandedness_report = f"{config['qc_dir']}/strandedness/inferred_strandedness.tsv"
-    if os.path.exists(strandedness_report) and not config['ignore_strandedness']:
-        strandedness = pd.read_csv(strandedness_report, sep='\t', dtype='str', index_col=0)
-        col = samples.replicate if "replicate" in samples else samples.index
-        if len(strandedness.index) != len(set(col)) or not all(s in set(col) for s in strandedness.index):
-            os.unlink(strandedness_report)
-
     # regular dict is prettier in the log
     config["deseq2"] = dict(config["deseq2"])
 
@@ -106,18 +100,18 @@ if config.get("bam_sorter", False):
 
 # make sure that our samples.tsv and configuration work together...
 # ...on biological replicates
-if "condition" in samples:
-    if "hmmratac" in config.get("peak_caller"):
-        assert config.get("biological_replicates", "") == "idr", f"HMMRATAC peaks can only be combined through idr"
+if "biological_replicate" in samples:
+    if "peak_caller" in config and "hmmratac" in config.get("peak_caller"):
+        assert config.get("biological_replicates", "") in ["idr", "keep"], f"HMMRATAC peaks can only be combined through idr"
 
-    for condition in set(samples["condition"]):
-        for assembly in set(samples[samples["condition"] == condition]["assembly"]):
-            if "replicate" in samples:
+    for condition in set(samples["biological_replicate"]):
+        for assembly in set(samples[samples["biological_replicate"] == condition]["assembly"]):
+            if "technical_replicate" in samples:
                 nr_samples = len(
-                    set(samples[(samples["condition"] == condition) & (samples["assembly"] == assembly)]["replicate"])
+                    set(samples[(samples["biological_replicate"] == condition) & (samples["assembly"] == assembly)]["technical_replicate"])
                 )
             else:
-                nr_samples = len(samples[(samples["condition"] == condition) & (samples["assembly"] == assembly)])
+                nr_samples = len(samples[(samples["biological_replicate"] == condition) & (samples["assembly"] == assembly)])
 
             if config.get("biological_replicates", "") == "idr":
                 assert nr_samples <= 2, (
@@ -129,37 +123,7 @@ if "condition" in samples:
 if config.get("contrasts"):
     # check differential gene expression contrasts
     for contrast in list(config["contrasts"]):
-        parsed_contrast, batch = parse_de_contrasts(contrast)
-        column_name = parsed_contrast[0]
-
-        # Check if the column names can be recognized in the contrast
-        assert column_name in samples.columns and column_name not in ["sample", "assembly"], (
-            f'\nIn contrast design "{contrast}", "{column_name} '
-            + f'does not match any valid column name in {config["samples"]}.\n'
-        )
-        if batch is not None:
-            assert batch in samples.columns and batch not in ["sample", "assembly"], (
-                f'\nIn contrast design "{contrast}", the batch effect "{batch}" '
-                + f'does not match any valid column name in {config["samples"]}.\n'
-            )
-
-        # Check if the contrast contains the number of components we can parse
-        components = len(parsed_contrast)
-        assert components > 1, (
-            f"\nA differential expression contrast is too short: '{contrast}'.\n"
-            "Specify at least one reference group to compare against.\n"
-        )
-        assert components < 4, (
-            "\nA differential expression contrast couldn't be parsed correctly.\n"
-            + f"{str(components-1)} groups were found in '{contrast}' "
-            + f"(groups: {', '.join(parsed_contrast[1:])}).\n\n"
-            + f'Tip: do not use underscores in the columns of {config["samples"]} referenced by your contrast.\n'
-        )
-
-        # Check if the groups in the contrast can be found in the right column of the samples.tsv
-        for group in parsed_contrast[1:]:
-            if group != "all":
-                assert str(group) in [str(i) for i in samples[column_name].tolist()], (
-                    f"\nYour contrast design contains group {group} which cannot be found "
-                    f'in column {column_name} of {config["samples"]}.\n'
-                )
+        assert len(contrast.split("_")) >= 3, (
+            f"\nCould not parse DESeq2 contrast '{contrast}'.\n"
+            "A DESeq2 design contrast must be in the form '(batch+)column_target_reference'. See the docs for examples.\n")
+        _,_,_,_ = parse_contrast(contrast, samples, check=True)

@@ -14,11 +14,10 @@ A different type of CreateCondaEnvironmentException occurs when you have conda c
 user@comp:~$ conda config --set channel_priority flexible
 ```
 
-## I changed the config/samples file but seq2science does not rerun
-TODO: we should support rerunning!
-Seq2science (actually Snakemake) has a "lazy" policy regarding the generation of files, and will normally only rerun jobs if the input is younger than the output. 
+## What if I change the configuration or samples file after running seq2science?
+Seq2science starts each run with checking if it was already run before, and if so, if any settings were changed. Seq2science then automatically derives which files need to be changed and only starts the necessary jobs.
 
-To push seq2science to do this anyway, you need to remove one or two downstream files. We suggest deleting the MultiQC file, and a fastqc file of the samples that need to rerun.
+This comes in handy when for example you want to add more data later on in the analysis or change for instance the colors in the trackhub.
 
 ## Failed to call external services.
 When downloading samples / looking up their layout online, seq2science makes use of online resources. Sometimes it can happen that those services are not online at the moment of running seq2science, you do not have internet, or you lose connection with the service. Usually just re-running seq2science solves these issues, either directly or a couple hours later.
@@ -53,4 +52,4 @@ There are differences between these methods however, and caution is advised with
 Additionally, Seq2science employs strict quality checks by default.
 You could try reducing the `min_mapping_quality` (for HTSeq and FeatureCounts) or change the parameters to the quantifier.
 
-The biggest difference in expressed genes found is in switching to or from Salmon.
+The biggest differences in expressed genes can be found by switching gene annotation, followed by switching quantifier (to or from Salmon).
