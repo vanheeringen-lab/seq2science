@@ -502,7 +502,7 @@ rule multiqc_header_info:
 
 rule multiqc_explain:
     output:
-        temp(expand('{log_dir}/workflow_explanation.yaml', **config))
+        expand('{log_dir}/workflow_explanation_mqc.html', **config)
     params:
         config={k: v for k, v in config.items() if k not in ["no_config_log", "cli_call"]}  # helps resolve changed config options, ignore no_config_log
     run:
@@ -518,6 +518,9 @@ rule multiqc_explain:
         cli_call = [arg for arg in cli_call if arg not in {"--unlock", "--rerun-incomplete", "-k", "--keep-going", "--skip-rerun", "--reason", "-r", "--dryrun", "-n"}]
         cores_index = cli_call.index("--cores" if "--cores" in cli_call else "-j")
         del cli_call[cores_index:cores_index+2]
+        
+        # make sure to get pretty hyperrefs
+        cli_call.append("--hyperref")
 
         result = subprocess.run(cli_call, stdout=subprocess.PIPE)
         explanation = result.stdout.decode('utf-8')
@@ -599,8 +602,8 @@ def get_qc_files(wildcards):
     assert 'quality_control' in globals(), "When trying to generate multiqc output, make sure that the "\
                                            "variable 'quality_control' exists and contains all the "\
                                            "relevant quality control functions."
-    qc['files'] = set([expand(['{qc_dir}/samplesconfig_mqc.html',
-                               '{log_dir}/workflow_explanation.yaml'], **config)])
+    qc['files'] = set(expand(['{qc_dir}/samplesconfig_mqc.html',
+                              '{log_dir}/workflow_explanation_mqc.html'], **config))
 
     # trimming qc on individual samples
     if get_trimming_qc in quality_control:
