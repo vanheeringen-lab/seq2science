@@ -398,8 +398,12 @@ def _explain(args, base_dir, workflows_dir, config_path):
     parsed_args["config"]["hyperref"] = args.hyperref
 
     # starting message
-    rules_used = {"start": f"\nPreprocessing of reads was done automatically with workflow tool "
-                           f"seq2science v{seq2science.__version__} (https://doi.org/10.5281/zenodo.3921913)."}
+    if args.hyperref:
+        rules_used = {"start": f"\nPreprocessing of reads was done automatically with workflow tool "
+                               f"<a href=https://doi.org/10.5281/zenodo.3921913>seq2science v{seq2science.__version__}</a>."}
+    else:
+        rules_used = {"start": f"\nPreprocessing of reads was done automatically with workflow tool "
+                               f"seq2science v{seq2science.__version__} (https://doi.org/10.5281/zenodo.3921913)."}
 
     def log_handler(log):
         if log["level"] == "job_info" and "msg" in log and log["msg"] is not None and log["name"] not in rules_used:
