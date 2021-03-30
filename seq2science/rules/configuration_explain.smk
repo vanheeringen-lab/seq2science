@@ -10,6 +10,15 @@ def hyperref(text, link):
         return f"{text} ({link})"
 
 
+def options(key, key2=None, cnfg=config):
+    string = ""
+    if key2 and cnfg.get(key, {}).get(key2):
+        string = f" with options '{{config[{key}][{key2}]}}'"
+    if key2 is None and cnfg.get(key):
+        string = f" with options '{{config[{key}]}}'"
+    return string
+
+
 if not config.get("explain_rule"):
     def explain_rule(name):
         """
@@ -70,13 +79,13 @@ else:
             return start + final_sep.join([all_but_last, last]) + end
         return start + "".join(lst) + end
 
-    messages={
-        "bowtie2_align": "Reads were aligned with hyperref('bowtie2 v@bowtie2[bowtie2]','https://dx.doi.org/10.1038%2Fnmeth.1923') with options '{config[align]}'.",
-        "bwa-mem_align": "Reads were aligned with hyperref('bwa-mem v@bwa[bwa]','http://arxiv.org/abs/1303.3997') with options '{config[align]}'.",
-        "bwa-mem2_align": "Reads were aligned with hyperref('bwa-mem2 v@bwamem2[bwa-mem2]','https://arxiv.org/abs/1907.12931') with options '{config[align]}'.",
+    messages = {
+        "bowtie2_align": "Reads were aligned with hyperref('bowtie2 v@bowtie2[bowtie2]','https://dx.doi.org/10.1038%2Fnmeth.1923')" + options("align") + ".",
+        "bwa-mem_align": "Reads were aligned with hyperref('bwa-mem v@bwa[bwa]','http://arxiv.org/abs/1303.3997')" + options("align") + ".",
+        "bwa-mem2_align": "Reads were aligned with hyperref('bwa-mem2 v@bwamem2[bwa-mem2]','https://arxiv.org/abs/1907.12931')" + options("align") + ".",
         "hisat_splice_aware": "An exon and splice-aware index was generated for HISAT2.",
-        "hisat2_align": "Reads were aligned with hyperref('HISAT2 v@hisat2[hisat2]','https://doi.org/10.1038/s41587-019-0201-4') with options '{config[align]}'.",
-        "star_align": "Reads were aligned with hyperref('STAR v@star[star]','https://dx.doi.org/10.1093%2Fbioinformatics%2Fbts635') with options '{config[align]}'.",
+        "hisat2_align": "Reads were aligned with hyperref('HISAT2 v@hisat2[hisat2]','https://doi.org/10.1038/s41587-019-0201-4')" + options("align") + ".",
+        "star_align": "Reads were aligned with hyperref('STAR v@star[star]','https://dx.doi.org/10.1093%2Fbioinformatics%2Fbts635')" + options("align") + ".",
         "sieve_bam":
             text_join(start="Mapped reads were removed if they ",
                       lst=["did not have a minimum mapping quality of {config[min_mapping_quality]}" if config.get("min_mapping_quality", 0) > 0 else "",
@@ -100,8 +109,8 @@ else:
         "run2sra": "Public samples were downloaded from the hyperref('Sequence Read Archive','https://doi.org/10.1093/nar/gkq1019') with help of the ncbi e-utilities.",
         "get_genome": "Genome assembly {wildcards.raw_assembly} was downloaded with hyperref('genomepy {genomepy.__version__}','https://doi.org/10.21105/joss.00320').",
         "custom_extension": "The genome and gene annotations was extended with custom regions.",
-        "call_peak_genrich":"Peaks were called with hyperref('genrich v@genrich[genrich]','https://github.com/jsh58/Genrich') with options '{config[peak_caller][genrich]}'.",
-        "macs2_callpeak": "Peaks were called with hyperref('macs2 v@macs2[macs2]','(https://doi.org/10.1186/gb-2008-9-9-r137') with options '{config[peak_caller][macs2]}' in {params.format} mode. The effective genome size was estimated by taking the number of unique kmers in the assembly of the same length as the average read length for each sample.",
+        "call_peak_genrich": "Peaks were called with hyperref('genrich v@genrich[genrich]','https://github.com/jsh58/Genrich')" + options("peak_caller", "genrich") + ".",
+        "macs2_callpeak": "Peaks were called with hyperref('macs2 v@macs2[macs2]','(https://doi.org/10.1186/gb-2008-9-9-r137')" + options("peak_caller", "macs2") + " in {params.format} mode. The effective genome size was estimated by taking the number of unique kmers in the assembly of the same length as the average read length for each sample.",
         "keep_mates": "After alignment we removed paired-end info from reads with seq2science to utilize both mates in the paired-end reads.",
         "idr": "Narrowpeak files of biological replicates belonging to the same condition were merged with the hyperref('irreproducible discovery rate v@idr[idr]','http://dx.doi.org/10.1214/11-AOAS466').",
         "macs_cmbreps": "Narrowpeak files of biological replicates belonging to the same condition were merged with fisher's method in macs2 v@macs2[macs2].",
@@ -109,21 +118,21 @@ else:
         "samtools_stats": "General alignment statistics were collected by hyperref('samtools stats v@samtools[samtools]','https://doi.org/10.1093/bioinformatics/btp352').",
         "featureCounts_qc": "The fraction reads in peak score (frips) was calculated by hyperref('featurecounts v@subread[subread]','https://doi.org/10.1093/bioinformatics/btt656').",
         "fastqc": "Fastq quality was measured by hyperref('FastQC v@fastqc[fastqc]','http://www.bioinformatics.babraham.ac.uk/projects/fastqc').",
-        "computeMatrix": "hyperref('Deeptools v@deeptools[deeptools]','https://doi.org/10.1093/nar/gkw257') was used for the fingerprint, profile, correlation and dendrogram/heatmap plots, where the heatmap was made with options '{config[deeptools_multibamsummary]}'.",
+        "computeMatrix": "hyperref('Deeptools v@deeptools[deeptools]','https://doi.org/10.1093/nar/gkw257') was used for the fingerprint, profile, correlation and dendrogram/heatmap plots, where the heatmap was made" + options("deeptools_multibamsummary") + ".",
         "dupradar": "RNA-seq read duplication types were analyzed using hyperref('dupRadar v@dupradar[bioconductor-dupradar]','https://doi.org/10.1186/s12859-016-1276-2').",
         "decoy_transcripts": "Decoy transcript were generated in order improve improve Salmon indexing accuracy (using the script from https://github.com/COMBINE-lab/SalmonTools)",
-        "salmon_quant": "Transcript abundances were quantified with hyperref('Salmon v@salmon[salmon]','https://doi.org/10.1038/nmeth.4197') with options '{config[quantifier_flags]}'.",
+        "salmon_quant": "Transcript abundances were quantified with hyperref('Salmon v@salmon[salmon]','https://doi.org/10.1038/nmeth.4197')" + options("quantifier_flags") + ".",
         "htseq_count": "Read counting and summarizing to gene-level was performed on filtered bam using hyperref('HTSeq-count v@gene_counts[htseq]','https://doi.org/10.1093/bioinformatics/btu638').",
         "kallistobus-count": "Reads were aligned and transformed to bus format with kb-python v@kallistobus[kb-python], a python wrapper for hyperref('kallisto','https://doi.org/10.1038/nbt.3519') and hyperref('bustools','doi.org/10.1101/673285').",
         "featurecounts_rna": "Read counting and summarizing to gene-level was performed on filtered bam using hyperref('featureCounts v@gene_counts[subread]','https://doi.org/10.1093/bioinformatics/btt656').",
         "dexseq": "Additionally, exon usage was counted using hyperref('[DEXSeq] v@dexseq[bioconductor-dexseq]','https://doi.org/doi:10.18129/B9.bioc.DEXSeq') for (potential) downstream analysis.",
-        "create_bins_SNAP_object": "We used hyperref('snaptools v@snaptools[snaptools]','https://doi.org/10.1101/615179') to create a snapobject with options '{config[snaptools_opt]}' and added a binned genome matrix with options '{config[bin_opt]}'.",
+        "create_bins_SNAP_object": "We used hyperref('snaptools v@snaptools[snaptools]','https://doi.org/10.1101/615179') to create a snapobject" + options("snaptools_opt") + " and added a binned genome matrix" + options("bin_opt") + ".",
         "infer_strandedness": "Sample sequencing strandedness was inferred using hyperref('RSeQC v@gene_counts[rseqc]','https://doi.org/10.1093/bioinformatics/bts356') in order to improve quantification accuracy.",
         "trackhub": "We used the hyperref('UCSC genome browser','http://www.genome.org/cgi/doi/10.1101/gr.229102') to visualize and inspect alignment.",
-        "trimgalore_SE": "We trimmed single-end reads with hyperref('trim galore! v@trimgalore[trim-galore]','http://www.bioinformatics.babraham.ac.uk/projects/trim_galore/') with options '{config[trimoptions]}' and cutadapt (https://doi.org/10.14806/ej.17.1.200).",
-        "trimgalore_PE": "We trimmed paired-end reads with hyperref('trim galore! v@trimgalore[trim-galore]','http://www.bioinformatics.babraham.ac.uk/projects/trim_galore/') with options '{config[trimoptions]}' and cutadapt (https://doi.org/10.14806/ej.17.1.200).",
-        "fastp_SE": "We trimmed single-end reads with hyperref('fastp v@fastp[fastp]','https://doi.org/10.1093/bioinformatics/bty560') with options '{config[trimoptions]}'.",
-        "fastp_PE": "We trimmed paired-end reads with hyperref('fastp v@fastp[fastp]','https://doi.org/10.1093/bioinformatics/bty560') with options '{config[trimoptions]}'.",
+        "trimgalore_SE": "We trimmed single-end reads with hyperref('trim galore! v@trimgalore[trim-galore]','http://www.bioinformatics.babraham.ac.uk/projects/trim_galore/')" + options("trimoptions") + " and hyperref('cutadapt', https://doi.org/10.14806/ej.17.1.200).",
+        "trimgalore_PE": "We trimmed paired-end reads with hyperref('trim galore! v@trimgalore[trim-galore]','http://www.bioinformatics.babraham.ac.uk/projects/trim_galore/')" + options("trimoptions") + " and hyperref('cutadapt', https://doi.org/10.14806/ej.17.1.200).",
+        "fastp_SE": "We trimmed single-end reads with hyperref('fastp v@fastp[fastp]','https://doi.org/10.1093/bioinformatics/bty560')" + options("trimoptions") + ".",
+        "fastp_PE": "We trimmed paired-end reads with hyperref('fastp v@fastp[fastp]','https://doi.org/10.1093/bioinformatics/bty560')" + options("trimoptions") + ".",
         "chipseeker": "A peak feature distribution plot and peak localization plot relative to TSS were made with hyperref('chipseeker','https://doi.org/doi:10.18129/B9.bioc.ChIPseeker').",  # v@chipseeker[chipseeker]
         "combine_peaks": "A consensus set of summits was made with hyperref('gimmemotifs.combine_peaks v@gimme[gimmemotifs]','https://www.biorxiv.org/content/10.1101/474403v1.full').",
         "bed_slop": "All summits were extended with '{config[slop]}' to get a consensus peakset.",
