@@ -634,8 +634,8 @@ def get_qc_files(wildcards):
             for trep in treps[treps['assembly'] == ori_assembly(wildcards.assembly)].index:
                 qc['files'].update(get_rna_qc(trep))
 
-        # add dupRadar plots
-        if "REMOVE_DUPLICATES=true" not in config.get("markduplicates",""):
+        # add dupRadar plots if BAMs are made
+        if "REMOVE_DUPLICATES=true" not in config.get("markduplicates","") and not (config.get('quantifier', '') == 'salmon' and config.get('create_trackhub') == False):
             qc['files'].update(expand("{qc_dir}/dupRadar/{{assembly}}-dupRadar_mqc.png",**config))
 
         if len(treps.index) > 2:
