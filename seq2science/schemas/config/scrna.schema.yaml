@@ -38,118 +38,72 @@ properties:
   seurat:
     description: Seurat rmd for exploratory data analysis
     properties:
-      total_feat_tresh: 
-        description: filter cell feature counts >= total feature threshold
+      method: 
+        description: method -- experimental method
+        enum:  [384plate,droplet]
+      barcode_file:  
+        description: "barcode_file -- .tab delimited file with 2-col layout for plate based methods (with DNA barcode and well-id)"
+        type: string
+      mt_genes_file: 
+        description: "mt_genes_file -- .txt file containing one column with mitchondrial genes"
+        type: string
+      isvelo:
+         description: "is_velo -- velocity workflow"
+         type: boolean
+      run.sct:
+         description: "run.sct -- perform SCTransform normalization, FALSE runs log(p1) NormalizeData, HVG selection and ScaleData in Seurat"
+         type: boolean
+      run.jackstraw:
+         description: "run.jackstraw -- perform Jackstraw analysis (does not work with SCTransform)"
+         type: boolean    
+      add.spikes.ercc: 
+        label: "add.spikes.ercc -- use ERCC RNA spike-ins (if present)"
+        type: boolean
+      ercc_pct_max: 
+        description: "ercc_pct_max -- max percentage ERCC spike-ins counts"
         type: integer
-      total_counts_tresh: 
-        description: filter total cell counts >= total counts threshold 
+      add.spikes.mt: 
+        description: "add.spikes.mt -- use mitochondrial gene-list for qc"
+        type: boolean
+      mt_pct_max: 
+        description: "mt_pct_max -- max percentage mitochondrial genes counts"
         type: integer
       gene_tresh: 
-        description: filter by gene expression > gene expression threshold
+        description: "gene_tresh -- gene filter: threshold for genes considered expressed"
         type: integer
-      amount_cells_expr:  
-        description: filter by number of cells expressed >  amount of cells expressed
+      amount_cells_expr: 
+        description: "amount_cells_expr -- gene filter: threshold for minimal amount of cells a gene should be expressed in"
         type: integer
-      remove_bc:
-        description: replace samples barcode with plate id
-        type: boolean
-      filtering:
-        description: filter cells by id (in) or exclude cells with id (out)
-        enum: [in,out,ignore]  
-      subset_id:
-        description: subset of cell ids to filter
+      total_counts_tresh: 
+        description: "total_counts_tresh -- cell filter: threshold for minimal amount of UMI counts detected in a cell"
+        type: integer
+      total_feat_tresh: 
+        description: "total_feat_tresh -- cell filter: threshold for minimal amount of features (genes) detected in a cell"
+        type: integer
+      nhvg: 
+        description: "nhvg -- number of Highly Variable Genes, used in Seurat's FindVariableFeatures"
+        type: integer
+      pcs_for_overview:
+        description: "pcs_for_overview -- principal components for overview in combined umap plot, runs UMAP for PC 1-value"
         type: string
-      nHVG:
-        description: number highly variables genes
-        type: integer
-      n_bc:
-        description: number barcodes
+      pcs_max_hvg: 
+        description: "pcs_max_hvg -- max number of principal components to visualize"
         type: integer  
-      MT_genes_file: 
-        description: 1-column txt file with mitchondrial gene names (QC) 
-        type: string
-      mt_pct_max:
-        description: filter cells by percentage of mitchondrial genes  
-        type: integer
-      ercc_pct_max:
-        description: filter cells by percentage of ercc genes
-        type: integer
-      pcs_max: 
-        description: max number of pca's for Seurat RunPCA.
-        type: integer
-      pcs_for_overview: 
-        description: max number of pca;s for Seurat RunUMAP plots. 
-        type: string
-      dual_col_barcodes:
-        description: 2-column tab delimited file with plate ids(col 1) and barcodes (col 2)
-        type: string
-      spike_in_qc:
-        description: perform Seurat spike-in QC
-        type: boolean
-      mt_qc:
-        description: perform Seurat mitchondrial QC
-        type: boolean
-      plate_qc:
-        description: qc plot for plate read counts.
-        type: boolean
-      extract_phenotypes:
-        description: extract meta-data from sample name seperated by _.
-        type: boolean
-      plate_variables:
-        description: comma seperated list of plate-variable names to extract from sample name. 
-        type: string
-      combined_variables_to_id:
-        description: comma seperated list of plate-variables to include in sample name
-        type: string
-      confounding_variables:
-        description: comma seperated list of variables for confounding check.
-        type: string
-      vars_to_regress:
-        description: comma seperated list of variables for regeression analysis
-        type: string
-      explore_violin:
-        description: comma seperated list of gene names for violin plot
-        type: string
-      old_col_pattern:
-        description: old column pattern to replace
-        type: string  
-      new_col_pattern:
-        description: new column pattern to replce old column pattern
-        type: string
-      lab_col: 
-        description: meta data column name for sequencing library
-        type: string
-      umap_col:
-        description: umap column name for umap
-        type: string
-   
-        
       default:
-        MT_genes_file: MT_genes.txt
-        dual_col_barcodes: 2col_barcode_384.tab 
-        spike_in_qc: true
-        mt_qc: true
-        plate_qc: true
-        extract_phenotypes: true      
-        new_col_pattern: -S
-        old_col_pattern: _S
-        lab_col: Library
-        umap_col: Method
-        plate_variables: Genome,Method,Lineage,Timepoint,Replicate,Library,Well
-        combined_variables_to_id: Method,Lineage,Timepoint,Library
-        confounders_to_test: Library,Lineage,Timepoint
-        vars_to_regress: nCount_sf,nFeature_sf
-        pcs_for_overview: 10,20,30,40,50
-        explore_violin: SOX2,GAPDH
+        method: 384plate
+        barcode_file: 2col_barcode_384.tab 
+        mt_genes_file: MT_genes.txt
+        isvelo: true
+        run.sct: true
+        run.jackstraw: false
+        add.spikes.ercc : true
+        add.spikes.mt: true
+        ercc_pct_max: 20
+        mt_pct_max: 50
+        gene_thresh: 0
         amount_cells_expr: 0  
         total_counts_tresh: 1000
         total_feat_tresh: 500
-        mt_pct_max: 50
-        ercc_pct_max: 20 
-        nHVG: 2000
-        n_bc: 384
-        pcs_max: 70
-        gene_tresh: 0 
-        remove_bc: true
-        filtering: ignore
-        subset_ids: '' 
+        nhvg: 2000
+        pcs_max_hvg: 70
+        pcs_for_overview: 10,20,30,40,50
