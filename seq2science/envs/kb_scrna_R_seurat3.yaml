@@ -21,6 +21,5 @@ dependencies:
   - r-seurat>=3
   - r-plot3d
   - r-here
-  - r-tinytex
 #In a terminal with conda, type
 #$mamba env create -f /scratch/snabel/conda_env_files/kb_scrna_R_seurat3.yaml

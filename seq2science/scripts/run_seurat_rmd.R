@@ -1,12 +1,15 @@
 #### Seurat settings ####
 #########################
 rmd <- paste0(snakemake@config$rule_dir,"/../scripts/scRNA-seq-1.0.0/kb_seurat_pp.rmd")
+barcode_file <- paste(snakemake@config$genome_dir,snakemake@config$seurat$barcode_file, sep="/")
+mt_genes_file <- paste(snakemake@config$genome_dir,snakemake@config$seurat$mt_genes_file, sep="/")
+
 #Render markdown file
 rmarkdown::render(rmd, params = list(method = snakemake@config$seurat$method,
                                     kb.dir =  paste0(snakemake@config$result_dir,"/kallistobus"), 
                                     resultsdir = snakemake@output$qc_dir,
-                                    barcode_file =  snakemake@config$seurat$barcode_file,
-                                    mt_genes_file = snakemake@config$seurat$mt_genes_file,
+                                    barcode_file =  barcode_file,
+                                    mt_genes_file = mt_genes_file,
                                     isvelo = snakemake@config$seurat$isvelo,
                                     run.sct = snakemake@config$seurat$run.sct,
                                     run.jackstraw =  snakemake@config$seurat$run.jackstraw,
@@ -34,4 +37,4 @@ rmarkdown::render(rmd, params = list(method = snakemake@config$seurat$method,
                                     vars_to_regress_uf = "nCount_uf",
                                     old_col_pattern = "",
                                     new_col_pattern = ""), 
-                                    output_file =  snakemake@output$pdf)
+                                    output_file =  snakemake@output$html)

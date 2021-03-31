@@ -103,11 +103,9 @@ params:
 
 
 output:
-  pdf_document:
-    pandoc_args: --listings
-    includes:
-      in_header: preamble.tex
-    toc: true
+  html_document:
+    df_print: paged
+    toc: yes
     toc_depth: 2
     number_sections: true
 ---
