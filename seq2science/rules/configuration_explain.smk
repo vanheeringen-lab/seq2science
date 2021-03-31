@@ -79,7 +79,7 @@ else:
             return start + final_sep.join([all_but_last, last]) + end
         return start + "".join(lst) + end
 
-    DESEQ_ANALYSIS = {"rna_seq": "gene expression", "chip_seq": "peak", "atac_seq": "accessibility"}[get_workflow()]
+    DESEQ_ANALYSIS = {"rna_seq": "gene expression", "chip_seq": "peak", "atac_seq": "accessibility"}.get(get_workflow(), "")
 
     messages={
         "bowtie2_align": "Reads were aligned with hyperref('bowtie2 v@bowtie2[bowtie2]','https://dx.doi.org/10.1038%2Fnmeth.1923')" + options("align") + ".",
