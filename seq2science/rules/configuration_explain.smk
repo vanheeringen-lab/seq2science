@@ -10,13 +10,13 @@ def hyperref(text, link):
         return f"{text} ({link})"
 
 
-def options(key, key2=None, cnfg=config):
-    string = ""
-    if key2 and cnfg.get(key, {}).get(key2):
-        string = f" with options '{{config[{key}][{key2}]}}'"
-    if key2 is None and cnfg.get(key):
-        string = f" with options '{{config[{key}]}}'"
-    return string
+def options(*opts, ret=config):
+    for opt in opts:
+        assert isinstance(ret, dict), f"Invalid config key '{opt}' in {opts}."
+        ret = ret.get(opt)
+        if ret is None:
+            return ""
+    return f" with options '{ret}'"
 
 
 if not config.get("explain_rule"):
