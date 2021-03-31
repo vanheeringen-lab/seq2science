@@ -51,7 +51,7 @@ else:
             # replace the placeholder with the actual version
             string = string[:match.span()[0]] + version + string[match.span()[1]:]
 
-        parser = re.compile("(hyperref\(.+\))")
+        parser = re.compile("(hyperref\(.+?\))")
         while len(parser.findall(string)):
             match = next(parser.finditer(string))
             string = string[:match.span()[0]] + eval(match.group(0)) + string[match.span()[1]:]
@@ -69,6 +69,8 @@ else:
             last = lst[-1]
             return start + final_sep.join([all_but_last, last]) + end
         return start + "".join(lst) + end
+
+    DESEQ_ANALYSIS = {"rna_seq": "gene expression", "chip_seq": "peak", "atac_seq": "accessibility"}[get_workflow()]
 
     messages={
         "bowtie2_align": "Reads were aligned with hyperref('bowtie2 v@bowtie2[bowtie2]','https://dx.doi.org/10.1038%2Fnmeth.1923') with options '{config[align]}'.",
@@ -89,7 +91,7 @@ else:
         "mark_duplicates": "Afterwards, duplicate reads were " + ("removed" if "REMOVE_DUPLICATES=true" in config.get("markduplicates", "") else "marked") + " with hyperref('picard MarkDuplicates v@picard[picard]','http://broadinstitute.github.io/picard').",
         "bam2cram": "Bam files were converted to cram format with samtools v@samtools[samtools].",
         "deseq2":
-            text_join(start="Differential gene expression analysis was performed using hyperref('DESeq2 v@deseq2[bioconductor-deseq2]','https://dx.doi.org/10.1186%2Fs13059-014-0550-8'). To adjust for multiple testing ",
+            text_join(start=f"Differential {DESEQ_ANALYSIS} analysis was performed using hyperref('DESeq2 v@deseq2[bioconductor-deseq2]','https://dx.doi.org/10.1186%2Fs13059-014-0550-8'). To adjust for multiple testing ",
                       lst=[("the (default) Benjamini-Hochberg procedure " if config.get('deseq2', {}).get('multiple_testing_procedure') == "BH" else
                                "hyperref('Independent hypothesis weighting','http://dx.doi.org/10.1038/nmeth.3885') "),
                            "was performed with an FDR cutoff of {config[deseq2][alpha_value]} (default is 0.1). Counts were log transformed using ",
@@ -120,8 +122,8 @@ else:
         "create_bins_SNAP_object": "We used hyperref('snaptools v@snaptools[snaptools]','https://doi.org/10.1101/615179') to create a snapobject with options '{config[snaptools_opt]}' and added a binned genome matrix with options '{config[bin_opt]}'.",
         "infer_strandedness": "Sample sequencing strandedness was inferred using hyperref('RSeQC v@gene_counts[rseqc]','https://doi.org/10.1093/bioinformatics/bts356') in order to improve quantification accuracy.",
         "trackhub": "We used the hyperref('UCSC genome browser','http://www.genome.org/cgi/doi/10.1101/gr.229102') to visualize and inspect alignment.",
-        "trimgalore_SE": "We trimmed single-end reads with hyperref('trim galore! v@trimgalore[trim-galore]','http://www.bioinformatics.babraham.ac.uk/projects/trim_galore/') with options '{config[trimoptions]}' and cutadapt (https://doi.org/10.14806/ej.17.1.200).",
-        "trimgalore_PE": "We trimmed paired-end reads with hyperref('trim galore! v@trimgalore[trim-galore]','http://www.bioinformatics.babraham.ac.uk/projects/trim_galore/') with options '{config[trimoptions]}' and cutadapt (https://doi.org/10.14806/ej.17.1.200).",
+        "trimgalore_SE": "We trimmed single-end reads with hyperref('trim galore! v@trimgalore[trim-galore]','http://www.bioinformatics.babraham.ac.uk/projects/trim_galore/') with options '{config[trimoptions]}' and hyperref('cutadapt','https://doi.org/10.14806/ej.17.1.200').",
+        "trimgalore_PE": "We trimmed paired-end reads with hyperref('trim galore! v@trimgalore[trim-galore]','http://www.bioinformatics.babraham.ac.uk/projects/trim_galore/') with options '{config[trimoptions]}' and hyperref('cutadapt','https://doi.org/10.14806/ej.17.1.200').",
         "fastp_SE": "We trimmed single-end reads with hyperref('fastp v@fastp[fastp]','https://doi.org/10.1093/bioinformatics/bty560') with options '{config[trimoptions]}'.",
         "fastp_PE": "We trimmed paired-end reads with hyperref('fastp v@fastp[fastp]','https://doi.org/10.1093/bioinformatics/bty560') with options '{config[trimoptions]}'.",
         "chipseeker": "A peak feature distribution plot and peak localization plot relative to TSS were made with hyperref('chipseeker','https://doi.org/doi:10.18129/B9.bioc.ChIPseeker').",  # v@chipseeker[chipseeker]
