@@ -7,26 +7,26 @@ params:
     value: '384plate'
   kb.dir: 
     label: "kb.dir -- directory containing kb-python output"
-    value: /Users/tilman_work/Documents/Projects/R/testset/kallistobus
+    value: ""
   barcode_file: 
     label: "barcode_file -- .tab delimited file with 2-col layout for plate based methods (with DNA barcode and well-id)"
-    value: ../data/barcode_384.tab
+    value: ""
   mt_genes_file:
     label: "mt_genes_file -- .txt file containing one column with mitchondrial genes"
-    value: ../data/MT_genes.txt
+    value: ""
   meta_data:
     label: "meta_data -- .csv file containing cell meta data. Alternative for extract_meta_columns"
-    value: ../data/examples/cell_meta_example.csv
+    value: ""
   meta_type:
       label: "meta_data_level -- type of meta data"
       choices: ["sample", "cell","names","default"]
       value: default       
   extract_meta_columns: 
     label: "extract_meta_columns -- extracts meta data from cell names (name fields separated by '_'). Alternative for meta_data."
-    value:  "" #genome,spike-in,reporter,cell_type,timepoint,library,index,cell_id
+    value:  "" 
   resultsdir:
      label: "resultsdir -- output directory for qc files" 
-     value: ../output
+     value: ""
   meta_group_id: 
       label: "meta_group_id -- combine meta data fields for plotting, creates variable combined_id (separate multiple values by comma)" 
       value: library
@@ -81,7 +81,7 @@ params:
       value: in    
   cell_id_filter_pattern: 
       label: "cell_id_subset -- cell ids to include/exclude based on cell_id_subset_filter"
-      value: _d12    
+      value: ""    
   pcs_for_overview:
       label: "pcs_for_overview -- principal components for overview in combined umap plot, runs UMAP for PC 1-value"
       value: '10,20,30,40,50'

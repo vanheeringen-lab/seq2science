@@ -91,8 +91,8 @@ properties:
         type: integer  
       default:
         method: 384plate
-        barcode_file: 2col_barcode_384.tab 
-        mt_genes_file: MT_genes.txt
+        barcode_file: ""
+        mt_genes_file: ""
         isvelo: true
         run.sct: true
         run.jackstraw: false
@@ -100,7 +100,7 @@ properties:
         add.spikes.mt: true
         ercc_pct_max: 20
         mt_pct_max: 50
-        gene_thresh: 0
+        gene_tresh: 0
         amount_cells_expr: 0  
         total_counts_tresh: 1000
         total_feat_tresh: 500
