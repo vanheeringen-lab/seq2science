@@ -60,7 +60,7 @@ else:
             # replace the placeholder with the actual version
             string = string[:match.span()[0]] + version + string[match.span()[1]:]
 
-        parser = re.compile("(hyperref\(.+\))")
+        parser = re.compile("(hyperref\(.+?\))")
         while len(parser.findall(string)):
             match = next(parser.finditer(string))
             string = string[:match.span()[0]] + eval(match.group(0)) + string[match.span()[1]:]
@@ -79,7 +79,9 @@ else:
             return start + final_sep.join([all_but_last, last]) + end
         return start + "".join(lst) + end
 
-    messages = {
+    DESEQ_ANALYSIS = {"rna_seq": "gene expression", "chip_seq": "peak", "atac_seq": "accessibility"}[get_workflow()]
+
+    messages={
         "bowtie2_align": "Reads were aligned with hyperref('bowtie2 v@bowtie2[bowtie2]','https://dx.doi.org/10.1038%2Fnmeth.1923')" + options("align") + ".",
         "bwa-mem_align": "Reads were aligned with hyperref('bwa-mem v@bwa[bwa]','http://arxiv.org/abs/1303.3997')" + options("align") + ".",
         "bwa-mem2_align": "Reads were aligned with hyperref('bwa-mem2 v@bwamem2[bwa-mem2]','https://arxiv.org/abs/1907.12931')" + options("align") + ".",
@@ -98,7 +100,7 @@ else:
         "mark_duplicates": "Afterwards, duplicate reads were " + ("removed" if "REMOVE_DUPLICATES=true" in config.get("markduplicates", "") else "marked") + " with hyperref('picard MarkDuplicates v@picard[picard]','http://broadinstitute.github.io/picard').",
         "bam2cram": "Bam files were converted to cram format with samtools v@samtools[samtools].",
         "deseq2":
-            text_join(start="Differential gene expression analysis was performed using hyperref('DESeq2 v@deseq2[bioconductor-deseq2]','https://dx.doi.org/10.1186%2Fs13059-014-0550-8'). To adjust for multiple testing ",
+            text_join(start=f"Differential {DESEQ_ANALYSIS} analysis was performed using hyperref('DESeq2 v@deseq2[bioconductor-deseq2]','https://dx.doi.org/10.1186%2Fs13059-014-0550-8'). To adjust for multiple testing ",
                       lst=[("the (default) Benjamini-Hochberg procedure " if config.get('deseq2', {}).get('multiple_testing_procedure') == "BH" else
                                "hyperref('Independent hypothesis weighting','http://dx.doi.org/10.1038/nmeth.3885') "),
                            "was performed with an FDR cutoff of {config[deseq2][alpha_value]} (default is 0.1). Counts were log transformed using ",
