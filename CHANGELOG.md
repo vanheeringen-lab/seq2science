@@ -8,9 +8,30 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- added CLI functionality to the deseq2.R script (try it with `Rscript /path/to/deseq2.R --help`!)
+- --force flag to seq2science init to automatically overwrite existing samples.tsv and config.yaml
+- local fastqs with Illumina's '_100' are now recognized
+
 ### Changed
 
+- config checks: all keys converted to lower case & duplicate keys throw an exception
 - MultiQC updated to v1.10
+- Link to seq2science log instead of snakemake log in final message
+
+### Fixed
+
+- Issue when filtering a combination of single-end and paired-end reads on template length
+- explain functionality testing
+- scATAC can properly use SE fastqs
+- scRNA can use fqexts other than R1/R2
+- fastq renaming works again
+- added missing schemas to extended docs
+
+### Fixed
+
+- Bug with edgeR.upperquartile normalization. Now makes everything NaN, so pipeline finishes succesfully.
 
 ## [0.5.0] - 2021-03-03
 

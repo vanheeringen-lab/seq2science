@@ -52,4 +52,4 @@ There are differences between these methods however, and caution is advised with
 Additionally, Seq2science employs strict quality checks by default.
 You could try reducing the `min_mapping_quality` (for HTSeq and FeatureCounts) or change the parameters to the quantifier.
 
-The biggest difference in expressed genes found is in switching to or from Salmon.
+The biggest differences in expressed genes can be found by switching gene annotation, followed by switching quantifier (to or from Salmon).

@@ -8,19 +8,20 @@ Running an RNA-seq analysis has never been easier!
 
 #### Downloading of sample(s)
 Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples.
-Take a look at the [downloading_fastq](./download_fastq.html) workflow for extensive documentation about downloading of public samples.
+You control which samples are used in the [samples.tsv](#filling-out-the-samples-tsv).
+Background on public data can be found [here](./download_fastq.html#download-sra-file).
 
 #### Downloading and indexing of assembly(s)
 Depending on whether the assembly and its index you align your samples against already exist seq2science will start with downloading of the assembly through [genomepy](https://github.com/vanheeringen-lab/genomepy).
 
 #### Read trimming
-The pipeline starts by trimming the reads with Trim galore or Fastp.
-The trimmer will automatically trims the low quality 3' ends of reads, and removes short reads.
-After the quality trimming it automatically detects which adapter was used, and trims it.
+The pipeline starts by trimming the reads with Trim Galore! or Fastp (the default).
+The trimmer will automatically trim the low quality 3' ends of reads, and removes short reads.
+During the quality trimming it automatically detects which adapter was used, and trims this as well.
 Trimming parameters for the pipeline can be set in the configuration.
 
 #### Alignment
-Reads are aligned using `STAR` or `HISAT2` (default `STAR`).
+Reads are aligned using `HISAT2` or `STAR` (the default).
 Sensible defaults have been set, but can be overwritten for either (or both) the indexing and alignment by specifying them in the `config.yaml`.
 
 The pipeline will check if the assembly you specified is present in the *genome_dir*, and otherwise will download it for you through [genomepy](https://github.com/vanheeringen-lab/genomepy).
@@ -87,20 +88,30 @@ GSM890    danRer11    stage_9      stage_9             GSM234
 ```
 
 #### Sample column
-This column is necessary for all workflows, not just the RNA-seq workflow.
-If you use the pipeline on public data this should be the name of the accession (e.g. GSM2837484).
-If you use the pipeline on local data this should be the *basename* of the file without the *extension(s)*.
-For instance, `/home/user/myfastqs/sample1.fastq.gz` would be `sample1` (for single-ended data).
-For paired-ended data `/home/user/myfastqs/sample2_R1.fastq.gz` and `/home/user/myfastqs/sample2_R2.fastq.gz` would be `sample2`.
+If you use the pipeline on **public data** this should be the name of the accession (e.g. GSM2837484).
+Accepted formats start with "GSM", "SRR", "SRX", "DRR", "DRX", "ERR" or "ERX".
+
+If you use the pipeline on **local data** this should be the *basename* of the file without the *extension(s)*.
+For example:
+- `/home/user/myfastqs/sample1.fastq.gz` -------> `sample1` for single-ended data
+- `/home/user/myfastqs/sample2_R1.fastq.gz` ┬> `sample2` for paired-ended data <br> `/home/user/myfastqs/sample2_R2.fastq.gz` ┘
+
+For **local data**, some fastq files may have slightly different naming formats.
+For instance, Illumina may produce a sample named `sample3_S1_L001_R1_001.fastq.gz` (and the `R2` fastq).
+Seq2science will attempt to recognize these files based on the sample name `sample3`.
+
+For **both local and public data**, identifiers used to recognize fastq files are the fastq read extensions (`R1` and `R2` by default) and the fastq suffix (`fastq` by default).
+The directory where seq2science will store (or look for) fastqs is determined by the `fastq_dir` config option.
+In the example above, the `fastq_dir` should be set to `/home/user/myfastqs`.
+These setting can be changed in the `config.yaml`.
 
 #### Assembly column
-This column is necessary for all workflows, except the *downloading samples* workflow.
 Here you simply add the name of the assembly you want your samples aligned against and the workflow will download it for you.
 
 #### Descriptive_name column
-The descriptive_name column is used for the trackhub and multiqc report.
+The descriptive\_name column is used for the trackhub and multiqc report.
 In the trackhub your tracks will be called after the descriptive name, and in the multiqc report there will be a button to rename your samples after this column.
-The descriptive name can not contain '-' characters, but underscores '_' are allowed.
+The descriptive name can not contain '-' characters, but underscores '\_' are allowed.
 
 #### Technical_replicate column
 Technical replicates, or any fastq file you may wish to merge, are set using the `technical_replicate` column in the samples.tsv file.
