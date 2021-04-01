@@ -709,23 +709,26 @@ rule multiqc:
 def get_trimming_qc(sample):
     if config["trimmer"] == "trimgalore":
         if get_workflow() == "scatac_seq":
-            # we (at least for now) do not was fastqc for each single cell before and after trimming (too much for MultiQC).
+            # we (at least for now) do not want fastqc for each single cell before and after trimming (too much for MultiQC).
             # still something to think about to add later, since that might be a good quality check though.
-            return expand(f"{{qc_dir}}/fastqc/{sample}_{{fqext}}_trimmed_fastqc.zip", **config)
+            if sampledict[sample]['layout'] == 'SINGLE':
+                return expand(f"{{qc_dir}}/fastqc/{sample}_trimmed_fastqc.zip", **config)
+            else:
+                return expand(f"{{qc_dir}}/fastqc/{sample}_{{fqext}}_trimmed_fastqc.zip", **config)
         elif get_workflow() == "scrna_seq":
             # single-cell RNA seq does weird things with barcodes in the fastq file
             # therefore we can not just always start trimming paired-end even though
             # the samples are paired-end (ish)
             read_id = get_bustools_rid(config.get("count"))
             if read_id == 0:
-                return expand([f"{{qc_dir}}/fastqc/{sample}_R1_fastqc.zip",
-                               f"{{qc_dir}}/fastqc/{sample}_R1_trimmed_fastqc.zip",
-                               f"{{qc_dir}}/trimming/{sample}_R1.{{fqsuffix}}.gz_trimming_report.txt"],
+                return expand([f"{{qc_dir}}/fastqc/{sample}_{{fqext1}}_fastqc.zip",
+                               f"{{qc_dir}}/fastqc/{sample}_{{fqext1}}_trimmed_fastqc.zip",
+                               f"{{qc_dir}}/trimming/{sample}_{{fqext1}}.{{fqsuffix}}.gz_trimming_report.txt"],
                               **config)
             elif read_id == 1:
-                return expand([f"{{qc_dir}}/fastqc/{sample}_R2_fastqc.zip",
-                            f"{{qc_dir}}/fastqc/{sample}_R2_trimmed_fastqc.zip",
-                            f"{{qc_dir}}/trimming/{sample}_R2.{{fqsuffix}}.gz_trimming_report.txt"],
+                return expand([f"{{qc_dir}}/fastqc/{sample}_{{fqext2}}_fastqc.zip",
+                            f"{{qc_dir}}/fastqc/{sample}_{{fqext2}}_trimmed_fastqc.zip",
+                            f"{{qc_dir}}/trimming/{sample}_{{fqext2}}.{{fqsuffix}}.gz_trimming_report.txt"],
                             **config)
             else:
                 raise NotImplementedError
@@ -745,9 +748,9 @@ def get_trimming_qc(sample):
         if get_workflow() == "scrna_seq": 
             read_id = get_bustools_rid(config.get("count"))
             if read_id == 0:
-                return expand(f"{{qc_dir}}/trimming/{sample}_R1.fastp.json", **config)
+                return expand(f"{{qc_dir}}/trimming/{sample}_{{fqext1}}.fastp.json", **config)
             elif read_id == 1:
-                return expand(f"{{qc_dir}}/trimming/{sample}_R2.fastp.json", **config)
+                return expand(f"{{qc_dir}}/trimming/{sample}_{{fqext2}}.fastp.json", **config)
             else:
                 raise NotImplementedError
         # not sure how fastp should work with scatac here

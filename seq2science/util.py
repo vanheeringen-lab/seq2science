@@ -4,9 +4,11 @@ Utility functions for seq2science
 import re
 import os
 import sys
+import glob
 import time
 import colorsys
 import urllib.request
+import yaml
 from io import StringIO
 from typing import List
 from math import ceil, floor
@@ -16,11 +18,26 @@ import numpy as np
 import pandas as pd
 import pysradb
 from snakemake.exceptions import TerminatedException
-from snakemake.io import expand
 from snakemake.logging import logger
 
 # default colors in matplotlib. Order dictates the priority.
 DEFAULT_COLOR_DICTS = [mcolors.BASE_COLORS, mcolors.TABLEAU_COLORS, mcolors.CSS4_COLORS, mcolors.XKCD_COLORS]
+
+
+class UniqueKeyLoader(yaml.SafeLoader):
+    """
+    YAML loader with duplicate key checking
+    source: https://stackoverflow.com/questions/33490870/parsing-yaml-in-python-detect-duplicated-keys
+    """
+    def construct_mapping(self, node, deep=False):
+        mapping = []
+        for key_node, value_node in node.value:
+            key = self.construct_object(key_node, deep=deep).lower()
+            if key in mapping:
+                logger.error(f"Duplicate key found in the config.yaml: {key}\n")
+                raise TerminatedException
+            mapping.append(key)
+        return super().construct_mapping(node, deep)
 
 
 def _sample_to_idxs(df: pd.DataFrame, sample: str) -> List[int]:
@@ -45,22 +62,29 @@ def samples2metadata_local(samples: List[str], config: dict, logger) -> dict:
     """
     sampledict = dict()
     for sample in samples:
-        if os.path.exists(expand(f'{{fastq_dir}}/{sample}.{{fqsuffix}}.gz', **config)[0]):
+        local_fastqs = glob.glob(os.path.join(config["fastq_dir"], f'{sample}*{config["fqsuffix"]}*.gz'))
+        if len(local_fastqs) == 1:
             sampledict[sample] = dict()
             sampledict[sample]["layout"] = "SINGLE"
-        elif all(os.path.exists(path) for path in expand(f'{{fastq_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz', **config)):
+        elif len(local_fastqs) == 2 \
+                and any([config["fqext1"] in os.path.basename(f) for f in local_fastqs]) \
+                and any([config["fqext2"] in os.path.basename(f) for f in local_fastqs]):
             sampledict[sample] = dict()
             sampledict[sample]["layout"] = "PAIRED"
         elif sample.startswith(("GSM", "DRX", "ERX", "SRX", "DRR", "ERR", "SRR")):
             continue
         else:
+            extend_msg = ""
+            if len(local_fastqs) > 2:
+                extend_msg = (f"We found too many files matching ({len(local_fastqs)}) "
+                              "and could not distinguish them:\n"
+                              + ', '.join([os.path.basename(f) for f in local_fastqs]) + ".\n")
+
             logger.error(f"\nsample {sample} was not found..\n"
-                         f"We checked for SE file:\n"
-                         f"\t{config['fastq_dir']}/{sample}.{config['fqsuffix']}.gz \n"
-                         f"and for PE files:\n"
-                         f"\t{config['fastq_dir']}/{sample}_{config['fqext1']}.{config['fqsuffix']}.gz \n"
-                         f"\t{config['fastq_dir']}/{sample}_{config['fqext2']}.{config['fqsuffix']}.gz \n"
-                         f"and since the sample did not start with either GSM, SRX, SRR, ERR, and DRR we "
+                         f"We checked directory '{config['fastq_dir']}' "
+                         f"for gzipped files starting with '{sample}' and containing '{config['fqsuffix']}'.\n"
+                         + extend_msg +
+                         f"Since the sample did not start with either GSM, SRX, SRR, ERR, and DRR we "
                          f"couldn't find it online..\n")
             raise TerminatedException
 

@@ -2,11 +2,12 @@
 Seq2science outputs counts matrices for each assembly in any bulk-sequencing workflow, which can optionally can be used for differential gene/peak analysis with [DESeq2](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-014-0550-8).
 To do so, add one or more contrast design(s) in the `config.yaml` file, with matching identifiers in the `samples.tsv` file.
 
+After completing the workflow, rerunning Seq2science with new contrasts will only perform the new analyses.
+Alternatively, you can call the DESeq2 script from the command line.
+To get started with the command line script, try out `Rscript /path/to/seq2science/scripts/deseq2.R --help`.
+
 This section details how the contrast designs are created.
 Examples are given [below](./DESeq2.html#deseq2-contrast-designs), and each `config.yaml` contains a commented-out example contrast design at the bottom.
-
-Note: (additional) design contrasts can be added at any time.
-After completing the workflow, rerunning Seq2science with new contrasts will only perform the new analyses.
 
 ##### Overview of the DESeq2 method
 DESeq2 automatically performs library bias correction when loading your data, and batch correction is performed if it is included in the contrast design.
@@ -15,7 +16,7 @@ The False Discovery Rate cutoff is set by alpha, which is 0.1 by default.
 Finally, count values are log transformed and shrunk (by default using the apeglm method).
 These defaults can be changed in the [config.yaml](./schemas.html#deseq2), under the `deseq2` variables using the `multiple_testing_procedure`, `alpha_value` and `shrinkage_estimator` options respectively.
 
-For more information, check out the steps in this [vignette](www.bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html), which Seq2science follows.
+For more information, check out the steps in this [vignette](https://www.bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html), which Seq2science follows.
 
 ##### Output
 For each contrast design, the list of *all* genes/peaks is saved to file, with analysis results for expressed genes. Briefly, these include:

@@ -19,14 +19,18 @@ We believe that all our default settings are reasonable, and manual finetuning i
 )
 
 path = "seq2science/schemas/config/"
-order = {"general": "general",
-         "alignment general": "alignment_general",
-         "alignment workflow specific": "alignment_specific",
-         "peak calling (ChIP & ATAC)": "peakcalling",
-         "gene expression (RNA-seq)": "gene_expression",
-         "single-cell ATAC": "scatac",
-         "single-cell RNA": "scrna",
-         "trackhub": "trackhub"}
+order = {
+    "General": "general",
+    "Download": "download",
+    "Alignment general": "alignment_general",
+    "Workflow: Alignment": "alignment_specific",
+    "Workflow: ChIP & ATAC-seq": "peakcalling",
+    "Workflow: RNA-seq": "gene_expression",
+    "Workflow: Single-cell ATAC-seq": "scatac",
+    "Workflow: Single-cell RNA-seq": "scrna",
+    "Differential gene/peak analysis": "deseq2",
+    "Trackhub": "trackhub",
+}
 
 # we add 4 indentation as a start
 indentation = 0
