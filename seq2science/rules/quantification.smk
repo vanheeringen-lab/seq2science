@@ -261,7 +261,7 @@ elif config["quantifier"] == "kallistobus":
             {params.options} {input.reads} > {log} 2>&1
             """
 
-    rule rmd_generate:
+    rule kb_seurat_pp:
         input:
             expand([f"{{result_dir}}/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}" for trep in treps.index], **config)
         output:
