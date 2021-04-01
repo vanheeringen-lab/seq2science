@@ -488,15 +488,17 @@ rule multiqc_header_info:
         import os
         from datetime import date
 
-        cwd = os.getcwd().split('/')[-1]
-        mail = config.get('email', 'none@provided.com')
+        workflow = get_workflow().replace("_", "-")
         date = date.today().strftime("%B %d, %Y")
+        project = os.getcwd().split('/')[-1]
+        mail = config.get('email', 'none@provided.com')
 
         with open(output[0], "w") as f:
             f.write(f"report_header_info:\n"
-                    f"    - Contact E-mail: '{mail}'\n"
-                    f"    - Workflow: '{cwd}'\n"
+                    f"    - Workflow: '{workflow}'\n"
                     f"    - Date: '{date}'\n"
+                    f"    - Project: '{project}'\n"
+                    f"    - Contact E-mail: '{mail}'\n"
             )
 
 

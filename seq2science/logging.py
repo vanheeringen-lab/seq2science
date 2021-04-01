@@ -1,8 +1,9 @@
 import time
 
+import seq2science
 
 ascii_logo = (
-"""\
+f"""\
              ____  ____   __              
             / ___)(  __) /  \             
             \___ \ ) _) (  O )            
@@ -16,6 +17,8 @@ ascii_logo = (
   \___ \( (__  )(  ) _) /    /( (__  ) _) 
   (____/ \___)(__)(____)\_)__) \___)(____)
 
+version: {seq2science.__version__}
+workflow: {get_workflow().replace("_", "-")}
 docs: https://vanheeringen-lab.github.io/seq2science
 """
 )
