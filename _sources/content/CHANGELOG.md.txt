@@ -8,6 +8,8 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+## [0.5.1] - 2021-04-01
+
 ### Added
 
 - added CLI functionality to the deseq2.R script (try it with `Rscript /path/to/deseq2.R --help`!)
@@ -361,7 +363,8 @@ Many minor bug- and quality of life fixes.
 ## [0.0.0] - 2020-06-11
 First release of seq2science!
 
-[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/master...v0.4.2
+[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/master...v0.5.1
+[0.5.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.1...v0.5.0
 [0.5.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.0...v0.4.3
 [0.4.3]: https://github.com/vanheeringen-lab/seq2science/compare/v0.4.3...v0.4.2
 [0.4.2]: https://github.com/vanheeringen-lab/seq2science/compare/v0.4.2...v0.4.1
