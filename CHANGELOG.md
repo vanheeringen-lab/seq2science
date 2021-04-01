@@ -13,6 +13,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - added CLI functionality to the deseq2.R script (try it with `Rscript /path/to/deseq2.R --help`!)
 - --force flag to seq2science init to automatically overwrite existing samples.tsv and config.yaml
 - local fastqs with Illumina's '_100' are now recognized
+- added the workflow explanation to the multiqc report
 
 ### Changed
 
