@@ -30,7 +30,7 @@ properties:
   barcodefile:
     type: string
     
-  run_seurat_rmd:
+  run_kb_seurat_pp:
     default: false
     type: boolean
       
