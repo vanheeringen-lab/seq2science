@@ -39,8 +39,8 @@
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="ChIP-seq" href="chip_seq.html" />
-    <link rel="prev" title="ATAC-seq" href="atac_seq.html" /> 
+    <link rel="next" title="scATAC-seq" href="scatac_seq.html" />
+    <link rel="prev" title="ChIP-seq" href="chip_seq.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -91,6 +91,7 @@
 <li class="toctree-l2"><a class="reference internal" href="download_fastq.html">Downloading fastqs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="alignment.html">Alignment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="atac_seq.html">ATAC-seq</a></li>
+<li class="toctree-l2"><a class="reference internal" href="chip_seq.html">ChIP-seq</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">RNA-seq</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#pipeline-steps">Pipeline steps</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#downloading-of-sample-s">Downloading of sample(s)</a></li>
@@ -125,7 +126,6 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="chip_seq.html">ChIP-seq</a></li>
 <li class="toctree-l2"><a class="reference internal" href="scatac_seq.html">scATAC-seq</a></li>
 <li class="toctree-l2"><a class="reference internal" href="scrna_seq.html">scRNA-seq</a></li>
 </ul>
@@ -215,7 +215,8 @@
 </p><div class="section" id="downloading-of-sample-s">
 <h3>Downloading of sample(s)<a class="headerlink" href="#downloading-of-sample-s" title="Permalink to this headline">¶</a></h3>
 <p>Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples.
-Take a look at the <a class="reference external" href="./download_fastq.html">downloading_fastq</a> workflow for extensive documentation about downloading of public samples.</p>
+You control which samples are used in the <a class="reference external" href="#filling-out-the-samples-tsv">samples.tsv</a>.
+Background on public data can be found <a class="reference external" href="./download_fastq.html#download-sra-file">here</a>.</p>
 </div>
 <div class="section" id="downloading-and-indexing-of-assembly-s">
 <h3>Downloading and indexing of assembly(s)<a class="headerlink" href="#downloading-and-indexing-of-assembly-s" title="Permalink to this headline">¶</a></h3>
@@ -223,14 +224,14 @@ Take a look at the <a class="reference external" href="./download_fastq.html">do
 </div>
 <div class="section" id="read-trimming">
 <h3>Read trimming<a class="headerlink" href="#read-trimming" title="Permalink to this headline">¶</a></h3>
-<p>The pipeline starts by trimming the reads with Trim galore or Fastp.
-The trimmer will automatically trims the low quality 3’ ends of reads, and removes short reads.
-After the quality trimming it automatically detects which adapter was used, and trims it.
+<p>The pipeline starts by trimming the reads with Trim Galore! or Fastp (the default).
+The trimmer will automatically trim the low quality 3’ ends of reads, and removes short reads.
+During the quality trimming it automatically detects which adapter was used, and trims this as well.
 Trimming parameters for the pipeline can be set in the configuration.</p>
 </div>
 <div class="section" id="alignment">
 <h3>Alignment<a class="headerlink" href="#alignment" title="Permalink to this headline">¶</a></h3>
-<p>Reads are aligned using <code class="docutils literal notranslate"><span class="pre">STAR</span></code> or <code class="docutils literal notranslate"><span class="pre">HISAT2</span></code> (default <code class="docutils literal notranslate"><span class="pre">STAR</span></code>).
+<p>Reads are aligned using <code class="docutils literal notranslate"><span class="pre">HISAT2</span></code> or <code class="docutils literal notranslate"><span class="pre">STAR</span></code> (the default).
 Sensible defaults have been set, but can be overwritten for either (or both) the indexing and alignment by specifying them in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>.</p>
 <p>The pipeline will check if the assembly you specified is present in the <em>genome_dir</em>, and otherwise will download it for you through <a class="reference external" href="https://github.com/vanheeringen-lab/genomepy">genomepy</a>.
 All these aligners require an index to be formed first for each assembly, but don’t worry, the pipeline does this for you.</p>
@@ -306,22 +307,31 @@ GSM890    danRer11    stage_9      stage_9             GSM234
 </div>
 <div class="section" id="sample-column">
 <h3>Sample column<a class="headerlink" href="#sample-column" title="Permalink to this headline">¶</a></h3>
-<p>This column is necessary for all workflows, not just the RNA-seq workflow.
-If you use the pipeline on public data this should be the name of the accession (e.g. GSM2837484).
-If you use the pipeline on local data this should be the <em>basename</em> of the file without the <em>extension(s)</em>.
-For instance, <code class="docutils literal notranslate"><span class="pre">/home/user/myfastqs/sample1.fastq.gz</span></code> would be <code class="docutils literal notranslate"><span class="pre">sample1</span></code> (for single-ended data).
-For paired-ended data <code class="docutils literal notranslate"><span class="pre">/home/user/myfastqs/sample2_R1.fastq.gz</span></code> and <code class="docutils literal notranslate"><span class="pre">/home/user/myfastqs/sample2_R2.fastq.gz</span></code> would be <code class="docutils literal notranslate"><span class="pre">sample2</span></code>.</p>
+<p>If you use the pipeline on <strong>public data</strong> this should be the name of the accession (e.g. GSM2837484).
+Accepted formats start with “GSM”, “SRR”, “SRX”, “DRR”, “DRX”, “ERR” or “ERX”.</p>
+<p>If you use the pipeline on <strong>local data</strong> this should be the <em>basename</em> of the file without the <em>extension(s)</em>.
+For example:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">/home/user/myfastqs/sample1.fastq.gz</span></code> ——-&gt; <code class="docutils literal notranslate"><span class="pre">sample1</span></code> for single-ended data</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/home/user/myfastqs/sample2_R1.fastq.gz</span></code> ┬&gt; <code class="docutils literal notranslate"><span class="pre">sample2</span></code> for paired-ended data <span class="raw-html-m2r"><br></span> <code class="docutils literal notranslate"><span class="pre">/home/user/myfastqs/sample2_R2.fastq.gz</span></code> ┘</p></li>
+</ul>
+<p>For <strong>local data</strong>, some fastq files may have slightly different naming formats.
+For instance, Illumina may produce a sample named <code class="docutils literal notranslate"><span class="pre">sample3_S1_L001_R1_001.fastq.gz</span></code> (and the <code class="docutils literal notranslate"><span class="pre">R2</span></code> fastq).
+Seq2science will attempt to recognize these files based on the sample name <code class="docutils literal notranslate"><span class="pre">sample3</span></code>.</p>
+<p>For <strong>both local and public data</strong>, identifiers used to recognize fastq files are the fastq read extensions (<code class="docutils literal notranslate"><span class="pre">R1</span></code> and <code class="docutils literal notranslate"><span class="pre">R2</span></code> by default) and the fastq suffix (<code class="docutils literal notranslate"><span class="pre">fastq</span></code> by default).
+The directory where seq2science will store (or look for) fastqs is determined by the <code class="docutils literal notranslate"><span class="pre">fastq_dir</span></code> config option.
+In the example above, the <code class="docutils literal notranslate"><span class="pre">fastq_dir</span></code> should be set to <code class="docutils literal notranslate"><span class="pre">/home/user/myfastqs</span></code>.
+These setting can be changed in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>.</p>
 </div>
 <div class="section" id="assembly-column">
 <h3>Assembly column<a class="headerlink" href="#assembly-column" title="Permalink to this headline">¶</a></h3>
-<p>This column is necessary for all workflows, except the <em>downloading samples</em> workflow.
-Here you simply add the name of the assembly you want your samples aligned against and the workflow will download it for you.</p>
+<p>Here you simply add the name of the assembly you want your samples aligned against and the workflow will download it for you.</p>
 </div>
 <div class="section" id="descriptive-name-column">
 <h3>Descriptive_name column<a class="headerlink" href="#descriptive-name-column" title="Permalink to this headline">¶</a></h3>
-<p>The descriptive<em>name column is used for the trackhub and multiqc report.
+<p>The descriptive_name column is used for the trackhub and multiqc report.
 In the trackhub your tracks will be called after the descriptive name, and in the multiqc report there will be a button to rename your samples after this column.
-The descriptive name can not contain ‘-‘ characters, but underscores ‘</em>’ are allowed.</p>
+The descriptive name can not contain ‘-‘ characters, but underscores ‘_’ are allowed.</p>
 </div>
 <div class="section" id="technical-replicate-column">
 <h3>Technical_replicate column<a class="headerlink" href="#technical-replicate-column" title="Permalink to this headline">¶</a></h3>
@@ -401,8 +411,8 @@ Should the results be disappointing, they can be overwritten using the <code cla
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="chip_seq.html" class="btn btn-neutral float-right" title="ChIP-seq" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="atac_seq.html" class="btn btn-neutral float-left" title="ATAC-seq" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="scatac_seq.html" class="btn btn-neutral float-right" title="scATAC-seq" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="chip_seq.html" class="btn btn-neutral float-left" title="ChIP-seq" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>

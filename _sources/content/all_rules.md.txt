@@ -591,11 +591,11 @@ multiBamSummary bins --bamfiles {input.bams} -out {output} {params.names} \
 {params.params} -p {threads} > {log} 2>&1
 ```
 
+#### multiqc_explain
+Generate rename buttons for the multiqc report.
+
 #### multiqc_filter_buttons
 Generate filter buttons.
-
-#### multiqc_rename_buttons
-Generate rename buttons for the multiqc report.
 
 #### multiqc_samplesconfig
 Add a section in the multiqc report that reports the samples.tsv and config.yaml
@@ -684,13 +684,10 @@ comparison between normalisation techniques.
 See wikipedia:
 https://en.wikipedia.org/wiki/Quantile_normalization
 
-#### renamefastq_PE
-Create symlinks to fastqs with incorrect fqexts (default R1/R2).
-Forward and reverse samples will be switched if forward/reverse names are not 
-lexicographically ordered.
+#### rename_sample
+Rename local samples with incompatible naming formats
 ```
-ln {input[0]} {output[0]}
-ln {input[1]} {output[1]}
+mv {input[0]} {output[0]}
 ```
 
 #### run2sra
@@ -805,6 +802,9 @@ This rule does (at least) one of these:
 samtools view -h {params.prim_align} {params.minqual} {params.blacklist} \
 {input.bam} | {params.atacshift} {params.sizesieve}
 samtools view -b > {output.final} 2> {log}
+
+# single-end reads never output allsizes so just touch the file when filtering on size
+{params.sizesieve_touch}
 ```
 
 #### softmask_track_1

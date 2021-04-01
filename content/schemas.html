@@ -92,8 +92,27 @@
 <li class="toctree-l1 current"><a class="reference internal" href="extensive_docs.html">Extensive docs</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="cli.html">Command line interface</a></li>
 <li class="toctree-l2"><a class="reference internal" href="all_rules.html">Per rule explanation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#single-end-reads-never-output-allsizes-so-just-touch-the-file-when-filtering-on-size">single-end reads never output allsizes so just touch the file when filtering on size</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#move-to-output-dir-since-somehow-parallel-fastq-dump-sometimes-puts-files-in-the-cwd">move to output dir since somehow parallel-fastq-dump sometimes puts files in the cwd…</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#acquire-the-lock">acquire the lock</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#dump-to-tmp-dir">dump to tmp dir</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#rename-file-and-move-to-output-dir">rename file and move to output dir</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#id4">move to output dir since somehow parallel-fastq-dump sometimes puts files in the cwd…</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#id5">acquire the lock</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#id6">dump to tmp dir</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#id7">rename file and move to output dir</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#move-all-non-log-files-to-output-directory-this-way-the-log-files-are-kept-on-error">move all non-log files to output directory (this way the log files are kept on error)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#generate-annotation-files">generate annotation files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#check-if-gtf-has-gene-names-if-l-0-use-gene-name-else-transcript-id">check if gtf has gene_names &gt; if l!=0, use gene_name, else transcript_id</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#switch-columns-1-transcript-id-and-12-gene-name">switch columns 1 (transcript_id) and 12 (gene_name)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#remove-lines-with-missing-headers">remove lines with missing headers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#generate-searchable-indexes-by-1-transcriptid-2-geneid-8-proteinid-9-genename-10-transcriptname">generate searchable indexes (by 1: transcriptID, 2: geneId, 8: proteinID, 9: geneName, 10: transcriptName)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#now-rename-to-proper-output">now rename to proper output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#move-the-trimming-reports-to-qc-directory">move the trimming reports to qc directory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#id14">now rename to proper output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#move-the-trimming-report-to-qc-directory">move the trimming report to qc directory</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">All configurable options</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#general">general</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#general">General</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#samples">samples</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#rule-dir">rule_dir</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#result-dir">result_dir</a></li>
@@ -107,7 +126,16 @@
 <li class="toctree-l4"><a class="reference internal" href="#email">email</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#alignment-general">alignment general</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#download">Download</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#sra-dir">sra_dir</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fastq-dir">fastq_dir</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ncbi-key">ncbi_key</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ncbi-requests">ncbi_requests</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ascp-path">ascp_path</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ascp-key">ascp_key</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#alignment-general">Alignment general</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#trimmed-dir">trimmed_dir</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#qc-dir">qc_dir</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#final-bam-dir">final_bam_dir</a></li>
@@ -135,12 +163,12 @@
 <li class="toctree-l4"><a class="reference internal" href="#max-template-length">max_template_length</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#alignment-workflow-specific">alignment workflow specific</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#workflow-alignment">Workflow: Alignment</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#bam-sorter">bam_sorter</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#cram-no-bam">cram_no_bam</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#peak-calling-chip-atac">peak calling (ChIP &amp; ATAC)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#workflow-chip-atac-seq">Workflow: ChIP &amp; ATAC-seq</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#peak-caller">peak_caller</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#macs2-keep-mates">macs2_keep_mates</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#peak-windowsize">peak_windowsize</a></li>
@@ -148,26 +176,33 @@
 <li class="toctree-l4"><a class="reference internal" href="#logbase">logbase</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#gene-expression-rna-seq">gene expression (RNA-seq)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#workflow-rna-seq">Workflow: RNA-seq</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#quantifier">quantifier</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#tximeta">tximeta</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ignore-strandedness">ignore_strandedness</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#dexseq">dexseq</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#single-cell-atac">single-cell ATAC</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#workflow-single-cell-atac-seq">Workflow: Single-cell ATAC-seq</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#snaptools-opt">snaptools_opt</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#bin-opt">bin_opt</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#single-cell-rna">single-cell RNA</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#workflow-single-cell-rna-seq">Workflow: Single-cell RNA-seq</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#fastq-clean-dir">fastq_clean_dir</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#fastq-pair">fastq-pair</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#id1">quantifier</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#barcodefile">barcodefile</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#trackhub">trackhub</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#differential-gene-peak-analysis">Differential gene/peak analysis</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#counts-dir">counts_dir</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#deseq2-dir">deseq2_dir</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#deseq2">deseq2</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#contrasts">contrasts</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#trackhub">Trackhub</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#create-trackhub">create_trackhub</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#bigwig-dir">bigwig_dir</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#deeptools-flags">deeptools_flags</a></li>
@@ -257,7 +292,7 @@
 <p>This is an automatically generated summary of all configurable options for seq2science. These options are loosely grouped around workflows/topics, however they are generally also shared across workflows. So it is possible that  tunable configuration settings are not mentioned in their topic. At the start of each seq2science run the complete configuration is printed to stdout. You can use that printed configuration as the complete list of tunable configuration settings.</p>
 <p>We believe that all our default settings are reasonable, and manual finetuning is generally not required.</p>
 <div class="section" id="general">
-<h2>general<a class="headerlink" href="#general" title="Permalink to this headline">¶</a></h2>
+<h2>General<a class="headerlink" href="#general" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="samples">
 <h3>samples<a class="headerlink" href="#samples" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>samples:
@@ -357,8 +392,61 @@
 </div>
 </div>
 </div>
+<div class="section" id="download">
+<h2>Download<a class="headerlink" href="#download" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="sra-dir">
+<h3>sra_dir<a class="headerlink" href="#sra-dir" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>sra_dir:
+    description: directory where to store the workflow sras (defaults inside the result dir)
+    default: sra
+    type: string
+</pre></div>
+</div>
+</div>
+<div class="section" id="fastq-dir">
+<h3>fastq_dir<a class="headerlink" href="#fastq-dir" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>fastq_dir:
+    description: directory where to store the workflow fastqs (defaults inside the result dir)
+    default: fastq
+    type: string
+</pre></div>
+</div>
+</div>
+<div class="section" id="ncbi-key">
+<h3>ncbi_key<a class="headerlink" href="#ncbi-key" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>ncbi_key:
+    description: e-utilities key for faster lookup interval
+    type: string
+</pre></div>
+</div>
+</div>
+<div class="section" id="ncbi-requests">
+<h3>ncbi_requests<a class="headerlink" href="#ncbi-requests" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>ncbi_requests:
+    description: the number of lookups per second the key permits
+    type: integer
+</pre></div>
+</div>
+</div>
+<div class="section" id="ascp-path">
+<h3>ascp_path<a class="headerlink" href="#ascp-path" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>ascp_path:
+    description: the pipeline supports downloading through ascp if this variable is set.
+    type: string
+</pre></div>
+</div>
+</div>
+<div class="section" id="ascp-key">
+<h3>ascp_key<a class="headerlink" href="#ascp-key" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>ascp_key:
+    description: the public key of ascp
+    type: string
+</pre></div>
+</div>
+</div>
+</div>
 <div class="section" id="alignment-general">
-<h2>alignment general<a class="headerlink" href="#alignment-general" title="Permalink to this headline">¶</a></h2>
+<h2>Alignment general<a class="headerlink" href="#alignment-general" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="trimmed-dir">
 <h3>trimmed_dir<a class="headerlink" href="#trimmed-dir" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>trimmed_dir:
@@ -654,8 +742,8 @@
 </div>
 </div>
 </div>
-<div class="section" id="alignment-workflow-specific">
-<h2>alignment workflow specific<a class="headerlink" href="#alignment-workflow-specific" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="workflow-alignment">
+<h2>Workflow: Alignment<a class="headerlink" href="#workflow-alignment" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="bam-sorter">
 <h3>bam_sorter<a class="headerlink" href="#bam-sorter" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>bam_sorter:
@@ -681,8 +769,8 @@
 </div>
 </div>
 </div>
-<div class="section" id="peak-calling-chip-atac">
-<h2>peak calling (ChIP &amp; ATAC)<a class="headerlink" href="#peak-calling-chip-atac" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="workflow-chip-atac-seq">
+<h2>Workflow: ChIP &amp; ATAC-seq<a class="headerlink" href="#workflow-chip-atac-seq" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="peak-caller">
 <h3>peak_caller<a class="headerlink" href="#peak-caller" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>peak_caller:
@@ -738,8 +826,8 @@
 </div>
 </div>
 </div>
-<div class="section" id="gene-expression-rna-seq">
-<h2>gene expression (RNA-seq)<a class="headerlink" href="#gene-expression-rna-seq" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="workflow-rna-seq">
+<h2>Workflow: RNA-seq<a class="headerlink" href="#workflow-rna-seq" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="quantifier">
 <h3>quantifier<a class="headerlink" href="#quantifier" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>quantifier:
@@ -816,8 +904,8 @@
 </div>
 </div>
 </div>
-<div class="section" id="single-cell-atac">
-<h2>single-cell ATAC<a class="headerlink" href="#single-cell-atac" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="workflow-single-cell-atac-seq">
+<h2>Workflow: Single-cell ATAC-seq<a class="headerlink" href="#workflow-single-cell-atac-seq" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="snaptools-opt">
 <h3>snaptools_opt<a class="headerlink" href="#snaptools-opt" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>snaptools_opt:
@@ -835,8 +923,8 @@
 </div>
 </div>
 </div>
-<div class="section" id="single-cell-rna">
-<h2>single-cell RNA<a class="headerlink" href="#single-cell-rna" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="workflow-single-cell-rna-seq">
+<h2>Workflow: Single-cell RNA-seq<a class="headerlink" href="#workflow-single-cell-rna-seq" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="fastq-clean-dir">
 <h3>fastq_clean_dir<a class="headerlink" href="#fastq-clean-dir" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>fastq_clean_dir:
@@ -880,8 +968,59 @@
 </div>
 </div>
 </div>
+<div class="section" id="differential-gene-peak-analysis">
+<h2>Differential gene/peak analysis<a class="headerlink" href="#differential-gene-peak-analysis" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="counts-dir">
+<h3>counts_dir<a class="headerlink" href="#counts-dir" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>counts_dir:
+    description: directory where to store the counts for DESeq2 analysis (defaults inside the result dir)
+    default: counts
+    type: string
+</pre></div>
+</div>
+</div>
+<div class="section" id="deseq2-dir">
+<h3>deseq2_dir<a class="headerlink" href="#deseq2-dir" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>deseq2_dir:
+    description: directory where to store the DESeq2 output (defaults inside the result dir)
+    default: deseq2
+    type: string
+</pre></div>
+</div>
+</div>
+<div class="section" id="deseq2">
+<h3>deseq2<a class="headerlink" href="#deseq2" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>deseq2:
+    description: DESeq2 settings. See the DESeq2 vignette for details
+    properties:
+        multiple_testing_procedure:
+            default: BH
+            enum: [&#39;BH&#39;, &#39;IHW&#39;]
+            type: string
+        alpha_value:
+            default: 0.1
+            type: number
+        shrinkage_estimator:
+            default: apeglm
+            enum: [&#39;apeglm&#39;, &#39;ashr&#39;, &#39;normal&#39;]
+            type: string
+    default:
+        multiple_testing_procedure: BH
+        alpha_value: 0.1
+        shrinkage_estimator: apeglm
+</pre></div>
+</div>
+</div>
+<div class="section" id="contrasts">
+<h3>contrasts<a class="headerlink" href="#contrasts" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>contrasts:
+    description: deseq2 design contrast(s)
+</pre></div>
+</div>
+</div>
+</div>
 <div class="section" id="trackhub">
-<h2>trackhub<a class="headerlink" href="#trackhub" title="Permalink to this headline">¶</a></h2>
+<h2>Trackhub<a class="headerlink" href="#trackhub" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="create-trackhub">
 <h3>create_trackhub<a class="headerlink" href="#create-trackhub" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>create_trackhub:

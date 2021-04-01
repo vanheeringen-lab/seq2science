@@ -182,10 +182,11 @@
 <h1>Differential gene/peak analysis<a class="headerlink" href="#differential-gene-peak-analysis" title="Permalink to this headline">¶</a></h1>
 <p>Seq2science outputs counts matrices for each assembly in any bulk-sequencing workflow, which can optionally can be used for differential gene/peak analysis with <a class="reference external" href="https://genomebiology.biomedcentral.com/articles/10.1186/s13059-014-0550-8">DESeq2</a>.
 To do so, add one or more contrast design(s) in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file, with matching identifiers in the <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> file.</p>
+<p>After completing the workflow, rerunning Seq2science with new contrasts will only perform the new analyses.
+Alternatively, you can call the DESeq2 script from the command line.
+To get started with the command line script, try out <code class="docutils literal notranslate"><span class="pre">Rscript</span> <span class="pre">/path/to/seq2science/scripts/deseq2.R</span> <span class="pre">--help</span></code>.</p>
 <p>This section details how the contrast designs are created.
 Examples are given <a class="reference external" href="./DESeq2.html#deseq2-contrast-designs">below</a>, and each <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> contains a commented-out example contrast design at the bottom.</p>
-<p>Note: (additional) design contrasts can be added at any time.
-After completing the workflow, rerunning Seq2science with new contrasts will only perform the new analyses.</p>
 <div class="section" id="overview-of-the-deseq2-method">
 <h2>Overview of the DESeq2 method<a class="headerlink" href="#overview-of-the-deseq2-method" title="Permalink to this headline">¶</a></h2>
 <p>DESeq2 automatically performs library bias correction when loading your data, and batch correction is performed if it is included in the contrast design.
@@ -193,7 +194,7 @@ After calculating differentially expressed genes/peaks, a multiple testing proce
 The False Discovery Rate cutoff is set by alpha, which is 0.1 by default.
 Finally, count values are log transformed and shrunk (by default using the apeglm method).
 These defaults can be changed in the <a class="reference external" href="./schemas.html#deseq2">config.yaml</a>, under the <code class="docutils literal notranslate"><span class="pre">deseq2</span></code> variables using the <code class="docutils literal notranslate"><span class="pre">multiple_testing_procedure</span></code>, <code class="docutils literal notranslate"><span class="pre">alpha_value</span></code> and <code class="docutils literal notranslate"><span class="pre">shrinkage_estimator</span></code> options respectively.</p>
-<p>For more information, check out the steps in this <a class="reference external" href="www.bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html">vignette</a>, which Seq2science follows.</p>
+<p>For more information, check out the steps in this <a class="reference external" href="https://www.bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html">vignette</a>, which Seq2science follows.</p>
 </div>
 <div class="section" id="output">
 <h2>Output<a class="headerlink" href="#output" title="Permalink to this headline">¶</a></h2>

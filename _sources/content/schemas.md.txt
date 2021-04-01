@@ -4,7 +4,7 @@
 This is an automatically generated summary of all configurable options for seq2science. These options are loosely grouped around workflows/topics, however they are generally also shared across workflows. So it is possible that  tunable configuration settings are not mentioned in their topic. At the start of each seq2science run the complete configuration is printed to stdout. You can use that printed configuration as the complete list of tunable configuration settings. 
 
 We believe that all our default settings are reasonable, and manual finetuning is generally not required.
-## general
+## General
 #####samples
 ```
 samples:
@@ -82,7 +82,47 @@ email:
     type: string
 ```
 
-## alignment general
+## Download
+#####sra_dir
+```
+sra_dir:
+    description: directory where to store the workflow sras (defaults inside the result dir)
+    default: sra
+    type: string
+```
+#####fastq_dir
+```
+fastq_dir:
+    description: directory where to store the workflow fastqs (defaults inside the result dir)
+    default: fastq
+    type: string
+```
+#####ncbi_key
+```
+ncbi_key:
+    description: e-utilities key for faster lookup interval
+    type: string
+```
+#####ncbi_requests
+```
+ncbi_requests:
+    description: the number of lookups per second the key permits
+    type: integer
+```
+#####ascp_path
+```
+ascp_path:
+    description: the pipeline supports downloading through ascp if this variable is set.
+    type: string
+```
+#####ascp_key
+```
+ascp_key:
+    description: the public key of ascp
+    type: string
+```
+
+## Alignment general
 #####trimmed_dir
 ```
 trimmed_dir:
@@ -328,7 +368,7 @@ max_template_length:
     type: integer
 ```
 
-## alignment workflow specific
+## Workflow: Alignment
 #####bam_sorter
 ```
 bam_sorter:
@@ -350,7 +390,7 @@ cram_no_bam:
     default: False
 ```
 
-## peak calling (ChIP & ATAC)
+## Workflow: ChIP & ATAC-seq
 #####peak_caller
 ```
 peak_caller:
@@ -396,7 +436,7 @@ logbase:
     type: number
 ```
 
-## gene expression (RNA-seq)
+## Workflow: RNA-seq
 #####quantifier
 ```
 quantifier:
@@ -465,7 +505,7 @@ dexseq:
     type: boolean
 ```
 
-## single-cell ATAC
+## Workflow: Single-cell ATAC-seq
 #####snaptools_opt
 ```
 snaptools_opt:
@@ -479,7 +519,7 @@ bin_opt:
     default: --bin-size-list 5000 --verbose=True
 ```
 
-## single-cell RNA
+## Workflow: Single-cell RNA-seq
 #####fastq_clean_dir
 ```
 fastq_clean_dir:
@@ -515,7 +555,49 @@ barcodefile:
     type: string
 ```
 
-## trackhub
+## Differential gene/peak analysis
+#####counts_dir
+```
+counts_dir:
+    description: directory where to store the counts for DESeq2 analysis (defaults inside the result dir)
+    default: counts
+    type: string
+```
+#####deseq2_dir
+```
+deseq2_dir:
+    description: directory where to store the DESeq2 output (defaults inside the result dir)
+    default: deseq2
+    type: string
+```
+#####deseq2
+```
+deseq2:
+    description: DESeq2 settings. See the DESeq2 vignette for details
+    properties:
+        multiple_testing_procedure:
+            default: BH
+            enum: ['BH', 'IHW']
+            type: string
+        alpha_value:
+            default: 0.1
+            type: number
+        shrinkage_estimator:
+            default: apeglm
+            enum: ['apeglm', 'ashr', 'normal']
+            type: string
+    default:
+        multiple_testing_procedure: BH
+        alpha_value: 0.1
+        shrinkage_estimator: apeglm
+```
+#####contrasts
+```
+contrasts:
+    description: deseq2 design contrast(s)
+```
+
+## Trackhub
 #####create_trackhub
 ```
 create_trackhub:

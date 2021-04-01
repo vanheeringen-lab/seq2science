@@ -91,21 +91,17 @@
 <li class="toctree-l2"><a class="reference internal" href="download_fastq.html">Downloading fastqs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="alignment.html">Alignment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="atac_seq.html">ATAC-seq</a></li>
-<li class="toctree-l2"><a class="reference internal" href="rna_seq.html">RNA-seq</a></li>
 <li class="toctree-l2"><a class="reference internal" href="chip_seq.html">ChIP-seq</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rna_seq.html">RNA-seq</a></li>
 <li class="toctree-l2"><a class="reference internal" href="scatac_seq.html">scATAC-seq</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">scRNA-seq</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#pipeline-steps">Pipeline steps</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#downloading-of-sample-s">Downloading of sample(s)</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#downloading-and-indexing-of-assembly-s">Downloading and indexing of assembly(s)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#downloading-and-indexing-of-assembly-s">Downloading and indexing of assembly(s)</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#read-trimming">Read trimming</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#quantification">Quantification</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#best-practices">Best practices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#how-to-get-the-pipeline-started">How to get the pipeline started?</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#filling-out-the-samples-tsv">Filling out the samples.tsv</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#sample-column">Sample column</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#assembly-column">Assembly column</a></li>
@@ -114,6 +110,8 @@
 <li class="toctree-l4"><a class="reference internal" href="#custom-assembly-extensions">Custom assembly extensions</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Filling out the config.yaml</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#best-practices">Best practices</a></li>
 </ul>
 </li>
 </ul>
@@ -203,12 +201,13 @@
 </p><div class="section" id="downloading-of-sample-s">
 <h3>Downloading of sample(s)<a class="headerlink" href="#downloading-of-sample-s" title="Permalink to this headline">¶</a></h3>
 <p>Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples.
-Take a look at the <a class="reference external" href="./download_fastq.html">downloading_fastq</a> workflow for extensive documentation about downloading of public samples.</p>
-</div>
+You control which samples are used in the <a class="reference external" href="#filling-out-the-samples-tsv">samples.tsv</a>.
+Background on public data can be found <a class="reference external" href="./download_fastq.html#download-sra-file">here</a>.</p>
 </div>
 <div class="section" id="downloading-and-indexing-of-assembly-s">
-<h2>Downloading and indexing of assembly(s)<a class="headerlink" href="#downloading-and-indexing-of-assembly-s" title="Permalink to this headline">¶</a></h2>
-<p>Depending on whether the assembly and its index you align your samples against already exist seq2science will start with downloading of the assembly through genomepy.</p>
+<h3>Downloading and indexing of assembly(s)<a class="headerlink" href="#downloading-and-indexing-of-assembly-s" title="Permalink to this headline">¶</a></h3>
+<p>Depending on whether the assembly and its index you align your samples against already exist seq2science will start with downloading of the assembly through <a class="reference external" href="https://github.com/vanheeringen-lab/genomepy">genomepy</a>.</p>
+</div>
 <div class="section" id="read-trimming">
 <h3>Read trimming<a class="headerlink" href="#read-trimming" title="Permalink to this headline">¶</a></h3>
 <p>The pipeline starts by trimming the reads with fastp.
@@ -226,12 +225,6 @@ Kallisto bustools relies on pseudo-alignment of scRNA reads against a reference 
 The resulting count matrices can be further processed with scRNA toolkits, such as Seurat or Scanpy.</p>
 </div>
 </div>
-<div class="section" id="best-practices">
-<h2>Best practices<a class="headerlink" href="#best-practices" title="Permalink to this headline">¶</a></h2>
-</div>
-<div class="section" id="how-to-get-the-pipeline-started">
-<h2>How to get the pipeline started?<a class="headerlink" href="#how-to-get-the-pipeline-started" title="Permalink to this headline">¶</a></h2>
-</div>
 <div class="section" id="filling-out-the-samples-tsv">
 <h2>Filling out the samples.tsv<a class="headerlink" href="#filling-out-the-samples-tsv" title="Permalink to this headline">¶</a></h2>
 <p>Before running a workflow you will have to specify which samples you want to run the workflow on.
@@ -243,15 +236,25 @@ pbmc    GRCh38.p13      pbmc
 </div>
 <div class="section" id="sample-column">
 <h3>Sample column<a class="headerlink" href="#sample-column" title="Permalink to this headline">¶</a></h3>
-<p>This column is necessary for all workflows, not just the scRNA-seq workflow.
-If you use the pipeline on public data this should be the name of the accession (e.g. GSM2837484).
-If you use the pipeline on local data this should be the <em>basename</em> of the file without the <em>extension(s)</em>.
-For example, for paired-ended data <code class="docutils literal notranslate"><span class="pre">/home/user/myfastqs/sample2_R1.fastq.gz</span></code> and <code class="docutils literal notranslate"><span class="pre">/home/user/myfastqs/sample2_R2.fastq.gz</span></code> would be <code class="docutils literal notranslate"><span class="pre">sample2</span></code>.</p>
+<p>If you use the pipeline on <strong>public data</strong> this should be the name of the accession (e.g. GSM2837484).
+Accepted formats start with “GSM”, “SRR”, “SRX”, “DRR”, “DRX”, “ERR” or “ERX”.</p>
+<p>If you use the pipeline on <strong>local data</strong> this should be the <em>basename</em> of the file without the <em>extension(s)</em>.
+For example:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">/home/user/myfastqs/sample1.fastq.gz</span></code> ——-&gt; <code class="docutils literal notranslate"><span class="pre">sample1</span></code> for single-ended data</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/home/user/myfastqs/sample2_R1.fastq.gz</span></code> ┬&gt; <code class="docutils literal notranslate"><span class="pre">sample2</span></code> for paired-ended data <span class="raw-html-m2r"><br></span> <code class="docutils literal notranslate"><span class="pre">/home/user/myfastqs/sample2_R2.fastq.gz</span></code> ┘</p></li>
+</ul>
+<p>For <strong>local data</strong>, some fastq files may have slightly different naming formats.
+For instance, Illumina may produce a sample named <code class="docutils literal notranslate"><span class="pre">sample3_S1_L001_R1_001.fastq.gz</span></code> (and the <code class="docutils literal notranslate"><span class="pre">R2</span></code> fastq).
+Seq2science will attempt to recognize these files based on the sample name <code class="docutils literal notranslate"><span class="pre">sample3</span></code>.</p>
+<p>For <strong>both local and public data</strong>, identifiers used to recognize fastq files are the fastq read extensions (<code class="docutils literal notranslate"><span class="pre">R1</span></code> and <code class="docutils literal notranslate"><span class="pre">R2</span></code> by default) and the fastq suffix (<code class="docutils literal notranslate"><span class="pre">fastq</span></code> by default).
+The directory where seq2science will store (or look for) fastqs is determined by the <code class="docutils literal notranslate"><span class="pre">fastq_dir</span></code> config option.
+In the example above, the <code class="docutils literal notranslate"><span class="pre">fastq_dir</span></code> should be set to <code class="docutils literal notranslate"><span class="pre">/home/user/myfastqs</span></code>.
+These setting can be changed in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>.</p>
 </div>
 <div class="section" id="assembly-column">
 <h3>Assembly column<a class="headerlink" href="#assembly-column" title="Permalink to this headline">¶</a></h3>
-<p>This column is necessary for all workflows, except the <em>downloading samples</em> workflow.
-Here you simply add the name of the assembly you want your samples aligned against and the workflow will download it for you.</p>
+<p>Here you simply add the name of the assembly you want your samples aligned against and the workflow will download it for you.</p>
 </div>
 <div class="section" id="descriptive-name-column">
 <h3>Descriptive_name column<a class="headerlink" href="#descriptive-name-column" title="Permalink to this headline">¶</a></h3>
@@ -299,6 +302,17 @@ To do so, add <code class="docutils literal notranslate"><span class="pre">custo
 Seq2science will place the customized assembly in a separate folder in the <code class="docutils literal notranslate"><span class="pre">genome_dir</span></code>.
 You can control the name of the customized assembly by setting <code class="docutils literal notranslate"><span class="pre">custom_assembly_suffix</span></code> in the config.</p>
 </div>
+</div>
+<div class="section" id="id1">
+<h2>Filling out the config.yaml<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<p>Every workflow has many configurable options, and can be set in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file.
+In each <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> we highlighted a couple options that we think are relevant for that specific workflow, and set (we think) <strong>reasonable default</strong> values.</p>
+<p>When a workflow starts it prints the configuration variables influencing the workflow, and (almost) all these values can be added in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> and changed to your liking.
+You can see the complete set of configurable options in the <a class="reference external" href="../schemas.html">extensive docs</a>.</p>
+</div>
+<div class="section" id="best-practices">
+<h2>Best practices<a class="headerlink" href="#best-practices" title="Permalink to this headline">¶</a></h2>
+<p>TODO</p>
 </div>
 </div>
 

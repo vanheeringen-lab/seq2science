@@ -111,6 +111,25 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="all_rules.html">Per rule explanation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#single-end-reads-never-output-allsizes-so-just-touch-the-file-when-filtering-on-size">single-end reads never output allsizes so just touch the file when filtering on size</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#move-to-output-dir-since-somehow-parallel-fastq-dump-sometimes-puts-files-in-the-cwd">move to output dir since somehow parallel-fastq-dump sometimes puts files in the cwd…</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#acquire-the-lock">acquire the lock</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#dump-to-tmp-dir">dump to tmp dir</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#rename-file-and-move-to-output-dir">rename file and move to output dir</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#id4">move to output dir since somehow parallel-fastq-dump sometimes puts files in the cwd…</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#id5">acquire the lock</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#id6">dump to tmp dir</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#id7">rename file and move to output dir</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#move-all-non-log-files-to-output-directory-this-way-the-log-files-are-kept-on-error">move all non-log files to output directory (this way the log files are kept on error)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#generate-annotation-files">generate annotation files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#check-if-gtf-has-gene-names-if-l-0-use-gene-name-else-transcript-id">check if gtf has gene_names &gt; if l!=0, use gene_name, else transcript_id</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#switch-columns-1-transcript-id-and-12-gene-name">switch columns 1 (transcript_id) and 12 (gene_name)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#remove-lines-with-missing-headers">remove lines with missing headers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#generate-searchable-indexes-by-1-transcriptid-2-geneid-8-proteinid-9-genename-10-transcriptname">generate searchable indexes (by 1: transcriptID, 2: geneId, 8: proteinID, 9: geneName, 10: transcriptName)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#now-rename-to-proper-output">now rename to proper output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#move-the-trimming-reports-to-qc-directory">move the trimming reports to qc directory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#id14">now rename to proper output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#move-the-trimming-report-to-qc-directory">move the trimming report to qc directory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="schemas.html">All configurable options</a></li>
 <li class="toctree-l2"><a class="reference internal" href="CHANGELOG.html">Changelog</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../CONTRIBUTING.html">Contributing to seq2science</a></li>
@@ -195,14 +214,14 @@
 <h2>init<a class="headerlink" href="#init" title="Permalink to this headline">¶</a></h2>
 <p><p>Each workflow requires a configuration and samples file to run. Running “seq2science init {workflow}” initialises a default configuration and samples file for the specific workflow.</p>
 </p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">seq2science</span> <span class="n">init</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="nb">dir</span> <span class="n">PATH</span><span class="p">]</span> <span class="n">WORKFLOW</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">seq2science</span> <span class="n">init</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="nb">dir</span> <span class="n">PATH</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">f</span><span class="p">]</span> <span class="n">WORKFLOW</span>
 </pre></div>
 </div>
 <div class="section" id="Positional Arguments">
 <h3>Positional Arguments<a class="headerlink" href="#Positional Arguments" title="Permalink to this headline">¶</a></h3>
 <dl class="option-list">
 <dt><kbd>WORKFLOW</kbd></dt>
-<dd><p>Possible choices: alignment, rna-seq, scrna-seq, atac-seq, scatac-seq, download-fastq, chip-seq</p>
+<dd><p>Possible choices: chip-seq, alignment, scatac-seq, atac-seq, rna-seq, scrna-seq, download-fastq</p>
 </dd>
 </dl>
 </div>
@@ -212,6 +231,10 @@
 <dt><kbd>--dir</kbd></dt>
 <dd><p>The path to the directory where to initialise the config and samples files.</p>
 <p>Default: “.”</p>
+</dd>
+<dt><kbd>-f, --force</kbd></dt>
+<dd><p>Overwrite existing samples.tsv and config.yaml silently.</p>
+<p>Default: False</p>
 </dd>
 </dl>
 </div>
@@ -232,7 +255,7 @@
 <h3>Positional Arguments<a class="headerlink" href="#Positional Arguments" title="Permalink to this headline">¶</a></h3>
 <dl class="option-list">
 <dt><kbd>WORKFLOW</kbd></dt>
-<dd><p>Possible choices: alignment, rna-seq, scrna-seq, atac-seq, scatac-seq, download-fastq, chip-seq</p>
+<dd><p>Possible choices: chip-seq, alignment, scatac-seq, atac-seq, rna-seq, scrna-seq, download-fastq</p>
 </dd>
 </dl>
 </div>
@@ -294,7 +317,8 @@ seq2science clean will clean up these files for you.</p>
 <h2>explain<a class="headerlink" href="#explain" title="Permalink to this headline">¶</a></h2>
 <p><p>Explains what has/will be done for the workflow. This prints a string which can serve as a skeleton for your material &amp; methods section.</p>
 </p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">seq2science</span> <span class="n">explain</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">snakemakeOptions</span> <span class="n">KEY</span><span class="o">=</span><span class="n">VAL</span> <span class="p">[</span><span class="n">KEY</span><span class="o">=</span><span class="n">VAL</span> <span class="o">...</span><span class="p">]]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">seq2science</span> <span class="n">explain</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">hyperref</span><span class="p">]</span>
+                           <span class="p">[</span><span class="o">--</span><span class="n">snakemakeOptions</span> <span class="n">KEY</span><span class="o">=</span><span class="n">VAL</span> <span class="p">[</span><span class="n">KEY</span><span class="o">=</span><span class="n">VAL</span> <span class="o">...</span><span class="p">]]</span>
                            <span class="p">[</span><span class="o">-</span><span class="n">p</span> <span class="n">PROFILE</span> <span class="n">NAME</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">c</span> <span class="n">FILE</span><span class="p">]</span>
                            <span class="n">WORKFLOW</span>
 </pre></div>
@@ -303,13 +327,17 @@ seq2science clean will clean up these files for you.</p>
 <h3>Positional Arguments<a class="headerlink" href="#Positional Arguments" title="Permalink to this headline">¶</a></h3>
 <dl class="option-list">
 <dt><kbd>WORKFLOW</kbd></dt>
-<dd><p>Possible choices: alignment, rna-seq, scrna-seq, atac-seq, scatac-seq, download-fastq, chip-seq</p>
+<dd><p>Possible choices: chip-seq, alignment, scatac-seq, atac-seq, rna-seq, scrna-seq, download-fastq</p>
 </dd>
 </dl>
 </div>
 <div class="section" id="Named Arguments">
 <h3>Named Arguments<a class="headerlink" href="#Named Arguments" title="Permalink to this headline">¶</a></h3>
 <dl class="option-list">
+<dt><kbd>--hyperref</kbd></dt>
+<dd><p>Print urls as html hyperref</p>
+<p>Default: False</p>
+</dd>
 <dt><kbd>--snakemakeOptions</kbd></dt>
 <dd><p>Extra arguments to pass along to snakemake. An example could be seq2science run alignment –cores 12 –snakemakeOptions resources={mem_gb:100} local_cores=3. Here we pass local_cores as KEY=VALUE and additional resources can even be passed along in a dictionary. Take a look at the snakemake API  for a complete list of all possible options: <a class="reference external" href="https://snakemake.readthedocs.io/en/latest/api_reference/snakemake.html">https://snakemake.readthedocs.io/en/latest/api_reference/snakemake.html</a></p>
 </dd>

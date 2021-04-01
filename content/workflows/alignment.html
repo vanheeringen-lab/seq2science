@@ -119,8 +119,8 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="atac_seq.html">ATAC-seq</a></li>
-<li class="toctree-l2"><a class="reference internal" href="rna_seq.html">RNA-seq</a></li>
 <li class="toctree-l2"><a class="reference internal" href="chip_seq.html">ChIP-seq</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rna_seq.html">RNA-seq</a></li>
 <li class="toctree-l2"><a class="reference internal" href="scatac_seq.html">scATAC-seq</a></li>
 <li class="toctree-l2"><a class="reference internal" href="scrna_seq.html">scRNA-seq</a></li>
 </ul>
@@ -210,26 +210,28 @@
 </p><div class="section" id="downloading-of-sample-s">
 <h3>Downloading of sample(s)<a class="headerlink" href="#downloading-of-sample-s" title="Permalink to this headline">¶</a></h3>
 <p>Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples.
-Take a look at the <a class="reference external" href="./download_fastq.html">downloading_fastq</a> workflow for extensive documentation about downloading of public samples.</p>
+You control which samples are used in the <a class="reference external" href="#filling-out-the-samples-tsv">samples.tsv</a>.
+Background on public data can be found <a class="reference external" href="./download_fastq.html#download-sra-file">here</a>.</p>
 </div>
 <div class="section" id="read-trimming">
 <h3>Read trimming<a class="headerlink" href="#read-trimming" title="Permalink to this headline">¶</a></h3>
-<p>The pipeline starts by trimming the reads with Trim galore or Fastp.
-The trimmer will automatically trims the low quality 3’ ends of reads, and removes short reads.
-After the quality trimming it automatically detects which adapter was used, and trims it.
+<p>The pipeline starts by trimming the reads with Trim Galore! or Fastp (the default).
+The trimmer will automatically trim the low quality 3’ ends of reads, and removes short reads.
+During the quality trimming it automatically detects which adapter was used, and trims this as well.
 Trimming parameters for the pipeline can be set in the configuration.</p>
 </div>
 <div class="section" id="alignment-sorting">
 <h3>Alignment &amp; Sorting<a class="headerlink" href="#alignment-sorting" title="Permalink to this headline">¶</a></h3>
 <p>After trimming the reads are aligned against an assembly. Currently we support <em>bowtie2</em>, <em>bwa</em>, <em>bwa-mem2</em>, <em>hisat2</em> and <em>STAR</em> as aligners. Choosing which aligner is as easy as setting the <em>aligner</em> variable in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>, for example: <code class="docutils literal notranslate"><span class="pre">aligner:</span> <span class="pre">bwa</span></code>. Sensible defaults have been set for every aligner, but can be overwritten for either (or both) the indexing and alignment by specifying them in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>:</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>aligner:
-  star:
-    index: &#39;--limitGenomeGenerateRAM 55000000000`  # give STAR 55 GB RAM during indexing (default is 31 GB)
-    align: &#39;--readFilesCommand gunzip -c&#39;          # unzips fastqs before aligning
+  bwa-mem:
+    index: &#39;-a bwtsw&#39;
+    align: &#39;-M&#39;
 </pre></div>
 </div>
-<p>The pipeline will check if the assembly you specified is present in the <em>genome_dir</em>, and otherwise will download it for you through <a class="reference external" href="https://github.com/vanheeringen-lab/genomepy">genomepy</a>. All these aligners require an index to be formed first for each assembly, but don’t worry, the pipeline does this for you.</p>
-<p>The outputted alignment.bam is immediately sorted by either samtools or sambamba (<em>bam_sorter</em>) either in <em>queryname</em> or <em>coordinate</em> (default) order. Take a look at our <a class="reference external" href="https://github.com/vanheeringen-lab/snakemake-workflows/wiki/3.-Alignment#choosing-an-appropriate-aligner">Choosing an aligner</a> section for tips which aligner to use.</p>
+<p>The pipeline will check if the assembly you specified is present in the <em>genome_dir</em>, and otherwise will download it for you through <a class="reference external" href="https://github.com/vanheeringen-lab/genomepy">genomepy</a>.
+All these aligners require an index to be formed first for each assembly, but don’t worry, the pipeline does this for you.</p>
+<p>The outputted alignment.bam is immediately sorted by either samtools or sambamba (<em>bam_sorter</em>) either in <em>queryname</em> or <em>coordinate</em> (default) order.</p>
 </div>
 <div class="section" id="custom-assembly-extensions">
 <h3>Custom assembly extensions<a class="headerlink" href="#custom-assembly-extensions" title="Permalink to this headline">¶</a></h3>
@@ -256,7 +258,9 @@ See the <a class="reference external" href="../results.html#trackhub">trackhub p
 </div>
 <div class="section" id="filling-out-the-samples-tsv">
 <h2>Filling out the samples.tsv<a class="headerlink" href="#filling-out-the-samples-tsv" title="Permalink to this headline">¶</a></h2>
-<p>Before running a workflow you will have to specify which samples you want to run the workflow on. Each workflow starts with a <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> as an example, and you should adapt it to your specific needs. As an example, the <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> could look something like this:</p>
+<p>Before running a workflow you will have to specify which samples you want to run the workflow on.
+Each workflow starts with a <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> as an example, and you should adapt it to your specific needs.
+As an example, the <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> could look something like this:</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>sample    assembly    technical_replicate    descriptive_name
 GSM123    GRCh38      heart_1      heart_merged
 GSM321    GRCh38      heart_1      heart_merged
@@ -267,15 +271,31 @@ GSM890    danRer11    stage_9      stage_9
 </div>
 <div class="section" id="sample-column">
 <h3>Sample column<a class="headerlink" href="#sample-column" title="Permalink to this headline">¶</a></h3>
-<p>This column is necessary for all workflows, not just the atac-seq workflow. If you use the pipeline on public data this should be the name of the accession (e.g. GSM2837484). If you use the pipeline on local data this should be the <em>basename</em> of the file without the <em>extension(s)</em>. For instance, <code class="docutils literal notranslate"><span class="pre">/home/user/myfastqs/sample1.fastq.gz</span></code> would be <code class="docutils literal notranslate"><span class="pre">sample1</span></code> (for single-ended data). For paired-ended data <code class="docutils literal notranslate"><span class="pre">/home/user/myfastqs/sample2_R1.fastq.gz</span></code> and <code class="docutils literal notranslate"><span class="pre">/home/user/myfastqs/sample2_R2.fastq.gz</span></code> would be <code class="docutils literal notranslate"><span class="pre">sample2</span></code>.</p>
+<p>If you use the pipeline on <strong>public data</strong> this should be the name of the accession (e.g. GSM2837484).
+Accepted formats start with “GSM”, “SRR”, “SRX”, “DRR”, “DRX”, “ERR” or “ERX”.</p>
+<p>If you use the pipeline on <strong>local data</strong> this should be the <em>basename</em> of the file without the <em>extension(s)</em>.
+For example:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">/home/user/myfastqs/sample1.fastq.gz</span></code> ——-&gt; <code class="docutils literal notranslate"><span class="pre">sample1</span></code> for single-ended data</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/home/user/myfastqs/sample2_R1.fastq.gz</span></code> ┬&gt; <code class="docutils literal notranslate"><span class="pre">sample2</span></code> for paired-ended data <span class="raw-html-m2r"><br></span> <code class="docutils literal notranslate"><span class="pre">/home/user/myfastqs/sample2_R2.fastq.gz</span></code> ┘</p></li>
+</ul>
+<p>For <strong>local data</strong>, some fastq files may have slightly different naming formats.
+For instance, Illumina may produce a sample named <code class="docutils literal notranslate"><span class="pre">sample3_S1_L001_R1_001.fastq.gz</span></code> (and the <code class="docutils literal notranslate"><span class="pre">R2</span></code> fastq).
+Seq2science will attempt to recognize these files based on the sample name <code class="docutils literal notranslate"><span class="pre">sample3</span></code>.</p>
+<p>For <strong>both local and public data</strong>, identifiers used to recognize fastq files are the fastq read extensions (<code class="docutils literal notranslate"><span class="pre">R1</span></code> and <code class="docutils literal notranslate"><span class="pre">R2</span></code> by default) and the fastq suffix (<code class="docutils literal notranslate"><span class="pre">fastq</span></code> by default).
+The directory where seq2science will store (or look for) fastqs is determined by the <code class="docutils literal notranslate"><span class="pre">fastq_dir</span></code> config option.
+In the example above, the <code class="docutils literal notranslate"><span class="pre">fastq_dir</span></code> should be set to <code class="docutils literal notranslate"><span class="pre">/home/user/myfastqs</span></code>.
+These setting can be changed in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>.</p>
 </div>
 <div class="section" id="assembly-column">
 <h3>Assembly column<a class="headerlink" href="#assembly-column" title="Permalink to this headline">¶</a></h3>
-<p>This column is necessary for all workflows, except the <em>downloading samples</em> workflow. Here you simply add the name of the assembly you want your samples aligned against and the workflow will download it for you.</p>
+<p>Here you simply add the name of the assembly you want your samples aligned against and the workflow will download it for you.</p>
 </div>
 <div class="section" id="descriptive-name-column">
 <h3>Descriptive_name column<a class="headerlink" href="#descriptive-name-column" title="Permalink to this headline">¶</a></h3>
-<p>The descriptive<em>name column is used for the trackhub and multiqc report. In the trackhub your tracks will be called after the descriptive name, and in the multiqc report there will be a button to rename your samples after this column. The descriptive name can not contain ‘-‘ characters, but underscores ‘</em>’ are allowed.</p>
+<p>The descriptive_name column is used for the trackhub and multiqc report.
+In the trackhub your tracks will be called after the descriptive name, and in the multiqc report there will be a button to rename your samples after this column.
+The descriptive name can not contain ‘-‘ characters, but underscores ‘_’ are allowed.</p>
 </div>
 <div class="section" id="technical-replicate-column">
 <h3>Technical_replicate column<a class="headerlink" href="#technical-replicate-column" title="Permalink to this headline">¶</a></h3>
