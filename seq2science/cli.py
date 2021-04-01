@@ -18,8 +18,6 @@ except ImportError:
     pass
 
 
-
-
 def _import():
     """
     this function serves that we can do imports as late as possible, for faster auto-completion
@@ -121,6 +119,13 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         help="The path to the directory where to initialise the config and samples files.",
     )
 
+    init.add_argument(
+        "-f", "--force",
+        default=False,
+        help="Overwrite existing samples.tsv and config.yaml silently.",
+        action="store_true",
+    )
+
     global core_arg
     core_arg = run.add_argument(
         "-j", "--cores",
@@ -159,6 +164,11 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
     run.add_argument(
         "--unlock",
         help="Remove a lock on the working directory.",
+        action='store_true'
+    )
+    explain.add_argument(
+        "--hyperref",
+        help="Print urls as html hyperref",
         action='store_true'
     )
     # run/explain arguments
@@ -205,7 +215,7 @@ def _init(args, workflows_dir, config_path):
         dest = os.path.join(os.path.dirname(config_path), file)
 
         copy_file = True
-        if os.path.exists(dest):
+        if os.path.exists(dest) and args.force is False:
             choices = {"yes": True, "y": True, "no": False, "n": False}
 
             sys.stdout.write(
@@ -304,14 +314,17 @@ def _run(args, base_dir, workflows_dir, config_path):
     if "cluster" in parsed_args and not "nodes" in parsed_args:
         parsed_args["nodes"] = parsed_args["cores"]
 
+    # store how seq2science was called
+    parsed_args["config"]["cli_call"] = sys.argv
+
     core_parser(parsed_args)
     parsed_args["config"].update({"cores": parsed_args["cores"]})
     resource_parser(parsed_args)
 
     # run snakemake/seq2science
     #   1. pretty welcome message
-    setup_seq2science_logger()
-    log_welcome(logger, parsed_args)
+    setup_seq2science_logger(parsed_args)
+    log_welcome(logger)
     if not args.skip_rerun or args.unlock:
         #   2. start a dryrun checking which files need to be created, and check if
         #      any params changed, which means we have to remove those files and
@@ -350,10 +363,9 @@ def _run(args, base_dir, workflows_dir, config_path):
     logger.printreason = parsed_args["printreason"]
     logger.stream_handler.setStream(sys.stdout)
     parsed_args["config"]["no_config_log"] = True
+
     #   5. start the "real" run where jobs actually get started
     exit_code = snakemake.snakemake(**parsed_args)
-
-    #   6. start the "real" run where jobs actually get started
     sys.exit(0) if exit_code else sys.exit(1)
 
 
@@ -390,10 +402,15 @@ def _explain(args, base_dir, workflows_dir, config_path):
 
     # cores
     parsed_args["cores"] = 999
+    parsed_args["config"]["hyperref"] = args.hyperref
 
     # starting message
-    rules_used = {"start": f"\nPreprocessing of reads was done automatically with workflow tool "
-                           f"seq2science v{seq2science.__version__} (https://doi.org/10.5281/zenodo.3921913)."}
+    if args.hyperref:
+        rules_used = {"start": f"\nPreprocessing of reads was done automatically with workflow tool "
+                               f"<a href=https://doi.org/10.5281/zenodo.3921913>seq2science v{seq2science.__version__}</a>."}
+    else:
+        rules_used = {"start": f"\nPreprocessing of reads was done automatically with workflow tool "
+                               f"seq2science v{seq2science.__version__} (https://doi.org/10.5281/zenodo.3921913)."}
 
     def log_handler(log):
         if log["level"] == "job_info" and "msg" in log and log["msg"] is not None and log["name"] not in rules_used:
@@ -410,7 +427,10 @@ def _explain(args, base_dir, workflows_dir, config_path):
         print(" ".join(rules_used.values()))
         sys.exit(0)
     else:
-        print("Oh no! Something went wrong... Please let us know: https://github.com/vanheeringen-lab/seq2science/issues ")
+        print(
+            "\nOh no! Something went wrong... "
+            "Please let us know: https://github.com/vanheeringen-lab/seq2science/issues "
+        )
         sys.exit(1)
 
 
@@ -546,13 +566,15 @@ def resource_parser(parsed_args):
         parsed_args["resources"]["mem_gb"] = round(mem)
 
 
-def setup_seq2science_logger():
-    seq2science_logfile = os.path.abspath(
-        "seq2science."
-        + datetime.datetime.now().isoformat().replace(":", "")
-        + ".log"
-    )
+def setup_seq2science_logger(parsed_args):
     setup_logger()
-    logger.logfile = seq2science_logfile
-    logger.logfile_handler = _logging.FileHandler(seq2science_logfile)
-    logger.logger.addHandler(logger.logfile_handler)
+    if not parsed_args["dryrun"]:
+        seq2science_logfile = os.path.abspath(
+            "seq2science."
+            + datetime.datetime.now().isoformat().replace(":", "")
+            + ".log"
+        )
+        logger.logfile = seq2science_logfile
+        logger.get_logfile = lambda: seq2science_logfile
+        logger.logfile_handler = _logging.FileHandler(seq2science_logfile)
+        logger.logger.addHandler(logger.logfile_handler)

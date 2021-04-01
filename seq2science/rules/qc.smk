@@ -103,7 +103,7 @@ if config["trimmer"] == "trimgalore":
         params:
             f"{config['qc_dir']}/fastqc/"
         conda:
-            "../envs/qc.yaml"
+            "../envs/fastqc.yaml"
         priority: -10
         shell:
             """
@@ -482,19 +482,57 @@ rule multiqc_header_info:
     """
     output:
         temp(expand('{qc_dir}/header_info.yaml', **config))
+    params:
+        config={k: v for k, v in config.items() if k not in ["no_config_log", "cli_call"]}  # helps resolve changed config options, ignore no_config_log
     run:
         import os
         from datetime import date
 
-        cwd = os.getcwd().split('/')[-1]
-        mail = config.get('email', 'none@provided.com')
+        workflow = get_workflow().replace("_", "-")
         date = date.today().strftime("%B %d, %Y")
+        project = os.getcwd().split('/')[-1]
+        mail = config.get('email', 'none@provided.com')
 
         with open(output[0], "w") as f:
             f.write(f"report_header_info:\n"
+                    f"    - Workflow: '{workflow}'\n"
+                    f"    - Date: '{date}'\n"
+                    f"    - Project: '{project}'\n"
                     f"    - Contact E-mail: '{mail}'\n"
-                    f"    - Workflow: '{cwd}'\n"
-                    f"    - Date: '{date}'\n")
+            )
+
+
+rule multiqc_explain:
+    output:
+        expand('{log_dir}/workflow_explanation_mqc.html', **config)
+    params:
+        config={k: v for k, v in config.items() if k not in ["no_config_log", "cli_call"]}  # helps resolve changed config options, ignore no_config_log
+    run:
+        import subprocess
+
+        # make a copy of the cli_call
+        cli_call = config["cli_call"][:]
+
+        # convert run into explain
+        cli_call[1] = "explain"
+
+        # remove run specific commands
+        cli_call = [arg for arg in cli_call if arg not in {"--unlock", "--rerun-incomplete", "-k", "--keep-going", "--skip-rerun", "--reason", "-r", "--dryrun", "-n"}]
+        cores_index = cli_call.index("--cores" if "--cores" in cli_call else "-j")
+        del cli_call[cores_index:cores_index+2]
+        
+        # make sure to get pretty hyperrefs
+        cli_call.append("--hyperref")
+
+        result = subprocess.run(cli_call, stdout=subprocess.PIPE)
+        explanation = result.stdout.decode('utf-8')
+
+        with open(output[0], "w") as f:
+            f.write("<!--\n" 
+                    "id: 'explanation'\n" 
+                    "section_name: 'Workflow explanation'\n" 
+                    "-->\n"
+                    f"{explanation}")
 
 
 rule multiqc_rename_buttons:
@@ -535,7 +573,7 @@ rule multiqc_samplesconfig:
         config_used=len(workflow.overwrite_configfiles) > 0,
         configfile=workflow.overwrite_configfiles[-1],
         sanitized_samples=sanitized_samples,  # helps resolve changed config options
-        config={k: v for k, v in config.items() if k != "no_config_log"}  # helps resolve changed config options, ignore no_config_log
+        config={k: v for k, v in config.items() if k not in ["no_config_log", "cli_call"]}  # helps resolve changed config options, ignore no_config_log
     conda:
         "../envs/htmltable.yaml"
     script:
@@ -566,7 +604,8 @@ def get_qc_files(wildcards):
     assert 'quality_control' in globals(), "When trying to generate multiqc output, make sure that the "\
                                            "variable 'quality_control' exists and contains all the "\
                                            "relevant quality control functions."
-    qc['files'] = set([expand('{qc_dir}/samplesconfig_mqc.html', **config)[0]])
+    qc['files'] = set(expand(['{qc_dir}/samplesconfig_mqc.html',
+                              '{log_dir}/workflow_explanation_mqc.html'], **config))
 
     # trimming qc on individual samples
     if get_trimming_qc in quality_control:
@@ -597,8 +636,8 @@ def get_qc_files(wildcards):
             for trep in treps[treps['assembly'] == ori_assembly(wildcards.assembly)].index:
                 qc['files'].update(get_rna_qc(trep))
 
-        # add dupRadar plots
-        if "REMOVE_DUPLICATES=true" not in config.get("markduplicates",""):
+        # add dupRadar plots if BAMs are made
+        if "REMOVE_DUPLICATES=true" not in config.get("markduplicates","") and not (config.get('quantifier', '') == 'salmon' and config.get('create_trackhub') == False):
             qc['files'].update(expand("{qc_dir}/dupRadar/{{assembly}}-dupRadar_mqc.png",**config))
 
         if len(treps.index) > 2:
@@ -651,7 +690,7 @@ rule multiqc:
     log:
         expand("{log_dir}/multiqc_{{assembly}}.log", **config)
     conda:
-        "../envs/qc.yaml"
+        "../envs/multiqc.yaml"
     shell:
         """
         multiqc $(< {input.files}) -o {params.dir} -n multiqc_{wildcards.assembly}.html \
@@ -670,23 +709,26 @@ rule multiqc:
 def get_trimming_qc(sample):
     if config["trimmer"] == "trimgalore":
         if get_workflow() == "scatac_seq":
-            # we (at least for now) do not was fastqc for each single cell before and after trimming (too much for MultiQC).
+            # we (at least for now) do not want fastqc for each single cell before and after trimming (too much for MultiQC).
             # still something to think about to add later, since that might be a good quality check though.
-            return expand(f"{{qc_dir}}/fastqc/{sample}_{{fqext}}_trimmed_fastqc.zip", **config)
+            if sampledict[sample]['layout'] == 'SINGLE':
+                return expand(f"{{qc_dir}}/fastqc/{sample}_trimmed_fastqc.zip", **config)
+            else:
+                return expand(f"{{qc_dir}}/fastqc/{sample}_{{fqext}}_trimmed_fastqc.zip", **config)
         elif get_workflow() == "scrna_seq":
             # single-cell RNA seq does weird things with barcodes in the fastq file
             # therefore we can not just always start trimming paired-end even though
             # the samples are paired-end (ish)
             read_id = get_bustools_rid(config.get("count"))
             if read_id == 0:
-                return expand([f"{{qc_dir}}/fastqc/{sample}_R1_fastqc.zip",
-                               f"{{qc_dir}}/fastqc/{sample}_R1_trimmed_fastqc.zip",
-                               f"{{qc_dir}}/trimming/{sample}_R1.{{fqsuffix}}.gz_trimming_report.txt"],
+                return expand([f"{{qc_dir}}/fastqc/{sample}_{{fqext1}}_fastqc.zip",
+                               f"{{qc_dir}}/fastqc/{sample}_{{fqext1}}_trimmed_fastqc.zip",
+                               f"{{qc_dir}}/trimming/{sample}_{{fqext1}}.{{fqsuffix}}.gz_trimming_report.txt"],
                               **config)
             elif read_id == 1:
-                return expand([f"{{qc_dir}}/fastqc/{sample}_R2_fastqc.zip",
-                            f"{{qc_dir}}/fastqc/{sample}_R2_trimmed_fastqc.zip",
-                            f"{{qc_dir}}/trimming/{sample}_R2.{{fqsuffix}}.gz_trimming_report.txt"],
+                return expand([f"{{qc_dir}}/fastqc/{sample}_{{fqext2}}_fastqc.zip",
+                            f"{{qc_dir}}/fastqc/{sample}_{{fqext2}}_trimmed_fastqc.zip",
+                            f"{{qc_dir}}/trimming/{sample}_{{fqext2}}.{{fqsuffix}}.gz_trimming_report.txt"],
                             **config)
             else:
                 raise NotImplementedError
@@ -706,9 +748,9 @@ def get_trimming_qc(sample):
         if get_workflow() == "scrna_seq": 
             read_id = get_bustools_rid(config.get("count"))
             if read_id == 0:
-                return expand(f"{{qc_dir}}/trimming/{sample}_R1.fastp.json", **config)
+                return expand(f"{{qc_dir}}/trimming/{sample}_{{fqext1}}.fastp.json", **config)
             elif read_id == 1:
-                return expand(f"{{qc_dir}}/trimming/{sample}_R2.fastp.json", **config)
+                return expand(f"{{qc_dir}}/trimming/{sample}_{{fqext2}}.fastp.json", **config)
             else:
                 raise NotImplementedError
         # not sure how fastp should work with scatac here

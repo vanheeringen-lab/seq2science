@@ -8,6 +8,32 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- added CLI functionality to the deseq2.R script (try it with `Rscript /path/to/deseq2.R --help`!)
+- --force flag to seq2science init to automatically overwrite existing samples.tsv and config.yaml
+- local fastqs with Illumina's '_100' are now recognized
+- added the workflow explanation to the multiqc report
+
+### Changed
+
+- config checks: all keys converted to lower case & duplicate keys throw an exception
+- MultiQC updated to v1.10
+- Link to seq2science log instead of snakemake log in final message
+
+### Fixed
+
+- Issue when filtering a combination of single-end and paired-end reads on template length
+- explain functionality testing
+- scATAC can properly use SE fastqs
+- scRNA can use fqexts other than R1/R2
+- fastq renaming works again
+- added missing schemas to extended docs
+
+### Fixed
+
+- Bug with edgeR.upperquartile normalization. Now makes everything NaN, so pipeline finishes succesfully.
+
 ## [0.5.0] - 2021-03-03
 
 Version 0.5.0 brings many quality of life improvements, such as seq2science automatically inferring what needs to be re-run when changing the samples.tsv and/or the config.yaml, differential peak analysis for chip/atac workflows and tab-completion!
