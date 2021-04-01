@@ -324,7 +324,7 @@ def _run(args, base_dir, workflows_dir, config_path):
     # run snakemake/seq2science
     #   1. pretty welcome message
     setup_seq2science_logger(parsed_args)
-    log_welcome(logger, parsed_args)
+    log_welcome(logger)
     if not args.skip_rerun or args.unlock:
         #   2. start a dryrun checking which files need to be created, and check if
         #      any params changed, which means we have to remove those files and
