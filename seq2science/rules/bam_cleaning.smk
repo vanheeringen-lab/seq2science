@@ -92,6 +92,7 @@ rule sieve_bam:
         * remove multimappers
         * remove reads inside the blacklist
         * filter paired-end reads on transcript length
+     
     """
     input:
         bam=rules.samtools_presort.output,

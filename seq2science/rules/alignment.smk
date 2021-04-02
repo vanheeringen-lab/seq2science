@@ -346,15 +346,15 @@ elif config["aligner"] == "star":
         Make a genome index for STAR.
 
         Troubleshooting:
-        1) sufficient RAM & disk space?
-        2) increase the RAM available (--limitGenomeGenerateRAM)
-        3) reduce the number of threads (seq2science -j 5)
-        4) reduce accuracy (--genomeSAsparseD 2)
+        1. sufficient RAM & disk space?
+        2. increase the RAM available (--limitGenomeGenerateRAM)
+        3. reduce the number of threads (seq2science -j 5)
+        4. reduce accuracy (--genomeSAsparseD 2)
 
-        In your config.yaml:
-        aligner:
-            star:
-                index: --limitGenomeGenerateRAM 60000000000 --genomeSAsparseD 1
+        In your config.yaml, add:
+         aligner:
+          star:
+           index: --limitGenomeGenerateRAM 60000000000 --genomeSAsparseD 1
         """
         input:
             genome=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
