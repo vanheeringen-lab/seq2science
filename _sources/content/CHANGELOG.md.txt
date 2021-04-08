@@ -31,9 +31,6 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - scRNA can use fqexts other than R1/R2
 - fastq renaming works again
 - added missing schemas to extended docs
-
-### Fixed
-
 - Bug with edgeR.upperquartile normalization. Now makes everything NaN, so pipeline finishes succesfully.
 
 ## [0.5.0] - 2021-03-03

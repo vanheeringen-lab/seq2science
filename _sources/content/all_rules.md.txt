@@ -798,6 +798,7 @@ This rule does (at least) one of these:
 * remove multimappers
 * remove reads inside the blacklist
 * filter paired-end reads on transcript length
+ 
 ```
 samtools view -h {params.prim_align} {params.minqual} {params.blacklist} \
 {input.bam} | {params.atacshift} {params.sizesieve}
@@ -889,15 +890,15 @@ find {log} -type f ! -name Log* -exec mv {{}} {output.dir} \;
 Make a genome index for STAR.
 
 Troubleshooting:
-1) sufficient RAM & disk space?
-2) increase the RAM available (--limitGenomeGenerateRAM)
-3) reduce the number of threads (seq2science -j 5)
-4) reduce accuracy (--genomeSAsparseD 2)
+1. sufficient RAM & disk space?
+2. increase the RAM available (--limitGenomeGenerateRAM)
+3. reduce the number of threads (seq2science -j 5)
+4. reduce accuracy (--genomeSAsparseD 2)
 
-In your config.yaml:
-aligner:
-star:
-index: --limitGenomeGenerateRAM 60000000000 --genomeSAsparseD 1
+In your config.yaml, add:
+ aligner:
+  star:
+   index: --limitGenomeGenerateRAM 60000000000 --genomeSAsparseD 1
 ```
             function log2 {{
 local x=0
@@ -945,8 +946,8 @@ My Data > Track Hubs > My Hubs
 #### trackhub_index
 Generate a searchable annotation & index for each assembly
 
-sources: https://genome.ucsc.edu/goldenPath/help/hubQuickStartSearch.html
- https://www.biostars.org/p/272649/
+sources: https://genome.ucsc.edu/goldenPath/help/hubQuickStartSearch.html, 
+https://www.biostars.org/p/272649/
 ```
 # generate annotation files
 gtfToGenePred -allErrors -ignoreGroupsWithoutExons -geneNameAsName2 -genePredExt {input.gtf} {output.genePred} -infoOut={output.info} >> {log} 2>&1
