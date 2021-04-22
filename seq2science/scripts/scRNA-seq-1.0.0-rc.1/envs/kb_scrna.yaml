@@ -1,0 +1,13 @@
+name: kb_scrna
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python>=3.7
+  - pip
+  - pip:
+    - kb-python
+
+#In a terminal with conda, type
+#$conda env create -f /home/snabel/conda_env_files/kb_scrna.yaml

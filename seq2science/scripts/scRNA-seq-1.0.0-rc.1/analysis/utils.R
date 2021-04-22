@@ -89,7 +89,6 @@ extract_meta_data <- function(cell.names=NULL, group_id="library", meta_cols=NUL
   phenodata <- data.frame(row.names=cell.names)
   phenodata$names <- row.names(phenodata)
   phenodata <- separate(phenodata, col = "names", into = meta_cols, sep = "_")
-  ncol_meta <- ncol(phenodata)
   ## Replace by tinyverse using the columns mentioned with group_id
   if (add.id.col){
     phenodata$well <-  gsub(".*_(.*)", "\\1", cell.names)
@@ -103,14 +102,14 @@ extract_meta_data <- function(cell.names=NULL, group_id="library", meta_cols=NUL
   pheno_matched <- phenodata[rownames(phenodata) %in% cell.names,]
   # Matching phenodata with the dataset ordering
   pheno_ordered <- pheno_matched[match(cell.names,rownames(pheno_matched)),]
-  return(list(pheno_ordered, pheno_matched, ncol_meta))
+  return(pheno_ordered)
 }
 
 #Add basic meta data based on sample
 read_meta_basic <- function(sample_folders=NULL, cell.names=NULL) {
   meta.basic <- data.frame(matrix(NA, nrow = length(cell.names), ncol = 2))
   rownames(meta.basic) <- cell.names
-  colnames(meta.basic) <- c("sample","library")
+  colnames(meta.basic) <- c("combined_id","library")
   for (s in 1:length(sample_folders)){
     data <- sample_folders[s]
     match <- grepl(data, rownames(meta.basic))

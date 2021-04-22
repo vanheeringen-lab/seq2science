@@ -7,35 +7,35 @@ params:
     value: '384plate'
   kb.dir: 
     label: "kb.dir -- directory containing kb-python output"
-    value: ""
+    value: /home/user/experiment/results/kallistobus/
   barcode_file: 
     label: "barcode_file -- .tab delimited file with 2-col layout for plate based methods (with DNA barcode and well-id)"
-    value: ""
+    value: /home/user/experiment/barcode_384.tab
   mt_genes_file:
     label: "mt_genes_file -- .txt file containing one column with mitchondrial genes"
-    value: ""
+    value: /home/user/experiment/genomes/genome_addons/MT_genes.txt
   meta_data:
     label: "meta_data -- .csv file containing cell meta data. Alternative for extract_meta_columns"
-    value: ""
+    value: "" #../data/examples/sample_meta_example.csv
   meta_type:
       label: "meta_data_level -- type of meta data"
       choices: ["sample", "cell","names","default"]
-      value: default       
+      value: names      
   extract_meta_columns: 
     label: "extract_meta_columns -- extracts meta data from cell names (name fields separated by '_'). Alternative for meta_data."
-    value:  "" 
+    value:  "genome,spike-in,reporter,method,lineage,timepoint,replicate,library,cell_id"
   resultsdir:
      label: "resultsdir -- output directory for qc files" 
-     value: ""
+     value: ../output
   meta_group_id: 
       label: "meta_group_id -- combine meta data fields for plotting, creates variable combined_id (separate multiple values by comma)" 
-      value: library
+      value: timepoint,lineage,method
   lab_col: 
       label: "lab_col -- meta data field used for QC plot labels (for instance: combined_id)"
       value: library
   umap_cols: 
       label: "umap_cols -- meta data fields used for Seurat's RunUMAP plot labels (separate multiple values by comma)"
-      value: library
+      value: library,timepoint,combined_id
   confounders_to_test: 
       label: "confounders_to_test -- meta data variables used for confounder testing (separate multiple values by comma)"
       value: library
@@ -62,10 +62,10 @@ params:
       value: 50
   gene_tresh: 
       label: "gene_tresh -- gene filter: threshold for genes considered expressed"
-      value: 0
+      value: 1
   amount_cells_expr: 
       label: "amount_cells_expr -- gene filter: threshold for minimal amount of cells a gene should be expressed in"
-      value: 0
+      value: 2
   total_counts_tresh: 
       label: "total_counts_tresh -- cell filter: threshold for minimal amount of UMI counts detected in a cell"
       value: 1000
@@ -78,37 +78,35 @@ params:
   cell_id_filter_option: 
       label: "cell_id_subset_filter -- filter options for cell_id_subset" 
       choices: ['in', 'out', 'none']
-      value: in    
+      value: in   
   cell_id_filter_pattern: 
       label: "cell_id_subset -- cell ids to include/exclude based on cell_id_subset_filter"
-      value: ""    
+      value: "EHT"  
   pcs_for_overview:
       label: "pcs_for_overview -- principal components for overview in combined umap plot, runs UMAP for PC 1-value"
-      value: '10,20,30,40,50'
+      value: '5,10,13,20,30,40'
   pcs_max_hvg: 
       label: "pcs_max_hvg -- max number of principal components to visualize"
       value: 70
   vars_to_regress_sf:
       label: "vars_to_regress -- variables to regress out (spliced, for example: nCount_sf,nFeature_sf)"
-      value:  nCount_sf
+      value:  nCount_sf,nFeature_sf
   vars_to_regress_uf:
       label: "vars_to_regress -- variables to regress out (unspliced, for example: nCount_uf,nFeature_uf))"
-      value:  nCount_uf
+      value:  nCount_uf,nFeature_uf
   old_col_pattern: 
       label: "old_col_pattern -- old column substring to replace by new_column_pattern"
       value: ""
   new_col_pattern:
       label: "new_col_pattern -- new column substring to replace old_column_pattern"
       value: ""
-
-
 output:
   html_document:
     df_print: paged
+    code_folding: hide
     toc: yes
-    toc_depth: 2
-    number_sections: true
----
+    toc_depth: '2'
+---    
 ```{r loading libraries, include=FALSE}
 #Custom listings markdown template: https://stackoverflow.com/questions/21402157/colour-for-r-code-chunk-in-listings-package/21468454
 
@@ -139,29 +137,21 @@ library(scran)
 library(RColorBrewer)
 library(plot3D)
 #Defaults
-vars_to_regress_sf = NULL
-vars_to_regress_uf = NULL
 remove_bc = FALSE
 ## Small sanity checks
 if (params$method == "384plate") {
   remove_bc = TRUE
 }
-if (params$vars_to_regress_sf != "") {
-  vars_to_regress_sf = unlist(strsplit(params$vars_to_regress_sf,","))
-}
-if (params$vars_to_regress_uf != "") {
-  vars_to_regress_uf = unlist(strsplit(params$vars_to_regress_uf,","))
-}
+vars_to_regress_sf = as.vector(strsplit(params$vars_to_regress_sf,",")[[1]])
+vars_to_regress_uf = as.vector(strsplit(params$vars_to_regress_uf,",")[[1]])
 ## Unlist parameters ##
-label.vector = unlist(strsplit(params$umap_cols,","))
-# Unique combined ID per plate, for visualization purposes
-extract_meta_columns = unlist(strsplit(params$extract_meta_columns,","))
+label.vector = as.vector(strsplit(params$umap_cols,",")[[1]])
 # Combined columns for plotting in meta data
-meta_group_id = unlist(strsplit(params$meta_group_id,","))
+meta_group_id = as.vector(strsplit(params$meta_group_id,",")[[1]])
 # PCs used for different UMAP representations
-pcs_for_overview = as.integer(unlist(strsplit(params$pcs_for_overview,",")))
+pcs_for_overview = as.vector(strsplit(params$pcs_for_overview,",")[[1]])
 #Checking variability explained by confounding factors
-confounders_to_test = unlist(strsplit(params$confounders_to_test,","))
+confounders_to_test = as.vector(strsplit(params$confounders_to_test,",")[[1]])
 ```
 ```{r writing params to yaml file}
 yaml::write_yaml(params, paste(params$resultsdir,"settings.yaml", sep="/"))
@@ -174,6 +164,8 @@ the profided thresholds.
 ----------------------------------------------------------------------
 
 ### Load the count matrix
+
+Loading all count matrices for the plates in `r params$kb.dir`.
 
 ```{r loading splice separated dataset, message=FALSE, warning=FALSE, eval=params$isvelo}
 ## Run when isvelo is set to TRUE ##
@@ -221,8 +213,8 @@ perc_spliced <- round((sum(unspliced.data.df)/(sum(spliced.data.df)+sum(unsplice
 sprintf("%s%% of the reads are unspliced",perc_spliced)
 # The default data.df will be the spliced dataset (shorter to type)
 ifelse(!identical(colnames(spliced.data.df), colnames(unspliced.data.df)),
-       stop("Different colnames between sf/uf"),
-       "Matching colnames sf/uf")
+       stop("Different colnames between spliced/unspliced matrix"),
+       "Matching colnames spliced/unspliced matrix")
 
 ```
 
@@ -241,7 +233,7 @@ if (params$cell_id_filter_option == "out"){
   data.df <- data.df[,!grepl(params$cell_id_filter_pattern, colnames(data.df)) == TRUE]
   sprintf("%s cells after filtering",length(colnames(data.df)))
 } else if (params$cell_id_filter_option == "in"){
-  print(paste0("Cells with ", params$cell_id_filter_pattern, "are kept."))
+  print(paste0("Cells with ", params$cell_id_filter_pattern, " are kept."))
   # filter cells based on the substring
   data.df <- data.df[,grepl(params$cell_id_filter_pattern, colnames(data.df)) == TRUE]
   sprintf("%s cells after filtering",length(colnames(data.df)))
@@ -274,45 +266,42 @@ all_samples <-  unique(gsub("_([^_]*)$", "", colnames(data.df)))
 if (params$meta_data != "" && params$meta_type == "sample") {
    phenodata <- read_meta_data(path = params$meta_data,
                                cell.names = colnames(data.df),
-                               group_id = params$meta_group_id,
+                               group_id = meta_group_id,
                                samples=all_samples)
                               
-   pheno_matched <-  phenodata
-   pheno_len <- ncol(phenodata)
+
   
 } else if (params$meta_data != "" && params$meta_type == "cell") {
    phenodata <- read_meta_data(path = params$meta_data,
                                cell.names = colnames(data.df),
-                               group_id = params$meta_group_id,
+                               group_id = meta_group_id,
                                samples=all_samples,
                                sample_meta=FALSE)
-   pheno_matched <-  phenodata
-   pheno_len <- ncol(phenodata)   
+
+   
    
    
 } else if(params$extract_meta_columns != "" && params$meta_type == "names" ) {
-  phenodata_all <- extract_meta_data(cell.names = colnames(data.df),
+  # Unique combined ID per plate, for visualization purposes
+  extract_meta_columns = as.vector(strsplit(params$extract_meta_columns,",")[[1]])
+  phenodata <- extract_meta_data(cell.names = colnames(data.df),
                                  group_id = meta_group_id, 
                                  meta_cols= extract_meta_columns)
-  phenodata <- phenodata_all[[1]]
-  pheno_matched <- phenodata_all[[2]]
-  pheno_len <- phenodata_all[[3]]
+
   
 } else {
   phenodata <- read_meta_basic(cell.names = colnames(data.df), sample_folders=all_samples)
-  pheno_len <- 1
-  pheno_matched <-  phenodata
-  
+
 }
-if (!identical(rownames(pheno_matched), colnames(spliced.data.df))) {
+if (!identical(rownames(phenodata), colnames(spliced.data.df))) {
      stop("meta-data row names and cell names are different!")
 }
-print("Writing meta data to file")
+print("Writing meta data to phenodata.csv file.")
 write.csv(phenodata, paste(params$resultsdir,"phenodata.csv", sep="/"), quote = F)
 ```
 ## Plate overviews
 
-Running QC over the plates: plotting the total amount of UMI (and ERCC) counts per wells of the 384-well plate. Allowing to check for any patterns accross the plate, of wells containing low counts. 
+Running QC over the plates: plotting the total amount of UMI (and ERCC) counts per well of the 384-well plate. Allowing to check for any patterns of wells containing low counts accross the plate. 
 
 ```{r Running plate QC, eval=params$method == "384plate"}
 ## Running plate QC: are there certain patterns?
@@ -327,7 +316,7 @@ dev.off()
 
 ## Create an object for confounder check
 
-The counts table along with the metadata of the cells are loaded within a SingleCellExperiment object. Scater will be used to look into the quality of the data, to help with filtering out unhealthy cells or lowly-expressed genes and for exploring potential confounding variables.
+The counts table along with the metadata of the cells are stored within a SingleCellExperiment object. Scater will be used to look into the quality of the data, to help with removing unhealthy cells or lowly-expressed genes and for exploring potential confounding variables.
 
 ```{r build SCE}
 ## df -> matrix + phenodata -> SCE
@@ -373,7 +362,7 @@ Use manually set minimum-count tresholds to keep the cells with enough count dep
 ```{r UMI histogram}
 # Looking at the total number of RNA molecules per sample
 # UMI counts were used for this experiment
-hist(sce$total_counts, breaks = 100)
+hist(sce$total_counts, breaks = 100, xlab = "Total amount of counts", main = "Histogram before filtering") 
 abline(v = params$total_counts_tresh, col = "red")
 ```
 
@@ -382,7 +371,7 @@ Histogram showing the total amounts of counts (x-axis) per proportion of cells (
 ```{r Features histogram}
 # Looking at the amount of unique genes per sample
 # This is the amount with ERCC included.
-hist(sce$total_features_by_counts, breaks = 100)
+hist(sce$total_features_by_counts, breaks = 100, xlab = "Total amount of features", main = "Histogram before filtering")
 abline(v= params$total_feat_tresh, col = "red")
 ```
 
@@ -390,9 +379,9 @@ Histogram showing the total amounts of genes (features) per proportion of cells.
 
 #### Plotting spike-in data
 
-Spike-ins and mitochondrial expression are used as another measure for quality of the cells. An overrepresentation of spikes and mitochondrial transcript might indicate a "unhealthy" cell or poor library. These plots show the percentage of spike-ins against the total amount of reads that are found in each cell.
+Spike-ins and mitochondrial expression are used as another measure for quality of the cells. An overrepresentation of spikes and mitochondrial transcript might indicate a "unhealthy" cell or poor library. These plots show the percentage of spike-ins against the total amount of reads found in each cell.
 
-A higher percentage of spike-in indicates a lower amount of endogenous genes found in the cell or in case of mitochondrial genes, a cell that was apoptotic. Also cells that are smaller will have relatively more spike-in allocated reads, and some cell types might have higher numbers of mitochondria, which is important to consider while setting this treshold.
+A higher percentage of spike-ins indicates a lower amount of endogenous transcripts found in the cell or in case of mitochondrial genes, a cell that was apoptotic. Also cells that are smaller will have relatively more spike-in allocated reads, and some cell types might have higher numbers of mitochondria, which is important to consider while setting this treshold.
 
 ```{r scatter plot - total counts/features}
 # Using Scater to plot percentages of spikes
@@ -416,11 +405,11 @@ multiplot( plotlist = plot.list, cols=2)
 
 ```
 
-Plotting the percentages of the spike-ins against the total amount of genes, each dot represents a cell. Color labels based on `r params$lab_col`.
+Plotting the percentages of the spike-ins against the total amount of genes, each dot represents a cell. Color labels based on `r params$lab_col`. (The color label can be changed with setting `lab_col`!)
 
 ### Filter cells
 
-Using the defined tresholds for filtering out the outliers in the dataset ( this is performed on the spliced dataset, in case of using Velocity).
+Using the defined tresholds for filtering out the outliers in the dataset (this is performed on the spliced matrix only, in case Velocity is used). (These tresholds can be changed by setting `filter_by_expr_features`, `filter_by_total_counts`, `filter_by_ercc` and `filter_by_mt`!)
 
 ```{r filter cells}
 # Filter library-size and the total amount of genes on the thresholds shown above in the histogram.
@@ -447,13 +436,22 @@ if (params$add.spikes.mt) {
 # Reduce filtered logis
 sce$use <- Reduce("&", Filter(Negate(is.null), filters))
 # Amount of cells removed per filtering:
+print("filtered by total number of genes")
 table(filters[["filter_by_expr_features"]])
+print("filtered by total number of counts")
 table(filters[["filter_by_total_counts"]])
+print("filtered by percentage of ERCC")
 table(filters[["filter_by_ercc"]])
+print("filtered by percentage of mitochondrial genes")
 table(filters[["filter_by_mt"]])
+```
+
+Dimensions of the dataset after filtering:
+
+```{r}
 # Result of manual filtering with set tresholds
 # TRUE are considered healthy cells:
-table(sce$use)
+print(paste0(table(sce$use)[1], " genes in ", table(sce$use)[2], "cells are left."))
 ```
 
 ```{r setting sce object after QC}
@@ -465,6 +463,8 @@ dim(sce_qc)
 ```
 
 ### Filter the genes
+
+Genes with an expression of at least `r params$gene_tresh` in at least `r params$amount_cells_expr` cells are kept in the dataset. (These tresholds can be changed by setting `gene_tresh` and `amount_cells_expr`!)
 
 ```{r filter genes,  linewidth=60}
 # Filter genes considered expressed: above a detection treshold for a minimal amount of cells
@@ -482,16 +482,16 @@ Plotting the distributions of the dataset before and after filtering.
 
 pdf(paste(params$resultsdir,"Histograms_before+aftercellsFiltering.pdf",sep="/"))
 par(mfrow=c(2,2))
-hist(sce$total_counts, breaks = 100)
+hist(sce$total_counts, breaks = 100, xlab = "Total amount of counts", main = "Histogram before filtering")
 abline(v = params$total_counts_tresh, col = "red")
 
-hist(sce$total_features_by_counts, breaks = 100)
+hist(sce$total_features_by_counts, breaks = 100, xlab = "Total amount of features", main = "Histogram before filtering")
 abline(v= params$total_feat_tresh, col = "red")
 
-hist(sce_qc$total_counts, breaks = 100)
+hist(sce_qc$total_counts, breaks = 100, xlab = "Total amount of counts", main = "Histogram after filtering")
 abline(v = params$total_counts_tresh, col = "red")
 
-hist(sce_qc$total_features_by_counts, breaks = 100)
+hist(sce_qc$total_features_by_counts, breaks = 100, xlab = "Total amount of features", main = "Histogram after filtering")
 abline(v= params$total_feat_tresh, col = "red")
 dev.off()
 
@@ -524,9 +524,9 @@ if (params$add.spikes.ercc) {
 }
 ```
 
-In the dataset `r genes_expressed` are considered expressed.
+In the dataset a total of `r genes_expressed` genes are considered expressed.
 
-## Check for confounding factors
+### Select endogenous genes
 
 PCA on the endogenous genes is used to evaluate the influence of the
 confounding factors.
@@ -540,8 +540,7 @@ table(endo_genes)
 sce_endo <- sce_qc[endo_genes,]
 reducedDim(sce_qc) <- NULL
 
-#plotExprsFreqVsMean(sce_endo)
-plotQC(sce_endo, type = "exprs-freq-vs-mean")
+plotExprsFreqVsMean(sce_endo)
 ```
 
 The reads consumed by the top 20 expressed genes:
@@ -550,23 +549,9 @@ The reads consumed by the top 20 expressed genes:
 plotHighestExprs(sce_endo, n = 20)
 ```
 
-Summary of filtering genes: Genes that had less than `r params$amount_cells_expr` cells with an expression less than `r params$gene_tresh`. For the genes in this dataset genes that were removed `r table(keep_feature)` genes were kept. Spikes: `r spikeNames(sce)` were saved in the dataset and used for quality metrics calculations.
+Summary of filtering genes: Genes that had less than `r params$amount_cells_expr` cells with an expression less than `r params$gene_tresh`. From this dataset `r table(keep_feature)[1]` genes were removed, `r table(keep_feature)[2]` genes were kept. Spikes: `r spikeNames(sce)` were saved in the dataset and used for quality metrics calculations.
 
-```{r PCA on raw data}
-# Plot the raw data without any transformation.
-sce_endo <- runPCA(
-  sce_endo,
-  ncomponents = 50,
-  exprs_values = "counts"
-)
-
-plotReducedDim(sce_endo, use_dimred = "PCA",
-               colour_by = params$lab_col,
-               size_by = "total_features_by_counts")
-
-```
-
-## Normalization in Seurat
+## Check for confounding factors
 
 First the Seurat object, 'seuset' is generated. Normalization is performed with the preferred method, after which the object will be stored again in a SCE object to let Scater calculate the influence of explanatory variables from the meta data and library size, before and after normalization.
 
@@ -575,7 +560,7 @@ seuset <-
   CreateSeuratObject(
   counts = counts(sce_endo),
   assay = "sf",
-  meta.data = as.data.frame(colData(sce_endo)[, 1:(pheno_len + 1)])
+  meta.data = as.data.frame(colData(sce_endo)[c(colnames(phenodata),"is_cell_control")])
   )
 ```
 
@@ -592,7 +577,7 @@ cat(res, sep = '\n')
 
 ## Visualizing PCs
 
-Various plots will be generated and saved to pdf files to explore the variability within the dataset, as well as the top correlating and anticorrelating genes per PC. These plots, together with the Jackstraw, Elbow plot and first UMAP overviews, will aid in choosing the right amount of principal components as input for further 2D dimensionality reduction (UMAP/tSNE).
+Various plots will be generated and saved to pdf files to explore the variability within the dataset, as well as the top correlating and anticorrelating genes per PC. These plots, together with the Jackstraw, Elbow plot and first UMAP overviews, will aid in choosing the appropriate amount of principal components as input for further 2D dimensionality reduction (UMAP/tSNE). (The maximum amount of PCs to take along for these steps, can be set with `pcs_max_hvg`!)
 
 ```{r PCA}
 pdf(paste(
@@ -647,7 +632,7 @@ JackStrawPlot(object = seuset.jack, dims = 1:params$pcs_max_hvg)
 This plot displays the standard deviations of the PCs.
 
 ```{r ElbowPlot}
-ElbowPlot(object = seuset, ndims = 35)
+ElbowPlot(object = seuset, ndims = params$pcs_max_hvg)
 ```
 
 ## Overview of different UMAPs with varying dimensional input
@@ -705,7 +690,3 @@ Based on the Heatmaps, Elbow plot (as well as the JackStraw indicating these are
 # Saving the dataset with the normalized, scaled and identified HVGs (stored in seuset.scnorm@var.genes).
 saveRDS(seuset, file= paste(params$resultsdir,"seusetv3_scnormHVG_velocity.rds", sep="/"))
 ```
-
-
-# Now use this file in the Velocyto.R dedicated Conda environment:
-# conda activate kb_scrna_velocyto2

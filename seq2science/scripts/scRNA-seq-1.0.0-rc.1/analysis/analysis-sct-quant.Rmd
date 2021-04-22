@@ -10,21 +10,21 @@ sct <- SCTransform(seuset, assay = "sf", variable.features.n=params$nhvg, vars.t
 
 ```{r}
 # looking into the dataset
-VlnPlot(
+feat_pl <- VlnPlot(
     object = sct,
     features = c("nFeature_sf"),
     group.by = params$lab_col
-)
-VlnPlot(
+) + ggtitle("Features before normalization")
+count_pl <- VlnPlot(
     object = sct,
     features = c("nCount_sf"),
     group.by = params$lab_col
-)
-FeatureScatter(
+) + ggtitle("Counts before normalization")
+feat_scatter <- FeatureScatter(
     object = sct,
     feature1 = "nCount_sf",
     feature2 = "nFeature_sf"
-)
+) + ggtitle("Feature scatter before normalization")
 ```
 
 ```{r plot SCT normalized counts/features}
@@ -33,22 +33,41 @@ FeatureScatter(
 # expression, multiplies this by a scale factor (10,000 by default), and
 # log-transforms the result.""
 # looking into the dataset
-VlnPlot(
+feat_pl_norm <- VlnPlot(
     object = sct,
     features = c("nFeature_SCT"),
     group.by = params$lab_col
-)
-VlnPlot(
+) + ggtitle("Features after normalization")
+count_pl_norm <- VlnPlot(
     object = sct,
     features = c("nCount_SCT"),
     group.by = params$lab_col
-)
-FeatureScatter(
+) + ggtitle("Counts after normalization")
+feat_scatter_norm <- FeatureScatter(
     object = sct,
     feature1 = "nCount_SCT",
     feature2 = "nFeature_SCT"
-)
+) + ggtitle("Feature scatter after normalization")
+
 saveRDS(seuset, paste(params$resultsdir,"seuset_qc+norm.rds",sep="/"))
+```
+
+```{r}
+## Visualizing metrics before and after normalization
+pdf(
+  paste(
+  params$resultsdir,
+  "QCmetrics_before-after_normalization.pdf",
+  sep = "/"
+  ),
+  width = 10, height = 15)
+multiplot(feat_pl, count_pl, feat_scatter, 
+          feat_pl_norm, count_pl_norm, feat_scatter_norm, cols = 2)
+dev.off()
+
+multiplot(feat_pl, feat_pl_norm, cols = 1)
+multiplot(count_pl, feat_pl_norm, cols = 1)
+multiplot(feat_scatter, feat_scatter_norm, cols = 1)
 ```
 
 #### Check confounders before & after normalization

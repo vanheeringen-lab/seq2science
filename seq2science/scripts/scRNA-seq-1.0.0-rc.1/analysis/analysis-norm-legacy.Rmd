@@ -1,68 +1,92 @@
 ---
-title: "analysis-sct.Rmd"
+title: "Untitled"
 output: pdf_document
 ---
 
-```{r Perform SCTransform, warning=FALSE}
- ##Perform SCTransform
-sct <- SCTransform(seuset, assay = "sf", variable.features.n=params$nhvg, vars.to.regress = params$vars_to_regress_sf, verbose = FALSE)
 ```
+## Normalization in Seurat
+Make the seurat object, 'seuset'. In this step you could filter the cells
+again, these however already have been filtered before in 'table clean-up',
+where the genes were taken that have >2 cells that have an expression >1.
 
 ```{r}
 # looking into the dataset
-VlnPlot(
-    object = sct,
+feat_pl <- VlnPlot(
+    object = seuset,
     features = c("nFeature_sf"),
     group.by = params$lab_col
-)
-VlnPlot(
-    object = sct,
+) + ggtitle("Features before normalization")
+count_pl <- VlnPlot(
+    object = seuset,
     features = c("nCount_sf"),
     group.by = params$lab_col
-)
-FeatureScatter(
-    object = sct,
+) + ggtitle("Counts before normalization")
+feat_scatter <- FeatureScatter(
+    object = seuset,
     feature1 = "nCount_sf",
     feature2 = "nFeature_sf"
-)
+) + ggtitle("Feature scatter before normalization")
 ```
 
-```{r plot SCT normalized counts/features}
+```{r}
 # Seurat normalization: "a global-scaling normalization method LogNormalize that
 # normalizes the gene expression measurements for each cell by the total
 # expression, multiplies this by a scale factor (10,000 by default), and
 # log-transforms the result.""
+seu <- seuset
+seuset <- NormalizeData(
+    object = seuset,
+    normalization.method = "LogNormalize",
+    scale.factor = 10000
+)
 # looking into the dataset
-VlnPlot(
-    object = sct,
-    features = c("nFeature_SCT"),
+feat_pl_norm <- VlnPlot(
+    object = seuset,
+    features = c("nFeature_sf"),
     group.by = params$lab_col
-)
-VlnPlot(
-    object = sct,
-    features = c("nCount_SCT"),
+) + ggtitle("Features after normalization")
+count_pl_norm <- VlnPlot(
+    object = seuset,
+    features = c("nCount_sf"),
     group.by = params$lab_col
-)
-FeatureScatter(
-    object = sct,
-    feature1 = "nCount_SCT",
-    feature2 = "nFeature_SCT"
-)
+) + ggtitle("Counts after normalization")
+feat_scatter_norm <- FeatureScatter(
+    object = seuset,
+    feature1 = "nCount_sf",
+    feature2 = "nFeature_sf"
+) + ggtitle("Feature scatter after normalization")
 saveRDS(seuset, paste(params$resultsdir,"seuset_qc+norm.rds",sep="/"))
+```
+
+```{r}
+## Visualizing metrics before and after normalization
+pdf(
+  paste(
+  params$resultsdir,
+  "QCmetrics_before-after_normalization.pdf",
+  sep = "/"
+  ),
+  width = 10, height = 15)
+multiplot(feat_pl, count_pl, feat_scatter, 
+          feat_pl_norm, count_pl_norm, feat_scatter_norm, cols = 2)
+dev.off()
+
+multiplot(feat_pl, feat_pl_norm, cols = 1)
+multiplot(count_pl, feat_pl_norm, cols = 1)
+multiplot(feat_scatter, feat_scatter_norm, cols = 1)
 ```
 
 #### Check confounders before & after normalization
 
 ```{r seurat objects to sce}
 # Only take the entries that are matchable with the counttable entries:
-# Here we take the vst normalized and logp1 transformed counts from the SCT assay (data slot)
 filtered_cells <- intersect(rownames(phenodata), 
-                            colnames(sct@assays$SCT))
+                            colnames(seuset@assays$sf@data))
 pheno_matchedseuset <- phenodata[filtered_cells, ]
 pheno_orderedseuset <-
-pheno_matchedseuset[match(colnames(sct@assays$SCT),
+pheno_matchedseuset[match(colnames(seuset@assays$sf@data),
 rownames(pheno_matchedseuset)), ]
-count_matrixseuset <- as.matrix(sct@assays$SCT@data)
+count_matrixseuset <- as.matrix(seuset@assays$sf@data)
 sce_seunorm <-
 SingleCellExperiment(
 assays = list(counts = count_matrixseuset),
@@ -111,7 +135,8 @@ multiplot(p1, p2)
 ```
 
 
-```{r  running PCA on SCT normalized counts}
+```{r}
+# running PCA on the normalized counts
 sce_seunorm <- runPCA(
   sce_seunorm, ncomponents = 20,
   exprs_values = "counts"
@@ -119,18 +144,20 @@ sce_seunorm <- runPCA(
 ```
 
 
-```{r PCA plot after SCT normalization,  linewidth=60}
+```{r,  linewidth=60}
 # plotting again the PCA's on raw-transformed and normalized values
+assay(sce_endo, "logcounts_raw") <- log2(counts(sce_endo) + 1)
 # raw log-transformation.
-#tmp <- runPCA(sce_endo, ncomponents = 50, exprs_values = "logcounts_raw")
+tmp <- runPCA(sce_endo, ncomponents = 50, exprs_values = "logcounts_raw")
 # PCA plot after log2 transformation
-# plotPCA(tmp,
-#         colour_by = params$lab_col,
-#         size_by = "total_features_by_counts")
-# PCA plot after seurat normalization
-plotPCA(sce_seunorm,
+p1 <- plotPCA(tmp,
         colour_by = params$lab_col,
         size_by = "total_features_by_counts")
+# PCA plot after seurat normalization
+p2 <- plotPCA(sce_seunorm,
+        colour_by = params$lab_col,
+        size_by = "total_features_by_counts")
+multiplot(p1, p2, cols = 1)
 ```
 
 
@@ -138,14 +165,14 @@ plotPCA(sce_seunorm,
 
 Select the same cells and genes as in the spliced dataset
 
-```{r build unspliced assay}
+```{r build SCE 2}
 # df -> matrix -> SCE + phenodata
 cells_use <- colnames(sce_endo)
 genes_use <- rownames(sce_endo)
 sce_us <-
   SingleCellExperiment(
   assays = list(counts = unspliced.data.df),
-  colData = pheno_matched,
+  colData = phenodata,
   rowData = rownames(unspliced.data.df)
   )
 control_features_us <- vector("list", 0)
@@ -178,15 +205,15 @@ sce_usmatch <- calculateQCMetrics(
 # Arbitrary thresholds:
 # Looking at the total number of RNA molecules per sample
 # UMI counts were used for this experiment
-hist(sce_us$total_counts, breaks = 100)
+hist(sce_us$total_counts, breaks = 100, xlab = "Total amount of counts", main = "Histogram before filtering")
 abline(v = params$total_counts_tresh, col = "red")
 # Looking at the amount of unique genes per sample
 # This is the amount with ERCC included.
-hist(sce_us$total_features_by_counts, breaks = 100)
+hist(sce_us$total_features_by_counts, breaks = 100, xlab = "Total amount of features", main = "Histogram before filtering")
 abline(v= params$total_feat_tresh, col = "red")
-hist(sce_usmatch$total_counts, breaks = 100)
+hist(sce_usmatch$total_counts, breaks = 100, xlab = "Total amount of counts", main = "Histogram after filtering")
 abline(v = params$total_counts_tresh, col = "red")
-hist(sce_usmatch$total_features_by_counts, breaks = 100)
+hist(sce_usmatch$total_features_by_counts, breaks = 100, xlab = "Total amount of features", main = "Histogram after filtering")
 abline(v= params$total_feat_tresh, col = "red")
 pdf(
   paste(
@@ -196,48 +223,62 @@ pdf(
   )
   )
 par(mfrow=c(2,2))
-hist(sce_us$total_counts, breaks = 100)
+hist(sce_us$total_counts, breaks = 100, xlab = "Total amount of counts", main = "Histogram before filtering")
 abline(v = params$total_counts_tresh, col = "red")
-hist(sce_us$total_features_by_counts, breaks = 100)
+hist(sce_us$total_features_by_counts, breaks = 100, xlab = "Total amount of features", main = "Histogram before filtering")
 abline(v= params$total_feat_tresh, col = "red")
-hist(sce_usmatch$total_counts, breaks = 100)
+hist(sce_usmatch$total_counts, breaks = 100, xlab = "Total amount of counts", main = "Histogram after filtering")
 abline(v = params$total_counts_tresh, col = "red")
-hist(sce_usmatch$total_features_by_counts, breaks = 100)
+hist(sce_usmatch$total_features_by_counts, breaks = 100, xlab = "Total amount of features", main = "Histogram after filtering")
 abline(v= params$total_feat_tresh, col = "red")
 dev.off()
 ```
 ## Build Seurat object with unspliced and spliced assay
 
-```{r add unspliced assay to Seurat object, warning=FALSE}
+```{r}
 unspliced_match <- unspliced.data.df[genes_use,cells_use]
 unspliced_match <- as.matrix(unspliced_match)
-#Add unspliced assay to seuset object
-seuset[['uf']] <- CreateAssayObject(counts = unspliced_match)
+seu[["uf"]] <- CreateAssayObject(counts = unspliced_match)
+seu <- NormalizeData(
+    object = seu, assay = "sf",
+    normalization.method = "LogNormalize",
+    scale.factor = 10000
+)
+seu <- NormalizeData(
+    object = seu, assay = "uf",
+    normalization.method = "LogNormalize",
+    scale.factor = 10000
+)
 ```
 
-```{r perform SCTransform on unspliced assay , warning=FALSE}
-sct_uf <- SCTransform(seuset, assay = "uf", variable.features.n=params$nhvg, vars.to.regress = params$vars_to_regress_uf, verbose = FALSE)
-```
 
 ## Highly variable genes & Scaling of the gene expression values
 
-```{r print VariableFeatures SCTransform}
+```{r}
 # FindVariableFeatures plots the dispersion (= a normalized measure of
 # cell-to-cell variation), as a function of average expression for each gene. In
 # their tutorial the Satija lab uses the cut-off of 2000 genes.
+seu <- FindVariableFeatures(
+    object = seu, assay = "sf",
+    selection.method = "vst",
+    nfeatures = params$nhvg)
+seu <- FindVariableFeatures(
+    object = seu, assay = "uf",
+    selection.method = "vst",
+    nfeatures = params$nhvg)
 # top 10 most variable genes
-top20 <- head(VariableFeatures(sct, assay = "SCT"), 20)
-top20_uf <- head(VariableFeatures(sct_uf, assay = "SCT"), 20)
+top20 <- head(VariableFeatures(seu, assay = "sf"), 20)
+top20_uf <- head(VariableFeatures(seu, assay = "uf"), 20)
 # plot variable features with labels:
-plot1 <- VariableFeaturePlot(sct, assay="SCT")
+plot1 <- VariableFeaturePlot(seu)
 plot2 <- LabelPoints(plot = plot1, points = top20, repel = TRUE)
 plot2
-plot3 <- VariableFeaturePlot(sct_uf, assay = "SCT")
+plot3 <- VariableFeaturePlot(seu, assay = "uf")
 plot4 <- LabelPoints(plot = plot3, points = top20_uf, repel = TRUE)
 plot4
 # Preferable removing the genes that are highly expressed but with a low variance.
-length(x = sct@assays$SCT@var.features)
-#seu[["sf"]]@var.features[1:10]
+length(x = seu@assays$sf@var.features)
+seu[["sf"]]@var.features[1:10]
 ```
 
 ```{r scaling and regressing,  linewidth=60}
@@ -245,20 +286,30 @@ length(x = sct@assays$SCT@var.features)
 # using all the genes, could also select only the highly variable genes.
 # Optional regression is performed here.
 all.genes <- rownames(seuset)
+seu <- ScaleData(
+    object = seu,  vars.to.regress = vars_to_regress_sf,
+    assay = "sf",
+    features = all.genes
+)
+seu <- ScaleData(
+    object = seu,  vars.to.regress =  vars_to_regress_uf,
+    assay = "uf",
+    features = all.genes
+)
 ```
 
 ## Running PCA analysis on the scaled data
 ```{r running PCA}
-#seuset <- seu
-#rm(seu)
-#DefaultAssay(seuset) <- "sf"
+seuset <- seu
+rm(seu)
+DefaultAssay(seuset) <- "sf"
 seuset <- RunPCA(
-    object = sct,
-    features = VariableFeatures(object = sct),
+    object = seuset,
+    features = VariableFeatures(object = seuset),
     npcs = params$pcs_max_hvg,
     ndims.print = 1:5,
     nfeatures.print = 5
 )
-length(sct@assays$SCT@var.features)
-length(sct_uf@assays$SCT@var.features)
+length(seuset[["sf"]]@var.features)
+length(seuset[["uf"]]@var.features)
 ```
