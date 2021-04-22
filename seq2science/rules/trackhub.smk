@@ -175,8 +175,8 @@ rule trackhub_index:
     """
     Generate a searchable annotation & index for each assembly
 
-    sources: https://genome.ucsc.edu/goldenPath/help/hubQuickStartSearch.html
-             https://www.biostars.org/p/272649/
+    sources: https://genome.ucsc.edu/goldenPath/help/hubQuickStartSearch.html, 
+    https://www.biostars.org/p/272649/
     """
     input:
         sizes=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),

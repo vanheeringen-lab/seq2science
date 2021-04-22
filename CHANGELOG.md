@@ -8,12 +8,15 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+## [0.5.1] - 2021-04-01
+
 ### Added
 
 - added rule for scRNA post-processing R Markdown for plate/droplet based scRNA protocols (experimental)
 - added CLI functionality to the deseq2.R script (try it with `Rscript /path/to/deseq2.R --help`!)
 - --force flag to seq2science init to automatically overwrite existing samples.tsv and config.yaml
 - local fastqs with Illumina's '_100' are now recognized
+- added the workflow explanation to the multiqc report
 
 ### Changed
 
@@ -29,9 +32,6 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - scRNA can use fqexts other than R1/R2
 - fastq renaming works again
 - added missing schemas to extended docs
-
-### Fixed
-
 - Bug with edgeR.upperquartile normalization. Now makes everything NaN, so pipeline finishes succesfully.
 
 ## [0.5.0] - 2021-03-03
@@ -361,7 +361,8 @@ Many minor bug- and quality of life fixes.
 ## [0.0.0] - 2020-06-11
 First release of seq2science!
 
-[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/master...v0.4.2
+[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/master...v0.5.1
+[0.5.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.1...v0.5.0
 [0.5.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.0...v0.4.3
 [0.4.3]: https://github.com/vanheeringen-lab/seq2science/compare/v0.4.3...v0.4.2
 [0.4.2]: https://github.com/vanheeringen-lab/seq2science/compare/v0.4.2...v0.4.1
