@@ -267,7 +267,6 @@ elif config["quantifier"] == "kallistobus":
         output:
             html=f"{config['result_dir']}/seurat/{{quantifier}}/{{assembly}}/kb_seurat_pp.html",
             qc_dir=directory(f"{config['result_dir']}/seurat/{{quantifier}}/{{assembly}}/qc")
-            
         priority: 1
         conda:
             "../envs/kb_scrna_R_seurat3.yaml"
