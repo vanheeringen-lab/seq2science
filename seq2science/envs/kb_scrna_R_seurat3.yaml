@@ -20,6 +20,5 @@ dependencies:
   - bioconductor-scater>=1.10
   - r-seurat>=3
   - r-plot3d
-  - r-here
 #In a terminal with conda, type
 #$mamba env create -f /scratch/snabel/conda_env_files/kb_scrna_R_seurat3.yaml
