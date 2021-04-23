@@ -1,6 +1,6 @@
 #### Seurat settings ####
 #########################
-rmd <- paste0(snakemake@config$rule_dir,"/../scripts/scRNA-seq/kb_seurat_pp.rmd")
+rmd <- paste0(snakemake@config$rule_dir,"/../scripts/scRNA-seq/kb_seurat_pp.Rmd")
 barcode_file <- paste(snakemake@config$genome_dir,snakemake@config$seurat$barcode_file, sep="/")
 mt_genes_file <- paste(snakemake@config$genome_dir,snakemake@config$seurat$mt_genes_file, sep="/")
 
