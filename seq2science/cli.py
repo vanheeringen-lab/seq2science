@@ -365,7 +365,8 @@ def _run(args, base_dir, workflows_dir, config_path):
     parsed_args["config"]["no_config_log"] = True
 
     #   5. start the "real" run where jobs actually get started
-    exit_code = snakemake.snakemake(**parsed_args)
+    with contextlib.redirect_stderr(sys.stdout):
+        exit_code = snakemake.snakemake(**parsed_args)
     sys.exit(0) if exit_code else sys.exit(1)
 
 
