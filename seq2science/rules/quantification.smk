@@ -276,16 +276,8 @@ elif config["quantifier"] == "kallistobus":
             R_scripts=1, # conda's R can have issues when starting multiple times
         script:
             f"{config['rule_dir']}/../scripts/kb_seurat_pp_rmd.R"
-  
-  
-     
-    
 
 
-
-
-            
-            
 elif config["quantifier"] == "htseq":
 
     rule htseq_count:
