@@ -306,7 +306,7 @@ rule plotFingerprint:
         """
 
 
-def computematrix_input(wildcards):
+def computeMatrix_input(wildcards):
     output = []
 
     for trep in set(treps[treps['assembly'] == ori_assembly(wildcards.assembly)].index):
@@ -315,18 +315,18 @@ def computematrix_input(wildcards):
     return output
 
 
-rule computeMatrix:
+rule computeMatrix_gene:
     """
     Pre-compute correlations between bams using deeptools.
     """
     input:
-        bw=computematrix_input
+        bw=computeMatrix_input
     output:
-        expand("{qc_dir}/computeMatrix/{{assembly}}-{{peak_caller}}.mat.gz", **config)
+        expand("{qc_dir}/computeMatrix_gene/{{assembly}}-{{peak_caller}}.mat.gz", **config)
     log:
-        expand("{log_dir}/computeMatrix/{{assembly}}-{{peak_caller}}.log", **config)
+        expand("{log_dir}/computeMatrix_gene/{{assembly}}-{{peak_caller}}.log", **config)
     benchmark:
-        expand("{benchmark_dir}/computeMatrix/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/computeMatrix_gene/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     conda:
         "../envs/deeptools.yaml"
     threads: 16
@@ -344,19 +344,19 @@ rule computeMatrix:
         """
 
 
-rule plotProfile:
+rule plotProfile_gene:
     """
-    Plot the so-called profile using deeptools.
+    Plot the gene profile using deeptools.
     """
     input:
-        rules.computeMatrix.output
+        rules.computeMatrix_gene.output
     output:
-        file=expand("{qc_dir}/plotProfile/{{assembly}}-{{peak_caller}}.tsv", **config),
-        img=expand("{qc_dir}/plotProfile/{{assembly}}-{{peak_caller}}.png", **config)
+        file=expand("{qc_dir}/plotProfile_gene/{{assembly}}-{{peak_caller}}.tsv", **config),
+        img=expand("{qc_dir}/plotProfile_gene/{{assembly}}-{{peak_caller}}.png", **config)
     log:
-        expand("{log_dir}/plotProfile/{{assembly}}-{{peak_caller}}.log", **config)
+        expand("{log_dir}/plotProfile_gene/{{assembly}}-{{peak_caller}}.log", **config)
     benchmark:
-        expand("{benchmark_dir}/plotProfile/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/plotProfile_gene/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     conda:
         "../envs/deeptools.yaml"
     resources:
@@ -364,6 +364,57 @@ rule plotProfile:
     shell:
         """
         plotProfile -m {input} --outFileName {output.img} --outFileNameData {output.file} > {log} 2>&1
+        """
+
+
+rule computeMatrix_peak:
+    """
+    Pre-compute correlations between bams using deeptools.
+    """
+    input:
+        bw=computeMatrix_input,
+        peaks=expand("{qc_dir}/computeMatrix_peak/{{assembly}}-{{peak_caller}}_N{{nrpeaks}}.bed", **config)
+    output:
+        expand("{qc_dir}/computeMatrix_peak/{{assembly}}-{{peak_caller}}_N{{nrpeaks}}.mat.gz", **config)
+    log:
+        expand("{log_dir}/computeMatrix_peak/{{assembly}}-{{peak_caller}}_N{{nrpeaks}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/computeMatrix_peak/{{assembly}}-{{peak_caller}}_N{{nrpeaks}}.benchmark.txt", **config)[0]
+    conda:
+        "../envs/deeptools.yaml"
+    threads: 16
+    resources:
+        deeptools_limit=lambda wildcards, threads: threads,
+        mem_gb=50,
+    params:
+        labels=lambda wildcards, input: "--samplesLabel " + get_descriptive_names(wildcards, input.bw) if
+                                 get_descriptive_names(wildcards, input.bw) != "" else "",
+    shell:
+        """
+        computeMatrix scale-regions -S {input.bw} {params.labels} -R {input.peaks} \
+        -p {threads} -b 1000 -a 1000 -o {output} > {log} 2>&1
+        """
+
+
+rule plotHeatmap_peak:
+    """
+    Plot the peak heatmap using deeptools.
+    """
+    input:
+        rules.computeMatrix_peak.output
+    output:
+        img=expand("{qc_dir}/plotHeatmap_peaks/{{assembly}}-{{peak_caller}}_N{{nrpeaks}}_mqc.png", **config),
+    log:
+        expand("{log_dir}/plotHeatmap_peaks/{{assembly}}-{{peak_caller}}_N{{nrpeaks}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/plotHeatmap_peaks/{{assembly}}-{{peak_caller}}_N{{nrpeaks}}.benchmark.txt", **config)[0]
+    conda:
+        "../envs/deeptools.yaml"
+    resources:
+        deeptools_limit=lambda wildcards, threads: threads
+    shell:
+        """
+        plotHeatmap_peaks --matrixfile {input} --outFileName {output.img} {params} > {log} 2>&1
         """
 
 
@@ -822,5 +873,7 @@ def get_peak_calling_qc(sample):
         if get_ftype(list(config["peak_caller"].keys())[0]) == "narrowPeak":
             output.extend(expand("{qc_dir}/chipseeker/{{assembly}}-{peak_caller}_img1_mqc.png", **config))
             output.extend(expand("{qc_dir}/chipseeker/{{assembly}}-{peak_caller}_img2_mqc.png", **config))
-
+    if config.get("deeptools_qc"):
+        output.extend(expand("{qc_dir}/plotHeatmap_peaks/{{assembly}}-{peak_caller}_N{nrpeaks}_mqc.png",
+                      **{**config, **{"nrpeaks": 10000}}))
     return output

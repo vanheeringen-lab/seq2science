@@ -326,3 +326,21 @@ rule onehot_peaks:
         
         echo -e "# onehot encoding of which condition contains which peaks\\n$(cat {output.real})" > {output.tmp} && cp {output.tmp} {output.real}
         """
+
+
+rule random_subset_peaks:
+    """
+
+    """
+    input:
+        rules.combine_peaks.output
+    output:
+        peaks=temp(expand("{qc_dir}/computeMatrix_peak/{{assembly}}-{{peak_caller}}_N{{nrpeaks}}.bed", **config))
+    log:
+        expand("{log_dir}/random_subset/{{assembly}}-{{peak_caller}}_N{{nrpeaks}}.log", **config),
+    benchmark:
+        expand("{benchmark_dir}/random_subset/{{assembly}}-{{peak_caller}}_N{{nrpeaks}}.benchmark.txt", **config)[0]
+    shell:
+        """
+        shuf -n {wildcards.nrpeaks} {input}
+        """
