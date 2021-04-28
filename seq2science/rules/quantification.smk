@@ -1,6 +1,8 @@
-from seq2science.util import get_bustools_rid
 import os
 import glob
+
+from seq2science.util import get_bustools_rid
+
 if config["quantifier"] == "salmon":
 
     rule get_transcripts:
