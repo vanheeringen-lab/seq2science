@@ -233,7 +233,7 @@ if "assembly" in samples:
                 for provider in list_providers(assembly):
                     try:
                         p = genomepy.ProviderBase.create(provider)
-                    except json.JSONDecodeError:
+                    except:
                         logger.error(f"We had trouble checking if assembly {assembly} can be downloaded with "
                                      f"provider {provider}. However we got a bad response. Try a again in a bit.")
                         assert False
@@ -498,7 +498,7 @@ if config.get("create_trackhub"):
                     try:
                         response = requests.get(f"https://genome.ucsc.edu/cgi-bin/hgGateway",
                                                 allow_redirects=True)
-                    except json.JSONDecodeError:
+                    except:
                         logger.error("There seems to be some problems with connecting to UCSC, try again in some time")
                         assert False
                     if not response.ok:
