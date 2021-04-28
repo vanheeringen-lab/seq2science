@@ -231,7 +231,12 @@ if "assembly" in samples:
             with contextlib.redirect_stdout(null), contextlib.redirect_stderr(null):
 
                 for provider in list_providers(assembly):
-                    p = genomepy.ProviderBase.create(provider)
+                    try:
+                        p = genomepy.ProviderBase.create(provider)
+                    except JSONDecodeError:
+                        logger.error(f"We had trouble checking if assembly {assembly} can be downloaded with "
+                                     f"provider {provider}. However we got a bad response. Try a again in a bit.")
+
                     if assembly in p.genomes:
                         if (file == "annotation" and p.get_annotation_download_link(assembly)) \
                                 or (file == "genome" and p.get_genome_download_link(assembly)):
