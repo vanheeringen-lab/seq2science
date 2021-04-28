@@ -274,6 +274,8 @@ elif config["quantifier"] == "kallistobus":
             "../envs/kb_scrna_R_seurat3.yaml"
         params:
             kb_dir=f"{config['result_dir']}/kallistobus"
+            isvelo=lambda wildcards, input: "true" if "--workflow" in config.get("count", "") else "false"
+
         resources:
             R_scripts=1, # conda's R can have issues when starting multiple times
         script:
