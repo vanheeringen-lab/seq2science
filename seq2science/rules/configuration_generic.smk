@@ -236,6 +236,7 @@ if "assembly" in samples:
                     except JSONDecodeError:
                         logger.error(f"We had trouble checking if assembly {assembly} can be downloaded with "
                                      f"provider {provider}. However we got a bad response. Try a again in a bit.")
+                        assert False
 
                     if assembly in p.genomes:
                         if (file == "annotation" and p.get_annotation_download_link(assembly)) \
