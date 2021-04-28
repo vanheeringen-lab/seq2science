@@ -231,13 +231,7 @@ if "assembly" in samples:
             with contextlib.redirect_stdout(null), contextlib.redirect_stderr(null):
 
                 for provider in list_providers(assembly):
-                    try:
-                        p = genomepy.ProviderBase.create(provider)
-                    except:
-                        logger.error(f"We had trouble checking if assembly {assembly} can be downloaded with "
-                                     f"provider {provider}. However we got a bad response. Try a again in a bit.")
-                        assert False
-
+                    p = genomepy.ProviderBase.create(provider)
                     if assembly in p.genomes:
                         if (file == "annotation" and p.get_annotation_download_link(assembly)) \
                                 or (file == "genome" and p.get_genome_download_link(assembly)):
@@ -495,15 +489,9 @@ if config.get("create_trackhub"):
             with FileLock(hubfile_lock):
                 if not os.path.exists(hubfile):
                     # check for response of ucsc
-                    try:
-                        response = requests.get(f"https://genome.ucsc.edu/cgi-bin/hgGateway",
-                                                allow_redirects=True)
-                    except:
-                        logger.error("There seems to be some problems with connecting to UCSC, try again in some time")
-                        assert False
-                    if not response.ok:
-                        logger.error("Make sure you are connected to the internet")
-                        assert False
+                    response = requests.get(f"https://genome.ucsc.edu/cgi-bin/hgGateway",
+                                            allow_redirects=True)
+                    assert response.ok, "Make sure you are connected to the internet"
 
                     with urllib.request.urlopen("https://api.genome.ucsc.edu/list/ucscGenomes") as url:
                         data = json.loads(url.read().decode())['ucscGenomes']
