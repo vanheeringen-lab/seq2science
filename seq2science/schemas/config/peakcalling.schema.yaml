@@ -27,7 +27,7 @@ properties:
     type: integer
 
   slop:
-    description: how much the summits should be extended by (on each side) for making a peak count table. When for instance a slop of 100 is chosen, the final peak's width is 200.
+    description: how much the summits should be extended by (on each side) for making a peak count table. If for instance a slop of 100 is chosen, the final peak's width is 200.
     default: 100
     type: integer
 
@@ -35,3 +35,19 @@ properties:
     description: The log base of the number of reads under peak count tables
     default: 2
     type: number
+
+  heatmap_slop:
+    description: how much the summits should be extended by (on each side) for making a heatmap of peaks in the multiQC report. If for instance a slop of 1000 is chosen, the final peak's width is 2000.
+    default: 1000
+    type: integer
+
+  heatmap_npeaks:
+    description: The number of random peaks used for the heatmap. This at most visualizes all peaks found, so picking a number higher than the number of peaks has no effect. The reason to pick a smaller number is to limit computational resources.
+    default: 20000
+    type: integer
+
+  heatmap_deeptools_options:
+    description: the options passed to deeptools when visualizing the heatmap
+    default: --kmeans 6
+    type: string
+

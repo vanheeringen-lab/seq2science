@@ -392,7 +392,7 @@ rule computeMatrix_peak:
     shell:
         """
         computeMatrix scale-regions -S {input.bw} {params.labels} -R {input.peaks} \
-        -p {threads} -b 1000 -a 1000 -o {output} > {log} 2>&1
+        -p {threads} --binSize 5 -o {output} > {log} 2>&1
         """
 
 
@@ -403,7 +403,7 @@ rule plotHeatmap_peak:
     input:
         rules.computeMatrix_peak.output
     output:
-        img=expand("{qc_dir}/plotHeatmap_peaks/{{assembly}}-{{peak_caller}}_N{{nrpeaks}}_mqc.png", **config),
+        img=expand("{qc_dir}/plotHeatmap_peaks/N{{nrpeaks}}-{{assembly}}-deeptools_{{peak_caller}}_heatmap_mqc.png", **config),
     log:
         expand("{log_dir}/plotHeatmap_peaks/{{assembly}}-{{peak_caller}}_N{{nrpeaks}}.log", **config)
     benchmark:
@@ -412,9 +412,12 @@ rule plotHeatmap_peak:
         "../envs/deeptools.yaml"
     resources:
         deeptools_limit=lambda wildcards, threads: threads
+    params: 
+        params=config["heatmap_deeptools_options"],
+        slop=config["heatmap_slop"]
     shell:
         """
-        plotHeatmap_peaks --matrixfile {input} --outFileName {output.img} {params} > {log} 2>&1
+        plotHeatmap --matrixFile {input} --outFileName {output.img} {params.params} --startLabel="-{params.slop}" --endLabel={params.slop} > {log} 2>&1
         """
 
 
@@ -874,6 +877,6 @@ def get_peak_calling_qc(sample):
             output.extend(expand("{qc_dir}/chipseeker/{{assembly}}-{peak_caller}_img1_mqc.png", **config))
             output.extend(expand("{qc_dir}/chipseeker/{{assembly}}-{peak_caller}_img2_mqc.png", **config))
     if config.get("deeptools_qc"):
-        output.extend(expand("{qc_dir}/plotHeatmap_peaks/{{assembly}}-{peak_caller}_N{nrpeaks}_mqc.png",
-                      **{**config, **{"nrpeaks": 10000}}))
+        output.extend(expand("{qc_dir}/plotHeatmap_peaks/N{heatmap_npeaks}-{{assembly}}-deeptools_{peak_caller}_heatmap_mqc.png", **config))
+
     return output
