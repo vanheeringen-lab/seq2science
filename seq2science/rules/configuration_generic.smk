@@ -233,7 +233,7 @@ if "assembly" in samples:
                 for provider in list_providers(assembly):
                     try:
                         p = genomepy.ProviderBase.create(provider)
-                    except JSONDecodeError:
+                    except json.JSONDecodeError:
                         logger.error(f"We had trouble checking if assembly {assembly} can be downloaded with "
                                      f"provider {provider}. However we got a bad response. Try a again in a bit.")
                         assert False
