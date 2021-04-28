@@ -70,8 +70,8 @@ rule complement_blacklist:
         "../envs/bedtools.yaml"
     shell:
         """
-        sortBed -faidx {input.sizes} -i {input.blacklist} |
-        complementBed -i stdin -g {input.sizes} > {output} 2> {log}
+        sortBed -faidx {input.sizes} -i {input.blacklist} 2>> {log} |
+        complementBed -i stdin -g {input.sizes} > {output} 2>> {log}
         """
 
 
