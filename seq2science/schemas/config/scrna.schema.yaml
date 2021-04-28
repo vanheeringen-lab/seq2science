@@ -39,55 +39,55 @@ properties:
     description: Seurat rmd for exploratory data analysis
     properties:
       method: 
-        description: method -- experimental method
+        description: experimental method
         enum:  [384plate,droplet]
       barcode_file:  
-        description: "barcode_file -- .tab delimited file with 2-col layout for plate based methods (with DNA barcode and well-id)"
+        description: ".tab delimited file with 2-col layout for plate based methods (with DNA barcode and well-id)"
         type: string
       mt_genes_file: 
-        description: "mt_genes_file -- .txt file containing one column with mitchondrial genes"
+        description: ".txt file containing one column with mitchondrial genes"
         type: string
       isvelo:
-         description: "is_velo -- velocity workflow"
+         description: "enable velocity workflow"
          type: boolean
       run.sct:
-         description: "run.sct -- perform SCTransform normalization, FALSE runs log(p1) NormalizeData, HVG selection and ScaleData in Seurat"
+         description: "perform SCTransform normalization, FALSE runs log(p1) NormalizeData, HVG selection and ScaleData in Seurat"
          type: boolean
       run.jackstraw:
-         description: "run.jackstraw -- perform Jackstraw analysis (does not work with SCTransform)"
+         description: "perform Jackstraw analysis (does not work with SCTransform)"
          type: boolean    
       add.spikes.ercc: 
-        label: "add.spikes.ercc -- use ERCC RNA spike-ins (if present)"
+        label: "use ERCC RNA spike-ins (if present)"
         type: boolean
       ercc_pct_max: 
-        description: "ercc_pct_max -- max percentage ERCC spike-ins counts"
+        description: "max percentage ERCC spike-ins counts"
         type: integer
       add.spikes.mt: 
-        description: "add.spikes.mt -- use mitochondrial gene-list for qc"
+        description: "use mitochondrial gene-list for qc"
         type: boolean
       mt_pct_max: 
-        description: "mt_pct_max -- max percentage mitochondrial genes counts"
+        description: "max percentage mitochondrial genes counts"
         type: integer
       gene_tresh: 
-        description: "gene_tresh -- gene filter: threshold for genes considered expressed"
+        description: "gene filter threshold for genes considered expressed"
         type: integer
       amount_cells_expr: 
-        description: "amount_cells_expr -- gene filter: threshold for minimal amount of cells a gene should be expressed in"
+        description: "gene filter threshold for minimal amount of cells a gene should be expressed in"
         type: integer
       total_counts_tresh: 
-        description: "total_counts_tresh -- cell filter: threshold for minimal amount of UMI counts detected in a cell"
+        description: "cell filter threshold for minimal amount of UMI counts detected in a cell"
         type: integer
       total_feat_tresh: 
-        description: "total_feat_tresh -- cell filter: threshold for minimal amount of features (genes) detected in a cell"
+        description: "cell filter threshold for minimal amount of features (genes) detected in a cell"
         type: integer
       nhvg: 
-        description: "nhvg -- number of Highly Variable Genes, used in Seurat's FindVariableFeatures"
+        description: "number of Highly Variable Genes, used in Seurat's FindVariableFeatures"
         type: integer
       pcs_for_overview:
-        description: "pcs_for_overview -- principal components for overview in combined umap plot, runs UMAP for PC 1-value"
+        description: "principal components for overview in combined umap plot, runs UMAP for PC 1-value"
         type: string
       pcs_max_hvg: 
-        description: "pcs_max_hvg -- max number of principal components to visualize"
+        description: "max number of principal components to visualize"
         type: integer  
       default:
         method: 384plate
