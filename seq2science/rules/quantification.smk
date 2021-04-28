@@ -271,7 +271,7 @@ elif config["quantifier"] == "kallistobus":
             qc_dir=directory(f"{config['result_dir']}/seurat/{{quantifier}}/{{assembly}}/qc")
         priority: 1
         conda:
-            "../envs/kb_scrna_R_seurat3.yaml"
+            "../envs/kb_seurat_pp.yaml"
         params:
             isvelo=lambda wildcards, input: True if "--workflow" in config.get("count", "") else False
         message: explain_rule("kb_seurat_pp")    
