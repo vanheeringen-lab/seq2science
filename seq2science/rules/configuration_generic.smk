@@ -212,13 +212,9 @@ if "assembly" in samples:
             metadata, _ = genomepy.utils.read_readme(readme_file)
             readme_provider = metadata.get("provider", "").lower()
 
-        if readme_provider in ["ensembl", "ucsc", "ncbi"]:
-            providers = [readme_provider]
-        elif config.get("provider"):
-            providers = [config["provider"].lower()]
-        else:
-            providers = ["ensembl", "ucsc", "ncbi"]
-
+        # will test if each provider is online
+        p = readme_provider if readme_provider in ["ensembl", "ucsc", "ncbi"] else config.get("provider")
+        providers = genomepy.functions._providers(p)
         return providers
 
 
@@ -230,12 +226,11 @@ if "assembly" in samples:
         with open(os.devnull, "w") as null:
             with contextlib.redirect_stdout(null), contextlib.redirect_stderr(null):
 
-                for provider in list_providers(assembly):
-                    p = genomepy.ProviderBase.create(provider)
+                for p in list_providers(assembly):
                     if assembly in p.genomes:
                         if (file == "annotation" and p.get_annotation_download_link(assembly)) \
                                 or (file == "genome" and p.get_genome_download_link(assembly)):
-                            return provider
+                            return p
         return None
 
 
@@ -489,9 +484,15 @@ if config.get("create_trackhub"):
             with FileLock(hubfile_lock):
                 if not os.path.exists(hubfile):
                     # check for response of ucsc
-                    response = requests.get(f"https://genome.ucsc.edu/cgi-bin/hgGateway",
-                                            allow_redirects=True)
-                    assert response.ok, "Make sure you are connected to the internet"
+                    try:
+                        response = requests.get(f"https://genome.ucsc.edu/cgi-bin/hgGateway",
+                                                allow_redirects=True)
+                    except:
+                        logger.error("There seems to be some problems with connecting to UCSC, try again in some time")
+                        assert False
+                    if not response.ok:
+                        logger.error("Make sure you are connected to the internet")
+                        assert False
 
                     with urllib.request.urlopen("https://api.genome.ucsc.edu/list/ucscGenomes") as url:
                         data = json.loads(url.read().decode())['ucscGenomes']
