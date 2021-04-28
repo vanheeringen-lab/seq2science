@@ -51,7 +51,7 @@ properties:
          description: "enable velocity workflow"
          type: boolean
       run.sct:
-         description: "perform SCTransform normalization, FALSE runs log(p1) NormalizeData, HVG selection and ScaleData in Seurat"
+         description: "perform SCTransform normalization, FALSE runs log1p NormalizeData, HVG selection and ScaleData in Seurat"
          type: boolean
       run.jackstraw:
          description: "perform Jackstraw analysis (does not work with SCTransform)"
