@@ -11,6 +11,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Added
 
 - added rule for scRNA post-processing R Markdown for plate/droplet based scRNA protocols (experimental)
+- added explanation for kb_seurat_pp rule
 
 ## [0.5.1] - 2021-04-01
 
