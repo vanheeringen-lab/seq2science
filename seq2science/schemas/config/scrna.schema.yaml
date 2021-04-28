@@ -81,7 +81,7 @@ properties:
         description: "number of Highly Variable Genes, used in Seurat's FindVariableFeatures"
         type: integer
       pcs_for_overview:
-        description: "Perform UMAP on the defined list of pc's (seperated by comma) and generate combined UMAP plot"
+        description: "perform UMAP on the defined list of pc's (seperated by comma) and generate combined UMAP plot"
         type: string
       pcs_max_hvg: 
         description: "max number of principal components to visualize"
