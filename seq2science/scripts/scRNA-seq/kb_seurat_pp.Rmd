@@ -106,7 +106,8 @@ output:
     code_folding: hide
     toc: yes
     toc_depth: '2'
----    
+---
+
 ```{r loading libraries, include=FALSE}
 #Custom listings markdown template: https://stackoverflow.com/questions/21402157/colour-for-r-code-chunk-in-listings-package/21468454
 
