@@ -267,8 +267,8 @@ elif config["quantifier"] == "kallistobus":
         input:
             expand([f"{{result_dir}}/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}" for trep in treps.index], **config)
         output:
-            html=f"{config['result_dir']}/seurat/{{quantifier}}/{{assembly}}/kb_seurat_pp.html",
-            qc_dir=directory(f"{config['result_dir']}/seurat/{{quantifier}}/{{assembly}}/qc")
+            html=f"{config['result_dir']}/kb_seurat_pp/{{quantifier}}/{{assembly}}/kb_seurat_pp.html",
+            qc_dir=directory(f"{config['result_dir']}/kb_seurat_pp/{{quantifier}}/{{assembly}}/qc")
         priority: 1
         conda:
             "../envs/kb_seurat_pp.yaml"
