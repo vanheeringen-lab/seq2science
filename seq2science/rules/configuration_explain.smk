@@ -170,5 +170,5 @@ else:
         "combine_peaks": f"A consensus set of summits was made with {href_v('gimmemotifs',text='gimmemotifs.combine_peaks',env='gimme')}.",
         "bed_slop": f"All summits were extended with {config.get('slop')} bp to get a consensus peakset.",
         "coverage_table": f"And finally we made a count table from the conensus peakset with gimmemotifs.",  # already cited in "combine_peaks"
-        "kb_seurat_pp": f"scRNA count post-processing was performed using the {href_v('scRNA-seq')} markdown with settings{options('seurat')}.",
+        "kb_seurat_pp": f"scRNA count post-processing was performed using the {hyperref('scRNA-seq')} markdown with settings{options('seurat')}.",
     }
