@@ -273,7 +273,6 @@ elif config["quantifier"] == "kallistobus":
         conda:
             "../envs/kb_scrna_R_seurat3.yaml"
         params:
-            kb_dir=f"{config['result_dir']}/kallistobus"
             isvelo=lambda wildcards, input: "true" if "--workflow" in config.get("count", "") else "false"
 
         resources:
