@@ -489,8 +489,11 @@ if config.get("create_trackhub"):
             with FileLock(hubfile_lock):
                 if not os.path.exists(hubfile):
                     # check for response of ucsc
-                    response = requests.get(f"https://genome.ucsc.edu/cgi-bin/hgGateway",
-                                            allow_redirects=True)
+                    try:
+                        response = requests.get(f"https://genome.ucsc.edu/cgi-bin/hgGateway",
+                                                allow_redirects=True)
+                    except json.JSONDecodeError:
+                        assert False, "There seems to be some problems with connecting to UCSC, try again in some time"
                     assert response.ok, "Make sure you are connected to the internet"
 
                     with urllib.request.urlopen("https://api.genome.ucsc.edu/list/ucscGenomes") as url:
