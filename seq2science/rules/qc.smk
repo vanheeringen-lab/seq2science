@@ -413,7 +413,7 @@ rule plotHeatmap_peak:
     resources:
         deeptools_limit=lambda wildcards, threads: threads
     params: 
-        params=config["heatmap_deeptools_options"],
+        params=config.get("heatmap_deeptools_options", ""),
         slop=config["heatmap_slop"]
     shell:
         """
