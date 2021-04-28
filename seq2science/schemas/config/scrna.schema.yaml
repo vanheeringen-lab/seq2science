@@ -47,9 +47,6 @@ properties:
       mt_genes_file: 
         description: ".txt file containing one column with mitchondrial genes"
         type: string
-      isvelo:
-         description: "enable velocity workflow"
-         type: boolean
       run.sct:
          description: "perform SCTransform normalization, FALSE runs log1p NormalizeData, HVG selection and ScaleData in Seurat"
          type: boolean
@@ -93,7 +90,6 @@ properties:
         method: 384plate
         barcode_file: ""
         mt_genes_file: ""
-        isvelo: true
         run.sct: true
         run.jackstraw: false
         add.spikes.ercc : true
