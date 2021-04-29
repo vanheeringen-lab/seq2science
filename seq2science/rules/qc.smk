@@ -309,8 +309,11 @@ rule plotFingerprint:
 def computeMatrix_input(wildcards):
     output = []
 
-    for trep in set(treps[treps['assembly'] == ori_assembly(wildcards.assembly)].index):
-        output.append(expand(f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{trep}.bw", **config)[0])
+    treps_seen = set()
+    for trep in treps[treps['assembly'] == ori_assembly(wildcards.assembly)].index:
+        if trep not in treps_seen:
+            output.append(expand(f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{trep}.bw", **config)[0])
+        treps_seen.add(trep)
 
     return output
 
@@ -414,7 +417,7 @@ rule plotHeatmap_peak:
         deeptools_limit=lambda wildcards, threads: threads
     params: 
         params=config.get("heatmap_deeptools_options", ""),
-        slop=config["heatmap_slop"]
+        slop=config.get("heatmap_slop", 0)
     shell:
         """
         plotHeatmap --matrixFile {input} --outFileName {output.img} {params.params} --startLabel="-{params.slop}" --endLabel={params.slop} > {log} 2>&1

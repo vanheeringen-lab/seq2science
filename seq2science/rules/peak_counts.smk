@@ -330,7 +330,7 @@ rule onehot_peaks:
 
 rule random_subset_peaks:
     """
-
+    Take a random subset of all summits, and make them all same width.
     """
     input:
         peaks=rules.combine_peaks.output,
