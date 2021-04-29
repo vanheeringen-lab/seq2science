@@ -48,6 +48,6 @@ properties:
 
   heatmap_deeptools_options:
     description: the options passed to deeptools when visualizing the heatmap
-    default: --kmeans 6
+    default: --kmeans 6 --xAxisLabel "Summit distance (bp)"
     type: string
 
