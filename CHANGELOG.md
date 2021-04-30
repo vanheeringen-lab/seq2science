@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- heatmap of N random peaks to the multiqc report in the end
+
 ## [0.5.1] - 2021-04-01
 
 ### Added
