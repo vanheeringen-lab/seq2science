@@ -23,8 +23,10 @@ with open(snakemake.log[0], "w") as log:
             plugins = genomepy.plugin.init_plugins()
             plugins["blacklist"].after_genome_download(genome)
 
-            # now delete the .fa.sizes as it gets created by a different rule
+            # now delete the support files as these are created by a different rule
+            os.remove(f"{snakemake.output[0]}.fai")
             os.remove(f"{snakemake.output[0]}.sizes")
+            os.remove(f"{snakemake.output[0][:-2]}gaps.bed")
         except Exception as e:
             print(e)
             print("\nSomething went wrong while downloading the genome (see error message above). "
