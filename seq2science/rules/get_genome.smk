@@ -36,6 +36,7 @@ rule get_genome_annotation:
     """
     input:
         ancient(rules.get_genome.output),
+        ancient(rules.get_genome_support_files),
     output:
         gtf=expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.annotation.gtf.gz", **config),
         bed=expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.annotation.bed.gz", **config),
