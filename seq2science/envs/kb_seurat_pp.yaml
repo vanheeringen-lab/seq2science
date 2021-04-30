@@ -5,7 +5,7 @@ channels:
   - defaults
 dependencies: 
   - conda-forge::r-base=3.5.1
-  - conda-forge::r-rmarkdown=1.1.0
+  - conda-forge::r-rmarkdown=1.10
   - conda-forge::r-devtools=2.3.0
   - conda-forge::r-matrix=1.2_14
   - conda-forge::r-irlba=2.3.2
