@@ -8,6 +8,7 @@ import glob
 import time
 import colorsys
 import urllib.request
+import yaml
 from io import StringIO
 from typing import List
 from math import ceil, floor
@@ -21,6 +22,22 @@ from snakemake.logging import logger
 
 # default colors in matplotlib. Order dictates the priority.
 DEFAULT_COLOR_DICTS = [mcolors.BASE_COLORS, mcolors.TABLEAU_COLORS, mcolors.CSS4_COLORS, mcolors.XKCD_COLORS]
+
+
+class UniqueKeyLoader(yaml.SafeLoader):
+    """
+    YAML loader with duplicate key checking
+    source: https://stackoverflow.com/questions/33490870/parsing-yaml-in-python-detect-duplicated-keys
+    """
+    def construct_mapping(self, node, deep=False):
+        mapping = []
+        for key_node, value_node in node.value:
+            key = self.construct_object(key_node, deep=deep).lower()
+            if key in mapping:
+                logger.error(f"Duplicate key found in the config.yaml: {key}\n")
+                raise TerminatedException
+            mapping.append(key)
+        return super().construct_mapping(node, deep)
 
 
 def _sample_to_idxs(df: pd.DataFrame, sample: str) -> List[int]:
@@ -133,6 +150,10 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
                      "seq2science does not support downloading those..\n\n")
         raise TerminatedException
 
+    # keep track of not-supported samples
+    not_supported_formats = ["ABI_SOLID"]
+    not_supported_samples = []
+
     for sample, clean in sample2clean.items():
         # table indices
         idxs = _sample_to_idxs(df_sra, clean)
@@ -141,6 +162,12 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
         runs = df_sra.loc[idxs].run_accession.tolist()
         assert len(runs) >= 1
         sampledict[sample]["runs"] = runs
+
+        # check if sample is from a supported format
+        for bad_format in not_supported_formats:
+            for real_format in df_sra.loc[idxs].instrument_model_desc.tolist():
+                if real_format == bad_format:
+                    not_supported_samples.append(sample)
 
         # get the layout
         layout = df_sra.loc[idxs].library_layout.tolist()
@@ -160,6 +187,12 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
         # if any run from a sample is not found on ENA, better be safe, and assume that sample as a whole is not on ENA
         if any([any(pd.isna(urls)) for urls in sampledict[sample]["ena_fastq_ftp"].values()]):
             sampledict[sample]["ena_fastq_ftp"] = None
+
+    # now report single message for all sample(s) that are from a sequencing platform that is not supported
+    assert len(not_supported_samples) == 0, \
+        f'Sample(s) {", ".join(not_supported_samples)} are not supported by seq2science. Samples that are one of ' \
+        f'these formats; [{", ".join(not_supported_formats)}] are not supported.'
+
 
     return sampledict
 

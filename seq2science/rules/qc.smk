@@ -306,27 +306,30 @@ rule plotFingerprint:
         """
 
 
-def computematrix_input(wildcards):
+def computeMatrix_input(wildcards):
     output = []
 
-    for trep in set(treps[treps['assembly'] == ori_assembly(wildcards.assembly)].index):
-        output.append(expand(f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{trep}.bw", **config)[0])
+    treps_seen = set()
+    for trep in treps[treps['assembly'] == ori_assembly(wildcards.assembly)].index:
+        if trep not in treps_seen:
+            output.append(expand(f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{trep}.bw", **config)[0])
+        treps_seen.add(trep)
 
     return output
 
 
-rule computeMatrix:
+rule computeMatrix_gene:
     """
     Pre-compute correlations between bams using deeptools.
     """
     input:
-        bw=computematrix_input
+        bw=computeMatrix_input
     output:
-        expand("{qc_dir}/computeMatrix/{{assembly}}-{{peak_caller}}.mat.gz", **config)
+        expand("{qc_dir}/computeMatrix_gene/{{assembly}}-{{peak_caller}}.mat.gz", **config)
     log:
-        expand("{log_dir}/computeMatrix/{{assembly}}-{{peak_caller}}.log", **config)
+        expand("{log_dir}/computeMatrix_gene/{{assembly}}-{{peak_caller}}.log", **config)
     benchmark:
-        expand("{benchmark_dir}/computeMatrix/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/computeMatrix_gene/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     conda:
         "../envs/deeptools.yaml"
     threads: 16
@@ -344,19 +347,19 @@ rule computeMatrix:
         """
 
 
-rule plotProfile:
+rule plotProfile_gene:
     """
-    Plot the so-called profile using deeptools.
+    Plot the gene profile using deeptools.
     """
     input:
-        rules.computeMatrix.output
+        rules.computeMatrix_gene.output
     output:
-        file=expand("{qc_dir}/plotProfile/{{assembly}}-{{peak_caller}}.tsv", **config),
-        img=expand("{qc_dir}/plotProfile/{{assembly}}-{{peak_caller}}.png", **config)
+        file=expand("{qc_dir}/plotProfile_gene/{{assembly}}-{{peak_caller}}.tsv", **config),
+        img=expand("{qc_dir}/plotProfile_gene/{{assembly}}-{{peak_caller}}.png", **config)
     log:
-        expand("{log_dir}/plotProfile/{{assembly}}-{{peak_caller}}.log", **config)
+        expand("{log_dir}/plotProfile_gene/{{assembly}}-{{peak_caller}}.log", **config)
     benchmark:
-        expand("{benchmark_dir}/plotProfile/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/plotProfile_gene/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     conda:
         "../envs/deeptools.yaml"
     resources:
@@ -364,6 +367,60 @@ rule plotProfile:
     shell:
         """
         plotProfile -m {input} --outFileName {output.img} --outFileNameData {output.file} > {log} 2>&1
+        """
+
+
+rule computeMatrix_peak:
+    """
+    Pre-compute correlations between bams using deeptools.
+    """
+    input:
+        bw=computeMatrix_input,
+        peaks=expand("{qc_dir}/computeMatrix_peak/{{assembly}}-{{peak_caller}}_N{{nrpeaks}}.bed", **config)
+    output:
+        expand("{qc_dir}/computeMatrix_peak/{{assembly}}-{{peak_caller}}_N{{nrpeaks}}.mat.gz", **config)
+    log:
+        expand("{log_dir}/computeMatrix_peak/{{assembly}}-{{peak_caller}}_N{{nrpeaks}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/computeMatrix_peak/{{assembly}}-{{peak_caller}}_N{{nrpeaks}}.benchmark.txt", **config)[0]
+    conda:
+        "../envs/deeptools.yaml"
+    threads: 16
+    resources:
+        deeptools_limit=lambda wildcards, threads: threads,
+        mem_gb=50,
+    params:
+        labels=lambda wildcards, input: "--samplesLabel " + get_descriptive_names(wildcards, input.bw) if
+                                 get_descriptive_names(wildcards, input.bw) != "" else "",
+    shell:
+        """
+        computeMatrix scale-regions -S {input.bw} {params.labels} -R {input.peaks} \
+        -p {threads} --binSize 5 -o {output} > {log} 2>&1
+        """
+
+
+rule plotHeatmap_peak:
+    """
+    Plot the peak heatmap using deeptools.
+    """
+    input:
+        rules.computeMatrix_peak.output
+    output:
+        img=expand("{qc_dir}/plotHeatmap_peaks/N{{nrpeaks}}-{{assembly}}-deeptools_{{peak_caller}}_heatmap_mqc.png", **config),
+    log:
+        expand("{log_dir}/plotHeatmap_peaks/{{assembly}}-{{peak_caller}}_N{{nrpeaks}}.log", **config)
+    benchmark:
+        expand("{benchmark_dir}/plotHeatmap_peaks/{{assembly}}-{{peak_caller}}_N{{nrpeaks}}.benchmark.txt", **config)[0]
+    conda:
+        "../envs/deeptools.yaml"
+    resources:
+        deeptools_limit=lambda wildcards, threads: threads
+    params: 
+        params=config.get("heatmap_deeptools_options", ""),
+        slop=config.get("heatmap_slop", 0)
+    shell:
+        """
+        plotHeatmap --matrixFile {input} --outFileName {output.img} {params.params} --startLabel="-{params.slop}" --endLabel={params.slop} > {log} 2>&1
         """
 
 
@@ -482,19 +539,57 @@ rule multiqc_header_info:
     """
     output:
         temp(expand('{qc_dir}/header_info.yaml', **config))
+    params:
+        config={k: v for k, v in config.items() if k not in ["no_config_log", "cli_call"]}  # helps resolve changed config options, ignore no_config_log
     run:
         import os
         from datetime import date
 
-        cwd = os.getcwd().split('/')[-1]
-        mail = config.get('email', 'none@provided.com')
+        workflow = get_workflow().replace("_", "-")
         date = date.today().strftime("%B %d, %Y")
+        project = os.getcwd().split('/')[-1]
+        mail = config.get('email', 'none@provided.com')
 
         with open(output[0], "w") as f:
             f.write(f"report_header_info:\n"
+                    f"    - Workflow: '{workflow}'\n"
+                    f"    - Date: '{date}'\n"
+                    f"    - Project: '{project}'\n"
                     f"    - Contact E-mail: '{mail}'\n"
-                    f"    - Workflow: '{cwd}'\n"
-                    f"    - Date: '{date}'\n")
+            )
+
+
+rule multiqc_explain:
+    output:
+        expand('{log_dir}/workflow_explanation_mqc.html', **config)
+    params:
+        config={k: v for k, v in config.items() if k not in ["no_config_log", "cli_call"]}  # helps resolve changed config options, ignore no_config_log
+    run:
+        import subprocess
+
+        # make a copy of the cli_call
+        cli_call = config["cli_call"][:]
+
+        # convert run into explain
+        cli_call[1] = "explain"
+
+        # remove run specific commands
+        cli_call = [arg for arg in cli_call if arg not in {"--unlock", "--rerun-incomplete", "-k", "--keep-going", "--skip-rerun", "--reason", "-r", "--dryrun", "-n"}]
+        cores_index = cli_call.index("--cores" if "--cores" in cli_call else "-j")
+        del cli_call[cores_index:cores_index+2]
+        
+        # make sure to get pretty hyperrefs
+        cli_call.append("--hyperref")
+
+        result = subprocess.run(cli_call, stdout=subprocess.PIPE)
+        explanation = result.stdout.decode('utf-8')
+
+        with open(output[0], "w") as f:
+            f.write("<!--\n" 
+                    "id: 'explanation'\n" 
+                    "section_name: 'Workflow explanation'\n" 
+                    "-->\n"
+                    f"{explanation}")
 
 
 rule multiqc_rename_buttons:
@@ -535,7 +630,7 @@ rule multiqc_samplesconfig:
         config_used=len(workflow.overwrite_configfiles) > 0,
         configfile=workflow.overwrite_configfiles[-1],
         sanitized_samples=sanitized_samples,  # helps resolve changed config options
-        config={k: v for k, v in config.items() if k != "no_config_log"}  # helps resolve changed config options, ignore no_config_log
+        config={k: v for k, v in config.items() if k not in ["no_config_log", "cli_call"]}  # helps resolve changed config options, ignore no_config_log
     conda:
         "../envs/htmltable.yaml"
     script:
@@ -566,7 +661,8 @@ def get_qc_files(wildcards):
     assert 'quality_control' in globals(), "When trying to generate multiqc output, make sure that the "\
                                            "variable 'quality_control' exists and contains all the "\
                                            "relevant quality control functions."
-    qc['files'] = set([expand('{qc_dir}/samplesconfig_mqc.html', **config)[0]])
+    qc['files'] = set(expand(['{qc_dir}/samplesconfig_mqc.html',
+                              '{log_dir}/workflow_explanation_mqc.html'], **config))
 
     # trimming qc on individual samples
     if get_trimming_qc in quality_control:
@@ -597,8 +693,8 @@ def get_qc_files(wildcards):
             for trep in treps[treps['assembly'] == ori_assembly(wildcards.assembly)].index:
                 qc['files'].update(get_rna_qc(trep))
 
-        # add dupRadar plots
-        if "REMOVE_DUPLICATES=true" not in config.get("markduplicates",""):
+        # add dupRadar plots if BAMs are made
+        if "REMOVE_DUPLICATES=true" not in config.get("markduplicates","") and not (config.get('quantifier', '') == 'salmon' and config.get('create_trackhub') == False):
             qc['files'].update(expand("{qc_dir}/dupRadar/{{assembly}}-dupRadar_mqc.png",**config))
 
         if len(treps.index) > 2:
@@ -779,9 +875,11 @@ def get_peak_calling_qc(sample):
     if has_annotation(assembly):
         output.extend(expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config))  # added to be unzipped
         if config.get("deeptools_qc"):
-            output.extend(expand("{qc_dir}/plotProfile/{{assembly}}-{peak_caller}.tsv", **config))
+            output.extend(expand("{qc_dir}/plotProfile_gene/{{assembly}}-{peak_caller}.tsv", **config))
         if get_ftype(list(config["peak_caller"].keys())[0]) == "narrowPeak":
             output.extend(expand("{qc_dir}/chipseeker/{{assembly}}-{peak_caller}_img1_mqc.png", **config))
             output.extend(expand("{qc_dir}/chipseeker/{{assembly}}-{peak_caller}_img2_mqc.png", **config))
+    if config.get("deeptools_qc"):
+        output.extend(expand("{qc_dir}/plotHeatmap_peaks/N{heatmap_npeaks}-{{assembly}}-deeptools_{peak_caller}_heatmap_mqc.png", **config))
 
     return output

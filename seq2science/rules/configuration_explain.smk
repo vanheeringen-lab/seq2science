@@ -1,7 +1,5 @@
-import re
 import os.path
 import yaml
-
 
 if not config.get("explain_rule"):
     def explain_rule(name):
@@ -11,108 +9,164 @@ if not config.get("explain_rule"):
         return None
 
 else:
+    REFERENCES = {
+        'apeglm': 'https://doi.org/10.1093/bioinformatics/bty895',
+        'ashr': 'https://doi.org/10.1093/biostatistics/kxw041',
+        'bowtie2': 'https://dx.doi.org/10.1038%2Fnmeth.1923',
+        'bustools': 'https://doi.org/10.1101/673285',
+        'bwa': 'http://arxiv.org/abs/1303.3997',
+        'bwa-mem2': 'https://arxiv.org/abs/1907.12931',
+        'chipseeker': 'https://doi.org/doi:10.18129/B9.bioc.ChIPseeker',
+        'cutadapt': 'https://doi.org/10.14806/ej.17.1.200',
+        'deeptools': 'https://doi.org/10.1093/nar/gkw257',
+        'deseq2': 'https://dx.doi.org/10.1186%2Fs13059-014-0550-8',
+        'dexseq': 'https://doi.org/doi:10.18129/B9.bioc.DEXSeq',
+        'dupradar': 'https://doi.org/10.1186/s12859-016-1276-2',
+        'encode blacklist': 'https://doi.org/10.1038/s41598-019-45839-z',
+        'fastp': 'https://doi.org/10.1093/bioinformatics/bty560',
+        'fastqc': 'http://www.bioinformatics.babraham.ac.uk/projects/fastqc',
+        'genomepy': 'https://doi.org/10.21105/joss.00320',
+        'genrich': 'https://github.com/jsh58/Genrich',
+        'gimmemotifs': 'https://www.biorxiv.org/content/10.1101/474403v1.full',
+        'hisat2': 'https://doi.org/10.1038/s41587-019-0201-4',
+        'htseq': 'https://doi.org/10.1093/bioinformatics/btu638',
+        'idr': 'http://dx.doi.org/10.1214/11-AOAS466',
+        'independent hypothesis weighting': 'http://dx.doi.org/10.1038/nmeth.3885',
+        'kallisto': 'https://doi.org/10.1038/nbt.3519',
+        'macs2': 'https://doi.org/10.1186/gb-2008-9-9-r137',
+        'multiqc': 'http://dx.doi.org/10.1093/bioinformatics/btw354',
+        'picard': 'http://broadinstitute.github.io/picard',
+        'rseqc': 'https://doi.org/10.1093/bioinformatics/bts356',
+        'salmon': 'https://doi.org/10.1038/nmeth.4197',
+        'sambamba': 'https://doi.org/10.1093/bioinformatics/btv098',
+        'samtools': 'https://doi.org/10.1093/bioinformatics/btp352',
+        'sequence read archive': 'https://doi.org/10.1093/nar/gkq1019',
+        'snaptools': 'https://doi.org/10.1101/615179',
+        'star': 'https://dx.doi.org/10.1093%2Fbioinformatics%2Fbts635',
+        'subread': 'https://doi.org/10.1093/bioinformatics/btt656',
+        'trim-galore': 'http://www.bioinformatics.babraham.ac.uk/projects/trim_galore/',
+        'tximeta': 'https://doi.org/10.1101/777888',
+        'ucsc genome browser': 'http://www.genome.org/cgi/doi/10.1101/gr.229102',
+    }
+
     def explain_rule(name):
         """
         Return a string explaining the workflow by parsing all messages
         """
-        string = messages[name]
+        return MESSAGES[name]
 
-        # clean our explanation
-        string = string.replace("\n", "")
-        string = " ".join(string.split())
 
-        # find our environment
-        env_dir = os.path.normpath(os.path.join(config['rule_dir'], "..", "envs"))
+    ENV_DIR = os.path.normpath(os.path.join(config['rule_dir'],"..","envs"))
 
-        parser = re.compile("@([^[]*)\[([^]]*)\]")
-        while len(parser.findall(string)):
-            match = next(parser.finditer(string))
+    def version(tool, env=None):
+        """
+        Return the tool version from the env.
+        Returns an empty string if no version can be found.
+        """
+        tool = tool.lower()  # conda always uses lower case
+        env = env if env else tool  # most tools are in a similarly named env
+        yaml_file = f"{ENV_DIR}/{env}.yaml"
+        with open(yaml_file,'r') as stream:
+            env = yaml.safe_load(stream)
 
-            # parse our environment
-            yaml_file = f"{env_dir}/{match.group(1)}.yaml"
-            tool = match.group(2)
-            with open(yaml_file, 'r') as stream:
-                env = yaml.safe_load(stream)
+        for dependency in env["dependencies"]:
+            if tool in dependency:
+                return f" v{dependency[dependency.find('=') + 1:]}"
+        return ""
 
-            for dependency in env["dependencies"]:
-                if tool in dependency:
-                    version = dependency[dependency.find("=") + 1:]
-                    break
-            else:
-                continue
 
-            # replace the placeholder with the actual version
-            string = string[:match.span()[0]] + version + string[match.span()[1]:]
-        return string
+    def hyperref(tool, text=None):
+        text = text if text else tool
+        ref = REFERENCES[tool.lower()]
+        if config.get("hyperref",False):
+            return f"""<a href="{ref}">{text}</a>"""
+        return f"{text} ({ref})"
+
+
+    def href_v(tool, text=None, env=None):
+        text = text if text else tool
+        v = version(tool,env)
+        return hyperref(tool,text + v)
 
 
     def text_join(lst, sep=", ", final_sep=" or ", start="", end=""):
         """
         prunes empty strings from a list, joins it with commas and a final separator
         """
-        lst = list(filter(None, lst))
+        lst = list(filter(None,lst))
         if len(lst) > 1:
             all_but_last = sep.join(lst[:-1])
             last = lst[-1]
             return start + final_sep.join([all_but_last, last]) + end
         return start + "".join(lst) + end
 
-    messages={
-        "bowtie2_align": "Reads were aligned with bowtie2 v@bowtie2[bowtie2] (https://dx.doi.org/10.1038%2Fnmeth.1923) with options '{config[align]}'.",
-        "bwa-mem_align": "Reads were aligned with bwa-mem v@bwa[bwa] (http://arxiv.org/abs/1303.3997) with options '{config[align]}'.",
-        "bwa-mem2_align": "Reads were aligned with bwa-mem2 v@bwamem2[bwa-mem2] (https://arxiv.org/abs/1907.12931) with options '{config[align]}'.",
+
+    def options(*opts, ret=config):
+        for opt in opts:
+            assert isinstance(ret,dict), f"Invalid config key '{opt}' in {opts}."
+            ret = ret.get(opt)
+            if ret in [None, ""]:
+                return ""
+        return f" with options '{ret}'"
+
+
+    DESEQ_ANALYSIS = {"rna_seq": "gene expression", "chip_seq": "peak", "atac_seq": "accessibility"}.get(get_workflow(),"")
+
+    MESSAGES = {
+        "bowtie2_align": f"Reads were aligned with {href_v('bowtie2')}{options('align')}.",
+        "bwa-mem_align": f"Reads were aligned with {href_v('bwa',text='bwa-mem')}{options('align')}.",
+        "bwa-mem2_align": f"Reads were aligned with {href_v('bwa-mem2',env='bwamem2')}{options('align')}.",
         "hisat_splice_aware": "An exon and splice-aware index was generated for HISAT2.",
-        "hisat2_align": "Reads were aligned with HISAT2 v@hisat2[hisat2] (https://doi.org/10.1038/s41587-019-0201-4) with options '{config[align]}'.",
-        "star_align": "Reads were aligned with STAR v@star[star] (https://dx.doi.org/10.1093%2Fbioinformatics%2Fbts635) with options '{config[align]}'.",
+        "hisat2_align": f"Reads were aligned with {href_v('HISAT2')}{options('align')}.",
+        "star_align": f"Reads were aligned with {href_v('STAR')}{options('align')}.",
         "sieve_bam":
             text_join(start="Mapped reads were removed if they ",
-                      lst=["did not have a minimum mapping quality of {config[min_mapping_quality]}" if config.get("min_mapping_quality", 0) > 0 else "",
-                           "were a (secondary) multimapper" if config.get("only_primary_align") else "",
-                           "aligned inside the ENCODE blacklist (https://doi.org/10.1038/s41598-019-45839-z)" if config.get("remove_blacklist") else "",
-                           "had a template length longer than {config[min_template_length]} and shorter than {config[max_template_length]}" if config.get("filter_on_size") else ""],
-                      end=" and finally were tn5 bias shifted by seq2science." if config.get("tn5_shift", 0) > 0 else "."),
-        # "samtools_sort": "Bam files were sorted with samtools v@samtools[samtools].",
-        "sambamba_sort": "Bam files were sorted with sambamba v@sambamba[sambamba] (https://doi.org/10.1093/bioinformatics/btv098).",
-        "mark_duplicates": "Afterwards, duplicate reads were " + ("removed" if "REMOVE_DUPLICATES=true" in config.get("markduplicates", "") else "marked") + " with picard MarkDuplicates v@picard[picard] (http://broadinstitute.github.io/picard).",
-        "bam2cram": "Bam files were converted to cram format with samtools v@samtools[samtools].",
-        "deseq2":
-            text_join(start="Differential gene expression analysis was performed using DESeq2 v@deseq2[bioconductor-deseq2] (https://dx.doi.org/10.1186%2Fs13059-014-0550-8). To adjust for multiple testing ",
-                      lst=[("the (default) Benjamini-Hochberg procedure " if config.get('deseq2', {}).get('multiple_testing_procedure') == "BH" else
-                               "Independent hypothesis weighting (http://dx.doi.org/10.1038/nmeth.3885) "),
-                           "was performed with an FDR cutoff of {config[deseq2][alpha_value]} (default is 0.1). Counts were log transformed using ",
-                           "the (default) shrinkage estimator apeglm (https://doi.org/10.1093/bioinformatics/bty895). " if config.get('deseq2', {}).get('shrinkage_estimator') == "apeglm" else (
-                               "shrinkage estimator ashr (https://doi.org/10.1093/biostatistics/kxw041). " if config.get('deseq2', {}).get('shrinkage_estimator') == "ashr" else
-                                   "the normal prior distribution provided by DESeq2.")], sep=" ", final_sep=" "),
-        "count_matrix_txi": "Transcript abundance estimations were aggregated and converted to gene counts using tximeta v@tximeta[tximeta] (https://doi.org/10.1101/777888).",
-        "run2sra": "Public samples were downloaded from the Sequence Read Archive (https://doi.org/10.1093/nar/gkq1019) with help of the ncbi e-utilities.",
-        "get_genome": "Genome assembly {wildcards.raw_assembly} was downloaded with genomepy {genomepy.__version__} (https://doi.org/10.21105/joss.00320).",
+                lst=[f"did not have a minimum mapping quality of {config['min_mapping_quality']}" if config.get("min_mapping_quality",0) > 0 else "",
+                     "were a (secondary) multimapper" if config.get("only_primary_align") else "",
+                     f"aligned inside the {hyperref('ENCODE blacklist')}" if config.get("remove_blacklist") else "",
+                     f"had a template length longer than {config['max_template_length']} bp and shorter than {config['min_template_length']} bp" if config.get("filter_on_size") else ""],
+                end=" and finally were tn5 bias shifted by seq2science." if config.get("tn5_shift",0) > 0 else "."),
+        "sambamba_sort": f"Bam files were sorted with {href_v('sambamba')}.",
+        "mark_duplicates": f"Afterwards, duplicate reads were {'removed' if 'REMOVE_DUPLICATES=true' in options('markduplicates') else 'marked'} with {href_v('picard',text='Picard MarkDuplicates')}.",
+        "bam2cram": f"Bam files were converted to cram format with samtools {href_v('samtools')}.",
+        "deseq2": "" if (deseq_opts := config.get('deseq2')) is None else \
+            text_join(
+                start=f"Differential {DESEQ_ANALYSIS} analysis was performed using {href_v('DESeq2')}. To adjust for multiple testing ",
+                lst=["the (default) Benjamini-Hochberg procedure " if deseq_opts['multiple_testing_procedure'] == "BH" else href_v('Independent hypothesis weighting',env='deseq2'),
+                     f"was performed with an FDR cutoff of {deseq_opts['alpha_value']} (default is 0.1). Counts were log transformed using ",
+                     f"the (default) shrinkage estimator {href_v('apeglm',env='deseq2')}. " if deseq_opts['shrinkage_estimator'] == "apeglm" else (
+                         f"shrinkage estimator {href_v('ashr',env='deseq2')}. " if deseq_opts['shrinkage_estimator'] == "ashr" else
+                            "the normal prior distribution provided by DESeq2.")],sep=" ",final_sep=" "),
+        "count_matrix_txi": f"Transcript abundance estimations were aggregated and converted to gene counts using {href_v('tximeta')}.",
+        "run2sra": f"Public samples were downloaded from the {hyperref('Sequence Read Archive')} with help of the ncbi e-utilities.",
+        "get_genome": f"Genome assembly {{wildcards.raw_assembly}} was downloaded with {hyperref('genomepy',text=f'genomepy {genomepy.__version__}')}.",
         "custom_extension": "The genome and gene annotations was extended with custom regions.",
-        "call_peak_genrich":"Peaks were called with genrich v@genrich[genrich] (https://github.com/jsh58/Genrich) with options '{config[peak_caller][genrich]}'.",
-        "macs2_callpeak": "Peaks were called with macs2 v@macs2[macs2] (https://doi.org/10.1186/gb-2008-9-9-r137) with options '{config[peak_caller][macs2]}' in {params.format} mode. The effective genome size was estimated by taking the number of unique kmers in the assembly of the same length as the average read length for each sample/",
+        "call_peak_genrich": f"Peaks were called with {href_v('genrich')}{options('peak_caller','genrich')}.",
+        "macs2_callpeak": f"Peaks were called with {href_v('macs2')}{options('peak_caller','macs2')} in {{params.format}} mode. The effective genome size was estimated by taking the number of unique kmers in the assembly of the same length as the average read length for each sample.",
         "keep_mates": "After alignment we removed paired-end info from reads with seq2science to utilize both mates in the paired-end reads.",
-        "idr": "Narrowpeak files of biological replicates belonging to the same condition were merged with the irreproducible discovery rate v@idr[idr] (http://dx.doi.org/10.1214/11-AOAS466).",
-        "macs_cmbreps": "Narrowpeak files of biological replicates belonging to the same condition were merged with fisher's method in macs2 v@macs2[macs2].",
-        "multiqc": "Quality control metrics were aggregated by MultiQC v@multiqc[multiqc] (http://dx.doi.org/10.1093/bioinformatics/btw354).",
-        "samtools_stats": "General alignment statistics were collected by samtools stats v@samtools[samtools] (https://doi.org/10.1093/bioinformatics/btp352).",
-        "featureCounts_qc": "The fraction reads in peak score (frips) was calculated by featurecounts v@subread[subread] (https://doi.org/10.1093/bioinformatics/btt656).",
-        "fastqc": "Fastq quality was measured by FastQC v@fastqc[fastqc] (http://www.bioinformatics.babraham.ac.uk/projects/fastqc).",
-        "computeMatrix": "Deeptools v@deeptools[deeptools] (https://doi.org/10.1093/nar/gkw257) was used for the fingerprint, profile, correlation and dendrogram/heatmap plots, where the heatmap was made with options '{config[deeptools_multibamsummary]}'.",
-        "dupradar": "RNA-seq read duplication types were analyzed using dupRadar v@dupradar[bioconductor-dupradar] (https://doi.org/10.1186/s12859-016-1276-2).",
-        "decoy_transcripts": "Decoy transcript were generated in order improve improve Salmon indexing accuracy (using the script from https://github.com/COMBINE-lab/SalmonTools)",
-        "salmon_quant": "Transcript abundances were quantified with Salmon v@salmon[salmon] (https://doi.org/10.1038/nmeth.4197) with options '{config[quantifier_flags]}'.",
-        "htseq_count": "Read counting and summarizing to gene-level was performed on filtered bam using HTSeq-count v@gene_counts[htseq] (https://doi.org/10.1093/bioinformatics/btu638).",
-        "kallistobus-count": "Reads were aligned and transformed to bus format with kb-python v@kallistobus[kb-python], a python wrapper for kallisto (https://doi.org/10.1038/nbt.3519) and bustools (doi.org/10.1101/673285).",
-        "featurecounts_rna": "Read counting and summarizing to gene-level was performed on filtered bam using featureCounts v@gene_counts[subread] (https://doi.org/10.1093/bioinformatics/btt656).",
-        "dexseq": "Additionally, exon usage was counted using [DEXSeq] v@dexseq[bioconductor-dexseq] (https://doi.org/doi:10.18129/B9.bioc.DEXSeq) for (potential) downstream analysis.",
-        "create_bins_SNAP_object": "We used snaptools v@snaptools[snaptools] (https://doi.org/10.1101/615179) to create a snapobject with options '{config[snaptools_opt]}' and added a binned genome matrix with options '{config[bin_opt]}'.",
-        "infer_strandedness": "Sample sequencing strandedness was inferred using RSeQC v@gene_counts[rseqc] https://doi.org/10.1093/bioinformatics/bts356 in order to improve quantification accuracy.",
-        "trackhub": "We used the UCSC genome browser (http://www.genome.org/cgi/doi/10.1101/gr.229102) to visualize and inspect alignment.",
-        "trimgalore_SE": "We trimmed single-end reads with trim galore! v@trimgalore[trim-galore] (http://www.bioinformatics.babraham.ac.uk/projects/trim_galore/) with options '{config[trimoptions]}' and cutadapt (https://doi.org/10.14806/ej.17.1.200).",
-        "trimgalore_PE": "We trimmed paired-end reads with trim galore! v@trimgalore[trim-galore] (http://www.bioinformatics.babraham.ac.uk/projects/trim_galore/) with options '{config[trimoptions]}' and cutadapt (https://doi.org/10.14806/ej.17.1.200).",
-        "fastp_SE": "We trimmed single-end reads with fastp v@fastp[fastp] (https://doi.org/10.1093/bioinformatics/bty560) with options '{config[trimoptions]}'.",
-        "fastp_PE": "We trimmed paired-end reads with fastp v@fastp[fastp] (https://doi.org/10.1093/bioinformatics/bty560) with options '{config[trimoptions]}'.",
-        "chipseeker": "A peak feature distribution plot and peak localization plot relative to TSS were made with chipseeker (https://doi.org/doi:10.18129/B9.bioc.ChIPseeker).",  # v@chipseeker[chipseeker]
-        "combine_peaks": "A consensus set of summits was made with gimmemotifs.combine_peaks v@gimme[gimmemotifs] (https://www.biorxiv.org/content/10.1101/474403v1.full).",
-        "bed_slop": "All summits were extended with 'config[slop]' to get a consensus peakset.",
-        "coverage_table": "And finally we made a count table from the conensus peakset with gimmemotifs.combine_peaks v@gimme[gimmemotifs] (https://www.biorxiv.org/content/10.1101/474403v1.full).",
+        "idr": f"Narrowpeak files of biological replicates belonging to the same condition were merged with the {href_v('idr',text='irreproducible discovery rate')}.",
+        "macs_cmbreps": "Narrowpeak files of biological replicates belonging to the same condition were merged with fisher's method in macs2.",
+        "multiqc": f"Quality control metrics were aggregated by {href_v('MultiQC')}.",
+        "samtools_stats": f"General alignment statistics were collected by {href_v('samtools',text='samtools stats')}.",
+        "featureCounts_qc": f"The fraction reads in peak score (frips) was calculated by {href_v('subread',text='featurecounts')}.",
+        "fastqc": f"Fastq quality was measured by {href_v('FastQC')}.",
+        "computeMatrix": f"{href_v('Deeptools')} was used for the fingerprint, profile, correlation and dendrogram/heatmap plots{', where the heatmap was made' + dt_opts if (dt_opts := options('deeptools_multibamsummary')) else ''}.",
+        "dupradar": f"RNA-seq read duplication types were analyzed using {href_v('dupRadar')}.",
+        "decoy_transcripts": "Decoy transcript were generated in order improve improve Salmon indexing accuracy using the scripts provided in the Salmon manual",
+        "salmon_quant": f"Transcript abundances were quantified with {href_v('Salmon')}{options('quantifier_flags')}.",
+        "htseq_count": f"Read counting and summarizing to gene-level was performed on filtered bam using {href_v('htseq',text='HTSeq-count',env='gene_counts')}.",
+        "kallistobus-count": f"Reads were aligned and transformed to bus format with kb-python{version('kb-python','kallistobus')}, a python wrapper for {hyperref('kallisto')} and {hyperref('bustools')}.",
+        "featurecounts_rna": f"Read counting and summarizing to gene-level was performed on filtered bam using {href_v('subread',text='featureCounts',env='gene_counts')}.",
+        "dexseq": f"Additionally, exon usage was counted using {href_v('DEXSeq')} for (potential) downstream analysis.",
+        "create_bins_SNAP_object": f"We used {href_v('snaptools')} to create a snapobject{options('snaptools_opt')} and added a binned genome matrix{options('bin_opt')}.",
+        "infer_strandedness": f"Sample sequencing strandedness was inferred using {href_v('RSeQC',env='gene_counts')} in order to improve quantification accuracy.",
+        "trackhub": f"We used the {hyperref('UCSC genome browser')} to visualize and inspect alignment.",
+        "trimgalore_SE": f"We trimmed single-end reads with {href_v('trim-galore',text='trim galore!',env='trimgalore')}{options('trimoptions')} and {hyperref('cutadapt')}.",
+        "trimgalore_PE": f"We trimmed paired-end reads with {href_v('trim-galore',text='trim galore!',env='trimgalore')}{options('trimoptions')} and {hyperref('cutadapt')}.",
+        "fastp_SE": f"We trimmed single-end reads with {href_v('fastp')}{options('trimoptions')}.",
+        "fastp_PE": f"We trimmed paired-end reads with {href_v('fastp')}{options('trimoptions')}.",
+        "chipseeker": f"A peak feature distribution plot and peak localization plot relative to TSS were made with {hyperref('chipseeker')}.",  # TODO: replace with href_v
+        "combine_peaks": f"A consensus set of summits was made with {href_v('gimmemotifs',text='gimmemotifs.combine_peaks',env='gimme')}.",
+        "bed_slop": f"All summits were extended with {config.get('slop')} bp to get a consensus peakset.",
+        "coverage_table": f"And finally we made a count table from the conensus peakset with gimmemotifs.",  # already cited in "combine_peaks"
     }

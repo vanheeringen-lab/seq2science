@@ -18,8 +18,6 @@ except ImportError:
     pass
 
 
-
-
 def _import():
     """
     this function serves that we can do imports as late as possible, for faster auto-completion
@@ -168,6 +166,11 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         help="Remove a lock on the working directory.",
         action='store_true'
     )
+    explain.add_argument(
+        "--hyperref",
+        help="Print urls as html hyperref",
+        action='store_true'
+    )
     # run/explain arguments
     for subparser in [run, explain]:
         subparser.add_argument(
@@ -311,6 +314,9 @@ def _run(args, base_dir, workflows_dir, config_path):
     if "cluster" in parsed_args and not "nodes" in parsed_args:
         parsed_args["nodes"] = parsed_args["cores"]
 
+    # store how seq2science was called
+    parsed_args["config"]["cli_call"] = sys.argv
+
     core_parser(parsed_args)
     parsed_args["config"].update({"cores": parsed_args["cores"]})
     resource_parser(parsed_args)
@@ -318,7 +324,7 @@ def _run(args, base_dir, workflows_dir, config_path):
     # run snakemake/seq2science
     #   1. pretty welcome message
     setup_seq2science_logger(parsed_args)
-    log_welcome(logger, parsed_args)
+    log_welcome(logger)
     if not args.skip_rerun or args.unlock:
         #   2. start a dryrun checking which files need to be created, and check if
         #      any params changed, which means we have to remove those files and
@@ -396,10 +402,15 @@ def _explain(args, base_dir, workflows_dir, config_path):
 
     # cores
     parsed_args["cores"] = 999
+    parsed_args["config"]["hyperref"] = args.hyperref
 
     # starting message
-    rules_used = {"start": f"\nPreprocessing of reads was done automatically with workflow tool "
-                           f"seq2science v{seq2science.__version__} (https://doi.org/10.5281/zenodo.3921913)."}
+    if args.hyperref:
+        rules_used = {"start": f"\nPreprocessing of reads was done automatically with workflow tool "
+                               f"<a href=https://doi.org/10.5281/zenodo.3921913>seq2science v{seq2science.__version__}</a>."}
+    else:
+        rules_used = {"start": f"\nPreprocessing of reads was done automatically with workflow tool "
+                               f"seq2science v{seq2science.__version__} (https://doi.org/10.5281/zenodo.3921913)."}
 
     def log_handler(log):
         if log["level"] == "job_info" and "msg" in log and log["msg"] is not None and log["name"] not in rules_used:

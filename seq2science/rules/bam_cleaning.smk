@@ -70,8 +70,8 @@ rule complement_blacklist:
         "../envs/bedtools.yaml"
     shell:
         """
-        sortBed -faidx {input.sizes} -i {input.blacklist} |
-        complementBed -i stdin -g {input.sizes} > {output} 2> {log}
+        sortBed -faidx {input.sizes} -i {input.blacklist} 2>> {log} |
+        complementBed -i stdin -g {input.sizes} > {output} 2>> {log}
         """
 
 
@@ -92,6 +92,7 @@ rule sieve_bam:
         * remove multimappers
         * remove reads inside the blacklist
         * filter paired-end reads on transcript length
+     
     """
     input:
         bam=rules.samtools_presort.output,
@@ -121,12 +122,16 @@ rule sieve_bam:
             f""" tee {output.allsizes} | awk 'substr($0,1,1)=="@" || ($9>={config['min_template_length']} && $9<={config['max_template_length']}) || ($9<=-{config['min_template_length']} && $9>=-{config['max_template_length']})' | """
             if sampledict[wildcards.sample]["layout"] == "PAIRED" and config["filter_on_size"]
             else ""
-        )
+        ),
+        sizesieve_touch="touch {output.allsizes}" if config["filter_on_size"] else ""
     shell:
         """
         samtools view -h {params.prim_align} {params.minqual} {params.blacklist} \
         {input.bam} | {params.atacshift} {params.sizesieve}
         samtools view -b > {output.final} 2> {log}
+        
+        # single-end reads never output allsizes so just touch the file when filtering on size
+        {params.sizesieve_touch}
         """
 
 
