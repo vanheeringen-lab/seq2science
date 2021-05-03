@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- heatmap of N random peaks to the multiqc report in the end
+
 ### Fixed
 
 - removed a warning of genome.fa.sizes already existing due to being already being downloaded beforehand (it's removed in between)
