@@ -326,3 +326,26 @@ rule onehot_peaks:
         
         echo -e "# onehot encoding of which condition contains which peaks\\n$(cat {output.real})" > {output.tmp} && cp {output.tmp} {output.real}
         """
+
+
+rule random_subset_peaks:
+    """
+    Take a random subset of all summits, and make them all same width.
+    """
+    input:
+        peaks=rules.combine_peaks.output,
+        sizes=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
+    output:
+        peaks=temp(expand("{qc_dir}/computeMatrix_peak/{{assembly}}-{{peak_caller}}_N{{nrpeaks}}.bed", **config))
+    log:
+        expand("{log_dir}/random_subset/{{assembly}}-{{peak_caller}}_N{{nrpeaks}}.log", **config),
+    benchmark:
+        expand("{benchmark_dir}/random_subset/{{assembly}}-{{peak_caller}}_N{{nrpeaks}}.benchmark.txt", **config)[0]
+    conda:
+        "../envs/bedtools.yaml"
+    params:
+        slop=config["heatmap_slop"],
+    shell:
+        """
+        shuf -n {wildcards.nrpeaks} {input.peaks} | bedtools slop -i stdin -g {input.sizes} -b {params.slop} > {output}
+        """
