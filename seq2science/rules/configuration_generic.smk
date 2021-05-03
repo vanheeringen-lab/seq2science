@@ -230,7 +230,7 @@ if "assembly" in samples:
                     if assembly in p.genomes:
                         if (file == "annotation" and p.get_annotation_download_link(assembly)) \
                                 or (file == "genome" and p.get_genome_download_link(assembly)):
-                            return p
+                            return p.name
         return None
 
 
