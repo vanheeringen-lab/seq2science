@@ -30,8 +30,8 @@ rule get_genome_annotation:
     """
     input:
         ancient(expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa", **config)),
-        expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa.fai", ** config),
-        expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa.sizes",**config),
+        expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa.fai", **config),
+        expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa.sizes", **config),
     output:
         gtf=expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.annotation.gtf.gz", **config),
         bed=expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.annotation.bed.gz", **config),
