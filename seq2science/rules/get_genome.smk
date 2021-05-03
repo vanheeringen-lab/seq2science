@@ -1,9 +1,3 @@
-import os
-import contextlib
-
-import genomepy
-
-
 localrules: extend_genome, get_genome_support_files, unzip_annotation
 
 
@@ -36,8 +30,8 @@ rule get_genome_annotation:
     """
     input:
         ancient(expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa", **config)),
-        ancient(expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa.fai", **config)),
-        ancient(expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa.sizes", **config)),
+        expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa.fai", **config),
+        expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa.sizes", **config),
     output:
         gtf=expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.annotation.gtf.gz", **config),
         bed=expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.annotation.bed.gz", **config),
@@ -181,4 +175,5 @@ rule unzip_annotation:
         filepath=".*(\.annotation)(\.gtf|\.bed)(?<!\.gz)$"  # filepath may not end with ".gz"
     priority: 1
     run:
+        import genomepy.utils
         genomepy.utils.gunzip_and_name(input[0])
