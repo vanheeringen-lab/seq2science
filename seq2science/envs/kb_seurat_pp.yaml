@@ -1,16 +1,17 @@
 name: kb_seurat_pp
 channels:
+  - r
   - conda-forge
   - bioconda
   - defaults
 dependencies: 
-  - conda-forge::r-base=3.5.1
-  - conda-forge::r-rmarkdown=1.10
+  - r::r-base=3.5.1
+  - r::r-rmarkdown=1.10
+  - r::r-matrix=1.2_14
+  - r::r-irlba=2.3.2
+  - r::r-dplyr=0.7.6
+  - r::r-ggplot2=3.0.0
   - conda-forge::r-devtools=2.3.0
-  - conda-forge::r-matrix=1.2_14
-  - conda-forge::r-irlba=2.3.2
-  - conda-forge::r-dplyr=0.7.6
-  - conda-forge::r-ggplot2=3.0.0
   - conda-forge::r-mvoutlier=2.0.9
   - conda-forge::r-plot3d=1.3
   - conda-forge::r-seurat=3.1.5
