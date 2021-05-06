@@ -159,6 +159,8 @@ elif config["quantifier"] == "kallistobus":
         priority: 1
         conda:
             "../envs/kallistobus.yaml"
+        resources:
+            mem_gb=88,
         params:
             basename=lambda wildcards, output: f"{output[0]}{wildcards.assembly}",
             options=config.get("ref")
@@ -249,6 +251,8 @@ elif config["quantifier"] == "kallistobus":
             "../envs/kallistobus.yaml"
         threads: 8
         message: explain_rule("kallistobus-count")
+        resources:
+            mem_gb=66,
         params:
             basename=lambda wildcards, input: f"{input.basedir[0]}/{wildcards.assembly}",
             options=config.get("count")
