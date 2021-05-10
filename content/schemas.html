@@ -155,6 +155,9 @@
 <li class="toctree-l4"><a class="reference internal" href="#peak-windowsize">peak_windowsize</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#slop">slop</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#logbase">logbase</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#heatmap-slop">heatmap_slop</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#heatmap-npeaks">heatmap_npeaks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#heatmap-deeptools-options">heatmap_deeptools_options</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#workflow-rna-seq">Workflow: RNA-seq</a><ul>
@@ -174,6 +177,8 @@
 <li class="toctree-l4"><a class="reference internal" href="#fastq-pair">fastq-pair</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#id1">quantifier</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#barcodefile">barcodefile</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run-kb-seurat-pp">run_kb_seurat_pp</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#seurat">seurat</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#differential-gene-peak-analysis">Differential gene/peak analysis</a><ul>
@@ -791,7 +796,7 @@
 <div class="section" id="slop">
 <h3>slop<a class="headerlink" href="#slop" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>slop:
-    description: how much the summits should be extended by (on each side) for making a peak count table. When for instance a slop of 100 is chosen, the final peak&#39;s width is 200.
+    description: how much the summits should be extended by (on each side) for making a peak count table. If for instance a slop of 100 is chosen, the final peak&#39;s width is 200.
     default: 100
     type: integer
 </pre></div>
@@ -803,6 +808,33 @@
     description: The log base of the number of reads under peak count tables
     default: 2
     type: number
+</pre></div>
+</div>
+</div>
+<div class="section" id="heatmap-slop">
+<h3>heatmap_slop<a class="headerlink" href="#heatmap-slop" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>heatmap_slop:
+    description: how much the summits should be extended by (on each side) for making a heatmap of peaks in the multiQC report. If for instance a slop of 1000 is chosen, the final peak&#39;s width is 2000.
+    default: 1000
+    type: integer
+</pre></div>
+</div>
+</div>
+<div class="section" id="heatmap-npeaks">
+<h3>heatmap_npeaks<a class="headerlink" href="#heatmap-npeaks" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>heatmap_npeaks:
+    description: The number of random peaks used for the heatmap. This at most visualizes all peaks found, so picking a number higher than the number of peaks has no effect. The reason to pick a smaller number is to limit computational resources.
+    default: 20000
+    type: integer
+</pre></div>
+</div>
+</div>
+<div class="section" id="heatmap-deeptools-options">
+<h3>heatmap_deeptools_options<a class="headerlink" href="#heatmap-deeptools-options" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>heatmap_deeptools_options:
+    description: the options passed to deeptools when visualizing the heatmap
+    default: --kmeans 6 --xAxisLabel &quot;Summit distance (bp)&quot;
+    type: string
 </pre></div>
 </div>
 </div>
@@ -945,6 +977,87 @@
 <h3>barcodefile<a class="headerlink" href="#barcodefile" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>barcodefile:
     type: string
+</pre></div>
+</div>
+</div>
+<div class="section" id="run-kb-seurat-pp">
+<h3>run_kb_seurat_pp<a class="headerlink" href="#run-kb-seurat-pp" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>run_kb_seurat_pp:
+    default: False
+    type: boolean
+</pre></div>
+</div>
+</div>
+<div class="section" id="seurat">
+<h3>seurat<a class="headerlink" href="#seurat" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>seurat:
+    description: Seurat rmd for exploratory data analysis
+    properties:
+        method:
+            description: experimental method
+            enum: [&#39;384plate&#39;, &#39;droplet&#39;]
+        barcode_file:
+            description: .tab delimited file with 2-col layout for plate based methods (with DNA barcode and well-id)
+            type: string
+        mt_genes_file:
+            description: .txt file containing one column with mitchondrial genes
+            type: string
+        run.sct:
+            description: perform SCTransform normalization, FALSE runs log1p NormalizeData, HVG selection and ScaleData in Seurat
+            type: boolean
+        run.jackstraw:
+            description: perform Jackstraw analysis (does not work with SCTransform)
+            type: boolean
+        add.spikes.ercc:
+            label: use ERCC RNA spike-ins (if present)
+            type: boolean
+        ercc_pct_max:
+            description: max percentage ERCC spike-ins counts
+            type: integer
+        add.spikes.mt:
+            description: use mitochondrial gene-list for qc
+            type: boolean
+        mt_pct_max:
+            description: max percentage mitochondrial genes counts
+            type: integer
+        gene_tresh:
+            description: gene filter threshold for genes considered expressed
+            type: integer
+        amount_cells_expr:
+            description: gene filter threshold for minimal amount of cells a gene should be expressed in
+            type: integer
+        total_counts_tresh:
+            description: cell filter threshold for minimal amount of UMI counts detected in a cell
+            type: integer
+        total_feat_tresh:
+            description: cell filter threshold for minimal amount of features (genes) detected in a cell
+            type: integer
+        nhvg:
+            description: number of Highly Variable Genes, used in Seurat&#39;s FindVariableFeatures
+            type: integer
+        pcs_for_overview:
+            description: perform UMAP on the defined list of pc&#39;s (seperated by comma) and generate combined UMAP plot
+            type: string
+        pcs_max_hvg:
+            description: max number of principal components to visualize
+            type: integer
+        default:
+            method: 384plate
+            barcode_file:
+            mt_genes_file:
+            run.sct: True
+            run.jackstraw: False
+            add.spikes.ercc: True
+            add.spikes.mt: True
+            ercc_pct_max: 20
+            mt_pct_max: 50
+            gene_tresh: 0
+            amount_cells_expr: 0
+            total_counts_tresh: 1000
+            total_feat_tresh: 500
+            nhvg: 2000
+            pcs_max_hvg: 70
+            pcs_for_overview: 10,20,30,40,50
 </pre></div>
 </div>
 </div>

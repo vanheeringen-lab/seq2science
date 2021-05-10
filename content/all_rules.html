@@ -109,7 +109,8 @@
 <li class="toctree-l3"><a class="reference internal" href="#combine-peaks">combine_peaks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#combine-qc-files">combine_qc_files</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#complement-blacklist">complement_blacklist</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#computematrix">computeMatrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#computematrix-gene">computeMatrix_gene</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#computematrix-peak">computeMatrix_peak</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#count-matrix">count_matrix</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#count-matrix-dexseq">count_matrix_DEXseq</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#coverage-table">coverage_table</a></li>
@@ -146,12 +147,12 @@
 <li class="toctree-l3"><a class="reference internal" href="#hisat2-splice-aware-index">hisat2_splice_aware_index</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#hmmratac">hmmratac</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#hmmratac-genome-info">hmmratac_genome_info</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#htseq-count">htseq_count</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#idr">idr</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#infer-strandedness">infer_strandedness</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#insert-size-metrics">insert_size_metrics</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#kallistobus-count">kallistobus_count</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#kallistobus-ref">kallistobus_ref</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#kb-seurat-pp">kb_seurat_pp</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#keep-mates">keep_mates</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#linked-txome">linked_txome</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#log-normalization">log_normalization</a></li>
@@ -174,10 +175,12 @@
 <li class="toctree-l3"><a class="reference internal" href="#peak-bigpeak">peak_bigpeak</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#plotcorrelation">plotCorrelation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#plotfingerprint">plotFingerprint</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#plotheatmap-peak">plotHeatmap_peak</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#plotpca">plotPCA</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#plotprofile">plotProfile</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#plotprofile-gene">plotProfile_gene</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#prepare-dexseq-annotation">prepare_DEXseq_annotation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#quantile-normalization">quantile_normalization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#random-subset-peaks">random_subset_peaks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#rename-sample">rename_sample</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#run2sra">run2sra</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#runs2sample">runs2sample</a></li>
@@ -431,16 +434,24 @@ multiqc.</p>
 <h2>complement_blacklist<a class="headerlink" href="#complement-blacklist" title="Permalink to this headline">¶</a></h2>
 <p>Take the complement of the blacklist. We need this complement to tell samtools
 to only keep reads that are in the complement of the blacklist.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>sortBed -faidx {input.sizes} -i {input.blacklist} |
-complementBed -i stdin -g {input.sizes} &gt; {output} 2&gt; {log}
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>sortBed -faidx {input.sizes} -i {input.blacklist} 2&gt;&gt; {log} |
+complementBed -i stdin -g {input.sizes} &gt; {output} 2&gt;&gt; {log}
 </pre></div>
 </div>
 </div>
-<div class="section" id="computematrix">
-<h2>computeMatrix<a class="headerlink" href="#computematrix" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="computematrix-gene">
+<h2>computeMatrix_gene<a class="headerlink" href="#computematrix-gene" title="Permalink to this headline">¶</a></h2>
 <p>Pre-compute correlations between bams using deeptools.</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>computeMatrix scale-regions -S {input.bw} {params.labels} -R {params.annotation} \
 -p {threads} -b 2000 -a 500 -o {output} &gt; {log} 2&gt;&amp;1
+</pre></div>
+</div>
+</div>
+<div class="section" id="computematrix-peak">
+<h2>computeMatrix_peak<a class="headerlink" href="#computematrix-peak" title="Permalink to this headline">¶</a></h2>
+<p>Pre-compute correlations between bams using deeptools.</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>computeMatrix scale-regions -S {input.bw} {params.labels} -R {input.peaks} \
+-p {threads} --binSize 5 -o {output} &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
 </div>
@@ -751,13 +762,6 @@ paste {output.tmp1} {output.tmp2} &gt; {output.out} 2&gt; {log}
 </pre></div>
 </div>
 </div>
-<div class="section" id="htseq-count">
-<h2>htseq_count<a class="headerlink" href="#htseq-count" title="Permalink to this headline">¶</a></h2>
-<p>summarize reads to gene level. Outputs a counts table per bam file.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>htseq-count {input.bam} {input.gtf} -r pos -s {params.strandedness} {params.user_flags} -n {threads} -c {output} &gt; {log} 2&gt;&amp;1
-</pre></div>
-</div>
-</div>
 <div class="section" id="idr">
 <h2>idr<a class="headerlink" href="#idr" title="Permalink to this headline">¶</a></h2>
 <p>Combine replicates based on the irreproducible discovery rate (IDR). Can only handle two replicates.
@@ -817,6 +821,10 @@ OUTPUT={output.tsv} H={output.pdf} &gt; {log} 2&gt;&amp;1
 {params.options} &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
+</div>
+<div class="section" id="kb-seurat-pp">
+<h2>kb_seurat_pp<a class="headerlink" href="#kb-seurat-pp" title="Permalink to this headline">¶</a></h2>
+<p>summarize reads to gene level. Outputs a counts table per bam file.</p>
 </div>
 <div class="section" id="keep-mates">
 <h2>keep_mates<a class="headerlink" href="#keep-mates" title="Permalink to this headline">¶</a></h2>
@@ -1002,6 +1010,13 @@ bedToBigBed -type={params.type} -as={params.schema} {output.tmp} \
 </pre></div>
 </div>
 </div>
+<div class="section" id="plotheatmap-peak">
+<h2>plotHeatmap_peak<a class="headerlink" href="#plotheatmap-peak" title="Permalink to this headline">¶</a></h2>
+<p>Plot the peak heatmap using deeptools.</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>plotHeatmap --matrixFile {input} --outFileName {output.img} {params.params} --startLabel=&quot;-{params.slop}&quot; --endLabel={params.slop} &gt; {log} 2&gt;&amp;1
+</pre></div>
+</div>
+</div>
 <div class="section" id="plotpca">
 <h2>plotPCA<a class="headerlink" href="#plotpca" title="Permalink to this headline">¶</a></h2>
 <p>Plot a PCA between bams using deeptools.</p>
@@ -1009,9 +1024,9 @@ bedToBigBed -type={params.type} -as={params.schema} {output.tmp} \
 </pre></div>
 </div>
 </div>
-<div class="section" id="plotprofile">
-<h2>plotProfile<a class="headerlink" href="#plotprofile" title="Permalink to this headline">¶</a></h2>
-<p>Plot the so-called profile using deeptools.</p>
+<div class="section" id="plotprofile-gene">
+<h2>plotProfile_gene<a class="headerlink" href="#plotprofile-gene" title="Permalink to this headline">¶</a></h2>
+<p>Plot the gene profile using deeptools.</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>plotProfile -m {input} --outFileName {output.img} --outFileNameData {output.file} &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
@@ -1035,6 +1050,13 @@ normalized (which has no effect between and within samples), for a fair
 comparison between normalisation techniques.</p>
 <p>See wikipedia:
 <a class="reference external" href="https://en.wikipedia.org/wiki/Quantile_normalization">https://en.wikipedia.org/wiki/Quantile_normalization</a></p>
+</div>
+<div class="section" id="random-subset-peaks">
+<h2>random_subset_peaks<a class="headerlink" href="#random-subset-peaks" title="Permalink to this headline">¶</a></h2>
+<p>Take a random subset of all summits, and make them all same width.</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>shuf -n {wildcards.nrpeaks} {input.peaks} | bedtools slop -i stdin -g {input.sizes} -b {params.slop} &gt; {output}
+</pre></div>
+</div>
 </div>
 <div class="section" id="rename-sample">
 <h2>rename_sample<a class="headerlink" href="#rename-sample" title="Permalink to this headline">¶</a></h2>

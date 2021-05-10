@@ -130,15 +130,22 @@ multiqc.
 Take the complement of the blacklist. We need this complement to tell samtools
 to only keep reads that are in the complement of the blacklist.
 ```
-sortBed -faidx {input.sizes} -i {input.blacklist} |
-complementBed -i stdin -g {input.sizes} > {output} 2> {log}
+sortBed -faidx {input.sizes} -i {input.blacklist} 2>> {log} |
+complementBed -i stdin -g {input.sizes} > {output} 2>> {log}
 ```
 
-#### computeMatrix
+#### computeMatrix_gene
 Pre-compute correlations between bams using deeptools.
 ```
 computeMatrix scale-regions -S {input.bw} {params.labels} -R {params.annotation} \
 -p {threads} -b 2000 -a 500 -o {output} > {log} 2>&1
+```
+
+#### computeMatrix_peak
+Pre-compute correlations between bams using deeptools.
+```
+computeMatrix scale-regions -S {input.bw} {params.labels} -R {input.peaks} \
+-p {threads} --binSize 5 -o {output} > {log} 2>&1
 ```
 
 #### count_matrix
@@ -420,12 +427,6 @@ samtools view -H {input} 2>> {log} | grep SQ 2>> {log} | cut -f 2-3 2>> {log} | 
 paste {output.tmp1} {output.tmp2} > {output.out} 2> {log}
 ```
 
-#### htseq_count
-summarize reads to gene level. Outputs a counts table per bam file.
-```
-htseq-count {input.bam} {input.gtf} -r pos -s {params.strandedness} {params.user_flags} -n {threads} -c {output} > {log} 2>&1
-```
-
 #### idr
 Combine replicates based on the irreproducible discovery rate (IDR). Can only handle two replicates.
 For more than two replicates use fisher's method.
@@ -482,6 +483,9 @@ kb ref \
 -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
 {params.options} > {log} 2>&1
 ```
+
+#### kb_seurat_pp
+summarize reads to gene level. Outputs a counts table per bam file.
 
 #### keep_mates
 In-house script that, after alignment, removes the information that reads are paired.
@@ -653,14 +657,20 @@ Plot the "fingerprint" of your bams, using deeptools.
 plotFingerprint -b {input.bams} {params} --outRawCounts {output} -p {threads} > {log} 2>&1 
 ```
 
+#### plotHeatmap_peak
+Plot the peak heatmap using deeptools.
+```
+plotHeatmap --matrixFile {input} --outFileName {output.img} {params.params} --startLabel="-{params.slop}" --endLabel={params.slop} > {log} 2>&1
+```
+
 #### plotPCA
 Plot a PCA between bams using deeptools.
 ```
 plotPCA --corData {input} --outFileNameData {output} > {log} 2>&1
 ```
 
-#### plotProfile
-Plot the so-called profile using deeptools.
+#### plotProfile_gene
+Plot the gene profile using deeptools.
 ```
 plotProfile -m {input} --outFileName {output.img} --outFileNameData {output.file} > {log} 2>&1
 ```
@@ -683,6 +693,12 @@ comparison between normalisation techniques.
 
 See wikipedia:
 https://en.wikipedia.org/wiki/Quantile_normalization
+
+#### random_subset_peaks
+Take a random subset of all summits, and make them all same width.
+```
+shuf -n {wildcards.nrpeaks} {input.peaks} | bedtools slop -i stdin -g {input.sizes} -b {params.slop} > {output}
+```
 
 #### rename_sample
 Rename local samples with incompatible naming formats
