@@ -32,3 +32,5 @@ seq2science/workflows/scrna_seq/barcodes.txt
 *bwa/
 *hisat2
 *star/
+
+.vscode/

@@ -47,6 +47,8 @@ else:
         'trim-galore': 'http://www.bioinformatics.babraham.ac.uk/projects/trim_galore/',
         'tximeta': 'https://doi.org/10.1101/777888',
         'ucsc genome browser': 'http://www.genome.org/cgi/doi/10.1101/gr.229102',
+        'seurat': 'https://satijalab.org/seurat/',
+        'kb_seurat_pp': 'https://github.com/Rebecza/scRNA-seq',
     }
 
     def explain_rule(name):
@@ -169,4 +171,5 @@ else:
         "combine_peaks": f"A consensus set of summits was made with {href_v('gimmemotifs',text='gimmemotifs.combine_peaks',env='gimme')}.",
         "bed_slop": f"All summits were extended with {config.get('slop')} bp to get a consensus peakset.",
         "coverage_table": f"And finally we made a count table from the conensus peakset with gimmemotifs.",  # already cited in "combine_peaks"
+        "kb_seurat_pp": f"scRNA count post-processing was performed using the {hyperref('seurat')} based {hyperref('kb_seurat_pp')} markdown.",
     }
