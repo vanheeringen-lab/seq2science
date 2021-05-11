@@ -373,16 +373,16 @@ Many minor bug- and quality of life fixes.
 ## [0.0.0] - 2020-06-11
 First release of seq2science!
 
-[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/master...v0.5.2
-[0.5.2]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.2...v0.5.1
-[0.5.1]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.1...v0.5.0
-[0.5.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.0...v0.4.3
-[0.4.3]: https://github.com/vanheeringen-lab/seq2science/compare/v0.4.3...v0.4.2
-[0.4.2]: https://github.com/vanheeringen-lab/seq2science/compare/v0.4.2...v0.4.1
-[0.4.1]: https://github.com/vanheeringen-lab/seq2science/compare/v0.4.1...v0.4.0
-[0.4.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.4.0...v0.3.2
-[0.3.2]: https://github.com/vanheeringen-lab/seq2science/compare/v0.3.2...v0.3.1
-[0.3.1]: https://github.com/vanheeringen-lab/seq2science/compare/v0.3.1...v0.3.0
+[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.3...master
+[0.5.2]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.1...v0.5.2
+[0.5.1]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.0...v0.5.1
+[0.5.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.4.3...v0.5.0
+[0.4.3]: https://github.com/vanheeringen-lab/seq2science/compare/v0.4.2...v0.4.3
+[0.4.2]: https://github.com/vanheeringen-lab/seq2science/compare/v0.4.1...v0.4.2
+[0.4.1]: https://github.com/vanheeringen-lab/seq2science/compare/v0.4.0...v0.4.1
+[0.4.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.3.2...v0.4.0
+[0.3.2]: https://github.com/vanheeringen-lab/seq2science/compare/v0.3.1...v0.3.2
+[0.3.1]: https://github.com/vanheeringen-lab/seq2science/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.2.3...v0.3.0
 [0.2.3]: https://github.com/vanheeringen-lab/seq2science/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/vanheeringen-lab/seq2science/compare/v0.2.1...v0.2.2
