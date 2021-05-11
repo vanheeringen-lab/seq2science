@@ -8,6 +8,9 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Fixed
+- depend less on local genomes (only when data is unavailable online)
+
 ## [0.5.2] - 2021-05-10
 
 ### Added
