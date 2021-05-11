@@ -246,32 +246,39 @@ if "assembly" in samples:
                 if os.path.exists(providersfile):
                     providers = pickle.load(open(providersfile, "rb"))
 
-                if any([assembly not in providers for assembly in set(samples["assembly"])]):
-                    logger.info("Determining assembly providers")
+                # list assemblies not in the s2s cache
+                search_assemblies = [assembly for assembly in set(samples["assembly"]) if assembly not in providers]
+                if len(search_assemblies) == 0:
+                    break
 
-                    for assembly in set(samples["assembly"]):
-                        if assembly not in providers:
-                            file = os.path.join(config['genome_dir'], assembly, assembly)
-                            providers[assembly] = {"genome": None, "annotation": None}
+                logger.info("Determining assembly providers")
+                for assembly in search_assemblies:
+                    file = os.path.join(config['genome_dir'], assembly, assembly)
+                    providers[assembly] = {"genome": None, "annotation": None}
 
-                            # check if genome and annotations exist locally
-                            if os.path.exists(f"{file}.fa"):
+                    # check if the annotation AND genome can be downloaded
+                    if providers[assembly]["annotation"] is None:
+                        annotion_provider = provider_with_file("annotation", assembly)
+                        if annotion_provider:
+                            providers[assembly]["genome"] = annotion_provider  # genome always exists if annotation does
+                            providers[assembly]["annotation"] = annotion_provider
+
+                        # if the annotation cannot be downloaded, but exists locally, leave it be.
+                        elif any(os.path.exists(f) for f in [f"{file}.annotation.gtf", f"{file}.annotation.gtf.gz"]) and \
+                            any(os.path.exists(f) for f in [f"{file}.annotation.bed", f"{file}.annotation.bed.gz"]):
+                            providers[assembly]["annotation"] = "local"
+                            # also check if the genome exists when using a local annotation
+                            if os.path.exists(f"{file}.fa") or os.path.exists(f"{file}.fa.gz"):
                                 providers[assembly]["genome"] = "local"
-                            if any(os.path.exists(f) for f in [f"{file}.annotation.gtf", f"{file}.annotation.gtf.gz"]) and \
-                                any(os.path.exists(f) for f in [f"{file}.annotation.bed", f"{file}.annotation.bed.gz"]):
-                                providers[assembly]["annotation"] = "local"
 
-                            # check if the annotation can be downloaded
-                            if providers[assembly]["annotation"] is None:
-                                annotion_provider = provider_with_file("annotation", assembly)
-                                if annotion_provider:
-                                    providers[assembly]["genome"] = annotion_provider  # genome always exists if annotation does
-                                    providers[assembly]["annotation"] = annotion_provider
-
-                            # check if the genome can be downloaded
-                            if providers[assembly]["genome"] is None:
-                                genome_provider = provider_with_file("genome", assembly)
-                                providers[assembly]["genome"] = genome_provider
+                    # check if the genome can be downloaded
+                    if providers[assembly]["genome"] is None:
+                        genome_provider = provider_with_file("genome", assembly)
+                        if genome_provider:
+                            providers[assembly]["genome"] = genome_provider
+                        # if the genome cannot be downloaded, but exists locally, leave it be.
+                        elif os.path.exists(f"{file}.fa") or os.path.exists(f"{file}.fa.gz"):
+                            providers[assembly]["genome"] = "local"
 
                     pickle.dump(providers, open(providersfile, "wb"))
                 break
