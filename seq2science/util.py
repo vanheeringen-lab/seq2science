@@ -7,12 +7,14 @@ import sys
 import glob
 import time
 import colorsys
+import pickle
 import urllib.request
 import yaml
 from io import StringIO
 from typing import List
 from math import ceil, floor
 
+from filelock import FileLock
 import matplotlib.colors as mcolors
 import numpy as np
 import pandas as pd
@@ -215,23 +217,6 @@ def samples2metadata(samples: List[str], config: dict, logger) -> dict:
         time.sleep(1)
 
     return {**local_samples, **sra_samples}
-
-
-def prep_filelock(lock_file, max_age=10):
-    """
-    create the directory for the lock_file if needed
-    and remove locks older than the max_age (in seconds)
-    """
-    os.makedirs(os.path.dirname(lock_file), exist_ok=True)
-
-    # sometimes two jobs start in parallel and try to delete at the same time
-    try:
-        # ignore locks that are older than the max_age
-        if os.path.exists(lock_file) and \
-                time.time() - os.stat(lock_file).st_mtime > max_age:
-            os.unlink(lock_file)
-    except FileNotFoundError:
-         pass
 
 
 def sieve_bam(configdict):
@@ -520,3 +505,56 @@ class CaptureStderr(list):
         self.extend(self._stringio.getvalue().splitlines())
         del self._stringio  # free up some memory
         sys.stderr = self._stderr
+
+
+def prep_filelock(lock_file, max_age=10):
+    """
+    create the directory for the lock_file if needed
+    and remove locks older than the max_age (in seconds)
+    """
+    os.makedirs(os.path.dirname(lock_file), exist_ok=True)
+
+    # sometimes two jobs start in parallel and try to delete at the same time
+    try:
+        # ignore locks that are older than the max_age
+        if os.path.exists(lock_file) and \
+                time.time() - os.stat(lock_file).st_mtime > max_age:
+            os.unlink(lock_file)
+    except FileNotFoundError:
+        pass
+
+
+def retry_pickling(func):
+    def wrap(*args, **kwargs):
+        # we get two tries, in case parallel executions are interfering with one another
+        for _ in range(2):
+            try:
+                return func(*args, **kwargs)
+            except FileNotFoundError:
+                time.sleep(1)
+        else:
+            logger.error("There were some problems with locking the seq2science cache. Please try again in a bit.")
+            raise TerminatedException
+    return wrap
+
+
+class PickleDict(dict):
+    """dict with builtin pickling utility"""
+    def __init__(self, file):
+        self.file = file
+        self.filelock = f"{file}.p.lock"
+
+        data = self.load() if os.path.exists(self.file) else dict()
+        super(PickleDict, self).__init__(data)
+
+    @retry_pickling
+    def load(self):
+        prep_filelock(self.filelock, 30)
+        with FileLock(self.filelock):
+            return pickle.load(open(self.file, "rb"))
+
+    @retry_pickling
+    def save(self):
+        prep_filelock(self.filelock, 30)
+        with FileLock(self.filelock):
+            pickle.dump(self, open(self.file, "wb"))
