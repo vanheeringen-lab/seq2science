@@ -8,6 +8,14 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+
+### Changed
+
+- Genrich peak calling defaults
+  - Doesn't remove PCR duplicates anymore (best to do with markduplicates)
+  - Changed extsize to 200 to be similar to macs settings
+  - Turned off tn5 shift, since that is done by seq2science
+
 ## [0.5.2] - 2021-05-10
 
 ### Added
