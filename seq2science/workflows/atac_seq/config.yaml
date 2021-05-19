@@ -36,7 +36,7 @@ peak_caller:
   macs2:
       --shift -100 --extsize 200 --nomodel --keep-dup 1 --buffer-size 10000
 #  genrich:
-#      -y -j -r
+#      -j -y -D -d 200
 
 ## differential gene expression analysis
 #contrasts:
