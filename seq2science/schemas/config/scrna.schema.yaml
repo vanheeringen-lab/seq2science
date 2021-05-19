@@ -22,11 +22,17 @@ properties:
             default: ''
           count:
             default: '-x 10XV3 --verbose --h5ad --workflow lamanno'
+          kite:
+            default: false
     default:
       kallistobus:
         ref: ''
         count: '-x 10XV3 --verbose --h5ad --workflow lamanno'
-
+        kite: false
+  
+  featurebarcodefile:
+    type: string
+  
   barcodefile:
     type: string
     
