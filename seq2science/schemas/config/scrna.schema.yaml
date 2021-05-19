@@ -29,5 +29,77 @@ properties:
 
   barcodefile:
     type: string
-
-  
+    
+  run_kb_seurat_pp:
+    default: false
+    type: boolean
+      
+  # Exploratory data analysis for in-house Celseq2
+  seurat:
+    description: Seurat rmd for exploratory data analysis
+    properties:
+      method: 
+        description: experimental method
+        enum:  [384plate,droplet]
+      barcode_file:  
+        description: ".tab delimited file with 2-col layout for plate based methods (with DNA barcode and well-id)"
+        type: string
+      mt_genes_file: 
+        description: ".txt file containing one column with mitchondrial genes"
+        type: string
+      run.sct:
+         description: "perform SCTransform normalization, FALSE runs log1p NormalizeData, HVG selection and ScaleData in Seurat"
+         type: boolean
+      run.jackstraw:
+         description: "perform Jackstraw analysis (does not work with SCTransform)"
+         type: boolean    
+      add.spikes.ercc: 
+        label: "use ERCC RNA spike-ins (if present)"
+        type: boolean
+      ercc_pct_max: 
+        description: "max percentage ERCC spike-ins counts"
+        type: integer
+      add.spikes.mt: 
+        description: "use mitochondrial gene-list for qc"
+        type: boolean
+      mt_pct_max: 
+        description: "max percentage mitochondrial genes counts"
+        type: integer
+      gene_tresh: 
+        description: "gene filter threshold for genes considered expressed"
+        type: integer
+      amount_cells_expr: 
+        description: "gene filter threshold for minimal amount of cells a gene should be expressed in"
+        type: integer
+      total_counts_tresh: 
+        description: "cell filter threshold for minimal amount of UMI counts detected in a cell"
+        type: integer
+      total_feat_tresh: 
+        description: "cell filter threshold for minimal amount of features (genes) detected in a cell"
+        type: integer
+      nhvg: 
+        description: "number of Highly Variable Genes, used in Seurat's FindVariableFeatures"
+        type: integer
+      pcs_for_overview:
+        description: "perform UMAP on the defined list of pc's (seperated by comma) and generate combined UMAP plot"
+        type: string
+      pcs_max_hvg: 
+        description: "max number of principal components to visualize"
+        type: integer  
+      default:
+        method: 384plate
+        barcode_file: ""
+        mt_genes_file: ""
+        run.sct: true
+        run.jackstraw: false
+        add.spikes.ercc : true
+        add.spikes.mt: true
+        ercc_pct_max: 20
+        mt_pct_max: 50
+        gene_tresh: 0
+        amount_cells_expr: 0  
+        total_counts_tresh: 1000
+        total_feat_tresh: 500
+        nhvg: 2000
+        pcs_max_hvg: 70
+        pcs_for_overview: 10,20,30,40,50

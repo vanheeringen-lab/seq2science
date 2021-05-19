@@ -1,5 +1,7 @@
-from seq2science.util import get_bustools_rid
+import os
+import glob
 
+from seq2science.util import get_bustools_rid
 
 if config["quantifier"] == "salmon":
 
@@ -159,6 +161,8 @@ elif config["quantifier"] == "kallistobus":
         priority: 1
         conda:
             "../envs/kallistobus.yaml"
+        resources:
+            mem_gb=88,
         params:
             basename=lambda wildcards, output: f"{output[0]}{wildcards.assembly}",
             options=config.get("ref")
@@ -239,7 +243,7 @@ elif config["quantifier"] == "kallistobus":
              basedir=rules.kallistobus_ref.output,
              reads=rules.fastq_pair.output.reads
         output:
-            dir=directory(expand("{result_dir}/{quantifier}/{{assembly}}-{{sample}}", **config)),
+            dir=directory(expand("{result_dir}/{quantifier}/{{assembly}}-{{sample}}",**config))
         log:
             expand("{log_dir}/kallistobus_count/{{assembly}}-{{sample}}.log", **config),
         benchmark:
@@ -249,6 +253,8 @@ elif config["quantifier"] == "kallistobus":
             "../envs/kallistobus.yaml"
         threads: 8
         message: explain_rule("kallistobus-count")
+        resources:
+            mem_gb=66,
         params:
             basename=lambda wildcards, input: f"{input.basedir[0]}/{wildcards.assembly}",
             options=config.get("count")
@@ -261,7 +267,24 @@ elif config["quantifier"] == "kallistobus":
             {params.options} {input.reads} > {log} 2>&1
             """
 
-            
+    rule kb_seurat_pp:
+        input:
+            expand([f"{{result_dir}}/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}" for trep in treps.index], **config)
+        output:
+            html=f"{config['result_dir']}/kb_seurat_pp/{{quantifier}}/{{assembly}}/kb_seurat_pp.html",
+            qc_dir=directory(f"{config['result_dir']}/kb_seurat_pp/{{quantifier}}/{{assembly}}/qc")
+        priority: 1
+        conda:
+            "../envs/kb_seurat_pp.yaml"
+        params:
+            isvelo=lambda wildcards, input: True if "--workflow" in config.get("count", "") else False
+        message: explain_rule("kb_seurat_pp")    
+        resources:
+            R_scripts=1, # conda's R can have issues when starting multiple times
+        script:
+            f"{config['rule_dir']}/../scripts/knit_kb_seurat_pp.R"
+
+
 elif config["quantifier"] == "htseq":
 
     rule htseq_count:
