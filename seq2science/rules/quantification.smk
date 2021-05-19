@@ -266,7 +266,71 @@ elif config["quantifier"] == "kallistobus":
             -o {output} -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
             {params.options} {input.reads} > {log} 2>&1
             """
+            
+    if config["kite-workflow"]:   
 
+        rule kallistobus_ref_kite:
+            """
+            Make a mismatch index for kallistobus. This index is required to count feature barcodes, such as antibody tags. 
+            """
+            input:
+                featurebarcodes=expand("{genome_dir}/{kite_fm}.tsv", **config)
+            output:
+                directory(expand("{genome_dir}/{kite_fm}/index/kallistobus_kite", **config)),
+            log:
+                expand("{log_dir}/kallistobus_index_kite/{kite_fm}.log", **config),    
+            conda:
+                "../envs/kallistobus.yaml"  
+            resources:
+                mem_gb=88, 
+            params:                
+                options=config.get("ref_kite"),
+                kite_prefix=f"{config['kite_fm']}"
+            priority: 1
+            shell:
+                """
+                mkdir -p {output[0]}/{params.kite_prefix}/index/kallistobus_kite
+                kb ref  \
+                {input.featurebarcodes} \
+                {params.options} \
+                -i {output[0]}/{params.kite_prefix}.idx -g {output[0]}/{params.kite_prefix}.t2g -f1 {output[0]}/{params.kite_prefix}.fa > {log} 2>&1 
+                """
+        
+        
+        rule kallistobus_count_kite:
+            """
+            Align reads against a transcriptome (index) with kallistobus and output a quantification file per sample.
+            """
+            input:
+                 basedir=rules.kallistobus_ref_kite.output,
+                 reads=rules.fastq_pair.output.reads
+            output:
+                dir=directory(expand("{result_dir}/{quantifier}/kite/{kite_fm}-{{sample}}",**config))
+            log:
+                expand("{log_dir}/kallistobus_count/kite/{kite_fm}-{{sample}}.log", **config),
+            benchmark:
+                expand("{benchmark_dir}/kallistobus_count/kite/{kite_fm}-{{sample}}.benchmark.txt", **config)[0]
+            priority: 1
+            conda:
+                "../envs/kallistobus.yaml"
+            threads: 8
+            message: explain_rule("kallistobus-count")
+            resources:
+                mem_gb=66,
+            params:
+                basename=lambda wildcards, input: f"{input.basedir}",
+                kite_prefix=f"{config['kite_fm']}",
+                options=config.get("count_kite")
+            shell:
+                """
+                kb count \
+                -i {params.basename}/{params.kite_prefix}.idx \
+                -t {threads} -g {params.basename}/{params.kite_prefix}.t2g \
+                -o {output}  \
+                {params.options} {input.reads} > {log} 2>&1
+                """
+       
+         
     rule kb_seurat_pp:
         input:
             expand([f"{{result_dir}}/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}" for trep in treps.index], **config)

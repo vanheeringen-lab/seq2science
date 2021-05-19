@@ -8,6 +8,11 @@ properties:
     description: directory where to find the workflow rules
     default: fastq_cleaned
     type: string
+  # directory to store custom annotations
+  custom_kb_extensions:
+    describtion: directory for kite feature mappings
+    default: kb_features
+    type: string 
   # fastq-pair
   fastq-pair:
       description: fastq synchronization
@@ -19,19 +24,22 @@ properties:
       kallistobus:
         properties:
           ref:
-            default: ''
+            default: '--workflow lamanno'
           count:
             default: '-x 10XV3 --verbose --h5ad --workflow lamanno'
-          kite:
-            default: false
+          ref_kite:
+            default: '--workflow kite'
+          count_kite:
+            default: '-x 10Xv3 --verbose --h5ad'
+    
     default:
       kallistobus:
-        ref: ''
+        ref: '--workflow lamanno'
         count: '-x 10XV3 --verbose --h5ad --workflow lamanno'
-        kite: false
   
-  featurebarcodefile:
-    type: string
+  kite-workflow:
+    default: false
+    type: boolean
   
   barcodefile:
     type: string
