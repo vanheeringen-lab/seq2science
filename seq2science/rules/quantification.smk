@@ -266,7 +266,7 @@ elif config["quantifier"] == "kallistobus":
                  {params.options} {input.reads} > {log} 2>&1
                  """        
         
-    if config.get['mode'] == "kite":
+    if config.get('mode') == "kite":
         
         rule kallistobus_ref_kite:
             """
@@ -281,7 +281,7 @@ elif config["quantifier"] == "kallistobus":
             conda:
                 "../envs/kallistobus.yaml"  
             resources:
-                mem_gb=88, 
+                mem_gb=12, 
             params:                
                 options=config.get("ref"),
                 kite_prefix=f"{config['kite_fm']}"
