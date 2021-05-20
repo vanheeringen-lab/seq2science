@@ -200,6 +200,7 @@ elif config["quantifier"] == "kallistobus":
             fi
             fastq_pair $opts {output.intermediates1} >> {log} 2>&1
         """
+            
     if config.get('mode') == 'gex':
     
         rule kallistobus_ref:
@@ -265,7 +266,7 @@ elif config["quantifier"] == "kallistobus":
                  -o {output} -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
                  {params.options} {input.reads} > {log} 2>&1
                  """        
-        
+                
     if config.get['mode'] == "kite":
         ruleorder: kallistobus_ref_kite > get_genome
         
@@ -284,7 +285,7 @@ elif config["quantifier"] == "kallistobus":
             conda:
                 "../envs/kallistobus.yaml"  
             resources:
-                mem_gb=88, 
+                mem_gb=12, 
             params:                
                 options=config.get("ref"),
                 # kite_prefix=f"{config['kite_fm']}"

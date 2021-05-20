@@ -23,10 +23,6 @@ properties:
     properties:
       kallistobus:
         properties:
-          mode:
-            description:
-            enum: ['kite', 'gex']
-            default: 'gex'
           ref:
             default: '--workflow lamanno'
           count:
