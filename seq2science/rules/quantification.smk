@@ -145,38 +145,6 @@ if config["quantifier"] == "salmon":
 
 elif config["quantifier"] == "kallistobus":
 
-    rule kallistobus_ref:
-        """
-        Make a genome index for kallistobus. This index is required for counting.
-        """
-        input:
-            fa=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
-            gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
-        output:
-            directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/", **config)),
-        log:
-            expand("{log_dir}/kallistobus_index/{{assembly}}.log", **config),
-        benchmark:
-            expand("{benchmark_dir}/kallistobus_index/{{assembly}}.benchmark.txt", **config)[0]
-        priority: 1
-        conda:
-            "../envs/kallistobus.yaml"
-        resources:
-            mem_gb=88,
-        params:
-            basename=lambda wildcards, output: f"{output[0]}{wildcards.assembly}",
-            options=config.get("ref")
-        shell:
-            """
-            kb ref \
-            {input.fa} {input.gtf} \
-            -i {params.basename}.idx -g {params.basename}_t2g.txt -f1 {params.basename}_cdna.fa \
-            -f2 {params.basename}_intron.fa \
-            -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
-            {params.options} > {log} 2>&1
-            """
-
-
     def get_fastq_pair_reads(wildcards):
         """
         Extracts the correct combination of R1/R2 (trimmed and barcodes) for fastq_pair 
@@ -231,44 +199,75 @@ elif config["quantifier"] == "kallistobus":
               opts="-p -t "$(wc -l {input.r1} | grep -Po '^\d+' | awk '{{print int($1/4)}}')
             fi
             fastq_pair $opts {output.intermediates1} >> {log} 2>&1
-            """
-
-
-    rule kallistobus_count:
         """
-        Align reads against a transcriptome (index) with kallistobus and output a quantification file per sample.
-        """
-        input:
-             barcodefile=config["barcodefile"],
-             basedir=rules.kallistobus_ref.output,
-             reads=rules.fastq_pair.output.reads
-        output:
-            dir=directory(expand("{result_dir}/{quantifier}/{{assembly}}-{{sample}}",**config))
-        log:
-            expand("{log_dir}/kallistobus_count/{{assembly}}-{{sample}}.log", **config),
-        benchmark:
-            expand("{benchmark_dir}/kallistobus_count/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
-        priority: 1
-        conda:
-            "../envs/kallistobus.yaml"
-        threads: 8
-        message: explain_rule("kallistobus-count")
-        resources:
-            mem_gb=66,
-        params:
-            basename=lambda wildcards, input: f"{input.basedir[0]}/{wildcards.assembly}",
-            options=config.get("count")
-        shell:
+    if config.get('mode') == 'gex':
+    
+        rule kallistobus_ref:
             """
-            kb count \
-            -i {params.basename}.idx -w {input.barcodefile} \
-            -t {threads} -g {params.basename}_t2g.txt \
-            -o {output} -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
-            {params.options} {input.reads} > {log} 2>&1
+            Make a genome index for kallistobus. This index is required for counting.
             """
-            
-    if config["kite-workflow"]:   
-
+            input:
+                fa=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+                gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
+            output:
+                directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/", **config)),
+            log:
+                expand("{log_dir}/kallistobus_index/{{assembly}}.log", **config),
+            benchmark:
+                expand("{benchmark_dir}/kallistobus_index/{{assembly}}.benchmark.txt", **config)[0]
+            priority: 1
+            conda:
+                "../envs/kallistobus.yaml"
+            resources:
+                mem_gb=88,
+            params:
+                basename=lambda wildcards, output: f"{output[0]}{wildcards.assembly}",
+                options=config.get("ref")
+            shell:
+                """
+                kb ref \
+                {input.fa} {input.gtf} \
+                -i {params.basename}.idx -g {params.basename}_t2g.txt -f1 {params.basename}_cdna.fa \
+                -f2 {params.basename}_intron.fa \
+                -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
+                {params.options} > {log} 2>&1
+                """
+    
+        rule kallistobus_count:
+             """
+             Align reads against a transcriptome (index) with kallistobus and output a quantification file per sample.
+             """
+             input:
+                  barcodefile=config["barcodefile"],
+                  basedir=rules.kallistobus_ref.output,
+                  reads=rules.fastq_pair.output.reads
+             output:
+                 dir=directory(expand("{result_dir}/{quantifier}/{{assembly}}-{{sample}}",**config))
+             log:
+                 expand("{log_dir}/kallistobus_count/{{assembly}}-{{sample}}.log", **config),
+             benchmark:
+                 expand("{benchmark_dir}/kallistobus_count/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
+             priority: 1
+             conda:
+                 "../envs/kallistobus.yaml"
+             threads: 8
+             message: explain_rule("kallistobus-count")
+             resources:
+                 mem_gb=66,
+             params:
+                 basename=lambda wildcards, input: f"{input.basedir[0]}/{wildcards.assembly}",
+                 options=config.get("count")
+             shell:
+                 """
+                 kb count \
+                 -i {params.basename}.idx -w {input.barcodefile} \
+                 -t {threads} -g {params.basename}_t2g.txt \
+                 -o {output} -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
+                 {params.options} {input.reads} > {log} 2>&1
+                 """        
+        
+    if config.get['mode'] == "kite":
+        
         rule kallistobus_ref_kite:
             """
             Make a mismatch index for kallistobus. This index is required to count feature barcodes, such as antibody tags. 
@@ -284,7 +283,7 @@ elif config["quantifier"] == "kallistobus":
             resources:
                 mem_gb=88, 
             params:                
-                options=config.get("ref_kite"),
+                options=config.get("ref"),
                 kite_prefix=f"{config['kite_fm']}"
             priority: 1
             shell:
@@ -295,7 +294,6 @@ elif config["quantifier"] == "kallistobus":
                 {params.options} \
                 -i {output[0]}/{params.kite_prefix}.idx -g {output[0]}/{params.kite_prefix}.t2g -f1 {output[0]}/{params.kite_prefix}.fa > {log} 2>&1 
                 """
-        
         
         rule kallistobus_count_kite:
             """
@@ -320,7 +318,7 @@ elif config["quantifier"] == "kallistobus":
             params:
                 basename=lambda wildcards, input: f"{input.basedir}",
                 kite_prefix=f"{config['kite_fm']}",
-                options=config.get("count_kite")
+                options=config.get("count")
             shell:
                 """
                 kb count \
@@ -329,8 +327,7 @@ elif config["quantifier"] == "kallistobus":
                 -o {output}  \
                 {params.options} {input.reads} > {log} 2>&1
                 """
-       
-         
+                
     rule kb_seurat_pp:
         input:
             expand([f"{{result_dir}}/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}" for trep in treps.index], **config)

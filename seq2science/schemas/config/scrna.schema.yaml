@@ -23,24 +23,24 @@ properties:
     properties:
       kallistobus:
         properties:
+          mode:
+            description:
+            enum: ['kite', 'gex']
+            default: 'gex'
           ref:
             default: '--workflow lamanno'
           count:
             default: '-x 10XV3 --verbose --h5ad --workflow lamanno'
-          ref_kite:
-            default: '--workflow kite'
-          count_kite:
-            default: '-x 10Xv3 --verbose --h5ad'
-    
+            
     default:
       kallistobus:
+        mode: 'gex'
         ref: '--workflow lamanno'
         count: '-x 10XV3 --verbose --h5ad --workflow lamanno'
   
-  kite-workflow:
-    default: false
-    type: boolean
-  
+  kite_fm:
+    type: string
+        
   barcodefile:
     type: string
     
