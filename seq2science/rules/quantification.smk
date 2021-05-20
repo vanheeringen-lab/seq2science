@@ -300,8 +300,9 @@ elif config["quantifier"] == "kallistobus":
             Align reads against a transcriptome (index) with kallistobus and output a quantification file per sample.
             """
             input:
-                 basedir=rules.kallistobus_ref_kite.output,
-                 reads=rules.fastq_pair.output.reads
+                barcodefile=config["barcodefile"],
+                basedir=rules.kallistobus_ref_kite.output,
+                reads=rules.fastq_pair.output.reads
             output:
                 dir=directory(expand("{result_dir}/{quantifier}/kite/{kite_fm}-{{sample}}",**config))
             log:
@@ -322,7 +323,7 @@ elif config["quantifier"] == "kallistobus":
             shell:
                 """
                 kb count \
-                -i {params.basename}/{params.kite_prefix}.idx \
+                -i {params.basename}/{params.kite_prefix}.idx -w {input.barcodefile}  \
                 -t {threads} -g {params.basename}/{params.kite_prefix}.t2g \
                 -o {output}  \
                 {params.options} {input.reads} > {log} 2>&1
