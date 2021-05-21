@@ -267,7 +267,7 @@ elif config["quantifier"] == "kallistobus":
                  {params.options} {input.reads} > {log} 2>&1
                  """        
                 
-    if config.get['mode'] == "kite":
+    if config.get('mode') == "kite":
         ruleorder: kallistobus_ref_kite > get_genome
         
         rule kallistobus_ref_kite:
