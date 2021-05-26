@@ -282,7 +282,8 @@ def _run(args, base_dir, workflows_dir, config_path):
                    "printreason": args.reason,
                    "keepgoing": args.keep_going,
                    "unlock": args.unlock,
-                   "force_incomplete": args.rerun_incomplete}
+                   "force_incomplete": args.rerun_incomplete,
+                   "scheduler": "greedy"}
 
     # get the additional snakemake options
     snakemake_options = args.snakemakeOptions if args.snakemakeOptions is not None else dict()
@@ -385,7 +386,8 @@ def _explain(args, base_dir, workflows_dir, config_path):
     parsed_args = {"snakefile": os.path.join(workflows_dir, args.workflow.replace("-", "_"), "Snakefile"),
                    "dryrun": True,
                    "forceall": True,
-                   "quiet": False}
+                   "quiet": False,
+                   "scheduler": "greedy"}
 
     # get the additional snakemake options
     snakemake_options = args.snakemakeOptions if args.snakemakeOptions is not None else dict()
