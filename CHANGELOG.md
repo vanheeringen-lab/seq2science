@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Changed
+
+- fixed bug with seq2science making a {output.allsizes} file
+
 ## [0.5.2] - 2021-05-10
 
 ### Added
