@@ -108,7 +108,7 @@ else:
             assert isinstance(ret,dict), f"Invalid config key '{opt}' in {opts}."
             ret = ret.get(opt)
             if ret in [None, ""]:
-                return ""
+                return " with default options"
         return f" with options '{ret}'"
 
 
@@ -145,7 +145,7 @@ else:
         "custom_extension": "The genome and gene annotations was extended with custom regions.",
         "call_peak_genrich": f"Peaks were called with {href_v('genrich')}{options('peak_caller','genrich')}.",
         "macs2_callpeak": f"Peaks were called with {href_v('macs2')}{options('peak_caller','macs2')} in {{params.format}} mode. The effective genome size was estimated by taking the number of unique kmers in the assembly of the same length as the average read length for each sample.",
-        "keep_mates": "After alignment we removed paired-end info from reads with seq2science to utilize both mates in the paired-end reads.",
+        "keep_mates": "After alignment paired-end info from reads was removed with seq2science to utilize both mates in the paired-end reads.",
         "idr": f"Narrowpeak files of biological replicates belonging to the same condition were merged with the {href_v('idr',text='irreproducible discovery rate')}.",
         "macs_cmbreps": "Narrowpeak files of biological replicates belonging to the same condition were merged with fisher's method in macs2.",
         "multiqc": f"Quality control metrics were aggregated by {href_v('MultiQC')}.",
@@ -160,16 +160,16 @@ else:
         "kallistobus-count": f"Reads were aligned and transformed to bus format with kb-python{version('kb-python','kallistobus')}, a python wrapper for {hyperref('kallisto')} and {hyperref('bustools')}.",
         "featurecounts_rna": f"Read counting and summarizing to gene-level was performed on filtered bam using {href_v('subread',text='featureCounts',env='gene_counts')}.",
         "dexseq": f"Additionally, exon usage was counted using {href_v('DEXSeq')} for (potential) downstream analysis.",
-        "create_bins_SNAP_object": f"We used {href_v('snaptools')} to create a snapobject{options('snaptools_opt')} and added a binned genome matrix{options('bin_opt')}.",
+        "create_bins_SNAP_object": f"{href_v('snaptools')} was used to create a snapobject{options('snaptools_opt')} and added a binned genome matrix{options('bin_opt')}.",
         "infer_strandedness": f"Sample sequencing strandedness was inferred using {href_v('RSeQC',env='gene_counts')} in order to improve quantification accuracy.",
-        "trackhub": f"We used the {hyperref('UCSC genome browser')} to visualize and inspect alignment.",
-        "trimgalore_SE": f"We trimmed single-end reads with {href_v('trim-galore',text='trim galore!',env='trimgalore')}{options('trimoptions')} and {hyperref('cutadapt')}.",
-        "trimgalore_PE": f"We trimmed paired-end reads with {href_v('trim-galore',text='trim galore!',env='trimgalore')}{options('trimoptions')} and {hyperref('cutadapt')}.",
-        "fastp_SE": f"We trimmed single-end reads with {href_v('fastp')}{options('trimoptions')}.",
-        "fastp_PE": f"We trimmed paired-end reads with {href_v('fastp')}{options('trimoptions')}.",
+        "trackhub": f"The {hyperref('UCSC genome browser')} was used to visualize and inspect alignment.",
+        "trimgalore_SE": f"Single-end reads were trimmed with {href_v('trim-galore',text='trim galore!',env='trimgalore')}{options('trimoptions')} and {hyperref('cutadapt')}.",
+        "trimgalore_PE": f"Paired-end reads were trimmed with {href_v('trim-galore',text='trim galore!',env='trimgalore')}{options('trimoptions')} and {hyperref('cutadapt')}.",
+        "fastp_SE": f"Single-end reads were trimmed with {href_v('fastp')}{options('trimoptions')}.",
+        "fastp_PE": f"Paired-end reads were trimmed with {href_v('fastp')}{options('trimoptions')}.",
         "chipseeker": f"A peak feature distribution plot and peak localization plot relative to TSS were made with {hyperref('chipseeker')}.",  # TODO: replace with href_v
         "combine_peaks": f"A consensus set of summits was made with {href_v('gimmemotifs',text='gimmemotifs.combine_peaks',env='gimme')}.",
         "bed_slop": f"All summits were extended with {config.get('slop')} bp to get a consensus peakset.",
-        "coverage_table": f"And finally we made a count table from the conensus peakset with gimmemotifs.",  # already cited in "combine_peaks"
+        "coverage_table": f"Finally, a count table from the consensus peakset with gimmemotifs.",  # already cited in "combine_peaks"
         "kb_seurat_pp": f"scRNA count post-processing was performed using the {hyperref('seurat')} based {hyperref('kb_seurat_pp')} markdown.",
     }

@@ -194,6 +194,7 @@ rule trackhub_index:
         expand("{log_dir}/trackhub/{{assembly}}.index.log", **config),
     benchmark:
         expand("{benchmark_dir}/trackhub/{{assembly}}.index.benchmark.txt", **config)[0]
+    message: explain_rule("trackhub")
     conda:
         "../envs/ucsc.yaml"
     shell:
