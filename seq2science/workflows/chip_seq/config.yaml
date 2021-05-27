@@ -32,6 +32,8 @@ only_primary_align: true
 peak_caller:
   macs2:
       --keep-dup 1 --buffer-size 10000
+#  genrich:
+#      -y
 
 ## differential gene expression analysis
 #contrasts:

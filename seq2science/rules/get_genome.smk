@@ -1,6 +1,5 @@
 localrules: extend_genome, get_genome_support_files, unzip_annotation
 
-
 rule get_genome:
     """
     Download a genome through genomepy.
@@ -29,7 +28,8 @@ rule get_genome_annotation:
     Download a gene annotation through genomepy.
     """
     input:
-        ancient(expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa", **config)),
+        # these should be ancient(), but snakemake simply ignores ancient items (bug)
+        expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa", **config),
         expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa.fai", **config),
         expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa.sizes", **config),
     output:
