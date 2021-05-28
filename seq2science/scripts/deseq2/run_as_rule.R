@@ -1,5 +1,3 @@
-#!/usr/bin/env Rscript
-
 suppressMessages({
   library(DESeq2)
   library(BiocParallel)

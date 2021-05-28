@@ -4,16 +4,16 @@
 if (exists("snakemake")){
   # parse seq2science input
   scripts_dir <- snakemake@params$scripts_dir
-  deseq_wrapper <- file.path(scripts_dir, "deseq2_rule.R")
+  deseq_init <- file.path(scripts_dir, "run_as_rule.R")
 } else {
   # parse command line input
   cli_args    <- commandArgs(trailingOnly=F)
   this_script <- sub("--file=", "", cli_args[grep("--file=", cli_args)])
   scripts_dir <- dirname(this_script)
-  deseq_wrapper <- file.path(scripts_dir, "deseq2_standalone.R")
+  deseq_init <- file.path(scripts_dir, "run_as_standalone.R")
 }
 deseq_utils <- file.path(scripts_dir, "utils.R")
-source(deseq_wrapper)
+source(deseq_init)
 source(deseq_utils)
 
 # parse the design contrast
@@ -277,7 +277,7 @@ if (is.na(batch)){
     #   mat.tpm <- t( t(x) * 1e6 / colSums(x) )
     #   return(mat.tpm)
     # }
-    batch_corr_tpm <- counts_to_tpm(batch_corr_counts, gene_lengths)
+    batch_corr_tpm <- counts2tpm(batch_corr_counts, gene_lengths)
 
     write.table(batch_corr_tpm, file=output_batch_corr_tpm, quote = F, sep = '\t', col.names=NA)
     cat('-batch corrected TPMs saved\n')

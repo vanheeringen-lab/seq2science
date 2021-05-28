@@ -3,7 +3,6 @@ suppressMessages({
   library(BiocParallel)
   library(RColorBrewer)
   library(pheatmap)
-  source(file.path(snakemake@params$scripts_dir, "utils.R"))
 })
 
 # snakemake variables
@@ -12,6 +11,7 @@ log_file       <- snakemake@log[[1]]
 counts_file    <- snakemake@input[[1]]
 samples_file   <- snakemake@params$samples
 replicates     <- snakemake@params$replicates
+scripts_dir    <- snakemake@params$scripts_dir
 assembly       <- snakemake@wildcards$assembly
 out_png        <- snakemake@output[[1]]
 
@@ -20,10 +20,12 @@ log <- file(log_file, open="wt")
 sink(log)
 sink(log, type="message")
 
+# load custom functions
+source(file.path(scripts_dir, "utils.R"))
+
 # log all variables for debugging purposes
 cat('# variables used for this analysis:\n')
-cat('threads      <- ',   threads,     '\n')
-cat('log_file     <- "', log_file,     '"\n', sep = "")
+cat('threads      <- ',  threads,      '\n')
 cat('counts_file  <- "', counts_file,  '"\n', sep = "")
 cat('samples_file <- "', samples_file, '"\n', sep = "")
 cat('replicates   <- ',  replicates,   '\n')

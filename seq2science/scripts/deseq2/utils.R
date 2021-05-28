@@ -129,7 +129,7 @@ batch_corrected_counts <- function(dds) {
 
 
 #' snippet from https://support.bioconductor.org/p/91218/ to convert counts to TPM
-counts_to_tpm <- function(mat.counts, mat.gene_lengths) {
+counts2tpm <- function(mat.counts, mat.gene_lengths) {
   x <- mat.counts / mat.gene_lengths
   mat.tpm <- t( t(x) * 1e6 / colSums(x) )
   return(mat.tpm)
