@@ -1,4 +1,4 @@
 # 2 replicates, 2 assemblies, incomplete column for good measure
-sample	assembly	technical_replicate
+sample	assembly	technical_replicates
 S1_1	assembly1	a
 S1_2	assembly1	a

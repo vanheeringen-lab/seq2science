@@ -1,5 +1,5 @@
 # mix of controls
-sample	assembly	biological_replicate	control
+sample	assembly	biological_replicates	control
 S1_1	assembly1	A	GSM2942627
 S1_2	assembly1	A	GSM2942628
 S2_1	assembly2	A	GSM2942627

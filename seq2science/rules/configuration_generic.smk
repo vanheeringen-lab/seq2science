@@ -122,15 +122,15 @@ if len(errors):
 #    (sample names if replicates are not found/applicable)
 # 2) drop column if it provides no information
 #    (renamed in case it's used in a DE contrast)
-if 'technical_replicate' in samples:
-    samples['technical_replicate'] = samples['technical_replicate'].mask(pd.isnull, samples['sample'])
-    if len(samples['technical_replicate'].unique()) == len(samples['sample'].unique()) or config.get('technical_replicates') == 'keep':
-        samples.rename(columns={'technical_replicate': '_trep'}, inplace=True)
-col = 'technical_replicate' if 'technical_replicate' in samples else 'sample'
-if 'biological_replicate' in samples:
-    samples['biological_replicate'] = samples['biological_replicate'].mask(pd.isnull, samples[col])
-    if len(samples['biological_replicate'].unique()) == len(samples[col].unique()) or config.get('biological_replicates') == 'keep':
-        samples.rename(columns={'biological_replicate': '_brep'}, inplace=True)
+if 'technical_replicates' in samples:
+    samples['technical_replicates'] = samples['technical_replicates'].mask(pd.isnull, samples['sample'])
+    if len(samples['technical_replicates'].unique()) == len(samples['sample'].unique()) or config.get('technical_replicates') == 'keep':
+        samples.rename(columns={'technical_replicates': '_trep'}, inplace=True)
+col = 'technical_replicates' if 'technical_replicates' in samples else 'sample'
+if 'biological_replicates' in samples:
+    samples['biological_replicates'] = samples['biological_replicates'].mask(pd.isnull, samples[col])
+    if len(samples['biological_replicates'].unique()) == len(samples[col].unique()) or config.get('biological_replicates') == 'keep':
+        samples.rename(columns={'biological_replicates': '_brep'}, inplace=True)
 if 'descriptive_name' in samples:
     samples['descriptive_name'] = samples['descriptive_name'].mask(pd.isnull, samples[col])
     if samples['descriptive_name'].to_list() == samples[col].to_list():
@@ -146,9 +146,9 @@ if 'colors' in samples:
     else:
         samples = samples.drop(columns=['colors'])
 
-if 'technical_replicate' in samples:
+if 'technical_replicates' in samples:
     # check if replicate names are unique between assemblies
-    r = samples[['assembly', 'technical_replicate']].drop_duplicates().set_index('technical_replicate')
+    r = samples[['assembly', 'technical_replicates']].drop_duplicates().set_index('technical_replicates')
     for replicate in r.index:
         assert len(r[r.index == replicate]) == 1, \
             ("\nReplicate names must be different between assemblies.\n" +
@@ -156,16 +156,16 @@ if 'technical_replicate' in samples:
 
 # check if sample, replicate and condition names are unique between the columns
 for idx in samples.index:
-    if "biological_replicate" in samples:
-        assert idx not in samples["biological_replicate"].values, f"sample names, conditions, and replicates can not overlap. " \
+    if "biological_replicates" in samples:
+        assert idx not in samples["biological_replicates"].values, f"sample names, conditions, and replicates can not overlap. " \
                                                                   f"Sample {idx} can not also occur as a condition"
-    if "technical_replicate" in samples:
-        assert idx not in samples["technical_replicate"].values, f"sample names, conditions, and replicates can not overlap. " \
+    if "technical_replicates" in samples:
+        assert idx not in samples["technical_replicates"].values, f"sample names, conditions, and replicates can not overlap. " \
                                                                  f"Sample {idx} can not also occur as a replicate"
 
-if "biological_replicate" in samples and "technical_replicate" in samples:
-    for cond in samples["biological_replicate"]:
-        assert cond not in samples["technical_replicate"].values, f"sample names, conditions, and replicates can not overlap. " \
+if "biological_replicates" in samples and "technical_replicates" in samples:
+    for cond in samples["biological_replicates"]:
+        assert cond not in samples["technical_replicates"].values, f"sample names, conditions, and replicates can not overlap. " \
                                                                   f"Condition {cond} can not also occur as a replicate"
 
 # validate samples file
@@ -401,14 +401,14 @@ for sample, values in sampledict.items():
 
 # if samples are merged add the layout of the technical replicate to the config
 failed_samples = dict()
-if 'technical_replicate' in samples:
+if 'technical_replicates' in samples:
     for sample in samples.index:
-        replicate = samples.loc[sample, 'technical_replicate']
+        replicate = samples.loc[sample, 'technical_replicates']
         if replicate not in sampledict:
             sampledict[replicate] = {'layout':  sampledict[sample]['layout']}
         elif sampledict[replicate]['layout'] != sampledict[sample]['layout']:
             assembly = samples.loc[sample, "assembly"]
-            treps = samples[(samples["assembly"] == assembly) & (samples["technical_replicate"] == replicate)].index
+            treps = samples[(samples["assembly"] == assembly) & (samples["technical_replicates"] == replicate)].index
             failed_samples.setdefault(replicate, set()).update({trep for trep in treps}) 
 
 if len(failed_samples):
@@ -452,15 +452,15 @@ if 'assembly' in samples:
         raw_assembly=any_given('assembly'),
         assembly=any_given('assembly', suffix=config["custom_assembly_suffix"] if modified else ""),
 
-if 'technical_replicate' in samples:
-    sample_constraints.append("technical_replicate")
+if 'technical_replicates' in samples:
+    sample_constraints.append("technical_replicates")
     wildcard_constraints:
-        replicate=any_given('technical_replicate')
+        replicate=any_given('technical_replicates')
 
-if 'biological_replicate' in samples:
-    sample_constraints.append("biological_replicate")
+if 'biological_replicates' in samples:
+    sample_constraints.append("biological_replicates")
     wildcard_constraints:
-        condition=any_given('biological_replicate')
+        condition=any_given('biological_replicates')
 
 if "control" in samples:
     sample_constraints.append("control")
