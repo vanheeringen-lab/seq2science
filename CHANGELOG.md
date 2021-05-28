@@ -10,6 +10,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Changed
 
+- "biological_replicate" and "technical_replicate" renamed to *"_replicates" (matches between samples.tsv & config.yaml)
 - Changed explain to use 'passive style'
 - Genrich peak calling defaults
   - Doesn't remove PCR duplicates anymore (best to do with markduplicates)
