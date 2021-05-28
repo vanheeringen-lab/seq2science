@@ -81,7 +81,7 @@ rule deseq2:
 
 rule blind_clustering:
     """
-    Per assembly, create a sample distance cluster heatmap, 
+    Create a sample distance cluster heatmap, 
     and various correlation cluster heatmaps.
     
     A (blind) variance stabilizing transformation is applied to the counts, 
