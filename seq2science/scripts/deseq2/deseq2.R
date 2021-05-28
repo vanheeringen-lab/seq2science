@@ -121,7 +121,7 @@ cat('\n')
 
 ## Save the results
 # save a diffexp table with all genes, not just the expressed genes
-save_complete_diffexp(resLFC, counts, outfile)
+save_complete_diffexp(resLFC, counts, output)
 # expressed_genes <- as.data.frame(resLFC[order(resLFC$padj),])
 #
 # missing_genes <- rownames(counts)[!(rownames(counts) %in% rownames(expressed_genes))]
