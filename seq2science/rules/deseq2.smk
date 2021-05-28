@@ -1,33 +1,34 @@
-from seq2science.util import parse_contrast
+from seq2science.util import expand_contrasts
+
 
 def get_contrasts():
     """
-    splits contrasts that contain multiple comparisons
+    list all diffexp.tsv files we expect
     """
-    if not config.get("contrasts"):
+    if not config.get('contrasts'):
         return []
 
-    new_contrasts = []
-    for contrast in list(config["contrasts"]):
-        batch, column, target, reference = parse_contrast(contrast, samples, check=False)
+    contrasts=expand_contrasts(samples, config)
+    all_contrasts = expand(
+        "{deseq2_dir}/{assemblies}-{contrasts}.diffexp.tsv",
+        **{**config, **{'assemblies': all_assemblies, 'contrasts': contrasts}}
+    )
+    # remove contrasts for assemblies where they dont apply
+    for de_contrast in contrasts:
+        # parse groups
+        target, reference = de_contrast.split("_")[-2:]
 
-        if target == "all":
-            # all vs 1 comparison ("all vs A")
-            targets = set(samples[column].dropna().astype(str))
-            targets.remove(reference)
-        else:
-            # 1 vs 1 comparison ("A vs B")
-            targets = [target]
+        # parse column
+        n = de_contrast.find(f"_{target}_{reference}")
+        column = de_contrast[:n]
+        if "+" in column:
+            column = column.split("+")[1]
 
-        for target in targets:
-            new_contrast = f"{column}_{target}_{reference}"
-            if batch:
-                new_contrast = f"{batch}+{new_contrast}"
-            new_contrasts.append(new_contrast)
-
-    # get unique elements
-    new_contrasts = list(set(new_contrasts))
-    return new_contrasts
+        for assembly in all_assemblies:
+            groups = set(samples[samples.assembly == assembly][column].to_list())
+            if target not in groups or reference not in groups:
+                all_contrasts = [f for f in all_contrasts if f"/{assembly}-" not in f]
+    return all_contrasts
 
 
 """
@@ -88,7 +89,7 @@ rule blind_clustering:
     to reduce the impact of genes with low expression levels. 
     """
     input:
-        deseq_input  # expand("{counts_dir}/{{assembly}}-counts.tsv", **config),
+        deseq_input
     output:
         expand("{qc_dir}/clustering/{{assembly}}-Sample_distance_clustering_mqc.png", **config),
         expand("{qc_dir}/clustering/{{assembly}}-Pearson_correlation_clustering_mqc.png", **config),

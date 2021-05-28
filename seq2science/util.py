@@ -294,6 +294,36 @@ def parse_contrast(contrast, samples, check=True):
     return batch, column, target, reference
 
 
+def expand_contrasts(samples, config):
+    """
+    splits contrasts that contain multiple comparisons
+    """
+    if not config.get("contrasts"):
+        return []
+
+    new_contrasts = []
+    for contrast in list(config["contrasts"]):
+        batch, column, target, reference = parse_contrast(contrast, samples, check=False)
+
+        if target == "all":
+            # all vs 1 comparison ("all vs A")
+            targets = set(samples[column].dropna().astype(str))
+            targets.remove(reference)
+        else:
+            # 1 vs 1 comparison ("A vs B")
+            targets = [target]
+
+        for target in targets:
+            new_contrast = f"{column}_{target}_{reference}"
+            if batch:
+                new_contrast = f"{batch}+{new_contrast}"
+            new_contrasts.append(new_contrast)
+
+    # get unique elements
+    new_contrasts = list(set(new_contrasts))
+    return new_contrasts
+
+
 def url_is_alive(url):
     """
     Checks that a given URL is reachable.
