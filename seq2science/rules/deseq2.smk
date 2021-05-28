@@ -71,22 +71,28 @@ rule deseq2:
         samples=os.path.abspath(config["samples"]),
         replicates=True if "technical_replicate" in samples else False,
         salmon=config.get("quantifier","") == "salmon",
-        scripts_dir=f"{config['rule_dir']}/../scripts"
+        scripts_dir=f"{config['rule_dir']}/../scripts/deseq2"
     resources:
         R_scripts=1, # conda's R can have issues when starting multiple times
         mem_gb=4,
     script:
-        f"{config['rule_dir']}/../scripts/deseq2.R"
+        f"{config['rule_dir']}/../scripts/deseq2/deseq2.R"
 
 
 rule blind_clustering:
     """
-    Create a sample distance matrix plot per assembly
+    Per assembly, create a sample distance cluster heatmap, 
+    and various correlation cluster heatmaps.
+    
+    A (blind) variance stabilizing transformation is applied to the counts, 
+    to reduce the impact of genes with low expression levels. 
     """
     input:
         expand("{counts_dir}/{{assembly}}-counts.tsv", **config),
     output:
-        expand("{qc_dir}/clustering/{{assembly}}-Sample_clustering_mqc.png", **config),
+        expand("{qc_dir}/clustering/{{assembly}}-Sample_distance_clustering_mqc.png", **config),
+        expand("{qc_dir}/clustering/{{assembly}}-Pearson_correlation_clustering_mqc.png", **config),
+        expand("{qc_dir}/clustering/{{assembly}}-Spearman_correlation_clustering_mqc.png", **config),
     conda:
         "../envs/deseq2.yaml"
     log:
@@ -97,7 +103,8 @@ rule blind_clustering:
     params:
         samples=os.path.abspath(config["samples"]),
         replicates=True if "technical_replicate" in samples else False,
+        scripts_dir=f"{config['rule_dir']}/../scripts/deseq2",
     resources:
         R_scripts=1, # conda's R can have issues when starting multiple times
     script:
-        f"{config['rule_dir']}/../scripts/deseq2_clustering.R"
+        f"{config['rule_dir']}/../scripts/deseq2/clustering.R"
