@@ -32,5 +32,5 @@ rule seq2science:
             (["{result_dir}/trackhub"] if config['create_trackhub'] else []) +
             (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []),
             assemblies=all_assemblies, **config) +
-         get_contrasts()
+         count_table_output() + get_contrasts()
 
