@@ -4,7 +4,7 @@
 #   bash ./tests/dag_tests.sh TEST
 
 # for lazy asses:
-# bash ./tests/dag_tests.sh alignment && bash ./tests/dag_tests.sh atac-seq && bash ./tests/dag_tests.sh scatac-seq && bash ./tests/dag_tests.sh rna-seq && bash ./tests/dag_tests.sh scrna-seq
+# bash ./tests/dag_tests.sh alignment && bash ./tests/dag_tests.sh atac-seq && bash ./tests/dag_tests.sh scatac-seq && bash ./tests/dag_tests.sh rna-seq && bash ./tests/dag_tests.sh scrna-seq && bash ./tests/dag_tests.sh explain
 
 # check if an argument was passed
 if [ -z "$1" ]; then
