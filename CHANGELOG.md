@@ -10,7 +10,8 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Added
 
-- Spearman & Pearson correlation plot for gene counts &
+- DESeq2 blind sample distance & correlation cluster heatmaps for RNA-, ATAC- ChIP-seq counts
+    - find them annotated in the MultiQC when running >1 sample
 
 ### Changed
 
