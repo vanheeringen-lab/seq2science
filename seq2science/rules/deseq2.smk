@@ -88,7 +88,7 @@ rule blind_clustering:
     to reduce the impact of genes with low expression levels. 
     """
     input:
-        expand("{counts_dir}/{{assembly}}-counts.tsv", **config),
+        deseq_input  # expand("{counts_dir}/{{assembly}}-counts.tsv", **config),
     output:
         expand("{qc_dir}/clustering/{{assembly}}-Sample_distance_clustering_mqc.png", **config),
         expand("{qc_dir}/clustering/{{assembly}}-Pearson_correlation_clustering_mqc.png", **config),

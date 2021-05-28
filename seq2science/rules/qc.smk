@@ -697,8 +697,10 @@ def get_qc_files(wildcards):
         if "REMOVE_DUPLICATES=true" not in config.get("markduplicates","") and not (config.get('quantifier', '') == 'salmon' and config.get('create_trackhub') == False):
             qc['files'].update(expand("{qc_dir}/dupRadar/{{assembly}}-dupRadar_mqc.png",**config))
 
-        if len(treps.index) > 2:
-            qc['files'].update(expand("{qc_dir}/clustering/{{assembly}}-Sample_clustering_mqc.png", **config))
+    # DESeq2 sample distance/correlation clustering (if count tables are made, and there is >1 column in the counts table)
+    if (get_peak_calling_qc in quality_control or get_rna_qc in quality_control) and len(treps.index) > 2:
+        plots = ["Sample_distance_clustering", "Pearson_correlation_clustering", "Spearman_correlation_clustering"]
+        qc['files'].update(expand("{qc_dir}/clustering/{{assembly}}-{plots}_mqc.png", **config, **plots))
 
     return qc
 
