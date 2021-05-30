@@ -111,7 +111,8 @@ rule sieve_bam:
     params:
         minqual=f"-q {config['min_mapping_quality']}",
         atacshift=(
-            lambda wildcards, input: f" {config['rule_dir']}/../scripts/atacshift.pl /dev/stdin {input.sizes} | "
+            lambda wildcards, input:
+            f" {config['rule_dir']}/../scripts/atacshift.pl /dev/stdin {input.sizes} | "
             if config["tn5_shift"]
             else ""
         ),
@@ -123,7 +124,12 @@ rule sieve_bam:
             if sampledict[wildcards.sample]["layout"] == "PAIRED" and config["filter_on_size"]
             else ""
         ),
-        sizesieve_touch="touch {output.allsizes}" if config["filter_on_size"] else ""
+        sizesieve_touch=(
+            lambda wildcards, input, output:
+            f"touch {output.allsizes}"
+            if sampledict[wildcards.sample]["layout"] == "SINGLE" and config["filter_on_size"]
+            else ""
+        ),
     shell:
         """
         samtools view -h {params.prim_align} {params.minqual} {params.blacklist} \

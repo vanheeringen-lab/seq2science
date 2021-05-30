@@ -10,6 +10,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Changed
 
+- fixed bug with seq2science making a {output.allsizes} file
 - Changed explain to use 'passive style'
 - Genrich peak calling defaults
   - Doesn't remove PCR duplicates anymore (best to do with markduplicates)
