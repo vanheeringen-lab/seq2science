@@ -143,7 +143,7 @@ rule get_genome_support_files:
     params:
         genome_dir=config["genome_dir"]
     script:
-        f"{config['rule_dir']}/../scripts/genome_support.py"
+        f"{config['rule_dir']}/../scripts/get_genome_support.py"
 
 
 rule gene_id2name:
