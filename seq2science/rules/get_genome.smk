@@ -23,9 +23,7 @@ rule get_genome:
 
 rule get_genome_blacklist:
     """
-    Download a genome through genomepy.
-    
-    Also download a blacklist if it exists.
+    Download a genome blacklist for a genome, if it exists, through genomepy.
     """
     input:
         expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa", **config),
@@ -42,7 +40,7 @@ rule get_genome_blacklist:
         parallel_downloads=1,
     priority: 1
     script:
-        f"{config['rule_dir']}/../scripts/get_genome.py"
+        f"{config['rule_dir']}/../scripts/get_genome_blacklist.py"
 
 
 rule get_genome_annotation:
