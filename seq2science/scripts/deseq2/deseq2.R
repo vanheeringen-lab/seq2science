@@ -22,37 +22,9 @@ batch <- ret$batch          # a column in samples or NA
 condition <- ret$condition  # a column in samples
 groups <- ret$groups        # >1 field in samples[condition]
 
-# ## parse the design contrast
-# # a contrast is always in the form 'batch+condition_group1_group2', where batch(+) is optional
-# batch <- NA
-# contr <- contrast
-#
-# # batch name
-# if (grepl('\\+', contrast)) {
-#   batch <- strsplit(contrast, '\\+')[[1]][1]
-#   contr <- strsplit(contrast, '\\+')[[1]][2]
-# }
-#
-# # group names
-# groups <- strsplit(contr, '_')[[1]]
-# groups <- tail(groups,2)
-#
-# # column name
-# n <- gregexpr(pattern=paste0("_", groups[1], "_", groups[2]), contr)[[1]][1] -1
-# condition <- substr(contr, 1, n)
 
 ## obtain coldata, the metadata input for DESeq2
 samples <- parse_samples(samples_file, assembly, replicates)
-# samples <- read.delim(samples_file, sep = "\t", na.strings = "", comment.char = "#", stringsAsFactors = F, row.names = "sample")
-# samples <- samples[samples$assembly == assembly, ]
-#
-# # collapse technical replicates
-# if ("technical_replicate" %in% colnames(samples) & isTRUE(replicates)) {
-#   to_rename <- is.na(samples$technical_replicate)
-#   samples$technical_replicate[to_rename] <- as.character(rownames(samples)[to_rename])
-#   samples <- subset(samples, !duplicated(technical_replicate))
-#   row.names(samples) <- samples$technical_replicate
-# }
 
 # rename batch and condition (required as DESeq's design cannot accept variables)
 coldata <- samples
@@ -86,20 +58,6 @@ reduced_counts <- counts[rowSums(counts) > 0, colnames(counts) %in% rownames(col
 ## DESeq2
 design <- if (!is.na(batch)){~ batch + condition} else {~ condition}
 dds <- run_deseq2(reduced_counts, coldata, design, threads)
-# # setup parallelization
-# parallel <- FALSE
-# if (threads > 1) {
-#   register(MulticoreParam(threads))
-#   parallel <- TRUE
-# }
-#
-# cat('Constructing DESeq object... \nTip: errors directly below this line are most likely DESeq2 related.\n\n')
-# dds <- DESeqDataSetFromMatrix(countData = reduced_counts,
-#                               colData = coldata,
-#                               design = if (!is.na(batch)){~ batch + condition} else {~ condition})
-# cat('\nFinished constructing DESeq object.\n\n')
-# dds <- DESeq(dds, parallel=parallel)
-# cat('\n')
 
 
 ## Extract differentially expressed genes
@@ -122,19 +80,6 @@ cat('\n')
 ## Save the results
 # save a diffexp table with all genes, not just the expressed genes
 save_complete_diffexp(resLFC, counts, output)
-# expressed_genes <- as.data.frame(resLFC[order(resLFC$padj),])
-#
-# missing_genes <- rownames(counts)[!(rownames(counts) %in% rownames(expressed_genes))]
-# if (length(missing_genes) > 0){
-#     unexpressed_genes <- as.data.frame(matrix(data = NA, ncol = ncol(expressed_genes), nrow = length(missing_genes)))
-#     rownames(unexpressed_genes) <- missing_genes
-#     colnames(unexpressed_genes) <- colnames(expressed_genes)
-#     unexpressed_genes[,'baseMean'] <- 0
-#     all_genes <- rbind(expressed_genes, unexpressed_genes)
-# } else {
-#     all_genes <- expressed_genes
-# }
-# write.table(all_genes, file=output, quote = F, sep = '\t', col.names=NA)
 cat('DE genes table saved\n\n')
 
 
@@ -152,6 +97,15 @@ if(n_DEGs == 0){
 # generate MA plot (log fold change vs mean gene counts)
 output_ma_plot <- sub(".diffexp.tsv", ".ma_plot.pdf", output)
 b <- ifelse(is.na(batch), '', ', batch corrected')  # if (is.na(batch)) {b <- ''} else {b <- ', batch corrected'}
+
+# TODO: remove after testing
+print(batch)
+print(b)
+print(groups[1])
+print(groups[2])
+print(nrow(reduced_counts))
+print(fdr)
+
 title <- paste0(
   groups[1], ' vs ', groups[2], '\n',
   n_DEGs, ' of ', nrow(reduced_counts), ' DE (a = ', fdr, b, ')',
