@@ -25,9 +25,6 @@ if [ $1 = "cleanup_files" ]; then
   rm -rf tests/tinydata/gene_id2name.tsv
   rm -rf tests/tinydata/tinydata.2bit
   rm -rf tests/tinydata/tinydata.DEXseq*
-  rm -rf tests/tinydata/tinydata.fa.fai
-  rm -rf tests/tinydata/tinydata.fa.sizes
-  rm -rf tests/tinydata/tinydata.gaps.bed
   rm -rf tests/tinydata/tinydata.gc5Base.bw
   rm -rf tests/tinydata/tinydata.transcripts.fa
   rm -rf tests/tinydata/tinydata_softmasking.bb
