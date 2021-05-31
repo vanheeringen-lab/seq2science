@@ -35,6 +35,6 @@ peak_caller:
 #  genrich:
 #      -y
 
-## differential gene expression analysis
+## differential peak analysis
 #contrasts:
 #  - 'descriptive_name_all_HEL'
