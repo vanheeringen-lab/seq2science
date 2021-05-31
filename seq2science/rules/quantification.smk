@@ -275,11 +275,11 @@ elif config["quantifier"] == "kallistobus":
             Make a mismatch index for kallistobus. This index is required to count feature barcodes, such as antibody tags. 
             """
             input:
-                featurebarcodes=expand("{genome_dir}/{assembly}.tsv", **config)
+                featurebarcodes=expand("{genome_dir}/{{assembly}}.tsv", **config)
             output:
-                fa=expand("{genome_dir}/{kite_fm}/index/kallistobus_kite/{assembly}.fa", **config),
-                idx=expand("{genome_dir}/{kite_fm}/index/kallistobus_kite/{assembly}.idx", **config),
-                t2g=expand("{genome_dir}/{kite_fm}/index/kallistobus_kite/{assembly}.t2g", **config)
+                fa=expand("{genome_dir}/{{assembly}}/index/kallistobus_kite/{{assembly}}.fa", **config),
+                idx=expand("{genome_dir}/{{assembly}}/index/kallistobus_kite/{{assembly}}.idx", **config),
+                t2g=expand("{genome_dir}/{{assembly}}/index/kallistobus_kite/{{assembly}}.t2g", **config)
             log:
                 expand("{log_dir}/kallistobus_index_kite/{assembly}.log", **config),    
             conda:
@@ -292,8 +292,7 @@ elif config["quantifier"] == "kallistobus":
             priority: 1
             shell:
                 """
-                mkdir -p {genome_dir}/{kite_fm}/index/kallistobus_kite/
-                
+                mkdir -p {genome_dir}/kite/index/kallistobus_kite/
                 kb ref  \
                 {input.featurebarcodes} \
                 {params.options} \
@@ -306,14 +305,14 @@ elif config["quantifier"] == "kallistobus":
             """
             input:
                 barcodefile=config["barcodefile"],
-                basedir=expand({genome_dir}/{kite_fm}/index/kallistobus_kite/, **config),
+                basedir=expand("{genome_dir}/kite/index/kallistobus_kite", **config),
                 reads=rules.fastq_pair.output.reads
             output:
-                dir=directory(expand("{result_dir}/{quantifier}/kite/{kite_fm}-{{sample}}",**config))
+                dir=directory(expand("{result_dir}/{quantifier}/kite/{{assembly}}-{{sample}}",**config))
             log:
-                expand("{log_dir}/kallistobus_count/kite/{kite_fm}-{{sample}}.log", **config),
+                expand("{log_dir}/kallistobus_count/kite/{{assembly}}-{{sample}}.log", **config),
             benchmark:
-                expand("{benchmark_dir}/kallistobus_count/kite/{kite_fm}-{{sample}}.benchmark.txt", **config)[0]
+                expand("{benchmark_dir}/kallistobus_count/kite/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
             priority: 1
             conda:
                 "../envs/kallistobus.yaml"
@@ -322,14 +321,13 @@ elif config["quantifier"] == "kallistobus":
             resources:
                 mem_gb=66,
             params:
-                basename=lambda wildcards, input: f"{input.basedir}",
-                kite_prefix=f"{config['kite_fm']}",
+                basename=lambda wildcards, input: f"{input.basedir[0]}/{wildcards.assembly}",
                 options=config.get("count")
             shell:
                 """
                 kb count \
-                -i {params.basename}/{params.kite_prefix}.idx -w {input.barcodefile}  \
-                -t {threads} -g {params.basename}/{params.kite_prefix}.t2g \
+                -i {params.basename}.idx -w {input.barcodefile}  \
+                -t {threads} -g {params.basename}.t2g \
                 -o {output}  \
                 {params.options} {input.reads} > {log} 2>&1
                 """
