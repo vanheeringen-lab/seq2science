@@ -16,6 +16,7 @@ rule get_genome:
         genome_dir=config["genome_dir"]
     resources:
         parallel_downloads=1,
+        genomepy_downloads=1,
     priority: 1
     script:
         f"{config['rule_dir']}/../scripts/get_genome.py"
@@ -38,6 +39,7 @@ rule get_genome_blacklist:
         genome_dir=config["genome_dir"]
     resources:
         parallel_downloads=1,
+        genomepy_downloads=1,
     priority: 1
     script:
         f"{config['rule_dir']}/../scripts/get_genome_blacklist.py"
@@ -62,6 +64,7 @@ rule get_genome_annotation:
         expand("{benchmark_dir}/get_annotation/{{raw_assembly}}.genome.benchmark.txt", **config)[0]
     resources:
         parallel_downloads=1,
+        genomepy_downloads=1,
     params:
         providers=providers,
         genome_dir=config["genome_dir"]
