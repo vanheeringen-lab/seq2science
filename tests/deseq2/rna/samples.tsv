@@ -1,5 +1,5 @@
 # RNA-test						
-sample	assembly	technical_replicate	biological_replicate	condition	batch	note
+sample	assembly	technical_replicates	biological_replicates	condition	batch	note
 sample1	GRCh38.p13	C0_1	C0	day0	C
 sample2	GRCh38.p13	C0_2	C0	day0	C
 sample3	GRCh38.p13	C2_1	C2	day2	C

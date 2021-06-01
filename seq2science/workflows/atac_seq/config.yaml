@@ -38,6 +38,6 @@ peak_caller:
 #  genrich:
 #      -j -y -D -d 200
 
-## differential gene expression analysis
+## differential accessibility analysis
 #contrasts:
-#  - 'biological_replicate_adult_embryo'
+#  - 'biological_replicates_adult_embryo'

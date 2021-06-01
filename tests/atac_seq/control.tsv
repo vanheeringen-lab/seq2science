@@ -1,4 +1,4 @@
-sample	assembly	technical_replicate	descriptive_name	control
+sample	assembly	technical_replicates	descriptive_name	control
 SRR4011697	Xenopus_tropicalis_v9.1	st8_Foxh1	st8_Foxh1_rep1	GSM2263598
 SRR4011696	Xenopus_tropicalis_v9.1	st8_Foxh1	st8_Foxh1_rep2	GSM2263598
 SRR4011699	Xenopus_tropicalis_v9.1	st9_Foxh1	st9_Foxh1_rep1	GSM2263600
