@@ -66,7 +66,15 @@ vsdMatrix <- t(assay(vsd))
 # Heatmap of the sample-to-sample distances
 # see http://www.bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#heatmap-of-the-sample-to-sample-distances
 mat <- as.matrix(dist(vsdMatrix))
+print(dim(mat))  # TODO remove
 heatmap_names(mat, coldata)
+print(rownames(mat))
+
+# TODO: test prints, remove
+mat1 <- as.matrix(cor(vsdMatrix, method="spearman"))
+print(dim(mat1))  # TODO remove
+heatmap_names(mat1, coldata)  # TODO remove
+print(rownames(mat1))
 
 title <- 'Sample distance clustering (blind)'
 legend_aes <- list(
