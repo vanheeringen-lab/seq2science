@@ -13,6 +13,7 @@ fi
 
 CORES=28
 set -e  # Exit immediately if a command exits with a non-zero status.
+touch -m tests/tinydata/*  # update testdata timestamps (prevent unexpected reruns)
 
 if [ $1 = "cleanup_files" ]; then
   rm -rf tests/local_test_results
@@ -144,6 +145,7 @@ if [ $1 = "star" ]; then
   let "c = $CORES / 6"
 
   seq2science run $WF --cores $c -r --configfile tests/$WF/default_config.yaml --snakemakeOptions until=[samtools_presort] config={samples:tests/alignment/local_sample.tsv,fastq_dir:../../tinyfastq,genome_dir:tests,result_dir:$RESULTS_DIR,aligner:$ALIGNER} show_failed_logs=True
+  # seq2science run alignment -nr --configfile tests/alignment/default_config.yaml --snakemakeOptions until=[samtools_presort] config={samples:tests/alignment/local_sample.tsv,fastq_dir:../../tinyfastq,genome_dir:tests,result_dir:tests/local_test_results/star,aligner:star}
 
   test_ran=1
 fi
