@@ -4,28 +4,13 @@ from seq2science.util import sieve_bam
 localrules: setup_blacklist, complement_blacklist
 
 
-def get_blacklist_files(wildcards):
-    files = {}
-    # ideally get genome is a checkpoint, however there are quite some Snakemake
-    # bugs related to this. So for now we solve it like this
-    # TODO: switch back to checkpoints
-    if config.get("remove_blacklist") and wildcards.assembly.lower() in ["ce10", "dm3", "hg38", "hg19", "mm9", "mm10"]:
-        blacklist = f"{config['genome_dir']}/{wildcards.assembly}/{wildcards.assembly}.fa"
-        files["blacklist"] = blacklist
-
-    if config.get("remove_mito"):
-        sizes = f"{config['genome_dir']}/{wildcards.assembly}/{wildcards.assembly}.fa.sizes"
-        files["sizes"] = sizes
-
-    return files
-
-
 rule setup_blacklist:
     """
     Combine the encode blacklist with mitochrondrial dna depending on config.
     """
     input:
-        unpack(get_blacklist_files),
+        blacklist=expand("{genome_dir}/{{assembly}}/{{assembly}}.blacklist.bed", **config),
+        sizes=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
     output:
         temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.customblacklist.bed", **config)),
     params:
@@ -33,13 +18,12 @@ rule setup_blacklist:
         config.get("remove_mito"),  # helps resolve changed params
     run:
         newblacklist = ""
-        if config.get("remove_blacklist") and wildcards.assembly.lower() in ["ce10", "dm3", "hg38", "hg19", "mm9", "mm10"]:
-            blacklist = f"{config['genome_dir']}/{wildcards.assembly}/{wildcards.assembly}.blacklist.bed"
-            with open(blacklist) as file:
+        if config.get("remove_blacklist"):
+            with open(input["blacklist"]) as file:
                 newblacklist += file.read()
 
-        if any(".fa.sizes" in inputfile for inputfile in input):
-            with open(input.sizes, "r") as file:
+        if config.get("remove_mito"):
+            with open(input["sizes"]) as file:
                 sizesfile = file.read().strip()
                 for match in re.findall("chrM.*|chrm.*|MT.*", sizesfile):
                     chrm, size = match.split("\t")
