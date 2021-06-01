@@ -245,7 +245,7 @@ elif config["quantifier"] == "kallistobus":
         input:
             featurebarcodes=expand("{genome_dir}/{{assembly}}.tsv", **config)
         output:
-            directory(expand("{genome_dir}/kite/{{assembly}}/index/", **config)),
+            directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/kite/", **config)),
         log:    
             expand("{log_dir}/kallistobus_index_kite/{{assembly}}.log", **config),    
         conda:
@@ -266,10 +266,10 @@ elif config["quantifier"] == "kallistobus":
             """
             
     def get_kb_dir(wildcards):
-        dir = directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/", **config))
         if 'kite' in config.get('ref'):
-            dir = directory(expand("{genome_dir}/kite/{{assembly}}/index/", **config))     
-        return dir
+            return directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/kite/", **config))     
+        else:
+            return directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/", **config))
         
     rule kallistobus_count:
             """
