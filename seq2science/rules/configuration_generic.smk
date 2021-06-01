@@ -260,9 +260,14 @@ if "assembly" in samples:
     providers = PickleDict(providersfile)
     ftype = "annotation" if annotation_required else "genome"
     search_assemblies = [assembly for assembly in remote_assemblies if providers.get(assembly, {}).get(ftype) is None]
-
+    
+    # custom assemblies without provider for local/remote annotations
+    custom_provider = False
+    if "scrna_seq" in get_workflow() and 'kallistobus' in config['quantifier']:
+        custom_provider= 'kite' in config['quantifier'].get('kallistobus').get('ref')
+        
     # check if genomepy can download the required files
-    if len(search_assemblies) > 0:
+    if len(search_assemblies) > 0 and not custom_provider:
         logger.info("Determining assembly providers")
         for assembly in search_assemblies:
             if assembly not in providers:
@@ -284,16 +289,16 @@ if "assembly" in samples:
         # store added assemblies
         providers.save()
 
-    # troubleshooting
+    # troubleshooting 
     for assembly in remote_assemblies:
-        if providers[assembly]["genome"] is None:
+        if providers[assembly]["genome"] is None and not custom_provider:
             logger.info(
                 f"Could not download assembly {assembly}.\n"
                 f"Find alternative assemblies with `genomepy search {assembly}`"
             )
             exit(1)
 
-        if providers[assembly]["annotation"] is None:
+        if providers[assembly]["annotation"] is None and not custom_provider:
             if not config.get("no_config_log"):
                 logger.info(
                     f"No annotation for assembly {assembly} can be downloaded. Another provider (and "
