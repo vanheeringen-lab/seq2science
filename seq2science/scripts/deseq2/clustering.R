@@ -71,7 +71,7 @@ heatmap_names(mat, coldata)
 title <- 'Sample distance clustering (blind)'
 legend_aes <- list(
   "breaks" = c(min(mat), mean(c(min(mat), max(mat))), max(mat)),
-  "labels" = c("low",                 "distance\n(euclidean)",                               "high"),
+  "labels" = c("low",    "distance\n(euclidean)",     "high")
 )
 out_pdf <- sub(".png", ".pdf", out_png)
 heatmap_plot(mat, title, heatmap_aes, legend_aes, out_pdf)
@@ -92,7 +92,7 @@ for (method in list("spearman", "pearson")){
   title <- paste0(toupper(substring(name, 1, 1)), substring(name, 2))
   legend_aes <- list(
     "breaks" = NA,
-    "labels" = NA,
+    "labels" = NA
   )
   out_pdf_cor <- sub("sample_distance_clustering", gsub(" ", "_", name), out_pdf)
   heatmap_plot(mat, title, heatmap_aes, legend_aes, out_pdf_cor)
