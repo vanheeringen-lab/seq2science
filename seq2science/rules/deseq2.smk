@@ -70,7 +70,7 @@ rule deseq2:
     threads: 4
     params:
         samples=os.path.abspath(config["samples"]),
-        replicates=True if "technical_replicate" in samples else False,
+        replicates=True if "technical_replicates" in samples else False,
         salmon=config.get("quantifier","") == "salmon",
         scripts_dir=f"{config['rule_dir']}/../scripts/deseq2"
     resources:
@@ -103,7 +103,7 @@ rule blind_clustering:
     threads: 4
     params:
         samples=os.path.abspath(config["samples"]),
-        replicates=True if "technical_replicate" in samples else False,
+        replicates=True if "technical_replicates" in samples else False,
         scripts_dir=f"{config['rule_dir']}/../scripts/deseq2",
     resources:
         R_scripts=1, # conda's R can have issues when starting multiple times

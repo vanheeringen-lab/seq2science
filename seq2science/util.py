@@ -274,7 +274,7 @@ def parse_contrast(contrast, samples, check=True):
         # check if columns exists and are valid
         valid_columns = [col for col in samples.columns if col not in ["sample", "assembly"]]
         # columns that may have been dropped, if so, these backups have been saved
-        backup_columns = {"technical_replicate": "_trep", "biological_replicate": "_brep", "descriptive_name": "_dname"}
+        backup_columns = {"technical_replicates": "_trep", "biological_replicates": "_brep", "descriptive_name": "_dname"}
         for col in [batch, column]:
             if col:
                 assert col in valid_columns + list(backup_columns.keys()), (

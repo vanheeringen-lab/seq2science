@@ -4,28 +4,13 @@ from seq2science.util import sieve_bam
 localrules: setup_blacklist, complement_blacklist
 
 
-def get_blacklist_files(wildcards):
-    files = {}
-    # ideally get genome is a checkpoint, however there are quite some Snakemake
-    # bugs related to this. So for now we solve it like this
-    # TODO: switch back to checkpoints
-    if config.get("remove_blacklist") and wildcards.assembly.lower() in ["ce10", "dm3", "hg38", "hg19", "mm9", "mm10"]:
-        blacklist = f"{config['genome_dir']}/{wildcards.assembly}/{wildcards.assembly}.fa"
-        files["blacklist"] = blacklist
-
-    if config.get("remove_mito"):
-        sizes = f"{config['genome_dir']}/{wildcards.assembly}/{wildcards.assembly}.fa.sizes"
-        files["sizes"] = sizes
-
-    return files
-
-
 rule setup_blacklist:
     """
     Combine the encode blacklist with mitochrondrial dna depending on config.
     """
     input:
-        unpack(get_blacklist_files),
+        blacklist=expand("{genome_dir}/{{assembly}}/{{assembly}}.blacklist.bed", **config),
+        sizes=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
     output:
         temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.customblacklist.bed", **config)),
     params:
@@ -33,13 +18,12 @@ rule setup_blacklist:
         config.get("remove_mito"),  # helps resolve changed params
     run:
         newblacklist = ""
-        if config.get("remove_blacklist") and wildcards.assembly.lower() in ["ce10", "dm3", "hg38", "hg19", "mm9", "mm10"]:
-            blacklist = f"{config['genome_dir']}/{wildcards.assembly}/{wildcards.assembly}.blacklist.bed"
-            with open(blacklist) as file:
+        if config.get("remove_blacklist"):
+            with open(input["blacklist"]) as file:
                 newblacklist += file.read()
 
-        if any(".fa.sizes" in inputfile for inputfile in input):
-            with open(input.sizes, "r") as file:
+        if config.get("remove_mito"):
+            with open(input["sizes"]) as file:
                 sizesfile = file.read().strip()
                 for match in re.findall("chrM.*|chrm.*|MT.*", sizesfile):
                     chrm, size = match.split("\t")
@@ -111,7 +95,8 @@ rule sieve_bam:
     params:
         minqual=f"-q {config['min_mapping_quality']}",
         atacshift=(
-            lambda wildcards, input: f" {config['rule_dir']}/../scripts/atacshift.pl /dev/stdin {input.sizes} | "
+            lambda wildcards, input:
+            f" {config['rule_dir']}/../scripts/atacshift.pl /dev/stdin {input.sizes} | "
             if config["tn5_shift"]
             else ""
         ),
@@ -123,7 +108,12 @@ rule sieve_bam:
             if sampledict[wildcards.sample]["layout"] == "PAIRED" and config["filter_on_size"]
             else ""
         ),
-        sizesieve_touch="touch {output.allsizes}" if config["filter_on_size"] else ""
+        sizesieve_touch=(
+            lambda wildcards, input, output:
+            f"touch {output.allsizes}"
+            if sampledict[wildcards.sample]["layout"] == "SINGLE" and config["filter_on_size"]
+            else ""
+        ),
     shell:
         """
         samtools view -h {params.prim_align} {params.minqual} {params.blacklist} \
@@ -188,7 +178,7 @@ rule samtools_sort:
         out_dir=f"{config['result_dir']}/{config['aligner']}",
         memory=lambda wildcards, input, output, threads: f"-m {int(1000 * round(config['bam_sort_mem']/threads, 3))}M",
     wildcard_constraints:
-        sample=f"""({any_given("sample", "technical_replicate", "control")})(_allsizes)?""",
+        sample=f"""({any_given("sample", "technical_replicates", "control")})(_allsizes)?""",
     threads: 2
     resources:
         mem_gb=config["bam_sort_mem"],
@@ -243,7 +233,7 @@ rule mark_duplicates:
     conda:
         "../envs/picard.yaml"
     wildcard_constraints:
-        sample=f"""({any_given("sample", "technical_replicate", "control")})(_allsizes)?""",
+        sample=f"""({any_given("sample", "technical_replicates", "control")})(_allsizes)?""",
     shell:
         """
         # use the TMPDIR if set, and not given in the config

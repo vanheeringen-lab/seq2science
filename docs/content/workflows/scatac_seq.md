@@ -48,7 +48,7 @@ After removing all the completely empty fastq files, use the remainder to fill y
 As an example, the samples.tsv could look something like this:
 
 ```
-sample	assembly	technical_replicate
+sample	assembly	technical_replicates
 GSM1596256	hg38	H1ESC
 GSM1596257	hg38	H1ESC
 GSM1596258	hg38	H1ESC
@@ -94,7 +94,7 @@ These setting can be changed in the `config.yaml`.
 #### Assembly column
 Here you simply add the name of the assembly you want your samples aligned against and the workflow will download it for you.
 
-#### technical_replicate column
+#### technical_replicates column
 Here you put to which technical replica each cell corresponds. E.g. the plate from which the cells were sequenced. Per technical replica QC will be generated. For public data you can put all cells under the same technical replica name.
 
 ### Filling out the config.yaml

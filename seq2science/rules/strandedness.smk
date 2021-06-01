@@ -25,7 +25,7 @@ def samples_to_infer(wildcards):
     """
     list all samples for which strandedness must be inferred
     """
-    col = samples.technical_replicate if "technical_replicate" in samples else samples.index
+    col = samples.technical_replicates if "technical_replicates" in samples else samples.index
     if config['ignore_strandedness'] or \
             ("strandedness" in samples and "nan" not in set(samples.strandedness)):
         files = []
@@ -73,7 +73,7 @@ checkpoint strandedness_report:
 
         strands = []
         method = []
-        col = samples.technical_replicate if "technical_replicate" in samples else samples.index
+        col = samples.technical_replicates if "technical_replicates" in samples else samples.index
         for sample in set(col):
             s = samples[col == sample].strandedness[0] if "strandedness" in samples else "nan"
             m = "user_specification"

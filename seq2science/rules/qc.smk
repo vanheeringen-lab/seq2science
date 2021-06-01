@@ -859,7 +859,7 @@ def get_rna_qc(sample):
     output = []
 
     # add infer experiment reports
-    col = samples.technical_replicate if "technical_replicate" in samples else samples.index
+    col = samples.technical_replicates if "technical_replicates" in samples else samples.index
     if "strandedness" not in samples or samples[col == sample].strandedness[0] == "nan":
         output += expand(f"{{qc_dir}}/strandedness/{{{{assembly}}}}-{sample}.strandedness.txt",**config)
 

@@ -37,11 +37,11 @@ parse_samples <- function(samples_file, assembly, replicates) {
 
   # collapse technical replicates
   # (and use these names for the counts table later)
-  if ("technical_replicate" %in% colnames(samples) & isTRUE(replicates)) {
-    to_rename <- is.na(samples$technical_replicate)
-    samples$technical_replicate[to_rename] <- as.character(rownames(samples)[to_rename])
-    samples <- subset(samples, !duplicated(technical_replicate))
-    rownames(samples) <- samples$technical_replicate
+  if ("technical_replicates" %in% colnames(samples) & isTRUE(replicates)) {
+    to_rename <- is.na(samples$technical_replicates)
+    samples$technical_replicates[to_rename] <- as.character(rownames(samples)[to_rename])
+    samples <- subset(samples, !duplicated(technical_replicates))
+    rownames(samples) <- samples$technical_replicates
   }
 
   # fill in blank descriptive names
@@ -175,7 +175,7 @@ heatmap_aesthetics <- function(num_samples){
 
 
 #' assign names from coldata to the rows and columns of a matrix
-#' uses descriptive names if available, else rownames (can be technical replicate/sample names)
+#' uses descriptive names if available, else rownames (can be technical replicates/sample names)
 heatmap_names <- function(matrix, coldata) {
   has_descriptive <- "descriptive_name" %in% colnames(coldata)
   names <- ifelse(has_descriptive, coldata$descriptive_name, rownames(coldata))
