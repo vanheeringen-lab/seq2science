@@ -700,7 +700,7 @@ def get_qc_files(wildcards):
     # DESeq2 sample distance/correlation cluster heatmaps
     if (get_peak_calling_qc in quality_control or get_rna_qc in quality_control) and len(treps.index) > 2:
         plots = ["sample_distance_clustering", "pearson_correlation_clustering", "spearman_correlation_clustering"]
-        files = expand("{qc_dir}/plotCorrelation/{{assembly}}-{plots}_mqc.png", plots=plots, **config)
+        files = expand("{qc_dir}/plotCorrelation/{{assembly}}-DESeq2_{plots}_mqc.png", plots=plots, **config)
         # only perform clustering if there are 2 or more groups in the assembly
         for assembly in treps.assembly:
             if len(treps[treps.assembly == assembly].index) < 2:
