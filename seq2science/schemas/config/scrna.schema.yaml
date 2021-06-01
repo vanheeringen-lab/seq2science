@@ -25,7 +25,6 @@ properties:
             
     default:
       kallistobus:
-        mode: 'gex'
         ref: '--workflow lamanno'
         count: '-x 10XV3 --verbose --h5ad --workflow lamanno'
         
