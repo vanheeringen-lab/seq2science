@@ -144,6 +144,12 @@ if config["quantifier"] == "salmon":
 
 
 elif config["quantifier"] == "kallistobus":
+    
+    if 'kite' in config.get('ref'):
+        ruleorder: kallistobus_ref_kite > get_genome
+        ruleorder: kallistobus_ref_kite > kallistobus_ref
+    else:
+        ruleorder: kallistobus_ref > kallistobus_ref_kite
 
     def get_fastq_pair_reads(wildcards):
         """
@@ -201,12 +207,6 @@ elif config["quantifier"] == "kallistobus":
             fastq_pair $opts {output.intermediates1} >> {log} 2>&1
         """
                 
-    if 'kite' in config.get('ref'):
-        ruleorder: kallistobus_ref_kite > get_genome
-        ruleorder: kallistobus_ref_kite > kallistobus_ref
-    else:
-        ruleorder: kallistobus_ref > kallistobus_ref_kite
-    
     rule kallistobus_ref:
         """
         Make a genome index for kallistobus. This index is required for counting.
