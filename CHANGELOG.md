@@ -8,9 +8,25 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+<<<<<<< HEAD
 ### Added
 
 - added support for kb-python kite workflow
+
+### Changed
+
+- "biological_replicate" and "technical_replicate" renamed to *"_replicates" (matches between samples.tsv & config.yaml)
+- fixed bug with seq2science making a {output.allsizes} file
+- Changed explain to use 'passive style'
+- Genrich peak calling defaults
+  - Doesn't remove PCR duplicates anymore (best to do with markduplicates)
+  - Changed extsize to 200 to be similar to macs settings
+  - Turned off tn5 shift, since that is done by seq2science
+
+### Fixed
+
+- depend less on local genomes (only when data is unavailable online)
+- trackhub explanation was missing, added
 
 ## [0.5.2] - 2021-05-10
 

@@ -4,4 +4,4 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - bioconda::genrich=0.6
+  - bioconda::genrich=0.6.1

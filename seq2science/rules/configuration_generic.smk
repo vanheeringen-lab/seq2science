@@ -25,7 +25,7 @@ from snakemake.utils import min_version
 from snakemake.exceptions import TerminatedException
 
 import seq2science
-from seq2science.util import UniqueKeyLoader, samples2metadata, prep_filelock, url_is_alive, color_parser
+from seq2science.util import UniqueKeyLoader, samples2metadata, prep_filelock, url_is_alive, color_parser, PickleDict
 
 
 # get the cache and config dirs
@@ -122,15 +122,15 @@ if len(errors):
 #    (sample names if replicates are not found/applicable)
 # 2) drop column if it provides no information
 #    (renamed in case it's used in a DE contrast)
-if 'technical_replicate' in samples:
-    samples['technical_replicate'] = samples['technical_replicate'].mask(pd.isnull, samples['sample'])
-    if len(samples['technical_replicate'].unique()) == len(samples['sample'].unique()) or config.get('technical_replicates') == 'keep':
-        samples.rename(columns={'technical_replicate': '_trep'}, inplace=True)
-col = 'technical_replicate' if 'technical_replicate' in samples else 'sample'
-if 'biological_replicate' in samples:
-    samples['biological_replicate'] = samples['biological_replicate'].mask(pd.isnull, samples[col])
-    if len(samples['biological_replicate'].unique()) == len(samples[col].unique()) or config.get('biological_replicates') == 'keep':
-        samples.rename(columns={'biological_replicate': '_brep'}, inplace=True)
+if 'technical_replicates' in samples:
+    samples['technical_replicates'] = samples['technical_replicates'].mask(pd.isnull, samples['sample'])
+    if len(samples['technical_replicates'].unique()) == len(samples['sample'].unique()) or config.get('technical_replicates') == 'keep':
+        samples.rename(columns={'technical_replicates': '_trep'}, inplace=True)
+col = 'technical_replicates' if 'technical_replicates' in samples else 'sample'
+if 'biological_replicates' in samples:
+    samples['biological_replicates'] = samples['biological_replicates'].mask(pd.isnull, samples[col])
+    if len(samples['biological_replicates'].unique()) == len(samples[col].unique()) or config.get('biological_replicates') == 'keep':
+        samples.rename(columns={'biological_replicates': '_brep'}, inplace=True)
 if 'descriptive_name' in samples:
     samples['descriptive_name'] = samples['descriptive_name'].mask(pd.isnull, samples[col])
     if samples['descriptive_name'].to_list() == samples[col].to_list():
@@ -146,9 +146,9 @@ if 'colors' in samples:
     else:
         samples = samples.drop(columns=['colors'])
 
-if 'technical_replicate' in samples:
+if 'technical_replicates' in samples:
     # check if replicate names are unique between assemblies
-    r = samples[['assembly', 'technical_replicate']].drop_duplicates().set_index('technical_replicate')
+    r = samples[['assembly', 'technical_replicates']].drop_duplicates().set_index('technical_replicates')
     for replicate in r.index:
         assert len(r[r.index == replicate]) == 1, \
             ("\nReplicate names must be different between assemblies.\n" +
@@ -156,16 +156,16 @@ if 'technical_replicate' in samples:
 
 # check if sample, replicate and condition names are unique between the columns
 for idx in samples.index:
-    if "biological_replicate" in samples:
-        assert idx not in samples["biological_replicate"].values, f"sample names, conditions, and replicates can not overlap. " \
+    if "biological_replicates" in samples:
+        assert idx not in samples["biological_replicates"].values, f"sample names, conditions, and replicates can not overlap. " \
                                                                   f"Sample {idx} can not also occur as a condition"
-    if "technical_replicate" in samples:
-        assert idx not in samples["technical_replicate"].values, f"sample names, conditions, and replicates can not overlap. " \
+    if "technical_replicates" in samples:
+        assert idx not in samples["technical_replicates"].values, f"sample names, conditions, and replicates can not overlap. " \
                                                                  f"Sample {idx} can not also occur as a replicate"
 
-if "biological_replicate" in samples and "technical_replicate" in samples:
-    for cond in samples["biological_replicate"]:
-        assert cond not in samples["technical_replicate"].values, f"sample names, conditions, and replicates can not overlap. " \
+if "biological_replicates" in samples and "technical_replicates" in samples:
+    for cond in samples["biological_replicates"]:
+        assert cond not in samples["technical_replicates"].values, f"sample names, conditions, and replicates can not overlap. " \
                                                                   f"Condition {cond} can not also occur as a replicate"
 
 # validate samples file
@@ -233,73 +233,67 @@ if "assembly" in samples:
                             return p.name
         return None
 
-
-    # determine provider for each new assembly
-    providersfile = f"{CACHE_DIR}/providers.p"
-    providersfile_lock = f"{CACHE_DIR}/providers.p.lock"
-    for _ in range(2):
-        # we get two tries, in case parallel executions are interfering with one another
-        try:
-            prep_filelock(providersfile_lock, 30)
-            with FileLock(providersfile_lock):
-                providers = dict()
-                if os.path.exists(providersfile):
-                    providers = pickle.load(open(providersfile, "rb"))
-
-                if any([assembly not in providers for assembly in set(samples["assembly"])]):
-                    logger.info("Determining assembly providers")
-
-                    for assembly in set(samples["assembly"]):
-                        if assembly not in providers:
-                            file = os.path.join(config['genome_dir'], assembly, assembly)
-                            providers[assembly] = {"genome": None, "annotation": None}
-
-                            # check if genome and annotations exist locally
-                            if os.path.exists(f"{file}.fa"):
-                                providers[assembly]["genome"] = "local"
-                            if any(os.path.exists(f) for f in [f"{file}.annotation.gtf", f"{file}.annotation.gtf.gz"]) and \
-                                any(os.path.exists(f) for f in [f"{file}.annotation.bed", f"{file}.annotation.bed.gz"]):
-                                providers[assembly]["annotation"] = "local"
-
-                            # check if the annotation can be downloaded
-                            if providers[assembly]["annotation"] is None:
-                                annotion_provider = provider_with_file("annotation", assembly)
-                                if annotion_provider:
-                                    providers[assembly]["genome"] = annotion_provider  # genome always exists if annotation does
-                                    providers[assembly]["annotation"] = annotion_provider
-
-                            # check if the genome can be downloaded
-                            if providers[assembly]["genome"] is None:
-                                genome_provider = provider_with_file("genome", assembly)
-                                providers[assembly]["genome"] = genome_provider
-
-                    pickle.dump(providers, open(providersfile, "wb"))
-                break
-        except FileNotFoundError:
-            time.sleep(1)
-    else:
-        logger.error("There were some problems with locking the seq2science cache. Please try again in a bit.")
-        raise TerminatedException
-    # Check for custom_provider which do not require any of the checks below.
-    custom_provider = False
-    if "scrna_seq" in get_workflow() and 'kallistobus' in config['quantifier']:
-        custom_provider= 'kite' in config['quantifier'].get('kallistobus').get('ref')
-    # check the providers for the required assemblies
-    annotation_required = "rna_seq" in get_workflow() or config["aligner"] == "star"
-    _has_annot = dict()
-    for assembly in set(samples["assembly"]):
+    def is_local(assembly, ftype="genome"):
+        """checks if genomic file(s) are present locally"""
         file = os.path.join(config['genome_dir'], assembly, assembly)
-        if providers[assembly]["genome"] is None and not os.path.exists(f"{file}.fa") and not custom_provider:
+        local_fasta = os.path.exists(f"{file}.fa")
+        local_gtf = any(os.path.exists(f) for f in [f"{file}.annotation.gtf", f"{file}.annotation.gtf.gz"])
+        local_bed = any(os.path.exists(f) for f in [f"{file}.annotation.bed", f"{file}.annotation.bed.gz"])
+        if ftype == "genome":
+            return local_fasta
+        if ftype == "annotation":
+            return local_gtf and local_bed
+        if ftype == "both":
+            return local_gtf and local_bed and local_fasta
+
+    # list assemblies that are used in this workflow
+    used_assemblies = list(set(samples["assembly"]))
+
+    # split into local and remote assemblies, depending on if all required files can be found
+    annotation_required = "rna_seq" in get_workflow() or config["aligner"] == "star"
+    ftype = "both" if annotation_required else "genome"
+    local_assemblies = [assembly for assembly in used_assemblies if is_local(assembly, ftype)]
+    remote_assemblies = [assembly for assembly in used_assemblies if assembly not in local_assemblies]
+
+    # list assemblies that genomepy needs to search first
+    providersfile = f"{CACHE_DIR}/providers.p"
+    providers = PickleDict(providersfile)
+    ftype = "annotation" if annotation_required else "genome"
+    search_assemblies = [assembly for assembly in remote_assemblies if providers.get(assembly, {}).get(ftype) is None]
+
+    # check if genomepy can download the required files
+    if len(search_assemblies) > 0:
+        logger.info("Determining assembly providers")
+        for assembly in search_assemblies:
+            if assembly not in providers:
+                providers[assembly] = {"genome": None, "annotation": None}
+
+            # check if the annotation AND genome can be downloaded
+            if providers[assembly]["annotation"] is None:
+                annotion_provider = provider_with_file("annotation",assembly)
+                if annotion_provider:
+                    providers[assembly]["genome"] = annotion_provider  # genome always exists if annotation does
+                    providers[assembly]["annotation"] = annotion_provider
+
+            # check if the genome can be downloaded
+            if providers[assembly]["genome"] is None:
+                genome_provider = provider_with_file("genome",assembly)
+                if genome_provider:
+                    providers[assembly]["genome"] = genome_provider
+
+        # store added assemblies
+        providers.save()
+
+    # troubleshooting
+    for assembly in remote_assemblies:
+        if providers[assembly]["genome"] is None:
             logger.info(
                 f"Could not download assembly {assembly}.\n"
                 f"Find alternative assemblies with `genomepy search {assembly}`"
             )
             exit(1)
 
-        if providers[assembly]["annotation"] is None and not custom_provider and not (
-                any(os.path.exists(f) for f in [f"{file}.annotation.gtf", f"{file}.annotation.gtf.gz"]) and
-                any(os.path.exists(f) for f in [f"{file}.annotation.bed", f"{file}.annotation.bed.gz"])
-        ):
+        if providers[assembly]["annotation"] is None:
             if not config.get("no_config_log"):
                 logger.info(
                     f"No annotation for assembly {assembly} can be downloaded. Another provider (and "
@@ -308,10 +302,13 @@ if "assembly" in samples:
                 )
             if annotation_required:
                 exit(1)
-            _has_annot[assembly] = False
-            time.sleep(0 if config.get("debug") else 2)  # give some time to read the message
-        else:
-            _has_annot[assembly] = True
+
+    # for the trackhub: determine which assemblies (will) have an annotation
+    _has_annot = dict()
+    for assembly in local_assemblies:
+        _has_annot[assembly] = is_local(assembly, "annotation")
+    for assembly in remote_assemblies:
+        _has_annot[assembly] = bool(providers[assembly]["annotation"])
 
 
     def ori_assembly(assembly):
@@ -404,14 +401,14 @@ for sample, values in sampledict.items():
 
 # if samples are merged add the layout of the technical replicate to the config
 failed_samples = dict()
-if 'technical_replicate' in samples:
+if 'technical_replicates' in samples:
     for sample in samples.index:
-        replicate = samples.loc[sample, 'technical_replicate']
+        replicate = samples.loc[sample, 'technical_replicates']
         if replicate not in sampledict:
             sampledict[replicate] = {'layout':  sampledict[sample]['layout']}
         elif sampledict[replicate]['layout'] != sampledict[sample]['layout']:
             assembly = samples.loc[sample, "assembly"]
-            treps = samples[(samples["assembly"] == assembly) & (samples["technical_replicate"] == replicate)].index
+            treps = samples[(samples["assembly"] == assembly) & (samples["technical_replicates"] == replicate)].index
             failed_samples.setdefault(replicate, set()).update({trep for trep in treps}) 
 
 if len(failed_samples):
@@ -455,15 +452,15 @@ if 'assembly' in samples:
         raw_assembly=any_given('assembly'),
         assembly=any_given('assembly', suffix=config["custom_assembly_suffix"] if modified else ""),
 
-if 'technical_replicate' in samples:
-    sample_constraints.append("technical_replicate")
+if 'technical_replicates' in samples:
+    sample_constraints.append("technical_replicates")
     wildcard_constraints:
-        replicate=any_given('technical_replicate')
+        replicate=any_given('technical_replicates')
 
-if 'biological_replicate' in samples:
-    sample_constraints.append("biological_replicate")
+if 'biological_replicates' in samples:
+    sample_constraints.append("biological_replicates")
     wildcard_constraints:
-        condition=any_given('biological_replicate')
+        condition=any_given('biological_replicates')
 
 if "control" in samples:
     sample_constraints.append("control")

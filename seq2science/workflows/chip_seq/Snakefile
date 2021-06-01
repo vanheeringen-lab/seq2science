@@ -1,5 +1,5 @@
 # do onstart/onexit things
-sample_schemas = ['sample', 'assembly', 'strandedness', 'biological_replicate', 'technical_replicate']
+sample_schemas = ['sample', 'assembly', 'strandedness', 'biological_replicates', 'technical_replicates']
 config_schemas = ['general', 'download', 'alignment_general', 'peakcalling', 'deseq2', 'trackhub']
 include: "../../rules/configuration.smk"
 

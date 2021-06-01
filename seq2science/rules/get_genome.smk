@@ -1,11 +1,8 @@
 localrules: extend_genome, get_genome_support_files, unzip_annotation
 
-
 rule get_genome:
     """
     Download a genome through genomepy.
-    
-    Also download a blacklist if it exists.
     """
     output:
         expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa", **config),
@@ -19,9 +16,33 @@ rule get_genome:
         genome_dir=config["genome_dir"]
     resources:
         parallel_downloads=1,
+        genomepy_downloads=1,
     priority: 1
     script:
         f"{config['rule_dir']}/../scripts/get_genome.py"
+
+
+rule get_genome_blacklist:
+    """
+    Download a genome blacklist for a genome, if it exists, through genomepy.
+    """
+    input:
+        expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa", **config),
+        # get_genome_support_files must have finished
+        expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa.fai", **config),
+        expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa.sizes", **config),
+    output:
+        expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.blacklist.bed", **config),
+    log:
+        expand("{log_dir}/get_genome/{{raw_assembly}}.blacklist.log", **config),
+    params:
+        genome_dir=config["genome_dir"]
+    resources:
+        parallel_downloads=1,
+        genomepy_downloads=1,
+    priority: 1
+    script:
+        f"{config['rule_dir']}/../scripts/get_genome_blacklist.py"
 
 
 rule get_genome_annotation:
@@ -29,7 +50,9 @@ rule get_genome_annotation:
     Download a gene annotation through genomepy.
     """
     input:
-        ancient(expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa", **config)),
+        # these should be ancient(), but snakemake simply ignores ancient items (bug)
+        expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa", **config),
+        # get_genome_support_files must have finished
         expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa.fai", **config),
         expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa.sizes", **config),
     output:
@@ -41,6 +64,7 @@ rule get_genome_annotation:
         expand("{benchmark_dir}/get_annotation/{{raw_assembly}}.genome.benchmark.txt", **config)[0]
     resources:
         parallel_downloads=1,
+        genomepy_downloads=1,
     params:
         providers=providers,
         genome_dir=config["genome_dir"]
@@ -67,6 +91,20 @@ rule extend_genome:
         for FILE in {input.extension}; do
             cat $FILE >> {output.genome}
         done
+        """
+
+
+rule extend_genome_blacklist:
+    """
+    Copy blacklist to the custom genome directory
+    """
+    input:
+        expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.blacklist.bed", **config),
+    output:
+        expand("{genome_dir}/{{raw_assembly}}{custom_assembly_suffix}/{{raw_assembly}}{custom_assembly_suffix}.blacklist.bed", **config),
+    shell:
+        """
+        cp {input} {output}
         """
 
 
@@ -110,7 +148,7 @@ rule get_genome_support_files:
     params:
         genome_dir=config["genome_dir"]
     script:
-        f"{config['rule_dir']}/../scripts/genome_support.py"
+        f"{config['rule_dir']}/../scripts/get_genome_support.py"
 
 
 rule gene_id2name:

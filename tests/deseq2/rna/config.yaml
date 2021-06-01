@@ -28,4 +28,4 @@ aligner: star
 
 contrasts:
   - batch + condition_day2_day0
-  - biological_replicate_H2_H0
+  - biological_replicates_H2_H0
