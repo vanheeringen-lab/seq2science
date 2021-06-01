@@ -177,13 +177,13 @@ heatmap_aesthetics <- function(num_samples){
 #' assign names from coldata to the rows and columns of a matrix
 #' uses descriptive names if available, else rownames (can be technical replicates/sample names)
 heatmap_names <- function(mat, coldata) {
-  print(colnames(coldata))
-  print(rownames(coldata))
-  print(list(rownames(coldata)))
   has_descriptive <- "descriptive_name" %in% colnames(coldata)
-  names <- ifelse(has_descriptive, coldata$descriptive_name, rownames(coldata))
-  print(has_descriptive)
+  names <- ifelse(has_descriptive, coldata$descriptive_name, row.names(coldata))
+
+  # TODO: remove when fixed
+  print(rownames(coldata))
   print(names)
+
   rownames(mat) <- names
   colnames(mat) <- names
 }
