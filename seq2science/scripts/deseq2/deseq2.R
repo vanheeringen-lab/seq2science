@@ -96,26 +96,17 @@ if(n_DEGs == 0){
 
 # generate MA plot (log fold change vs mean gene counts)
 output_ma_plot <- sub(".diffexp.tsv", ".ma_plot.pdf", output)
-b <- ifelse(is.na(batch), '', ', batch corrected')  # if (is.na(batch)) {b <- ''} else {b <- ', batch corrected'}
-
-# TODO: remove after testing
-print(batch)
-print(b)
-print(groups[1])
-print(groups[2])
-print(nrow(reduced_counts))
-print(fdr)
-
+b <- ifelse(is.na(batch), '', ', batch corrected')
 title <- paste0(
   groups[1], ' vs ', groups[2], '\n',
-  n_DEGs, ' of ', nrow(reduced_counts), ' DE (a = ', fdr, b, ')',
+  n_DEGs, ' of ', nrow(reduced_counts), ' DE (a = ', fdr, b, ')'
 )
 pdf(output_ma_plot)
 plotMA(
   resLFC,
   alpha = fdr,
   ylab = 'log2 fold change',
-  main = title,
+  main = title
 )
 invisible(dev.off())
 cat('-MA plot saved\n')
@@ -124,7 +115,6 @@ if (is.na(batch)){
   # generate a PCA plot (for sample outlier detection)
 
   blind_vst <- varianceStabilizingTransformation(dds, blind = TRUE)
-
   g <- plotPCA(blind_vst, intgroup="condition")
 
   output_pca_plot <- sub(".diffexp.tsv", ".pca_plot.pdf", output)
@@ -137,24 +127,24 @@ if (is.na(batch)){
   # generate a PCA plots before and after batch correction
 
   blind_vst <- varianceStabilizingTransformation(dds, blind = TRUE)
-  batchcorr_vst <- batch_corrected_vst(dds)
-  # nonblind_vst <- varianceStabilizingTransformation(dds, blind = FALSE)
-  # # model the effect of batch correction in the correlation heatap. DESeq2 applies this internally as well.
-  # mat <- assay(nonblind_vst)
-  # mat <- limma::removeBatchEffect(mat, nonblind_vst$batch)
-  # batchcorr_vst <- nonblind_vst
-  # assay(batchcorr_vst) <- mat
-
   g1 <- plotPCA(blind_vst, intgroup=c("condition", "batch"))
+
+  batchcorr_vst <- batch_corrected_vst(dds)
   g2 <- plotPCA(batchcorr_vst, intgroup=c("condition", "batch"))
+
+  # color by batch/condition. Add
   condition_aes <- theme(legend.position="bottom") + ifelse(
     length(levels(blind_vst$batch)) < 7,
     aes(color=condition, shape=batch),
-    aes(color=condition),
+    aes(color=condition)
   )
-  batch_aes <- theme(legend.position="bottom") + aes(color=batch)
-  output_pca_plots <- sub(".diffexp.tsv", ".pca_plot_%01d.pdf", output)
+  batch_aes <- theme(legend.position="bottom") + ifelse(
+    length(levels(blind_vst$condition)) < 7,
+    aes(color=batch, shape=condition),
+    aes(color=batch)
+  )  # + aes(color=batch)  # TODO: remove if batch_aes works
 
+  output_pca_plots <- sub(".diffexp.tsv", ".pca_plot_%01d.pdf", output)
   pdf(output_pca_plots)
   plot(g1 + ggtitle("blind PCA - color by condition") + condition_aes)
   plot(g1 + ggtitle("blind PCA - color by batch") + batch_aes)
@@ -163,52 +153,10 @@ if (is.na(batch)){
   plot(g2 + ggtitle("batch corrected PCA - color by batch") + batch_aes)
   invisible(dev.off())
   cat('-PCA plots saved\n\n')
-  # g1 <- plotPCA(blind_vst, intgroup=c("condition", "batch"))
-  # g2 <- plotPCA(batchcorr_vst, intgroup=c("condition", "batch"))
-  # output_pca_plots <- sub(".diffexp.tsv", ".pca_plot_%01d.pdf", output)
-  # if(length(levels(blind_vst$batch)) < 7){
-  #   plot(g1 + ggtitle("blind PCA - color by condition") + aes(color=condition, shape=batch) + theme(legend.position="bottom"))
-  #   plot(g1 + ggtitle("blind PCA - color by batch") + aes(color=batch) + theme(legend.position="bottom"))
-  #
-  #   plot(g2 + ggtitle("batch corrected PCA - color by condition") + aes(color=condition, shape=batch) + theme(legend.position="bottom"))
-  #   plot(g2 + ggtitle("batch corrected PCA - color by batch") + aes(color=batch) + theme(legend.position="bottom"))
-  # } else {
-  #   plot(g1 + ggtitle("blind PCA - color by condition") + aes(color=condition) + theme(legend.position="bottom"))
-  #   plot(g1 + ggtitle("blind PCA - color by batch") + aes(color=batch) + theme(legend.position="bottom"))
-  #
-  #   plot(g2 + ggtitle("batch corrected PCA - color by condition") + aes(color=condition) + theme(legend.position="bottom"))
-  #   plot(g2 + ggtitle("batch corrected PCA - color by batch") + aes(color=batch) + theme(legend.position="bottom"))
-  # }
-  # invisible(dev.off())
-  # cat('-PCA plots saved\n\n')
 
   # Generate the batch corrected counts
   # (for downstream tools that do not model batch effects)
   if (!file.exists(output_batch_corr_counts)){
-
-    # batch_corrected_counts <- function(dds) {
-    #   #' accepts a large DESeqDataSet, normalizes and removes the batch effects, and returns a batch corrected count matrix
-    #
-    #   nonblind_vst <- DESeq2::varianceStabilizingTransformation(dds, blind = FALSE)
-    #   mat <- SummarizedExperiment::assay(nonblind_vst)
-    #   mat <- limma::removeBatchEffect(mat, nonblind_vst$batch)
-    #
-    #   # mat contains the normalized and batch corrected variant stabilized data (mat = vst.fn(batch_corr_counts))
-    #   # next, we invert this function (from DESeq2::getVarianceStabilizedData) to get normalized and batch corrected counts (batch_corr_counts)
-    #
-    #   # vst.fn <- function(q) {
-    #   #     log((1 + coefs["extraPois"] + 2 * coefs["asymptDisp"] *
-    #   #         q + 2 * sqrt(coefs["asymptDisp"] * q * (1 + coefs["extraPois"] +
-    #   #         coefs["asymptDisp"] * q)))/(4 * coefs["asymptDisp"]))/log(2)
-    #   # }
-    #   coefs <- attr(DESeq2::dispersionFunction(dds), "coefficients")
-    #   x <- mat * log(2)
-    #   x <- exp(1)^x * (4 * coefs["asymptDisp"])
-    #   x <- (x - (1 + coefs["extraPois"]))/2
-    #   batch_corr_counts <- x^2 / (coefs["asymptDisp"] * (coefs["extraPois"] + 2 * x + 1))
-    #   return(batch_corr_counts)
-    # }
-
     batch_corr_counts <- batch_corrected_counts(dds)
 
     bcc <- cbind(gene = rownames(batch_corr_counts), batch_corr_counts)  # consistent with other tables
@@ -224,15 +172,7 @@ if (is.na(batch)){
     gene_lengths <- read.table(lengths_file, row.names = 1, header = T, stringsAsFactors = F, sep = '\t', check.names = F)
     gene_lengths <- gene_lengths[rownames(batch_corr_counts),colnames(batch_corr_counts)]
 
-    # counts_to_tpm <- function(mat.counts, mat.gene_lengths) {
-    #   #' snippet from https://support.bioconductor.org/p/91218/ to convert counts to TPM
-    #
-    #   x <- mat.counts / mat.gene_lengths
-    #   mat.tpm <- t( t(x) * 1e6 / colSums(x) )
-    #   return(mat.tpm)
-    # }
     batch_corr_tpm <- counts2tpm(batch_corr_counts, gene_lengths)
-
     write.table(batch_corr_tpm, file=output_batch_corr_tpm, quote = F, sep = '\t', col.names=NA)
     cat('-batch corrected TPMs saved\n')
   } else if (salmon & file.exists(output_batch_corr_tpm)) {

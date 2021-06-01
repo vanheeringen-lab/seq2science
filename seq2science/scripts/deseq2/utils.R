@@ -18,7 +18,13 @@ parse_contrast <- function(contrast) {
   n <- gregexpr(pattern=paste0("_", groups[1], "_", groups[2]), contr)[[1]][1] -1
   condition <- substr(contr, 1, n)
 
-  return(list("batch"=batch, "condition"=condition, "groups"=groups))
+  return(
+    list(
+      "batch"=batch,
+      "condition"=condition,
+      "groups"=groups
+    )
+  )
 }
 
 
@@ -161,7 +167,7 @@ heatmap_aesthetics <- function(num_samples){
       "fontsize"=fontsize,
       "show_colnames"=show_colnames,
       "show_rownames"=show_rownames,
-      "colors"=colors,
+      "colors"=colors
     )
   )
 }
@@ -170,9 +176,10 @@ heatmap_aesthetics <- function(num_samples){
 #' assign names from coldata to the rows and columns of a matrix
 #' uses descriptive names if available, else rownames (can be technical replicate/sample names)
 heatmap_names <- function(matrix, coldata) {
-  descriptive <- "descriptive_name" %in% colnames(coldata)
-  rownames(matrix) <- ifelse(descriptive, coldata$descriptive_name, rownames(coldata))  # if (length(cols) == 1) {colnames(counts(dds))} else {coldata$descriptive_name}
-  colnames(matrix) <- ifelse(descriptive, coldata$descriptive_name, rownames(coldata))  # if (length(cols) == 1) {colnames(counts(dds))} else {coldata$descriptive_name}
+  has_descriptive <- "descriptive_name" %in% colnames(coldata)
+  names <- ifelse(has_descriptive, coldata$descriptive_name, rownames(coldata))
+  rownames(matrix) <- names
+  colnames(matrix) <- names
 }
 
 
@@ -189,7 +196,7 @@ heatmap_plot <- function(mat, title, heatmap_aes, legend_aes, out_pdf) {
     cellwidth  = heatmap_aes$cell_dimensions,
     cellheight = heatmap_aes$cell_dimensions,
     col = heatmap_aes$colors,
-    filename = out_pdf,
+    filename = out_pdf
   )
 }
 
