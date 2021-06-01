@@ -23,6 +23,13 @@ def get_contrasts():
         column = de_contrast[:n]
         if "+" in column:
             column = column.split("+")[1]
+        if column not in samples:
+            backup_columns = {
+                "technical_replicates": "_trep",
+                "biological_replicates": "_brep",
+                "descriptive_name": "_dname"
+            }
+            column = backup_columns[column]
 
         for assembly in all_assemblies:
             groups = set(samples[samples.assembly == assembly][column].to_list())

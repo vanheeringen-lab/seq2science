@@ -212,8 +212,7 @@ if [ $1 = "rna-seq" ]; then
   omit_from=[blind_clustering]  # <- remove when fixed
 
   printf "\nrna-seq default - quantification deseq2\n"
-#  seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/deseq2_config.yaml --snakemakeOptions config={counts_dir:salmon_counts} show_failed_logs=True \
-#  omit_from=[blind_clustering,deseq2]  # <- remove when fixed
+#  seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/deseq2_config.yaml --snakemakeOptions config={counts_dir:salmon_counts} show_failed_logs=True
 
   # fake input data & fix timestamps
   mkdir -p tests/local_test_results/GRCh38.p13
