@@ -8,11 +8,6 @@ properties:
     description: directory where to find the workflow rules
     default: fastq_cleaned
     type: string
-  # directory to store custom annotations
-  custom_kb_extensions:
-    describtion: directory for kite feature mappings
-    default: kb_features
-    type: string 
   # fastq-pair
   fastq-pair:
       description: fastq synchronization
@@ -33,9 +28,6 @@ properties:
         mode: 'gex'
         ref: '--workflow lamanno'
         count: '-x 10XV3 --verbose --h5ad --workflow lamanno'
-  
-  kite_fm:
-    type: string
         
   barcodefile:
     type: string

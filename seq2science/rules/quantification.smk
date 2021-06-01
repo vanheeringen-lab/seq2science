@@ -267,7 +267,7 @@ elif config["quantifier"] == "kallistobus":
                  {params.options} {input.reads} > {log} 2>&1
                  """        
                 
-    if config.get('mode') == "kite":
+    if 'kite' in config.get('ref'):
         ruleorder: kallistobus_ref_kite > get_genome
         
         rule kallistobus_ref_kite:
@@ -277,26 +277,25 @@ elif config["quantifier"] == "kallistobus":
             input:
                 featurebarcodes=expand("{genome_dir}/{{assembly}}.tsv", **config)
             output:
-                fa=expand("{genome_dir}/{{assembly}}/index/kallistobus_kite/{{assembly}}.fa", **config),
-                idx=expand("{genome_dir}/{{assembly}}/index/kallistobus_kite/{{assembly}}.idx", **config),
-                t2g=expand("{genome_dir}/{{assembly}}/index/kallistobus_kite/{{assembly}}.t2g", **config)
-            log:
-                expand("{log_dir}/kallistobus_index_kite/{assembly}.log", **config),    
+                directory(expand("{genome_dir}/kite/{{assembly}}/index/", **config)),
+            log:    
+                expand("{log_dir}/kallistobus_index_kite/{{assembly}}.log", **config),    
             conda:
                 "../envs/kallistobus.yaml"  
             resources:
                 mem_gb=12, 
-            params:                
+            params:    
+                basename=lambda wildcards, output: f"{output[0]}{wildcards.assembly}",
                 options=config.get("ref"),
                 # kite_prefix=f"{config['kite_fm']}"
             priority: 1
             shell:
                 """
-                mkdir -p {genome_dir}/kite/index/kallistobus_kite/
+                mkdir -p {params.basename}
                 kb ref  \
                 {input.featurebarcodes} \
                 {params.options} \
-                -i {output.idx} -g {output.t2g} -f1 {output.fa} > {log} 2>&1 
+                -i {params.basename}.idx -g {params.basename}_t2g.txt -f1 {params.basename}_cdna.fa > {log} 2>&1 
                 """
         
         rule kallistobus_count_kite:
@@ -305,7 +304,7 @@ elif config["quantifier"] == "kallistobus":
             """
             input:
                 barcodefile=config["barcodefile"],
-                basedir=expand("{genome_dir}/kite/index/kallistobus_kite", **config),
+                basedir=rules.kallistobus_ref_kite.output,
                 reads=rules.fastq_pair.output.reads
             output:
                 dir=directory(expand("{result_dir}/{quantifier}/kite/{{assembly}}-{{sample}}",**config))
@@ -327,7 +326,7 @@ elif config["quantifier"] == "kallistobus":
                 """
                 kb count \
                 -i {params.basename}.idx -w {input.barcodefile}  \
-                -t {threads} -g {params.basename}.t2g \
+                -t {threads} -g {params.basename}_t2g.txt \
                 -o {output}  \
                 {params.options} {input.reads} > {log} 2>&1
                 """

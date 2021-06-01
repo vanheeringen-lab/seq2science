@@ -280,20 +280,21 @@ if "assembly" in samples:
     else:
         logger.error("There were some problems with locking the seq2science cache. Please try again in a bit.")
         raise TerminatedException
-
+    # custom provider do not require any of the checks below  
+    custom_providers = 'kite' in config['quantifier'].get('kallistobus').get('ref')
     # check the providers for the required assemblies
     annotation_required = "rna_seq" in get_workflow() or config["aligner"] == "star"
     _has_annot = dict()
     for assembly in set(samples["assembly"]):
         file = os.path.join(config['genome_dir'], assembly, assembly)
-        if providers[assembly]["genome"] is None and not os.path.exists(f"{file}.fa"):
+        if providers[assembly]["genome"] is None and not os.path.exists(f"{file}.fa") and not custom_providers:
             logger.info(
                 f"Could not download assembly {assembly}.\n"
                 f"Find alternative assemblies with `genomepy search {assembly}`"
             )
             exit(1)
 
-        if providers[assembly]["annotation"] is None and not (
+        if providers[assembly]["annotation"] is None and not custom_providers and not (
                 any(os.path.exists(f) for f in [f"{file}.annotation.gtf", f"{file}.annotation.gtf.gz"]) and
                 any(os.path.exists(f) for f in [f"{file}.annotation.bed", f"{file}.annotation.bed.gz"])
         ):
