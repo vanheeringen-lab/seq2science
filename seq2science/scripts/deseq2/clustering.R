@@ -40,22 +40,11 @@ cat('\n')
 
 ## obtain coldata, the metadata input for DESeq2
 samples <- parse_samples(samples_file, assembly, replicates)
-# samples <- read.delim(samples_file, sep = "\t", na.strings = "", comment.char = "#", stringsAsFactors = F)
-# if ("technical_replicate" %in% colnames(samples) & isTRUE(replicates)) {
-#   samples$technical_replicate[is.na(samples$technical_replicate)] <- as.character(samples$sample[is.na(samples$technical_replicate)])
-#   samples <- subset(samples, !duplicated(technical_replicate))
-#   row.names(samples) <- samples$technical_replicate
-# } else {
-#   row.names(samples) <- samples$sample
-# }
 
 # filter for assembly, remove NAs and add random variables (not needed for blind clustering)
 cols <- ifelse("descriptive_name" %in% colnames(samples), c('assembly', 'descriptive_name'), 'assembly')
 coldata  <- samples[cols]
 coldata['assembly'] <- factor(as.character(seq_len(nrow(coldata))))
-# # filter for assembly, remove NAs and add random variables (not needed for blind clustering)
-# cols <- ifelse("descriptive_name" %in% colnames(samples), list('assembly', 'descriptive_name'), list('assembly'))
-# coldata  <- samples[samples$assembly == assembly, cols, drop = F]
 
 # filter counts to speed up DESeq
 counts <- read.table(counts_file, row.names = 1, header = T, stringsAsFactors = F, sep = '\t', check.names = F)
@@ -64,22 +53,7 @@ reduced_counts <- counts[rowSums(counts) > 0, colnames(counts) %in% rownames(col
 
 ## DESeq2
 dds <- run_deseq2(reduced_counts, coldata, ~ 1, threads)
-# # setup parallelization
-# parallel <- FALSE
-# if (threads > 1) {
-#   register(MulticoreParam(threads))
-#   parallel <- TRUE
-# }
-#
-#
-# # Combine counts and metadata
-# dds <- DESeqDataSetFromMatrix(countData = reduced_counts,
-#                               colData = coldata,
-#                               design = ~ 1) #dummy design, we only want the sample correlations
-#
-# # normalization and preprocessing
-# dds <- DESeq(dds, parallel=parallel)
-# cat('\n')
+
 
 ## Heatmaps
 # list of aesthetics for all heatmaps
@@ -126,74 +100,3 @@ for (method in list("spearman", "pearson")){
   out_png_cor <- sub(".pdf", ".png", out_pdf_cor)
   pdf2png(out_pdf_cor, out_png_cor)
 }
-
-
-# spearmanMatrix <- as.matrix(cor(vsdMatrix, method="spearman"))
-# pearsonMatrix  <- as.matrix(cor(vsdMatrix, method="pearson"))
-# kendallMatrix  <- as.matrix(cor(vsdMatrix, method="kendall"))
-
-
-
-# # transform the data
-# main <- 'Sample distance clustering (blind)'
-# log_counts <- varianceStabilizingTransformation(dds, blind = TRUE)
-# sampleDistMatrix <- as.matrix(dist(t(assay(log_counts))))
-# rownames(sampleDistMatrix) <- if (length(cols) == 1) {colnames(counts(dds))} else {coldata$descriptive_name}
-# colnames(sampleDistMatrix) <- if (length(cols) == 1) {colnames(counts(dds))} else {coldata$descriptive_name}
-#
-#
-#
-#
-#
-# # if (num_samples < 16) {
-# #   cell_dimensions <- as.integer(160/num_samples)  # minimal size to fit the legend
-# #   fontsize        <- 8
-# # } else if (num_samples < 24) {
-# #   cell_dimensions <- 10  # pleasant size
-# #   fontsize        <- 8
-# # } else if (num_samples < 32) {
-# #   cell_dimensions <- as.integer(25 - 0.625*num_samples)  # linear shrink
-# #   fontsize        <- 8 - 0.15*num_samples
-# # } else {
-# #   cell_dimensions <- 5  # minimal size
-# #   fontsize        <- 3.2
-# # }
-# # show_colnames <- ifelse(num_samples > 28, TRUE, FALSE)
-# # show_rownames <- ifelse(num_samples > 28, FALSE, TRUE)
-#
-# #
-# # cell_dimensions <- (if (num_samples < 16) {as.integer(160/num_samples)}             # minimal size to fit the legend
-# #                    else if (num_samples < 24) {10}                                  # pleasant size
-# #                    else if (num_samples < 32) {as.integer(25 - 0.625*num_samples)}  # linear shrink
-# #                    else {5})                                                        # minimal size
-# # fontsize <- (if (num_samples < 16) {8}
-# #             else if (num_samples < 32) {8 - 0.15*num_samples}
-# #             else {3.2})
-#
-# # make heatmap and save as pdf (only pdfs can consistently save text properly)
-# out_pdf <- sub(".png", ".pdf", out_png)
-# pheatmap(
-#   sampleDistMatrix,
-#   main = main,
-#   angle_col = 45,
-#   show_colnames = if (num_samples > 28) {TRUE} else {FALSE},  # show names underneath if the image gets to wide
-#   show_rownames = if (num_samples > 28) {FALSE} else {TRUE},
-#   fontsize = fontsize,
-#   legend_breaks = c(min(sampleDistMatrix), mean(c(min(sampleDistMatrix), max(sampleDistMatrix))), max(sampleDistMatrix)),
-#   legend_labels = c("low",                 "distance\n(euclidean)",                               "high"),
-#   cellwidth  = cell_dimensions,
-#   cellheight = cell_dimensions,
-#   col=colors,
-#   filename=out_pdf,
-# )
-#
-# # convert pdf to png (required for MULTIQC)
-# pdf2png(out_pdf, out_png)
-# # pdftools::pdf_convert(
-# #   out_pdf,
-# #   format = "png",
-# #   filenames = out_png,
-# #   dpi = 300,  # standard minimum
-# #   antialias = TRUE,
-# #   verbose = TRUE
-# # )
