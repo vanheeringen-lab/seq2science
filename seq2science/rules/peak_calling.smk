@@ -156,7 +156,7 @@ rule macs2_callpeak:
         expand("{benchmark_dir}/macs2_callpeak/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
     message: explain_rule("macs2_callpeak")
     wildcard_constraints:
-        sample=any_given("sample", "technical_replicate")
+        sample=any_given("sample", "technical_replicates")
     params:
         name=(
             lambda wildcards, input: wildcards.sample
@@ -266,14 +266,14 @@ rule hmmratac:
         """
 
 
-if "biological_replicate" in samples:
+if "biological_replicates" in samples:
     if config["biological_replicates"] == "idr":
         ruleorder: idr > macs2_callpeak > call_peak_genrich
 
         def get_idr_replicates(wildcards):
             reps = []
             for replicate in treps[
-                (treps["assembly"] == ori_assembly(wildcards.assembly)) & (treps["biological_replicate"] == wildcards.condition)
+                (treps["assembly"] == ori_assembly(wildcards.assembly)) & (treps["biological_replicates"] == wildcards.condition)
             ].index:
                 reps.append(
                     f"{config['result_dir']}/{wildcards.peak_caller}/{wildcards.assembly}-{replicate}_peaks.{wildcards.ftype}"
@@ -355,7 +355,7 @@ if "biological_replicate" in samples:
                     [
                         f"{{result_dir}}/macs2/{wildcards.assembly}-{replicate}_qvalues.bdg"
                         for replicate in treps[
-                            (treps["assembly"] == ori_assembly(wildcards.assembly)) & (treps["biological_replicate"] == wildcards.condition)
+                            (treps["assembly"] == ori_assembly(wildcards.assembly)) & (treps["biological_replicates"] == wildcards.condition)
                         ].index
                     ],
                     **config,
@@ -364,7 +364,7 @@ if "biological_replicate" in samples:
             def get_macs_replicate(wildcards):
                 """the original peakfile, to link if there is only 1 sample for a condition"""
                 replicate = treps[
-                    (treps['assembly'] == ori_assembly(wildcards.assembly)) & (treps['biological_replicate'] == wildcards.condition)
+                    (treps['assembly'] == ori_assembly(wildcards.assembly)) & (treps['biological_replicates'] == wildcards.condition)
                 ].index
                 return expand(
                     f"{{result_dir}}/macs2/{wildcards.assembly}-{replicate[0]}_peaks.{wildcards.ftype}",

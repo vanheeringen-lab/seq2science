@@ -38,10 +38,10 @@ samples <- read.delim(samples_file, sep = "\t", na.strings = "", comment.char = 
 samples <- samples[samples$assembly == assembly, ]
 
 # collapse technical replicates
-if ("technical_replicate" %in% colnames(samples) & isTRUE(replicates)) {
+if ("technical_replicates" %in% colnames(samples) & isTRUE(replicates)) {
   to_rename <- is.na(samples$technical_replicate)
   samples$technical_replicate[to_rename] <- as.character(rownames(samples)[to_rename])
-  samples <- subset(samples, !duplicated(technical_replicate))
+  samples <- subset(samples, !duplicated(technical_replicates))
   row.names(samples) <- samples$technical_replicate
 }
 

@@ -125,13 +125,13 @@ The descriptive\_name column is used for the trackhub and multiqc report.
 In the trackhub your tracks will be called after the descriptive name, and in the multiqc report there will be a button to rename your samples after this column.
 The descriptive name can not contain '-' characters, but underscores '\_' are allowed.
 
-#### Technical_replicate column
-Technical replicates, or any fastq file you may wish to merge, are set using the `technical_replicate` column in the samples.tsv file.
-All samples with the same name in the `technical_replicate` column will be concatenated into one file with the replicate name.
+#### technical_replicates column
+Technical replicates, or any fastq file you may wish to merge, are set using the `technical_replicates` column in the samples.tsv file.
+All samples with the same name in the `technical_replicates` column will be concatenated into one file with the replicate name.
 
 Example `samples.tsv` utilizing replicate merging:
 ```
-sample    assembly    technical_replicate
+sample    assembly    technical_replicates
 GSM123    GRCh38      heart
 GSMabc    GRCh38      heart
 GSMxzy    GRCh38      stage8
@@ -147,10 +147,10 @@ Note: If you are working with multiple assemblies in one workflow, replicate nam
 Replicate merging is turned on by default. It can be turned off by setting `technical_replicates` in the `config.yaml` to `keep`.
 
 #### Biological replicates
-During ATAC-seq workflows, peak calling can be performed per biological condition, depending on your configuration setting. Biological conditions are determined by the `biological_replicate` column in the samples.tsv file. How these samples are handled is specified by configuration variable `biological_replicates`.
+During ATAC-seq workflows, peak calling can be performed per biological condition, depending on your configuration setting. Biological conditions are determined by the `biological_replicates` column in the samples.tsv file. How these samples are handled is specified by configuration variable `biological_replicates`.
 
 ```
-sample    assembly    biological_replicate
+sample    assembly    biological_replicates
 GSM123    GRCh38      kidney
 GSMabc    GRCh38      liver
 GSMxzy    GRCh38      liver
@@ -160,7 +160,7 @@ GSM890    GRCh38
 In this case peaks of the two liver samples (GSMabc and GSMxzy) will be combined by e.g. IDR.
 
 ##### Keep
-By setting `biological_replicates` to keep, all biological replicates are analyzed individually. The `biological_replicate` column is ignored.
+By setting `biological_replicates` to keep, all biological replicates are analyzed individually. The `biological_replicates` column is ignored.
 
 ##### Irreproducible Discovery Rate (IDR)
 One of the more common methods to combine biological replicates is by the irreproducible discovery rate ([idr](https://github.com/kundajelab/idr)). Shortly; idr sorts all the peaks of two replicates separately on their significance. Since true peaks should be very significant for both replicates these peaks will be one of the highest sorted peaks. As peaks get less and less true (and thus their significance) their ordering also becomes more random between the samples. The idr method then only keeps the peak that overlap *nonrandomly* between the samples. The idr method only works for two replicates, so can not be used when you have more than 2 (`n == 2`). IDR can be turned on by setting `biological_replicates` to idr.
@@ -172,7 +172,7 @@ One of the more common methods to combine biological replicates is by the irrepr
 #### A mix of biological and technical replicates
 
 ```
-sample    assembly    technical_replicate  biological_replicate
+sample    assembly    technical_replicates  biological_replicates
 GSM123    GRCh38      peter_kidney         kidney
 GSMabc    GRCh38      peter_liver          liver
 GSMxzy    GRCh38      lindsey_liver        liver
