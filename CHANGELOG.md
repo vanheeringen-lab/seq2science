@@ -8,7 +8,6 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
-<<<<<<< HEAD
 ### Added
 
 - added support for kb-python kite workflow
