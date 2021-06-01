@@ -262,12 +262,13 @@ if "assembly" in samples:
     search_assemblies = [assembly for assembly in remote_assemblies if providers.get(assembly, {}).get(ftype) is None]
     
     # custom assemblies without provider for local/remote annotations
-    custom_provider = False
     if "scrna_seq" in get_workflow() and 'kallistobus' in config['quantifier']:
-        custom_provider= 'kite' in config['quantifier'].get('kallistobus').get('ref')
+        if 'kite' in config['quantifier'].get('kallistobus').get('ref'):
+            remote_assemblies = []
+            search_assemblies = []
         
     # check if genomepy can download the required files
-    if len(search_assemblies) > 0 and not custom_provider:
+    if len(search_assemblies) > 0:
         logger.info("Determining assembly providers")
         for assembly in search_assemblies:
             if assembly not in providers:
@@ -291,14 +292,14 @@ if "assembly" in samples:
 
     # troubleshooting 
     for assembly in remote_assemblies:
-        if providers[assembly]["genome"] is None and not custom_provider:
+        if providers[assembly]["genome"] is None:
             logger.info(
                 f"Could not download assembly {assembly}.\n"
                 f"Find alternative assemblies with `genomepy search {assembly}`"
             )
             exit(1)
 
-        if providers[assembly]["annotation"] is None and not custom_provider:
+        if providers[assembly]["annotation"] is None:
             if not config.get("no_config_log"):
                 logger.info(
                     f"No annotation for assembly {assembly} can be downloaded. Another provider (and "
