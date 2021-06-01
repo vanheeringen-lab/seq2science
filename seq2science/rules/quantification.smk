@@ -200,118 +200,91 @@ elif config["quantifier"] == "kallistobus":
             fi
             fastq_pair $opts {output.intermediates1} >> {log} 2>&1
         """
-            
-    if config.get('mode') == 'gex':
-    
-        rule kallistobus_ref:
-            """
-            Make a genome index for kallistobus. This index is required for counting.
-            """
-            input:
-                fa=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
-                gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
-            output:
-                directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/", **config)),
-            log:
-                expand("{log_dir}/kallistobus_index/{{assembly}}.log", **config),
-            benchmark:
-                expand("{benchmark_dir}/kallistobus_index/{{assembly}}.benchmark.txt", **config)[0]
-            priority: 1
-            conda:
-                "../envs/kallistobus.yaml"
-            resources:
-                mem_gb=88,
-            params:
-                basename=lambda wildcards, output: f"{output[0]}{wildcards.assembly}",
-                options=config.get("ref")
-            shell:
-                """
-                kb ref \
-                {input.fa} {input.gtf} \
-                -i {params.basename}.idx -g {params.basename}_t2g.txt -f1 {params.basename}_cdna.fa \
-                -f2 {params.basename}_intron.fa \
-                -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
-                {params.options} > {log} 2>&1
-                """
-    
-        rule kallistobus_count:
-             """
-             Align reads against a transcriptome (index) with kallistobus and output a quantification file per sample.
-             """
-             input:
-                  barcodefile=config["barcodefile"],
-                  basedir=rules.kallistobus_ref.output,
-                  reads=rules.fastq_pair.output.reads
-             output:
-                 dir=directory(expand("{result_dir}/{quantifier}/{{assembly}}-{{sample}}",**config))
-             log:
-                 expand("{log_dir}/kallistobus_count/{{assembly}}-{{sample}}.log", **config),
-             benchmark:
-                 expand("{benchmark_dir}/kallistobus_count/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
-             priority: 1
-             conda:
-                 "../envs/kallistobus.yaml"
-             threads: 8
-             message: explain_rule("kallistobus-count")
-             resources:
-                 mem_gb=66,
-             params:
-                 basename=lambda wildcards, input: f"{input.basedir[0]}/{wildcards.assembly}",
-                 options=config.get("count")
-             shell:
-                 """
-                 kb count \
-                 -i {params.basename}.idx -w {input.barcodefile} \
-                 -t {threads} -g {params.basename}_t2g.txt \
-                 -o {output} -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
-                 {params.options} {input.reads} > {log} 2>&1
-                 """        
                 
     if 'kite' in config.get('ref'):
         ruleorder: kallistobus_ref_kite > get_genome
-        
-        rule kallistobus_ref_kite:
+        ruleorder: kallistobus_ref_kite > kallistobus_ref
+    else:
+        ruleorder: kallistobus_ref > kallistobus_ref_kite
+    
+    rule kallistobus_ref:
+        """
+        Make a genome index for kallistobus. This index is required for counting.
+        """
+        input:
+            fa=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+            gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
+        output:
+            directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/", **config)),
+        log:
+            expand("{log_dir}/kallistobus_index/{{assembly}}.log", **config),
+        benchmark:
+            expand("{benchmark_dir}/kallistobus_index/{{assembly}}.benchmark.txt", **config)[0]
+        priority: 1
+        conda:
+            "../envs/kallistobus.yaml"
+        resources:
+            mem_gb=88,
+        params:
+            basename=lambda wildcards, output: f"{output[0]}{wildcards.assembly}",
+            options=config.get("ref")
+        shell:
             """
-            Make a mismatch index for kallistobus. This index is required to count feature barcodes, such as antibody tags. 
+            kb ref \
+            {input.fa} {input.gtf} \
+            -i {params.basename}.idx -g {params.basename}_t2g.txt -f1 {params.basename}_cdna.fa \
+            -f2 {params.basename}_intron.fa \
+            -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
+            {params.options} > {log} 2>&1
             """
-            input:
-                featurebarcodes=expand("{genome_dir}/{{assembly}}.tsv", **config)
-            output:
-                directory(expand("{genome_dir}/kite/{{assembly}}/index/", **config)),
-            log:    
-                expand("{log_dir}/kallistobus_index_kite/{{assembly}}.log", **config),    
-            conda:
-                "../envs/kallistobus.yaml"  
-            resources:
-                mem_gb=12, 
-            params:    
-                basename=lambda wildcards, output: f"{output[0]}{wildcards.assembly}",
-                options=config.get("ref"),
-                # kite_prefix=f"{config['kite_fm']}"
-            priority: 1
-            shell:
-                """
-                mkdir -p {params.basename}
-                kb ref  \
-                {input.featurebarcodes} \
-                {params.options} \
-                -i {params.basename}.idx -g {params.basename}_t2g.txt -f1 {params.basename}_cdna.fa > {log} 2>&1 
-                """
+                
+    rule kallistobus_ref_kite:
+        """
+        Make a mismatch index for kallistobus. This index is required to count feature barcodes, such as antibody tags. 
+        """
+        input:
+            featurebarcodes=expand("{genome_dir}/{{assembly}}.tsv", **config)
+        output:
+            directory(expand("{genome_dir}/kite/{{assembly}}/index/", **config)),
+        log:    
+            expand("{log_dir}/kallistobus_index_kite/{{assembly}}.log", **config),    
+        conda:
+            "../envs/kallistobus.yaml"  
+        resources:
+            mem_gb=12, 
+        params:    
+            basename=lambda wildcards, output: f"{output[0]}{wildcards.assembly}",
+            options=config.get("ref")
+        priority: 1
+        shell:
+            """
+            mkdir -p {params.basename}
+            kb ref  \
+            {input.featurebarcodes} \
+            {params.options} \
+            -i {params.basename}.idx -g {params.basename}_t2g.txt -f1 {params.basename}_cdna.fa > {log} 2>&1 
+            """
+            
+    def get_kb_dir(wildcards):
+        dir = directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/", **config))
+        if 'kite' in config.get('ref'):
+            dir = directory(expand("{genome_dir}/kite/{{assembly}}/index/", **config))     
+        return dir
         
-        rule kallistobus_count_kite:
+    rule kallistobus_count:
             """
             Align reads against a transcriptome (index) with kallistobus and output a quantification file per sample.
             """
             input:
                 barcodefile=config["barcodefile"],
-                basedir=rules.kallistobus_ref_kite.output,
+                basedir=get_kb_dir,
                 reads=rules.fastq_pair.output.reads
             output:
-                dir=directory(expand("{result_dir}/{quantifier}/kite/{{assembly}}-{{sample}}",**config))
+                dir=directory(expand("{result_dir}/{quantifier}/{{assembly}}-{{sample}}",**config))
             log:
-                expand("{log_dir}/kallistobus_count/kite/{{assembly}}-{{sample}}.log", **config),
+                expand("{log_dir}/kallistobus_count/{{assembly}}-{{sample}}.log", **config),
             benchmark:
-                expand("{benchmark_dir}/kallistobus_count/kite/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
+                expand("{benchmark_dir}/kallistobus_count/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
             priority: 1
             conda:
                 "../envs/kallistobus.yaml"
@@ -325,12 +298,12 @@ elif config["quantifier"] == "kallistobus":
             shell:
                 """
                 kb count \
-                -i {params.basename}.idx -w {input.barcodefile}  \
+                -i {params.basename}.idx -w {input.barcodefile} \
                 -t {threads} -g {params.basename}_t2g.txt \
-                -o {output}  \
+                -o {output} -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
                 {params.options} {input.reads} > {log} 2>&1
-                """
-                
+                """                
+                 
     rule kb_seurat_pp:
         input:
             expand([f"{{result_dir}}/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}" for trep in treps.index], **config)
