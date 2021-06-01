@@ -91,15 +91,13 @@ rule blind_clustering:
     input:
         deseq_input
     output:
-        expand("{qc_dir}/clustering/{{assembly}}-Sample_distance_clustering_mqc.png", **config),
-        expand("{qc_dir}/clustering/{{assembly}}-Pearson_correlation_clustering_mqc.png", **config),
-        expand("{qc_dir}/clustering/{{assembly}}-Spearman_correlation_clustering_mqc.png", **config),
+        expand("{qc_dir}/plotCorrelation/{{assembly}}-DESeq2_sample_distance_clustering_mqc.png", **config),
+        expand("{qc_dir}/plotCorrelation/{{assembly}}-DESeq2_pearson_correlation_clustering_mqc.png", **config),
+        expand("{qc_dir}/plotCorrelation/{{assembly}}-DESeq2_spearman_correlation_clustering_mqc.png", **config),
+    log:
+        expand("{log_dir}/plotCorrelation/{{assembly}}-DESeq2_clustering.log", **config),
     conda:
         "../envs/deseq2.yaml"
-    log:
-        expand("{log_dir}/deseq2/{{assembly}}-clustering.log", **config),
-    benchmark:
-        expand("{benchmark_dir}/deseq2/{{assembly}}-clustering.benchmark.txt", **config)[0]
     threads: 4
     params:
         samples=os.path.abspath(config["samples"]),

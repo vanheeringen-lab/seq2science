@@ -82,18 +82,19 @@ pdf2png(out_pdf, out_png)
 
 # Heatmaps of various correlation matrices
 for (method in list("spearman", "pearson")){
+  name <- paste(method, 'correlation clustering')
+
   # Kendall is also available, but is computationally much more complex
   mat <- as.matrix(cor(vsdMatrix, method=method))
   heatmap_names(mat, coldata)
 
   # capitalize method name
-  name <- paste0(toupper(substring(method, 1, 1)), substring(method, 2))
-  title <- paste(name, 'correlation clustering')
+  title <- paste0(toupper(substring(name, 1, 1)), substring(name, 2))
   legend_aes <- list(
     "breaks" = NA,
     "labels" = NA,
   )
-  out_pdf_cor <- sub("Sample_distance_clustering", gsub(" ", "_", title), out_pdf)
+  out_pdf_cor <- sub("sample_distance_clustering", gsub(" ", "_", name), out_pdf)
   heatmap_plot(mat, title, heatmap_aes, legend_aes, out_pdf_cor)
 
   # convert pdf to png (required for MULTIQC)
