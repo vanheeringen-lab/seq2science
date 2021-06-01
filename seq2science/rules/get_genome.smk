@@ -103,7 +103,9 @@ rule extend_genome_blacklist:
     output:
         expand("{genome_dir}/{{raw_assembly}}{custom_assembly_suffix}/{{raw_assembly}}{custom_assembly_suffix}.blacklist.bed", **config),
     shell:
-        """cp {input} {output}"""
+        """
+        cp {input} {output}
+        """
 
 
 rule extend_genome_annotation:
