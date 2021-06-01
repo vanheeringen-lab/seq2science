@@ -78,7 +78,7 @@ if [ $1 = "bowtie2" ]; then
   mkdir -p $RESULTS_DIR
   let "c = $CORES / 5"
 
-  seq2science run $WF --cores $c --configfile tests/$WF/default_config.yaml --snakemakeOptions config={samples:tests/alignment/local_sample.tsv,fastq_dir:../../tinyfastq,genome_dir:tests,result_dir:$RESULTS_DIR,aligner:$ALIGNER} show_failed_logs=True
+  seq2science run $WF --cores $c -r --configfile tests/$WF/default_config.yaml --snakemakeOptions config={samples:tests/alignment/local_sample.tsv,fastq_dir:../../tinyfastq,genome_dir:tests,result_dir:$RESULTS_DIR,aligner:$ALIGNER} show_failed_logs=True
 
   test_ran=1
 fi
@@ -91,7 +91,7 @@ if [ $1 = "bwa-mem1" ]; then
   mkdir -p $RESULTS_DIR
   let "c = $CORES / 6"
 
-  seq2science run $WF --cores $c --configfile tests/$WF/default_config.yaml --snakemakeOptions until=[samtools_presort] config={samples:tests/alignment/local_sample.tsv,fastq_dir:../../tinyfastq,genome_dir:tests,result_dir:$RESULTS_DIR,aligner:$ALIGNER} show_failed_logs=True
+  seq2science run $WF --cores $c -r --configfile tests/$WF/default_config.yaml --snakemakeOptions until=[samtools_presort] config={samples:tests/alignment/local_sample.tsv,fastq_dir:../../tinyfastq,genome_dir:tests,result_dir:$RESULTS_DIR,aligner:$ALIGNER} show_failed_logs=True
 
   test_ran=1
 fi
@@ -104,7 +104,7 @@ if [ $1 = "bwa-mem2" ]; then
   mkdir -p $RESULTS_DIR
   let "c = $CORES / 6"
 
-  seq2science run $WF --cores $c --configfile tests/$WF/default_config.yaml --snakemakeOptions until=[samtools_presort] resources={mem_gb:999} config={samples:tests/alignment/local_sample.tsv,fastq_dir:../../tinyfastq,genome_dir:tests,result_dir:$RESULTS_DIR,aligner:$ALIGNER} show_failed_logs=True
+  seq2science run $WF --cores $c -r --configfile tests/$WF/default_config.yaml --snakemakeOptions until=[samtools_presort] resources={mem_gb:999} config={samples:tests/alignment/local_sample.tsv,fastq_dir:../../tinyfastq,genome_dir:tests,result_dir:$RESULTS_DIR,aligner:$ALIGNER} show_failed_logs=True
 
   test_ran=1
 fi
@@ -117,7 +117,7 @@ if [ $1 = "hisat2" ]; then
   mkdir -p $RESULTS_DIR
   let "c = $CORES / 6"
 
-  seq2science run $WF --cores $c --configfile tests/$WF/default_config.yaml --snakemakeOptions until=[samtools_presort] config={samples:tests/alignment/local_sample.tsv,fastq_dir:../../tinyfastq,genome_dir:tests,result_dir:$RESULTS_DIR,aligner:$ALIGNER} show_failed_logs=True
+  seq2science run $WF --cores $c -r --configfile tests/$WF/default_config.yaml --snakemakeOptions until=[samtools_presort] config={samples:tests/alignment/local_sample.tsv,fastq_dir:../../tinyfastq,genome_dir:tests,result_dir:$RESULTS_DIR,aligner:$ALIGNER} show_failed_logs=True
 
   test_ran=1
 fi
@@ -130,7 +130,7 @@ if [ $1 = "minimap2" ]; then
   mkdir -p $RESULTS_DIR
   let "c = $CORES / 6"
 
-  seq2science run $WF --cores $c --configfile tests/$WF/default_config.yaml --snakemakeOptions until=[samtools_presort] resources={mem_gb:999} config={samples:tests/alignment/local_sample.tsv,fastq_dir:../../tinyfastq,genome_dir:tests,result_dir:$RESULTS_DIR,aligner:$ALIGNER} show_failed_logs=True
+  seq2science run $WF --cores $c -r --configfile tests/$WF/default_config.yaml --snakemakeOptions until=[samtools_presort] resources={mem_gb:999} config={samples:tests/alignment/local_sample.tsv,fastq_dir:../../tinyfastq,genome_dir:tests,result_dir:$RESULTS_DIR,aligner:$ALIGNER} show_failed_logs=True
 
   test_ran=1
 fi
@@ -143,7 +143,7 @@ if [ $1 = "star" ]; then
   mkdir -p $RESULTS_DIR
   let "c = $CORES / 6"
 
-  seq2science run $WF --cores $c --configfile tests/$WF/default_config.yaml --snakemakeOptions until=[samtools_presort] config={samples:tests/alignment/local_sample.tsv,fastq_dir:../../tinyfastq,genome_dir:tests,result_dir:$RESULTS_DIR,aligner:$ALIGNER} show_failed_logs=True
+  seq2science run $WF --cores $c -r --configfile tests/$WF/default_config.yaml --snakemakeOptions until=[samtools_presort] config={samples:tests/alignment/local_sample.tsv,fastq_dir:../../tinyfastq,genome_dir:tests,result_dir:$RESULTS_DIR,aligner:$ALIGNER} show_failed_logs=True
 
   test_ran=1
 fi
