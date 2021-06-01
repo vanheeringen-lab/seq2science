@@ -298,11 +298,12 @@ def expand_contrasts(samples, config):
     """
     splits contrasts that contain multiple comparisons
     """
-    if not config.get("contrasts"):
-        return []
+    old_contrasts = config.get("contrasts", [])
+    if isinstance(old_contrasts, str):
+        old_contrasts = [old_contrasts]
 
     new_contrasts = []
-    for contrast in list(config["contrasts"]):
+    for contrast in old_contrasts:
         batch, column, target, reference = parse_contrast(contrast, samples, check=False)
 
         if target == "all":

@@ -434,6 +434,20 @@ if [ $1 = "rna-seq" ]; then
   assert_rulecount $1 star_align 10
   assert_rulecount $1 dexseq_count 10
   assert_rulecount $1 deseq2 1
+
+  printf "\nmultiple assemblies - trackhubs\n"
+  seq2science run rna-seq --skip-rerun -n --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={technical_replicates:keep,samples:tests/rna_seq/complex_samples.tsv,create_trackhub:True} | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 trackhub 1
+
+  printf "\nmultiple assemblies - multiqc\n"
+  seq2science run rna-seq --skip-rerun -n --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={technical_replicates:keep,samples:tests/rna_seq/complex_samples.tsv,create_qc_report:True,trimmer:trimgalore} | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 fastqc 24
+  assert_rulecount $1 multiqc 2
+
+  printf "\nmultiple replicates - DEA \n"
+  seq2science run rna-seq --skip-rerun -n --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={technical_replicates:keep} | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 merge_replicates 0
+  assert_rulecount $1 htseq_count 10
   seq2science run rna-seq --skip-rerun -n --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={technical_replicates:merge,dexseq:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 htseq_count 8
   assert_rulecount $1 dexseq_count 8

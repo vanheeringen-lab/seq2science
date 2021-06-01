@@ -35,8 +35,8 @@ parse_samples <- function(samples_file, assembly, replicates) {
   samples <- read.delim(samples_file, sep = "\t", na.strings = "", comment.char = "#", stringsAsFactors = F, row.names = "sample")
   samples <- samples[samples$assembly == assembly, ]
 
-  # collapse technical replicates (and use these names for the counts table)
-  # if no replicates are found, we can use descriptive names for the counts table
+  # collapse technical replicates
+  # (and use these names for the counts table later)
   if ("technical_replicate" %in% colnames(samples) & isTRUE(replicates)) {
     to_rename <- is.na(samples$technical_replicate)
     samples$technical_replicate[to_rename] <- as.character(rownames(samples)[to_rename])
@@ -45,6 +45,7 @@ parse_samples <- function(samples_file, assembly, replicates) {
   }
 
   # fill in blank descriptive names
+  # (if no replicates are found, we can use descriptive names for the counts table later)
   if ("descriptive_name" %in% colnames(samples)) {
     to_rename <- is.na(samples$descriptive_name)
     samples$descriptive_name[to_rename] <- as.character(rownames(samples)[to_rename])
@@ -78,7 +79,7 @@ run_deseq2 <- function(counts, coldata, design, threads=1) {
 
 
 #' save a diffexp table with all genes, not just the expressed genes
-save_complete_diffexp <- function(resLFC, counts, counts_file) {
+save_complete_diffexp <- function(resLFC, counts, diffexp_file) {
   expressed_genes <- as.data.frame(resLFC[order(resLFC$padj),])
 
   missing_genes <- rownames(counts)[!(rownames(counts) %in% rownames(expressed_genes))]
@@ -91,7 +92,7 @@ save_complete_diffexp <- function(resLFC, counts, counts_file) {
   } else {
       all_genes <- expressed_genes
   }
-  write.table(all_genes, file=counts_file, quote = F, sep = '\t', col.names=NA)
+  write.table(all_genes, file=diffexp_file, quote = F, sep = '\t', col.names=NA)
 }
 
 

@@ -132,7 +132,7 @@ if (is.na(batch)){
   batchcorr_vst <- batch_corrected_vst(dds)
   g2 <- plotPCA(batchcorr_vst, intgroup=c("condition", "batch"))
 
-  # color by batch/condition. Add
+  # color by batch/condition. up to 6 shapes can be displayed too.
   condition_aes <- theme(legend.position="bottom") + ifelse(
     length(levels(blind_vst$batch)) < 7,
     aes(color=condition, shape=batch),
