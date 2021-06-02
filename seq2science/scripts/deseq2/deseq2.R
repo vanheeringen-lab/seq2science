@@ -133,18 +133,16 @@ if (is.na(batch)) {
   g2 <- DESeq2::plotPCA(batchcorr_vst, intgroup=c("condition", "batch"))
 
   # color by batch/condition. up to 6 shapes can be displayed too.
-  condition_aes <- theme(legend.position="bottom") +
-    if (length(levels(blind_vst$batch)) < 7) {aes(color=condition, shape=batch)} else {aes(color=condition)}
-  batch_aes <- theme(legend.position="bottom") +
-    if (length(levels(blind_vst$condition)) < 7) {aes(color=batch, shape=condition)} else {aes(color=batch)}  # + aes(color=batch)  # TODO: remove if batch_aes works
+  condition_aes <- if (length(levels(blind_vst$batch)) < 7) {aes(color=condition, shape=batch)} else {aes(color=condition)}
+  batch_aes <- if (length(levels(blind_vst$condition)) < 7) {aes(color=batch, shape=condition)} else {aes(color=batch)}
 
   output_pca_plots <- sub(".diffexp.tsv", ".pca_plot_%01d.pdf", output)
   pdf(output_pca_plots)
-  plot(g1 + ggtitle("blind PCA - color by condition") + condition_aes)
-  plot(g1 + ggtitle("blind PCA - color by batch") + batch_aes)
+  plot(g1 + ggtitle("blind PCA - color by condition") + condition_aes + theme(legend.position="bottom"))
+  plot(g1 + ggtitle("blind PCA - color by batch") + batch_aes + theme(legend.position="bottom"))
 
-  plot(g2 + ggtitle("batch corrected PCA - color by condition") + condition_aes)
-  plot(g2 + ggtitle("batch corrected PCA - color by batch") + batch_aes)
+  plot(g2 + ggtitle("batch corrected PCA - color by condition") + condition_aes + theme(legend.position="bottom"))
+  plot(g2 + ggtitle("batch corrected PCA - color by batch") + batch_aes + theme(legend.position="bottom"))
   invisible(dev.off())
   cat('-PCA plots saved\n\n')
 
