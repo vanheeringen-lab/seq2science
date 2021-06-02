@@ -19,11 +19,11 @@ rule setup_blacklist:
     run:
         newblacklist = ""
         if config.get("remove_blacklist"):
-            with open(input["blacklist"]) as file:
+            with open(input["blacklist"][0]) as file:
                 newblacklist += file.read()
 
         if config.get("remove_mito"):
-            with open(input["sizes"]) as file:
+            with open(input["sizes"][0]) as file:
                 sizesfile = file.read().strip()
                 for match in re.findall("chrM.*|chrm.*|MT.*", sizesfile):
                     chrm, size = match.split("\t")
