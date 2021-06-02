@@ -180,7 +180,7 @@ heatmap_aesthetics <- function(num_samples){
 #' uses descriptive names if available, else rownames (can be technical replicates/sample names)
 heatmap_names <- function(mat, coldata) {
   has_descriptive <- "descriptive_name" %in% colnames(coldata)
-  if(has_descriptive){names <- coldata$descriptive_name}else{names <- rownames(coldata)}
+  names <- if (has_descriptive) {coldata$descriptive_name} else {rownames(coldata)}
   rownames(mat) <- names
   colnames(mat) <- names
 }

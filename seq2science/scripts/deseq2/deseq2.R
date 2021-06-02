@@ -29,7 +29,7 @@ samples <- parse_samples(samples_file, assembly, replicates)
 # rename batch and condition (required as DESeq's design cannot accept variables)
 coldata <- samples
 coldata[,"condition"] <- coldata[condition]
-coldata[,"batch"]     <- ifelse(!is.na(batch), coldata[batch], NA)
+coldata[,"batch"]     <- if (!is.na(batch)) { coldata[batch] } else { NA }
 coldata <- coldata[c("condition", "batch")]
 
 # determine if we need to run batch correction on the whole assembly
@@ -66,7 +66,7 @@ DE_contrast <- paste("condition", groups[1], "vs", groups[2], sep="_")
 cat('selected contrast:', DE_contrast, '\n\n')
 
 # correct for multiple testing
-if(mtp=='IHW'){
+if (mtp=='IHW') {
   res <- results(dds, name=DE_contrast, alpha=fdr, filterFun=ihw)
 } else {
   res <- results(dds, name=DE_contrast, alpha=fdr)
@@ -85,7 +85,7 @@ cat('DE genes table saved\n\n')
 
 ## determine DE genes
 n_DEGs <- length(resLFC[resLFC$padj <= fdr & !is.na(resLFC$padj), ][,1])
-if(n_DEGs == 0){
+if (n_DEGs == 0) {
   cat("No differentially expressed genes found!\n")
   quit(save = "no" , status = 0)
 } else {
@@ -111,7 +111,7 @@ DESeq2::plotMA(
 invisible(dev.off())
 cat('-MA plot saved\n')
 
-if (is.na(batch)){
+if (is.na(batch)) {
   # generate a PCA plot (for sample outlier detection)
 
   blind_vst <- varianceStabilizingTransformation(dds, blind = TRUE)
@@ -133,16 +133,10 @@ if (is.na(batch)){
   g2 <- DESeq2::plotPCA(batchcorr_vst, intgroup=c("condition", "batch"))
 
   # color by batch/condition. up to 6 shapes can be displayed too.
-  condition_aes <- theme(legend.position="bottom") + ifelse(
-    length(levels(blind_vst$batch)) < 7,
-    aes(color=condition, shape=batch),
-    aes(color=condition)
-  )
-  batch_aes <- theme(legend.position="bottom") + ifelse(
-    length(levels(blind_vst$condition)) < 7,
-    aes(color=batch, shape=condition),
-    aes(color=batch)
-  )  # + aes(color=batch)  # TODO: remove if batch_aes works
+  condition_aes <- theme(legend.position="bottom") +
+    if (length(levels(blind_vst$batch)) < 7) {aes(color=condition, shape=batch)} else {aes(color=condition)}
+  batch_aes <- theme(legend.position="bottom") +
+    if (length(levels(blind_vst$condition)) < 7) {aes(color=batch, shape=condition)} else {aes(color=batch)}  # + aes(color=batch)  # TODO: remove if batch_aes works
 
   output_pca_plots <- sub(".diffexp.tsv", ".pca_plot_%01d.pdf", output)
   pdf(output_pca_plots)
@@ -156,7 +150,7 @@ if (is.na(batch)){
 
   # Generate the batch corrected counts
   # (for downstream tools that do not model batch effects)
-  if (!file.exists(output_batch_corr_counts)){
+  if (!file.exists(output_batch_corr_counts)) {
     batch_corr_counts <- batch_corrected_counts(dds)
 
     bcc <- cbind(gene = rownames(batch_corr_counts), batch_corr_counts)  # consistent with other tables
@@ -167,7 +161,7 @@ if (is.na(batch)){
   }
 
   # if quantified with salmon, generate the batch corrected TPMs as well
-  if(salmon & !file.exists(output_batch_corr_tpm)){
+  if (salmon & !file.exists(output_batch_corr_tpm)) {
     lengths_file <- sub("-counts.tsv", "-gene_lengths.tsv", counts_file)
     gene_lengths <- read.table(lengths_file, row.names = 1, header = T, stringsAsFactors = F, sep = '\t', check.names = F)
     gene_lengths <- gene_lengths[rownames(batch_corr_counts),colnames(batch_corr_counts)]

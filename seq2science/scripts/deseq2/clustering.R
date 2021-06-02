@@ -39,7 +39,7 @@ cat('\n')
 samples <- parse_samples(samples_file, assembly, replicates)
 
 # filter for assembly, remove NAs and add random variables (not needed for blind clustering)
-cols <- ifelse("descriptive_name" %in% colnames(samples), c('assembly', 'descriptive_name'), 'assembly')
+cols <- if("descriptive_name" %in% colnames(samples)){c('assembly', 'descriptive_name')}else{'assembly'}
 coldata  <- samples[cols]
 coldata['assembly'] <- factor(as.character(seq_len(nrow(coldata))))
 
