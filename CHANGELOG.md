@@ -22,6 +22,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 - depend less on local genomes (only when data is unavailable online)
 - trackhub explanation was missing, added
+- bug with broad peaks and qc that could not be made
 
 ## [0.5.2] - 2021-05-10
 
