@@ -63,7 +63,7 @@ vsdMatrix <- assay(vsd)
 # Heatmap of the sample-to-sample distances
 # see http://www.bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#heatmap-of-the-sample-to-sample-distances
 mat <- as.matrix(dist(t(vsdMatrix)))
-heatmap_names(mat, coldata)
+mat <- heatmap_names(mat, coldata)
 
 title <- 'Sample distance clustering (blind)'
 legend_aes <- list(
@@ -83,7 +83,7 @@ for (method in list("spearman", "pearson")){
 
   # Kendall is also available, but is computationally much more complex
   mat <- as.matrix(cor(vsdMatrix, method=method))
-  heatmap_names(mat, coldata)
+  mat <- heatmap_names(mat, coldata)
 
   # capitalize method name
   title <- paste0(toupper(substring(name, 1, 1)), substring(name, 2))

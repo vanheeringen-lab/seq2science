@@ -183,6 +183,7 @@ heatmap_names <- function(mat, coldata) {
   names <- if (has_descriptive) {coldata$descriptive_name} else {rownames(coldata)}
   rownames(mat) <- names
   colnames(mat) <- names
+  return(mat)
 }
 
 
