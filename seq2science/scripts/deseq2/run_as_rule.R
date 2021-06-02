@@ -1,6 +1,5 @@
 suppressMessages({
   library(DESeq2)
-  library(BiocParallel)
   library(IHW)
   library(ggplot2)
 })

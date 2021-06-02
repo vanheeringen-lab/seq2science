@@ -59,19 +59,21 @@ parse_samples <- function(samples_file, assembly, replicates) {
 run_deseq2 <- function(counts, coldata, design, threads=1) {
   parallel <- FALSE
   if (threads > 1) {
-    register(MulticoreParam(threads))
+    BiocParallel::register(
+      BiocParallel::MulticoreParam(threads)
+    )
     parallel <- TRUE
   }
 
   cat('Constructing DESeq object... \n')
   cat('Tip: errors directly below this line are most likely DESeq2 related.\n\n')
-  dds <- DESeqDataSetFromMatrix(
+  dds <- DESeq2::DESeqDataSetFromMatrix(
     countData = counts,
     colData = coldata,
     design = design,
   )
   cat('\nFinished constructing DESeq object.\n\n')
-  dds <- DESeq(dds, parallel=parallel)
+  dds <- DESeq2::DESeq(dds, parallel=parallel)
   cat('\n')
 
   return(dds)
@@ -160,7 +162,7 @@ heatmap_aesthetics <- function(num_samples){
   }
   show_colnames <- ifelse(num_samples > 28, TRUE, FALSE)
   show_rownames <- !show_colnames
-  colors <- colorRampPalette( rev(brewer.pal(9, "Blues")) )(255)
+  colors <- colorRampPalette( rev(RColorBrewer::brewer.pal(9, "Blues")) )(255)
 
   return(
     list(
@@ -185,7 +187,7 @@ heatmap_names <- function(mat, coldata) {
 
 
 heatmap_plot <- function(mat, title, heatmap_aes, legend_aes, out_pdf) {
-  pheatmap(
+  pheatmap::pheatmap(
     mat,
     main = title,
     angle_col = 45,

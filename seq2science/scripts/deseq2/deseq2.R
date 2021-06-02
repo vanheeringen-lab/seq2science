@@ -102,7 +102,7 @@ title <- paste0(
   n_DEGs, ' of ', nrow(reduced_counts), ' DE (a = ', fdr, b, ')'
 )
 pdf(output_ma_plot)
-plotMA(
+DESeq2::plotMA(
   resLFC,
   alpha = fdr,
   ylab = 'log2 fold change',
@@ -115,7 +115,7 @@ if (is.na(batch)){
   # generate a PCA plot (for sample outlier detection)
 
   blind_vst <- varianceStabilizingTransformation(dds, blind = TRUE)
-  g <- plotPCA(blind_vst, intgroup="condition")
+  g <- DESeq2::plotPCA(blind_vst, intgroup="condition")
 
   output_pca_plot <- sub(".diffexp.tsv", ".pca_plot.pdf", output)
   pdf(output_pca_plot)
@@ -127,10 +127,10 @@ if (is.na(batch)){
   # generate a PCA plots before and after batch correction
 
   blind_vst <- varianceStabilizingTransformation(dds, blind = TRUE)
-  g1 <- plotPCA(blind_vst, intgroup=c("condition", "batch"))
+  g1 <- DESeq2::plotPCA(blind_vst, intgroup=c("condition", "batch"))
 
   batchcorr_vst <- batch_corrected_vst(dds)
-  g2 <- plotPCA(batchcorr_vst, intgroup=c("condition", "batch"))
+  g2 <- DESeq2::plotPCA(batchcorr_vst, intgroup=c("condition", "batch"))
 
   # color by batch/condition. up to 6 shapes can be displayed too.
   condition_aes <- theme(legend.position="bottom") + ifelse(
