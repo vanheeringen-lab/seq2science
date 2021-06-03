@@ -127,6 +127,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#ena2fastq-se">ena2fastq_SE</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#extend-genome">extend_genome</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#extend-genome-annotation">extend_genome_annotation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#extend-genome-blacklist">extend_genome_blacklist</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#fastp-pe">fastp_PE</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#fastp-se">fastp_SE</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#fastp-qc-pe">fastp_qc_PE</a></li>
@@ -140,6 +141,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#genrich-pileup">genrich_pileup</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#get-genome">get_genome</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#get-genome-annotation">get_genome_annotation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#get-genome-blacklist">get_genome_blacklist</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#get-genome-support-files">get_genome_support_files</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#get-transcripts">get_transcripts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#hisat2-align">hisat2_align</a></li>
@@ -352,7 +354,10 @@ to a total width of 200, for a fair comparison between peaks.</p>
 </div>
 <div class="section" id="blind-clustering">
 <h2>blind_clustering<a class="headerlink" href="#blind-clustering" title="Permalink to this headline">¶</a></h2>
-<p>Create a sample distance matrix plot per assembly</p>
+<p>Create a sample distance cluster heatmap,
+and various correlation cluster heatmaps.</p>
+<p>A (blind) variance stabilizing transformation is applied to the counts,
+to reduce the impact of genes with low expression levels.</p>
 </div>
 <div class="section" id="bowtie2-align">
 <h2>bowtie2_align<a class="headerlink" href="#bowtie2-align" title="Permalink to this headline">¶</a></h2>
@@ -588,6 +593,13 @@ genePredToBed {output.gp} {output.bed}
 </pre></div>
 </div>
 </div>
+<div class="section" id="extend-genome-blacklist">
+<h2>extend_genome_blacklist<a class="headerlink" href="#extend-genome-blacklist" title="Permalink to this headline">¶</a></h2>
+<p>Copy blacklist to the custom genome directory</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>cp {input} {output}
+</pre></div>
+</div>
+</div>
 <div class="section" id="fastp-pe">
 <h2>fastp_PE<a class="headerlink" href="#fastp-pe" title="Permalink to this headline">¶</a></h2>
 <p>Automated adapter detection, adapter trimming, and quality trimming through fastp (paired-end).</p>
@@ -698,11 +710,14 @@ Genrich -X -t $input -f {output.log} {params.control} -k {output.bedgraphish} \
 <div class="section" id="get-genome">
 <h2>get_genome<a class="headerlink" href="#get-genome" title="Permalink to this headline">¶</a></h2>
 <p>Download a genome through genomepy.</p>
-<p>Also download a blacklist if it exists.</p>
 </div>
 <div class="section" id="get-genome-annotation">
 <h2>get_genome_annotation<a class="headerlink" href="#get-genome-annotation" title="Permalink to this headline">¶</a></h2>
 <p>Download a gene annotation through genomepy.</p>
+</div>
+<div class="section" id="get-genome-blacklist">
+<h2>get_genome_blacklist<a class="headerlink" href="#get-genome-blacklist" title="Permalink to this headline">¶</a></h2>
+<p>Download a genome blacklist for a genome, if it exists, through genomepy.</p>
 </div>
 <div class="section" id="get-genome-support-files">
 <h2>get_genome_support_files<a class="headerlink" href="#get-genome-support-files" title="Permalink to this headline">¶</a></h2>
@@ -997,7 +1012,7 @@ bedToBigBed -type={params.type} -as={params.schema} {output.tmp} \
 </div>
 <div class="section" id="plotcorrelation">
 <h2>plotCorrelation<a class="headerlink" href="#plotcorrelation" title="Permalink to this headline">¶</a></h2>
-<p>Calculate the correlation between bams with deeptools.</p>
+<p>Calculate the correlation between bams with deepTools.</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>plotCorrelation --corData {input} --plotFile {output} -c {wildcards.method} \
 -p heatmap --plotTitle {params.title} {params.params} &gt; {log} 2&gt;&amp;1
 </pre></div>
@@ -1012,14 +1027,14 @@ bedToBigBed -type={params.type} -as={params.schema} {output.tmp} \
 </div>
 <div class="section" id="plotheatmap-peak">
 <h2>plotHeatmap_peak<a class="headerlink" href="#plotheatmap-peak" title="Permalink to this headline">¶</a></h2>
-<p>Plot the peak heatmap using deeptools.</p>
+<p>Plot the peak heatmap using deepTools.</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>plotHeatmap --matrixFile {input} --outFileName {output.img} {params.params} --startLabel=&quot;-{params.slop}&quot; --endLabel={params.slop} &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
 </div>
 <div class="section" id="plotpca">
 <h2>plotPCA<a class="headerlink" href="#plotpca" title="Permalink to this headline">¶</a></h2>
-<p>Plot a PCA between bams using deeptools.</p>
+<p>Plot a PCA between bams using deepTools.</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>plotPCA --corData {input} --outFileNameData {output} &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>

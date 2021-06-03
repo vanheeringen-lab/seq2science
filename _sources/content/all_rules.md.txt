@@ -57,7 +57,11 @@ bedtools slop -i {input.bedfile} -g {input.sizes} -b {params.slop} | uniq > {out
 ```
 
 #### blind_clustering
-Create a sample distance matrix plot per assembly
+Create a sample distance cluster heatmap, 
+and various correlation cluster heatmaps.
+
+A (blind) variance stabilizing transformation is applied to the counts, 
+to reduce the impact of genes with low expression levels. 
 
 #### bowtie2_align
 Align reads against a genome (index) with bowtie2, and pipe the output to the required sorter(s).
@@ -268,6 +272,12 @@ gtfToGenePred {output.gtf} {output.gp}
 genePredToBed {output.gp} {output.bed}
 ```
 
+#### extend_genome_blacklist
+Copy blacklist to the custom genome directory
+```
+cp {input} {output}
+```
+
 #### fastp_PE
 Automated adapter detection, adapter trimming, and quality trimming through fastp (paired-end).
 ```
@@ -369,10 +379,11 @@ Genrich -X -t $input -f {output.log} {params.control} -k {output.bedgraphish} \
 #### get_genome
 Download a genome through genomepy.
 
-Also download a blacklist if it exists.
-
 #### get_genome_annotation
 Download a gene annotation through genomepy.
+
+#### get_genome_blacklist
+Download a genome blacklist for a genome, if it exists, through genomepy.
 
 #### get_genome_support_files
 Generate supporting files for a genome.
@@ -645,7 +656,7 @@ bedToBigBed -type={params.type} -as={params.schema} {output.tmp} \
 ```
 
 #### plotCorrelation
-Calculate the correlation between bams with deeptools.
+Calculate the correlation between bams with deepTools.
 ```
 plotCorrelation --corData {input} --plotFile {output} -c {wildcards.method} \
 -p heatmap --plotTitle {params.title} {params.params} > {log} 2>&1
@@ -658,13 +669,13 @@ plotFingerprint -b {input.bams} {params} --outRawCounts {output} -p {threads} > 
 ```
 
 #### plotHeatmap_peak
-Plot the peak heatmap using deeptools.
+Plot the peak heatmap using deepTools.
 ```
 plotHeatmap --matrixFile {input} --outFileName {output.img} {params.params} --startLabel="-{params.slop}" --endLabel={params.slop} > {log} 2>&1
 ```
 
 #### plotPCA
-Plot a PCA between bams using deeptools.
+Plot a PCA between bams using deepTools.
 ```
 plotPCA --corData {input} --outFileNameData {output} > {log} 2>&1
 ```

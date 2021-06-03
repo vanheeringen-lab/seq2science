@@ -110,7 +110,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#assembly-column">Assembly column</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#control-column">Control column</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#descriptive-name-column">Descriptive_name column</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#technical-replicate-column">Technical_replicate column</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#technical-replicates-column">technical_replicates column</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#biological-replicates">Biological replicates</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#a-mix-of-biological-and-technical-replicates">A mix of biological and technical replicates</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#colors-column">Colors column</a></li>
@@ -340,12 +340,12 @@ These setting can be changed in the <code class="docutils literal notranslate"><
 In the trackhub your tracks will be called after the descriptive name, and in the multiqc report there will be a button to rename your samples after this column.
 The descriptive name can not contain ‘-‘ characters, but underscores ‘_’ are allowed.</p>
 </div>
-<div class="section" id="technical-replicate-column">
-<h3>Technical_replicate column<a class="headerlink" href="#technical-replicate-column" title="Permalink to this headline">¶</a></h3>
-<p>Technical replicates, or any fastq file you may wish to merge, are set using the <code class="docutils literal notranslate"><span class="pre">technical_replicate</span></code> column in the samples.tsv file.
-All samples with the same name in the <code class="docutils literal notranslate"><span class="pre">technical_replicate</span></code> column will be concatenated into one file with the replicate name.</p>
+<div class="section" id="technical-replicates-column">
+<h3>technical_replicates column<a class="headerlink" href="#technical-replicates-column" title="Permalink to this headline">¶</a></h3>
+<p>Technical replicates, or any fastq file you may wish to merge, are set using the <code class="docutils literal notranslate"><span class="pre">technical_replicates</span></code> column in the samples.tsv file.
+All samples with the same name in the <code class="docutils literal notranslate"><span class="pre">technical_replicates</span></code> column will be concatenated into one file with the replicate name.</p>
 <p>Example <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> utilizing replicate merging:</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>sample    assembly    technical_replicate
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>sample    assembly    technical_replicates
 GSM123    GRCh38      heart
 GSMabc    GRCh38      heart
 GSMxzy    GRCh38      stage8
@@ -362,8 +362,8 @@ The MultiQC will inform you of the trimming steps performed on all samples, and 
 </div>
 <div class="section" id="biological-replicates">
 <h3>Biological replicates<a class="headerlink" href="#biological-replicates" title="Permalink to this headline">¶</a></h3>
-<p>During ATAC-seq workflows, peak calling can be performed per biological condition, depending on your configuration setting. Biological conditions are determined by the <code class="docutils literal notranslate"><span class="pre">biological_replicate</span></code> column in the samples.tsv file. How these samples are handled is specified by configuration variable <code class="docutils literal notranslate"><span class="pre">biological_replicates</span></code>.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>sample    assembly    biological_replicate
+<p>During ATAC-seq workflows, peak calling can be performed per biological condition, depending on your configuration setting. Biological conditions are determined by the <code class="docutils literal notranslate"><span class="pre">biological_replicates</span></code> column in the samples.tsv file. How these samples are handled is specified by configuration variable <code class="docutils literal notranslate"><span class="pre">biological_replicates</span></code>.</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>sample    assembly    biological_replicates
 GSM123    GRCh38      kidney
 GSMabc    GRCh38      liver
 GSMxzy    GRCh38      liver
@@ -373,7 +373,7 @@ GSM890    GRCh38
 <p>In this case peaks of the two liver samples (GSMabc and GSMxzy) will be combined by e.g. IDR.</p>
 <div class="section" id="id4">
 <h4>Keep<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h4>
-<p>By setting <code class="docutils literal notranslate"><span class="pre">biological_replicates</span></code> to keep, all biological replicates are analyzed individually. The <code class="docutils literal notranslate"><span class="pre">biological_replicate</span></code> column is ignored.</p>
+<p>By setting <code class="docutils literal notranslate"><span class="pre">biological_replicates</span></code> to keep, all biological replicates are analyzed individually. The <code class="docutils literal notranslate"><span class="pre">biological_replicates</span></code> column is ignored.</p>
 </div>
 <div class="section" id="irreproducible-discovery-rate-idr">
 <h4>Irreproducible Discovery Rate (IDR)<a class="headerlink" href="#irreproducible-discovery-rate-idr" title="Permalink to this headline">¶</a></h4>
@@ -386,7 +386,7 @@ GSM890    GRCh38
 </div>
 <div class="section" id="a-mix-of-biological-and-technical-replicates">
 <h3>A mix of biological and technical replicates<a class="headerlink" href="#a-mix-of-biological-and-technical-replicates" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>sample    assembly    technical_replicate  biological_replicate
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>sample    assembly    technical_replicates  biological_replicates
 GSM123    GRCh38      peter_kidney         kidney
 GSMabc    GRCh38      peter_liver          liver
 GSMxzy    GRCh38      lindsey_liver        liver
