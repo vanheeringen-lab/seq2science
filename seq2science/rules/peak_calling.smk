@@ -1,4 +1,4 @@
-def get_ftype(peak_caller):
+def get_peak_ftype(peak_caller):
     """
     Get the filetype (narrowpeak, broadpeak, gappedpeak) for a peak caller.
     """

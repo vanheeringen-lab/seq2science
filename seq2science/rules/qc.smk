@@ -42,7 +42,7 @@ def get_featureCounts_bam(wildcards):
 #  I added this as it was sufficient for rule idr
 def get_featureCounts_peak(wildcards):
     peak_sample = brep_from_trep[wildcards.sample]
-    ftype = get_ftype(wildcards.peak_caller)
+    ftype = get_peak_ftype(wildcards.peak_caller)
     return expand(f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{peak_sample}_peaks.{ftype}", **config)
 
 rule featureCounts:
@@ -878,15 +878,16 @@ def get_peak_calling_qc(sample):
 
     # deeptools profile
     assembly = treps.loc[sample, "assembly"]
+    narrowpeak_used = "narrowPeak" in [get_peak_ftype(pc) for pc in list(config["peak_caller"].keys())]
     # TODO: replace with genomepy checkpoint in the future
     if has_annotation(assembly):
         output.extend(expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config))  # added to be unzipped
         if config.get("deeptools_qc"):
             output.extend(expand("{qc_dir}/plotProfile_gene/{{assembly}}-{peak_caller}.tsv", **config))
-        if get_ftype(list(config["peak_caller"].keys())[0]) == "narrowPeak":
+        if narrowpeak_used:
             output.extend(expand("{qc_dir}/chipseeker/{{assembly}}-{peak_caller}_img1_mqc.png", **config))
             output.extend(expand("{qc_dir}/chipseeker/{{assembly}}-{peak_caller}_img2_mqc.png", **config))
-    if config.get("deeptools_qc"):
+    if config.get("deeptools_qc") and narrowpeak_used:
         output.extend(expand("{qc_dir}/plotHeatmap_peaks/N{heatmap_npeaks}-{{assembly}}-deepTools_{peak_caller}_heatmap_mqc.png", **config))
 
     return output
