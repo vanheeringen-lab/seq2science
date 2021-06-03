@@ -878,7 +878,7 @@ def get_peak_calling_qc(sample):
 
     # deeptools profile
     assembly = treps.loc[sample, "assembly"]
-    narrowpeak_used = "narrowPeak" in [(get_peak_ftype(pc) for pc in list(config["peak_caller"].keys())]
+    narrowpeak_used = "narrowPeak" in [get_peak_ftype(pc) for pc in list(config["peak_caller"].keys())]
     # TODO: replace with genomepy checkpoint in the future
     if has_annotation(assembly):
         output.extend(expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config))  # added to be unzipped
