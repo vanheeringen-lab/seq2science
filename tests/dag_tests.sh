@@ -237,7 +237,7 @@ if [ $1 = "atac-seq" ]; then
   assert_rulecount $1 bwa_mem2_index 1
   assert_rulecount $1 bwa_mem2 1
 
-  printf "\nmultiple peak callers\n"
+  printf "\nbroad peaks\n"
   seq2science run atac-seq -n --configfile tests/$WF/macs2_broad.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 macs2_callpeak 1
 
