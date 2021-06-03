@@ -8,6 +8,11 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- DESeq2 blind sample distance & correlation cluster heatmaps for RNA-, ATAC- ChIP-seq counts
+    - find them annotated in the MultiQC when running >1 sample
+
 ### Changed
 
 - "biological_replicate" and "technical_replicate" renamed to *"_replicates" (matches between samples.tsv & config.yaml)

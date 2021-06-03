@@ -1,6 +1,4 @@
-#!/usr/bin/env Rscript
-
-args = commandArgs(trailingOnly=TRUE)
+args <- commandArgs(trailingOnly=TRUE)
 
 # help message
 if ("--help" %in% args || "-h" %in% args) {
@@ -61,7 +59,6 @@ output      <- file.path(out_dir, paste0(assembly, "-", contrast, ".diffexp.tsv"
 # load libraries
 suppressMessages({
   library(DESeq2)
-  library(BiocParallel)
   library(IHW)
   library(ggplot2)
 })
