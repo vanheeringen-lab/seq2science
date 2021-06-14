@@ -269,7 +269,7 @@ elif config["quantifier"] == "kallistobus":
                 
                 
     def get_kb_dir(wildcards):
-        if 'kite' in config.get('ref'):
+        if 'kite' in config.get('ref',""):
             return directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/kite/", **config))     
         else:
             return directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/", **config))
