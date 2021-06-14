@@ -145,7 +145,7 @@ if config["quantifier"] == "salmon":
 
 elif config["quantifier"] == "kallistobus":
     
-    if 'kite' in config.get('ref'):
+    if 'kite' in config.get('ref',""):
         ruleorder: kallistobus_ref_kite > get_genome
         ruleorder: kallistobus_ref_kite > kallistobus_ref
     else:
