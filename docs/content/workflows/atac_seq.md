@@ -79,7 +79,7 @@ A UCSC compatible trackhub can be generated for this workflow. See the [trackhub
 ### Filling out the samples.tsv
 Before running a workflow you will have to specify which samples you want to run the workflow on. Each workflow starts with a `samples.tsv` as an example, and you should adapt it to your specific needs. As an example, the `samples.tsv` could look something like this:
 ```
-sample    assembly    technical_replicate    descriptive_name    control
+sample    assembly    technical_replicates    descriptive_name    control
 GSM123    GRCh38      heart_1      heart_merged        GSM234
 GSM321    GRCh38      heart_1      heart_merged        GSM234
 GSMabc    GRCh38      heart_2      heart_not_merged    GSM234
@@ -116,13 +116,13 @@ The descriptive\_name column is used for the trackhub and multiqc report.
 In the trackhub your tracks will be called after the descriptive name, and in the multiqc report there will be a button to rename your samples after this column.
 The descriptive name can not contain '-' characters, but underscores '\_' are allowed.
 
-#### Technical_replicate column
-Technical replicates, or any fastq file you may wish to merge, are set using the `technical_replicate` column in the samples.tsv file.
-All samples with the same name in the `technical_replicate` column will be concatenated into one file with the replicate name.
+#### Technical_replicates column
+Technical replicates, or any fastq file you may wish to merge, are set using the `technical_replicates` column in the samples.tsv file.
+All samples with the same name in the `technical_replicates` column will be concatenated into one file with the replicate name.
 
 Example `samples.tsv` utilizing replicate merging:
 ```
-sample    assembly    technical_replicate
+sample    assembly    technical_replicates
 GSM123    GRCh38      heart
 GSMabc    GRCh38      heart
 GSMxzy    GRCh38      stage8
@@ -163,7 +163,7 @@ One of the more common methods to combine biological replicates is by the irrepr
 #### A mix of biological and technical replicates
 
 ```
-sample    assembly    technical_replicate  biological_replicates
+sample    assembly    technical_replicates  biological_replicates
 GSM123    GRCh38      peter_kidney         kidney
 GSMabc    GRCh38      peter_liver          liver
 GSMxzy    GRCh38      lindsey_liver        liver

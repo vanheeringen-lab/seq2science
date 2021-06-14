@@ -42,7 +42,7 @@ def get_featureCounts_bam(wildcards):
 #  I added this as it was sufficient for rule idr
 def get_featureCounts_peak(wildcards):
     peak_sample = brep_from_trep[wildcards.sample]
-    ftype = get_ftype(wildcards.peak_caller)
+    ftype = get_peak_ftype(wildcards.peak_caller)
     return expand(f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{peak_sample}_peaks.{ftype}", **config)
 
 rule featureCounts:
@@ -401,12 +401,12 @@ rule computeMatrix_peak:
 
 rule plotHeatmap_peak:
     """
-    Plot the peak heatmap using deeptools.
+    Plot the peak heatmap using deepTools.
     """
     input:
         rules.computeMatrix_peak.output
     output:
-        img=expand("{qc_dir}/plotHeatmap_peaks/N{{nrpeaks}}-{{assembly}}-deeptools_{{peak_caller}}_heatmap_mqc.png", **config),
+        img=expand("{qc_dir}/plotHeatmap_peaks/N{{nrpeaks}}-{{assembly}}-deepTools_{{peak_caller}}_heatmap_mqc.png", **config),
     log:
         expand("{log_dir}/plotHeatmap_peaks/{{assembly}}-{{peak_caller}}_N{{nrpeaks}}.log", **config)
     benchmark:
@@ -456,12 +456,12 @@ rule multiBamSummary:
 
 rule plotCorrelation:
     """
-    Calculate the correlation between bams with deeptools.
+    Calculate the correlation between bams with deepTools.
     """
     input:
         rules.multiBamSummary.output
     output:
-        expand("{qc_dir}/plotCorrelation/{{assembly}}-deeptools_{{method}}_mqc.png", **config)
+        expand("{qc_dir}/plotCorrelation/{{assembly}}-deepTools_{{method}}_correlation_clustering_mqc.png", **config)
     log:
         expand("{log_dir}/plotCorrelation/{{assembly}}-{{method}}.log", **config)
     benchmark:
@@ -484,7 +484,7 @@ rule plotCorrelation:
 
 rule plotPCA:
     """
-    Plot a PCA between bams using deeptools.
+    Plot a PCA between bams using deepTools.
     """
     input:
         rules.multiBamSummary.output
@@ -697,8 +697,15 @@ def get_qc_files(wildcards):
         if "REMOVE_DUPLICATES=true" not in config.get("markduplicates","") and not (config.get('quantifier', '') == 'salmon' and config.get('create_trackhub') == False):
             qc['files'].update(expand("{qc_dir}/dupRadar/{{assembly}}-dupRadar_mqc.png",**config))
 
-        if len(treps.index) > 2:
-            qc['files'].update(expand("{qc_dir}/clustering/{{assembly}}-Sample_clustering_mqc.png", **config))
+    # DESeq2 sample distance/correlation cluster heatmaps
+    if (get_peak_calling_qc in quality_control or get_rna_qc in quality_control) and len(treps.index) > 2:
+        plots = ["sample_distance_clustering", "pearson_correlation_clustering", "spearman_correlation_clustering"]
+        files = expand("{qc_dir}/plotCorrelation/{{assembly}}-DESeq2_{plots}_mqc.png", plots=plots, **config)
+        # only perform clustering if there are 2 or more groups in the assembly
+        for assembly in treps.assembly:
+            if len(treps[treps.assembly == assembly].index) < 2:
+                files = [f for f in files if f"clustering/{assembly}-" not in f]
+        qc['files'].update(files)
 
     return qc
 
@@ -841,8 +848,8 @@ def get_alignment_qc(sample):
             get_workflow() == "rna_seq" and (config.get('create_trackhub') or config.get('quantifier') != 'salmon'):
         output.append("{qc_dir}/plotFingerprint/{{assembly}}.tsv")
     if len(breps[breps["assembly"] == treps.loc[sample, "assembly"]].index) > 1 and config.get("deeptools_qc"):
-        output.append("{qc_dir}/plotCorrelation/{{assembly}}-deeptools_pearson_mqc.png")
-        output.append("{qc_dir}/plotCorrelation/{{assembly}}-deeptools_spearman_mqc.png")
+        output.append("{qc_dir}/plotCorrelation/{{assembly}}-deepTools_pearson_correlation_clustering_mqc.png")
+        output.append("{qc_dir}/plotCorrelation/{{assembly}}-deepTools_spearman_correlation_clustering_mqc.png")
         output.append("{qc_dir}/plotPCA/{{assembly}}.tsv")
 
     return expand(output, **config)
@@ -871,15 +878,16 @@ def get_peak_calling_qc(sample):
 
     # deeptools profile
     assembly = treps.loc[sample, "assembly"]
+    narrowpeak_used = "narrowPeak" in [get_peak_ftype(pc) for pc in list(config["peak_caller"].keys())]
     # TODO: replace with genomepy checkpoint in the future
     if has_annotation(assembly):
         output.extend(expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config))  # added to be unzipped
         if config.get("deeptools_qc"):
             output.extend(expand("{qc_dir}/plotProfile_gene/{{assembly}}-{peak_caller}.tsv", **config))
-        if get_ftype(list(config["peak_caller"].keys())[0]) == "narrowPeak":
+        if narrowpeak_used:
             output.extend(expand("{qc_dir}/chipseeker/{{assembly}}-{peak_caller}_img1_mqc.png", **config))
             output.extend(expand("{qc_dir}/chipseeker/{{assembly}}-{peak_caller}_img2_mqc.png", **config))
-    if config.get("deeptools_qc"):
-        output.extend(expand("{qc_dir}/plotHeatmap_peaks/N{heatmap_npeaks}-{{assembly}}-deeptools_{peak_caller}_heatmap_mqc.png", **config))
+    if config.get("deeptools_qc") and narrowpeak_used:
+        output.extend(expand("{qc_dir}/plotHeatmap_peaks/N{heatmap_npeaks}-{{assembly}}-deepTools_{peak_caller}_heatmap_mqc.png", **config))
 
     return output

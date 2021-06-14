@@ -11,6 +11,12 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Added
 
 - added support for kb-python kite workflow
+## [0.5.3] - 2021-06-03
+
+### Added
+
+- DESeq2 blind sample distance & correlation cluster heatmaps for RNA-, ATAC- ChIP-seq counts
+    - find them annotated in the MultiQC when running >1 sample
 
 ### Changed
 
@@ -26,6 +32,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 - depend less on local genomes (only when data is unavailable online)
 - trackhub explanation was missing, added
+- bug with broad peaks and qc that could not be made
 
 ## [0.5.2] - 2021-05-10
 
@@ -393,6 +400,7 @@ Many minor bug- and quality of life fixes.
 First release of seq2science!
 
 [Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.3...master
+[0.5.3]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.2...v0.5.3
 [0.5.2]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.4.3...v0.5.0
