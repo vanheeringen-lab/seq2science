@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+## Changed
+
+- optional barcodefile argument for scRNA-seq workflow 
+
 ### Added
 
 - added support for kb-python kite workflow
