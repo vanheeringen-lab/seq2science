@@ -282,7 +282,7 @@ elif config["quantifier"] == "kallistobus":
             input:
                 basedir=get_kb_dir,
                 reads=rules.fastq_pair.output.reads,
-                barcodefile=expand(["{barcodefile}"] if 'barcodefile' in config else [],**config),
+                barcodefile=config.get("barcodefile",[]),
             output:
                 dir=directory(expand("{result_dir}/{quantifier}/{{assembly}}-{{sample}}",**config))
             log:
@@ -298,7 +298,7 @@ elif config["quantifier"] == "kallistobus":
                 mem_gb=66,
             params:
                 basename=lambda wildcards, input: f"{input.basedir[0]}/{wildcards.assembly}",
-                barcode_arg=lambda wildcards, input: "-w " + input.barcodefile[0] if input.barcodefile else "", 
+                barcode_arg=lambda wildcards, input: ("-w " + input.barcodefile) if input.barcodefile else "", 
                 options=config.get("count")
             shell:
                 """
