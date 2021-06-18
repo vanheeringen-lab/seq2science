@@ -72,9 +72,9 @@ rule bedgraph_bigwig:
 
 
 def get_bigpeak_columns(wildcards):
-    if get_ftype(wildcards.peak_caller) == "narrowPeak":
+    if get_peak_ftype(wildcards.peak_caller) == "narrowPeak":
         return 10
-    if get_ftype(wildcards.peak_caller) == "broadPeak":
+    if get_peak_ftype(wildcards.peak_caller) == "broadPeak":
         if len(treps_from_brep[(wildcards.sample, wildcards.assembly)]) == 1:
             return 9
         return 12
@@ -82,9 +82,9 @@ def get_bigpeak_columns(wildcards):
 
 
 def get_bigpeak_type(wildcards):
-    if get_ftype(wildcards.peak_caller) == "narrowPeak":
+    if get_peak_ftype(wildcards.peak_caller) == "narrowPeak":
         return "bed6+4"
-    if get_ftype(wildcards.peak_caller) == "broadPeak":
+    if get_peak_ftype(wildcards.peak_caller) == "broadPeak":
         if len(treps_from_brep[(wildcards.sample, wildcards.assembly)]) == 1:
             return "bed6+3"
         return "bed12"
@@ -92,9 +92,9 @@ def get_bigpeak_type(wildcards):
 
 
 def get_bigpeak_schema(wildcards):
-    if get_ftype(wildcards.peak_caller) == "narrowPeak":
+    if get_peak_ftype(wildcards.peak_caller) == "narrowPeak":
         return f"{config['rule_dir']}/../schemas/bignarrowPeak.as"
-    if get_ftype(wildcards.peak_caller) == "broadPeak":
+    if get_peak_ftype(wildcards.peak_caller) == "broadPeak":
         if len(treps_from_brep[(wildcards.sample, wildcards.assembly)]) == 1:
             return f"{config['rule_dir']}/../schemas/bigbroadPeak.as"
         return f"{config['rule_dir']}/../schemas/bigBed.as"

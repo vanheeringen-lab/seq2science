@@ -274,7 +274,7 @@ def parse_contrast(contrast, samples, check=True):
         # check if columns exists and are valid
         valid_columns = [col for col in samples.columns if col not in ["sample", "assembly"]]
         # columns that may have been dropped, if so, these backups have been saved
-        backup_columns = {"technical_replicate": "_trep", "biological_replicate": "_brep", "descriptive_name": "_dname"}
+        backup_columns = {"technical_replicates": "_trep", "biological_replicates": "_brep", "descriptive_name": "_dname"}
         for col in [batch, column]:
             if col:
                 assert col in valid_columns + list(backup_columns.keys()), (
@@ -292,6 +292,37 @@ def parse_contrast(contrast, samples, check=True):
                 )
 
     return batch, column, target, reference
+
+
+def expand_contrasts(samples, config):
+    """
+    splits contrasts that contain multiple comparisons
+    """
+    old_contrasts = config.get("contrasts", [])
+    if isinstance(old_contrasts, str):
+        old_contrasts = [old_contrasts]
+
+    new_contrasts = []
+    for contrast in old_contrasts:
+        batch, column, target, reference = parse_contrast(contrast, samples, check=False)
+
+        if target == "all":
+            # all vs 1 comparison ("all vs A")
+            targets = set(samples[column].dropna().astype(str))
+            targets.remove(reference)
+        else:
+            # 1 vs 1 comparison ("A vs B")
+            targets = [target]
+
+        for target in targets:
+            new_contrast = f"{column}_{target}_{reference}"
+            if batch:
+                new_contrast = f"{batch}+{new_contrast}"
+            new_contrasts.append(new_contrast)
+
+    # get unique elements
+    new_contrasts = list(set(new_contrasts))
+    return new_contrasts
 
 
 def url_is_alive(url):

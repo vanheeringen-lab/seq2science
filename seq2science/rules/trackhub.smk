@@ -469,7 +469,7 @@ def create_trackhub():
         # workflow specific data
         if get_workflow() in ["atac_seq", "chip_seq"]:
             for peak_caller in config["peak_caller"]:
-                ftype = get_ftype(peak_caller)
+                ftype = get_peak_ftype(peak_caller)
                 ttype = "bigNarrowPeak" if ftype == "narrowPeak" else "bigBed"
                 peak_caller_suffix = "" if len(config["peak_caller"]) == 1 else f" {peak_caller}"
                 pcs = shorten(peak_caller_suffix, 5)

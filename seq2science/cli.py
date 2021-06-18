@@ -547,8 +547,13 @@ def resource_parser(parsed_args):
     Memory limit changes depending on local execution or cluster
     """
     # set some defaults
-    parsed_args["resources"] = {**{'parallel_downloads': 3, 'deeptools_limit': 16, 'R_scripts': 1},
-                                **parsed_args.get("resources", {})}
+    parsed_args["resources"] = {
+        **{'parallel_downloads': 3,
+           'genomepy_downloads': 1,
+           'deeptools_limit': 16,
+           'R_scripts': 1},
+        **parsed_args.get("resources", {})
+    }
 
     if "mem_mb" in parsed_args["resources"]:
         # convert memory to gigabytes

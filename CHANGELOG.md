@@ -8,8 +8,25 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+## Changed
+
+- optional barcodefile argument for scRNA-seq workflow 
+
+### Added
+
+- added support for kb-python kite workflow
+
+## [0.5.3] - 2021-06-03
+
+### Added
+
+- DESeq2 blind sample distance & correlation cluster heatmaps for RNA-, ATAC- ChIP-seq counts
+    - find them annotated in the MultiQC when running >1 sample
+
 ### Changed
 
+- "biological_replicate" and "technical_replicate" renamed to *"_replicates" (matches between samples.tsv & config.yaml)
+- fixed bug with seq2science making a {output.allsizes} file
 - Changed explain to use 'passive style'
 - Genrich peak calling defaults
   - Doesn't remove PCR duplicates anymore (best to do with markduplicates)
@@ -20,6 +37,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 - depend less on local genomes (only when data is unavailable online)
 - trackhub explanation was missing, added
+- bug with broad peaks and qc that could not be made
 
 ## [0.5.2] - 2021-05-10
 
@@ -387,6 +405,7 @@ Many minor bug- and quality of life fixes.
 First release of seq2science!
 
 [Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.3...master
+[0.5.3]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.2...v0.5.3
 [0.5.2]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.4.3...v0.5.0

@@ -1,5 +1,5 @@
 # 2 replicates, 2 assemblies, incomplete column for good measure
-sample	assembly	technical_replicate	stage	batch	descriptive_name
+sample	assembly	technical_replicates	stage	batch	descriptive_name
 S1_1	assembly1	R1_1	1	batch1	sample1_1
 S1_2	assembly1	R1_1	1	batch1	sample1_2
 S2_1	assembly1	R2_1	1	batch2	sample2_1

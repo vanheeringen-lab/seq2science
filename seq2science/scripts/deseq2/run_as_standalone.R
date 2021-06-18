@@ -1,6 +1,4 @@
-#!/usr/bin/env Rscript
-
-args = commandArgs(trailingOnly=TRUE)
+args <- commandArgs(trailingOnly=TRUE)
 
 # help message
 if ("--help" %in% args || "-h" %in% args) {
@@ -49,7 +47,7 @@ if (!dir.exists(out_dir)){
 
 # variables required in the core script
 samples     <- read.delim(samples_file, sep = "\t", na.strings = "", comment.char = "#", stringsAsFactors = F, row.names = "sample")
-replicates  <- "technical_replicate" %in% colnames(samples)  # always merge replicates if "technical_replicate" exists
+replicates  <- "technical_replicates" %in% colnames(samples)  # always merge replicates if "technical_replicates" exists
 assembly    <- samples$assembly[1]                           # always use the first assembly
 mtp         <- "BH"                                          # \
 fdr         <- 0.1                                           #  |-default options only
@@ -61,7 +59,6 @@ output      <- file.path(out_dir, paste0(assembly, "-", contrast, ".diffexp.tsv"
 # load libraries
 suppressMessages({
   library(DESeq2)
-  library(BiocParallel)
   library(IHW)
   library(ggplot2)
 })

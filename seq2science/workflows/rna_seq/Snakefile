@@ -1,5 +1,5 @@
 # do onstart/onexit things
-sample_schemas = ['sample', 'assembly', 'technical_replicate', 'strandedness']
+sample_schemas = ['sample', 'assembly', 'technical_replicates', 'strandedness']
 config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific', 'gene_expression', 'deseq2', 'trackhub']
 include: "../../rules/configuration.smk"
 
@@ -35,7 +35,5 @@ rule seq2science:
 
              (["{counts_dir}/{assemblies}-counts.tsv"]) +
              (["{counts_dir}/{assemblies}-DEXSeq_counts.tsv"] if config['dexseq'] else []) +
-             (["{genome_dir}/{assemblies}/gene_id2name.tsv"]) +
-
-             (["{deseq2_dir}/{assemblies}-{contrasts}.diffexp.tsv"] if config.get('contrasts', False) else []),
-             **{**config, **{'assemblies': all_assemblies, 'contrasts': get_contrasts()}})
+             (["{genome_dir}/{assemblies}/gene_id2name.tsv"]), assemblies=all_assemblies, **config) +
+         get_contrasts()

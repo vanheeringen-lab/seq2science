@@ -1,5 +1,5 @@
 # 2 replicates, 2 assemblies
-sample	assembly	technical_replicate
+sample	assembly	technical_replicates
 S1_1	assembly1	R1_1
 S1_2	assembly1	R1_1
 S2_1	assembly2	R2_1
