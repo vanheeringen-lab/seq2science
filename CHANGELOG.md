@@ -10,6 +10,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## Changed
 
+- kb count output validation
 - optional barcodefile argument for scRNA-seq workflow 
 
 ### Added
