@@ -283,7 +283,8 @@ def _run(args, base_dir, workflows_dir, config_path):
                    "keepgoing": args.keep_going,
                    "unlock": args.unlock,
                    "force_incomplete": args.rerun_incomplete,
-                   "scheduler": "greedy"}
+                   # "scheduler": "greedy"
+                  }
 
     # get the additional snakemake options
     snakemake_options = args.snakemakeOptions if args.snakemakeOptions is not None else dict()
@@ -387,7 +388,8 @@ def _explain(args, base_dir, workflows_dir, config_path):
                    "dryrun": True,
                    "forceall": True,
                    "quiet": False,
-                   "scheduler": "greedy"}
+                   # "scheduler": "greedy"
+                  }
 
     # get the additional snakemake options
     snakemake_options = args.snakemakeOptions if args.snakemakeOptions is not None else dict()
