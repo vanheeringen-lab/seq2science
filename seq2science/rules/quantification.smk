@@ -309,8 +309,6 @@ elif config["quantifier"] == "kallistobus":
                 {params.barcode_arg} {params.options} {input.reads} > {log} 2>&1
                 # Validate output
                 if grep -q 'ERROR\|bad_alloc' "{log}"; then
-                  echo "An error was encoutered. Please check the logfile: {log} for details!" 
-                  if [ -e "{output}" ]; then rm -Rf {output}; fi
                   exit 1
                 fi  
                 """                
