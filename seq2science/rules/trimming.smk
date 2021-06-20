@@ -7,7 +7,7 @@ if config["trimmer"] == "trimgalore":
         ruleorder: trimgalore_PE > trimgalore_SE
 
 
-    rule trimgalore_SE:
+    checkpoint trimgalore_SE:
         """
         Automated adapter detection, adapter trimming, and quality trimming through trim galore (single-end).
         """
@@ -43,7 +43,7 @@ if config["trimmer"] == "trimgalore":
             """
 
 
-    rule trimgalore_PE:
+    checkpoint trimgalore_PE:
         """
         Automated adapter detection, adapter trimming, and quality trimming through trim galore (paired-end).
         """
@@ -106,7 +106,7 @@ elif config["trimmer"] == "fastp":
         all_paired_samples = [sample for sample in all_samples if sampledict[sample]["layout"] == "PAIRED"]
 
 
-    rule fastp_SE:
+    checkpoint fastp_SE:
         """
         Automated adapter detection, adapter trimming, and quality trimming through fastp (single-end).
         """
@@ -137,7 +137,7 @@ elif config["trimmer"] == "fastp":
             """
 
 
-    rule fastp_PE:
+    checkpoint fastp_PE:
         """
         Automated adapter detection, adapter trimming, and quality trimming through fastp (paired-end).
         """
