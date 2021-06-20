@@ -21,10 +21,10 @@ path = "seq2science/rules/"
 
 
 def get_dirty_docstrings(string):
-    splitter = re.compile("rule (.*):[\s\S]*?\"\"\"([\s\S]*?)\"\"\"", re.MULTILINE)
+    splitter = re.compile("(rule|checkpoint) (.*):[\s\S]*?\"\"\"([\s\S]*?)\"\"\"", re.MULTILINE)
     docstrings = {}
     for match in splitter.finditer(string):
-        docstrings[match.group(1)] = match.group(2)
+        docstrings[match.group(2)] = match.group(3)
     return docstrings
 
 

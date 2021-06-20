@@ -88,7 +88,7 @@ def get_fastqc_input(wildcards):
 
 
 if config["trimmer"] == "trimgalore":
-    rule fastqc:
+    checkpoint fastqc:
         """
         Generate quality control report for fastq files.
         """
@@ -115,7 +115,7 @@ elif config["trimmer"] == "fastp":
     ruleorder: fastp_qc_PE> fastp_qc_SE > fastp_PE > fastp_SE
 
 
-    rule fastp_qc_SE:
+    checkpoint fastp_qc_SE:
         """
         Get quality scores for (technical) replicates
         """
