@@ -1,0 +1,7 @@
+name: chromap
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - bioconda::chromap=0.1

@@ -178,6 +178,33 @@ elif config["aligner"] == "bwa-mem2":
             bwa-mem2 mem {params.params} -t {threads} {params.index_dir} {input.reads} 2> {log} | tee {output} 1> /dev/null 2>> {log}
             """
 
+elif config["aligner"] == "chromap":
+
+    rule chromap_index:
+        """
+        Make a genome index for chromap. This index is required for alignment.
+        """
+        input:
+            expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+        output:
+            directory(expand("{genome_dir}/{{assembly}}/index/{aligner}/index", **config)),
+        log:
+            expand("{log_dir}/{aligner}_index/{{assembly}}.log", **config),
+        benchmark:
+            expand("{benchmark_dir}/{aligner}_index/{{assembly}}.benchmark.txt", **config)[0]
+        params:
+            prefix="{genome_dir}/{{assembly}}/index/{aligner}/{{assembly}}".format(**config)
+        priority: 1
+        resources:
+            mem_gb=20,
+        conda:
+            "../envs/chromap.yaml"
+        shell:
+            """
+            mkdir -p {output}
+
+            chromap --build-index --ref {input} --output {params.prefix} > {log} 2>&1
+            """
 
 elif config["aligner"] == "hisat2":
 
