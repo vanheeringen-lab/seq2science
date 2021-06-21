@@ -57,7 +57,7 @@ In the example above, the `fastq_dir` should be set to `/home/user/myfastqs`.
 These setting can be changed in the `config.yaml`.
 
 #### Assembly column
-Here you simply add the name of the assembly you want your samples aligned against and the workflow will download it for you.
+Here you simply add the name of the assembly you want your samples aligned against and the workflow will download it for you. In case your intend to run kb-python's kite workflow, the assembly name becomes the basename of the tab delimited feature barcode file. 
 
 #### Descriptive_name column
 The descriptive_name column is used for the multiqc report.
@@ -67,8 +67,9 @@ In the multiqc report there will be a button to rename your samples after this c
 Every workflow has many configurable options, and can be set in the config.yaml file.
 In each config.yaml we highlighted a couple options that we think are relevant for that specific workflow, and set (we think) reasonable default values.
 
-After initializing your working directory and editing the `samples.tsv` file, you have to specify if you either want to perform quantification or RNA velocity analysis.
-For velocity analysis, add the `--workflow lamanno` argument to the ref and count properties as shown below.
+After initializing your working directory and editing the `samples.tsv` file, specify the desired arguments for kb-pyhon via the ref (kb ref) and count (kb count) properties except for the barcode whilteist (`-w`). The path to the barcode whiltelist can be supplied via the `barcodefile` property. This step is optional since kb python python provides several pre-installed whitelists.
+
+
 
 ##### Quantifier
 ```

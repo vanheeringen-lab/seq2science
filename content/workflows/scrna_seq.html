@@ -254,7 +254,7 @@ These setting can be changed in the <code class="docutils literal notranslate"><
 </div>
 <div class="section" id="assembly-column">
 <h3>Assembly column<a class="headerlink" href="#assembly-column" title="Permalink to this headline">¶</a></h3>
-<p>Here you simply add the name of the assembly you want your samples aligned against and the workflow will download it for you.</p>
+<p>Here you simply add the name of the assembly you want your samples aligned against and the workflow will download it for you. In case your intend to run kb-python’s kite workflow, the assembly name becomes the basename of the tab delimited feature barcode file.</p>
 </div>
 <div class="section" id="descriptive-name-column">
 <h3>Descriptive_name column<a class="headerlink" href="#descriptive-name-column" title="Permalink to this headline">¶</a></h3>
@@ -265,8 +265,7 @@ In the multiqc report there will be a button to rename your samples after this c
 <h3>Filling out the config.yaml<a class="headerlink" href="#filling-out-the-config-yaml" title="Permalink to this headline">¶</a></h3>
 <p>Every workflow has many configurable options, and can be set in the config.yaml file.
 In each config.yaml we highlighted a couple options that we think are relevant for that specific workflow, and set (we think) reasonable default values.</p>
-<p>After initializing your working directory and editing the <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> file, you have to specify if you either want to perform quantification or RNA velocity analysis.
-For velocity analysis, add the <code class="docutils literal notranslate"><span class="pre">--workflow</span> <span class="pre">lamanno</span></code> argument to the ref and count properties as shown below.</p>
+<p>After initializing your working directory and editing the <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> file, specify the desired arguments for kb-pyhon via the ref (kb ref) and count (kb count) properties except for the barcode whilteist (<code class="docutils literal notranslate"><span class="pre">-w</span></code>). The path to the barcode whiltelist can be supplied via the <code class="docutils literal notranslate"><span class="pre">barcodefile</span></code> property. This step is optional since kb python python provides several pre-installed whitelists.</p>
 <div class="section" id="quantifier">
 <h4>Quantifier<a class="headerlink" href="#quantifier" title="Permalink to this headline">¶</a></h4>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>quantifier:
