@@ -225,6 +225,8 @@ rule get_genome_size:
         expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
     output:
         expand("{genome_dir}/{{assembly}}/{{assembly}}.kmer_{{kmer_size}}.genome_size", **config)
+    conda:
+        "../envs/khmer.yaml"
     shell:
         """
         unique-kmers.py {input} -k $kmer_size --quiet 2>&1 | grep -P -o '(?<=\.fa: ).*' > {output}

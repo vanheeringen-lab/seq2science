@@ -4,4 +4,4 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - bioconda::macs2=2.2.7
+  - bioconda::khmer=2.0
