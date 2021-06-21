@@ -134,8 +134,8 @@ def get_control_macs(wildcards):
 
 
 def get_genome_size(wildcards):
-    kmer_size = get_kmer_size(wildcards.sample)
-    return expand("{genome_dir}/{{assembly}}/{{assembly}}.kmer_" + str(kmer_size) + ".genome_size", **config)
+    read_length = get_read_length(wildcards.sample)
+    return expand("{genome_dir}/{{assembly}}/{{assembly}}.kmer_" + str(read_length) + ".genome_size", **config)
 
 
 rule macs2_callpeak:
@@ -157,12 +157,6 @@ rule macs2_callpeak:
     wildcard_constraints:
         sample=any_given("sample", "technical_replicates")
     params:
-        name=(
-            lambda wildcards, input: wildcards.sample
-            if sampledict[wildcards.sample]["layout"] == "SINGLE"
-            else [f"{wildcards.sample}_{config['fqext1']}"]
-        ),
-        genome=f"{config['genome_dir']}/{{assembly}}/{{assembly}}.fa",
         macs_params=config["peak_caller"].get("macs2", ""),
         format=(
             lambda wildcards: "BAMPE"

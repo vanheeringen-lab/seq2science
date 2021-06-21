@@ -130,23 +130,38 @@ if config.get("contrasts"):
         _,_,_,_ = parse_contrast(contrast, samples, check=True)
 
 
-def get_kmer_size(sample):
+def get_read_length(sample):
     """
 
     """
     return 30
+    # trimgalore
+    if config["trimmer"] == "trimgalore"
+        if sampledict[wildcards.sample]["layout"] == "SINGLE":
+            qc_file = checkpoints.fastqc.get(fname=f"{wildcards.sample}_R1_trimmed").qc
+            zip_name = sample
+        if sampledict[wildcards.sample]["layout"] == "PAIRED":
+            qc_file = checkpoints.fastqc.get(fname=f"{wildcards.sample}_R1_trimmed").qc
+            zip_name = f"{sample}_{config['fqext1']}"
+
+        import zipfile
+        import re
+
+        archive = zipfile.ZipFile(qc_file, 'r').read(zip_name)
+
+        kmer_size = re.search("Sequence length\\t(\d+)", qc_report.decode("utf-8")).group(1)
+
+    # fastp
     if config["trimmer"] == "fastp":
-        if sampledict[sample]["layout"] == "SINGLE":
-            qc_file = checkpoints.fastp_SE.get(sample=sample).qc_json
-        if sampledict[sample]["layout"] == "PAIRED":
-            qc_file = checkpoints.fastp_PE.get(sample=sample).qc_json
-    else:
-        if sampledict[sample]["layout"] == "SINGLE":
-            qc_file = checkpoints.fastp_qc_SE.get(sample=sample).qc_json
-        if sampledict[sample]["layout"] == "PAIRED":
-            qc_file = checkpoints.fastp_qc_PE.get(sample=sample).qc_json
+        if sampledict[wildcards.sample]["layout"] == "SINGLE":
+            qc_file = checkpoints.fastp_SE.get(sample=wildcards.sample).qc_json
+        if sampledict[wildcards.sample]["layout"] == "PAIRED":
+            qc_file = checkpoints.fastp_PE.get(sample=wildcards.sample).qc_json
 
-    # TODO: fix this!
-    kmer_size = "kmer_size=$(jq -r .summary.after_filtering.read1_mean_length {input.fastq_qc})"
+        import json
 
-    return 30
+        with open('qc_file') as f:
+            data = json.load(f)
+        kmer_size = data["summary"]["read1_mean_length"]
+
+    return kmer_size
