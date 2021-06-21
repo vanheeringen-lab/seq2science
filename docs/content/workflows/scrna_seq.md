@@ -76,6 +76,17 @@ After initializing your working directory and editing the `samples.tsv` file, sp
 
 The white-list will be installed automatically if the appropiate stechnology argument is provided via the `-x` parameter in short-hand syntax.
 
+##### BUS (Barcode/UMI/Set) format
+The `-x` argument indicates the read and file positions of UMIs and barcodes in the supplied R1/R2 fastq files.
+Kallisto bustools should auto-detect the correct settings if you use the short-hand syntax for your technology of choice, such as `-x 10xv2`.
+Internally, this is translated to the following group of `bc:umi:set` triplets:
+
+`0,0,16:0,16,26:1,0,0`
+
+The ` bc:umi:set` format can be supplied as an alternative to the short-hand syntax.
+For more information on the BUS format, consider the [Kallisto](https://pachterlab.github.io/kallisto/manual) manual.
+
+
 #### Examples
 
 ##### Quantification (10XV3)
@@ -96,24 +107,13 @@ quantifier:
 **Note**: The RNA velocity workflow produces count matrices for unspliced/spliced mRNA.  
 
 
-##### Kite feature barcoding (CEL-Seq2)
+##### KITE feature barcoding (CEL-Seq2)
 ```
 quantifier:
   kallistobus:
     ref: '--workflow kite'
     count: '-x 1,8,16:1,0,8:0,0,0 --h5ad --verbose --workflow kite'
 ```
-
-
-##### BUS (Barcode/UMI/Set) format
-The `-x` argument indicates the read and file positions of UMIs and barcodes in the supplied R1/R2 fastq files.
-Kallisto bustools should auto-detect the correct settings if you use the short-hand syntax for your technology of choice, such as `-x 10xv2`.
-Internally, this is translated to the following group of `bc:umi:set` triplets:
-
-`0,0,16:0,16,26:1,0,0`
-
-The ` bc:umi:set` format can be supplied as an alternative to the short-hand syntax.
-For more information on the BUS format, consider the [Kallisto](https://pachterlab.github.io/kallisto/manual) manual.
 
 #### Custom assembly extensions
 The genome and/or gene annotation can be extended with custom files, such as ERCC spike-ins for scRNA-seq.
