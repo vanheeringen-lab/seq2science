@@ -107,9 +107,12 @@
 <li class="toctree-l4"><a class="reference internal" href="#assembly-column">Assembly column</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#descriptive-name-column">Descriptive_name column</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#filling-out-the-config-yaml">Filling out the config.yaml</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#custom-assembly-extensions">Custom assembly extensions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#examples">Examples</a></li>
 </ul>
 </li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#note-kallisto-bustools-generates-the-required-files-for-rna-velocity-estimation-and-produces-count-matrices-for-unspliced-spliced-mrna">Note: kallisto bustools generates the required files for RNA velocity estimation and produces count matrices for unspliced/spliced mRNA.</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#id1">Filling out the config.yaml</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#best-practices">Best practices</a></li>
 </ul>
@@ -265,43 +268,55 @@ In the multiqc report there will be a button to rename your samples after this c
 <h3>Filling out the config.yaml<a class="headerlink" href="#filling-out-the-config-yaml" title="Permalink to this headline">¶</a></h3>
 <p>Every workflow has many configurable options, and can be set in the config.yaml file.
 In each config.yaml we highlighted a couple options that we think are relevant for that specific workflow, and set (we think) reasonable default values.</p>
-<p>After initializing your working directory and editing the <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> file, specify the desired arguments for kb-pyhon via the ref (kb ref) and count (kb count) properties except for the barcode whilteist (<code class="docutils literal notranslate"><span class="pre">-w</span></code>). The path to the barcode whiltelist can be supplied via the <code class="docutils literal notranslate"><span class="pre">barcodefile</span></code> property. This step is optional since kb python python provides several pre-installed whitelists.</p>
-<div class="section" id="quantifier">
-<h4>Quantifier<a class="headerlink" href="#quantifier" title="Permalink to this headline">¶</a></h4>
+<p>After initializing your working directory and editing the <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> file, specify the desired arguments for kb-pyhon via the ref (kb ref) and count (kb count) properties except for the barcode whilteist (<code class="docutils literal notranslate"><span class="pre">-w</span></code>). The path to the barcode whiltelist can be supplied via the <code class="docutils literal notranslate"><span class="pre">barcodefile</span></code> property. This step is optional since kb python python provides several pre-installed whitelists for the following technologies.</p>
+<ul class="simple">
+<li><p>10XV1</p></li>
+<li><p>10XV2</p></li>
+<li><p>10XV3</p></li>
+<li><p>INDROPSV3</p></li>
+</ul>
+<p>The white-list will be installed automatically if the appropiate stechnology argument is provided via the <code class="docutils literal notranslate"><span class="pre">-x</span></code> parameter in short-hand syntax.</p>
+</div>
+<div class="section" id="examples">
+<h3>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="quantification-10xv3">
+<h4>Quantification (10XV3)<a class="headerlink" href="#quantification-10xv3" title="Permalink to this headline">¶</a></h4>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>quantifier:
   kallistobus:
     count: &#39;-x 10xv3 --h5ad --verbose&#39;
 </pre></div>
 </div>
 </div>
-<div class="section" id="rna-velocity">
-<h4>RNA velocity<a class="headerlink" href="#rna-velocity" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="rna-velocity-cel-seq2">
+<h4>RNA velocity (CEL-Seq2)<a class="headerlink" href="#rna-velocity-cel-seq2" title="Permalink to this headline">¶</a></h4>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>quantifier:
   kallistobus:
     ref: &#39;--workflow lamanno&#39;
-    count: &#39;-x 10xv3 --h5ad --verbose --workflow lamanno&#39;
+    count: &#39;-x 1,8,16:1,0,8:0,0,0 --h5ad --verbose --workflow lamanno&#39;
 </pre></div>
 </div>
-<p>This will ensure that kallisto bustools generates the required files for RNA velocity estimation and produces count matrices for unspliced/spliced mRNA.</p>
 </div>
-<div class="section" id="bus-barcode-umi-set-format">
-<h4>BUS (Barcode/UMI/Set) format<a class="headerlink" href="#bus-barcode-umi-set-format" title="Permalink to this headline">¶</a></h4>
+</div>
+</div>
+</div>
+<div class="section" id="note-kallisto-bustools-generates-the-required-files-for-rna-velocity-estimation-and-produces-count-matrices-for-unspliced-spliced-mrna">
+<h1>Note: kallisto bustools generates the required files for RNA velocity estimation and produces count matrices for unspliced/spliced mRNA.<a class="headerlink" href="#note-kallisto-bustools-generates-the-required-files-for-rna-velocity-estimation-and-produces-count-matrices-for-unspliced-spliced-mrna" title="Permalink to this headline">¶</a></h1>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>quantifier:
+  kallistobus:
+    ref: &#39;--workflow kite&#39;
+    count: &#39;-x 1,8,16:1,0,8:0,0,0 --h5ad --verbose --workflow kite&#39;
+</pre></div>
+</div>
 <p>The <code class="docutils literal notranslate"><span class="pre">-x</span></code> argument indicates the read and file positions of UMIs and barcodes in the supplied R1/R2 fastq files.
 Kallisto bustools should auto-detect the correct settings if you use the short-hand syntax for your technology of choice, such as <code class="docutils literal notranslate"><span class="pre">-x</span> <span class="pre">10xv2</span></code>.
 Internally, this is translated to the following group of <code class="docutils literal notranslate"><span class="pre">bc:umi:set</span></code> triplets:</p>
 <p><code class="docutils literal notranslate"><span class="pre">0,0,16:0,16,26:1,0,0</span></code></p>
 <p>The <code class="docutils literal notranslate"><span class="pre">bc:umi:set</span></code> format can be supplied as an alternative to the short-hand syntax.
 For more information on the BUS format, consider the <a class="reference external" href="https://pachterlab.github.io/kallisto/manual">Kallisto</a> manual.</p>
-</div>
-</div>
-<div class="section" id="custom-assembly-extensions">
-<h3>Custom assembly extensions<a class="headerlink" href="#custom-assembly-extensions" title="Permalink to this headline">¶</a></h3>
 <p>The genome and/or gene annotation can be extended with custom files, such as ERCC spike-ins for scRNA-seq.
 To do so, add <code class="docutils literal notranslate"><span class="pre">custom_genome_extension:</span> <span class="pre">path/to/spike_in.fa</span></code> and <code class="docutils literal notranslate"><span class="pre">custom_annotation_extension:</span> <span class="pre">path/to/spike_in.gtf</span></code> to the config.
 Seq2science will place the customized assembly in a separate folder in the <code class="docutils literal notranslate"><span class="pre">genome_dir</span></code>.
 You can control the name of the customized assembly by setting <code class="docutils literal notranslate"><span class="pre">custom_assembly_suffix</span></code> in the config.</p>
-</div>
-</div>
 <div class="section" id="id1">
 <h2>Filling out the config.yaml<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
 <p>Every workflow has many configurable options, and can be set in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file.

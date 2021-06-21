@@ -67,26 +67,43 @@ In the multiqc report there will be a button to rename your samples after this c
 Every workflow has many configurable options, and can be set in the config.yaml file.
 In each config.yaml we highlighted a couple options that we think are relevant for that specific workflow, and set (we think) reasonable default values.
 
-After initializing your working directory and editing the `samples.tsv` file, specify the desired arguments for kb-pyhon via the ref (kb ref) and count (kb count) properties except for the barcode whilteist (`-w`). The path to the barcode whiltelist can be supplied via the `barcodefile` property. This step is optional since kb python python provides several pre-installed whitelists.
+After initializing your working directory and editing the `samples.tsv` file, specify the desired arguments for kb-pyhon via the ref (kb ref) and count (kb count) properties except for the barcode whilteist (`-w`). The path to the barcode whiltelist can be supplied via the `barcodefile` property. This step is optional since kb python python provides several pre-installed whitelists for the following technologies.
 
+- 10XV1
+- 10XV2
+- 10XV3
+- INDROPSV3
 
+The white-list will be installed automatically if the appropiate stechnology argument is provided via the `-x` parameter in short-hand syntax.
 
-##### Quantifier
+#### Examples
+
+##### Quantification (10XV3)
 ```
 quantifier:
   kallistobus:
     count: '-x 10xv3 --h5ad --verbose'
 ```
 
-##### RNA velocity 
+##### RNA velocity (CEL-Seq2)
 ```
 quantifier:
   kallistobus:
     ref: '--workflow lamanno'
-    count: '-x 10xv3 --h5ad --verbose --workflow lamanno'
+    count: '-x 1,8,16:1,0,8:0,0,0 --h5ad --verbose --workflow lamanno'
 ```
 
-This will ensure that kallisto bustools generates the required files for RNA velocity estimation and produces count matrices for unspliced/spliced mRNA.  
+## Note: kallisto bustools generates the required files for RNA velocity estimation and produces count matrices for unspliced/spliced mRNA.  
+
+
+##### Kite feature barcoding (CEL-Seq2)
+```
+quantifier:
+  kallistobus:
+    ref: '--workflow kite'
+    count: '-x 1,8,16:1,0,8:0,0,0 --h5ad --verbose --workflow kite'
+```
+
 
 ##### BUS (Barcode/UMI/Set) format
 The `-x` argument indicates the read and file positions of UMIs and barcodes in the supplied R1/R2 fastq files.
