@@ -146,12 +146,5 @@ To do so, add `custom_genome_extension: path/to/spike_in.fa` and `custom_annotat
 Seq2science will place the customized assembly in a separate folder in the `genome_dir`.
 You can control the name of the customized assembly by setting `custom_assembly_suffix` in the config.
 
-### Filling out the config.yaml
-Every workflow has many configurable options, and can be set in the `config.yaml` file.
-In each `config.yaml` we highlighted a couple options that we think are relevant for that specific workflow, and set (we think) **reasonable default** values.
-
-When a workflow starts it prints the configuration variables influencing the workflow, and (almost) all these values can be added in the `config.yaml` and changed to your liking.
-You can see the complete set of configurable options in the [extensive docs](../schemas.html).
-
 ### Best practices
 TODO
