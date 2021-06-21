@@ -87,18 +87,26 @@ The ` bc:umi:set` format can be supplied as an alternative to the short-hand syn
 For more information on the BUS format, consider the [Kallisto](https://pachterlab.github.io/kallisto/manual) manual.
 
 ##### Input preparations for KITE workflow
-The steps to prepare an analysis for Feature Barcoding experiments deviate slighlty from the standard seq2science workflow. In essence, we quantify the abundance of sequence features such as antibody tags rather than transcripts. Therefore, our index does not rely on a particular assembly but is build from these sequence features. Please consider the offical [kite](https://github.com/pachterlab/kite) documentation for more details.
+The steps to prepare an analysis for Feature Barcoding experiments deviate slighlty from the standard seq2science workflow. In essence, we quantify the abundance of sequence features such as antibody tags rather than transcripts. Therefore, our index does not rely on a particular assembly but is build from these sequence features. 
 
-**1**. Prepare a two-column, tab-delimited (.tsv) file with your feature barcode in the first column and feature names in the second.
+Please consider the offical [kite](https://github.com/pachterlab/kite) documentation for more details.
 
-  **Example**
-  |sequence|name|
-  |---|---|
-  |AACAAGACCCTTGAG|barcode 1|
-  |TACCCGTAATAGCGT|barcode 2|
+**1**. Prepare a two-column, tab-delimited file with your feature barcode in the first column and feature names in the second.
+
+**Example**
+|sequence|name|
+|---|---|
+|AACAAGACCCTTGAG|barcode 1|
+|TACCCGTAATAGCGT|barcode 2|
 
 
+We save this file as fb.tsv.
 
+**2**. Copy this file to the genome folder specified in `config.yaml` where seq2science searches for assemblies.
+
+**3**. Add the basename of the feature barcode file, in this case **fb**, to the assembly column in your samples.tsv file as described above.
+
+An example of configuring kb-python for feature barcode analysis is shown below.
 
 #### Examples
 
@@ -115,6 +123,8 @@ quantifier:
   kallistobus:
     ref: '--workflow lamanno'
     count: '-x 1,8,16:1,0,8:0,0,0 --h5ad --verbose --workflow lamanno'
+
+barcodefile: "1col_barcode_384.tab"   
 ```
 
 **Note**: The RNA velocity workflow produces count matrices for unspliced/spliced mRNA.  
@@ -126,6 +136,8 @@ quantifier:
   kallistobus:
     ref: '--workflow kite'
     count: '-x 1,8,16:1,0,8:0,0,0 --h5ad --verbose --workflow kite'
+
+barcodefile: "1col_barcode_384.tab"    
 ```
 
 #### Custom assembly extensions
