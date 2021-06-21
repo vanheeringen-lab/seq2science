@@ -93,8 +93,15 @@ for key, value in config.items():
 try:
     samples = pd.read_csv(config["samples"], sep='\t', dtype='str', comment='#')
 except Exception as e:
-    logger.error("An error occured while reading the samples.tsv")
-    raise e
+    logger.error("An error occurred while reading the samples.tsv:")
+    column_error = re.search("Expected \d+ fields in line \d+, saw \d+", str(e.args))
+    if column_error:
+        logger.error(column_error.group(0))
+        logger.error("")
+        raise e.with_traceback(None)
+    else:
+        logger.error("")
+        raise e
 samples.columns = samples.columns.str.strip()
 
 assert all([col[0:7] not in ["Unnamed", ''] for col in samples]), \
