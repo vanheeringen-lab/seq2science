@@ -86,6 +86,10 @@ Internally, this is translated to the following group of `bc:umi:set` triplets:
 The ` bc:umi:set` format can be supplied as an alternative to the short-hand syntax.
 For more information on the BUS format, consider the [Kallisto](https://pachterlab.github.io/kallisto/manual) manual.
 
+##### Input preparations for KITE workflow
+The steps to prepare an analysis for Feature Barcoding experiments deviate slighlty from the standard seq2science workflow. In essence, we quantify the abundance of sequence features such as antibody tags rather than transcripts. Therefore, our index does not rely on a particular assembly but is build from these sequence features. Please consider the offical (kite)[https://github.com/pachterlab/kite] documentation for mroe details.   
+
+
 
 #### Examples
 
