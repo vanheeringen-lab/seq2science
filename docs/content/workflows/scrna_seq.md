@@ -89,7 +89,7 @@ For more information on the BUS format, consider the [Kallisto](https://pachterl
 ##### Input preparations for KITE workflow
 The steps to prepare an analysis for Feature Barcoding experiments deviate slighlty from the standard seq2science workflow. In essence, we quantify the abundance of sequence features such as antibody tags rather than transcripts. Therefore, our index does not rely on a particular assembly but is build from these sequence features. Please consider the offical [kite](https://github.com/pachterlab/kite) documentation for more details.
 
-1. Prepare a two-column, tab-delimited (.tsv) file with your feature barcode in the first column and feature names in the second.
+**1**. Prepare a two-column, tab-delimited (.tsv) file with your feature barcode in the first column and feature names in the second.
 
   **Example**
   |sequence|name|
