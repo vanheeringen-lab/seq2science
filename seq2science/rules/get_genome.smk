@@ -227,5 +227,5 @@ rule get_genome_size:
         expand("{genome_dir}/{{assembly}}/{{assembly}}.kmer_{{kmer_size}}.genome_size", **config)
     shell:
         """
-        unique-kmers.py {params.genome} -k $kmer_size --quiet 2>&1 | grep -P -o '(?<=\.fa: ).*' > {output}
+        unique-kmers.py {input} -k $kmer_size --quiet 2>&1 | grep -P -o '(?<=\.fa: ).*' > {output}
         """

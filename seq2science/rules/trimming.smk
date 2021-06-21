@@ -7,7 +7,7 @@ if config["trimmer"] == "trimgalore":
         ruleorder: trimgalore_PE > trimgalore_SE
 
 
-    checkpoint trimgalore_SE:
+    rule trimgalore_SE:
         """
         Automated adapter detection, adapter trimming, and quality trimming through trim galore (single-end).
         """
@@ -43,7 +43,7 @@ if config["trimmer"] == "trimgalore":
             """
 
 
-    checkpoint trimgalore_PE:
+    rule trimgalore_PE:
         """
         Automated adapter detection, adapter trimming, and quality trimming through trim galore (paired-end).
         """

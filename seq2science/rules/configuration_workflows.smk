@@ -26,6 +26,7 @@ if config.get("peak_caller", False):
 
     config["macs2_types"] = ["control_lambda.bdg", "peaks.xls", "treat_pileup.bdg"]
     if "macs2" in config["peak_caller"]:
+        config["kmer_estimation"] = True
         params = config["peak_caller"]["macs2"].split(" ")
         invalid_params = [
             "-t",
@@ -127,3 +128,25 @@ if config.get("contrasts"):
             f"\nCould not parse DESeq2 contrast '{contrast}'.\n"
             "A DESeq2 design contrast must be in the form '(batch+)column_target_reference'. See the docs for examples.\n")
         _,_,_,_ = parse_contrast(contrast, samples, check=True)
+
+
+def get_kmer_size(sample):
+    """
+
+    """
+    return 30
+    if config["trimmer"] == "fastp":
+        if sampledict[sample]["layout"] == "SINGLE":
+            qc_file = checkpoints.fastp_SE.get(sample=sample).qc_json
+        if sampledict[sample]["layout"] == "PAIRED":
+            qc_file = checkpoints.fastp_PE.get(sample=sample).qc_json
+    else:
+        if sampledict[sample]["layout"] == "SINGLE":
+            qc_file = checkpoints.fastp_qc_SE.get(sample=sample).qc_json
+        if sampledict[sample]["layout"] == "PAIRED":
+            qc_file = checkpoints.fastp_qc_PE.get(sample=sample).qc_json
+
+    # TODO: fix this!
+    kmer_size = "kmer_size=$(jq -r .summary.after_filtering.read1_mean_length {input.fastq_qc})"
+
+    return 30
