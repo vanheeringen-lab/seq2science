@@ -98,7 +98,7 @@ except Exception as e:
     if column_error:
         logger.error(column_error.group(0))
         logger.error("")
-        raise e.with_traceback(None)
+        raise pd.errors.ParserError
     else:
         logger.error("")
         raise e
