@@ -91,11 +91,11 @@ The steps to prepare an analysis for Feature Barcoding experiments deviate sligh
 
 1. Prepare a two-column, tab-delimited (.tsv) file with your feature barcode in the first column and feature names in the second.
 
-**Example**
-|sequence|name|
-|---|---|
-|AACAAGACCCTTGAG|barcode 1|
-|TACCCGTAATAGCGT|barcode 2|
+  **Example**
+  |sequence|name|
+  |---|---|
+  |AACAAGACCCTTGAG|barcode 1|
+  |TACCCGTAATAGCGT|barcode 2|
 
 
 
