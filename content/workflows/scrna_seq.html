@@ -274,6 +274,15 @@ In each config.yaml we highlighted a couple options that we think are relevant f
 <li><p>INDROPSV3</p></li>
 </ul>
 <p>The white-list will be installed automatically if the appropiate stechnology argument is provided via the <code class="docutils literal notranslate"><span class="pre">-x</span></code> parameter in short-hand syntax.</p>
+<div class="section" id="bus-barcode-umi-set-format">
+<h4>BUS (Barcode/UMI/Set) format<a class="headerlink" href="#bus-barcode-umi-set-format" title="Permalink to this headline">¶</a></h4>
+<p>The <code class="docutils literal notranslate"><span class="pre">-x</span></code> argument indicates the read and file positions of UMIs and barcodes in the supplied R1/R2 fastq files.
+Kallisto bustools should auto-detect the correct settings if you use the short-hand syntax for your technology of choice, such as <code class="docutils literal notranslate"><span class="pre">-x</span> <span class="pre">10xv2</span></code>.
+Internally, this is translated to the following group of <code class="docutils literal notranslate"><span class="pre">bc:umi:set</span></code> triplets:</p>
+<p><code class="docutils literal notranslate"><span class="pre">0,0,16:0,16,26:1,0,0</span></code></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">bc:umi:set</span></code> format can be supplied as an alternative to the short-hand syntax.
+For more information on the BUS format, consider the <a class="reference external" href="https://pachterlab.github.io/kallisto/manual">Kallisto</a> manual.</p>
+</div>
 </div>
 <div class="section" id="examples">
 <h3>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h3>
@@ -296,22 +305,13 @@ In each config.yaml we highlighted a couple options that we think are relevant f
 <p><strong>Note</strong>: The RNA velocity workflow produces count matrices for unspliced/spliced mRNA.</p>
 </div>
 <div class="section" id="kite-feature-barcoding-cel-seq2">
-<h4>Kite feature barcoding (CEL-Seq2)<a class="headerlink" href="#kite-feature-barcoding-cel-seq2" title="Permalink to this headline">¶</a></h4>
+<h4>KITE feature barcoding (CEL-Seq2)<a class="headerlink" href="#kite-feature-barcoding-cel-seq2" title="Permalink to this headline">¶</a></h4>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>quantifier:
   kallistobus:
     ref: &#39;--workflow kite&#39;
     count: &#39;-x 1,8,16:1,0,8:0,0,0 --h5ad --verbose --workflow kite&#39;
 </pre></div>
 </div>
-</div>
-<div class="section" id="bus-barcode-umi-set-format">
-<h4>BUS (Barcode/UMI/Set) format<a class="headerlink" href="#bus-barcode-umi-set-format" title="Permalink to this headline">¶</a></h4>
-<p>The <code class="docutils literal notranslate"><span class="pre">-x</span></code> argument indicates the read and file positions of UMIs and barcodes in the supplied R1/R2 fastq files.
-Kallisto bustools should auto-detect the correct settings if you use the short-hand syntax for your technology of choice, such as <code class="docutils literal notranslate"><span class="pre">-x</span> <span class="pre">10xv2</span></code>.
-Internally, this is translated to the following group of <code class="docutils literal notranslate"><span class="pre">bc:umi:set</span></code> triplets:</p>
-<p><code class="docutils literal notranslate"><span class="pre">0,0,16:0,16,26:1,0,0</span></code></p>
-<p>The <code class="docutils literal notranslate"><span class="pre">bc:umi:set</span></code> format can be supplied as an alternative to the short-hand syntax.
-For more information on the BUS format, consider the <a class="reference external" href="https://pachterlab.github.io/kallisto/manual">Kallisto</a> manual.</p>
 </div>
 </div>
 <div class="section" id="custom-assembly-extensions">
