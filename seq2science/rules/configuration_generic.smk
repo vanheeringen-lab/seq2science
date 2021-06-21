@@ -90,7 +90,11 @@ for key, value in config.items():
 
 
 # read the samples.tsv file as all text, drop comment lines
-samples = pd.read_csv(config["samples"], sep='\t', dtype='str', comment='#')
+try:
+    samples = pd.read_csv(config["samples"], sep='\t', dtype='str', comment='#')
+except Exception as e:
+    logger.error("An error occured while reading the samples.tsv")
+    raise e
 samples.columns = samples.columns.str.strip()
 
 assert all([col[0:7] not in ["Unnamed", ''] for col in samples]), \
