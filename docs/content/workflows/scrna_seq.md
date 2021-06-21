@@ -93,7 +93,7 @@ quantifier:
     count: '-x 1,8,16:1,0,8:0,0,0 --h5ad --verbose --workflow lamanno'
 ```
 
-## Note: kallisto bustools generates the required files for RNA velocity estimation and produces count matrices for unspliced/spliced mRNA.  
+**Note**: The RNA velocity workflow produces count matrices for unspliced/spliced mRNA.  
 
 
 ##### Kite feature barcoding (CEL-Seq2)
