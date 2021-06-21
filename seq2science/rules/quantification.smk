@@ -307,6 +307,10 @@ elif config["quantifier"] == "kallistobus":
                 -t {threads} -g {params.basename}_t2g.txt \
                 -o {output} -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
                 {params.barcode_arg} {params.options} {input.reads} > {log} 2>&1
+                # Validate output
+                if grep -q 'ERROR\|bad_alloc' "{log}"; then
+                  exit 1
+                fi  
                 """                
                  
                  
