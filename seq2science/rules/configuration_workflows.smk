@@ -136,11 +136,11 @@ def get_read_length(sample):
     """
     # trimgalore
     if config["trimmer"] == "trimgalore":
-        if sampledict[wildcards.sample]["layout"] == "SINGLE":
-            qc_file = checkpoints.fastqc.get(fname=f"{wildcards.sample}_R1_trimmed").qc
+        if sampledict[sample]["layout"] == "SINGLE":
+            qc_file = checkpoints.fastqc.get(fname=f"{sample}_R1_trimmed").qc
             zip_name = sample
-        if sampledict[wildcards.sample]["layout"] == "PAIRED":
-            qc_file = checkpoints.fastqc.get(fname=f"{wildcards.sample}_R1_trimmed").qc
+        if sampledict[sample]["layout"] == "PAIRED":
+            qc_file = checkpoints.fastqc.get(fname=f"{sample}_R1_trimmed").qc
             zip_name = f"{sample}_{config['fqext1']}"
 
         import zipfile
@@ -152,10 +152,10 @@ def get_read_length(sample):
 
     # fastp
     if config["trimmer"] == "fastp":
-        if sampledict[wildcards.sample]["layout"] == "SINGLE":
-            qc_file = checkpoints.fastp_SE.get(sample=wildcards.sample).qc_json
-        if sampledict[wildcards.sample]["layout"] == "PAIRED":
-            qc_file = checkpoints.fastp_PE.get(sample=wildcards.sample).qc_json
+        if sampledict[sample]["layout"] == "SINGLE":
+            qc_file = checkpoints.fastp_SE.get(sample=sample).qc_json
+        if sampledict[sample]["layout"] == "PAIRED":
+            qc_file = checkpoints.fastp_PE.get(sample=sample).qc_json
 
         import json
 
