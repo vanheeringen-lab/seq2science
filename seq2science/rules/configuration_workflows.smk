@@ -134,9 +134,8 @@ def get_read_length(sample):
     """
 
     """
-    return 30
     # trimgalore
-    if config["trimmer"] == "trimgalore"
+    if config["trimmer"] == "trimgalore":
         if sampledict[wildcards.sample]["layout"] == "SINGLE":
             qc_file = checkpoints.fastqc.get(fname=f"{wildcards.sample}_R1_trimmed").qc
             zip_name = sample
