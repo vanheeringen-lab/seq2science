@@ -232,9 +232,9 @@ rule get_effective_genome_size:
     conda:
         "../envs/khmer.yaml"
     log:
-        expand("{log_dir}/get_genome_size/{{assembly}}.log", **config),
+        expand("{log_dir}/get_genome_size/{{assembly}}_{{kmer_size}}.log", **config),
     benchmark:
-        expand("{benchmark_dir}/get_genome_size/{{assembly}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/get_genome_size/{{assembly}}_{{kmer_size}}.benchmark.txt", **config)[0]
     shell:
         """
         unique-kmers.py {input} -k $kmer_size --quiet 2>&1 | grep -P -o '(?<=\.fa: ).*' > {output} 2> {log}
