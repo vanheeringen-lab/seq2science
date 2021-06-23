@@ -159,7 +159,7 @@ def get_read_length(sample):
 
         import json
 
-        with open('qc_file') as f:
+        with open(qc_file) as f:
             data = json.load(f)
         kmer_size = data["summary"]["read1_mean_length"]
 
