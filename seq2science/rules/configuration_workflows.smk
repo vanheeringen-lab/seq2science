@@ -26,6 +26,7 @@ if config.get("peak_caller", False):
 
     config["macs2_types"] = ["control_lambda.bdg", "peaks.xls", "treat_pileup.bdg"]
     if "macs2" in config["peak_caller"]:
+        config["kmer_estimation"] = True
         params = config["peak_caller"]["macs2"].split(" ")
         invalid_params = [
             "-t",
@@ -127,3 +128,39 @@ if config.get("contrasts"):
             f"\nCould not parse DESeq2 contrast '{contrast}'.\n"
             "A DESeq2 design contrast must be in the form '(batch+)column_target_reference'. See the docs for examples.\n")
         _,_,_,_ = parse_contrast(contrast, samples, check=True)
+
+
+def get_read_length(sample):
+    """
+
+    """
+    # trimgalore
+    if config["trimmer"] == "trimgalore":
+        if sampledict[sample]["layout"] == "SINGLE":
+            qc_file = checkpoints.fastqc.get(fname=f"{sample}_R1_trimmed").output.qc[0]
+            zip_name = sample
+        if sampledict[sample]["layout"] == "PAIRED":
+            qc_file = checkpoints.fastqc.get(fname=f"{sample}_R1_trimmed").output.qc[0]
+            zip_name = f"{sample}_{config['fqext1']}"
+
+        import zipfile
+        import re
+
+        archive = zipfile.ZipFile(qc_file, 'r').read(zip_name)
+
+        kmer_size = re.search("Sequence length\\t(\d+)", qc_report.decode("utf-8")).group(1)
+
+    # fastp
+    if config["trimmer"] == "fastp":
+        if sampledict[sample]["layout"] == "SINGLE":
+            qc_file = checkpoints.fastp_SE.get(sample=sample).output.qc_json[0]
+        if sampledict[sample]["layout"] == "PAIRED":
+            qc_file = checkpoints.fastp_PE.get(sample=sample).output.qc_json[0]
+
+        import json
+
+        with open(qc_file) as f:
+            data = json.load(f)
+        kmer_size = data["summary"]["after_filtering"]["read1_mean_length"]
+
+    return kmer_size

@@ -134,25 +134,9 @@ def get_control_macs(wildcards):
 
 
 def get_genome_size(wildcards):
-    # trimgalore
-    if config["trimmer"] == "trimgalore"
-        if sampledict[wildcards.sample]["layout"] == "SINGLE":
-            qc_file = checkpoints.fastqc.get(fname=f"{wildcards.sample}_R1_trimmed").qc
-        if sampledict[wildcards.sample]["layout"] == "PAIRED":
-            qc_file = checkpoints.fastqc.get(fname=f"{wildcards.sample}_R1_trimmed").qc
+    read_length = get_read_length(wildcards.sample)
+    return expand("{genome_dir}/{{assembly}}/{{assembly}}.kmer_" + str(read_length) + ".genome_size", **config)
 
-        kmer_size = "kmer_size=$(unzip -p {input.fastq_qc} {params.name}_trimmed_fastqc/fastqc_data.txt  | grep -P -o '(?<=Sequence length\\t).*' | grep -P -o '\d+$')"
-
-    # fastp
-    if config["trimmer"] == "fastp":
-        if sampledict[wildcards.sample]["layout"] == "SINGLE":
-            qc_file = checkpoints.fastp_SE.get(sample=wildcards.sample).qc_json
-        if sampledict[wildcards.sample]["layout"] == "PAIRED":
-            qc_file = checkpoints.fastp_PE.get(sample=wildcards.sample).qc_json
-
-        kmer_size = "kmer_size=$(jq -r .summary.after_filtering.read1_mean_length {input.fastq_qc})"
-
-    return "{genome_dir}/{{assembly}}/{{assembly}}.kmer_" + kmer_size + ".genome_size"
 
 rule macs2_callpeak:
     """
@@ -173,12 +157,6 @@ rule macs2_callpeak:
     wildcard_constraints:
         sample=any_given("sample", "technical_replicates")
     params:
-        name=(
-            lambda wildcards, input: wildcards.sample
-            if sampledict[wildcards.sample]["layout"] == "SINGLE"
-            else [f"{wildcards.sample}_{config['fqext1']}"]
-        ),
-        genome=f"{config['genome_dir']}/{{assembly}}/{{assembly}}.fa",
         macs_params=config["peak_caller"].get("macs2", ""),
         format=(
             lambda wildcards: "BAMPE"

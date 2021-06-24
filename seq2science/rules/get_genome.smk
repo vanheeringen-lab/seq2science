@@ -217,15 +217,25 @@ rule unzip_annotation:
         genomepy.utils.gunzip_and_name(input[0])
 
 
-rule get_genome_size:
+rule get_effective_genome_size:
     """
-
+    Get the effective genome size for a kmer length. Some tools (e.g. macs2) require
+    an estimation of the effective genome size to better estimate how (un)likely it
+    is to have a certain number of reads on a position. The actual genome size is
+    not the best indication in these cases, since reads in repetitive regions
+    (for a certain kmer length) can not possible align on some locations.
     """
     input:
         expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
     output:
         expand("{genome_dir}/{{assembly}}/{{assembly}}.kmer_{{kmer_size}}.genome_size", **config)
+    conda:
+        "../envs/khmer.yaml"
+    log:
+        expand("{log_dir}/get_genome_size/{{assembly}}_{{kmer_size}}.log", **config),
+    benchmark:
+        expand("{benchmark_dir}/get_genome_size/{{assembly}}_{{kmer_size}}.benchmark.txt", **config)[0]
     shell:
         """
-        unique-kmers.py {params.genome} -k $kmer_size --quiet 2>&1 | grep -P -o '(?<=\.fa: ).*' > {output}
+        unique-kmers.py {input} -k $kmer_size --quiet 2>&1 | grep -P -o '(?<=\.fa: ).*' > {output} 2> {log}
         """

@@ -111,7 +111,7 @@ if config["trimmer"] == "trimgalore":
             """
 
 
-elif config["trimmer"] == "fastp":
+elif config["trimmer"] == "fastp" or "kmer_estimation" in config:
     ruleorder: fastp_qc_PE> fastp_qc_SE > fastp_PE > fastp_SE
 
 
