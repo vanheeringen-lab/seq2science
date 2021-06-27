@@ -90,6 +90,15 @@ properties:
         default:
           index: ''
           align: ''
+      chromap:
+        properties:
+          index:
+            default: ''
+          align:
+            default: ''
+        default:
+          index: ''
+          align: ''
       hisat2:
         properties:
           index:

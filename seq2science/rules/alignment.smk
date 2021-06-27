@@ -180,30 +180,6 @@ elif config["aligner"] == "bwa-mem2":
 
 elif config["aligner"] == "chromap":
 
-    def get_min_kmer_size(wildcards):
-        # TODO: CHANGE TO USE MINIMUM SIZE!!
-        # trimgalore
-        if config["trimmer"] == "trimgalore"
-            if sampledict[wildcards.sample]["layout"] == "SINGLE":
-                qc_file = checkpoints.fastqc.get(fname=f"{wildcards.sample}_R1_trimmed").qc
-            if sampledict[wildcards.sample]["layout"] == "PAIRED":
-                qc_file = checkpoints.fastqc.get(fname=f"{wildcards.sample}_R1_trimmed").qc
-
-            kmer_size = "kmer_size=$(unzip -p {input.fastq_qc} {params.name}_trimmed_fastqc/fastqc_data.txt  | grep -P -o '(?<=Sequence length\\t).*' | grep -P -o '\d+$')"
-
-        # fastp
-        if config["trimmer"] == "fastp":
-            # TODO: CHANGE TO USE MINIMUM SIZE!!
-            if sampledict[wildcards.sample]["layout"] == "SINGLE":
-                qc_file = checkpoints.fastp_SE.get(sample=wildcards.sample).qc_json
-            if sampledict[wildcards.sample]["layout"] == "PAIRED":
-                qc_file = checkpoints.fastp_PE.get(sample=wildcards.sample).qc_json
-
-            kmer_size = "kmer_size=$(jq -r .summary.after_filtering.read1_mean_length {input.fastq_qc})"
-
-        return kmer_size
-
-
     rule chromap_index:
         """
         Make a genome index for chromap. This index is required for alignment.
@@ -211,14 +187,11 @@ elif config["aligner"] == "chromap":
         input:
             expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
         output:
-            directory(expand("{genome_dir}/{{assembly}}/index/{aligner}/index", **config)),
+            directory(expand("{genome_dir}/{{assembly}}/index/{aligner}/index_{{kmer_size}}", **config)),
         log:
-            expand("{log_dir}/{aligner}_index/{{assembly}}.log", **config),
+            expand("{log_dir}/{aligner}_index/{{assembly}}_{{kmer_size}}.log", **config),
         benchmark:
-            expand("{benchmark_dir}/{aligner}_index/{{assembly}}.benchmark.txt", **config)[0]
-        params:
-            prefix="{genome_dir}/{{assembly}}/index/{aligner}/{{assembly}}".format(**config),
-            min_kmer=lambda wildcards: get_min_kmer_size(wildcards)
+            expand("{benchmark_dir}/{aligner}_index/{{assembly}}_{{kmer_size}}.benchmark.txt", **config)[0]
         priority: 1
         resources:
             mem_gb=20,
@@ -226,10 +199,37 @@ elif config["aligner"] == "chromap":
             "../envs/chromap.yaml"
         shell:
             """
-            mkdir -p {output}
-
-            chromap --build-index --min-frag-length {params.min_kmer} --ref {input} --output {params.prefix} > {log} 2>&1
+            chromap --build-index --min-frag-length {wildcards.kmer_size} --ref {input} --output {output} > {log} 2>&1
             """
+
+        rule chromap:
+            """
+            Align reads against a genome (index) with chromap, and pipe the output to the required sorter(s).
+            """
+            input:
+                reads=get_reads,
+                index=expand("{genome_dir}/{{assembly}}/index/{aligner}/index_kmer", **config)
+            output:
+                pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.chromap-coordinate.sam", **config)[0])
+            log:
+                expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}.log", **config),
+            benchmark:
+                expand("{benchmark_dir}/{aligner}_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
+            message: explain_rule(f"{config['aligner']}_align")
+            params:
+                params=config["align"],
+                reads=lambda wildcards, input: f"--reads1 {input}" if len(input) == 1 else f"--reads1 {input[0]} --reads2 {input[1]}"
+            resources:
+                mem_gb=40,
+            priority: 0
+            threads: 6
+            conda:
+                "../envs/chromap.yaml"
+            shell:
+                """
+                chromap --index {input.index} {params.reads} {params.params} -t {threads}  2> {log} | tee {output} 1> /dev/null 2>> {log}
+                """
+
 
 elif config["aligner"] == "hisat2":
 
