@@ -237,5 +237,5 @@ rule get_effective_genome_size:
         expand("{benchmark_dir}/get_genome_size/{{assembly}}_{{kmer_size}}.benchmark.txt", **config)[0]
     shell:
         """
-        unique-kmers.py {input} -k $kmer_size --quiet 2>&1 | grep -P -o '(?<=\.fa: ).*' > {output} 2> {log}
+        unique-kmers.py {input} -k {wildcards.kmer_size} --quiet 2>&1 | grep -P -o '(?<=\.fa: ).*' > {output} 2> {log}
         """

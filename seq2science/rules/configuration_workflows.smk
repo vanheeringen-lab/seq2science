@@ -134,19 +134,22 @@ def get_read_length(sample):
     """
 
     """
+    #print("1")
     # trimgalore
     if config["trimmer"] == "trimgalore":
         if sampledict[sample]["layout"] == "SINGLE":
-            qc_file = checkpoints.fastqc.get(fname=f"{sample}_R1_trimmed").output.qc[0]
-            zip_name = sample
+            qc_file = checkpoints.fastqc.get(fname=f"{sample}_R1_trimmed").output.zip
+            zip_name = f"{sample}_trimmed_fastqc/fastqc_data.txt"
         if sampledict[sample]["layout"] == "PAIRED":
-            qc_file = checkpoints.fastqc.get(fname=f"{sample}_R1_trimmed").output.qc[0]
-            zip_name = f"{sample}_{config['fqext1']}"
+            qc_file = checkpoints.fastqc.get(fname=f"{sample}_R1_trimmed").output.zip
+            zip_name = f"{sample}_{config['fqext1']}_trimmed_fastqc/fastqc_data.txt"
 
         import zipfile
         import re
 
-        archive = zipfile.ZipFile(qc_file, 'r').read(zip_name)
+        print(2, qc_file)
+        print(3, zip_name)
+        qc_report = zipfile.ZipFile(qc_file, 'r').read(zip_name)
 
         kmer_size = re.search("Sequence length\\t(\d+)", qc_report.decode("utf-8")).group(1)
 
@@ -159,8 +162,10 @@ def get_read_length(sample):
 
         import json
 
+        #print(qc_file, type(qc_file))
         with open(qc_file) as f:
             data = json.load(f)
         kmer_size = data["summary"]["after_filtering"]["read1_mean_length"]
 
+    #print("kmer!", kmer_size, type(kmer_size))
     return kmer_size

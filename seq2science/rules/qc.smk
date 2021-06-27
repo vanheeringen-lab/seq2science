@@ -95,8 +95,8 @@ if config["trimmer"] == "trimgalore":
         input:
             get_fastqc_input
         output:
-            f"{config['qc_dir']}/fastqc/{{fname}}_fastqc.html",
-            f"{config['qc_dir']}/fastqc/{{fname}}_fastqc.zip"
+            html=f"{config['qc_dir']}/fastqc/{{fname}}_fastqc.html",
+            zip=f"{config['qc_dir']}/fastqc/{{fname}}_fastqc.zip"
         message:explain_rule("fastqc")
         log:
             f"{config['log_dir']}/fastqc/{{fname}}.log"
