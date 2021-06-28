@@ -280,9 +280,9 @@ elif config["quantifier"] == "kallistobus":
             Align reads against a transcriptome (index) with kallistobus and output a quantification file per sample.
             """
             input:
-                barcodefile=config["barcodefile"],
                 basedir=get_kb_dir,
-                reads=rules.fastq_pair.output.reads
+                reads=rules.fastq_pair.output.reads,
+                barcodefile=config.get("barcodefile",[]),
             output:
                 dir=directory(expand("{result_dir}/{quantifier}/{{assembly}}-{{sample}}",**config))
             log:
@@ -298,14 +298,19 @@ elif config["quantifier"] == "kallistobus":
                 mem_gb=66,
             params:
                 basename=lambda wildcards, input: f"{input.basedir[0]}/{wildcards.assembly}",
+                barcode_arg=lambda wildcards, input: ("-w " + input.barcodefile) if input.barcodefile else "", 
                 options=config.get("count")
             shell:
                 """
                 kb count \
-                -i {params.basename}.idx -w {input.barcodefile} \
+                -i {params.basename}.idx \
                 -t {threads} -g {params.basename}_t2g.txt \
                 -o {output} -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
-                {params.options} {input.reads} > {log} 2>&1
+                {params.barcode_arg} {params.options} {input.reads} > {log} 2>&1
+                # Validate output
+                if grep -q 'ERROR\|bad_alloc' "{log}"; then
+                  exit 1
+                fi  
                 """                
                  
                  
