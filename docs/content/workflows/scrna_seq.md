@@ -77,19 +77,29 @@ After initializing your working directory and editing the `samples.tsv` file, sp
 The white-list will be installed automatically if the appropiate technology argument is provided via the `-x` parameter in short-hand syntax.
 
 ##### BUS (Barcode/UMI/Set) format
-The `-x` argument indicates the read and file positions of UMIs and barcodes in the supplied R1/R2 fastq files.
-Kallisto bustools should auto-detect the correct settings if you use the short-hand syntax for your technology of choice, such as `-x 10xv2`.
-Internally, this is translated to the following group of `bc:umi:set` triplets:
+The `-x` argument indicates the read and file positions of the UMI and barcode. Kallisto bustools should auto-detect the correct settings barcode/umi layout for the following technologies if the name is supplied:
 
-`0,0,16:0,16,26:1,0,0`
+```
+name         whitelist    barcode                  umi        cDNA
+---------    ---------    ---------------------    -------    -----------------------
+10XV1        yes          0,0,14                   1,0,10     2,None,None
+10XV2        yes          0,0,16                   0,16,26    1,None,None
+10XV3        yes          0,0,16                   0,16,28    1,None,None
+CELSEQ                    0,0,8                    0,8,12     1,None,None
+CELSEQ2                   0,6,12                   0,0,6      1,None,None
+DROPSEQ                   0,0,12                   0,12,20    1,None,None
+INDROPSV1                 0,0,11 0,30,38           0,42,48    1,None,None
+INDROPSV2                 1,0,11 1,30,38           1,42,48    0,None,None
+INDROPSV3    yes          0,0,8 1,0,8              1,8,14     2,None,None
+SCRUBSEQ                  0,0,6                    0,6,16     1,None,None
+SURECELL                  0,0,6 0,21,27 0,42,48    0,51,59    1,None,None
+SMARTSEQ                                                      0,None,None 1,None,None
+````
 
-The ` bc:umi:set` format can be supplied as an alternative to the short-hand syntax.
-For more information on the BUS format, consider the [Kallisto](https://pachterlab.github.io/kallisto/manual) manual.
+Alternatively, the layout can be specified as a `bc:umi:set` triplet. The first position indicates the read, the second position the start of the feature and the third position the end of the feature. For more information and examples on the BUS format, consider the [Kallisto](https://pachterlab.github.io/kallisto/manual) manual.
 
 ##### Input preparations for KITE workflow
-The steps to prepare an analysis for Feature Barcoding experiments deviate slighlty from the standard seq2science workflow. In essence, we quantify the abundance of sequence features such as antibody tags rather than transcripts. Therefore, our index does not rely on a particular assembly but is build from these sequence features. 
-
-Please consider the offical [kite](https://github.com/pachterlab/kite) documentation for more details.
+The steps to prepare a scRNA analysis for Feature Barcoding experiments deviates slighlty from the standard seq2science workflow. In essence, we quantify the abundance of sequence features, such as antibody barcodes, rather than a transcriptome for a particular species. Therefore, our index does not rely on a particular assembly but is build from these sequence features. Please consider the offical [kite](https://github.com/pachterlab/kite) documentation for more details.
 
 **1**. Prepare a two-column, tab-delimited file with your feature barcode in the first column and feature names in the second.
 
@@ -106,7 +116,12 @@ We save this file as fb.tsv.
 
 **3**. Add the basename of the feature barcode file, in this case **fb**, to the assembly column in your samples.tsv file as described above.
 
-An example of configuring kb-python for feature barcode analysis is shown below.
+```
+sample  assembly        
+pbmc    fb      
+```
+
+An example of configuring kb-python for feature barcode analysis is shown below. Add the appropiate settings to your config.
 
 #### Examples
 
@@ -127,7 +142,7 @@ quantifier:
 barcodefile: "1col_barcode_384.tab"   
 ```
 
-**Note**: The RNA velocity workflow produces count matrices for unspliced/spliced mRNA.  
+**Note**: The RNA velocity workflow produces count matrices for unspliced/spliced mRNA counts.  
 
 
 ##### KITE feature barcoding (CEL-Seq2)
@@ -145,6 +160,3 @@ The genome and/or gene annotation can be extended with custom files, such as ERC
 To do so, add `custom_genome_extension: path/to/spike_in.fa` and `custom_annotation_extension: path/to/spike_in.gtf` to the config.
 Seq2science will place the customized assembly in a separate folder in the `genome_dir`.
 You can control the name of the customized assembly by setting `custom_assembly_suffix` in the config.
-
-### Best practices
-TODO
