@@ -96,7 +96,7 @@ SURECELL                  0,0,6 0,21,27 0,42,48    0,51,59    1,None,None
 SMARTSEQ                                                      0,None,None 1,None,None
 ````
 
-Alternatively, the layout can be specified as a `bc:umi:set` triplet. The first position indicates the read, the second position the start of the feature and the third position the end of the feature. For more information and examples on the BUS format, consider the [Kallisto](https://pachterlab.github.io/kallisto/manual) manual.
+Alternatively, the layout can be specified as a `bc:umi:set` triplet. The first position indicates the read, the second position the start of the feature and the third position the end of the feature. For more information and examples on the BUS format, consider the **Bus** section in the [Kallisto](https://pachterlab.github.io/kallisto/manual) manual.
 
 ##### Input preparations for KITE workflow
 The steps to prepare a scRNA analysis for Feature Barcoding experiments deviates slighlty from the standard seq2science workflow. In essence, we quantify the abundance of sequence features, such as antibody barcodes, rather than a transcriptome for a particular species. Therefore, our index does not rely on a particular assembly but is build from these sequence features. Please consider the offical [kite](https://github.com/pachterlab/kite) documentation for more details.
@@ -114,7 +114,7 @@ We save this file as fb.tsv.
 
 **2**. Copy this file to the genome folder specified in `config.yaml` where seq2science searches for assemblies.
 
-**3**. Add the basename of the feature barcode file, in this case **fb**, to the assembly column in your samples.tsv file as described above.
+**3**. Add the basename of the feature barcode tabel, in this case **fb**, to the assembly column in your samples.tsv file.
 
 ```
 sample  assembly        
