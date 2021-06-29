@@ -74,18 +74,54 @@ After initializing your working directory and editing the `samples.tsv` file, sp
 - 10XV3
 - INDROPSV3
 
-The white-list will be installed automatically if the appropiate stechnology argument is provided via the `-x` parameter in short-hand syntax.
+The white-list will be installed automatically if the appropiate technology argument is provided via the `-x` parameter in short-hand syntax.
 
 ##### BUS (Barcode/UMI/Set) format
-The `-x` argument indicates the read and file positions of UMIs and barcodes in the supplied R1/R2 fastq files.
-Kallisto bustools should auto-detect the correct settings if you use the short-hand syntax for your technology of choice, such as `-x 10xv2`.
-Internally, this is translated to the following group of `bc:umi:set` triplets:
+The `-x` argument indicates the read and file positions of the UMI and barcode. Kallisto bustools should auto-detect the correct settings barcode/umi layout for the following technologies if the name is supplied:
 
-`0,0,16:0,16,26:1,0,0`
+```
+name         whitelist    barcode                  umi        cDNA
+---------    ---------    ---------------------    -------    -----------------------
+10XV1        yes          0,0,14                   1,0,10     2,None,None
+10XV2        yes          0,0,16                   0,16,26    1,None,None
+10XV3        yes          0,0,16                   0,16,28    1,None,None
+CELSEQ                    0,0,8                    0,8,12     1,None,None
+CELSEQ2                   0,6,12                   0,0,6      1,None,None
+DROPSEQ                   0,0,12                   0,12,20    1,None,None
+INDROPSV1                 0,0,11 0,30,38           0,42,48    1,None,None
+INDROPSV2                 1,0,11 1,30,38           1,42,48    0,None,None
+INDROPSV3    yes          0,0,8 1,0,8              1,8,14     2,None,None
+SCRUBSEQ                  0,0,6                    0,6,16     1,None,None
+SURECELL                  0,0,6 0,21,27 0,42,48    0,51,59    1,None,None
+SMARTSEQ                                                      0,None,None 1,None,None
+````
 
-The ` bc:umi:set` format can be supplied as an alternative to the short-hand syntax.
-For more information on the BUS format, consider the [Kallisto](https://pachterlab.github.io/kallisto/manual) manual.
+Alternatively, the layout can be specified as a `bc:umi:set` triplet. The first position indicates the read, the second position the start of the feature and the third position the end of the feature. For more information and examples on the BUS format, consider the **Bus** section in the [Kallisto](https://pachterlab.github.io/kallisto/manual) manual.
 
+##### Input preparations for KITE workflow
+The steps to prepare a scRNA analysis for Feature Barcoding experiments deviates slighlty from the standard seq2science workflow. In essence, we quantify the abundance of sequence features, such as antibody barcodes, rather than a set of transcripts for a certain species. Therefore, our index does not rely on a particular assembly but is build from these sequence features. Please consider the offical [kite](https://github.com/pachterlab/kite) documentation for more details.
+
+**1**. Prepare a two-column, tab-delimited file with your feature barcode in the first column and feature names in the second.
+
+**Example**
+|sequence|name|
+|---|---|
+|AACAAGACCCTTGAG|barcode 1|
+|TACCCGTAATAGCGT|barcode 2|
+
+
+We save this file as fb.tsv.
+
+**2**. Copy this file to the genome folder specified in `config.yaml` where seq2science searches for assemblies.
+
+**3**. Add the basename of the feature barcode tabel, in this case **fb**, to the assembly column in your samples.tsv file.
+
+```
+sample  assembly        
+pbmc    fb      
+```
+
+An example of configuring kb-python for feature barcode analysis is shown below. Add the appropiate settings to your config.
 
 #### Examples
 
@@ -102,9 +138,11 @@ quantifier:
   kallistobus:
     ref: '--workflow lamanno'
     count: '-x 1,8,16:1,0,8:0,0,0 --h5ad --verbose --workflow lamanno'
+
+barcodefile: "1col_barcode_384.tab"   
 ```
 
-**Note**: The RNA velocity workflow produces count matrices for unspliced/spliced mRNA.  
+**Note**: The RNA velocity workflow produces count matrices for unspliced/spliced mRNA counts.  
 
 
 ##### KITE feature barcoding (CEL-Seq2)
@@ -113,6 +151,8 @@ quantifier:
   kallistobus:
     ref: '--workflow kite'
     count: '-x 1,8,16:1,0,8:0,0,0 --h5ad --verbose --workflow kite'
+
+barcodefile: "1col_barcode_384.tab"    
 ```
 
 #### Custom assembly extensions
@@ -120,13 +160,3 @@ The genome and/or gene annotation can be extended with custom files, such as ERC
 To do so, add `custom_genome_extension: path/to/spike_in.fa` and `custom_annotation_extension: path/to/spike_in.gtf` to the config.
 Seq2science will place the customized assembly in a separate folder in the `genome_dir`.
 You can control the name of the customized assembly by setting `custom_assembly_suffix` in the config.
-
-### Filling out the config.yaml
-Every workflow has many configurable options, and can be set in the `config.yaml` file.
-In each `config.yaml` we highlighted a couple options that we think are relevant for that specific workflow, and set (we think) **reasonable default** values.
-
-When a workflow starts it prints the configuration variables influencing the workflow, and (almost) all these values can be added in the `config.yaml` and changed to your liking.
-You can see the complete set of configurable options in the [extensive docs](../schemas.html).
-
-### Best practices
-TODO
