@@ -865,6 +865,14 @@ def get_rna_qc(sample):
 
     return output
 
+def get_scrna_qc(sample):
+    output = []
+
+    # add kallistobus qc
+    output.append("{result_dir}/{quantifier}/{{assembly}}-{{sample}}/inspect.json")
+
+    return output
+
 
 def get_peak_calling_qc(sample):
     output = []
