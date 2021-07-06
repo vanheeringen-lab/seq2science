@@ -17,6 +17,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - kb count output validation
 - optional barcodefile argument for scRNA-seq workflow
 - MultiQC updated to newest version
+- updated kb-python version
 
 ## [0.5.3] - 2021-06-03
 
@@ -34,7 +35,6 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
   - Doesn't remove PCR duplicates anymore (best to do with markduplicates)
   - Changed extsize to 200 to be similar to macs settings
   - Turned off tn5 shift, since that is done by seq2science
-- updated kb-python version
 
 ### Fixed
 
