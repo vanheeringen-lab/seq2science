@@ -16,7 +16,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 - kb count output validation
 - optional barcodefile argument for scRNA-seq workflow
-- multiqc updated to newest version
+- MultiQC updated to newest version
 
 ## [0.5.3] - 2021-06-03
 
