@@ -316,7 +316,8 @@ elif config["quantifier"] == "kallistobus":
                  
     rule kb_seurat_pp:
         input:
-            expand([f"{{result_dir}}/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}" for trep in treps.index], **config)
+            expand([f"{{result_dir}}/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}/{{file}}" for trep in treps.index], **{**config,
+                                                                                                                                                 **{file:["inspect.json", "run_info.json", "output.bus"]})
         output:
             html=f"{config['result_dir']}/kb_seurat_pp/{{quantifier}}/{{assembly}}/kb_seurat_pp.html",
             qc_dir=directory(f"{config['result_dir']}/kb_seurat_pp/{{quantifier}}/{{assembly}}/qc")
