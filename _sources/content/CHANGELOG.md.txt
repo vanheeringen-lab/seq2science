@@ -14,7 +14,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 - added support for kb-python kite workflow
 
-## Changed
+### Changed
 
 - kb count output validation
 - optional barcodefile argument for scRNA-seq workflow
