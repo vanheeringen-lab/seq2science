@@ -562,12 +562,12 @@ quantifier:
         kallistobus:
             properties:
                 ref:
-                    default: 
+                    default: --workflow lamanno
                 count:
                     default: -x 10XV3 --verbose --h5ad --workflow lamanno
     default:
         kallistobus:
-            ref: 
+            ref: --workflow lamanno
             count: -x 10XV3 --verbose --h5ad --workflow lamanno
 ```
 #####barcodefile

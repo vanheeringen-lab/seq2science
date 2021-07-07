@@ -322,6 +322,7 @@ else
   opts="-p -t "$(wc -l {input.r1} | grep -Po '^\d+' | awk '{{print int($1/4)}}')
 fi
 fastq_pair $opts {output.intermediates1} >> {log} 2>&1
+        
 ```
 
 #### fastqc
@@ -478,10 +479,14 @@ OUTPUT={output.tsv} H={output.pdf} > {log} 2>&1
 Align reads against a transcriptome (index) with kallistobus and output a quantification file per sample.
 ```
 kb count \
--i {params.basename}.idx -w {input.barcodefile} \
+-i {params.basename}.idx \
 -t {threads} -g {params.basename}_t2g.txt \
--o {output} -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
-{params.options} {input.reads} > {log} 2>&1
+-o {params.outdir} -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
+{params.barcode_arg} {params.options} {input.reads} > {log} 2>&1
+# Validate output
+if grep -q 'ERROR\|bad_alloc' "{log}"; then
+  exit 1
+fi  
 ```
 
 #### kallistobus_ref
@@ -493,6 +498,16 @@ kb ref \
 -f2 {params.basename}_intron.fa \
 -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
 {params.options} > {log} 2>&1
+```
+
+#### kallistobus_ref_kite
+Make a mismatch index for kallistobus. This index is required to count feature barcodes, such as antibody tags. 
+```
+mkdir -p {params.basename}
+kb ref  \
+{input.featurebarcodes} \
+{params.options} \
+-i {params.basename}.idx -g {params.basename}_t2g.txt -f1 {params.basename}_cdna.fa > {log} 2>&1 
 ```
 
 #### kb_seurat_pp

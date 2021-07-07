@@ -154,6 +154,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#insert-size-metrics">insert_size_metrics</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#kallistobus-count">kallistobus_count</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#kallistobus-ref">kallistobus_ref</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#kallistobus-ref-kite">kallistobus_ref_kite</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#kb-seurat-pp">kb_seurat_pp</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#keep-mates">keep_mates</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#linked-txome">linked_txome</a></li>
@@ -818,10 +819,14 @@ OUTPUT={output.tsv} H={output.pdf} &gt; {log} 2&gt;&amp;1
 <h2>kallistobus_count<a class="headerlink" href="#kallistobus-count" title="Permalink to this headline">¶</a></h2>
 <p>Align reads against a transcriptome (index) with kallistobus and output a quantification file per sample.</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>kb count \
--i {params.basename}.idx -w {input.barcodefile} \
+-i {params.basename}.idx \
 -t {threads} -g {params.basename}_t2g.txt \
--o {output} -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
-{params.options} {input.reads} &gt; {log} 2&gt;&amp;1
+-o {params.outdir} -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
+{params.barcode_arg} {params.options} {input.reads} &gt; {log} 2&gt;&amp;1
+# Validate output
+if grep -q &#39;ERROR\|bad_alloc&#39; &quot;{log}&quot;; then
+  exit 1
+fi
 </pre></div>
 </div>
 </div>
@@ -834,6 +839,17 @@ OUTPUT={output.tsv} H={output.pdf} &gt; {log} 2&gt;&amp;1
 -f2 {params.basename}_intron.fa \
 -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
 {params.options} &gt; {log} 2&gt;&amp;1
+</pre></div>
+</div>
+</div>
+<div class="section" id="kallistobus-ref-kite">
+<h2>kallistobus_ref_kite<a class="headerlink" href="#kallistobus-ref-kite" title="Permalink to this headline">¶</a></h2>
+<p>Make a mismatch index for kallistobus. This index is required to count feature barcodes, such as antibody tags.</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>mkdir -p {params.basename}
+kb ref  \
+{input.featurebarcodes} \
+{params.options} \
+-i {params.basename}.idx -g {params.basename}_t2g.txt -f1 {params.basename}_cdna.fa &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
 </div>

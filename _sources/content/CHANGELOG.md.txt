@@ -8,6 +8,17 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- added support for kb-python kite workflow
+
+## Changed
+
+- kb count output validation
+- optional barcodefile argument for scRNA-seq workflow
+- MultiQC updated to newest version
+- updated kb-python version
+
 ## [0.5.3] - 2021-06-03
 
 ### Added
