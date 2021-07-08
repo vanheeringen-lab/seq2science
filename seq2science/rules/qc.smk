@@ -243,8 +243,8 @@ def fingerprint_multiBamSummary_input(wildcards):
             output["bams"].update(expand(f"{{final_bam_dir}}/{wildcards.assembly}-{control}.samtools-coordinate.bam", **config))
             output["bais"].update(expand(f"{{final_bam_dir}}/{wildcards.assembly}-{control}.samtools-coordinate.bam.bai", **config))
 
-    output["bams"] = list(sorted(list(output["bams"])))
-    output["bais"] = list(sorted(list(output["bais"])))
+    output["bams"] = list(sorted(output["bams"]))
+    output["bais"] = list(sorted(output["bais"]))
     return output
 
 
@@ -317,7 +317,7 @@ def computeMatrix_input(wildcards):
             output.append(expand(f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{trep}.bw", **config)[0])
         treps_seen.add(trep)
 
-    return list(sorted(list(output)))
+    return list(sorted(output))
 
 
 rule computeMatrix_gene:
