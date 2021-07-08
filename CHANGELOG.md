@@ -8,11 +8,13 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+## [0.5.4] - 2021-07-07
+
 ### Added
 
 - added support for kb-python kite workflow
 
-## Changed
+### Changed
 
 - kb count output validation
 - optional barcodefile argument for scRNA-seq workflow
@@ -407,7 +409,8 @@ Many minor bug- and quality of life fixes.
 ## [0.0.0] - 2020-06-11
 First release of seq2science!
 
-[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.3...master
+[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.4...master
+[0.5.4]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.3...v0.5.4
 [0.5.3]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.2...v0.5.3
 [0.5.2]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.0...v0.5.1
