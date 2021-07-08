@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Fixed
+
+- rerunning being triggered too easily by input order
+
 ## [0.5.4] - 2021-07-07
 
 ### Added
