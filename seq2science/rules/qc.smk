@@ -709,6 +709,11 @@ def get_qc_files(wildcards):
                 files = [f for f in files if f"clustering/{assembly}-" not in f]
         qc['files'].update(files)
 
+    if get_scrna_qc in quality_control:
+        for trep in treps[treps['assembly'] == ori_assembly(wildcards.assembly)].index:
+            qc['files'].update(get_scrna_qc(trep))
+
+
     return qc
 
 
@@ -864,6 +869,14 @@ def get_rna_qc(sample):
     col = samples.technical_replicates if "technical_replicates" in samples else samples.index
     if "strandedness" not in samples or samples[col == sample].strandedness[0] == "nan":
         output += expand(f"{{qc_dir}}/strandedness/{{{{assembly}}}}-{sample}.strandedness.txt",**config)
+
+    return output
+
+def get_scrna_qc(sample):
+    output = []
+
+    # add kallistobus qc
+    output.extend(expand(f"{{result_dir}}/{{quantifier}}/{{{{assembly}}}}-{sample}/inspect.json", **config))
 
     return output
 
