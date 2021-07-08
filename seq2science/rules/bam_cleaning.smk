@@ -58,12 +58,20 @@ rule complement_blacklist:
         complementBed -i stdin -g {input.sizes} > {output} 2>> {log}
         """
 
+# TODO sorting based on shift
+if config.get("tn5_shift"):
+    sieve_dir = config["final_bam_dir"]
+    shiftsieve = "-sieved"
+else:
+    sieve_dir = config["final_bam_dir"]
+    ruleorder sieve_bam > samtools_sort
+    shift_sieve = ""
 
 if config["filter_on_size"]:
-    sieve_bam_output = {"allsizes": temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}_allsizes.samtools-coordinate-sieved.sam",**config)),
-                        "final": temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-sieved.bam",**config))}
+    sieve_bam_output = {"allsizes": temp(f"{sieve_dir}/{{assembly}}-{{sample}}_allsizes.samtools-coordinate{shiftsieve}.sam"),
+                        "final": f"{sieve_dir}/{{assembly}}-{{sample}}.samtools-coordinate{shiftsieve}.bam"}
 else:
-    sieve_bam_output = {"final": temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-sieved.bam",**config))}
+    sieve_bam_output = {"final": f"{sieve_dir}/{{assembly}}-{{sample}}.samtools-coordinate{shiftsieve}.bam"}
 
 
 rule sieve_bam:
@@ -79,7 +87,7 @@ rule sieve_bam:
      
     """
     input:
-        bam=rules.samtools_presort.output,
+        bam=rules.markduplicates.output.bam,
         blacklist=rules.complement_blacklist.output,
         sizes=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
     output:
@@ -168,7 +176,7 @@ rule samtools_sort:
     input:
         rules.sieve_bam.output.final
     output:
-        temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-{{sorting}}-sievsort.bam", **config)),
+        temp(expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-{{sorting}}.bam", **config)),
     log:
         expand("{log_dir}/samtools_sort/{{assembly}}-{{sample}}-samtools_{{sorting}}.log", **config),
     benchmark:
@@ -217,9 +225,9 @@ rule mark_duplicates:
     Mark all duplicate reads in a bam file with picard MarkDuplicates
     """
     input:
-        get_bam_mark_duplicates,
+        rules.samtools_presort.output,
     output:
-        bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config),
+        bam=expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}-dupmarked.bam", **config),
         metrics=expand("{qc_dir}/markdup/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.metrics.txt", **config),
     log:
         expand("{log_dir}/mark_duplicates/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config),
