@@ -198,16 +198,16 @@ rule sambamba_sort:
     Sort the result of alignment or sieving with the sambamba sorter.
     """
     input:
-        get_sambamba_sort_bam,
+        expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config)
     output:
-        temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.sambamba-{{sorting}}{{sieve}}.bam", **config)),
+        temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.sambamba-{{sorting}}.bam", **config)),
     wildcard_constraints:
         sieve="|-sievsort",
     log:
-        expand("{log_dir}/sambamba_sort/{{assembly}}-{{sample}}-sambamba_{{sorting}}{{sieve}}.log", **config),
+        expand("{log_dir}/sambamba_sort/{{assembly}}-{{sample}}-sambamba_{{sorting}}.log", **config),
     message: explain_rule("sambamba_sort")
     benchmark:
-        expand("{benchmark_dir}/sambamba_sort/{{assembly}}-{{sample}}-{{sorting}}{{sieve}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/sambamba_sort/{{assembly}}-{{sample}}-{{sorting}}.benchmark.txt", **config)[0]
     params:
         sort_order=lambda wildcards: "-n" if "queryname" in wildcards.sorting else "",
         memory=f"-m {config['bam_sort_mem']}G",
