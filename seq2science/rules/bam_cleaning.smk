@@ -127,6 +127,12 @@ if config["filter_on_size"]:
 else:
     sieve_bam_output = {"final": f"{sieve_dir}/{{assembly}}-{{sample}}.samtools-coordinate{shiftsieve}.bam"}
 
+sieve_flag = 0
+if config["only_primary_align"]:
+    sieve_flag += 256
+if config["remove_dups"]:
+    sieve_flag += 1024
+
 
 rule sieve_bam:
     """
@@ -137,6 +143,7 @@ rule sieve_bam:
         * tn5 shift adjustment
         * remove multimappers
         * remove reads inside the blacklist
+        * remove duplicates
         * filter paired-end reads on transcript length
      
     """
@@ -163,7 +170,7 @@ rule sieve_bam:
             else ""
         ),
         blacklist=lambda wildcards, input: f"-L {input.blacklist}",
-        prim_align=f"-F 256" if config["only_primary_align"] else "",
+        prim_align=f"-F {sieve_flag}" if sieve_flag > 0 else "",
         sizesieve=(
             lambda wildcards, input, output:
             f""" tee {output.allsizes} | awk 'substr($0,1,1)=="@" || ($9>={config['min_template_length']} && $9<={config['max_template_length']}) || ($9<=-{config['min_template_length']} && $9>=-{config['max_template_length']})' | """
