@@ -58,13 +58,67 @@ rule complement_blacklist:
         complementBed -i stdin -g {input.sizes} > {output} 2>> {log}
         """
 
+def get_bam_mark_duplicates(wildcards):
+    if sieve_bam(config):
+        # when alignmentsieving but not shifting we do not have to re-sort samtools-coordinate
+        if wildcards.sorter == "samtools" and wildcards.sorting == "coordinate" and not config.get("tn5_shift", False):
+            if config["filter_on_size"] and wildcards.sample.endswith("_allsizes"):
+                return expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-sieved.bam",**config)
+            else:
+                return rules.sieve_bam.output.final
+        else:
+            return expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}-sievsort.bam", **config)
+
+    # if we don't want to do anything get the untreated bam
+    if wildcards.sorter == "samtools":
+        return rules.samtools_presort.output
+    return expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config)
+
+
+rule mark_duplicates:
+    """
+    Mark all duplicate reads in a bam file with picard MarkDuplicates
+    """
+    input:
+        rules.samtools_presort.output,
+    output:
+        bam=expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-dupmarked.bam", **config),
+        metrics=expand("{qc_dir}/markdup/{{assembly}}-{{sample}}.samtools-coordinate.metrics.txt", **config),
+    log:
+        expand("{log_dir}/mark_duplicates/{{assembly}}-{{sample}}.log", **config),
+    benchmark:
+        expand("{benchmark_dir}/mark_duplicates/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
+    message: explain_rule("mark_duplicates")
+    params:
+        config["markduplicates"],
+    resources:
+        mem_gb=8,
+    conda:
+        "../envs/picard.yaml"
+    wildcard_constraints:
+        sample=f"""({any_given("sample", "technical_replicates", "control")})(_allsizes)?""",
+    shell:
+        """
+        # use the TMPDIR if set, and not given in the config
+        if [[ ${{TMPDIR:=F}} == "F" ]] || [[ "{params}" == *TMP_DIR* ]]
+        then
+            tmpdir=""
+        else 
+            tmpdir=TMP_DIR=$TMPDIR
+        fi
+
+        picard MarkDuplicates $tmpdir {params} INPUT={input} \
+        OUTPUT={output.bam} METRICS_FILE={output.metrics} > {log} 2>&1
+        """
+
+
 # TODO sorting based on shift
 if config.get("tn5_shift"):
     sieve_dir = config["final_bam_dir"]
     shiftsieve = "-sieved"
 else:
     sieve_dir = config["final_bam_dir"]
-    ruleorder sieve_bam > samtools_sort
+    ruleorder: sieve_bam > samtools_sort
     shift_sieve = ""
 
 if config["filter_on_size"]:
@@ -87,7 +141,7 @@ rule sieve_bam:
      
     """
     input:
-        bam=rules.markduplicates.output.bam,
+        bam=rules.mark_duplicates.output.bam,
         blacklist=rules.complement_blacklist.output,
         sizes=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
     output:
@@ -200,60 +254,6 @@ rule samtools_sort:
 
         samtools sort {params.sort_order} -@ {threads} {params.memory} {input} -o {output} \
         -T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
-        """
-
-
-def get_bam_mark_duplicates(wildcards):
-    if sieve_bam(config):
-        # when alignmentsieving but not shifting we do not have to re-sort samtools-coordinate
-        if wildcards.sorter == "samtools" and wildcards.sorting == "coordinate" and not config.get("tn5_shift", False):
-            if config["filter_on_size"] and wildcards.sample.endswith("_allsizes"):
-                return expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-sieved.bam",**config)
-            else:
-                return rules.sieve_bam.output.final
-        else:
-            return expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}-sievsort.bam", **config)
-
-    # if we don't want to do anything get the untreated bam
-    if wildcards.sorter == "samtools":
-        return rules.samtools_presort.output
-    return expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config)
-
-
-rule mark_duplicates:
-    """
-    Mark all duplicate reads in a bam file with picard MarkDuplicates
-    """
-    input:
-        rules.samtools_presort.output,
-    output:
-        bam=expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}-dupmarked.bam", **config),
-        metrics=expand("{qc_dir}/markdup/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.metrics.txt", **config),
-    log:
-        expand("{log_dir}/mark_duplicates/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config),
-    benchmark:
-        expand("{benchmark_dir}/mark_duplicates/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.benchmark.txt", **config)[0]
-    message: explain_rule("mark_duplicates")
-    params:
-        config["markduplicates"],
-    resources:
-        mem_gb=8,
-    conda:
-        "../envs/picard.yaml"
-    wildcard_constraints:
-        sample=f"""({any_given("sample", "technical_replicates", "control")})(_allsizes)?""",
-    shell:
-        """
-        # use the TMPDIR if set, and not given in the config
-        if [[ ${{TMPDIR:=F}} == "F" ]] || [[ "{params}" == *TMP_DIR* ]]
-        then
-            tmpdir=""
-        else 
-            tmpdir=TMP_DIR=$TMPDIR
-        fi
-
-        picard MarkDuplicates $tmpdir {params} INPUT={input} \
-        OUTPUT={output.bam} METRICS_FILE={output.metrics} > {log} 2>&1
         """
 
 
