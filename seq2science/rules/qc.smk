@@ -8,7 +8,7 @@ localrules: multiqc_header_info, multiqc_rename_buttons, multiqc_filter_buttons,
 
 def samtools_stats_input(wildcards):
     if wildcards.directory == config["aligner"]:
-        return expand("{result_dir}/{{directory}}/{{assembly}}-{{sample}}.samtools-coordinate-unsieved.bam", **config)
+        return expand("{result_dir}/{{directory}}/{{assembly}}-{{sample}}.samtools-coordinate-dupmarked.bam", **config)
     return expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config)
 
 
