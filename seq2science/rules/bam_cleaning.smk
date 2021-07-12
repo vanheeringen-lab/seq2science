@@ -119,7 +119,7 @@ if config.get("tn5_shift"):
 else:
     sieve_dir = config["final_bam_dir"]
     ruleorder: sieve_bam > samtools_sort
-    shift_sieve = ""
+    shiftsieve = ""
 
 if config["filter_on_size"]:
     sieve_bam_output = {"allsizes": temp(f"{sieve_dir}/{{assembly}}-{{sample}}_allsizes.samtools-coordinate{shiftsieve}.sam"),
