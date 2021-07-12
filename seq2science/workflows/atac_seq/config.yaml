@@ -37,7 +37,7 @@ peak_caller:
   macs2:
       --shift -100 --extsize 200 --nomodel --buffer-size 10000
 #  genrich:
-#      -j -y -D -d 200
+#      -j -y -D -d 200 -q 0.05
 
 ## differential accessibility analysis
 #contrasts:

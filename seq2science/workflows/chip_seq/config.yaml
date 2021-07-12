@@ -34,7 +34,7 @@ peak_caller:
   macs2:
       --buffer-size 10000
 #  genrich:
-#      -y
+#      -y -q 0.05
 
 ## differential peak analysis
 #contrasts:
