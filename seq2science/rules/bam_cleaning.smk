@@ -207,7 +207,7 @@ rule sambamba_sort:
     input:
         expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config)
     output:
-        temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.sambamba-{{sorting}}.bam", **config)),
+        temp(expand("{final_bam_dir}/{{assembly}}-{{sample}}.sambamba-{{sorting}}.bam", **config)),
     wildcard_constraints:
         sieve="|-sievsort",
     log:
