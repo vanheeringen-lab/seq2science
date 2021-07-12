@@ -82,7 +82,7 @@ rule mark_duplicates:
     input:
         rules.samtools_presort.output,
     output:
-        bam=expand(temp("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-dupmarked.bam", **config)),
+        bam=temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-dupmarked.bam", **config)),
         metrics=expand("{qc_dir}/markdup/{{assembly}}-{{sample}}.samtools-coordinate.metrics.txt", **config),
     log:
         expand("{log_dir}/mark_duplicates/{{assembly}}-{{sample}}.log", **config),
