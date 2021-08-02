@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Changed
+
+- changed option `heatmap_deeptools_options` to `deeptools_heatmap_options`
+
 ### Fixed
 
 - rerunning being triggered too easily by input order
