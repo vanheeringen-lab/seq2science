@@ -8,11 +8,15 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Changed
+
+- Updated sra tools and parallel fastq-dump versions
+
 ### Fixed
 
 - rerunning being triggered too easily by input order
 - issue with qc plots and broad peaks
-- changed output of run2sra rule, fixing failing tests
+- changed output of run2sra rule, fixing failing tests.
 
 ## [0.5.4] - 2021-07-07
 
