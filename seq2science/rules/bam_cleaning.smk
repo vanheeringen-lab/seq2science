@@ -58,22 +58,6 @@ rule complement_blacklist:
         complementBed -i stdin -g {input.sizes} > {output} 2>> {log}
         """
 
-# def get_bam_mark_duplicates(wildcards):
-#     if sieve_bam(config):
-#         # when alignmentsieving but not shifting we do not have to re-sort samtools-coordinate
-#         if wildcards.sorter == "samtools" and wildcards.sorting == "coordinate" and not config.get("tn5_shift", False):
-#             if config["filter_on_size"] and wildcards.sample.endswith("_allsizes"):
-#                 return expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-sieved.bam",**config)
-#             else:
-#                 return rules.sieve_bam.output.final
-#         else:
-#             return expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}-sievsort.bam", **config)
-#
-#     # if we don't want to do anything get the untreated bam
-#     if wildcards.sorter == "samtools":
-#         return rules.samtools_presort.output
-#     return expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config)
-
 
 rule mark_duplicates:
     """
@@ -112,24 +96,34 @@ rule mark_duplicates:
         """
 
 
-# TODO sorting based on shift
+# if doing tn5 shift, we need to re-sort afterwards!
 if config.get("tn5_shift"):
-    shiftsieve = "-shift"
+    shiftsieve = "-shifted"
+    sieve_bam_output["final"] = temp(sieve_bam_output["final"])
 else:
     ruleorder: sieve_bam > samtools_sort
     shiftsieve = ""
 
+# if we filter on size, we make two files. One split on size, and one not.
+# We can use the full one to get insertsizemetrics!
 if config["filter_on_size"]:
     sieve_bam_output = {"allsizes": temp(f"{config['final_bam_dir']}/{{assembly}}-{{sample}}_allsizes.samtools-coordinate{shiftsieve}.sam"),
                         "final": f"{config['final_bam_dir']}/{{assembly}}-{{sample}}.samtools-coordinate{shiftsieve}.bam"}
 else:
     sieve_bam_output = {"final": f"{config['final_bam_dir']}/{{assembly}}-{{sample}}.samtools-coordinate{shiftsieve}.bam"}
 
+# now that we know the output sieve bam, we can mark as temp based on whether we do tn5 shift
+if config.get("tn5_shift"):
+    sieve_bam_output["final"] = temp(sieve_bam_output["final"])
+
+# the flag to sieve on (bitwise flags)
+# https://en.wikipedia.org/wiki/SAM_(file_format)#Bitwise_flags
 sieve_flag = 0
 if config["only_primary_align"]:
     sieve_flag += 256
 if config["remove_dups"]:
     sieve_flag += 1024
+
 
 rule sieve_bam:
     """
@@ -141,8 +135,7 @@ rule sieve_bam:
         * remove multimappers
         * remove reads inside the blacklist
         * remove duplicates
-        * filter paired-end reads on transcript length
-     
+        * filter paired-end reads on transcript length     
     """
     input:
         bam=rules.mark_duplicates.output.bam,
@@ -193,6 +186,8 @@ rule sieve_bam:
 if not sieve_bam(config):
     rule cp_unsieved2sieved:
         """
+        This simply copies a bam file before that is unsieved, to the final bam directory,
+        in case no sieving is necessary. 
         """
         input:
             rules.mark_duplicates.output.bam
@@ -244,7 +239,7 @@ rule sambamba_sort:
 
 rule samtools_sort:
     """
-    Sort the result of sieving with the samtools sorter.
+    Sort the result of shiftsieving with the samtools sorter.
     """
     input:
         rules.sieve_bam.output.final
