@@ -99,7 +99,6 @@ rule mark_duplicates:
 # if doing tn5 shift, we need to re-sort afterwards!
 if config.get("tn5_shift"):
     shiftsieve = "-shifted"
-    sieve_bam_output["final"] = temp(sieve_bam_output["final"])
 else:
     ruleorder: sieve_bam > samtools_sort
     shiftsieve = ""
