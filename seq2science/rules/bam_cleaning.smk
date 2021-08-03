@@ -58,21 +58,21 @@ rule complement_blacklist:
         complementBed -i stdin -g {input.sizes} > {output} 2>> {log}
         """
 
-def get_bam_mark_duplicates(wildcards):
-    if sieve_bam(config):
-        # when alignmentsieving but not shifting we do not have to re-sort samtools-coordinate
-        if wildcards.sorter == "samtools" and wildcards.sorting == "coordinate" and not config.get("tn5_shift", False):
-            if config["filter_on_size"] and wildcards.sample.endswith("_allsizes"):
-                return expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-sieved.bam",**config)
-            else:
-                return rules.sieve_bam.output.final
-        else:
-            return expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}-sievsort.bam", **config)
-
-    # if we don't want to do anything get the untreated bam
-    if wildcards.sorter == "samtools":
-        return rules.samtools_presort.output
-    return expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config)
+# def get_bam_mark_duplicates(wildcards):
+#     if sieve_bam(config):
+#         # when alignmentsieving but not shifting we do not have to re-sort samtools-coordinate
+#         if wildcards.sorter == "samtools" and wildcards.sorting == "coordinate" and not config.get("tn5_shift", False):
+#             if config["filter_on_size"] and wildcards.sample.endswith("_allsizes"):
+#                 return expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-sieved.bam",**config)
+#             else:
+#                 return rules.sieve_bam.output.final
+#         else:
+#             return expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}-sievsort.bam", **config)
+#
+#     # if we don't want to do anything get the untreated bam
+#     if wildcards.sorter == "samtools":
+#         return rules.samtools_presort.output
+#     return expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config)
 
 
 rule mark_duplicates:
@@ -82,7 +82,7 @@ rule mark_duplicates:
     input:
         rules.samtools_presort.output,
     output:
-        bam=expand(temp("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-dupmarked.bam", **config)),
+        bam=temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-dupmarked.bam", **config)),
         metrics=expand("{qc_dir}/markdup/{{assembly}}-{{sample}}.samtools-coordinate.metrics.txt", **config),
     log:
         expand("{log_dir}/mark_duplicates/{{assembly}}-{{sample}}.log", **config),
@@ -114,25 +114,22 @@ rule mark_duplicates:
 
 # TODO sorting based on shift
 if config.get("tn5_shift"):
-    sieve_dir = config["final_bam_dir"]
-    shiftsieve = "-sieved"
+    shiftsieve = "-shift"
 else:
-    sieve_dir = config["final_bam_dir"]
     ruleorder: sieve_bam > samtools_sort
     shiftsieve = ""
 
 if config["filter_on_size"]:
-    sieve_bam_output = {"allsizes": temp(f"{sieve_dir}/{{assembly}}-{{sample}}_allsizes.samtools-coordinate{shiftsieve}.sam"),
-                        "final": f"{sieve_dir}/{{assembly}}-{{sample}}.samtools-coordinate{shiftsieve}.bam"}
+    sieve_bam_output = {"allsizes": temp(f"{config['final_bam_dir']}/{{assembly}}-{{sample}}_allsizes.samtools-coordinate{shiftsieve}.sam"),
+                        "final": f"{config['final_bam_dir']}/{{assembly}}-{{sample}}.samtools-coordinate{shiftsieve}.bam"}
 else:
-    sieve_bam_output = {"final": f"{sieve_dir}/{{assembly}}-{{sample}}.samtools-coordinate{shiftsieve}.bam"}
+    sieve_bam_output = {"final": f"{config['final_bam_dir']}/{{assembly}}-{{sample}}.samtools-coordinate{shiftsieve}.bam"}
 
 sieve_flag = 0
 if config["only_primary_align"]:
     sieve_flag += 256
 if config["remove_dups"]:
     sieve_flag += 1024
-
 
 rule sieve_bam:
     """
@@ -192,6 +189,21 @@ rule sieve_bam:
         # single-end reads never output allsizes so just touch the file when filtering on size
         {params.sizesieve_touch}
         """
+
+if not sieve_bam(config):
+    rule cp_unsieved2sieved:
+        """
+        """
+        input:
+            rules.mark_duplicates.output.bam
+        output:
+            expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config)
+        shell:
+            """
+            cp {input} {output}
+            """
+
+    ruleorder: cp_unsieved2sieved > sieve_bam > samtools_sort
 
 
 def get_sambamba_sort_bam(wildcards):
