@@ -10,7 +10,7 @@ rule run2sra:
     falls back on the slower http protocol.
     """
     output:
-        temp(expand("{sra_dir}/{{run}}/{{run}}/{{run}}.sra", **config)),
+        temp(expand("{sra_dir}/{{run}}/{{run}}.sra", **config)),
     log:
         expand("{log_dir}/run2sra/{{run}}.log", **config),
     benchmark:
@@ -27,7 +27,7 @@ rule run2sra:
         """
         # move to output dir since somehow prefetch sometimes puts files in the cwd...
         # and remove the top level folder since prefetch will assume we are done otherwise
-        mkdir -p {params.outdir}; cd {params.outdir}; rm -r {wildcards.run}
+        mkdir -p {params.outdir}; cd {params.outdir}; rm -rf {wildcards.run}*
 
         # three attempts
         for i in {{1..3}}
