@@ -275,14 +275,20 @@ elif config["quantifier"] == "kallistobus":
         else:
             return directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/", **config))
         
-        
+
+    def get_kb_reads(wildcards):
+        if wildcards.sample in merged_treps:
+            return expand(f"{{trimmed_dir}}/{wildcards.sample}_{{fqext}}_trimmed.{{fqsuffix}}.gz", **config)
+        else:
+            return rules.fastq_pair.output.reads
+
     rule kallistobus_count:
             """
             Align reads against a transcriptome (index) with kallistobus and output a quantification file per sample.
             """
             input:
                 basedir=get_kb_dir,
-                reads=rules.fastq_pair.output.reads,
+                reads=get_kb_reads,
                 barcodefile=config.get("barcodefile",[]),
             output:
                 dir=expand("{result_dir}/{quantifier}/{{assembly}}-{{sample}}/{file}",**{**config,
