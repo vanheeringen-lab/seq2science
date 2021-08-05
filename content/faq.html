@@ -99,6 +99,8 @@
 <li class="toctree-l2"><a class="reference internal" href="#storage-exhausted-no-space-left-on-device">storage exhausted / No Space Left on Device</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#i-want-to-run-the-pipeline-until-a-certain-rule-but-not-farther">I want to run the pipeline until a certain rule, but not farther</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#rna-seq-this-gene-should-be-expressed">RNA-seq: this gene should be expressed!</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#scrna-seq-kallisto-bustools-warn-no-reads-pseudoaligned">scRNA-seq: Kallisto|Bustools: [~warn] no reads pseudoaligned</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#scrna-seq-kallisto-bustools-what-std-bad-alloc">scRNA-seq: Kallisto|Bustools: what():  std::bad_alloc</a></li>
 </ul>
 </li>
 </ul>
@@ -223,6 +225,20 @@ There are differences between these methods however, and caution is advised with
 <p>Additionally, Seq2science employs strict quality checks by default.
 You could try reducing the <code class="docutils literal notranslate"><span class="pre">min_mapping_quality</span></code> (for HTSeq and FeatureCounts) or change the parameters to the quantifier.</p>
 <p>The biggest differences in expressed genes can be found by switching gene annotation, followed by switching quantifier (to or from Salmon).</p>
+</div>
+<div class="section" id="scrna-seq-kallisto-bustools-warn-no-reads-pseudoaligned">
+<h2>scRNA-seq: Kallisto|Bustools: [~warn] no reads pseudoaligned<a class="headerlink" href="#scrna-seq-kallisto-bustools-warn-no-reads-pseudoaligned" title="Permalink to this headline">¶</a></h2>
+<p>This error means that no reads were (pseudo)aligned to the reference genome!
+Oh no!
+This is probably because you did not specify the chemistry correctly.
+Take a look at how to <a class="reference external" href="https://vanheeringen-lab.github.io/seq2science/content/workflows/scrna_seq.html#bus-barcode-umi-set-format">specify the BUS format</a> for kallisto|bustools.</p>
+</div>
+<div class="section" id="scrna-seq-kallisto-bustools-what-std-bad-alloc">
+<h2>scRNA-seq: Kallisto|Bustools: what():  std::bad_alloc<a class="headerlink" href="#scrna-seq-kallisto-bustools-what-std-bad-alloc" title="Permalink to this headline">¶</a></h2>
+<p>bad alloc generally means that kallisto|bustools tried to reserve some memory, but there was none left to be reserved…
+Are there other programs running that take up a lot of memory?
+For us (the developers) it also seems as if this rule sometimes happens, seemingly at random.
+Simply restarting seq2science might just solve the problem!</p>
 </div>
 </div>
 
