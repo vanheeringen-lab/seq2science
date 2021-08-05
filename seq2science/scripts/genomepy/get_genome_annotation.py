@@ -9,23 +9,12 @@ import genomepy
 with open(snakemake.log[0], "w") as log:
     with contextlib.redirect_stdout(log), contextlib.redirect_stderr(log):
         # list user plugins
-        active_plugins = genomepy.functions.config.get("plugin", [])
+        active_plugins = genomepy.config.config.get("plugin", [])
         # deactivate user plugins
-        genomepy.functions.manage_plugins("disable", active_plugins)
+        genomepy.manage_plugins("disable", active_plugins)
 
         # select a provider with the annotation if possible
         provider = snakemake.params.providers[snakemake.wildcards.raw_assembly]["annotation"]
-
-        kwargs = dict()
-        if provider == "ucsc":
-            p = genomepy.ProviderBase.create(provider)
-            kwargs = {"ucsc_annotation_type": "ensembl"}
-            if not p.get_annotation_download_link(
-                    name=snakemake.wildcards.raw_assembly,
-                    kwargs=kwargs
-            ):
-                kwargs = dict()
-
         try:
             genomepy.install_genome(
                 name=snakemake.wildcards.raw_assembly,
@@ -33,7 +22,6 @@ with open(snakemake.log[0], "w") as log:
                 genomes_dir=snakemake.params.genome_dir,
                 only_annotation=True,
                 force=True,
-                kwargs=kwargs,
             )
 
         except Exception as e:
@@ -47,4 +35,4 @@ with open(snakemake.log[0], "w") as log:
 
         finally:
             # reactivate user plugins
-            genomepy.functions.manage_plugins("enable", active_plugins)
+            genomepy.manage_plugins("enable", active_plugins)

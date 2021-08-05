@@ -12,7 +12,7 @@ import genomepy
 with open(snakemake.log[0], "w") as log:
     with contextlib.redirect_stdout(log), contextlib.redirect_stderr(log):
         genome = genomepy.Genome(snakemake.wildcards.raw_assembly, snakemake.params.genome_dir)
-        plugins = genomepy.plugin.init_plugins()
+        plugins = genomepy.plugins.init_plugins()
         plugins["blacklist"].after_genome_download(genome)
 
         # touch the file if no blacklist was available

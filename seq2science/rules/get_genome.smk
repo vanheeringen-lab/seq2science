@@ -158,19 +158,3 @@ rule gene_id2name:
         expand("{genome_dir}/{{assembly}}/gene_id2name.tsv", **config),
     script:
         f"{config['rule_dir']}/../scripts/gene_id2name.py"
-
-
-rule unzip_annotation:
-    """
-    Unzip (b)gzipped files.
-    """
-    input:
-        "{filepath}.gz"
-    output:
-        "{filepath}"
-    wildcard_constraints:
-        filepath=".*(\.annotation)(\.gtf|\.bed)(?<!\.gz)$"  # filepath may not end with ".gz"
-    priority: 1
-    run:
-        import genomepy.utils
-        genomepy.utils.gunzip_and_name(input[0])

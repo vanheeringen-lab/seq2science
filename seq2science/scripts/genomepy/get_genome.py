@@ -10,9 +10,9 @@ import genomepy
 with open(snakemake.log[0], "w") as log:
     with contextlib.redirect_stdout(log), contextlib.redirect_stderr(log):
         # list user plugins
-        active_plugins = genomepy.functions.config.get("plugin", [])
+        active_plugins = genomepy.config.config.get("plugin", [])
         # deactivate user plugins
-        genomepy.functions.manage_plugins("disable", active_plugins)
+        genomepy.manage_plugins("disable", active_plugins)
 
         # select a provider with the annotation if possible
         a = snakemake.params.providers[snakemake.wildcards.raw_assembly]["annotation"]
@@ -42,4 +42,4 @@ with open(snakemake.log[0], "w") as log:
 
         finally:
             # reactivate user plugins
-            genomepy.functions.manage_plugins("enable", active_plugins)
+            genomepy.manage_plugins("enable", active_plugins)

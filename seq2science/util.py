@@ -15,6 +15,7 @@ from typing import List
 from math import ceil, floor
 
 from filelock import FileLock
+import genomepy
 import matplotlib.colors as mcolors
 import numpy as np
 import pandas as pd
@@ -589,3 +590,107 @@ class PickleDict(dict):
         prep_filelock(self.filelock, 30)
         with FileLock(self.filelock):
             pickle.dump(self, open(self.file, "wb"))
+
+    def search(self, search_assemblies: list):
+        """
+        Check the genomepy database for a provider stat serves both genome and annotation for an assembly.
+        If impossible, settle with the first provider that serves the genome.
+        """
+        logger.info("Determining assembly providers")
+        for p in genomepy.providers.online_providers():
+            for assembly in search_assemblies:
+                if assembly not in self:
+                    self[assembly] = {"genome": None, "annotation": None}
+
+                if assembly not in p.genomes:
+                    continue  # check again next provider
+
+                if p.annotation_links(assembly):
+                    self[assembly]["genome"] = p.name
+                    self[assembly]["annotation"] = p.name
+                    search_assemblies.remove(assembly)
+
+                elif self[assembly]["genome"] is None:
+                    self[assembly]["genome"] = p.name
+
+        # store added assemblies
+        self.save()
+
+    def check(self, assemblies: list, annotation_required: bool, verbose: bool):
+        """
+        Check if the genome (and the annotation if required) can be downloaded for each specified assembly.
+        """
+        for assembly in assemblies:
+            if self.get(assembly, {}).get("genome") is None:
+                logger.warning(
+                    f"Could not download assembly {assembly}.\n"
+                    f"Find alternative assemblies with `genomepy search {assembly}`"
+                )
+                exit(1)
+
+            if self[assembly]["annotation"] is None:
+                if verbose:
+                    logger.warning(
+                        f"No annotation for assembly {assembly} can be downloaded. Another provider (and "
+                        f"thus another assembly name) might have a gene annotation.\n"
+                        f"Find alternative assemblies with `genomepy search {assembly}`\n"
+                    )
+                if annotation_required:
+                    exit(1)
+
+
+def is_local(assembly: str, ftype: str, config: dict) -> bool:
+    """checks if genomic file(s) are present locally"""
+    file = os.path.join(config['genome_dir'], assembly, assembly)
+    local_fasta = os.path.exists(f"{file}.fa")
+    local_gtf = os.path.exists(f"{file}.annotation.gtf")
+    local_bed = os.path.exists(f"{file}.annotation.bed")
+    if ftype == "genome":
+        return local_fasta
+    if ftype == "annotation":
+        # check genome and annotations, as genome is always needed
+        return local_gtf and local_bed and local_fasta
+
+
+# def update_providers(search_assemblies: list):
+#     global providers
+#     logger.info("Determining assembly providers")
+#     for p in genomepy.providers.online_providers():
+#         for assembly in search_assemblies:
+#             if assembly not in providers:
+#                 providers[assembly] = {"genome": None, "annotation": None}
+#
+#             if assembly not in p.genomes:
+#                 continue  # check again next provider
+#
+#             if p.annotation_links(assembly):
+#                 providers[assembly]["genome"] = p.name
+#                 providers[assembly]["annotation"] = p.name
+#                 search_assemblies.remove(assembly)
+#
+#             elif providers[assembly]["genome"] is None:
+#                 providers[assembly]["genome"] = p.name
+#
+#     # store added assemblies
+#     providers.save()
+
+
+# def check_providers(remote_assemblies: list, annotation_required: bool, config: dict):
+#     global providers
+#     for assembly in remote_assemblies:
+#         if providers[assembly]["genome"] is None:
+#             logger.info(
+#                 f"Could not download assembly {assembly}.\n"
+#                 f"Find alternative assemblies with `genomepy search {assembly}`"
+#             )
+#             exit(1)
+#
+#         if providers[assembly]["annotation"] is None:
+#             if not config.get("no_config_log"):
+#                 logger.info(
+#                     f"No annotation for assembly {assembly} can be downloaded. Another provider (and "
+#                     f"thus another assembly name) might have a gene annotation.\n"
+#                     f"Find alternative assemblies with `genomepy search {assembly}`\n"
+#                 )
+#             if annotation_required:
+#                 exit(1)
