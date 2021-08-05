@@ -10,8 +10,6 @@ rule get_genome:
         expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa", **config),
     log:
         expand("{log_dir}/get_genome/{{raw_assembly}}.genome.log", **config),
-    benchmark:
-        expand("{benchmark_dir}/get_genome/{{raw_assembly}}.genome.benchmark.txt", **config)[0]
     message: explain_rule("get_genome")
     params:
         providers=providers,
@@ -56,9 +54,7 @@ rule get_genome_annotation:
         gtf=expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.annotation.gtf", **config),
         bed=expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.annotation.bed", **config),
     log:
-        expand("{log_dir}/get_annotation/{{raw_assembly}}.genome.log", **config),
-    benchmark:
-        expand("{benchmark_dir}/get_annotation/{{raw_assembly}}.genome.benchmark.txt", **config)[0]
+        expand("{log_dir}/get_genome/{{raw_assembly}}.annotation.log", **config),
     resources:
         parallel_downloads=1,
         genomepy_downloads=1,

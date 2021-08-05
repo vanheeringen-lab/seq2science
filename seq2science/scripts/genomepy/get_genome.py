@@ -5,25 +5,28 @@ import contextlib
 
 import genomepy
 
+
 logfile = snakemake.log[0]
-providers = snakemake.params.providers
 assembly = snakemake.wildcards.raw_assembly
+providers = snakemake.params.providers
 genome_dir = snakemake.params.genome_dir
 output = snakemake.output[0]
 
-genomepy.files.rm_rf(logfile)
-genomepy.logger.remove()
-genomepy.logger.add(
-    logfile,
-    format="<green>{time:HH:mm:ss}</green> <bold>|</bold> <blue>{level}</blue> <bold>|</bold> {message}",
-    level="INFO",
-)
-with open(logfile, "a") as log:
+# redirect all messages to a logfile
+with open(logfile, "w") as log:
     with contextlib.redirect_stdout(log), contextlib.redirect_stderr(log):
+        genomepy.logger.remove()
+        genomepy.logger.add(
+            logfile,
+            format="<green>{time:HH:mm:ss}</green> <bold>|</bold> <blue>{level}</blue> <bold>|</bold> {message}",
+            level="INFO",
+        )
+
         # list user plugins
         active_plugins = genomepy.config.config.get("plugin", [])
-        # deactivate user plugins
-        genomepy.manage_plugins("disable", active_plugins)
+        if active_plugins:
+            print("Deactivating user plugins")
+            genomepy.manage_plugins("disable", active_plugins)
 
         # select a provider with the annotation if possible
         a = providers[assembly]["annotation"]
@@ -52,5 +55,6 @@ with open(logfile, "a") as log:
                   "issue.")
 
         finally:
-            # reactivate user plugins
-            genomepy.manage_plugins("enable", active_plugins)
+            if active_plugins:
+                print("Reactivating user plugins")
+                genomepy.manage_plugins("enable", active_plugins)
