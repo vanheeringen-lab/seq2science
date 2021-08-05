@@ -1,4 +1,4 @@
-localrules: extend_genome, get_genome_support_files, unzip_annotation
+localrules: extend_genome, get_genome_support_files
 
 support_exts = [".fa.fai", ".fa.sizes", ".gaps.bed"]
 
@@ -53,8 +53,8 @@ rule get_genome_annotation:
         expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa", **config),
         ancient(expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}{exts}", exts=support_exts, **config)),
     output:
-        gtf=expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.annotation.gtf.gz", **config),
-        bed=expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.annotation.bed.gz", **config),
+        gtf=expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.annotation.gtf", **config),
+        bed=expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.annotation.bed", **config),
     log:
         expand("{log_dir}/get_annotation/{{raw_assembly}}.genome.log", **config),
     benchmark:
