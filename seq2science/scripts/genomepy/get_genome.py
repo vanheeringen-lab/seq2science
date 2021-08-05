@@ -4,7 +4,6 @@ Script to download genome
 import contextlib
 
 import genomepy
-from loguru import logger
 
 logfile = snakemake.log[0]
 providers = snakemake.params.providers
@@ -13,7 +12,12 @@ genome_dir = snakemake.params.genome_dir
 output = snakemake.output[0]
 
 genomepy.files.rm_rf(logfile)
-logger.add(logfile)
+genomepy.logger.remove()
+genomepy.logger.add(
+    logfile,
+    format="<green>{time:HH:mm:ss}</green> <bold>|</bold> <blue>{level}</blue> <bold>|</bold> {message}",
+    level="INFO",
+)
 with open(logfile, "a") as log:
     with contextlib.redirect_stdout(log), contextlib.redirect_stderr(log):
         # list user plugins
