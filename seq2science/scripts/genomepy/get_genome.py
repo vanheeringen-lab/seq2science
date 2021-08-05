@@ -1,13 +1,20 @@
 """
 Script to download genome
 """
-import os
 import contextlib
 
 import genomepy
+from loguru import logger
 
+logfile = snakemake.log[0]
+providers = snakemake.params.providers
+assembly = snakemake.wildcards.raw_assembly
+genome_dir = snakemake.params.genome_dir
+output = snakemake.output[0]
 
-with open(snakemake.log[0], "w") as log:
+genomepy.files.rm_rf(logfile)
+logger.add(logfile)
+with open(logfile, "a") as log:
     with contextlib.redirect_stdout(log), contextlib.redirect_stderr(log):
         # list user plugins
         active_plugins = genomepy.config.config.get("plugin", [])
@@ -15,22 +22,22 @@ with open(snakemake.log[0], "w") as log:
         genomepy.manage_plugins("disable", active_plugins)
 
         # select a provider with the annotation if possible
-        a = snakemake.params.providers[snakemake.wildcards.raw_assembly]["annotation"]
-        g = snakemake.params.providers[snakemake.wildcards.raw_assembly]["genome"]
+        a = providers[assembly]["annotation"]
+        g = providers[assembly]["genome"]
         provider = g if a is None else a
         try:
             genomepy.install_genome(
-                name=snakemake.wildcards.raw_assembly,
+                name=assembly,
                 provider=provider,
-                genomes_dir=snakemake.params.genome_dir,
+                genomes_dir=genome_dir,
                 force=True,
             )
 
             # delete the support files
             # (we recreate these separately to make the output simple for snakemake and prevent redownloading)
-            os.remove(f"{snakemake.output[0]}.fai")
-            os.remove(f"{snakemake.output[0]}.sizes")
-            os.remove(f"{snakemake.output[0][:-2]}gaps.bed")
+            genomepy.files.rm_rf(f"{output}.fai")
+            genomepy.files.rm_rf(f"{output}.sizes")
+            genomepy.files.rm_rf(f"{output[:-2]}gaps.bed")
         except Exception as e:
             print(e)
             print("\nSomething went wrong while downloading the genome (see error message above). "
