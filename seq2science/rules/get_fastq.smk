@@ -28,6 +28,7 @@ rule run2sra:
         # move to output dir since somehow prefetch sometimes puts files in the cwd...
         # and remove the top level folder since prefetch will assume we are done otherwise
         mkdir -p {params.outdir}; cd {params.outdir}; rm -rf {wildcards.run}*
+        vdb-config -on
 
         # three attempts
         for i in {{1..3}}
