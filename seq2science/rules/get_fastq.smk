@@ -28,7 +28,6 @@ rule run2sra:
         # move to output dir since somehow prefetch sometimes puts files in the cwd...
         # and remove the top level folder since prefetch will assume we are done otherwise
         mkdir -p {params.outdir}; cd {params.outdir}; rm -r {wildcards.run}
-        vdb-config -on
 
         # three attempts
         for i in {{1..3}}
@@ -49,6 +48,7 @@ rule run2sra:
         # be a global setting that we haven't discovered yet...
         # bug report: https://github.com/ncbi/sra-tools/issues/533
         if [[ -f "{params.outdir}/{wildcards.run}.sra" ]]; then
+            mkdir {params.outdir}/{wildcards.run}/{wildcards.run}
             mv {params.outdir}/{wildcards.run}.sra {output}
         fi
         """
