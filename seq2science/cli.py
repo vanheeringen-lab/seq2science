@@ -546,7 +546,7 @@ def resource_parser(parsed_args):
     """
     # set some defaults
     parsed_args["resources"] = {
-        **{'parallel_downloads': 1,
+        **{'parallel_downloads': 3,
            'genomepy_downloads': 1,
            'deeptools_limit': 16,
            'R_scripts': 1},
