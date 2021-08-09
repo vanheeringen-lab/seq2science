@@ -185,8 +185,7 @@ rule sieve_bam:
 if not sieve_bam(config):
     rule cp_unsieved2sieved:
         """
-        This simply copies a bam file before that is unsieved, to the final bam directory,
-        in case no sieving is necessary. 
+        Copy a bam file if no sieving is necessary. 
         """
         input:
             rules.mark_duplicates.output.bam
