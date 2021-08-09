@@ -43,6 +43,14 @@ rule run2sra:
             prefetch --max-size 999999999999 --output-directory ./ --log-level debug --progress {wildcards.run} >> {log} 2>&1 && break
             sleep 10
         done
+
+        # TODO: this is the strangest bug, in that on some machines (ocimum) prefetch downloads
+        # to a different location. Not sure what causes this, but this should fix that. Could simply
+        # be a global setting that we haven't discovered yet...
+        # bug report: https://github.com/ncbi/sra-tools/issues/533
+        if [[ -f "{params.outdir}/{wildcards.run}.sra" ]]; then
+            mv {params.outdir}/{wildcards.run}.sra {output}
+        fi
         """
 
 
