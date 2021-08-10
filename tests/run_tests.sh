@@ -77,7 +77,7 @@ if [ $1 = "bowtie2" ]; then
   WF=alignment
   RESULTS_DIR=tests/local_test_results/${ALIGNER}
   mkdir -p $RESULTS_DIR
-  let "c = $CORES / 5"
+  let "c = $CORES / 6"
 
   seq2science run $WF --cores $c -r --configfile tests/$WF/default_config.yaml --snakemakeOptions config={samples:tests/alignment/local_sample.tsv,fastq_dir:../../tinyfastq,genome_dir:tests,result_dir:$RESULTS_DIR,aligner:$ALIGNER} show_failed_logs=True
 
