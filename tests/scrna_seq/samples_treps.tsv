@@ -1,0 +1,6 @@
+# for help with filling out the samples.tsv:		
+# https://vanheeringen-lab.github.io/seq2science/content/workflows/scrna_seq.html#filling-out-the-samples-tsv		
+# also make sure that you use tab as a delimiter		
+sample	assembly	technical_replicates
+SRR13066141	mm10	merge
+SRR13066150	mm10	merge
