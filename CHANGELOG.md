@@ -10,6 +10,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Changed
 
+- changed option `heatmap_deeptools_options` to `deeptools_heatmap_options`
 - Updated sra tools and parallel fastq-dump versions
 
 ### Fixed
