@@ -237,6 +237,15 @@ pipeline {
                         bash ./tests/run_tests.sh hisat2
                         '''
                     },
+                    "MINIMAP2" : {
+                        sh '''#!/usr/bin/env bash
+                        set -e
+                        source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+                        conda activate s2s
+
+                        bash ./tests/run_tests.sh minimap2
+                        '''
+                    },
                     "STAR" : {
                         sh '''#!/usr/bin/env bash
                         set -e
