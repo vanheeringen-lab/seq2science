@@ -16,3 +16,4 @@ remove_blacklist: False
 remove_mito: False
 tn5_shift: False
 minqual: 0
+remove_dups: False

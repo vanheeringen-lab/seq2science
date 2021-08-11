@@ -8,7 +8,7 @@ localrules: multiqc_header_info, multiqc_rename_buttons, multiqc_filter_buttons,
 
 def samtools_stats_input(wildcards):
     if wildcards.directory == config["aligner"]:
-        return expand("{result_dir}/{{directory}}/{{assembly}}-{{sample}}.samtools-coordinate-unsieved.bam", **config)
+        return expand("{result_dir}/{{directory}}/{{assembly}}-{{sample}}.samtools-coordinate-dupmarked.bam", **config)
     return expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config)
 
 
@@ -243,6 +243,8 @@ def fingerprint_multiBamSummary_input(wildcards):
             output["bams"].update(expand(f"{{final_bam_dir}}/{wildcards.assembly}-{control}.samtools-coordinate.bam", **config))
             output["bais"].update(expand(f"{{final_bam_dir}}/{wildcards.assembly}-{control}.samtools-coordinate.bam.bai", **config))
 
+    output["bams"] = list(sorted(output["bams"]))
+    output["bais"] = list(sorted(output["bais"]))
     return output
 
 
@@ -315,7 +317,7 @@ def computeMatrix_input(wildcards):
             output.append(expand(f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{trep}.bw", **config)[0])
         treps_seen.add(trep)
 
-    return output
+    return list(sorted(output))
 
 
 rule computeMatrix_gene:
@@ -416,7 +418,7 @@ rule plotHeatmap_peak:
     resources:
         deeptools_limit=lambda wildcards, threads: threads
     params: 
-        params=config.get("heatmap_deeptools_options", ""),
+        params=config.get("deeptools_heatmap_options", ""),
         slop=config.get("heatmap_slop", 0)
     shell:
         """
@@ -698,7 +700,8 @@ def get_qc_files(wildcards):
             qc['files'].update(expand("{qc_dir}/dupRadar/{{assembly}}-dupRadar_mqc.png",**config))
 
     # DESeq2 sample distance/correlation cluster heatmaps
-    if (get_peak_calling_qc in quality_control or get_rna_qc in quality_control) and len(treps.index) > 2:
+    if ((get_peak_calling_qc in quality_control and "narrowPeak" in [get_peak_ftype(pc) for pc in list(config["peak_caller"].keys())])
+    or get_rna_qc in quality_control) and len(treps.index) > 2:
         plots = ["sample_distance_clustering", "pearson_correlation_clustering", "spearman_correlation_clustering"]
         files = expand("{qc_dir}/plotCorrelation/{{assembly}}-DESeq2_{plots}_mqc.png", plots=plots, **config)
         # only perform clustering if there are 2 or more groups in the assembly
