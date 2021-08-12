@@ -415,9 +415,8 @@ def _explain(args, base_dir, workflows_dir, config_path):
     def log_handler(log):
         if log["level"] == "job_info" and \
            "msg" in log and \
-           log["msg"] is not None and \
            log["name"] not in rules_used and \
-           log["msg"] not in rules_used.values():
+           log["msg"] not in (list(rules_used.values()) + [None]):
             rules_used[log["name"]] = log["msg"]
 
     parsed_args["log_handler"] = [log_handler]
