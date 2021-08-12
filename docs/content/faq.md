@@ -53,3 +53,15 @@ Additionally, Seq2science employs strict quality checks by default.
 You could try reducing the `min_mapping_quality` (for HTSeq and FeatureCounts) or change the parameters to the quantifier.
 
 The biggest differences in expressed genes can be found by switching gene annotation, followed by switching quantifier (to or from Salmon).
+
+## scRNA-seq: Kallisto|Bustools: \[~warn\] no reads pseudoaligned
+This error means that no reads were (pseudo)aligned to the reference genome! 
+Oh no! 
+This is probably because you did not specify the chemistry correctly. 
+Take a look at how to [specify the BUS format](https://vanheeringen-lab.github.io/seq2science/content/workflows/scrna_seq.html#bus-barcode-umi-set-format) for kallisto|bustools.
+
+## scRNA-seq: Kallisto|Bustools: what():  std::bad_alloc
+bad alloc generally means that kallisto|bustools tried to reserve some memory, but there was none left to be reserved...
+Are there other programs running that take up a lot of memory?
+For us (the developers) it also seems as if this rule sometimes happens, seemingly at random.
+Simply restarting seq2science might just solve the problem!
