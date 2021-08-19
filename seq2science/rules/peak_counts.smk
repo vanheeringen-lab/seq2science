@@ -123,18 +123,10 @@ rule bedtools_slop:
 
 def get_coverage_table_replicates(file_ext):
     def wrapped(wildcards):
-        if wildcards.peak_caller == "macs2":
+        if wildcards.peak_caller in ["macs2", "genrich"]:
             return expand(
                 [
                     f"{{final_bam_dir}}/{wildcards.assembly}-{replicate}.samtools-coordinate.{file_ext}"
-                    for replicate in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index
-                ],
-                **config,
-            )
-        elif wildcards.peak_caller == "genrich":
-            return expand(
-                [
-                    f"{{final_bam_dir}}/{wildcards.assembly}-{replicate}.sambamba-queryname.{file_ext}"
                     for replicate in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index
                 ],
                 **config,

@@ -90,7 +90,32 @@ for key, value in config.items():
 
 
 # read the samples.tsv file as all text, drop comment lines
-samples = pd.read_csv(config["samples"], sep='\t', dtype='str', comment='#')
+try:
+    samples = pd.read_csv(config["samples"], sep='\t', dtype='str', comment='#')
+except Exception as e:
+    logger.error("An error occurred while reading the samples.tsv:")
+    column_error = re.search("Expected \d+ fields in line \d+, saw \d+", str(e.args))
+    if column_error:
+        digits = re.findall("\d+", column_error.group(0))
+        logger.error(f"We found {digits[2]} columns on line {digits[1]}, but your header has only {digits[0]} columns...")
+        show_header = True
+        with open(config["samples"]) as s:
+            for n, line in enumerate(s):
+                if line.startswith("#"):
+                    continue
+                line = line.strip('\n').split('\t')
+                if show_header:
+                    logger.error(f"  header columns: {line}")
+                    show_header = False
+                    continue
+                if n == int(digits[1])-1:
+                    logger.error(f"  line {digits[1]} columns: {line}")
+                    break
+        logger.info("\n(if this was intentional, you can give this column an arbitrary name such as 'notes')")
+        os._exit(0)
+    else:
+        logger.error("")
+        raise e
 samples.columns = samples.columns.str.strip()
 
 assert all([col[0:7] not in ["Unnamed", ''] for col in samples]), \
