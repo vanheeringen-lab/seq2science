@@ -125,9 +125,11 @@ else:
             text_join(start="Mapped reads were removed if they ",
                 lst=[f"did not have a minimum mapping quality of {config['min_mapping_quality']}" if config.get("min_mapping_quality",0) > 0 else "",
                      "were a (secondary) multimapper" if config.get("only_primary_align") else "",
+                     "were a PCR/optical duplicate" if config.get("remove_dups") else "",
                      f"aligned inside the {hyperref('ENCODE blacklist')}" if config.get("remove_blacklist") else "",
-                     f"had a template length longer than {config['max_template_length']} bp and shorter than {config['min_template_length']} bp" if config.get("filter_on_size") else ""],
-                end=" and finally were tn5 bias shifted by seq2science." if config.get("tn5_shift",0) > 0 else "."),
+                     f"had a template length longer than {config['max_template_length']} bp and shorter than {config['min_template_length']} bp" if config.get("filter_on_size") else "",
+                    ]
+                 end=" and finally were tn5 bias shifted by seq2science." if config.get("tn5_shift",0) > 0 else "."),
         "sambamba_sort": f"Bam files were sorted with {href_v('sambamba')}.",
         "mark_duplicates": f"Afterwards, duplicate reads were {'removed' if 'REMOVE_DUPLICATES=true' in options('markduplicates') else 'marked'} with {href_v('picard',text='Picard MarkDuplicates')}.",
         "bam2cram": f"Bam files were converted to cram format with samtools {href_v('samtools')}.",
