@@ -597,6 +597,7 @@ class PickleDict(dict):
         If impossible, settle with the first provider that serves the genome.
         """
         logger.info("Determining assembly providers")
+        genomepy.logger.remove()
         for p in genomepy.providers.online_providers():
             for assembly in search_assemblies:
                 if assembly not in self:
