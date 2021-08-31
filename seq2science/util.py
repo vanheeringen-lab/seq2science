@@ -1,7 +1,6 @@
 """
 Utility functions for seq2science
 """
-import contextlib
 import re
 import os
 import sys
