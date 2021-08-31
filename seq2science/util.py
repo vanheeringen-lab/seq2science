@@ -598,6 +598,11 @@ class PickleDict(dict):
         """
         logger.info("Determining assembly providers")
         genomepy.logger.remove()
+        genomepy.logger.add(
+            logger.logfile,
+            format="<green>{time:HH:mm:ss}</green> <bold>|</bold> <blue>{level}</blue> <bold>|</bold> {message}",
+            level="INFO",
+        )
         for p in genomepy.providers.online_providers():
             for assembly in search_assemblies:
                 if assembly not in self:
