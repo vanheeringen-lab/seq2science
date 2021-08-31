@@ -611,13 +611,14 @@ class PickleDict(dict):
                         if assembly not in self:
                             self[assembly] = {"genome": None, "annotation": None}
 
-                        if assembly not in p.genomes:
-                            continue  # check again next provider
+                        not_here = assembly not in p.genomes
+                        already_found = self[assembly]["annotation"] is not None
+                        if not_here or already_found:
+                            continue
 
                         if p.annotation_links(assembly):
                             self[assembly]["genome"] = p.name
                             self[assembly]["annotation"] = p.name
-                            search_assemblies.remove(assembly)
 
                         elif self[assembly]["genome"] is None:
                             self[assembly]["genome"] = p.name
@@ -630,7 +631,7 @@ class PickleDict(dict):
         Check if the genome (and the annotation if required) can be downloaded for each specified assembly.
         """
         for assembly in assemblies:
-            if self.get(assembly, {}).get("genome") is None:
+            if self[assembly]["genome"] is None:
                 logger.warning(
                     f"Could not download assembly {assembly}.\n"
                     f"Find alternative assemblies with `genomepy search {assembly}`"
