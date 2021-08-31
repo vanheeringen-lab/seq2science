@@ -598,29 +598,28 @@ class PickleDict(dict):
         If impossible, settle with the first provider that serves the genome.
         """
         logger.info("Determining assembly providers")
-        genomepy.logger.remove()
         with open(logger.logfile, 'w') as log:
-            with contextlib.redirect_stdout(log), contextlib.redirect_stderr(log):
-                genomepy.logger.add(
-                    log,
-                    format="<green>{time:HH:mm:ss}</green> <bold>|</bold> <blue>{level}</blue> <bold>|</bold> {message}",
-                    level="INFO",
-                )
-                for p in genomepy.providers.online_providers():
-                    for assembly in search_assemblies:
-                        if assembly not in self:
-                            self[assembly] = {"genome": None, "annotation": None}
+            genomepy.logger.remove()
+            genomepy.logger.add(
+                log,
+                format="<green>{time:HH:mm:ss}</green> <bold>|</bold> <blue>{level}</blue> <bold>|</bold> {message}",
+                level="INFO",
+            )
+            for p in genomepy.providers.online_providers():
+                for assembly in search_assemblies:
+                    if assembly not in self:
+                        self[assembly] = {"genome": None, "annotation": None}
 
-                        if assembly not in p.genomes:
-                            continue  # check again next provider
+                    if assembly not in p.genomes:
+                        continue  # check again next provider
 
-                        if p.annotation_links(assembly):
-                            self[assembly]["genome"] = p.name
-                            self[assembly]["annotation"] = p.name
-                            search_assemblies.remove(assembly)
+                    if p.annotation_links(assembly):
+                        self[assembly]["genome"] = p.name
+                        self[assembly]["annotation"] = p.name
+                        search_assemblies.remove(assembly)
 
-                        elif self[assembly]["genome"] is None:
-                            self[assembly]["genome"] = p.name
+                    elif self[assembly]["genome"] is None:
+                        self[assembly]["genome"] = p.name
 
         # store added assemblies
         self.save()
