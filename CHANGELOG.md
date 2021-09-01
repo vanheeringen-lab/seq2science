@@ -10,9 +10,11 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Changed
 
-- duplicate read marking happens before sieving and no reads get removed. Removal of duplicate reads now controleld with flag `remove_dups` in the config.
+- duplicate read marking happens before sieving and no reads get removed. Removal of duplicate reads now controlled with flag `remove_dups` in the config.
 - changed option `heatmap_deeptools_options` to `deeptools_heatmap_options`
 - Updated sra tools and parallel fastq-dump versions
+- Updated genomepy version
+- Gene annotations are no longer gzipped and ungzipped. This should reduce rerunning.
 
 ### Fixed
 

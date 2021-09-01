@@ -1,6 +1,3 @@
-import os.path
-import yaml
-
 if not config.get("explain_rule"):
     def explain_rule(name):
         """
@@ -9,6 +6,10 @@ if not config.get("explain_rule"):
         return None
 
 else:
+    import os.path
+    import yaml
+    import genomepy
+
     REFERENCES = {
         'apeglm': 'https://doi.org/10.1093/bioinformatics/bty895',
         'ashr': 'https://doi.org/10.1093/biostatistics/kxw041',
