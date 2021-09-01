@@ -265,7 +265,7 @@ samtools_index:
 ```
 markduplicates:
     description: the parameters of picard markduplicates
-    default: REMOVE_DUPLICATES=true -Xms4G -Xmx6G MAX_FILE_HANDLES_FOR_READ_ENDS_MAP=999
+    default: -Xms4G -Xmx6G MAX_FILE_HANDLES_FOR_READ_ENDS_MAP=999
     type: string
 ```
 #####min_mapping_quality
@@ -300,6 +300,13 @@ remove_mito:
 ```
 only_primary_align:
     description: whether or not to only keep primary aligned reads (no multimappers)
+    default: False
+    type: boolean
+```
+#####remove_dups
+```
+remove_dups:
+    description: whether or not to remove duplicate reads (either optical or PCR)
     default: False
     type: boolean
 ```
@@ -449,9 +456,9 @@ heatmap_npeaks:
     default: 20000
     type: integer
 ```
-#####heatmap_deeptools_options
+#####deeptools_heatmap_options
 ```
-heatmap_deeptools_options:
+deeptools_heatmap_options:
     description: the options passed to deeptools when visualizing the heatmap
     default: --kmeans 6 --xAxisLabel "Summit distance (bp)"
     type: string

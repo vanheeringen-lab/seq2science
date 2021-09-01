@@ -92,6 +92,25 @@
 <li class="toctree-l1 current"><a class="reference internal" href="extensive_docs.html">Extensive docs</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="cli.html">Command line interface</a></li>
 <li class="toctree-l2"><a class="reference internal" href="all_rules.html">Per rule explanation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#single-end-reads-never-output-allsizes-so-just-touch-the-file-when-filtering-on-size">single-end reads never output allsizes so just touch the file when filtering on size</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#move-to-output-dir-since-somehow-parallel-fastq-dump-sometimes-puts-files-in-the-cwd">move to output dir since somehow parallel-fastq-dump sometimes puts files in the cwd…</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#acquire-the-lock">acquire the lock</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#dump-to-tmp-dir">dump to tmp dir</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#rename-file-and-move-to-output-dir">rename file and move to output dir</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#id4">move to output dir since somehow parallel-fastq-dump sometimes puts files in the cwd…</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#id5">acquire the lock</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#id6">dump to tmp dir</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#id7">rename file and move to output dir</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#move-all-non-log-files-to-output-directory-this-way-the-log-files-are-kept-on-error">move all non-log files to output directory (this way the log files are kept on error)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#generate-annotation-files">generate annotation files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#check-if-gtf-has-gene-names-if-l-0-use-gene-name-else-transcript-id">check if gtf has gene_names &gt; if l!=0, use gene_name, else transcript_id</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#switch-columns-1-transcript-id-and-12-gene-name">switch columns 1 (transcript_id) and 12 (gene_name)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#remove-lines-with-missing-headers">remove lines with missing headers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#generate-searchable-indexes-by-1-transcriptid-2-geneid-8-proteinid-9-genename-10-transcriptname">generate searchable indexes (by 1: transcriptID, 2: geneId, 8: proteinID, 9: geneName, 10: transcriptName)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#now-rename-to-proper-output">now rename to proper output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#move-the-trimming-reports-to-qc-directory">move the trimming reports to qc directory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#id14">now rename to proper output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="all_rules.html#move-the-trimming-report-to-qc-directory">move the trimming report to qc directory</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">All configurable options</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#general">General</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#samples">samples</a></li>
@@ -132,6 +151,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#remove-blacklist">remove_blacklist</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#remove-mito">remove_mito</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#only-primary-align">only_primary_align</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#remove-dups">remove_dups</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#create-qc-report">create_qc_report</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#bam-sort-mem">bam_sort_mem</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#custom-genome-extension">custom_genome_extension</a></li>
@@ -157,7 +177,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#logbase">logbase</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#heatmap-slop">heatmap_slop</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#heatmap-npeaks">heatmap_npeaks</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#heatmap-deeptools-options">heatmap_deeptools_options</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#deeptools-heatmap-options">deeptools_heatmap_options</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#workflow-rna-seq">Workflow: RNA-seq</a><ul>
@@ -593,7 +613,7 @@
 <h3>markduplicates<a class="headerlink" href="#markduplicates" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>markduplicates:
     description: the parameters of picard markduplicates
-    default: REMOVE_DUPLICATES=true -Xms4G -Xmx6G MAX_FILE_HANDLES_FOR_READ_ENDS_MAP=999
+    default: -Xms4G -Xmx6G MAX_FILE_HANDLES_FOR_READ_ENDS_MAP=999
     type: string
 </pre></div>
 </div>
@@ -638,6 +658,15 @@
 <h3>only_primary_align<a class="headerlink" href="#only-primary-align" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>only_primary_align:
     description: whether or not to only keep primary aligned reads (no multimappers)
+    default: False
+    type: boolean
+</pre></div>
+</div>
+</div>
+<div class="section" id="remove-dups">
+<h3>remove_dups<a class="headerlink" href="#remove-dups" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>remove_dups:
+    description: whether or not to remove duplicate reads (either optical or PCR)
     default: False
     type: boolean
 </pre></div>
@@ -829,9 +858,9 @@
 </pre></div>
 </div>
 </div>
-<div class="section" id="heatmap-deeptools-options">
-<h3>heatmap_deeptools_options<a class="headerlink" href="#heatmap-deeptools-options" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>heatmap_deeptools_options:
+<div class="section" id="deeptools-heatmap-options">
+<h3>deeptools_heatmap_options<a class="headerlink" href="#deeptools-heatmap-options" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>deeptools_heatmap_options:
     description: the options passed to deeptools when visualizing the heatmap
     default: --kmeans 6 --xAxisLabel &quot;Summit distance (bp)&quot;
     type: string

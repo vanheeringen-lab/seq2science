@@ -169,6 +169,12 @@ awk 'BEGIN {{ FS = "@" }} NR==1{{gsub("{wildcards.assembly}-|.samtools-coordinat
 {{print $0}}' >> {output}
 ```
 
+#### cp_unsieved2sieved
+Copy a bam file if no sieving is necessary. 
+```
+cp {input} {output}
+```
+
 #### create_SNAP_object
 Create a snapobject for each BAM file. 
 
@@ -755,6 +761,15 @@ do
     prefetch --max-size 999999999999 --output-directory ./ --log-level debug --progress {wildcards.run} >> {log} 2>&1 && break
     sleep 10
 done
+
+# TODO: this is the strangest bug, in that on some machines (ocimum) prefetch downloads
+# to a different location. Not sure what causes this, but this should fix that. Could simply
+# be a global setting that we haven't discovered yet...
+# bug report: https://github.com/ncbi/sra-tools/issues/533
+if [[ -f "{params.outdir}/{wildcards.run}.sra" ]]; then
+    mkdir {params.outdir}/{wildcards.run}
+    mv {params.outdir}/{wildcards.run}.sra {output}
+fi
 ```
 
 #### runs2sample
@@ -815,7 +830,7 @@ samtools sort -@ {threads} {params.memory} {input} -o {output} \
 ```
 
 #### samtools_sort
-Sort the result of sieving with the samtools sorter.
+Sort the result of shiftsieving with the samtools sorter.
 ```
 # we set this trap to remove temp files when prematurely ending the rule
 trap "rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
@@ -839,8 +854,8 @@ This rule does (at least) one of these:
 * tn5 shift adjustment
 * remove multimappers
 * remove reads inside the blacklist
-* filter paired-end reads on transcript length
- 
+* remove duplicates
+* filter paired-end reads on transcript length 
 ```
 samtools view -h {params.prim_align} {params.minqual} {params.blacklist} \
 {input.bam} | {params.atacshift} {params.sizesieve}
@@ -1048,7 +1063,4 @@ mv $report {output.qc}
 
 #### twobit
 Generate a 2bit file for each assembly
-
-#### unzip_annotation
-Unzip (b)gzipped files.
 
