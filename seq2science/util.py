@@ -598,6 +598,10 @@ class PickleDict(dict):
         If impossible, settle with the first provider that serves the genome.
         """
         logger.info("Determining assembly providers")
+        for assembly in search_assemblies:
+            if assembly not in self:
+                self[assembly] = {"genome": None, "annotation": None}
+
         with open(logger.logfile, 'w') as log:
             with contextlib.redirect_stdout(log), contextlib.redirect_stderr(log):
                 genomepy.logger.remove()
@@ -607,14 +611,10 @@ class PickleDict(dict):
                     level="INFO",
                 )
                 for p in genomepy.providers.online_providers():
+                    search_assemblies = [a for a in search_assemblies if self[a]["annotation"] is None]
                     for assembly in search_assemblies:
-                        if assembly not in self:
-                            self[assembly] = {"genome": None, "annotation": None}
-
-                        not_here = assembly not in p.genomes
-                        already_found = self[assembly]["annotation"] is not None
-                        if not_here or already_found:
-                            continue
+                        if assembly not in p.genomes:
+                            continue  # check again next provider
 
                         if p.annotation_links(assembly):
                             self[assembly]["genome"] = p.name
@@ -622,6 +622,9 @@ class PickleDict(dict):
 
                         elif self[assembly]["genome"] is None:
                             self[assembly]["genome"] = p.name
+
+                    if all(self[a]["annotation"] for a in search_assemblies):
+                        break  # don't load the next provider
 
         # store added assemblies
         self.save()
