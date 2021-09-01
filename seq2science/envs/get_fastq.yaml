@@ -5,5 +5,5 @@ channels:
   - defaults
 dependencies:
   - pkgs/main::pigz=2.4
-  - bioconda::sra-tools=2.10.8
-  - bioconda::parallel-fastq-dump=0.6.6
+  - bioconda::sra-tools=2.11.0
+  - bioconda::parallel-fastq-dump=0.6.7

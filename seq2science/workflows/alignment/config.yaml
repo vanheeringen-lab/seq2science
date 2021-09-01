@@ -31,3 +31,4 @@ bam_sorter:
 remove_blacklist: true
 only_primary_align: true
 min_mapping_quality: 30
+remove_dups: false

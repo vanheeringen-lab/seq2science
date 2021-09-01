@@ -413,7 +413,10 @@ def _explain(args, base_dir, workflows_dir, config_path):
                                f"seq2science v{seq2science.__version__} (https://doi.org/10.5281/zenodo.3921913)."}
 
     def log_handler(log):
-        if log["level"] == "job_info" and "msg" in log and log["msg"] is not None and log["name"] not in rules_used:
+        if log["level"] == "job_info" and \
+           "msg" in log and \
+           log["name"] not in rules_used and \
+           log["msg"] not in (list(rules_used.values()) + [None]):
             rules_used[log["name"]] = log["msg"]
 
     parsed_args["log_handler"] = [log_handler]
@@ -515,7 +518,7 @@ def core_parser(parsed_args):
     """
     cores = parsed_args["cores"]
     sorters = ["samtools_presort"]
-    aligners = ["bwa_mem", "bwa_mem2", "bowtie2_align", "hisat2_align", "star_align"]
+    aligners = ["bowtie2_align", "bwa_mem", "bwa_mem2", "hisat2_align", "minimap2_align", "star_align"]
 
     d_sorters_threads = 2
     d_aligner_threads = 10
