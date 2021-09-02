@@ -8,6 +8,8 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+## [0.5.5] - 2021-09-01
+
 ### Changed
 
 - duplicate read marking happens before sieving and no reads get removed. Removal of duplicate reads now controlled with flag `remove_dups` in the config.
@@ -424,7 +426,8 @@ Many minor bug- and quality of life fixes.
 ## [0.0.0] - 2020-06-11
 First release of seq2science!
 
-[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.4...master
+[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.5...master
+[0.5.5]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.4...v0.5.5
 [0.5.4]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.3...v0.5.4
 [0.5.3]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.2...v0.5.3
 [0.5.2]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.1...v0.5.2
