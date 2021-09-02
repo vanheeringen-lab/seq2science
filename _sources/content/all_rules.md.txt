@@ -32,7 +32,7 @@ lncnt=$(wc -l {input} | echo "$(grep -Po ".*(?=\ )")":)
 splits+=($lncnt)
 
 counter=1
-for split in "${{splits[@]::${{#splits[@]}}-1}}";
+for split in "${{splits[@]::${{\#splits[@]}}-1}}";
 do
     filename=$(grep -Po "(?<=:).*" <<< $split);
     if [[ $filename =~ {wildcards.sample} ]]; then
@@ -163,8 +163,8 @@ for use in function `DEXSeqDataSet()`
 Use gimmemotif's coverage_table to generate a count table with the nr of reads
 under each peak per sample.
 ```
-echo "# The number of reads under each peak" > {output} 
-coverage_table -p {input.peaks} -d {input.replicates} 2> {log} | grep -vE "^#" 2>> {log} |  
+echo "\# The number of reads under each peak" > {output} 
+coverage_table -p {input.peaks} -d {input.replicates} 2> {log} | grep -vE "^\#" 2>> {log} |  
 awk 'BEGIN {{ FS = "@" }} NR==1{{gsub("{wildcards.assembly}-|.samtools-coordinate","",$0)}}; \
 {{print $0}}' >> {output}
 ```
@@ -255,7 +255,7 @@ Download single-end fastq files directly from the ENA.
 #### extend_genome
 Append given file(s) to genome
 ```
-# extend the genome.fa
+\# extend the genome.fa
 cp {input.genome} {output.genome}
 
 for FILE in {input.extension}; do
@@ -266,14 +266,14 @@ done
 #### extend_genome_annotation
 Append given file(s) to genome annotation
 ```
-# extend the genome.annotation.gtf
+\# extend the genome.annotation.gtf
 cp {input.gtf} {output.gtf}
 
 for FILE in {input.extension}; do
     cat $FILE >> {output.gtf}
 done
 
-# generate an extended genome.annotation.bed
+\# generate an extended genome.annotation.bed
 gtfToGenePred {output.gtf} {output.gp}
 genePredToBed {output.gp} {output.bed}
 ```
@@ -342,14 +342,14 @@ Use featureCounts to generate the fraction reads in peaks score
 (frips/assigned reads). See: https://www.biostars.org/p/337872/ and
 https://www.biostars.org/p/228636/
 ```
-# Make a custom "SAF" file which featureCounts needs:
+\# Make a custom "SAF" file which featureCounts needs:
 awk 'BEGIN{{FS=OFS="\t"; print "GeneID\tChr\tStart\tEnd\tStrand"}}{{print $4, $1, $2+1, $3, "."}}' \
 {input.peak} 1> {output.tmp_saf} 2> {log}
 
-# run featureCounts
+\# run featureCounts
 featureCounts -T {threads} -p -a {output.tmp_saf} -F SAF -o {output.real_out} {input.bam} > {log} 2>&1
 
-# move the summary to qc directory
+\# move the summary to qc directory
 mv $(dirname {output.real_out})/$(basename {output.summary}) {output.summary}
 ```
 
@@ -489,7 +489,7 @@ kb count \
 -t {threads} -g {params.basename}_t2g.txt \
 -o {params.outdir} -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
 {params.barcode_arg} {params.options} {input.reads} > {log} 2>&1
-# Validate output
+\# Validate output
 if grep -q 'ERROR\|bad_alloc' "{log}"; then
   exit 1
 fi  
@@ -542,7 +542,7 @@ echo "preparing to run unique-kmers.py with -k $kmer_size" >> {log}
 GENSIZE=$(unique-kmers.py {params.genome} -k $kmer_size --quiet 2>&1 | grep -P -o '(?<=\.fa: ).*')
 echo "kmer size: $kmer_size, and effective genome size: $GENSIZE" >> {log}
 
-# call peaks
+\# call peaks
 macs2 callpeak --bdg -t {input.bam} {params.control} --outdir {config[result_dir]}/macs2/ -n {wildcards.assembly}-{wildcards.sample} \
 {params.macs_params} -g $GENSIZE -f {params.format} >> {log} 2>&1
 ```
@@ -572,7 +572,7 @@ cat {output.tmppeaks} | tail -n +2 > {output.peaks}
 #### mark_duplicates
 Mark all duplicate reads in a bam file with picard MarkDuplicates
 ```
-# use the TMPDIR if set, and not given in the config
+\# use the TMPDIR if set, and not given in the config
 if [[ ${{TMPDIR:=F}} == "F" ]] || [[ "{params}" == *TMP_DIR* ]]
 then
     tmpdir=""
@@ -659,7 +659,7 @@ Get onehot encodings of which peaks are found in which samples
             mv {output.tmp} {output.real}
         done
         
-        echo -e "# onehot encoding of which condition contains which peaks\\n$(cat {output.real})" > {output.tmp} && cp {output.tmp} {output.real}
+        echo -e "\# onehot encoding of which condition contains which peaks\\n$(cat {output.real})" > {output.tmp} && cp {output.tmp} {output.real}
         
 ```
 
@@ -667,7 +667,7 @@ Get onehot encodings of which peaks are found in which samples
 Convert a narrowpeak file into a bignarrowpeak file.
 https://genome-source.gi.ucsc.edu/gitlist/kent.git/tree/master/src/hg/lib/
 ```
-# keep first 10 columns, idr adds extra columns we do not need for our bigpeak
+\# keep first 10 columns, idr adds extra columns we do not need for our bigpeak
 cut -d$'\t' -f 1-{params.columns} {input.narrowpeak} |
 awk -v OFS="\t" '{{$5=$5>1000?1000:$5}} {{print}}' | 
 bedSort /dev/stdin {output.tmp} > {log} 2>&1
@@ -744,28 +744,28 @@ Download the SRA of a sample by its unique identifier.
 Tries first downloading with the faster ascp protocol, if that fails it
 falls back on the slower http protocol.
 ```
-# move to output dir since somehow prefetch sometimes puts files in the cwd...
-# and remove the top level folder since prefetch will assume we are done otherwise
+\# move to output dir since somehow prefetch sometimes puts files in the cwd...
+\# and remove the top level folder since prefetch will assume we are done otherwise
 mkdir -p {params.outdir}; cd {params.outdir}; rm -r {wildcards.run}
 
-# three attempts
+\# three attempts
 for i in {{1..3}}
 do
-    # acquire a lock
+    \# acquire a lock
     (
         flock --timeout 30 200 || continue
         sleep 2
     ) 200>{pysradb_cache_lock}
 
-    # dump
+    \# dump
     prefetch --max-size 999999999999 --output-directory ./ --log-level debug --progress {wildcards.run} >> {log} 2>&1 && break
     sleep 10
 done
 
-# TODO: this is the strangest bug, in that on some machines (ocimum) prefetch downloads
-# to a different location. Not sure what causes this, but this should fix that. Could simply
-# be a global setting that we haven't discovered yet...
-# bug report: https://github.com/ncbi/sra-tools/issues/533
+\# TODO: this is the strangest bug, in that on some machines (ocimum) prefetch downloads
+\# to a different location. Not sure what causes this, but this should fix that. Could simply
+\# be a global setting that we haven't discovered yet...
+\# bug report: https://github.com/ncbi/sra-tools/issues/533
 if [[ -f "{params.outdir}/{wildcards.run}.sra" ]]; then
     mkdir {params.outdir}/{wildcards.run}
     mv {params.outdir}/{wildcards.run}.sra {output}
@@ -821,7 +821,7 @@ samtools index {input} {output} > {log} 2>&1
 #### samtools_presort
 (Pre)sort the result of alignment with the samtools sorter.
 ```
-# we set this trap to remove temp files when prematurely ending the rule
+\# we set this trap to remove temp files when prematurely ending the rule
 trap "rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
 rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2> {log}
 
@@ -832,7 +832,7 @@ samtools sort -@ {threads} {params.memory} {input} -o {output} \
 #### samtools_sort
 Sort the result of shiftsieving with the samtools sorter.
 ```
-# we set this trap to remove temp files when prematurely ending the rule
+\# we set this trap to remove temp files when prematurely ending the rule
 trap "rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
 rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2> {log}
 
@@ -861,7 +861,7 @@ samtools view -h {params.prim_align} {params.minqual} {params.blacklist} \
 {input.bam} | {params.atacshift} {params.sizesieve}
 samtools view -b > {output.final} 2> {log}
 
-# single-end reads never output allsizes so just touch the file when filtering on size
+\# single-end reads never output allsizes so just touch the file when filtering on size
 {params.sizesieve_touch}
 ```
 
@@ -885,22 +885,22 @@ source: https://github.com/Gaius-Augustus/MakeHub/blob/master/make_hub.py
 Downloaded (raw) SRAs are converted to paired-end fastq files.
 Forward and reverse samples will be switched if forward/reverse names are not lexicographically ordered.
 ```
-# move to output dir since somehow parallel-fastq-dump sometimes puts files in the cwd...
+\# move to output dir since somehow parallel-fastq-dump sometimes puts files in the cwd...
 mkdir -p {output.tmpdir}; cd {output.tmpdir}
 
-# acquire the lock
+\# acquire the lock
 (
     flock --timeout 30 200 || exit 1
     sleep 3
 ) 200>{pysradb_cache_lock}
 
-# dump to tmp dir
+\# dump to tmp dir
 parallel-fastq-dump -s {input} -O {output.tmpdir} \
 --threads {threads} --split-e --skip-technical --dumpbase \
 --readids --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' \
 --defline-qual '+' --gzip >> {log} 2>&1
 
-# rename file and move to output dir
+\# rename file and move to output dir
 mv {output.tmpdir}/*_1* {output.fastq[0]}
 mv {output.tmpdir}/*_2* {output.fastq[1]}
 ```
@@ -908,22 +908,22 @@ mv {output.tmpdir}/*_2* {output.fastq[1]}
 #### sra2fastq_SE
 Downloaded (raw) SRAs are converted to single-end fastq files.
 ```
-# move to output dir since somehow parallel-fastq-dump sometimes puts files in the cwd...
+\# move to output dir since somehow parallel-fastq-dump sometimes puts files in the cwd...
 mkdir -p {output.tmpdir}; cd {output.tmpdir}
 
-# acquire the lock
+\# acquire the lock
 (
     flock --timeout 30 200 || exit 1
     sleep 3
 ) 200>{pysradb_cache_lock}
 
-# dump to tmp dir
+\# dump to tmp dir
 parallel-fastq-dump -s {input} -O {output.tmpdir} \
 --threads {threads} --split-spot --skip-technical --dumpbase --readids \
 --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' \
 --defline-qual '+' --gzip >> {log} 2>&1
 
-# rename file and move to output dir
+\# rename file and move to output dir
 mv {output.tmpdir}/*.fastq.gz {output.fastq}
 ```
 
@@ -939,7 +939,7 @@ STAR --genomeDir {input.index} --readFilesIn {params.input} --readFilesCommand g
 --outFileNamePrefix {log}/ --outTmpDir {output.dir}/STARtmp \
 --runThreadN {threads} {params.params} > {output.pipe} 2> {log}/Log.stderr.out
 
-# move all non-log files to output directory (this way the log files are kept on error)
+\# move all non-log files to output directory (this way the log files are kept on error)
 find {log} -type f ! -name Log* -exec mv {{}} {output.dir} \;
 ```
 
@@ -965,21 +965,21 @@ done
 echo $x
             }}
 
-            # set genome dependent variables
+            \# set genome dependent variables
             NBits=""
             NBases=""
             GenomeLength=$(awk -F"\t" '{{x+=$2}}END{{printf "%i", x}}' {input.sizefile})
             NumberOfReferences=$(awk 'END{{print NR}}' {input.sizefile})
             if [ $NumberOfReferences -gt 5000 ]; then
-                # for large genomes, --genomeChrBinNbits should be scaled to min(18,log2[max(GenomeLength/NumberOfReferences,ReadLength)])
-                # ReadLength is skipped here, as it is unknown
+                \# for large genomes, --genomeChrBinNbits should be scaled to min(18,log2[max(GenomeLength/NumberOfReferences,ReadLength)])
+                \# ReadLength is skipped here, as it is unknown
                 LpR=$(log2 $((GenomeLength / NumberOfReferences)))
                 NBits="--genomeChrBinNbits $(($LpR<18 ? $LpR : 18))"
                 printf "NBits: $NBits\n\n" >> {log} 2>&1
             fi
 
             if [ $GenomeLength -lt 268435456 ]; then
-                # for small genomes, --genomeSAindexNbases must be scaled down to min(14, log2(GenomeLength)/2-1)
+                \# for small genomes, --genomeSAindexNbases must be scaled down to min(14, log2(GenomeLength)/2-1)
                 logG=$(( $(log2 $GenomeLength) / 2 - 1 ))
                 NBases="--genomeSAindexNbases $(( $logG<14 ? $logG : 14 ))"
                 printf "NBases: $NBases\n\n" >> {log} 2>&1
@@ -1006,16 +1006,16 @@ Generate a searchable annotation & index for each assembly
 sources: https://genome.ucsc.edu/goldenPath/help/hubQuickStartSearch.html, 
 https://www.biostars.org/p/272649/
 ```
-# generate annotation files
+\# generate annotation files
 gtfToGenePred -allErrors -ignoreGroupsWithoutExons -geneNameAsName2 -genePredExt {input.gtf} {output.genePred} -infoOut={output.info} >> {log} 2>&1
 
-# check if gtf has gene_names > if l!=0, use gene_name, else transcript_id
+\# check if gtf has gene_names > if l!=0, use gene_name, else transcript_id
 l=$(head -n 100 {input.gtf} | (grep gene_name || true) | wc -l)
 
-# switch columns 1 (transcript_id) and 12 (gene_name)
+\# switch columns 1 (transcript_id) and 12 (gene_name)
 awk -v len=$l 'BEGIN {{ FS = "\t" }}; {{ if(len!="0") {{ t = $1; $1 = $12; $12 = t; print; }} else {{ print; }} }}' {output.genePred} > {output.genePrednamed}
 
-# remove lines with missing headers        
+\# remove lines with missing headers        
 grep -v "^ " {output.genePrednamed} > {output.genePred}
 
 genePredToBed {output.genePred} {output.genePredbed} >> {log} 2>&1
@@ -1024,8 +1024,8 @@ bedSort {output.genePredbed} {output.genePredbed} >> {log} 2>&1
 
 bedToBigBed -extraIndex=name {output.genePredbed} {input.sizes} {output.genePredbigbed} >> {log} 2>&1
 
-# generate searchable indexes (by 1: transcriptID, 2: geneId, 8: proteinID, 9: geneName, 10: transcriptName)
-grep -v "^#" {output.info} | awk -v len=$l 'BEGIN {{ FS = "\t" }} ; {{ if(len!="0") {{print $9, $1, $2, $8, $9, $10}} else {{print $1, $1, $2, $8, $9, $10}} }}' > {output.indexinfo}
+\# generate searchable indexes (by 1: transcriptID, 2: geneId, 8: proteinID, 9: geneName, 10: transcriptName)
+grep -v "^\#" {output.info} | awk -v len=$l 'BEGIN {{ FS = "\t" }} ; {{ if(len!="0") {{print $9, $1, $2, $8, $9, $10}} else {{print $1, $1, $2, $8, $9, $10}} }}' > {output.indexinfo}
 
 ixIxx {output.indexinfo} {output.ix} {output.ixx} >> {log} 2>&1
 ```
@@ -1035,13 +1035,13 @@ Automated adapter detection, adapter trimming, and quality trimming through trim
 ```
 trim_galore --paired -j {threads} {params.config} -o $(dirname {output.r1}) {input.r1} {input.r2} > {log} 2>&1
     
-# now rename to proper output
+\# now rename to proper output
 for f in $(find "$(dirname {output.r1})/" -name "{wildcards.sample}_*val_*.fq.gz"); do
     mv "$f" "$(echo "$f" | sed s/.fq/.{params.fqsuffix}/)"; done
 for f in $(find "$(dirname {output.r1})/" -maxdepth 1 -name "{wildcards.sample}_*val_*.{params.fqsuffix}.gz"); do
     mv "$f" "$(echo "$f" | sed s/_val_./_trimmed/)"; done
     
-# move the trimming reports to qc directory
+\# move the trimming reports to qc directory
 for f in $(find "$(dirname {output.r1})/" -name "{wildcards.sample}_*.{params.fqsuffix}.gz_trimming_report.txt"); do
     mv "$f" "$(dirname {output.qc[0]})/$(basename $f)"; done
 ```
@@ -1051,12 +1051,12 @@ Automated adapter detection, adapter trimming, and quality trimming through trim
 ```
 trim_galore -j {threads} {params.config} -o $(dirname {output.se}) {input} > {log} 2>&1
     
-# now rename to proper output
+\# now rename to proper output
 if [ "{params.fqsuffix}" != "fq" ]; then
   mv "$(dirname {output.se})/{wildcards.sample}_trimmed.fq.gz" {output.se}
 fi 
     
-# move the trimming report to qc directory
+\# move the trimming report to qc directory
 report=$(dirname {output.se})/{wildcards.sample}.{params.fqsuffix}.gz_trimming_report.txt
 mv $report {output.qc}
 ```
