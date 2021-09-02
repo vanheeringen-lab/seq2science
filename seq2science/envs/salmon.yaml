@@ -4,5 +4,5 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - bioconda::salmon=1.3.0
+  - bioconda::salmon=1.5.2
   - bioconda::gffread=0.12.1
