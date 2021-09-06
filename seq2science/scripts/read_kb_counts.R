@@ -27,7 +27,7 @@ read_count_output <- function(dir, name) {
 #List files
 files <- list.files(kb_dir, full.names = T)
 spliced <- lapply(files, read_count_output, name = "spliced") 
-names(spliced) <- list.files(path)
+names(spliced) <- list.files(kb_dir)
 #Get a list of all Seurat objects
 all_seu <-
   lapply(seq(spliced), function(x) {
