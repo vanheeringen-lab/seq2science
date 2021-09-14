@@ -1,10 +1,11 @@
 suppressMessages({
     library(Matrix)
     library(Seurat)
+    library(dplyr)
 })
 
-kb_dir <- snakemake@input[[1]]
-rds <- snakemale@output[[1]] 
+kb_dir <- paste0(snakemake@config$result_dir,"/kallistobus")
+rds <- snakemake@output[[1]] 
 
 read_count_output <- function(dir, name) {
   dir <- normalizePath(dir, mustWork = TRUE)
@@ -36,14 +37,19 @@ all_seu <-
                        project = names(spliced[x]))
     
   })
-# Create merged Seurat object
-seu_merged <-
-  merge(
-    x = all_seu[[1]],
-    y = all_seu[2:length(all_seu)],
-    add.cell.ids = names(spliced),
-    project = "merged"
-  )
+# Create merged Seurat object for > 1 samples
+if(length(all_seu) > 1) {
+  seu_obj <-
+    merge(
+      x = all_seu[[1]],
+      y = all_seu[2:length(all_seu)],
+      add.cell.ids = names(spliced),
+      project = "merged"
+    )
+} else {
+  seu_obj <- all_seu[[1]]
+}
+
 
 #Save workspace to RData object
 save.image(file = rds)
