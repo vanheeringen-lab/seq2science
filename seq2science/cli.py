@@ -346,8 +346,8 @@ def _run(args, base_dir, workflows_dir, config_path):
         #      not want to consider.
         #      - genome files since provider will change to local
         regex_patterns = [
-            "(\/.+){2}[^_custom]+\.(fa|gaps)",  # match genome fasta
-            "(\/.+){2}.+\.annotation.(bed|gtf)",  # match annotations
+            "(\/.+){2}.*\.(fa|gaps)",  # match genome fasta
+            "(\/.+){2}.*\.annotation\.(bed|gtf)",  # match annotations
         ]
         targets = [target for target in targets if not any(re.match(pattern, target) for pattern in regex_patterns)]
 
