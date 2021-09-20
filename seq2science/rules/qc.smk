@@ -820,13 +820,14 @@ def get_trimming_qc(sample):
         if get_workflow() == "scrna_seq": 
             read_id = get_bustools_rid(config.get("count"))
             if read_id == 0:
-                return expand(f"{{qc_dir}}/trimming/{sample}_{{fqext1}}.fastp.json", **config)
+                files = expand(f"{{qc_dir}}/trimming/{sample}_{{fqext1}}.fastp.json", **config)
             elif read_id == 1:
-                return expand(f"{{qc_dir}}/trimming/{sample}_{{fqext2}}.fastp.json", **config)
+                files = expand(f"{{qc_dir}}/trimming/{sample}_{{fqext2}}.fastp.json", **config)
             else:
                 raise NotImplementedError
-        # not sure how fastp should work with scatac here
-        return expand(f"{{qc_dir}}/trimming/{sample}.fastp.json", **config)
+        else:
+            files = expand(f"{{qc_dir}}/trimming/{sample}.fastp.json", **config)
+        return list(sorted(files))
 
 
 def get_alignment_qc(sample):
