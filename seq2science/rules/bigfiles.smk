@@ -136,9 +136,9 @@ rule peak_bigpeak:
 
 def set_strand(wildcards):
     if wildcards.strand == ".fwd":
-        return "--filterRNAstrand reverse"  # drop reverse/minus/antisense strand reads
-    elif wildcards.strand == ".rev":
         return "--filterRNAstrand forward"
+    elif wildcards.strand == ".rev":
+        return "--filterRNAstrand reverse"
     return ""
 
 
