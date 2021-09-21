@@ -54,9 +54,10 @@ checkpoint strandedness_report:
         import pandas as pd
 
         def get_strand(sample):
+            fail_val = 0.0
+            fwd_val = 0.0
             report_file = [f for f in input if f.endswith(f"-{sample}.strandedness.txt")][0]
             with open(report_file) as report:
-                fail_val = fwd_val = 0
                 for line in report:
                     if line.startswith("Fraction of reads failed"):
                         fail_val = float(line.strip().split(": ")[1])
@@ -66,10 +67,9 @@ checkpoint strandedness_report:
 
             if fwd_val > 0.6:
                 return "forward"
-            elif 1 - (fwd_val + fail_val) > 0.6:
+            if 1 - (fwd_val + fail_val) > 0.6:
                 return "reverse"
-            else:
-                return "no"
+            return "no"
 
         strands = []
         method = []
@@ -92,7 +92,7 @@ checkpoint strandedness_report:
 
 
 def _strandedness_report(wildcards):
-    strandreport = checkpoints.strandedness_report.get().output
+    strandreport = checkpoints.strandedness_report.get(**wildcards).output
     return strandreport[0]
 
 
