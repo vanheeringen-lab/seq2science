@@ -48,9 +48,10 @@ def cleanup_shell(dirty):
         firstline = shell.split("\n")[1]
 
         indentation = len(firstline) - len(firstline.lstrip())
-        docstring = "\n".join([shell_line.replace(" " * indentation, "", 1) for shell_line in shell.split("\n")])
-        docstring = docstring.strip("\n")
-        clean[rule] = docstring
+        shellstring = "\n".join([shell_line.replace(" " * indentation, "", 1) for shell_line in shell.split("\n")])
+        shellstring = shellstring.strip("\n")
+        shellstring = shellstring.replace("#", "\#")
+        clean[rule] = shellstring
 
     return clean
 

@@ -6,34 +6,36 @@ import contextlib
 import genomepy
 
 
-with open(snakemake.log[0], "w") as log:
+logfile = snakemake.log[0]
+assembly = snakemake.wildcards.raw_assembly
+providers = snakemake.params.providers
+genome_dir = snakemake.params.genome_dir
+
+# redirect all messages to a logfile
+with open(logfile, "w") as log:
     with contextlib.redirect_stdout(log), contextlib.redirect_stderr(log):
+        genomepy.logger.remove()
+        genomepy.logger.add(
+            logfile,
+            format="<green>{time:HH:mm:ss}</green> <bold>|</bold> <blue>{level}</blue> <bold>|</bold> {message}",
+            level="INFO",
+        )
+
         # list user plugins
-        active_plugins = genomepy.functions.config.get("plugin", [])
-        # deactivate user plugins
-        genomepy.functions.manage_plugins("disable", active_plugins)
+        active_plugins = genomepy.config.config.get("plugin", [])
+        if active_plugins:
+            print("Deactivating user plugins")
+            genomepy.manage_plugins("disable", active_plugins)
 
         # select a provider with the annotation if possible
-        provider = snakemake.params.providers[snakemake.wildcards.raw_assembly]["annotation"]
-
-        kwargs = dict()
-        if provider == "ucsc":
-            p = genomepy.ProviderBase.create(provider)
-            kwargs = {"ucsc_annotation_type": "ensembl"}
-            if not p.get_annotation_download_link(
-                    name=snakemake.wildcards.raw_assembly,
-                    kwargs=kwargs
-            ):
-                kwargs = dict()
-
+        provider = providers[assembly]["annotation"]
         try:
             genomepy.install_genome(
-                name=snakemake.wildcards.raw_assembly,
+                name=assembly,
                 provider=provider,
-                genomes_dir=snakemake.params.genome_dir,
+                genomes_dir=genome_dir,
                 only_annotation=True,
                 force=True,
-                kwargs=kwargs,
             )
 
         except Exception as e:
@@ -46,5 +48,6 @@ with open(snakemake.log[0], "w") as log:
                   "issue.")
 
         finally:
-            # reactivate user plugins
-            genomepy.functions.manage_plugins("enable", active_plugins)
+            if active_plugins:
+                print("Reactivating user plugins")
+                genomepy.manage_plugins("enable", active_plugins)

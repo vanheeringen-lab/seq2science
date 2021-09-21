@@ -1,6 +1,7 @@
 """
 Utility functions for seq2science
 """
+import contextlib
 import re
 import os
 import sys
@@ -15,6 +16,7 @@ from typing import List
 from math import ceil, floor
 
 from filelock import FileLock
+import genomepy
 import matplotlib.colors as mcolors
 import numpy as np
 import pandas as pd
@@ -589,3 +591,75 @@ class PickleDict(dict):
         prep_filelock(self.filelock, 30)
         with FileLock(self.filelock):
             pickle.dump(self, open(self.file, "wb"))
+
+    def search(self, search_assemblies: list):
+        """
+        Check the genomepy database for a provider stat serves both genome and annotation for an assembly.
+        If impossible, settle with the first provider that serves the genome.
+        """
+        logger.info("Determining assembly providers")
+        for assembly in search_assemblies:
+            if assembly not in self:
+                self[assembly] = {"genome": None, "annotation": None}
+
+        with open(logger.logfile, 'w') as log:
+            with contextlib.redirect_stdout(log), contextlib.redirect_stderr(log):
+                genomepy.logger.remove()
+                genomepy.logger.add(
+                    log,
+                    format="<green>{time:HH:mm:ss}</green> <bold>|</bold> <blue>{level}</blue> <bold>|</bold> {message}",
+                    level="INFO",
+                )
+                for p in genomepy.providers.online_providers():
+                    search_assemblies = [a for a in search_assemblies if self[a]["annotation"] is None]
+                    for assembly in search_assemblies:
+                        if assembly not in p.genomes:
+                            continue  # check again next provider
+
+                        if p.annotation_links(assembly):
+                            self[assembly]["genome"] = p.name
+                            self[assembly]["annotation"] = p.name
+
+                        elif self[assembly]["genome"] is None:
+                            self[assembly]["genome"] = p.name
+
+                    if all(self[a]["annotation"] for a in search_assemblies):
+                        break  # don't load the next provider
+
+        # store added assemblies
+        self.save()
+
+    def check(self, assemblies: list, annotation_required: bool, verbose: bool):
+        """
+        Check if the genome (and the annotation if required) can be downloaded for each specified assembly.
+        """
+        for assembly in assemblies:
+            if self[assembly]["genome"] is None:
+                logger.warning(
+                    f"Could not download assembly {assembly}.\n"
+                    f"Find alternative assemblies with `genomepy search {assembly}`"
+                )
+                exit(1)
+
+            if self[assembly]["annotation"] is None:
+                if verbose:
+                    logger.warning(
+                        f"No annotation for assembly {assembly} can be downloaded. Another provider (and "
+                        f"thus another assembly name) might have a gene annotation.\n"
+                        f"Find alternative assemblies with `genomepy search {assembly}`\n"
+                    )
+                if annotation_required:
+                    exit(1)
+
+
+def is_local(assembly: str, ftype: str, config: dict) -> bool:
+    """checks if genomic file(s) are present locally"""
+    file = os.path.join(config['genome_dir'], assembly, assembly)
+    local_fasta = os.path.exists(f"{file}.fa")
+    local_gtf = os.path.exists(f"{file}.annotation.gtf")
+    local_bed = os.path.exists(f"{file}.annotation.bed")
+    if ftype == "genome":
+        return local_fasta
+    if ftype == "annotation":
+        # check genome and annotations, as genome is always needed
+        return local_gtf and local_bed and local_fasta

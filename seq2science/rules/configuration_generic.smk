@@ -1,6 +1,3 @@
-import contextlib
-import genomepy
-import math
 import os.path
 import pickle
 import re
@@ -12,7 +9,6 @@ from functools import lru_cache
 import yaml
 
 import xdg
-import numpy as np
 import pandas as pd
 import urllib.request
 from filelock import FileLock
@@ -25,7 +21,7 @@ from snakemake.utils import min_version
 from snakemake.exceptions import TerminatedException
 
 import seq2science
-from seq2science.util import UniqueKeyLoader, samples2metadata, prep_filelock, url_is_alive, color_parser, PickleDict
+from seq2science.util import UniqueKeyLoader, samples2metadata, prep_filelock, url_is_alive, color_parser, PickleDict, is_local
 
 
 # get the cache and config dirs
@@ -34,7 +30,7 @@ CACHE_DIR = os.path.join(xdg.XDG_CACHE_HOME, "seq2science", seq2science.__versio
 # config.yaml(s)
 
 # convert all config keys to lower case (upper case = user typo)
-config =  {k.lower(): v for k, v in config.items()}
+config = {k.lower(): v for k, v in config.items()}
 
 # check config file for correct directory names
 for key, value in config.items():
@@ -218,129 +214,64 @@ sequencing_protocol = get_workflow()\
 
 
 if "assembly" in samples:
+    # list assemblies that are used in this workflow
+    used_assemblies = list(set(samples["assembly"]))
+
+    # dictionary with which providers to use per genome
+    providers = PickleDict(os.path.join(CACHE_DIR, "providers.p"))
+
+    # split into local and remote assemblies, depending on if all required files can be found
+    annotation_required = "rna_seq" in get_workflow() or config["aligner"] == "star"
+    ftype = "annotation" if annotation_required else "genome"
+    local_assemblies = [a for a in used_assemblies if is_local(a, ftype, config)]
+    remote_assemblies = [a for a in used_assemblies if a not in local_assemblies]
+    search_assemblies = [assembly for assembly in remote_assemblies if providers.get(assembly, {}).get(ftype) is None]
+
+    # custom assemblies without provider (for local/remote annotations)
+    if "scrna_seq" in get_workflow() and \
+        'kite' in config['quantifier'].get('kallistobus', {}).get('ref', ""):
+        remote_assemblies = []
+        search_assemblies = []
+
+    # check if genomepy can download the required files
+    if len(search_assemblies) > 0:
+        providers.search(search_assemblies)
+
+    # check if all remote assemblies can be downloaded
+    if len(remote_assemblies) > 0:
+        verbose = not config.get("no_config_log")
+        providers.check(remote_assemblies, annotation_required, verbose)
+
+
+    # trackhub
+
+    # determine which assemblies (will) have an annotation
+    _has_annot = dict()
+    for assembly in local_assemblies:
+        _has_annot[assembly] = is_local(assembly, "annotation", config)
+    for assembly in remote_assemblies:
+        _has_annot[assembly] = bool(providers[assembly]["annotation"])
+
+    @lru_cache(maxsize=None)
+    def has_annotation(assembly):
+        """
+        Returns True/False on whether or not the assembly has an annotation.
+        """
+        return _has_annot[assembly]
+
+
+    # custom assemblies
+
     # control whether to custom extended assemblies
     if isinstance(config.get("custom_genome_extension"), str):
         config["custom_genome_extension"] = [config["custom_genome_extension"]]
     if isinstance(config.get("custom_annotation_extension"), str):
         config["custom_annotation_extension"] = [config["custom_annotation_extension"]]
+
+    # custom assembly suffices
     modified = config.get("custom_genome_extension") or config.get("custom_annotation_extension")
-    all_assemblies = [assembly + config["custom_assembly_suffix"] if modified else assembly for assembly in set(samples['assembly'])]
     suffix = config["custom_assembly_suffix"] if modified else ""
-
-    def list_providers(assembly):
-        """
-        Return a minimal list of providers to check
-        """
-        readme_file = os.path.join(config['genome_dir'], assembly, "README.txt")
-        readme_provider = None
-        if os.path.exists(readme_file):
-            metadata, _ = genomepy.utils.read_readme(readme_file)
-            readme_provider = metadata.get("provider", "").lower()
-
-        # will test if each provider is online
-        p = readme_provider if readme_provider in ["ensembl", "ucsc", "ncbi"] else config.get("provider")
-        providers = genomepy.functions._providers(p)
-        return providers
-
-
-    def provider_with_file(file, assembly):
-        """
-        Returns the first provider which has the file for the assembly.
-        file: annotation or genome
-        """
-        with open(os.devnull, "w") as null:
-            with contextlib.redirect_stdout(null), contextlib.redirect_stderr(null):
-
-                for p in list_providers(assembly):
-                    if assembly in p.genomes:
-                        if (file == "annotation" and p.get_annotation_download_link(assembly)) \
-                                or (file == "genome" and p.get_genome_download_link(assembly)):
-                            return p.name
-        return None
-
-    def is_local(assembly, ftype="genome"):
-        """checks if genomic file(s) are present locally"""
-        file = os.path.join(config['genome_dir'], assembly, assembly)
-        local_fasta = os.path.exists(f"{file}.fa")
-        local_gtf = any(os.path.exists(f) for f in [f"{file}.annotation.gtf", f"{file}.annotation.gtf.gz"])
-        local_bed = any(os.path.exists(f) for f in [f"{file}.annotation.bed", f"{file}.annotation.bed.gz"])
-        if ftype == "genome":
-            return local_fasta
-        if ftype == "annotation":
-            return local_gtf and local_bed
-        if ftype == "both":
-            return local_gtf and local_bed and local_fasta
-
-    # list assemblies that are used in this workflow
-    used_assemblies = list(set(samples["assembly"]))
-
-    # split into local and remote assemblies, depending on if all required files can be found
-    annotation_required = "rna_seq" in get_workflow() or config["aligner"] == "star"
-    ftype = "both" if annotation_required else "genome"
-    local_assemblies = [assembly for assembly in used_assemblies if is_local(assembly, ftype)]
-    remote_assemblies = [assembly for assembly in used_assemblies if assembly not in local_assemblies]
-
-    # list assemblies that genomepy needs to search first
-    providersfile = f"{CACHE_DIR}/providers.p"
-    providers = PickleDict(providersfile)
-    ftype = "annotation" if annotation_required else "genome"
-    search_assemblies = [assembly for assembly in remote_assemblies if providers.get(assembly, {}).get(ftype) is None]
-    
-    # custom assemblies without provider for local/remote annotations
-    if "scrna_seq" in get_workflow():
-        if 'kite' in config['quantifier'].get('kallistobus', {}).get('ref', ""):
-            remote_assemblies = []
-            search_assemblies = []
-        
-    # check if genomepy can download the required files
-    if len(search_assemblies) > 0:
-        logger.info("Determining assembly providers")
-        for assembly in search_assemblies:
-            if assembly not in providers:
-                providers[assembly] = {"genome": None, "annotation": None}
-
-            # check if the annotation AND genome can be downloaded
-            if providers[assembly]["annotation"] is None:
-                annotion_provider = provider_with_file("annotation",assembly)
-                if annotion_provider:
-                    providers[assembly]["genome"] = annotion_provider  # genome always exists if annotation does
-                    providers[assembly]["annotation"] = annotion_provider
-
-            # check if the genome can be downloaded
-            if providers[assembly]["genome"] is None:
-                genome_provider = provider_with_file("genome",assembly)
-                if genome_provider:
-                    providers[assembly]["genome"] = genome_provider
-
-        # store added assemblies
-        providers.save()
-
-    # troubleshooting 
-    for assembly in remote_assemblies:
-        if providers[assembly]["genome"] is None:
-            logger.info(
-                f"Could not download assembly {assembly}.\n"
-                f"Find alternative assemblies with `genomepy search {assembly}`"
-            )
-            exit(1)
-
-        if providers[assembly]["annotation"] is None:
-            if not config.get("no_config_log"):
-                logger.info(
-                    f"No annotation for assembly {assembly} can be downloaded. Another provider (and "
-                    f"thus another assembly name) might have a gene annotation.\n"
-                    f"Find alternative assemblies with `genomepy search {assembly}`\n"
-                )
-            if annotation_required:
-                exit(1)
-
-    # for the trackhub: determine which assemblies (will) have an annotation
-    _has_annot = dict()
-    for assembly in local_assemblies:
-        _has_annot[assembly] = is_local(assembly, "annotation")
-    for assembly in remote_assemblies:
-        _has_annot[assembly] = bool(providers[assembly]["annotation"])
-
+    all_assemblies = [a + suffix for a in used_assemblies]
 
     def ori_assembly(assembly):
         """
@@ -356,14 +287,6 @@ if "assembly" in samples:
         """
         return assembly if assembly.endswith(config["custom_assembly_suffix"]) or not modified else \
          (assembly + config["custom_assembly_suffix"])
-
-
-    @lru_cache(maxsize=None)
-    def has_annotation(assembly):
-        """
-        Returns True/False on whether or not the assembly has an annotation.
-        """
-        return _has_annot[assembly]
 
 else:
     modified = False

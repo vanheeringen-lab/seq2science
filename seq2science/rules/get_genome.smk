@@ -1,4 +1,4 @@
-localrules: extend_genome, get_genome_support_files, unzip_annotation
+localrules: extend_genome, get_genome_support_files
 
 support_exts = [".fa.fai", ".fa.sizes", ".gaps.bed"]
 
@@ -10,8 +10,6 @@ rule get_genome:
         expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa", **config),
     log:
         expand("{log_dir}/get_genome/{{raw_assembly}}.genome.log", **config),
-    benchmark:
-        expand("{benchmark_dir}/get_genome/{{raw_assembly}}.genome.benchmark.txt", **config)[0]
     message: explain_rule("get_genome")
     params:
         providers=providers,
@@ -53,12 +51,10 @@ rule get_genome_annotation:
         expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa", **config),
         ancient(expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}{exts}", exts=support_exts, **config)),
     output:
-        gtf=expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.annotation.gtf.gz", **config),
-        bed=expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.annotation.bed.gz", **config),
+        gtf=expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.annotation.gtf", **config),
+        bed=expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.annotation.bed", **config),
     log:
-        expand("{log_dir}/get_annotation/{{raw_assembly}}.genome.log", **config),
-    benchmark:
-        expand("{benchmark_dir}/get_annotation/{{raw_assembly}}.genome.benchmark.txt", **config)[0]
+        expand("{log_dir}/get_genome/{{raw_assembly}}.annotation.log", **config),
     resources:
         parallel_downloads=1,
         genomepy_downloads=1,
@@ -158,19 +154,3 @@ rule gene_id2name:
         expand("{genome_dir}/{{assembly}}/gene_id2name.tsv", **config),
     script:
         f"{config['rule_dir']}/../scripts/gene_id2name.py"
-
-
-rule unzip_annotation:
-    """
-    Unzip (b)gzipped files.
-    """
-    input:
-        "{filepath}.gz"
-    output:
-        "{filepath}"
-    wildcard_constraints:
-        filepath=".*(\.annotation)(\.gtf|\.bed)(?<!\.gz)$"  # filepath may not end with ".gz"
-    priority: 1
-    run:
-        import genomepy.utils
-        genomepy.utils.gunzip_and_name(input[0])
