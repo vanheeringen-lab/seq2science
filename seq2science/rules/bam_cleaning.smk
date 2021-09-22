@@ -83,7 +83,7 @@ rule mark_duplicates:
         sample=f"""({any_given("sample", "technical_replicates", "control")})(_allsizes)?""",
     shell:
         """
-        picard MarkDuplicates --TMP_DIR={resources.tmpdir} {params} INPUT={input} \
+        picard MarkDuplicates TMP_DIR={resources.tmpdir} {params} INPUT={input} \
         OUTPUT={output.bam} METRICS_FILE={output.metrics} > {log} 2>&1
         """
 
