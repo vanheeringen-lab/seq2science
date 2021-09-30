@@ -638,6 +638,7 @@ rule multiqc_samplesconfig:
     script:
         f"{config['rule_dir']}/../scripts/multiqc_samplesconfig.py"
 
+
 rule multiqc_schema:
     """
     Generate a multiqc config schema. Used for the ordering of modules.
@@ -645,6 +646,31 @@ rule multiqc_schema:
     output:
         temp(expand('{qc_dir}/schema.yaml', **config))
     run:
+        from seq2science.util import expand_contrasts
+
+        order = -954
+        deseq2_imgs = ""
+        deseq2_order = ""
+        for contrast in expand_contrasts(samples, config):
+            deseq2_imgs += f"""\
+    {contrast}.ma_plot:
+        section_name: 'DESeq2 - MA plot for contrast {contrast}'
+        description: 'A MA plot shows the relation between the (normalized) mean counts for each gene, and the log2 fold change between the conditions. Genes that are significantly differentially expressed are coloured blue.'
+    {contrast}.pca_plot:
+        section_name: 'DESeq2 - PCA plot for {contrast}'
+        description: 'This PCA plot shows the relation among samples along the two most principal components, coloured by condition. PCA transforms the data from the normalized high dimensions (e.g. 20.000 gene counts, or 100.000 peak expressions) to a low dimension (PC1 and PC2). It does so by maximizing the variance along these two components. Generally you expect there to be more variance between samples from different conditions, than within conditions. This means that you would "expect" similar samples closeby each other on PC1 and PC2.' 
+"""
+            deseq2_order += f"""\
+  {contrast}_ma_plot:
+    order: {order}
+  {contrast}_pca_plot:
+    order: {order-1}
+"""
+            order -= 2
+
+        deseq2_order = deseq2_order.replace("+", "_").rstrip("\n")
+        deseq2_imgs = deseq2_imgs.rstrip("\n")
+
         with open(f'{config["rule_dir"]}/../schemas/multiqc_config.yaml') as cookie_schema:
             cookie = cookie_schema.read()
         
@@ -709,6 +735,11 @@ def get_qc_files(wildcards):
             if len(treps[treps.assembly == assembly].index) < 2:
                 files = [f for f in files if f"clustering/{assembly}-" not in f]
         qc['files'].update(files)
+
+    # DESeq2 all contrast plots
+    contrast_files = [contrast.replace(config.get("deseq2_dir", ""), config.get("qc_dir", "")+"/deseq2") for contrast in get_contrasts()]
+    qc['files'].update(contrast.replace(".diffexp.tsv", ".ma_plot_mqc.png") for contrast in contrast_files)
+    qc['files'].update(contrast.replace(".diffexp.tsv", ".pca_plot_mqc.png") for contrast in contrast_files)
 
     if get_scrna_qc in quality_control:
         for trep in treps[treps['assembly'] == ori_assembly(wildcards.assembly)].index:
@@ -817,7 +848,7 @@ def get_trimming_qc(sample):
                                **config)
 
     elif config["trimmer"] == "fastp":
-        if get_workflow() == "scrna_seq": 
+        if get_workflow() == "scrna_seq":
             read_id = get_bustools_rid(config.get("count"))
             if read_id == 0:
                 return expand(f"{{qc_dir}}/trimming/{sample}_{{fqext1}}.fastp.json", **config)
@@ -835,7 +866,7 @@ def get_alignment_qc(sample):
     # add samtools stats
     output.append(f"{{qc_dir}}/markdup/{{{{assembly}}}}-{sample}.samtools-coordinate.metrics.txt")
     output.append(f"{{qc_dir}}/samtools_stats/{{aligner}}/{{{{assembly}}}}-{sample}.samtools-coordinate.samtools_stats.txt")
-    
+
     # if Salmon is used, the sieving does not effect the expression values, so adding it to the MultiQC is confusing
     if sieve_bam(config) and \
             not (get_workflow() == "rna_seq" and config.get('quantifier') == 'salmon'):

@@ -66,7 +66,9 @@ rule deseq2:
     input:
         deseq_input
     output:
-        expand("{deseq2_dir}/{{assembly}}-{{contrast}}.diffexp.tsv", **config),
+        diffexp=expand("{deseq2_dir}/{{assembly}}-{{contrast}}.diffexp.tsv", **config),
+        maplot=expand("{qc_dir}/deseq2/{{assembly}}-{{contrast}}.ma_plot_mqc.png", **config),
+        pcaplot=expand("{qc_dir}/deseq2/{{assembly}}-{{contrast}}.pca_plot_mqc.png", **config),
     conda:
         "../envs/deseq2.yaml"
     log:
