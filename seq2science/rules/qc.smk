@@ -737,9 +737,10 @@ def get_qc_files(wildcards):
         qc['files'].update(files)
 
     # DESeq2 all contrast plots
-    contrast_files = [contrast.replace(config.get("deseq2_dir", ""), config.get("qc_dir", "")+"/deseq2") for contrast in get_contrasts()]
-    qc['files'].update(contrast.replace(".diffexp.tsv", ".ma_plot_mqc.png") for contrast in contrast_files)
-    qc['files'].update(contrast.replace(".diffexp.tsv", ".pca_plot_mqc.png") for contrast in contrast_files)
+    if get_contrasts in globals():
+        contrast_files = [contrast.replace(config.get("deseq2_dir", ""), config.get("qc_dir", "")+"/deseq2") for contrast in get_contrasts()]
+        qc['files'].update(contrast.replace(".diffexp.tsv", ".ma_plot_mqc.png") for contrast in contrast_files)
+        qc['files'].update(contrast.replace(".diffexp.tsv", ".pca_plot_mqc.png") for contrast in contrast_files)
 
     if get_scrna_qc in quality_control:
         for trep in treps[treps['assembly'] == ori_assembly(wildcards.assembly)].index:
