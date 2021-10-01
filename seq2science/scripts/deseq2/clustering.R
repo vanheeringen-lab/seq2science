@@ -72,16 +72,13 @@ legend_aes <- list(
 )
 out_pdf <- sub(".png", ".pdf", out_png)
 
-#heatmap_aes$color <- rev(heatmap_aes$color)
 heatmap_plot(mat, title, heatmap_aes, legend_aes, out_pdf)
-print(heatmap_aes$color)
-heatmap_aes[["color"]] <- rev(heatmap_aes$color)
-print(heatmap_aes$color)
 
 # convert pdf to png (required for MULTIQC)
 pdf2png(out_pdf, out_png)
 
 
+heatmap_aes$colors <- rev(heatmap_aes$colors)
 # Heatmaps of various correlation matrices
 for (method in list("spearman", "pearson")){
   name <- paste(method, 'correlation clustering')

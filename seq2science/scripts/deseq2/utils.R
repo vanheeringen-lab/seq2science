@@ -199,7 +199,7 @@ heatmap_plot <- function(mat, title, heatmap_aes, legend_aes, out_pdf) {
     legend_labels = legend_aes$labels,
     cellwidth  = heatmap_aes$cell_dimensions,
     cellheight = heatmap_aes$cell_dimensions,
-    col = heatmap_aes$colors,
+    color = heatmap_aes$colors,
     filename = out_pdf
   )
 }
