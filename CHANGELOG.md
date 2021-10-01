@@ -16,6 +16,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 - stranded bigwigs are no longer inverted (forward containing reverse reads and vice-versa).
 - fix in `rename_sample` preventing the inversion of R1 and R2 FASTQs.
+- bug with parsing cli for explanations
 
 ## [0.5.5] - 2021-09-01
 
