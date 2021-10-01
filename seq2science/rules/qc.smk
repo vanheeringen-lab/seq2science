@@ -577,8 +577,18 @@ rule multiqc_explain:
 
         # remove run specific commands
         cli_call = [arg for arg in cli_call if arg not in {"--unlock", "--rerun-incomplete", "-k", "--keep-going", "--skip-rerun", "--reason", "-r", "--dryrun", "-n"}]
-        cores_index = cli_call.index("--cores" if "--cores" in cli_call else "-j")
-        del cli_call[cores_index:cores_index+2]
+        if "--cores" in cli_call:
+            cores_index = cli_call.index("--cores")
+            del cli_call[cores_index:cores_index+2]
+        elif "-j" in cli_call:
+            cores_index = cli_call.index("-j")
+            del cli_call[cores_index:cores_index+2]
+        elif bool([i for i, x in enumerate(cli_call) if re.match('-j\d+', x)]):
+            cores_index = [i for i, x in enumerate(cli_call) if re.match('-j\d+', x)][0]
+            del cli_call[cores_index]
+
+        #cores_index = cli_call.index("--cores" if "--cores" in cli_call else "-j")
+        #del cli_call[cores_index:cores_index+2]
         
         # make sure to get pretty hyperrefs
         cli_call.append("--hyperref")
