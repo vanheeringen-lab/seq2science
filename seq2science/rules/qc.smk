@@ -628,8 +628,11 @@ rule multiqc_filter_buttons:
         samples  # helps resolve changed params if e.g. descriptive names change
     run:
         with open(output[0], "w") as f:
-            f.write("Read Group 1 & Alignment\thide\t_R2\n"
-                    "Read Group 2\tshow\t_R2\n")
+            if config.get("trimmer", "") == "trimgalore":
+                f.write(f"Read Group 1 & Alignment\thide\t_{config.get('fqext2')}\n"
+                        f"Read Group 2\tshow\t_{config.get('fqext2')}\n")
+            if len(x for x in merged_treps if treps.loc[x, "assembly"] == wildcards.assembly):
+                pass
 
 
 rule multiqc_samplesconfig:
@@ -743,7 +746,7 @@ def get_qc_schemas(wildcards):
     qc['header'] = expand('{qc_dir}/header_info.yaml', **config)[0]
     qc['sample_names'] = expand('{qc_dir}/sample_names_{{assembly}}.tsv', **config)[0]
     qc['schema'] = expand('{qc_dir}/schema.yaml', **config)[0]
-    if config["trimmer"] == "trimgalore":
+    if config["trimmer"] == "trimgalore" or len(x for x in merged_treps if treps.loc[x, "assembly"] == wildcards.assembly):
         qc['filter_buttons'] = expand('{qc_dir}/sample_filters_{{assembly}}.tsv', **config)[0]
     return qc
 
