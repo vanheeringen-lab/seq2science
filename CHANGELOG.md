@@ -11,6 +11,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Changed
 
 - updated salmon & tximeta versions
+- colors for DESeq2 distance plots "fixed"
 
 ### Fixed
 
