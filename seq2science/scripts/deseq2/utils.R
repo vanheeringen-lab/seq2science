@@ -162,7 +162,7 @@ heatmap_aesthetics <- function(num_samples){
   }
   show_colnames <- ifelse(num_samples > 28, TRUE, FALSE)
   show_rownames <- !show_colnames
-  colors <- colorRampPalette( rev(RColorBrewer::brewer.pal(9, "RdYlBl")) )(255)
+  colors <- colorRampPalette( rev(RColorBrewer::brewer.pal(9, "RdYlBu")) )(255)
 
   return(
     list(
