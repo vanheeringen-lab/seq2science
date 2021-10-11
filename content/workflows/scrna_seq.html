@@ -1,71 +1,33 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
-  
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
-  <title>scRNA-seq &mdash; seq2science  documentation</title>
-  
-
-  
-  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-
-  
-  
-
-  
-  
-
-  
-
-  
+  <title>scRNA-seq &mdash; seq2science  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/doctools.js"></script>
         <script src="../../_static/language_data.js"></script>
-    
-    <script type="text/javascript" src="../../_static/js/theme.js"></script>
-
-    
+    <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Using the results" href="../results.html" />
     <link rel="prev" title="scATAC-seq" href="scatac_seq.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
-
-          
             <a href="../../index.html" class="icon icon-home"> seq2science
-          
-
-          
           </a>
-
-          
-            
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -73,18 +35,7 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../gettingstarted.html">Getting started</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../workflows.html">Workflows</a><ul class="current">
@@ -121,93 +72,49 @@
 <li class="toctree-l1"><a class="reference internal" href="../faq.html">Frequently Asked Questions (FAQ)</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../../index.html">seq2science</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
       <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
-        
           <li><a href="../workflows.html">Workflows</a> &raquo;</li>
-        
       <li>scRNA-seq</li>
-    
-    
       <li class="wy-breadcrumbs-aside">
-        
-          
-            
               <a href="https://github.com/vanheeringen-lab/seq2science/blob/master/docs/content/workflows/scrna_seq.md" class="fa fa-github"> Edit on GitHub</a>
-            
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="scrna-seq">
+             
+  <section id="scrna-seq">
 <h1>scRNA-seq<a class="headerlink" href="#scrna-seq" title="Permalink to this headline">¶</a></h1>
 <p>Running a scRNA-seq pipeline has never been easier!</p>
-<div class="section" id="pipeline-steps">
+<section id="pipeline-steps">
 <h2>Pipeline steps<a class="headerlink" href="#pipeline-steps" title="Permalink to this headline">¶</a></h2>
 <p align="center">
   <img src="../../_static/scrna_seq.png">
-</p><div class="section" id="downloading-of-sample-s">
+</p><section id="downloading-of-sample-s">
 <h3>Downloading of sample(s)<a class="headerlink" href="#downloading-of-sample-s" title="Permalink to this headline">¶</a></h3>
 <p>Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples.
 You control which samples are used in the <a class="reference external" href="#filling-out-the-samples-tsv">samples.tsv</a>.
 Background on public data can be found <a class="reference external" href="./download_fastq.html#download-sra-file">here</a>.</p>
-</div>
-<div class="section" id="downloading-and-indexing-of-assembly-s">
+</section>
+<section id="downloading-and-indexing-of-assembly-s">
 <h3>Downloading and indexing of assembly(s)<a class="headerlink" href="#downloading-and-indexing-of-assembly-s" title="Permalink to this headline">¶</a></h3>
 <p>Depending on whether the assembly and its index you align your samples against already exist seq2science will start with downloading of the assembly through <a class="reference external" href="https://github.com/vanheeringen-lab/genomepy">genomepy</a>.</p>
-</div>
-<div class="section" id="read-trimming">
+</section>
+<section id="read-trimming">
 <h3>Read trimming<a class="headerlink" href="#read-trimming" title="Permalink to this headline">¶</a></h3>
 <p>The pipeline starts by trimming the reads with fastp.
 Fastp automatically detects sequencing adapters, removes short reads and performs quality filtering.
@@ -216,15 +123,15 @@ The parameters of fastp for the pipeline can be set in the configuration by the 
 This is due to the fact that reads, barcode and umi sequences are stored in separate fastq files.
 After trimming, the fastq containing the reads, usually R2, may contains less reads then R1.
 Therefore, we perform an intermediate step by running <code class="docutils literal notranslate"><span class="pre">fastq-pair</span></code> to remove singleton reads before proceeding any further.</p>
-</div>
-<div class="section" id="quantification">
+</section>
+<section id="quantification">
 <h3>Quantification<a class="headerlink" href="#quantification" title="Permalink to this headline">¶</a></h3>
 <p>Quantification is performed by running the kb-python wrapper for Kallisto bustools.
 Kallisto bustools relies on pseudo-alignment of scRNA reads against a reference transcriptome index.
 The resulting count matrices can be further processed with scRNA toolkits, such as Seurat or Scanpy.</p>
-</div>
-</div>
-<div class="section" id="filling-out-the-samples-tsv">
+</section>
+</section>
+<section id="filling-out-the-samples-tsv">
 <h2>Filling out the samples.tsv<a class="headerlink" href="#filling-out-the-samples-tsv" title="Permalink to this headline">¶</a></h2>
 <p>Before running a workflow you will have to specify which samples you want to run the workflow on.
 Each workflow starts with a <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> as an example, and you should adapt it to your specific needs.
@@ -233,7 +140,7 @@ As an example, the <code class="docutils literal notranslate"><span class="pre">
 pbmc    GRCh38.p13      pbmc
 </pre></div>
 </div>
-<div class="section" id="sample-column">
+<section id="sample-column">
 <h3>Sample column<a class="headerlink" href="#sample-column" title="Permalink to this headline">¶</a></h3>
 <p>If you use the pipeline on <strong>public data</strong> this should be the name of the accession (e.g. GSM2837484).
 Accepted formats start with “GSM”, “SRR”, “SRX”, “DRR”, “DRX”, “ERR” or “ERX”.</p>
@@ -250,17 +157,17 @@ Seq2science will attempt to recognize these files based on the sample name <code
 The directory where seq2science will store (or look for) fastqs is determined by the <code class="docutils literal notranslate"><span class="pre">fastq_dir</span></code> config option.
 In the example above, the <code class="docutils literal notranslate"><span class="pre">fastq_dir</span></code> should be set to <code class="docutils literal notranslate"><span class="pre">/home/user/myfastqs</span></code>.
 These setting can be changed in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>.</p>
-</div>
-<div class="section" id="assembly-column">
+</section>
+<section id="assembly-column">
 <h3>Assembly column<a class="headerlink" href="#assembly-column" title="Permalink to this headline">¶</a></h3>
 <p>Here you simply add the name of the assembly you want your samples aligned against and the workflow will download it for you. In case your intend to run kb-python’s kite workflow, the assembly name becomes the basename of the tab delimited feature barcode file.</p>
-</div>
-<div class="section" id="descriptive-name-column">
+</section>
+<section id="descriptive-name-column">
 <h3>Descriptive_name column<a class="headerlink" href="#descriptive-name-column" title="Permalink to this headline">¶</a></h3>
 <p>The descriptive_name column is used for the multiqc report.
 In the multiqc report there will be a button to rename your samples after this column.</p>
-</div>
-<div class="section" id="filling-out-the-config-yaml">
+</section>
+<section id="filling-out-the-config-yaml">
 <h3>Filling out the config.yaml<a class="headerlink" href="#filling-out-the-config-yaml" title="Permalink to this headline">¶</a></h3>
 <p>Every workflow has many configurable options, and can be set in the config.yaml file.
 In each config.yaml we highlighted a couple options that we think are relevant for that specific workflow, and set (we think) reasonable default values.</p>
@@ -272,7 +179,7 @@ In each config.yaml we highlighted a couple options that we think are relevant f
 <li><p>INDROPSV3</p></li>
 </ul>
 <p>The white-list will be installed automatically if the appropiate technology argument is provided via the <code class="docutils literal notranslate"><span class="pre">-x</span></code> parameter in short-hand syntax.</p>
-<div class="section" id="bus-barcode-umi-set-format">
+<section id="bus-barcode-umi-set-format">
 <h4>BUS (Barcode/UMI/Set) format<a class="headerlink" href="#bus-barcode-umi-set-format" title="Permalink to this headline">¶</a></h4>
 <p>The <code class="docutils literal notranslate"><span class="pre">-x</span></code> argument indicates the read and file positions of the UMI and barcode. Kallisto bustools should auto-detect the correct settings barcode/umi layout for the following technologies if the name is supplied:</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>name         whitelist    barcode                  umi        cDNA
@@ -293,8 +200,8 @@ SMARTSEQ                                                      0,None,None 1,None
 </pre></div>
 </div>
 <p>Alternatively, the layout can be specified as a <code class="docutils literal notranslate"><span class="pre">bc:umi:set</span></code> triplet. The first position indicates the read, the second position the start of the feature and the third position the end of the feature. For more information and examples on the BUS format, consider the <strong>Bus</strong> section in the <a class="reference external" href="https://pachterlab.github.io/kallisto/manual">Kallisto</a> manual.</p>
-</div>
-<div class="section" id="input-preparations-for-kite-workflow">
+</section>
+<section id="input-preparations-for-kite-workflow">
 <h4>Input preparations for KITE workflow<a class="headerlink" href="#input-preparations-for-kite-workflow" title="Permalink to this headline">¶</a></h4>
 <p>The steps to prepare a scRNA analysis for Feature Barcoding experiments deviates slighlty from the standard seq2science workflow. In essence, we quantify the abundance of sequence features, such as antibody barcodes, rather than a set of transcripts for a certain species. Therefore, our index does not rely on a particular assembly but is build from these sequence features. Please consider the offical <a class="reference external" href="https://github.com/pachterlab/kite">kite</a> documentation for more details.</p>
 <p><strong>1</strong>. Prepare a two-column, tab-delimited file with your feature barcode in the first column and feature names in the second.</p>
@@ -311,19 +218,19 @@ pbmc    fb
 </pre></div>
 </div>
 <p>An example of configuring kb-python for feature barcode analysis is shown below. Add the appropiate settings to your config.</p>
-</div>
-</div>
-<div class="section" id="examples">
+</section>
+</section>
+<section id="examples">
 <h3>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h3>
-<div class="section" id="quantification-10xv3">
+<section id="quantification-10xv3">
 <h4>Quantification (10XV3)<a class="headerlink" href="#quantification-10xv3" title="Permalink to this headline">¶</a></h4>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>quantifier:
   kallistobus:
     count: &#39;-x 10xv3 --h5ad --verbose&#39;
 </pre></div>
 </div>
-</div>
-<div class="section" id="rna-velocity-cel-seq2">
+</section>
+<section id="rna-velocity-cel-seq2">
 <h4>RNA velocity (CEL-Seq2)<a class="headerlink" href="#rna-velocity-cel-seq2" title="Permalink to this headline">¶</a></h4>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>quantifier:
   kallistobus:
@@ -334,8 +241,8 @@ barcodefile: &quot;1col_barcode_384.tab&quot;
 </pre></div>
 </div>
 <p><strong>Note</strong>: The RNA velocity workflow produces count matrices for unspliced/spliced mRNA counts.</p>
-</div>
-<div class="section" id="kite-feature-barcoding-cel-seq2">
+</section>
+<section id="kite-feature-barcoding-cel-seq2">
 <h4>KITE feature barcoding (CEL-Seq2)<a class="headerlink" href="#kite-feature-barcoding-cel-seq2" title="Permalink to this headline">¶</a></h4>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>quantifier:
   kallistobus:
@@ -345,64 +252,47 @@ barcodefile: &quot;1col_barcode_384.tab&quot;
 barcodefile: &quot;1col_barcode_384.tab&quot;
 </pre></div>
 </div>
-</div>
-</div>
-<div class="section" id="custom-assembly-extensions">
+</section>
+</section>
+<section id="custom-assembly-extensions">
 <h3>Custom assembly extensions<a class="headerlink" href="#custom-assembly-extensions" title="Permalink to this headline">¶</a></h3>
 <p>The genome and/or gene annotation can be extended with custom files, such as ERCC spike-ins for scRNA-seq.
 To do so, add <code class="docutils literal notranslate"><span class="pre">custom_genome_extension:</span> <span class="pre">path/to/spike_in.fa</span></code> and <code class="docutils literal notranslate"><span class="pre">custom_annotation_extension:</span> <span class="pre">path/to/spike_in.gtf</span></code> to the config.
 Seq2science will place the customized assembly in a separate folder in the <code class="docutils literal notranslate"><span class="pre">genome_dir</span></code>.
 You can control the name of the customized assembly by setting <code class="docutils literal notranslate"><span class="pre">custom_assembly_suffix</span></code> in the config.</p>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="../results.html" class="btn btn-neutral float-right" title="Using the results" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="scatac_seq.html" class="btn btn-neutral float-left" title="scATAC-seq" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../results.html" class="btn btn-neutral float-right" title="Using the results" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &#169; Copyright Maarten van der Sande, Siebren Frölich, Jos Smits, Rebecca Snabel, Tilman Schäfers, &amp; Simon van Heeringen..
-
-    </p>
+    <p>&#169; Copyright Maarten van der Sande, Siebren Frölich, Jos Smits, Rebecca Snabel, Tilman Schäfers, &amp; Simon van Heeringen..</p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>
