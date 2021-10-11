@@ -15,7 +15,7 @@ user@comp:~$ conda config --set channel_priority flexible
 ```
 ## Encountered problems while solving (nothing provides ... needed by seq2science) 
 
-This error usually has something to do with not having all the channels properly added. This should resolve it:
+This error usually has something to do with not having all the channels properly added. Running this should resolve it:
 
 ```console
 user@comp:~$ conda config --add channels defaults
