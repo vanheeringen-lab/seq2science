@@ -13,6 +13,15 @@ A different type of CreateCondaEnvironmentException occurs when you have conda c
 ```console
 user@comp:~$ conda config --set channel_priority flexible
 ```
+## Encountered problems while solving (nothing provides ... needed by seq2science) 
+
+This error usually has something to do with not having all the channels properly added. This should resolve it:
+
+```console
+user@comp:~$ conda config --add channels defaults
+user@comp:~$ conda config --add channels bioconda
+user@comp:~$ conda config --add channels conda-forge
+```
 
 ## What if I change the configuration or samples file after running seq2science?
 Seq2science starts each run with checking if it was already run before, and if so, if any settings were changed. Seq2science then automatically derives which files need to be changed and only starts the necessary jobs.
