@@ -31,9 +31,10 @@ parse_contrast <- function(contrast) {
 #' load the samples.tsv file into a dataframe,
 #' filter for the right assembly, and
 #' collapse technical replicates (if present).
-parse_samples <- function(samples_file, assembly, replicates) {
+parse_samples <- function(samples_file, assembly_name, replicates) {
   samples <- read.delim(samples_file, sep = "\t", na.strings = "", comment.char = "#", stringsAsFactors = F, row.names = "sample")
-  samples <- samples[samples$assembly == assembly, ]
+  colnames(samples) <- gsub("\\s+", "", colnames(samples))  # strip whitespace from column names
+  samples <- subset(samples, assembly == assembly_name)
 
   # collapse technical replicates
   # (and use these names for the counts table later)
@@ -162,7 +163,7 @@ heatmap_aesthetics <- function(num_samples){
   }
   show_colnames <- ifelse(num_samples > 28, TRUE, FALSE)
   show_rownames <- !show_colnames
-  colors <- colorRampPalette( rev(RColorBrewer::brewer.pal(9, "Blues")) )(255)
+  colors <- colorRampPalette( rev(RColorBrewer::brewer.pal(9, "RdYlBu")) )(255)
 
   return(
     list(
@@ -199,7 +200,7 @@ heatmap_plot <- function(mat, title, heatmap_aes, legend_aes, out_pdf) {
     legend_labels = legend_aes$labels,
     cellwidth  = heatmap_aes$cell_dimensions,
     cellheight = heatmap_aes$cell_dimensions,
-    col = heatmap_aes$colors,
+    color = heatmap_aes$colors,
     filename = out_pdf
   )
 }
