@@ -256,7 +256,7 @@ def add_profile_args(profile_file, parsed_args):
                 parsed_args[k] = {item.split("=")[0]: float(item.split("=")[1]) for item in parsed_args[k]}
 
         elif k in parsed_args and isinstance(parsed_args[k], dict):
-            for k2, v2 in profile[k].items():
+            for k2, v2 in parsed_args[k].items():
                 if k2 not in parsed_args[k]:
                     parsed_args[k][k2] = int(v2) if isinstance(v2, str) and v2.isdigit() else v2
 

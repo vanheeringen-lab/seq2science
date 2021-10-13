@@ -16,11 +16,11 @@ properties:
     type: string
   result_dir:
     description: where to store the pipeline's results (by default)
-    default: ./
+    default: ./results
     type: string
   genome_dir:
     description: where to store the pipeline's genome assemblies
-    default: ./
+    default: ./genomes
     type: string
   log_dir:
     description: directory where to store the logs (defaults inside the result dir)

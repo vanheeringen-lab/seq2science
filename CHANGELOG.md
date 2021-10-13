@@ -11,11 +11,14 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Changed
 
 - updated salmon & tximeta versions
+- colors for DESeq2 distance plots "fixed"
+- updated bwa-mem2 version and reduced the expected memory usage of bwa-mem2 to 40GB
 
 ### Fixed
 
 - stranded bigwigs are no longer inverted (forward containing reverse reads and vice-versa).
 - fix in `rename_sample` preventing the inversion of R1 and R2 FASTQs.
+- bug with parsing cli for explanations
 - fixes in deseq2/utils.R
   - the samples.tsv will now work with only 2 columns
   - the samples.tsv column names will be stripped of excess whitespace, similar to the config.

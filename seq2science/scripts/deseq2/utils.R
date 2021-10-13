@@ -163,7 +163,7 @@ heatmap_aesthetics <- function(num_samples){
   }
   show_colnames <- ifelse(num_samples > 28, TRUE, FALSE)
   show_rownames <- !show_colnames
-  colors <- colorRampPalette( rev(RColorBrewer::brewer.pal(9, "Blues")) )(255)
+  colors <- colorRampPalette( rev(RColorBrewer::brewer.pal(9, "RdYlBu")) )(255)
 
   return(
     list(
@@ -200,7 +200,7 @@ heatmap_plot <- function(mat, title, heatmap_aes, legend_aes, out_pdf) {
     legend_labels = legend_aes$labels,
     cellwidth  = heatmap_aes$cell_dimensions,
     cellheight = heatmap_aes$cell_dimensions,
-    col = heatmap_aes$colors,
+    color = heatmap_aes$colors,
     filename = out_pdf
   )
 }
