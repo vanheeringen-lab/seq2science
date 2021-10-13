@@ -1,0 +1,15 @@
+name: ucsc
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - bioconda::ucsc-bedsort=377
+  - bioconda::ucsc-bedGraphToBigWig=377
+  - bioconda::ucsc-bedToBigBed=377
+  - bioconda::ucsc-fatotwobit=377
+  - bioconda::ucsc-gtftogenepred=377
+  - bioconda::ucsc-genepredtobed=377
+  - bioconda::ucsc-hggcpercent=377
+  - bioconda::ucsc-ixixx=377
+  - bioconda::ucsc-wigtobigwig=377

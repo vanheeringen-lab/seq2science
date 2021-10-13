@@ -1,0 +1,5 @@
+# for help with filling out the samples.tsv:
+# https://vanheeringen-lab.github.io/seq2science/content/workflows/chip_seq.html#filling-out-the-samples-tsv
+# also make sure that you use tab as a delimiter
+sample	assembly	descriptive_name
+GSM4404624	GRCh38.p13	HEL

@@ -1,0 +1,11 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+description: an entry in the sample sheet
+
+properties:
+  sample:
+    type: string
+    description: sample name/identifier, if it starts with GSM/SRR/ERR/DRR it can be downloaded from the ENA or NCBI servers.
+
+required:
+  - sample

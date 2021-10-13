@@ -1,0 +1,21 @@
+# for help with filling out the samples.tsv:
+# https://vanheeringen-lab.github.io/seq2science/content/workflows/scatac_seq.html#filling-out-the-samples-tsv
+# also make sure that you use tab as a delimiter
+sample	assembly	technical_replicates
+GSM1596256	hg38	H1ESC
+GSM1596257	hg38	H1ESC
+GSM1596258	hg38	H1ESC
+GSM1596259	hg38	H1ESC
+GSM1596260	hg38	H1ESC
+GSM1596261	hg38	H1ESC
+GSM1596262	hg38	H1ESC
+GSM1596263	hg38	H1ESC
+GSM1596351	hg38	GM
+GSM1596352	hg38	GM
+GSM1596353	hg38	GM
+GSM1596354	hg38	GM
+GSM1596355	hg38	GM
+GSM1596356	hg38	GM
+GSM1596357	hg38	GM
+GSM1596358	hg38	GM
+GSM1596359	hg38	GM

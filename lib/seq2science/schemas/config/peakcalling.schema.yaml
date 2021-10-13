@@ -1,0 +1,53 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+
+description: seq2science peak calling configuration
+
+properties:
+  # peak caller algorithms
+  peak_caller:
+    type: object
+    properties:
+      genrich:  {type: string}
+      hmmratac: {type: string}
+      macs2:    {type: string}
+    minProperties: 1   # if you want to have at least one
+    additionalProperties: false
+    default:
+      macs2: --shift -100 --extsize 200 --nomodel --keep-dup 1 --buffer-size 10000
+
+  # keep macs2 mates when peak calling with shift
+  macs2_keep_mates:
+    description: macs2 normally removes paired-end mates when doing --nomodel shift peak calling. When this flag is on, the paired-end bam is converted to sngle-end bam, so all reads are counted. This is not conventional to do, but might help with low sequencing depth.
+    default: false
+    type: boolean
+
+  peak_windowsize:
+    description: when combining narrowpeaks, how much each summit should be extended by when considering overlapping peaks. A summit is expanded by the windowsize on each side, so the total width is twice the peak_windowsize.
+    default: 100
+    type: integer
+
+  slop:
+    description: how much the summits should be extended by (on each side) for making a peak count table. If for instance a slop of 100 is chosen, the final peak's width is 200.
+    default: 100
+    type: integer
+
+  logbase:
+    description: The log base of the number of reads under peak count tables
+    default: 2
+    type: number
+
+  heatmap_slop:
+    description: how much the summits should be extended by (on each side) for making a heatmap of peaks in the multiQC report. If for instance a slop of 1000 is chosen, the final peak's width is 2000.
+    default: 1000
+    type: integer
+
+  heatmap_npeaks:
+    description: The number of random peaks used for the heatmap. This at most visualizes all peaks found, so picking a number higher than the number of peaks has no effect. The reason to pick a smaller number is to limit computational resources.
+    default: 20000
+    type: integer
+
+  deeptools_heatmap_options:
+    description: the options passed to deeptools when visualizing the heatmap
+    default: --kmeans 6 --xAxisLabel "Summit distance (bp)"
+    type: string
+

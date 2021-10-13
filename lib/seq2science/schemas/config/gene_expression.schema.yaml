@@ -1,0 +1,64 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+
+description: seq2science gene expression configuration
+
+properties:
+  quantifier:
+    description: which quantifier to use
+    properties:
+      salmon:
+        properties:
+          quantifier_index:
+            default: '-k 31' # minimmum length. Reduce if mapping rate is too low.
+          quantifier_flags:
+            default: '--seqBias --gcBias --validateMappings --recoverOrphans' # --posBias experimental flag
+          decoy_aware_index:
+            default: False
+        default:
+          quantifier_index: '-k 31'
+          quantifier_flags: '--seqBias --gcBias --validateMappings --recoverOrphans'
+          decoy_aware_index: False
+      htseq:
+        properties:
+          htseq_flags:
+            default: ''
+        default:
+          htseq_flags: ''
+      featurecounts:
+        properties:
+          featurecounts_flags:
+            default: ''
+        default:
+          featurecounts_flags: ''
+    default:
+      htseq:
+        htseq_flags: ''
+
+  tximeta:
+    description: tximeta is used to convert salmon output to gene counts. If you are using an assembly from Ensembl or GENCODE, you can refine the output by specifying these fields.
+    properties:
+      source:
+        description: the source of transcriptome
+        enum: [Ensembl, GENCODE, de-novo]
+        default: de-novo
+      organism:
+        description: organism (e.g. "Homo sapiens")
+        default: tximeta_file
+      release:
+        description: release number of the source database (e.g. "101")
+        default: 42
+    default:
+      source: de-novo
+      organism: tximeta_file
+      release: 42
+
+  ignore_strandedness:
+    description: ignore/dont infer strand-specificity?
+    default: False
+    type: boolean
+
+  # differential transcript usage
+  dexseq:
+    description: output an exon counts matrix for use in DEXSeq.
+    default: False
+    type: boolean

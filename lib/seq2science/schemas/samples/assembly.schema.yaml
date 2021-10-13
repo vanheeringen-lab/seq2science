@@ -1,0 +1,11 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+description: an entry in the sample sheet
+
+properties:
+  assembly:
+    type: string
+    description: assembly to align against. Will be downloaded by genomepy if not yet in genome_dir.
+
+required:
+  - assembly

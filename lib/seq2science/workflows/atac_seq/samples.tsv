@@ -1,0 +1,10 @@
+# for help with filling out the samples.tsv:
+# https://vanheeringen-lab.github.io/seq2science/content/workflows/atac_seq.html#filling-out-the-samples-tsv
+# also make sure that you use tab as a delimiter
+sample	assembly	biological_replicates	descriptive_name
+GSM2837488	Bl71nemr	adult	adult_1
+GSM2837489	Bl71nemr	adult	adult_2
+GSM2837490	Bl71nemr	adult	adult_3
+GSM2837491	Bl71nemr	embryo	embryo_1
+GSM2837492	Bl71nemr	embryo	embryo_2
+GSM2837493	Bl71nemr	heart	heart_1

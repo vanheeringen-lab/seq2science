@@ -1,0 +1,7 @@
+name: snaptools
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - bioconda::snaptools=1.4.8

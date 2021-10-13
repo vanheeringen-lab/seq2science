@@ -1,0 +1,19 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+
+description: seq2science trackhub configuration
+
+properties:
+  # scope of analysis: create a trackhub or only align and/or quantify (and create gene counts)
+  create_trackhub:
+    description: generate a trackhub (and required files)?
+    default: true
+    type: boolean
+
+  bigwig_dir:
+    description: directory where to store the bigwigs used by the trackhub (defaults inside the result dir)
+    default: bigwigs
+    type: string
+
+  deeptools_flags:
+    description: flags for bam to bigwig conversions with deeptools bamCoverage
+    default: '--normalizeUsing BPM'  # Bins Per Million mapped reads, same as TPM in RNA-seq

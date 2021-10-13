@@ -1,0 +1,7 @@
+name: subread
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - bioconda::subread=1.6.4

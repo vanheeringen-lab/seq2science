@@ -1,0 +1,30 @@
+# do onstart/onexit things
+sample_schemas = ['sample', 'assembly']
+config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific', 'scrna', 'trackhub']
+include: "../../rules/configuration.smk"
+
+
+# load all the relevant rules
+include: f"{config['rule_dir']}/alignment.smk"
+include: f"{config['rule_dir']}/get_fastq.smk"
+include: f"{config['rule_dir']}/get_genome.smk"
+include: f"{config['rule_dir']}/merge_replicates.smk"
+include: f"{config['rule_dir']}/qc.smk"
+include: f"{config['rule_dir']}/trimming.smk"
+include: f"{config['rule_dir']}/quantification.smk"
+
+
+# set the quality_control functions
+quality_control = [get_trimming_qc, get_scrna_qc]
+
+
+rule seq2science:
+    """
+    Make a QC report and map
+    """
+    input:
+        expand([f"{{result_dir}}/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}/run_info.json" for trep in treps.index] + 
+               (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []) + 
+               (["{result_dir}/kb_seurat_pp/kallistobus/{assemblies}/kb_seurat_pp.html", "{result_dir}/kb_seurat_pp/kallistobus/{assemblies}/qc"] if config['run_kb_seurat_pp'] else []),
+               **{**config,
+                  **{'assemblies': all_assemblies}})

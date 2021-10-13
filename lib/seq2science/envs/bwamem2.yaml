@@ -1,0 +1,7 @@
+name: bwamem2
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - bioconda::bwa-mem2=2.1

@@ -1,0 +1,28 @@
+# do onstart/onexit things
+sample_schemas = ['sample', 'assembly', 'technical_replicates']
+config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific', 'scatac']
+include: "../../rules/configuration.smk"
+
+
+# load all the relevant rules
+include: f"{config['rule_dir']}/alignment.smk"
+include: f"{config['rule_dir']}/bam_cleaning.smk"
+include: f"{config['rule_dir']}/get_fastq.smk"
+include: f"{config['rule_dir']}/get_genome.smk"
+include: f"{config['rule_dir']}/merge_replicates.smk"
+include: f"{config['rule_dir']}/qc.smk"
+include: f"{config['rule_dir']}/scATAC.smk"
+include: f"{config['rule_dir']}/trimming.smk"
+
+# set the quality_control functions
+quality_control = [get_trimming_qc, get_alignment_qc]
+
+
+rule seq2science:
+    """
+    """
+    input:
+        expand(
+            (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []) +
+            ([f"{{result_dir}}/snap/{trep}-{treps.loc[trep, 'assembly']}.binned.snap" for trep in treps.index]),
+            **{**config, **{'assemblies': all_assemblies}})

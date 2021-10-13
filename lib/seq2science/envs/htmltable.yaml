@@ -1,0 +1,8 @@
+name: htmltable
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - conda-forge::pretty_html_table=0.9.11
+  - pandas=1.2.5

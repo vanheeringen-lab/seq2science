@@ -1,0 +1,34 @@
+# tab-separated file of the samples
+samples: samples.tsv
+
+# pipeline file locations
+result_dir: ./results  # where to store results
+genome_dir: ./genomes  # where to look for or download the genomes
+# fastq_dir: ./results/fastq  # where to look for or download the fastqs
+
+
+# contact info for multiqc report and trackhub
+email: yourmail@here.com
+
+# how to handle plates ("technical replicates")
+technical_replicates: merge
+
+# filtering after alignment
+remove_blacklist: true
+remove_mito: true
+tn5_shift: true
+min_mapping_quality: 30
+only_primary_align: True
+max_template_length: 1000
+remove_dups: true
+
+# which trimmer to use
+trimmer: fastp
+
+# which aligner to use
+aligner: bwa-mem2
+
+# snaptools options
+# min-mapq, min-flen, max-flen & keep-chrm set by config options above
+snaptools_opt: --min-flen=0 --max-flen=1000 --keep-single=FALSE --keep-secondary=FALSE --overwrite=True --min-cov=100 --verbose=True
+bin_opt: --bin-size-list 5000 --verbose=True

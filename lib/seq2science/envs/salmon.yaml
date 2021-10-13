@@ -1,0 +1,8 @@
+name: salmon
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - bioconda::salmon=1.3.0
+  - bioconda::gffread=0.12.1

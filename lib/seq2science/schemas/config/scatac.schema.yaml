@@ -1,0 +1,11 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+
+description: seq2science single-cell atac-seq configuration
+
+properties:
+  snaptools_opt:
+    description: "snaptools optional arguments for snaptools snap-pre, from snaptools (https://github.com/r3fang/SnapTools). For more info run snaptools snap-pre -h"
+    default: --min-flen=0 --max-flen=1000 --keep-single=FALSE --keep-secondary=FALSE --overwrite=True --min-cov=100 --verbose=True
+  bin_opt:
+    description: snaptools optional arguments for snaptools snap-add-bmat, from snaptools (https://github.com/r3fang/SnapTools). The genome will be divided into bins of the equal size of --bin-size-list to create the cell x bin count matrix. For more info run snaptools snap-add-bmat -h 
+    default: --bin-size-list 5000 --verbose=True

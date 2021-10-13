@@ -1,0 +1,56 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+
+description: seq2science general configuration
+
+properties:
+  # workflow samples
+  samples:
+    description: tab-separated file specifying the samples to run through the workflow
+    default: samples.tsv
+    type: string
+
+  # paths
+  rule_dir:
+    description: directory where to find the workflow rules
+    default: ../../rules
+    type: string
+  result_dir:
+    description: where to store the pipeline's results (by default)
+    default: ./
+    type: string
+  genome_dir:
+    description: where to store the pipeline's genome assemblies
+    default: ./
+    type: string
+  log_dir:
+    description: directory where to store the logs (defaults inside the result dir)
+    default: log
+    type: string
+  benchmark_dir:
+    description: directory where to store the logs (defaults inside the result dir)
+    default: benchmark
+    type: string
+
+  # filename conventions
+  fqext1:
+    description: filename suffix when handling paired-end data, describing the forward read
+    default: R1
+    type: string
+  fqext2:
+    description: filename suffix when handling paired-end data, describing the reverse read
+    default: R2
+    type: string
+  fqsuffix:
+    description: file descriptor for fastq files (often fastq or fq)
+    default: fastq
+    type: string
+
+  cpulimit:
+    description: whether or not to make use of cpulimit to enfoce max thread usage for some rules
+    default: true
+    type: boolean
+
+  # email
+  email:
+    description: email to reach you after pipeline finished, required for trackhub and multiqc report
+    type: string

@@ -1,0 +1,7 @@
+name: sambamba
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - bioconda::sambamba=0.7.0
