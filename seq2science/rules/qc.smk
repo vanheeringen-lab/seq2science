@@ -632,7 +632,10 @@ rule multiqc_filter_buttons:
                 f.write(f"Read Group 1 & Alignment\thide\t_{config.get('fqext2')}\n"
                         f"Read Group 2\tshow\t_{config.get('fqext2')}\n")
             if len([x for x in merged_treps if treps.loc[x, "assembly"] == wildcards.assembly]):
-                pass
+                _merged_treps = [x for x in treps[treps["assembly"] == wildcards.assembly].index]
+                _real_treps = [rep for rep in samples.index if rep not in merged_treps and samples.loc[rep, "assembly"] == wildcards.assembly]
+                f.write(f"Technical replicates\tshow\t" + "\t".join(_real_treps) + "\n")
+                f.write(f"Merged technical replicates\tshow\t" + "\t".join(_merged_treps) + "\n")
 
 
 rule multiqc_samplesconfig:
