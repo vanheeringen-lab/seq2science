@@ -31,9 +31,10 @@ parse_contrast <- function(contrast) {
 #' load the samples.tsv file into a dataframe,
 #' filter for the right assembly, and
 #' collapse technical replicates (if present).
-parse_samples <- function(samples_file, assembly, replicates) {
+parse_samples <- function(samples_file, assembly_name, replicates) {
   samples <- read.delim(samples_file, sep = "\t", na.strings = "", comment.char = "#", stringsAsFactors = F, row.names = "sample")
-  samples <- samples[samples$assembly == assembly, ]
+  colnames(samples) <- gsub("\\s+", "", colnames(samples))  # strip whitespace from column names
+  samples <- subset(samples, assembly == assembly_name)
 
   # collapse technical replicates
   # (and use these names for the counts table later)
