@@ -242,7 +242,7 @@ rule samtools_sort:
     input:
         rules.sieve_bam.output.final
     output:
-        temp(expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-{{sorting}}.bam", **config)),
+        expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-{{sorting}}.bam", **config),
     log:
         expand("{log_dir}/samtools_sort/{{assembly}}-{{sample}}-samtools_{{sorting}}.log", **config),
     benchmark:

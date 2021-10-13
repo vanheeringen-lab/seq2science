@@ -23,6 +23,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - fixes in deseq2/utils.R
   - the samples.tsv will now work with only 2 columns
   - the samples.tsv column names will be stripped of excess whitespace, similar to the config.
+- ATAC-seq pipeline removing the final bams, keeping the unsorted one
 
 ## [0.5.5] - 2021-09-01
 
