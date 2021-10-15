@@ -634,7 +634,7 @@ rule multiqc_filter_buttons:
             if len([x for x in merged_treps if treps.loc[x, "assembly"] == wildcards.assembly]):
                 _merged_treps = [x for x in treps[treps["assembly"] == wildcards.assembly].index]
                 _real_treps = [rep for rep in samples.index if rep not in merged_treps and samples.loc[rep, "assembly"] == wildcards.assembly]
-                f.write(f"Technical replicates\tshow\t" + "\t".join(_real_treps) + "\n")
+                f.write(f"Pre-merge technical replicates\tshow\t" + "\t".join(_real_treps) + "\n")
                 f.write(f"Merged technical replicates\tshow\t" + "\t".join(_merged_treps) + "\n")
 
 
