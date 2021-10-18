@@ -10,7 +10,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Added
 
-- MA plot and PCA plots added to QC report for deseq2 related workflows
+- MA plot, volcano plot, and PCA plots added to QC report for deseq2 related workflows
 
 ### Changed
 
