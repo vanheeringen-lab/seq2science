@@ -15,4 +15,3 @@ dependencies:
   - conda-forge::r-ggplot2=3.3.3
   - conda-forge::r-pheatmap=1.0.12
   - conda-forge::r-pdftools=2.3.1
-  - conda-forge::r-gridextra=2.3
