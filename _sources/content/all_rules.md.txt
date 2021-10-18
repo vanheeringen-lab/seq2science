@@ -595,6 +595,12 @@ Must happen after trimming due to trim-galore's automatic adapter trimming metho
 
 If a replicate has only 1 sample in it, simply move the file.
 
+#### merge_volcano_ma
+Combine the volcano and maplot resulting of the deseq2 rule into a single figure.
+```
+convert {input.maplot} {input.volcanoplot} +append {output} 2> {log}
+```
+
 #### minimap2_align
 Align reads against a genome (index) with minimap2, and pipe the output to the required sorter(s).
 ```

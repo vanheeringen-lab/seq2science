@@ -117,6 +117,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#mark-duplicates">mark_duplicates</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#mean-center">mean_center</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#merge-replicates">merge_replicates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#merge-volcano-ma">merge_volcano_ma</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#minimap2-align">minimap2_align</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#minimap2-index">minimap2_index</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#mt-nuc-ratio-calculator">mt_nuc_ratio_calculator</a></li>
@@ -839,6 +840,13 @@ OUTPUT={output.bam} METRICS_FILE={output.metrics} &gt; {log} 2&gt;&amp;1
 contain the name of the original replicate.</p>
 <p>Must happen after trimming due to trim-galore’s automatic adapter trimming method</p>
 <p>If a replicate has only 1 sample in it, simply move the file.</p>
+</section>
+<section id="merge-volcano-ma">
+<h2>merge_volcano_ma<a class="headerlink" href="#merge-volcano-ma" title="Permalink to this headline">¶</a></h2>
+<p>Combine the volcano and maplot resulting of the deseq2 rule into a single figure.</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>convert {input.maplot} {input.volcanoplot} +append {output} 2&gt; {log}
+</pre></div>
+</div>
 </section>
 <section id="minimap2-align">
 <h2>minimap2_align<a class="headerlink" href="#minimap2-align" title="Permalink to this headline">¶</a></h2>

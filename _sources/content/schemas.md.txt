@@ -23,14 +23,14 @@ rule_dir:
 ```
 result_dir:
     description: where to store the pipeline's results (by default)
-    default: ./
+    default: ./results
     type: string
 ```
 #####genome_dir
 ```
 genome_dir:
     description: where to store the pipeline's genome assemblies
-    default: ./
+    default: ./genomes
     type: string
 ```
 #####log_dir
@@ -709,6 +709,13 @@ create_trackhub:
     description: generate a trackhub (and required files)?
     default: True
     type: boolean
+```
+#####trackhub_dir
+```
+trackhub_dir:
+    description: directory where to store the trackhub (defaults inside the result dir)
+    default: trackhub
+    type: string
 ```
 #####bigwig_dir
 ```

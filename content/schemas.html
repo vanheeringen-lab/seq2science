@@ -142,6 +142,7 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#trackhub">Trackhub</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#create-trackhub">create_trackhub</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#trackhub-dir">trackhub_dir</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#bigwig-dir">bigwig_dir</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#deeptools-flags">deeptools_flags</a></li>
 </ul>
@@ -209,7 +210,7 @@
 <h3>result_dir<a class="headerlink" href="#result-dir" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>result_dir:
     description: where to store the pipeline&#39;s results (by default)
-    default: ./
+    default: ./results
     type: string
 </pre></div>
 </div>
@@ -218,7 +219,7 @@
 <h3>genome_dir<a class="headerlink" href="#genome-dir" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>genome_dir:
     description: where to store the pipeline&#39;s genome assemblies
-    default: ./
+    default: ./genomes
     type: string
 </pre></div>
 </div>
@@ -1038,6 +1039,15 @@
     description: generate a trackhub (and required files)?
     default: True
     type: boolean
+</pre></div>
+</div>
+</section>
+<section id="trackhub-dir">
+<h3>trackhub_dir<a class="headerlink" href="#trackhub-dir" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>trackhub_dir:
+    description: directory where to store the trackhub (defaults inside the result dir)
+    default: trackhub
+    type: string
 </pre></div>
 </div>
 </section>
