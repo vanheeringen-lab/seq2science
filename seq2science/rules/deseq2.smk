@@ -92,7 +92,7 @@ rule deseq2:
 
 rule merge_volcano_ma:
     """
-
+    Combine the volcano and maplot resulting of the deseq2 rule into a single figure.
     """
     input:
         maplot=rules.deseq2.output.maplot,
