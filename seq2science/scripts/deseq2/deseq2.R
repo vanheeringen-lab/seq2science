@@ -3,14 +3,21 @@
 # input method
 if (exists("snakemake")){
   # parse seq2science input
-  scripts_dir <- snakemake@params$scripts_dir
-  deseq_init <- file.path(scripts_dir, "run_as_rule.R")
+  scripts_dir        <- snakemake@params$scripts_dir
+  deseq_init         <- file.path(scripts_dir, "run_as_rule.R")
+  output             <- snakemake@output$diffexp
+  output_ma_plot     <- snakemake@output$maplot
+  output_vol_plot    <- snakemake@output$volcanoplot
+  output_pca_plot    <- snakemake@output$pcaplot
 } else {
   # parse command line input
-  cli_args    <- commandArgs(trailingOnly=F)
-  this_script <- sub("--file=", "", cli_args[grep("--file=", cli_args)])
-  scripts_dir <- dirname(this_script)
-  deseq_init <- file.path(scripts_dir, "run_as_standalone.R")
+  cli_args           <- commandArgs(trailingOnly=F)
+  this_script        <- sub("--file=", "", cli_args[grep("--file=", cli_args)])
+  scripts_dir        <- dirname(this_script)
+  deseq_init         <- file.path(scripts_dir, "run_as_standalone.R")
+  output_ma_plot     <- sub(".diffexp.tsv", ".ma_plot.png", output)
+  output_vol_plot    <- sub(".diffexp.tsv", ".volcano_plot.png", output)
+  output_pca_plot    <- sub(".diffexp.tsv", ".pca_plot.png", output)
 }
 deseq_utils <- file.path(scripts_dir, "utils.R")
 source(deseq_init)
@@ -95,21 +102,34 @@ if (n_DEGs == 0) {
 ## generate additional files if DE genes are found
 
 # generate MA plot (log fold change vs mean gene counts)
-output_ma_plot <- sub(".diffexp.tsv", ".ma_plot.pdf", output)
 b <- ifelse(is.na(batch), '', ', batch corrected')
 title <- paste0(
   groups[1], ' vs ', groups[2], '\n',
   n_DEGs, ' of ', nrow(reduced_counts), ' DE (a = ', fdr, b, ')'
 )
-pdf(output_ma_plot)
+
+png(output_ma_plot, width = 250, height = 250, units='mm', res = 300)
 DESeq2::plotMA(
   resLFC,
   alpha = fdr,
   ylab = 'log2 fold change',
   main = title
 )
+
 invisible(dev.off())
 cat('-MA plot saved\n')
+
+
+png(output_vol_plot, width = 250, height = 250, units='mm', res = 300)
+EnhancedVolcano::EnhancedVolcano(resLFC,
+    lab = rownames(resLFC),
+    x = 'log2FoldChange',
+    y = 'pvalue',
+    title = title,
+)
+
+invisible(dev.off())
+cat('-volcano plot saved\n')
 
 if (is.na(batch)) {
   # generate a PCA plot (for sample outlier detection)
@@ -117,8 +137,7 @@ if (is.na(batch)) {
   blind_vst <- varianceStabilizingTransformation(dds, blind = TRUE)
   g <- DESeq2::plotPCA(blind_vst, intgroup="condition")
 
-  output_pca_plot <- sub(".diffexp.tsv", ".pca_plot.pdf", output)
-  pdf(output_pca_plot)
+  png(output_pca_plot, width = 465, height = 225, units='mm', res = 300)
   plot(g + ggtitle("blind PCA") + aes(color=condition) + theme(legend.position="bottom"))
   invisible(dev.off())
   cat('-PCA plot saved\n')
@@ -136,13 +155,14 @@ if (is.na(batch)) {
   condition_aes <- if (length(levels(blind_vst$batch)) < 7) {aes(color=condition, shape=batch)} else {aes(color=condition)}
   batch_aes <- if (length(levels(blind_vst$condition)) < 7) {aes(color=batch, shape=condition)} else {aes(color=batch)}
 
-  output_pca_plots <- sub(".diffexp.tsv", ".pca_plot_%01d.pdf", output)
-  pdf(output_pca_plots)
-  plot(g1 + ggtitle("blind PCA - color by condition") + condition_aes + theme(legend.position="bottom"))
-  plot(g1 + ggtitle("blind PCA - color by batch") + batch_aes + theme(legend.position="bottom"))
+  plot1 <- plot(g1 + ggtitle("blind PCA - color by condition") + condition_aes + theme(legend.position="bottom"))
+  plot2 <- plot(g1 + ggtitle("blind PCA - color by batch") + batch_aes + theme(legend.position="bottom"))
 
-  plot(g2 + ggtitle("batch corrected PCA - color by condition") + condition_aes + theme(legend.position="bottom"))
-  plot(g2 + ggtitle("batch corrected PCA - color by batch") + batch_aes + theme(legend.position="bottom"))
+  plot3 <- plot(g2 + ggtitle("batch corrected PCA - color by condition") + condition_aes + theme(legend.position="bottom"))
+  plot4 <- plot(g2 + ggtitle("batch corrected PCA - color by batch") + batch_aes + theme(legend.position="bottom"))
+  png(output_pca_plot, width = 465, height = 225, units='mm', res = 300)
+  gridExtra::grid.arrange(plot1, plot2, plot3, plot4, ncol=2, nrow=2)
+  
   invisible(dev.off())
   cat('-PCA plots saved\n\n')
 

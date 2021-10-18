@@ -10,7 +10,10 @@ dependencies:
   - bioconda::bioconductor-ihw=1.18.0
   - bioconda::bioconductor-apeglm=1.12.0
   - bioconda::bioconductor-limma=3.46.0
+  - bioconda::bioconductor-enhancedvolcano=1.6.0
   - conda-forge::r-rcolorbrewer=1.1_2
   - conda-forge::r-ggplot2=3.3.3
   - conda-forge::r-pheatmap=1.0.12
   - conda-forge::r-pdftools=2.3.1
+  - conda-forge::r-gridextra=2.3
+  

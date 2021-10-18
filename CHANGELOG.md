@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- MA plot, volcano plot, and PCA plots added to QC report for deseq2 related workflows
+
 ### Changed
 
 - updated salmon & tximeta versions

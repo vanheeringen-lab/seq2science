@@ -73,7 +73,8 @@ report_section_order:
     order: -952
   DESeq2_pearson_correlation_clustering:
     order: -953
-  samplesconfig: 
+{{deseq2_order}}
+  samplesconfig:
     order: -1000
 
 
@@ -177,4 +178,4 @@ custom_data:
     DESeq2_pearson_correlation_clustering:
         section_name: 'DESeq2 - Pearson correlation cluster heatmap of counts'
         description: 'Correlation cluster heatmap based on variance stabilizing transformed counts. Pearson correlation is a parametric (lots of assumptions, e.g. normality and homoscedasticity) method, and assesses the linearity of the relationship.'
-
+{{deseq2_imgs}}
