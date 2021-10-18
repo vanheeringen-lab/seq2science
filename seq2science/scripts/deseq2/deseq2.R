@@ -6,7 +6,8 @@ if (exists("snakemake")){
   scripts_dir        <- snakemake@params$scripts_dir
   deseq_init         <- file.path(scripts_dir, "run_as_rule.R")
   output             <- snakemake@output$diffexp
-  output_mavol_plot  <- snakemake@output$maplot
+  output_ma_plot     <- snakemake@output$maplot
+  output_vol_plot    <- snakemake@output$volcanoplot
   output_pca_plot    <- snakemake@output$pcaplot
 } else {
   # parse command line input
@@ -14,7 +15,8 @@ if (exists("snakemake")){
   this_script        <- sub("--file=", "", cli_args[grep("--file=", cli_args)])
   scripts_dir        <- dirname(this_script)
   deseq_init         <- file.path(scripts_dir, "run_as_standalone.R")
-  output_mavol_plot  <- sub(".diffexp.tsv", ".ma_plot.png", output)
+  output_ma_plot     <- sub(".diffexp.tsv", ".ma_plot.png", output)
+  output_vol_plot    <- sub(".diffexp.tsv", ".volcano_plot.png", output)
   output_pca_plot    <- sub(".diffexp.tsv", ".pca_plot.png", output)
 }
 deseq_utils <- file.path(scripts_dir, "utils.R")
@@ -106,9 +108,7 @@ title <- paste0(
   n_DEGs, ' of ', nrow(reduced_counts), ' DE (a = ', fdr, b, ')'
 )
 
-png(output_mavol_plot, width = 465, height = 225, units='mm', res = 300)
-layout(1:2)
-#par(mfrow=c(1,2))
+png(output_ma_plot, width = 250, height = 250, units='mm', res = 300)
 DESeq2::plotMA(
   resLFC,
   alpha = fdr,
@@ -116,41 +116,20 @@ DESeq2::plotMA(
   main = title
 )
 
-#DESeq2::plotMA(
-#  resLFC,
-#  alpha = fdr,
-#  ylab = 'log2 fold change',
-#  main = title
-#)
+invisible(dev.off())
+cat('-MA plot saved\n')
 
+
+png(output_vol_plot, width = 250, height = 250, units='mm', res = 300)
 EnhancedVolcano::EnhancedVolcano(resLFC,
     lab = rownames(resLFC),
     x = 'log2FoldChange',
     y = 'pvalue',
     title = title,
-    #selectLab = c('VCAM1','KCTD12','ADAM12',
-    #  'CXCL12','CACNB2','SPARCL1','DUSP1','SAMHD1','MAOA'),
- #   xlab = bquote(~Log[2]~ 'fold change'),
- #   pCutoff = 10e-14,
- #   FCcutoff = 2.0,
- #   pointSize = 4.0,
- #   labSize = 6.0,
- #   labCol = 'black',
- #   labFace = 'bold',
- #   boxedLabels = TRUE,
- #   colAlpha = 4/5,
- #   legendPosition = 'right',
- #   legendLabSize = 14,
- #   legendIconSize = 4.0,
- #   drawConnectors = TRUE,
- #   widthConnectors = 1.0,
- #   colConnectors = 'black'
 )
 
-#gridExtra::grid.arrange(plot1, plot2, ncol=2)
-
 invisible(dev.off())
-cat('-MA plot saved\n')
+cat('-volcano plot saved\n')
 
 if (is.na(batch)) {
   # generate a PCA plot (for sample outlier detection)

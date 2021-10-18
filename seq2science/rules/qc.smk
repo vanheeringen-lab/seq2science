@@ -669,15 +669,15 @@ rule multiqc_schema:
         deseq2_order = ""
         for contrast in expand_contrasts(samples, config):
             deseq2_imgs += f"""\
-    {contrast}.ma_plot:
+    {contrast}.combined_ma_volcano:
         section_name: 'DESeq2 - MA plot for contrast {contrast}'
-        description: 'A MA plot shows the relation between the (normalized) mean counts for each gene, and the log2 fold change between the conditions. Genes that are significantly differentially expressed are coloured blue.'
+        description: 'A MA plot shows the relation between the (normalized) mean counts for each gene, and the log2 fold change between the conditions. Genes that are significantly differentially expressed are coloured blue. Similarily a volcano plot shows the relation between the log2 fold change between contrasts and their p-value.'
     {contrast}.pca_plot:
         section_name: 'DESeq2 - PCA plot for {contrast}'
         description: 'This PCA plot shows the relation among samples along the two most principal components, coloured by condition. PCA transforms the data from the normalized high dimensions (e.g. 20.000 gene counts, or 100.000 peak expressions) to a low dimension (PC1 and PC2). It does so by maximizing the variance along these two components. Generally you expect there to be more variance between samples from different conditions, than within conditions. This means that you would "expect" similar samples closeby each other on PC1 and PC2.' 
 """
             deseq2_order += f"""\
-  {contrast}_ma_plot:
+  {contrast}_combined_ma_volcano:
     order: {order}
   {contrast}_pca_plot:
     order: {order-1}
@@ -755,7 +755,7 @@ def get_qc_files(wildcards):
     # DESeq2 all contrast plots
     if "get_contrasts" in globals():
         contrast_files = [contrast.replace(config.get("deseq2_dir", ""), config.get("qc_dir", "")+"/deseq2") for contrast in get_contrasts()]
-        qc['files'].update(contrast.replace(".diffexp.tsv", ".ma_plot_mqc.png") for contrast in contrast_files)
+        qc['files'].update(contrast.replace(".diffexp.tsv", ".combined_ma_volcano_mqc.png") for contrast in contrast_files)
         qc['files'].update(contrast.replace(".diffexp.tsv", ".pca_plot_mqc.png") for contrast in contrast_files)
 
     if get_scrna_qc in quality_control:
