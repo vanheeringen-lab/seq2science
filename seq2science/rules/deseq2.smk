@@ -66,7 +66,10 @@ rule deseq2:
     input:
         deseq_input
     output:
-        expand("{deseq2_dir}/{{assembly}}-{{contrast}}.diffexp.tsv", **config),
+        diffexp=expand("{deseq2_dir}/{{assembly}}-{{contrast}}.diffexp.tsv", **config),
+        maplot=expand("{qc_dir}/deseq2/{{assembly}}-{{contrast}}.ma_plot.png", **config),
+        volcanoplot=expand("{qc_dir}/deseq2/{{assembly}}-{{contrast}}.volcano_plot.png", **config),
+        pcaplot=expand("{qc_dir}/deseq2/{{assembly}}-{{contrast}}.pca_plot_mqc.png", **config),
     conda:
         "../envs/deseq2.yaml"
     log:
@@ -85,6 +88,23 @@ rule deseq2:
         mem_gb=4,
     script:
         f"{config['rule_dir']}/../scripts/deseq2/deseq2.R"
+
+
+rule merge_volcano_ma:
+    """
+    Combine the volcano and maplot resulting of the deseq2 rule into a single figure.
+    """
+    input:
+        maplot=rules.deseq2.output.maplot,
+        volcanoplot=rules.deseq2.output.volcanoplot
+    output:
+        expand("{qc_dir}/deseq2/{{assembly}}-{{contrast}}.combined_ma_volcano_mqc.png", **config)
+    log:
+        expand("{log_dir}/deseq2/combine_{{assembly}}-{{contrast}}_plots.log", **config),
+    shell:
+        """
+        convert {input.maplot} {input.volcanoplot} +append {output} 2> {log}
+        """
 
 
 rule blind_clustering:
