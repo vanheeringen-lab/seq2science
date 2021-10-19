@@ -101,6 +101,8 @@ rule merge_volcano_ma:
         expand("{qc_dir}/deseq2/{{assembly}}-{{contrast}}.combined_ma_volcano_mqc.png", **config)
     log:
         expand("{log_dir}/deseq2/combine_{{assembly}}-{{contrast}}_plots.log", **config),
+    conda:
+        "../envs/imagemick.yaml"
     shell:
         """
         convert {input.maplot} {input.volcanoplot} +append {output} 2> {log}
