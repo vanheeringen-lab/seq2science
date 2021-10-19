@@ -8,6 +8,8 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+## [0.5.6] - 2021-10-19
+
 ### Added
 
 - MA plot, volcano plot, and PCA plots added to QC report for deseq2 related workflows
@@ -447,7 +449,8 @@ Many minor bug- and quality of life fixes.
 ## [0.0.0] - 2020-06-11
 First release of seq2science!
 
-[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.5...develop
+[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.6...develop
+[0.5.5]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.5...v0.5.6
 [0.5.5]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.4...v0.5.5
 [0.5.4]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.3...v0.5.4
 [0.5.3]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.2...v0.5.3
