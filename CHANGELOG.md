@@ -19,6 +19,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - updated salmon & tximeta versions
 - colors for DESeq2 distance plots "fixed"
 - updated bwa-mem2 version and reduced the expected memory usage of bwa-mem2 to 40GB
+- seq2science now uses snakemake-minimal
 
 ### Fixed
 
