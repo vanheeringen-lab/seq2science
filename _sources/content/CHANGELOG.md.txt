@@ -451,7 +451,7 @@ Many minor bug- and quality of life fixes.
 First release of seq2science!
 
 [Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.6...develop
-[0.5.5]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.5...v0.5.6
+[0.5.6]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.5...v0.5.6
 [0.5.5]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.4...v0.5.5
 [0.5.4]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.3...v0.5.4
 [0.5.3]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.2...v0.5.3
