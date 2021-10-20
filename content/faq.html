@@ -50,6 +50,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#unknown-provider">Unknown provider</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#storage-exhausted-no-space-left-on-device">storage exhausted / No Space Left on Device</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#i-want-to-run-the-pipeline-until-a-certain-rule-but-not-farther">I want to run the pipeline until a certain rule, but not farther</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#chip-seq-macs2-too-few-paired-peaks-so-i-can-not-build-the-model">ChIP-seq: MACS2: Too few paired peaks so I can not build the model!</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#rna-seq-this-gene-should-be-expressed">RNA-seq: this gene should be expressed!</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#scrna-seq-kallisto-bustools-warn-no-reads-pseudoaligned">scRNA-seq: Kallisto|Bustools: [~warn] no reads pseudoaligned</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#scrna-seq-kallisto-bustools-what-std-bad-alloc">scRNA-seq: Kallisto|Bustools: what():  std::bad_alloc</a></li>
@@ -134,6 +135,14 @@ export TMPDIR=/scratch/${USER}/tmp
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>seq2science run alignment --cores 48 --snakemakeOptions until=[&quot;trim_galore_PE&quot;,&quot;trim_galore_SE&quot;]
 </pre></div>
 </div>
+</section>
+<section id="chip-seq-macs2-too-few-paired-peaks-so-i-can-not-build-the-model">
+<h2>ChIP-seq: MACS2: Too few paired peaks so I can not build the model!<a class="headerlink" href="#chip-seq-macs2-too-few-paired-peaks-so-i-can-not-build-the-model" title="Permalink to this headline">¶</a></h2>
+<p>This error is due to the fact that MACS2 cannot properly make its internal shifting model, it wants to shift since a peak might not have the same signal on both strands of the genome.
+This generally shouldn’t happen with good samples with peaks/enrichment.
+Did you perhaps add the input/control as a sample?
+The input/control shouldn’t really have any peaks, so macs2 will fail on those samples here.
+You should add the input/control in the <code class="docutils literal notranslate"><span class="pre">control</span></code> column of the samples.tsv, see the ChIP-seq docs.</p>
 </section>
 <section id="rna-seq-this-gene-should-be-expressed">
 <h2>RNA-seq: this gene should be expressed!<a class="headerlink" href="#rna-seq-this-gene-should-be-expressed" title="Permalink to this headline">¶</a></h2>

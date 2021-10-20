@@ -53,6 +53,13 @@ let's say you want to download and trim reads with seq2science, but you do not w
 seq2science run alignment --cores 48 --snakemakeOptions until=["trim_galore_PE","trim_galore_SE"]
 ```
 
+## ChIP-seq: MACS2: Too few paired peaks so I can not build the model!
+This error is due to the fact that MACS2 cannot properly make its internal shifting model, it wants to shift since a peak might not have the same signal on both strands of the genome.
+This generally shouldn't happen with good samples with peaks/enrichment.
+Did you perhaps add the input/control as a sample?
+The input/control shouldn't really have any peaks, so macs2 will fail on those samples here.
+You should add the input/control in the `control` column of the samples.tsv, see the ChIP-seq docs.
+
 ## RNA-seq: this gene should be expressed!
 Seq2science supports 3 gene-quantifiers: HTSeq-count, FeatureCounts and Salmon.
 All three are valid methods, and a large population of the expressed genes is found by all quantifiers.

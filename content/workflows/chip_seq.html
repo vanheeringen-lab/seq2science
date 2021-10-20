@@ -59,7 +59,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#filling-out-the-samples-tsv">Filling out the samples.tsv</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#sample-column">Sample column</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#assembly-column">Assembly column</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#control-column">Control column</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#control-input-column">Control (input) column</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#descriptive-name-column">Descriptive_name column</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#technical-replicates-column">technical_replicates column</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#biological-replicates">Biological replicates</a></li>
@@ -237,9 +237,15 @@ These setting can be changed in the <code class="docutils literal notranslate"><
 <h3>Assembly column<a class="headerlink" href="#assembly-column" title="Permalink to this headline">¶</a></h3>
 <p>Here you simply add the name of the assembly you want your samples aligned against and the workflow will download it for you.</p>
 </section>
-<section id="control-column">
-<h3>Control column<a class="headerlink" href="#control-column" title="Permalink to this headline">¶</a></h3>
-<p>In the <code class="docutils literal notranslate"><span class="pre">control</span></code> column you can (optionally) add the “sample name” of the input control. It is generally a bad idea to add the input control as a sample in the sample since generally peak callers fail on these samples.</p>
+<section id="control-input-column">
+<h3>Control (input) column<a class="headerlink" href="#control-input-column" title="Permalink to this headline">¶</a></h3>
+<p>In the <code class="docutils literal notranslate"><span class="pre">control</span></code> column you can (optionally) add the “sample name” of the input control.
+It is generally a bad idea to add the input control as a sample in the sample since generally peak callers fail on these samples.
+Doing so looks like this:</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>sample    assembly    control
+GSM123    GRCh38      GSMabc
+</pre></div>
+</div>
 </section>
 <section id="descriptive-name-column">
 <h3>Descriptive_name column<a class="headerlink" href="#descriptive-name-column" title="Permalink to this headline">¶</a></h3>
