@@ -19,6 +19,7 @@ f"""\
 
 version: {seq2science.__version__}
 docs: https://vanheeringen-lab.github.io/seq2science
+workflow: {get_workflow().replace("_", "-")}
 """
 )
 
