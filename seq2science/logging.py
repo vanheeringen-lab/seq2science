@@ -2,7 +2,9 @@ import time
 
 import seq2science
 
-ascii_logo = (
+
+def log_welcome(logger, workflow):
+    ascii_logo = (
 f"""\
              ____  ____   __              
             / ___)(  __) /  \             
@@ -19,12 +21,10 @@ f"""\
 
 version: {seq2science.__version__}
 docs: https://vanheeringen-lab.github.io/seq2science
-workflow: {get_workflow().replace("_", "-")}
+workflow: {workflow}
 """
-)
+    )
 
-
-def log_welcome(logger):
     logger.info(ascii_logo)
 
     # give people a second to appreciate this beautiful ascii art
