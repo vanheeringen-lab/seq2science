@@ -19,9 +19,10 @@ f"""\
   \___ \( (__  )(  ) _) /    /( (__  ) _) 
   (____/ \___)(__)(____)\_)__) \___)(____)
 
-version: {seq2science.__version__}
-docs: https://vanheeringen-lab.github.io/seq2science
 workflow: {workflow}
+version:  {seq2science.__version__}
+docs:     https://vanheeringen-lab.github.io/seq2science
+
 """
     )
 
