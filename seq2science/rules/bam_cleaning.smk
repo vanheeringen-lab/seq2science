@@ -3,13 +3,6 @@ from seq2science.util import sieve_bam
 
 localrules: setup_blacklist, complement_blacklist
 
-# the blacklist has different output depending on what it blacklists
-blacklisted_filename = []
-if config.get("remove_blacklist"):
-    blacklisted_filename.append("encode")
-if config.get("remove_mito"):
-    blacklisted_filename.append("mito")
-blacklisted_filename = "_".join(blacklisted_filename)
 
 rule setup_blacklist:
     """
@@ -19,7 +12,7 @@ rule setup_blacklist:
         blacklist=expand("{genome_dir}/{{assembly}}/{{assembly}}.blacklist.bed", **config),
         sizes=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
     output:
-        expand("{genome_dir}/{{assembly}}/{{assembly}}.seq2scienceblacklist_{types}.bed", **{**config, **{"types": blacklisted_filename}),
+        temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.customblacklist.bed", **config)),
     params:
         config.get("remove_blacklist"),  # helps resolve changed params
         config.get("remove_mito"),  # helps resolve changed params
@@ -49,7 +42,7 @@ rule complement_blacklist:
         blacklist=rules.setup_blacklist.output,
         sizes=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
     output:
-        expand("{genome_dir}/{{assembly}}/{{assembly}}.seq2scienceblacklist_complement_{types}.bed", **{**config, **{"types": blacklisted_filename}),
+        expand("{genome_dir}/{{assembly}}/{{assembly}}.customblacklist_complement.bed", **config),
     params:
         config.get("remove_blacklist"),  # helps resolve changed params
         config.get("remove_mito"),  # helps resolve changed params
