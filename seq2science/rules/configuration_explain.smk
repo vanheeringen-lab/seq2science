@@ -144,7 +144,7 @@ else:
                          f"shrinkage estimator {href_v('ashr',env='deseq2')}. " if deseq_opts['shrinkage_estimator'] == "ashr" else
                             "the normal prior distribution provided by DESeq2.")],sep=" ",final_sep=" "),
         "count_matrix_txi": f"Transcript abundance estimations were aggregated and converted to gene counts using {href_v('tximeta')}.",
-        "run2sra": f"Public samples were downloaded from the {hyperref('Sequence Read Archive')} with help of the ncbi e-utilities and pysradb{hyperref('pysradb')}.",
+        "run2sra": f"Public samples were downloaded from the {hyperref('Sequence Read Archive')} with help of the ncbi e-utilities and {hyperref('pysradb')}.",
         "get_genome": f"Genome assembly {{wildcards.raw_assembly}} was downloaded with {hyperref('genomepy',text=f'genomepy {genomepy.__version__}')}.",
         "custom_extension": "The genome and gene annotations was extended with custom regions.",
         "call_peak_genrich": f"Peaks were called with {href_v('genrich')}{options('peak_caller','genrich')}.",
