@@ -667,7 +667,7 @@ rule trackhub:
     input:
         get_trackhub_files
     output:
-        directory(f"{config['result_dir']}/trackhub"),
+        directory(config['trackhub_dir']),
     message: explain_rule("trackhub")
     log:
         expand("{log_dir}/trackhub/trackhub.log", **config),

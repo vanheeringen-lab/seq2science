@@ -30,7 +30,7 @@ rule seq2science:
     """
     input:
          expand(
-             (["{result_dir}/trackhub"]              if config['create_trackhub']  else []) +
+             (["{trackhub_dir}"]                     if config['create_trackhub']  else []) +
              (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []) +
 
              (["{counts_dir}/{assemblies}-counts.tsv"]) +

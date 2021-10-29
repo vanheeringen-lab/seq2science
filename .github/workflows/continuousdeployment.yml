@@ -38,7 +38,7 @@ jobs:
         tag_name: ${{ github.ref }}
         release_name: Release ${{ github.ref }}
         body: |
-          Automated preprocessing of Next-Generation Sequencing data, including full (sc)ATAC-seq, ChIP-seq, and RNA-seq workflows.
+          Automated preprocessing of Next-Generation Sequencing data, including full (sc)ATAC-seq, ChIP-seq, and (sc)RNA-seq workflows.
 
           ${{ steps.changelog_reader.outputs.log_entry }}
         draft: false

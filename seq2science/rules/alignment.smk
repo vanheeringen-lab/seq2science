@@ -140,7 +140,7 @@ elif config["aligner"] == "bwa-mem2":
             prefix="{genome_dir}/{{assembly}}/index/{aligner}/{{assembly}}".format(**config)
         priority: 1
         resources:
-            mem_gb=100,
+            mem_gb=40,
         conda:
             "../envs/bwamem2.yaml"
         shell:
