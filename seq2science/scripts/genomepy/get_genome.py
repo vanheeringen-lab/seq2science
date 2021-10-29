@@ -1,36 +1,50 @@
 """
 Script to download genome
 """
-import os
 import contextlib
 
 import genomepy
 
 
-with open(snakemake.log[0], "w") as log:
+logfile = snakemake.log[0]
+assembly = snakemake.wildcards.raw_assembly
+providers = snakemake.params.providers
+genome_dir = snakemake.params.genome_dir
+output = snakemake.output[0]
+
+# redirect all messages to a logfile
+with open(logfile, "w") as log:
     with contextlib.redirect_stdout(log), contextlib.redirect_stderr(log):
+        genomepy.logger.remove()
+        genomepy.logger.add(
+            logfile,
+            format="<green>{time:HH:mm:ss}</green> <bold>|</bold> <blue>{level}</blue> <bold>|</bold> {message}",
+            level="INFO",
+        )
+
         # list user plugins
-        active_plugins = genomepy.functions.config.get("plugin", [])
-        # deactivate user plugins
-        genomepy.functions.manage_plugins("disable", active_plugins)
+        active_plugins = genomepy.config.config.get("plugin", [])
+        if active_plugins:
+            print("Deactivating user plugins")
+            genomepy.manage_plugins("disable", active_plugins)
 
         # select a provider with the annotation if possible
-        a = snakemake.params.providers[snakemake.wildcards.raw_assembly]["annotation"]
-        g = snakemake.params.providers[snakemake.wildcards.raw_assembly]["genome"]
+        a = providers[assembly]["annotation"]
+        g = providers[assembly]["genome"]
         provider = g if a is None else a
         try:
             genomepy.install_genome(
-                name=snakemake.wildcards.raw_assembly,
+                name=assembly,
                 provider=provider,
-                genomes_dir=snakemake.params.genome_dir,
+                genomes_dir=genome_dir,
                 force=True,
             )
 
             # delete the support files
             # (we recreate these separately to make the output simple for snakemake and prevent redownloading)
-            os.remove(f"{snakemake.output[0]}.fai")
-            os.remove(f"{snakemake.output[0]}.sizes")
-            os.remove(f"{snakemake.output[0][:-2]}gaps.bed")
+            genomepy.files.rm_rf(f"{output}.fai")
+            genomepy.files.rm_rf(f"{output}.sizes")
+            genomepy.files.rm_rf(f"{output[:-2]}gaps.bed")
         except Exception as e:
             print(e)
             print("\nSomething went wrong while downloading the genome (see error message above). "
@@ -41,5 +55,6 @@ with open(snakemake.log[0], "w") as log:
                   "issue.")
 
         finally:
-            # reactivate user plugins
-            genomepy.functions.manage_plugins("enable", active_plugins)
+            if active_plugins:
+                print("Reactivating user plugins")
+                genomepy.manage_plugins("enable", active_plugins)

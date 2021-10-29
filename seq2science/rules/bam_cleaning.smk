@@ -4,6 +4,15 @@ from seq2science.util import sieve_bam
 localrules: setup_blacklist, complement_blacklist
 
 
+# the blacklist has different output depending on what it blacklists
+blacklisted_filename = []
+if config.get("remove_blacklist"):
+    blacklisted_filename.append("encode")
+if config.get("remove_mito"):
+    blacklisted_filename.append("mito")
+blacklisted_filename = "_".join(blacklisted_filename)
+
+
 rule setup_blacklist:
     """
     Combine the encode blacklist with mitochrondrial dna depending on config.
@@ -12,7 +21,7 @@ rule setup_blacklist:
         blacklist=expand("{genome_dir}/{{assembly}}/{{assembly}}.blacklist.bed", **config),
         sizes=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
     output:
-        temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.customblacklist.bed", **config)),
+        expand("{genome_dir}/{{assembly}}/{{assembly}}.seq2scienceblacklist_{types}.bed", **{**config, **{"types": blacklisted_filename}}),
     params:
         config.get("remove_blacklist"),  # helps resolve changed params
         config.get("remove_mito"),  # helps resolve changed params
@@ -42,7 +51,7 @@ rule complement_blacklist:
         blacklist=rules.setup_blacklist.output,
         sizes=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
     output:
-        expand("{genome_dir}/{{assembly}}/{{assembly}}.customblacklist_complement.bed", **config),
+        expand("{genome_dir}/{{assembly}}/{{assembly}}.seq2scienceblacklist_complement_{types}.bed", **{**config, **{"types": blacklisted_filename}}),
     params:
         config.get("remove_blacklist"),  # helps resolve changed params
         config.get("remove_mito"),  # helps resolve changed params
@@ -242,7 +251,7 @@ rule samtools_sort:
     input:
         rules.sieve_bam.output.final
     output:
-        temp(expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-{{sorting}}.bam", **config)),
+        expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-{{sorting}}.bam", **config),
     log:
         expand("{log_dir}/samtools_sort/{{assembly}}-{{sample}}-samtools_{{sorting}}.log", **config),
     benchmark:

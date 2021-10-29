@@ -256,7 +256,7 @@ def add_profile_args(profile_file, parsed_args):
                 parsed_args[k] = {item.split("=")[0]: float(item.split("=")[1]) for item in parsed_args[k]}
 
         elif k in parsed_args and isinstance(parsed_args[k], dict):
-            for k2, v2 in profile[k].items():
+            for k2, v2 in parsed_args[k].items():
                 if k2 not in parsed_args[k]:
                     parsed_args[k][k2] = int(v2) if isinstance(v2, str) and v2.isdigit() else v2
 
@@ -324,7 +324,7 @@ def _run(args, base_dir, workflows_dir, config_path):
     # run snakemake/seq2science
     #   1. pretty welcome message
     setup_seq2science_logger(parsed_args)
-    log_welcome(logger)
+    log_welcome(logger, args.workflow)
     if not args.skip_rerun or args.unlock:
         #   2. start a dryrun checking which files need to be created, and check if
         #      any params changed, which means we have to remove those files and
@@ -346,8 +346,8 @@ def _run(args, base_dir, workflows_dir, config_path):
         #      not want to consider.
         #      - genome files since provider will change to local
         regex_patterns = [
-            "(\/.+){2}[^_custom]+\.(fa|gaps)",  # match genome fasta
-            "(\/.+){2}.+\.annotation.(bed|gtf)",  # match annotations
+            "(\/.+){2}.*\.(fa|gaps)",  # match genome fasta
+            "(\/.+){2}.*\.annotation\.(bed|gtf)",  # match annotations
         ]
         targets = [target for target in targets if not any(re.match(pattern, target) for pattern in regex_patterns)]
 

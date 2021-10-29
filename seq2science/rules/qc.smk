@@ -577,8 +577,18 @@ rule multiqc_explain:
 
         # remove run specific commands
         cli_call = [arg for arg in cli_call if arg not in {"--unlock", "--rerun-incomplete", "-k", "--keep-going", "--skip-rerun", "--reason", "-r", "--dryrun", "-n"}]
-        cores_index = cli_call.index("--cores" if "--cores" in cli_call else "-j")
-        del cli_call[cores_index:cores_index+2]
+        if "--cores" in cli_call:
+            cores_index = cli_call.index("--cores")
+            del cli_call[cores_index:cores_index+2]
+        elif "-j" in cli_call:
+            cores_index = cli_call.index("-j")
+            del cli_call[cores_index:cores_index+2]
+        elif bool([i for i, x in enumerate(cli_call) if re.match('-j\d+', x)]):
+            cores_index = [i for i, x in enumerate(cli_call) if re.match('-j\d+', x)][0]
+            del cli_call[cores_index]
+
+        #cores_index = cli_call.index("--cores" if "--cores" in cli_call else "-j")
+        #del cli_call[cores_index:cores_index+2]
         
         # make sure to get pretty hyperrefs
         cli_call.append("--hyperref")
@@ -618,8 +628,14 @@ rule multiqc_filter_buttons:
         samples  # helps resolve changed params if e.g. descriptive names change
     run:
         with open(output[0], "w") as f:
-            f.write("Read Group 1 & Alignment\thide\t_R2\n"
-                    "Read Group 2\tshow\t_R2\n")
+            if config.get("trimmer", "") == "trimgalore":
+                f.write(f"Read Group 1 & Alignment\thide\t_{config.get('fqext2')}\n"
+                        f"Read Group 2\tshow\t_{config.get('fqext2')}\n")
+            if len([x for x in merged_treps if treps.loc[x, "assembly"] == wildcards.assembly]):
+                _merged_treps = [x for x in treps[treps["assembly"] == wildcards.assembly].index]
+                _real_treps = [rep for rep in samples.index if rep not in merged_treps and samples.loc[rep, "assembly"] == wildcards.assembly]
+                f.write(f"Pre-merge technical replicates\tshow\t" + "\t".join(_real_treps) + "\n")
+                f.write(f"Merged technical replicates\tshow\t" + "\t".join(_merged_treps) + "\n")
 
 
 rule multiqc_samplesconfig:
@@ -638,6 +654,7 @@ rule multiqc_samplesconfig:
     script:
         f"{config['rule_dir']}/../scripts/multiqc_samplesconfig.py"
 
+
 rule multiqc_schema:
     """
     Generate a multiqc config schema. Used for the ordering of modules.
@@ -645,6 +662,31 @@ rule multiqc_schema:
     output:
         temp(expand('{qc_dir}/schema.yaml', **config))
     run:
+        from seq2science.util import expand_contrasts
+
+        order = -954
+        deseq2_imgs = ""
+        deseq2_order = ""
+        for contrast in expand_contrasts(samples, config):
+            deseq2_imgs += f"""\
+    {contrast}.combined_ma_volcano:
+        section_name: 'DESeq2 - MA plot for contrast {contrast}'
+        description: 'A MA plot shows the relation between the (normalized) mean counts for each gene, and the log2 fold change between the conditions. Genes that are significantly differentially expressed are coloured blue. Similarily a volcano plot shows the relation between the log2 fold change between contrasts and their p-value.'
+    {contrast}.pca_plot:
+        section_name: 'DESeq2 - PCA plot for {contrast}'
+        description: 'This PCA plot shows the relation among samples along the two most principal components, coloured by condition. PCA transforms the data from the normalized high dimensions (e.g. 20.000 gene counts, or 100.000 peak expressions) to a low dimension (PC1 and PC2). It does so by maximizing the variance along these two components. Generally you expect there to be more variance between samples from different conditions, than within conditions. This means that you would "expect" similar samples closeby each other on PC1 and PC2.' 
+"""
+            deseq2_order += f"""\
+  {contrast}_combined_ma_volcano:
+    order: {order}
+  {contrast}_pca_plot:
+    order: {order-1}
+"""
+            order -= 2
+
+        deseq2_order = deseq2_order.replace("+", "_").rstrip("\n")
+        deseq2_imgs = deseq2_imgs.rstrip("\n")
+
         with open(f'{config["rule_dir"]}/../schemas/multiqc_config.yaml') as cookie_schema:
             cookie = cookie_schema.read()
         
@@ -710,6 +752,12 @@ def get_qc_files(wildcards):
                 files = [f for f in files if f"clustering/{assembly}-" not in f]
         qc['files'].update(files)
 
+    # DESeq2 all contrast plots
+    if "get_contrasts" in globals():
+        contrast_files = [contrast.replace(config.get("deseq2_dir", ""), config.get("qc_dir", "")+"/deseq2") for contrast in get_contrasts()]
+        qc['files'].update(contrast.replace(".diffexp.tsv", ".combined_ma_volcano_mqc.png") for contrast in contrast_files)
+        qc['files'].update(contrast.replace(".diffexp.tsv", ".pca_plot_mqc.png") for contrast in contrast_files)
+
     if get_scrna_qc in quality_control:
         for trep in treps[treps['assembly'] == ori_assembly(wildcards.assembly)].index:
             qc['files'].update(get_scrna_qc(trep))
@@ -733,7 +781,7 @@ def get_qc_schemas(wildcards):
     qc['header'] = expand('{qc_dir}/header_info.yaml', **config)[0]
     qc['sample_names'] = expand('{qc_dir}/sample_names_{{assembly}}.tsv', **config)[0]
     qc['schema'] = expand('{qc_dir}/schema.yaml', **config)[0]
-    if config["trimmer"] == "trimgalore":
+    if config["trimmer"] == "trimgalore" or len([x for x in merged_treps if treps.loc[x, "assembly"] == wildcards.assembly]):
         qc['filter_buttons'] = expand('{qc_dir}/sample_filters_{{assembly}}.tsv', **config)[0]
     return qc
 
@@ -817,7 +865,7 @@ def get_trimming_qc(sample):
                                **config)
 
     elif config["trimmer"] == "fastp":
-        if get_workflow() == "scrna_seq": 
+        if get_workflow() == "scrna_seq":
             read_id = get_bustools_rid(config.get("count"))
             if read_id == 0:
                 return expand(f"{{qc_dir}}/trimming/{sample}_{{fqext1}}.fastp.json", **config)
@@ -835,7 +883,7 @@ def get_alignment_qc(sample):
     # add samtools stats
     output.append(f"{{qc_dir}}/markdup/{{{{assembly}}}}-{sample}.samtools-coordinate.metrics.txt")
     output.append(f"{{qc_dir}}/samtools_stats/{{aligner}}/{{{{assembly}}}}-{sample}.samtools-coordinate.samtools_stats.txt")
-    
+
     # if Salmon is used, the sieving does not effect the expression values, so adding it to the MultiQC is confusing
     if sieve_bam(config) and \
             not (get_workflow() == "rna_seq" and config.get('quantifier') == 'salmon'):

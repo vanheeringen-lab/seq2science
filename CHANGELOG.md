@@ -10,8 +10,41 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Changed
 
+- Seq2science now makes a separate blacklist file per blacklist option (encode & mitochondria), so that e.g. RNA-seq and ATAC-seq workflows can be run in parallel and don't conflict on the blacklist.  
+
+## [0.5.6] - 2021-10-19
+
+### Added
+
+- MA plot, volcano plot, and PCA plots added to QC report for deseq2 related workflows
+
+### Changed
+
+- updated salmon & tximeta versions
+- colors for DESeq2 distance plots "fixed"
+- updated bwa-mem2 version and reduced the expected memory usage of bwa-mem2 to 40GB
+- seq2science now uses snakemake-minimal
+
+### Fixed
+
+- stranded bigwigs are no longer inverted (forward containing reverse reads and vice-versa).
+- fix in `rename_sample` preventing the inversion of R1 and R2 FASTQs.
+- bug with parsing cli for explanations
+- show/hide buttons for treps are actually made for multiqc report
+- fixes in deseq2/utils.R
+  - the samples.tsv will now work with only 2 columns
+  - the samples.tsv column names will be stripped of excess whitespace, similar to the config.
+- ATAC-seq pipeline removing the final bams, keeping the unsorted one
+
+## [0.5.5] - 2021-09-01
+
+### Changed
+
+- duplicate read marking happens before sieving and no reads get removed. Removal of duplicate reads now controlled with flag `remove_dups` in the config.
 - changed option `heatmap_deeptools_options` to `deeptools_heatmap_options`
 - Updated sra tools and parallel fastq-dump versions
+- Updated genomepy version
+- Gene annotations are no longer gzipped and ungzipped. This should reduce rerunning.
 
 ### Fixed
 
@@ -421,7 +454,9 @@ Many minor bug- and quality of life fixes.
 ## [0.0.0] - 2020-06-11
 First release of seq2science!
 
-[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.4...master
+[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.6...develop
+[0.5.6]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.5...v0.5.6
+[0.5.5]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.4...v0.5.5
 [0.5.4]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.3...v0.5.4
 [0.5.3]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.2...v0.5.3
 [0.5.2]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.1...v0.5.2
