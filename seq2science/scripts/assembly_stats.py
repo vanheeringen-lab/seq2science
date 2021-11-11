@@ -61,7 +61,7 @@ html = '<img src="data:image/png;base64, {}">'.format(base64.b64encode(img.getva
 
 # if
 if hasattr(snakemake.input, "annotation"):
-    with open("/vol/genomes/oryLat2/oryLat2.annotation.gtf") as f:
+    with open(snakemake.input.annotation) as f:
         annotation = f.read()
     nr_genes = annotation.count("transcript\t")
     annotation_text = f"""The genome annotation contains {nr_genes} genes."""
@@ -76,11 +76,11 @@ with open(outfile, "a") as f:
 id: 'assembly_stats'
 section_name: 'Assembly stats'
 -->
-Genome assembly {"TODOOO"} contains of {len(sizes)} contigs, with a GC-to-AT ratio \
+Genome assembly {assembly} contains of {len(sizes)} contigs, with a GC-to-AT ratio \
 of {gc / (gc + at) * 100:.2f}%, and {(total_size - gc - at) / total_size * 100:.2f}%\
-consists of the letter N. The <a href="https://en.wikipedia.org/wiki/N50,_L50,_and_r\
-elated_statistics">N50/L50</a> are {n50[1]}/{n50[0]} and the N75/L75 are \
-{n75[1]}/{n75[0]}. {annotation_text}
+ consists of the letter N. The <a href="https://en.wikipedia.org/wiki/N50,_L50,_and_r\
+elated_statistics">N50-L50</a> stats are {n50[1]}-{n50[0]} and the N75-L75 stats are \
+{n75[1]}-{n75[0]}. {annotation_text}
 
 <br>
 
