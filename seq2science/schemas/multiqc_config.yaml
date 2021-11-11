@@ -49,6 +49,8 @@ module_order:
 report_section_order:
   explanation:
     order: 1000
+  assembly_stats:
+    order: 999
   deepTools_spearman_correlation_clustering:
     order: -896
   deepTools_pearson_correlation_clustering:

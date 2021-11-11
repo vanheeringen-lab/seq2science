@@ -616,7 +616,7 @@ def assembly_stats_input(wildcards):
 
 rule multiqc_assembly_stats:
     input:
-        assembly_stats_input
+        unpack(assembly_stats_input)
     output:
         expand('{qc_dir}/assembly_{{assembly}}_stats_mqc.html', **config)
     conda:
@@ -728,7 +728,7 @@ def get_qc_files(wildcards):
                                            "relevant quality control functions."
     qc['files'] = set(expand(['{qc_dir}/samplesconfig_mqc.html',
                               '{log_dir}/workflow_explanation_mqc.html',
-                              '{qc_dir}/assembly_{assembly}_stats_mqc.html'], **config))
+                              f'{{qc_dir}}/assembly_{wildcards.assembly}_stats_mqc.html'], **config))
 
     # trimming qc on individual samples
     if get_trimming_qc in quality_control:
