@@ -14,7 +14,7 @@ assembly = snakemake.wildcards.assembly
 open(outfile, "w").close()
 
 # read the assembly
-fa = pyfaidx.Fasta("/vol/genomes/oryLat2/oryLat2.fa")
+fa = pyfaidx.Fasta(snakemake.input.genome)
 
 # variables to keep track of
 gc = at = 0
@@ -59,11 +59,11 @@ fig.savefig(img, format='png')
 img.seek(0)
 html = '<img src="data:image/png;base64, {}">'.format(base64.b64encode(img.getvalue()).decode('utf-8'))
 
-# if
+# if we have an annotation check for the number of genes present
 if hasattr(snakemake.input, "annotation"):
     with open(snakemake.input.annotation) as f:
         annotation = f.read()
-    nr_genes = annotation.count("transcript\t")
+    nr_genes = annotation.count("gene\t")
     annotation_text = f"""The genome annotation contains {nr_genes} genes."""
 else:
     annotation_text = ""
