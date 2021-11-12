@@ -76,7 +76,7 @@ with open(outfile, "a") as f:
 id: 'assembly_stats'
 section_name: 'Assembly stats'
 -->
-Genome assembly {assembly} contains of {len(sizes)} contigs, with a GC-to-AT ratio \
+Genome assembly {assembly} contains of {len(sizes)} contigs, with a GC-content \
 of {gc / (gc + at) * 100:.2f}%, and {(total_size - gc - at) / total_size * 100:.2f}%\
  consists of the letter N. The <a href="https://en.wikipedia.org/wiki/N50,_L50,_and_r\
 elated_statistics">N50-L50</a> stats are {n50[1]}-{n50[0]} and the N75-L75 stats are \
