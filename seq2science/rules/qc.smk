@@ -609,6 +609,7 @@ def assembly_stats_input(wildcards):
 
     assembly = wildcards.assembly
     req_input["genome"] = expand(f"{{genome_dir}}/{assembly}/{assembly}.fa", **config)[0]
+    req_input["index"] = expand(f"{{genome_dir}}/{assembly}/{assembly}.fa.fai", **config)[0]
     if has_annotation(assembly):
         req_input["annotation"] = expand(f"{{genome_dir}}/{assembly}/{assembly}.annotation.gtf", **config)[0]
     return req_input
