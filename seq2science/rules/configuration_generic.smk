@@ -249,8 +249,10 @@ if "assembly" in samples:
     _has_annot = dict()
     for assembly in local_assemblies:
         _has_annot[assembly] = is_local(assembly, "annotation", config)
+        _has_annot[assembly+config["custom_assembly_suffix"]] = _has_annot[assembly]
     for assembly in remote_assemblies:
         _has_annot[assembly] = bool(providers[assembly]["annotation"])
+        _has_annot[assembly+config["custom_assembly_suffix"]] = _has_annot[assembly]
 
     @lru_cache(maxsize=None)
     def has_annotation(assembly):

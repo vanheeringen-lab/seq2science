@@ -10,7 +10,8 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Added
 
-- Added the slop parameter to the config.yaml of atac-seq and chip-seq workflows, just so they are more visible.
+- added generic stats to the MultiQC report about the assembly, which might help pin point problems with the assembly used.
+- added the slop parameter to the config.yaml of atac-seq and chip-seq workflows, just so they are more visible.
 
 ### Changed
 
