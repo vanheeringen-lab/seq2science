@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- added generic stats to the MultiQC report about the assembly, which might help pin point problems with the assembly used.
+
 ### Changed
 
 - Seq2science now makes a separate blacklist file per blacklist option (encode & mitochondria), so that e.g. RNA-seq and ATAC-seq workflows can be run in parallel and don't conflict on the blacklist.  
