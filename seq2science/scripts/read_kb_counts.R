@@ -4,9 +4,13 @@ suppressMessages({
     library(dplyr)
 })
 
-kb_dir <- paste0(snakemake@config$result_dir,"/kallistobus")
+kb_dir <- snakemake@input$counts
 rds <- snakemake@output[[1]] 
+assay <- snakemake@params$assay
+sample <- snakemake@params$sample
+name <- "cell_x_genes"
 
+#Read counts into seurat object
 read_count_output <- function(dir, name) {
   dir <- normalizePath(dir, mustWork = TRUE)
   m <- readMM(paste0(dir, "/counts_unfiltered/", name, ".mtx"))
@@ -26,31 +30,11 @@ read_count_output <- function(dir, name) {
 }
 
 #List files
-files <- list.files(kb_dir, full.names = T)
-spliced <- lapply(files, read_count_output, name = "spliced") 
-names(spliced) <- list.files(kb_dir)
-#Get a list of all Seurat objects
-all_seu <-
-  lapply(seq(spliced), function(x) {
-    CreateSeuratObject(counts = spliced[[x]],
-                       assay = "sf",
-                       project = names(spliced[x]))
+counts <- read_count_output(kb_dir, name=name)
+CreateSeuratObject(counts = counts,
+                   assay = assay,
+                   project = sample)
     
-  })
-# Create merged Seurat object for > 1 samples
-if(length(all_seu) > 1) {
-  seu_obj <-
-    merge(
-      x = all_seu[[1]],
-      y = all_seu[2:length(all_seu)],
-      add.cell.ids = names(spliced),
-      project = "merged"
-    )
-} else {
-  seu_obj <- all_seu[[1]]
-}
-
-
 #Save workspace to RData object
 save.image(file = rds)
 
