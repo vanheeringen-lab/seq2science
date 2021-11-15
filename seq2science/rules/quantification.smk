@@ -344,8 +344,6 @@ elif config["quantifier"] == "kallistobus":
         params:
             isvelo=lambda wildcards, input: True if "--workflow" in config.get("count", "") else False,
             assay=get_sample_assay
-
-            
         resources:
             R_scripts=1, # conda's R can have issues when starting multiple times
         script:
