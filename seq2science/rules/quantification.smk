@@ -319,7 +319,6 @@ elif config["quantifier"] == "kallistobus":
                 basename=lambda wildcards, input: f"{input.basedir[0]}/{wildcards.assembly}",
                 barcode_arg=lambda wildcards, input: ("-w " + input.barcodefile) if input.barcodefile else "", 
                 options=config.get("count"),
-                assay=get_sample_assay,
                 outdir=lambda wildcards, input, output: os.path.dirname(output[0])
             shell:
                 """
@@ -343,7 +342,10 @@ elif config["quantifier"] == "kallistobus":
         conda:
             "../envs/kb_seurat_pp.yaml"
         params:
-            isvelo=lambda wildcards, input: True if "--workflow" in config.get("count", "") else False
+            isvelo=lambda wildcards, input: True if "--workflow" in config.get("count", "") else False,
+            assay=get_sample_assay
+
+            
         resources:
             R_scripts=1, # conda's R can have issues when starting multiple times
         script:
