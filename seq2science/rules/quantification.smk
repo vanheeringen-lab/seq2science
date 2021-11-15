@@ -281,6 +281,17 @@ elif config["quantifier"] == "kallistobus":
             return expand(f"{{trimmed_dir}}/{wildcards.sample}_{{fqext}}_trimmed.{{fqsuffix}}.gz", **config)
         else:
             return rules.fastq_pair.output.reads
+    
+    
+    def get_sample_assay(wildcards):
+        if not "assay" in samples.columns:
+            return "Default"
+        
+        if samples.loc[wildcards.sample, "assay"] == "RNA":
+            return "RNA"
+        if samples.loc[wildcards.sample, "assay"] == "ADT":
+            return "ADT"
+        raise ValueError
 
     rule kallistobus_count:
             """
@@ -308,6 +319,7 @@ elif config["quantifier"] == "kallistobus":
                 basename=lambda wildcards, input: f"{input.basedir[0]}/{wildcards.assembly}",
                 barcode_arg=lambda wildcards, input: ("-w " + input.barcodefile) if input.barcodefile else "", 
                 options=config.get("count"),
+                assay=get_sample_assay,
                 outdir=lambda wildcards, input, output: os.path.dirname(output[0])
             shell:
                 """
