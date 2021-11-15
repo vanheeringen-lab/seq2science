@@ -16,6 +16,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 - Seq2science now makes a separate blacklist file per blacklist option (encode & mitochondria), so that e.g. RNA-seq and ATAC-seq workflows can be run in parallel and don't conflict on the blacklist.  
 
+### Fixed
+
+- edge-case where local samples are in the cache, but not present in the fastq_dir
+
 ## [0.5.6] - 2021-10-19
 
 ### Added
