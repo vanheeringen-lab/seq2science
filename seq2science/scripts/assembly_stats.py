@@ -5,6 +5,7 @@ from itertools import accumulate
 
 import pyfaidx
 import matplotlib.pyplot as plt
+import genomepy
 
 
 outfile = snakemake.output[0]

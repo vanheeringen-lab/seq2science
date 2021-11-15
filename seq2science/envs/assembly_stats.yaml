@@ -7,3 +7,5 @@ dependencies:
   - defaults::python=3.7
   - bioconda::pyfaidx=0.6.3.1
   - conda-forge::matplotlib=3.4.3
+  - bioconda::genomepy=0.10.0
+
