@@ -335,16 +335,16 @@ elif config["quantifier"] == "kallistobus":
                   
     rule export_seurat_obj:
         input:
-            counts=kallistobus.output.dir
+            counts=rules.kallistobus_count.output.dir[0]
         output:
-            rds=f"{config['result_dir']}/seurat/{{quantifier}}/{{assembly}}-{{sample}}/seurat_obj.rds",
+            rds=expand("{result_dir}/seurat/{quantifier}/{{assembly}}-{{sample}}/seurat_obj.rds", **config)
         priority: 1
         conda:
             "../envs/kb_seurat_pp.yaml"
         params:
             isvelo=lambda wildcards, input: True if "--workflow" in config.get("count", "") else False,
             assay=get_sample_assay,
-            sample=wildcards.sample
+            sample=lambda wildcards, input: wildcards.sample
         resources:
             R_scripts=1, # conda's R can have issues when starting multiple times
         script:

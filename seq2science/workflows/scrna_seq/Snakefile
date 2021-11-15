@@ -23,9 +23,9 @@ rule seq2science:
     Make a QC report and map
     """
     input:
-        expand([f"{{result_dir}}/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}/run_info.json" for trep in treps.index] + 
+        expand([f"{{result_dir}}/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}/run_info.json" for trep in treps.index] +
+               [f"{{result_dir}}/seurat/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}/seurat_obj.rds" for trep in treps.index] + 
                (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []) + 
-               (["{result_dir}/kb_seurat_pp/kallistobus/{assemblies}/kb_seurat_pp.html", "{result_dir}/kb_seurat_pp/kallistobus/{assemblies}/qc"] if config['run_kb_seurat_pp'] else []) +
-               (["{result_dir}/seurat/kallistobus/{assemblies}/seurat_obj.rds"]),
+               (["{result_dir}/kb_seurat_pp/kallistobus/{assemblies}/kb_seurat_pp.html", "{result_dir}/kb_seurat_pp/kallistobus/{assemblies}/qc"] if config['run_kb_seurat_pp'] else []),
                **{**config,
                   **{'assemblies': all_assemblies}})

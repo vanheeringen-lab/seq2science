@@ -1,14 +1,19 @@
 suppressMessages({
     library(Matrix)
     library(Seurat)
-    library(dplyr)
 })
 
-kb_dir <- snakemake@input$counts
+kb_dir <- dirname(snakemake@input$counts)
 rds <- snakemake@output[[1]] 
 assay <- snakemake@params$assay
 sample <- snakemake@params$sample
-name <- "cell_x_genes"
+isvelo <- snakemake@params$isvelo
+
+#Set name for non velocity analysis
+name <- "cells_x_genes"
+if (assay == "ADT") {
+  name <- "cells_x_features"
+}
 
 #Read counts into seurat object
 read_count_output <- function(dir, name) {
