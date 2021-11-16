@@ -3,16 +3,6 @@ suppressMessages({
     library(Seurat)
 })
 
-kb_dir <- dirname(snakemake@input$counts)
-rds <- snakemake@output[[1]] 
-assay <- snakemake@params$assay
-sample <- snakemake@params$sample
-isvelo <- snakemake@params$isvelo
-iskite <- snakemake@params$iskite
-
-sample_sheet <- tryCatch(
-    read.table(paste0(snakemake@config$result_dir,"/../samples.tsv"), sep = '\t', header = TRUE)
-)
 #Set name for non velocity analysis
 prep_cell_meta <- function(seu, sample_sheet) {
   blacklist <- c("result_folder","descriptive_name","technical_replicates")
@@ -42,24 +32,39 @@ read_count_output <- function(dir, name) {
   rownames(m) <- genes
   return(m)
 }
+#Load parameters
+kb_dir <- dirname(snakemake@input$counts)
+rds <- snakemake@output[[1]] 
+assay <- snakemake@params$assay
+sample <- snakemake@params$sample
+isvelo <- snakemake@params$isvelo
+iskite <- snakemake@params$iskite
+
+sample_sheet <- tryCatch(
+    read.table(paste0(snakemake@config$result_dir,"/../samples.tsv"), sep = '\t', header = TRUE)
+)
+
 # Create Seurat objects based on input workflow
 if (iskite) {
   seu <- CreateSeuratObject(counts = read_count_output(kb_dir, name="cells_x_features"), assay = "ADT", project = sample)
   seu@meta.data <- prep_cell_meta(seu, sample_sheet)
-  assign(paste0("seu.",sample,".ADT"),seu)
-} else if (isvelo) {
-   assign(paste("seu.",sample,".sf"), CreateSeuratObject(counts = read_count_output(kb_dir, name="spliced"), assay = "sf", project = sample))                   
-   assign(paste("seu.",sample,".uf"), CreateSeuratObject(counts = read_count_output(kb_dir, name="unspliced"), assay = "uf", project = sample))
-} else {
-  assign(paste("seu.",sample,".RNA"), CreateSeuratObject(counts = read_count_output(kb_dir, name="cells_x_genes"), assay = "RNA", project = sample))
-}
-#Cleanup
-rm(seu)
-rm(snakemake)
-rm(sample_sheet)
+  saveRDS(seu, file = rds)
 
-#Save workspace to RData object
-save.image(file = rds)
+} else if (isvelo) {
+   seu.sf <- CreateSeuratObject(counts = read_count_output(kb_dir, name="spliced"), assay = "sf", project = sample)
+   seu.uf <- CreateSeuratObject(counts = read_count_output(kb_dir, name="unspliced"), assay = "uf", project = sample)
+   seu.sf@meta.data <- prep_cell_meta(seu.sf, sample_sheet)
+   seu.uf@meta.data <- prep_cell_meta(seu.uf, sample_sheet)
+   saveRDS(c(seu.sf, seu.uf), file = rds) 
+    
+} else {
+  seu <- CreateSeuratObject(counts = read_count_output(kb_dir, name="cells_x_genes"), assay = "RNA", project = sample)
+  seu@meta.data <- prep_cell_meta(seu, sample_sheet)
+  saveRDS(seu, file = rds)
+
+}
+
+
 
 
 
