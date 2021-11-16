@@ -336,7 +336,7 @@ elif config["quantifier"] == "kallistobus":
         input:
             counts=rules.kallistobus_count.output.dir[0]
         output:
-            rds=expand("{result_dir}/seurat/{quantifier}/{{assembly}}-{{sample}}/{{sample}}_seu_obj.rds", **config)
+            rds=expand("{result_dir}/seurat/{quantifier}/{{assembly}}-{{sample}}/{{sample}}_seu_obj.Rdata", **config)
         priority: 1
         conda:
             "../envs/kb_seurat_pp.yaml"

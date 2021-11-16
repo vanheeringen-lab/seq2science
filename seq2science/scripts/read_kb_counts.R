@@ -10,8 +10,20 @@ sample <- snakemake@params$sample
 isvelo <- snakemake@params$isvelo
 iskite <- snakemake@params$iskite
 
+sample_sheet <- tryCatch(
+    read.table(paste0(snakemake@config$result_dir,"/../samples.tsv"), sep = '\t', header = TRUE)
+)
 #Set name for non velocity analysis
-
+prep_cell_meta <- function(seu, sample_sheet) {
+  blacklist <- c("result_folder","descriptive_name","technical_replicates")
+  meta <- colnames(sample_sheet[setdiff(names(sample_sheet),blacklist)])
+  sample.meta <- sample_sheet[sample_sheet$sample==seu@project.name,]
+  sample.meta <- sample.meta[meta]
+  sample.meta <- sample.meta[rep(seq_len(nrow(sample.meta)), each = ncol(seu)),]
+  rownames(sample.meta) <- rownames(FetchData(seu,"ident"))
+  sample.meta <- sample.meta[match(rownames(FetchData(seu,"ident")),rownames(sample.meta)),]
+  return(sample.meta)
+}
 #Read counts into seurat object
 read_count_output <- function(dir, name) {
   dir <- normalizePath(dir, mustWork = TRUE)
@@ -32,13 +44,19 @@ read_count_output <- function(dir, name) {
 }
 # Create Seurat objects based on input workflow
 if (iskite) {
-  assign(paste("seu.",sample,".ADT"),CreateSeuratObject(counts = read_count_output(kb_dir, name="cells_x_features"), assay = "ADT", project = sample))
+  seu <- CreateSeuratObject(counts = read_count_output(kb_dir, name="cells_x_features"), assay = "ADT", project = sample)
+  seu@meta.data <- prep_cell_meta(seu, sample_sheet)
+  assign(paste0("seu.",sample,".ADT"),seu)
 } else if (isvelo) {
    assign(paste("seu.",sample,".sf"), CreateSeuratObject(counts = read_count_output(kb_dir, name="spliced"), assay = "sf", project = sample))                   
    assign(paste("seu.",sample,".uf"), CreateSeuratObject(counts = read_count_output(kb_dir, name="unspliced"), assay = "uf", project = sample))
 } else {
   assign(paste("seu.",sample,".RNA"), CreateSeuratObject(counts = read_count_output(kb_dir, name="cells_x_genes"), assay = "RNA", project = sample))
 }
+#Cleanup
+rm(seu)
+rm(snakemake)
+rm(sample_sheet)
 
 #Save workspace to RData object
 save.image(file = rds)
