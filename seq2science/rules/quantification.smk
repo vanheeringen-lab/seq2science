@@ -285,8 +285,7 @@ elif config["quantifier"] == "kallistobus":
     
     def get_sample_assay(wildcards):
         if not "assay" in samples.columns:
-            return "Default"
-        
+            return ""
         if samples.loc[wildcards.sample, "assay"] == "RNA":
             return "RNA"
         if samples.loc[wildcards.sample, "assay"] == "ADT":
@@ -337,12 +336,13 @@ elif config["quantifier"] == "kallistobus":
         input:
             counts=rules.kallistobus_count.output.dir[0]
         output:
-            rds=expand("{result_dir}/seurat/{quantifier}/{{assembly}}-{{sample}}/seurat_obj.rds", **config)
+            rds=expand("{result_dir}/seurat/{quantifier}/{{assembly}}-{{sample}}/{{sample}}_seu_obj.rds", **config)
         priority: 1
         conda:
             "../envs/kb_seurat_pp.yaml"
         params:
-            isvelo=lambda wildcards, input: True if "--workflow" in config.get("count", "") else False,
+            isvelo=lambda wildcards, input: True if "--workflow velocity" in config.get("count", "") else False,
+            iskite=lambda wildcards, input: True if "--workflow kite" in config.get("count", "") else False,
             assay=get_sample_assay,
             sample=lambda wildcards, input: wildcards.sample
         resources:
