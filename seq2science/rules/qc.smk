@@ -622,6 +622,8 @@ rule multiqc_assembly_stats:
         expand('{qc_dir}/assembly_{{assembly}}_stats_mqc.html', **config)
     conda:
         "../envs/assembly_stats.yaml"
+    params:
+        genomes_dir=config["genome_dir"]
     script:
         f"{config['rule_dir']}/../scripts/assembly_stats.py"
 

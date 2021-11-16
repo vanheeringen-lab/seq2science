@@ -5,6 +5,7 @@ from itertools import accumulate
 
 import pyfaidx
 import matplotlib.pyplot as plt
+import genomepy
 
 
 outfile = snakemake.output[0]
@@ -61,9 +62,8 @@ html = '<img src="data:image/png;base64, {}">'.format(base64.b64encode(img.getva
 
 # if we have an annotation check for the number of genes present
 if hasattr(snakemake.input, "annotation"):
-    with open(snakemake.input.annotation) as f:
-        annotation = f.read()
-    nr_genes = annotation.count("gene\t")
+    gp = genomepy.Annotation(assembly, genomes_dir=snakemake.params.genomes_dir)
+    nr_genes = len(gp.genes("gtf"))
     annotation_text = f"""The genome annotation contains {nr_genes} genes."""
 else:
     annotation_text = ""
