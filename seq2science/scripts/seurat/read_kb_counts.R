@@ -54,6 +54,7 @@ read_count_output <- function(dir, name) {
   return(m)
 }
 
+# Read samplesheet
 sample_sheet <- tryCatch(
     read.table(snakemake@config$samples, sep = '\t', header = TRUE)
 )
