@@ -339,7 +339,7 @@ elif config["quantifier"] == "kallistobus":
             rds=expand("{result_dir}/seurat/{quantifier}/{{assembly}}-{{sample}}_seu_obj.RData", **config)
         priority: 1
         conda:
-            "../envs/kb_seurat_pp.yaml"
+            "../envs/seurat.yaml"
         params:
             isvelo=lambda wildcards, input: True if "--workflow lamanno" in config.get("count", "") else False,
             iskite=lambda wildcards, input: True if "--workflow kite" in config.get("count", "") else False,
@@ -357,7 +357,7 @@ elif config["quantifier"] == "kallistobus":
             rds=f"{config['result_dir']}/seurat/{{quantifier}}/{{assembly}}_seu_merged.RData",
         priority: 1
         conda:
-            "../envs/kb_seurat_pp.yaml"
+            "../envs/seurat.yaml"
         params:
             isvelo=lambda wildcards, input: True if "--workflow lamanno" in config.get("count", "") else False,
             iskite=lambda wildcards, input: True if "--workflow kite" in config.get("count", "") else False,
