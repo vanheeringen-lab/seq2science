@@ -47,8 +47,8 @@ if(isvelo) {
   unspliced <- c()
   for (i in 1:length(output_folders)){
     data <- readRDS(output_folders[i])
-    res <- c(res,data[[1]])
-    unspliced <- c(unspliced, data[[2]])  
+    res <- c(res,data["sf"])
+    unspliced <- c(unspliced, data["uf"])  
   }
   #Merge spliced counts
   seu_obj <- merge_seu_objects(res)

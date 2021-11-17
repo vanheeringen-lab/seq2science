@@ -55,9 +55,7 @@ read_count_output <- function(dir, name) {
 }
 
 # Read
-sample_sheet <- tryCatch(
-    read.table(snakemake@config$samples, sep = '\t', header = TRUE)
-)
+sample_sheet <- read.table(snakemake@config$samples, sep = '\t', header = TRUE)
 
 # Create Seurat objects based on input workflow
 if (iskite) {
@@ -70,7 +68,9 @@ if (iskite) {
    seu.uf <- CreateSeuratObject(counts = read_count_output(kb_dir, name="unspliced"), assay = "uf", project = sample)
    seu.sf@meta.data <- prep_cell_meta(seu.sf, sample_sheet)
    seu.uf@meta.data <- prep_cell_meta(seu.uf, sample_sheet)
-   saveRDS(c(seu.sf, seu.uf), file = rds) 
+   seu_objs <- c(seu.sf, seu.uf)
+   names(seu_objs) <- c("sf","uf")
+   saveRDS(seu_objs, file = rds) 
     
 } else {
   seu <- CreateSeuratObject(counts = read_count_output(kb_dir, name="cells_x_genes"), assay = "RNA", project = sample)
