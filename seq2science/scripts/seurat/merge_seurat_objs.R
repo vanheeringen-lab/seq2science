@@ -1,4 +1,6 @@
-library(Seurat)
+suppressMessages({
+    library(Seurat)
+})
 
 #Snakemake variables
 seu_dir <- paste0(snakemake@config$result_dir,"/seurat/kallistobus")
