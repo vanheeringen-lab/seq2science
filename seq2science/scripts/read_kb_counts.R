@@ -41,7 +41,7 @@ isvelo <- snakemake@params$isvelo
 iskite <- snakemake@params$iskite
 
 sample_sheet <- tryCatch(
-    read.table(paste0(snakemake@config$result_dir,"/../samples.tsv"), sep = '\t', header = TRUE)
+    read.table(snakemake@config$samples, sep = '\t', header = TRUE)
 )
 
 # Create Seurat objects based on input workflow

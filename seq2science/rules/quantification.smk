@@ -336,7 +336,7 @@ elif config["quantifier"] == "kallistobus":
         input:
             counts=rules.kallistobus_count.output.dir[0]
         output:
-            rds=expand("{result_dir}/seurat/{quantifier}/{{assembly}}-{{sample}}/{{sample}}_seu_obj.RData", **config)
+            rds=expand("{result_dir}/seurat/{quantifier}/{{assembly}}-{{sample}}_seu_obj.RData", **config)
         priority: 1
         conda:
             "../envs/kb_seurat_pp.yaml"
@@ -348,8 +348,24 @@ elif config["quantifier"] == "kallistobus":
         resources:
             R_scripts=1, # conda's R can have issues when starting multiple times
         script:
-            f"{config['rule_dir']}/../scripts/read_kb_counts.R"            
-                 
+            f"{config['rule_dir']}/../scripts/read_kb_counts.R"          
+    
+    rule merge_seurat_obj:
+        input:
+            seu_objs=expand([f"{{result_dir}}/seurat/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}_seu_obj.RData" for trep in treps.index], **config)
+        output:
+            rds=f"{config['result_dir']}/seurat/{{quantifier}}/{{assembly}}_seu_merged.RData",
+        priority: 1
+        conda:
+            "../envs/kb_seurat_pp.yaml"
+        params:
+            isvelo=lambda wildcards, input: True if "--workflow lamanno" in config.get("count", "") else False,
+            iskite=lambda wildcards, input: True if "--workflow kite" in config.get("count", "") else False,
+        resources:
+            R_scripts=1, # conda's R can have issues when starting multiple times
+        script:
+            f"{config['rule_dir']}/../scripts/merge_seurat_objs.R"    
+            
     rule kb_seurat_pp:
         input:
             expand([f"{{result_dir}}/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}/run_info.json" for trep in treps.index], **config)
