@@ -38,13 +38,8 @@ properties:
   export_seu_objects:
     description: "Export scRNA count tables to Seurat objects and save in RDS format"
     default: false
-     type: boolean 
-  
-  merge_seu_objects:
-    description: "Merge exported Seurat objects and save to RDS format"
-    default: false 
-     type: boolean 
-     
+    type: boolean 
+    
   # Exploratory data analysis for in-house Celseq2
   seurat:
     description: Seurat rmd for exploratory data analysis

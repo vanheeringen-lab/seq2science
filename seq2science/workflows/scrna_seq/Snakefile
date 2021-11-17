@@ -24,8 +24,8 @@ rule seq2science:
     """
     input:
         expand([f"{{result_dir}}/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}/run_info.json" for trep in treps.index] +
-               [f"{{result_dir}}/seurat/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}_seu_obj.RData" for trep in treps.index] + 
-               (["{result_dir}/seurat/kallistobus/{assemblies}_seu_merged.RData"]) + 
+               ([f"{{result_dir}}/seurat/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}_seu_obj.RData" for trep in treps.index] + 
+               ["{result_dir}/seurat/kallistobus/{assemblies}_seu_merged.RData"] if config["export_seu_objects"] else []) + 
                (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []) + 
                (["{result_dir}/kb_seurat_pp/kallistobus/{assemblies}/kb_seurat_pp.html", "{result_dir}/kb_seurat_pp/kallistobus/{assemblies}/qc"] if config['run_kb_seurat_pp'] else []),
                **{**config,
