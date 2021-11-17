@@ -281,17 +281,8 @@ elif config["quantifier"] == "kallistobus":
             return expand(f"{{trimmed_dir}}/{wildcards.sample}_{{fqext}}_trimmed.{{fqsuffix}}.gz", **config)
         else:
             return rules.fastq_pair.output.reads
-    
-    
-    def get_sample_assay(wildcards):
-        if not "assay" in samples.columns:
-            return ""
-        if samples.loc[wildcards.sample, "assay"] == "RNA":
-            return "RNA"
-        if samples.loc[wildcards.sample, "assay"] == "ADT":
-            return "ADT"
-        raise ValueError
-
+            
+            
     rule kallistobus_count:
             """
             Align reads against a transcriptome (index) with kallistobus and output a quantification file per sample.
@@ -362,8 +353,7 @@ elif config["quantifier"] == "kallistobus":
         conda:
             "../envs/seurat.yaml"
         params:
-            isvelo=lambda wildcards, input: True if "--workflow lamanno" in config.get("count", "") else False,
-            iskite=lambda wildcards, input: True if "--workflow kite" in config.get("count", "") else False,
+            isvelo=lambda wildcards, input: True if "--workflow lamanno" in config.get("count", "") else False
         resources:
             R_scripts=1, # conda's R can have issues when starting multiple times
         script:
