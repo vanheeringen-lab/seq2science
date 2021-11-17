@@ -176,4 +176,6 @@ else:
         "bed_slop": f"All summits were extended with {config.get('slop')} bp to get a consensus peakset.",
         "coverage_table": f"Finally, a count table from the consensus peakset with gimmemotifs.",  # already cited in "combine_peaks"
         "kb_seurat_pp": f"scRNA count post-processing was performed using the {hyperref('seurat')} based {hyperref('kb_seurat_pp')} markdown.",
+        "export_seurat_obj": f"scRNA count tables and meta-data were stored as {hyperref('seurat')} objects and stored in RDS format.",
+        "merge_seurat_obj": f"scRNA {hyperref('seurat')} objects were merged and stored in RDS format."
     }
