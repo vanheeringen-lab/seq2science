@@ -21,15 +21,13 @@ read_count_output <- function(dir, name) {
   m <- Matrix::t(m)
   m <- as(m, "dgCMatrix")
   # The matrix read has cells in rows
-  ge <- ".genes.txt"
-  genes <-
-    readLines(file(paste0(dir, "/counts_unfiltered/", name, ge)))
-  barcodes <-
-    readLines(file(paste0(
-      dir, "/counts_unfiltered/", name, ".barcodes.txt"
-    )))
-  colnames(m) <- barcodes
-  rownames(m) <- genes
+  ge.con <- file(paste0(dir, "/counts_unfiltered/", name, ".genes.txt"))
+  bc.con <- file(paste0(dir, "/counts_unfiltered/", name, ".barcodes.txt"))
+  colnames(m) <- readLines(bc.con)
+  rownames(m) <- readLines(ge.con)
+  #Close file connections
+  close(ge.con)
+  close(bc.con)
   return(m)
 }
 #Load parameters
