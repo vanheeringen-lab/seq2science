@@ -42,7 +42,7 @@ merge_seu_objects <- function(res){
 }                             
 
 #Read velocity data if detected
-if(isvelo) {
+if (isvelo) {
   spliced <- c()
   unspliced <- c()
   for (i in 1:length(output_folders)){

@@ -64,13 +64,13 @@ if (iskite) {
   saveRDS(seu, file = rds)
 
 } else if (isvelo) {
-   seu.sf <- CreateSeuratObject(counts = read_count_output(kb_dir, name="spliced"), assay = "sf", project = sample)
-   seu.uf <- CreateSeuratObject(counts = read_count_output(kb_dir, name="unspliced"), assay = "uf", project = sample)
-   seu.sf@meta.data <- prep_cell_meta(seu.sf, sample_sheet)
-   seu.uf@meta.data <- prep_cell_meta(seu.uf, sample_sheet)
-   seu_objs <- c(seu.sf, seu.uf)
-   names(seu_objs) <- c("sf","uf")
-   saveRDS(seu_objs, file = rds) 
+  seu.sf <- CreateSeuratObject(counts = read_count_output(kb_dir, name="spliced"), assay = "sf", project = sample)
+  seu.uf <- CreateSeuratObject(counts = read_count_output(kb_dir, name="unspliced"), assay = "uf", project = sample)
+  seu.sf@meta.data <- prep_cell_meta(seu.sf, sample_sheet)
+  seu.uf@meta.data <- prep_cell_meta(seu.uf, sample_sheet)
+  seu_objs <- c(seu.sf, seu.uf)
+  names(seu_objs) <- c("sf","uf")
+  saveRDS(seu_objs, file = rds) 
     
 } else {
   seu <- CreateSeuratObject(counts = read_count_output(kb_dir, name="cells_x_genes"), assay = "RNA", project = sample)
