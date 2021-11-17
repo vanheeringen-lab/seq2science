@@ -24,7 +24,7 @@ cat('\n')
 # List RDS files
 dir <- normalizePath(seu_dir, mustWork = TRUE)
 output_folders <- list.files(dir, 
-                             recursive = TRUE, include.dirs = FALSE, full.names = TRUE )
+                             recursive = TRUE, include.dirs = FALSE, full.names = TRUE, pattern = "^.*\\.RData$" )
                              
 #Helper function to merge seurat objects
 merge_seu_objects <- function(res){
@@ -43,19 +43,21 @@ merge_seu_objects <- function(res){
 
 #Read velocity data if detected
 if(isvelo) {
-  res <- c()
+  spliced <- c()
   unspliced <- c()
   for (i in 1:length(output_folders)){
     data <- readRDS(output_folders[i])
-    res <- c(res,data["sf"])
+    spliced <- c(spliced,data["sf"])
     unspliced <- c(unspliced, data["uf"])  
   }
   #Merge spliced counts
-  seu_obj <- merge_seu_objects(res)
+  seu_obj_sf <- merge_seu_objects(spliced)
   #Merged unspliced counts
-  seu_obj_uns <- merge_seu_objects(unspliced)
+  seu_obj_uf <- merge_seu_objects(unspliced)
   #Save workspace
-  saveRDS(c(seu_obj,seu_obj_uns), file = rds)
+  seu_velo_merged <- c(seu_obj_sf, seu_obj_uf)
+  names(seu_velo_merged) <- c("sf_merged","uf_merged")
+  saveRDS(seu_velo_merged, file = rds)
 } else {
   #Read all RDS object from directory
   res <- sapply(output_folders, readRDS)
