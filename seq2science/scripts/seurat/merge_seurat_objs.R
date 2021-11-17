@@ -1,11 +1,25 @@
 library(Seurat)
 
-#Load parameters
+#Snakemake variables
 seu_dir <- paste0(snakemake@config$result_dir,"/seurat/kallistobus")
 rds <- snakemake@output[[1]] 
+log_file <- snakemake@log[[1]]
+
+# log all console output
+log <- file(log_file, open="wt")
+sink(log)
+sink(log, type="message")
+
+# log all variables for debugging purposes
+cat('# variables used for this analysis:\n')
+cat('seu_dir      <- "', seu_dir,         '"\n', sep = "")
+cat('rds          <- "', rds,             '"\n', sep = "")
+cat('\n')
+
 #isvelo <- snakemake@params$isvelo
 #iskite <- snakemake@params$iskite
 
+# List RDS files
 dir <- normalizePath(seu_dir, mustWork = TRUE)
 output_folders <- list.files(dir, 
                              recursive = TRUE, include.dirs = FALSE, full.names = TRUE )
@@ -21,7 +35,7 @@ for (i in 1:length(res)){
 }
 names(res) <- cell.ids
 
-#Merge Seurat object and keep cell id.
+#Merge Seurat object and use cell id as prefix.
 if (length(res) > 1) {
 seu_obj <-
   merge(x = res[[1]],
@@ -32,4 +46,5 @@ seu_obj <-
   seu_obj <- res[[1]]
 }
 
+#Save merged object in RDS format
 saveRDS(seu_obj, file = rds)

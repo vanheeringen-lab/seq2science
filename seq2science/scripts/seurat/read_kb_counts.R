@@ -3,6 +3,29 @@ suppressMessages({
     library(Seurat)
 })
 
+#Snakemake variables
+kb_dir <- dirname(snakemake@input$counts)
+rds <- snakemake@output[[1]] 
+sample <- snakemake@params$sample
+isvelo <- snakemake@params$isvelo
+iskite <- snakemake@params$iskite
+log_file <- snakemake@log[[1]]
+
+# log all console output
+log <- file(log_file, open="wt")
+sink(log)
+sink(log, type="message")
+
+# log all variables for debugging purposes
+cat('# variables used for this analysis:\n')
+cat('log_file     <- "', log_file,        '"\n', sep = "")
+cat('kb_dir       <- "', kb_dir,          '"\n', sep = "")
+cat('rds          <- "', rds,          '"\n', sep = "")
+cat('sample       <- "', sample,          '"\n', sep = "")
+cat('isvelo       <- "', isvelo,          '"\n', sep = "")
+cat('iskite       <- "', iskite,          '"\n', sep = "")
+cat('\n')
+
 #Set name for non velocity analysis
 prep_cell_meta <- function(seu, sample_sheet) {
   blacklist <- c("result_folder","descriptive_name","technical_replicates")
@@ -30,13 +53,6 @@ read_count_output <- function(dir, name) {
   close(bc.con)
   return(m)
 }
-#Load parameters
-kb_dir <- dirname(snakemake@input$counts)
-rds <- snakemake@output[[1]] 
-assay <- snakemake@params$assay
-sample <- snakemake@params$sample
-isvelo <- snakemake@params$isvelo
-iskite <- snakemake@params$iskite
 
 sample_sheet <- tryCatch(
     read.table(snakemake@config$samples, sep = '\t', header = TRUE)

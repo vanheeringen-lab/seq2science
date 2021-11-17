@@ -337,13 +337,14 @@ elif config["quantifier"] == "kallistobus":
             counts=rules.kallistobus_count.output.dir[0]
         output:
             rds=expand("{result_dir}/seurat/{quantifier}/{{assembly}}-{{sample}}_seu_obj.RData", **config)
+        log:
+            expand("{log_dir}/seurat/{{assembly}}-{{sample}}_seu_obj.log", **config),
         priority: 1
         conda:
             "../envs/seurat.yaml"
         params:
             isvelo=lambda wildcards, input: True if "--workflow lamanno" in config.get("count", "") else False,
             iskite=lambda wildcards, input: True if "--workflow kite" in config.get("count", "") else False,
-            assay=get_sample_assay,
             sample=lambda wildcards, input: wildcards.sample
         resources:
             R_scripts=1, # conda's R can have issues when starting multiple times
@@ -355,6 +356,8 @@ elif config["quantifier"] == "kallistobus":
             seu_objs=expand([f"{{result_dir}}/seurat/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}_seu_obj.RData" for trep in treps.index], **config)
         output:
             rds=f"{config['result_dir']}/seurat/{{quantifier}}/{{assembly}}_seu_merged.RData",
+        log:
+            expand("{log_dir}/seurat/{{quantifier}}/{{assembly}}_seu_merged.log", **config),
         priority: 1
         conda:
             "../envs/seurat.yaml"
