@@ -348,7 +348,7 @@ elif config["quantifier"] == "kallistobus":
         resources:
             R_scripts=1, # conda's R can have issues when starting multiple times
         script:
-            f"{config['rule_dir']}/../scripts/read_kb_counts.R"          
+            f"{config['rule_dir']}/../scripts/seurat/read_kb_counts.R"          
     
     rule merge_seurat_obj:
         input:
@@ -364,7 +364,7 @@ elif config["quantifier"] == "kallistobus":
         resources:
             R_scripts=1, # conda's R can have issues when starting multiple times
         script:
-            f"{config['rule_dir']}/../scripts/merge_seurat_objs.R"    
+            f"{config['rule_dir']}/../scripts/seurat/merge_seurat_objs.R"    
             
     rule kb_seurat_pp:
         input:
