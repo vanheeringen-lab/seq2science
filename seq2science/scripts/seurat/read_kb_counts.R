@@ -54,7 +54,7 @@ read_count_output <- function(dir, name) {
   return(m)
 }
 
-# Read samplesheet
+# Read
 sample_sheet <- tryCatch(
     read.table(snakemake@config$samples, sep = '\t', header = TRUE)
 )
@@ -76,10 +76,4 @@ if (iskite) {
   seu <- CreateSeuratObject(counts = read_count_output(kb_dir, name="cells_x_genes"), assay = "RNA", project = sample)
   seu@meta.data <- prep_cell_meta(seu, sample_sheet)
   saveRDS(seu, file = rds)
-
 }
-
-
-
-
-
