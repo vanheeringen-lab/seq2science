@@ -17,15 +17,14 @@ sink(log, type="message")
 cat('# variables used for this analysis:\n')
 cat('seu_dir      <- "', seu_dir,         '"\n', sep = "")
 cat('rds          <- "', rds,             '"\n', sep = "")
-cat('isvelo       <- "', isvelo,             '"\n', sep = "")
+cat('isvelo       <- "', isvelo,          '"\n', sep = "")
 
 cat('\n')
 
-# List RData files
-dir <- normalizePath(seu_dir, mustWork = TRUE)
-output_folders <- list.files(dir, 
-                             recursive = TRUE, include.dirs = FALSE, full.names = TRUE, pattern = "^.*_seu_obj\\.RData$" )
-                             
+# List RData files   
+seu_rdata <- snakemake@input$seu_objs                             
+print(seu_rdata)                             
+
 # Helper function to merge Seurat objects
 merge_seu_objects <- function(res){
   cell.ids <- lapply(res,attr, which="project.name")
@@ -45,8 +44,8 @@ merge_seu_objects <- function(res){
 if (isvelo) {
   spliced <- c()
   unspliced <- c()
-  for (i in 1:length(output_folders)){
-    data <- readRDS(output_folders[i])
+  for (i in 1:length(seu_rdata)){
+    data <- readRDS(seu_rdata[i])
     spliced <- c(spliced,data["sf"])
     unspliced <- c(unspliced, data["uf"])  
   }
@@ -60,7 +59,7 @@ if (isvelo) {
   saveRDS(seu_velo_merged, file = rds)
 } else {
   # Read all RDS object from directory
-  res <- sapply(output_folders, readRDS)
+  res <- sapply(seu_rdata, readRDS)
   # Merge counts
   seu_obj <- merge_seu_objects(res)
   # Save merged object in RDS format

@@ -22,7 +22,6 @@ sample_sheet <- read.table(samples_tsv, sep = '\t', header = TRUE)
 
 # Log all variables for debugging purposes
 cat('# variables used for this analysis:\n')
-
 cat('sample_sheet <- "', samples_tsv,     '"\n', sep = "")
 cat('log_file     <- "', log_file,        '"\n', sep = "")
 cat('kb_dir       <- "', kb_dir,          '"\n', sep = "")
@@ -30,6 +29,7 @@ cat('rds          <- "', rds,             '"\n', sep = "")
 cat('sample       <- "', sample,          '"\n', sep = "")
 cat('isvelo       <- "', isvelo,          '"\n', sep = "")
 cat('iskite       <- "', iskite,          '"\n', sep = "")
+
 cat('\n')
 
 # Read cell meta data from samplesheet
