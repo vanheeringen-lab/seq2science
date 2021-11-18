@@ -2,7 +2,7 @@ suppressMessages({
     library(Seurat)
 })
 
-#Snakemake variables
+# Snakemake variables
 seu_dir <- paste0(snakemake@config$result_dir,"/seurat/kallistobus")
 rds <- snakemake@output[[1]] 
 isvelo <- snakemake@params$isvelo
@@ -21,12 +21,12 @@ cat('isvelo       <- "', isvelo,             '"\n', sep = "")
 
 cat('\n')
 
-# List RDS files
+# List RData files
 dir <- normalizePath(seu_dir, mustWork = TRUE)
 output_folders <- list.files(dir, 
-                             recursive = TRUE, include.dirs = FALSE, full.names = TRUE, pattern = "^.*\\.RData$" )
+                             recursive = TRUE, include.dirs = FALSE, full.names = TRUE, pattern = "^.*\\seu_obj.RData$" )
                              
-#Helper function to merge seurat objects
+# Helper function to merge Seurat objects
 merge_seu_objects <- function(res){
   cell.ids <- lapply(res,attr, which="project.name")
   names(res) <- unlist(cell.ids)
@@ -41,7 +41,7 @@ merge_seu_objects <- function(res){
   }
 }                             
 
-#Read velocity data if detected
+# Read velocity data if detected (Lamanno workflow argument)
 if (isvelo) {
   spliced <- c()
   unspliced <- c()
@@ -50,19 +50,19 @@ if (isvelo) {
     spliced <- c(spliced,data["sf"])
     unspliced <- c(unspliced, data["uf"])  
   }
-  #Merge spliced counts
+  # Merge spliced counts
   seu_obj_sf <- merge_seu_objects(spliced)
-  #Merged unspliced counts
+  # Merged unspliced counts
   seu_obj_uf <- merge_seu_objects(unspliced)
-  #Save workspace
+  # Save workspace
   seu_velo_merged <- c(seu_obj_sf, seu_obj_uf)
   names(seu_velo_merged) <- c("sf_merged","uf_merged")
   saveRDS(seu_velo_merged, file = rds)
 } else {
-  #Read all RDS object from directory
+  # Read all RDS object from directory
   res <- sapply(output_folders, readRDS)
   # Merge counts
   seu_obj <- merge_seu_objects(res)
-  #Save merged object in RDS format
+  # Save merged object in RData format
   saveRDS(seu_obj, file = rds)
 }
