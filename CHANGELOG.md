@@ -8,6 +8,13 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+## Added
+
+- Added export_seurat_obj rule to read kb output to Seurat objects and store in RData format.
+- Added merge_seurat_obj rule to merge single Seurat objects and store in RData format.
+- Exporting/merging can be enabled by setting export_seu_objs: true
+- Helper R scripts 
+
 ## [0.5.5] - 2021-09-01
 
 ### Changed
