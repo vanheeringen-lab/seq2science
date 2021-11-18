@@ -7,6 +7,7 @@ seu_dir <- paste0(snakemake@config$result_dir,"/seurat/kallistobus")
 rds <- snakemake@output[[1]] 
 isvelo <- snakemake@params$isvelo
 log_file <- snakemake@log[[1]]
+seu_rdata <- snakemake@input$seu_objs   
 
 # log all console output
 log <- file(log_file, open="wt")
@@ -22,7 +23,6 @@ cat('isvelo       <- "', isvelo,          '"\n', sep = "")
 cat('\n')
 
 # List RData files   
-seu_rdata <- snakemake@input$seu_objs                             
 print(seu_rdata)                             
 
 # Helper function to merge Seurat objects
