@@ -17,7 +17,6 @@ include: f"{config['rule_dir']}/quantification.smk"
 # set the quality_control functions
 quality_control = [get_trimming_qc, get_scrna_qc]
 
-
 rule seq2science:
     """
     Make a QC report and map

@@ -24,7 +24,7 @@ cat('\n')
 # List RData files
 dir <- normalizePath(seu_dir, mustWork = TRUE)
 output_folders <- list.files(dir, 
-                             recursive = TRUE, include.dirs = FALSE, full.names = TRUE, pattern = "^.*\\seu_obj.RData$" )
+                             recursive = TRUE, include.dirs = FALSE, full.names = TRUE, pattern = "^.*_seu_obj\\.RData$" )
                              
 # Helper function to merge Seurat objects
 merge_seu_objects <- function(res){
@@ -63,6 +63,6 @@ if (isvelo) {
   res <- sapply(output_folders, readRDS)
   # Merge counts
   seu_obj <- merge_seu_objects(res)
-  # Save merged object in RData format
+  # Save merged object in RDS format
   saveRDS(seu_obj, file = rds)
 }

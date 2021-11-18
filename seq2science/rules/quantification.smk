@@ -322,7 +322,8 @@ elif config["quantifier"] == "kallistobus":
                   exit 1
                 fi  
                 """                
-                  
+                
+                
     rule export_seurat_obj:
         input:
             counts=rules.kallistobus_count.output.dir[0]
@@ -341,6 +342,7 @@ elif config["quantifier"] == "kallistobus":
             R_scripts=1, # conda's R can have issues when starting multiple times
         script:
             f"{config['rule_dir']}/../scripts/seurat/read_kb_counts.R"          
+    
     
     rule merge_seurat_obj:
         input:
