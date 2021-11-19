@@ -143,7 +143,8 @@ rule sieve_bam:
         * remove multimappers
         * remove reads inside the blacklist
         * remove duplicates
-        * filter paired-end reads on transcript length     
+        * filter paired-end reads on transcript length
+    
     """
     input:
         bam=rules.mark_duplicates.output.bam,
