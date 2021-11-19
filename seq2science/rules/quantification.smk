@@ -325,6 +325,9 @@ elif config["quantifier"] == "kallistobus":
                 
                 
     rule export_seurat_obj:
+        """
+        Read kb count output into Seurat object, add meta-data and export to RData format.
+        """
         input:
             counts=rules.kallistobus_count.output.dir[0]
         output:
@@ -345,6 +348,9 @@ elif config["quantifier"] == "kallistobus":
     
     
     rule merge_seurat_obj:
+        """
+        Gather and merge multiple Seurat objects into a combined object and export to RData format. 
+        """
         input:
             seu_objs=expand([f"{{result_dir}}/seurat/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}_seu_obj.RData" for trep in treps.index], **config)
         output:
