@@ -604,6 +604,30 @@ rule multiqc_explain:
                     f"{explanation}")
 
 
+def assembly_stats_input(wildcards):
+    req_input = dict()
+
+    assembly = wildcards.assembly
+    req_input["genome"] = expand(f"{{genome_dir}}/{assembly}/{assembly}.fa", **config)[0]
+    req_input["index"] = expand(f"{{genome_dir}}/{assembly}/{assembly}.fa.fai", **config)[0]
+    if has_annotation(assembly):
+        req_input["annotation"] = expand(f"{{genome_dir}}/{assembly}/{assembly}.annotation.gtf", **config)[0]
+    return req_input
+
+
+rule multiqc_assembly_stats:
+    input:
+        unpack(assembly_stats_input)
+    output:
+        expand('{qc_dir}/assembly_{{assembly}}_stats_mqc.html', **config)
+    conda:
+        "../envs/assembly_stats.yaml"
+    params:
+        genomes_dir=config["genome_dir"]
+    script:
+        f"{config['rule_dir']}/../scripts/assembly_stats.py"
+
+
 rule multiqc_rename_buttons:
     """
     Generate rename buttons for the multiqc report.
@@ -706,7 +730,8 @@ def get_qc_files(wildcards):
                                            "variable 'quality_control' exists and contains all the "\
                                            "relevant quality control functions."
     qc['files'] = set(expand(['{qc_dir}/samplesconfig_mqc.html',
-                              '{log_dir}/workflow_explanation_mqc.html'], **config))
+                              '{log_dir}/workflow_explanation_mqc.html',
+                              f'{{qc_dir}}/assembly_{wildcards.assembly}_stats_mqc.html'], **config))
 
     # trimming qc on individual samples
     if get_trimming_qc in quality_control:

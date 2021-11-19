@@ -249,8 +249,10 @@ if "assembly" in samples:
     _has_annot = dict()
     for assembly in local_assemblies:
         _has_annot[assembly] = is_local(assembly, "annotation", config)
+        _has_annot[assembly+config["custom_assembly_suffix"]] = _has_annot[assembly]
     for assembly in remote_assemblies:
         _has_annot[assembly] = bool(providers[assembly]["annotation"])
+        _has_annot[assembly+config["custom_assembly_suffix"]] = _has_annot[assembly]
 
     @lru_cache(maxsize=None)
     def has_annotation(assembly):
@@ -323,7 +325,7 @@ for _ in range(2):
             if len(missing_samples) > 0:
                 sampledict.update(samples2metadata(missing_samples, config, logger))
 
-            pickle.dump(sampledict, open(pysradb_cache, "wb"))
+            pickle.dump({k: v for k, v in sampledict.items() if k.startswith(("ERR", "ERX", "SRR", "SRX", "GSM", "DRX", "DRR"))}, open(pysradb_cache, "wb"))
 
             # only keep samples for this run
             sampledict = {sample: values for sample, values in sampledict.items() if sample in all_samples}
