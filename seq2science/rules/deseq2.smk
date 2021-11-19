@@ -12,8 +12,11 @@ def get_contrasts():
     all_contrasts = list()
 
     for de_contrast in contrasts:
+        # parse groups
         target, reference = de_contrast.split("_")[-2:]
         column = de_contrast[:de_contrast.find(f"_{target}_{reference}")]
+
+        # parse column
         if "+" in column:
             column = column.split("+")[1]
             
