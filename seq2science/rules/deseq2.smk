@@ -14,6 +14,8 @@ def get_contrasts():
     for de_contrast in contrasts:
         target, reference = de_contrast.split("_")[-2:]
         column = de_contrast[:de_contrast.find(f"_{target}_{reference}")]
+        if "+" in column:
+            column = column[column.find("+"):]
 
         # TODO is this necessary? I don't see why/when we would need this
         #if column not in samples:
