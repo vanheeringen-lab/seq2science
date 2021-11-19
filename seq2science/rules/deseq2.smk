@@ -17,14 +17,13 @@ def get_contrasts():
         if "+" in column:
             column = column.split("+")[1]
             
-        # TODO is this necessary? I don't see why/when we would need this
-        #if column not in samples:
-        #    backup_columns = {
-        #        "technical_replicates": "_trep",
-        #        "biological_replicates": "_brep",
-        #        "descriptive_name": "_dname"
-        #    }
-        #    column = backup_columns[column]
+        if column not in samples:
+           backup_columns = {
+               "technical_replicates": "_trep",  # is trep technically possible? You need multiple reps right?
+               "biological_replicates": "_brep",
+               "descriptive_name": "_dname"
+           }
+           column = backup_columns[column]
 
         for assembly in all_assemblies:
             groups = set(samples[samples.assembly == assembly][column].to_list())
