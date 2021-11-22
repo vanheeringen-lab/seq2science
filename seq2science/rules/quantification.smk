@@ -228,7 +228,9 @@ elif config["quantifier"] == "kallistobus":
             reads["r1"] = expand("{fastq_dir}/{{sample}}_{fqext1}.{fqsuffix}.gz", **config)
             reads["r2"] = expand("{trimmed_dir}/{{sample}}_{fqext2}_trimmed.{fqsuffix}.gz", **config)
         else:
-            raise NotImplementedError
+            logger.error(f"Something went wrong parsing the read id for fastq_pair. "
+                          "Please make an issue on github if this is unexpected behaviour!")
+            sys.exit(1)
         return reads
 
 

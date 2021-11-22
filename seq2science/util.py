@@ -39,7 +39,7 @@ class UniqueKeyLoader(yaml.SafeLoader):
             key = self.construct_object(key_node, deep=deep).lower()
             if key in mapping:
                 logger.error(f"Duplicate key found in the config.yaml: {key}\n")
-                raise TerminatedException
+                sys.exit(1)
             mapping.append(key)
         return super().construct_mapping(node, deep)
 
@@ -90,7 +90,7 @@ def samples2metadata_local(samples: List[str], config: dict, logger) -> dict:
                          + extend_msg +
                          f"Since the sample did not start with either GSM, SRX, SRR, ERR, and DRR we "
                          f"couldn't find it online..\n")
-            raise TerminatedException
+            sys.exit(1)
 
     return sampledict
 
@@ -135,7 +135,7 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
                          "are overloaded or slow. Please try again in a bit...\n"
                          "Another possible option is that you try to access samples that do not exist or are protected, and "
                          "seq2science does not support downloading those..\n\n")
-            raise TerminatedException
+            sys.exit(1)
 
         sample2clean = dict(zip(df_geo.experiment_alias, df_geo.experiment_accession))
     else:
@@ -152,7 +152,7 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
                      "are overloaded or slow. Please try again in a bit...\n"
                      "Another possible option is that you try to access samples that do not exist or are protected, and "
                      "seq2science does not support downloading those..\n\n")
-        raise TerminatedException
+        sys.exit(1)
 
     # keep track of not-supported samples
     not_supported_formats = ["ABI_SOLID"]
@@ -365,7 +365,8 @@ def get_bustools_rid(params):
         tech = re.search(bus_regex_short, params).group(0)
         read_id = kb_tech_dict[tech.lower()]
     else:
-        raise Exception("Not a valid BUS(barcode:umi:set) string. Please check -x argument")
+        logger.error("Not a valid BUS(barcode:umi:set) string. Please check -x argument")
+        sys.exit(1)
     return read_id
 
 
@@ -423,7 +424,7 @@ def color_parser(color: str, color_dicts: list=None) -> tuple:
             return rgb_to_hsv(value)
 
     logger.error(f"Color not recognized: {color}")
-    raise ValueError
+    sys.exit(1)
 
 
 def color_picker(n, min_h=0, max_h=0.85, s=1.00, v=0.75, alternate=True):
@@ -567,7 +568,7 @@ def retry_pickling(func):
                 time.sleep(1)
         else:
             logger.error("There were some problems with locking the seq2science cache. Please try again in a bit.")
-            raise TerminatedException
+            sys.exit(1)
     return wrap
 
 
