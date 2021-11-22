@@ -1,3 +1,4 @@
+import sys
 import re
 
 import seq2science
@@ -265,7 +266,9 @@ def get_descriptive_names(wildcards, input):
         elif trep.find("_summits.bed") != -1:
             trep = trep[:trep.find("_summits.bed")]
         else:
-            raise ValueError
+            logger.error(f"Something unexpected happened inferring descriptive names! "
+                          "Please make an issue on github.")
+            sys.exit(1)
 
         if trep in breps.index:
             if len(treps_from_brep[(trep, wildcards.assembly)]) == 1 and trep in samples.index:
@@ -879,7 +882,9 @@ def get_trimming_qc(sample):
                             f"{{qc_dir}}/trimming/{sample}_{{fqext2}}.{{fqsuffix}}.gz_trimming_report.txt"],
                             **config)
             else:
-                raise NotImplementedError
+                logger.error(f"Something went wrong parsing the read id. "
+                              "Please make an issue on github if this is unexpected behaviour!")
+                sys.exit(1)
         else:
             if sampledict[sample]['layout'] == 'SINGLE':
                 return expand([f"{{qc_dir}}/fastqc/{sample}_fastqc.zip",
@@ -900,7 +905,9 @@ def get_trimming_qc(sample):
             elif read_id == 1:
                 return expand(f"{{qc_dir}}/trimming/{sample}_{{fqext2}}.fastp.json", **config)
             else:
-                raise NotImplementedError
+                logger.error(f"Something went wrong parsing the read id. "
+                              "Please make an issue on github if this is unexpected behaviour!")
+                sys.exit(1)
         # not sure how fastp should work with scatac here
         return expand(f"{{qc_dir}}/trimming/{sample}.fastp.json", **config)
 

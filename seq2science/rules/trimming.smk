@@ -98,7 +98,10 @@ elif config["trimmer"] == "fastp":
         elif read_id == 1:
             all_single_samples = [sample + f"_{config['fqext2']}" for sample in all_samples if sampledict[sample]["layout"] == "PAIRED"]
         else:
-            raise NotImplementedError
+            logger.error(f"Seq2science encountered an unexpected error with inferring the read id ({read_id})."
+                          "Please make an issue on github if this is unexpected behaviour!")
+            sys.exit(1)
+
 
         all_paired_samples = []
     else:
