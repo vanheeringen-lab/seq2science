@@ -16,6 +16,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Changed
 
 - Seq2science now makes a separate blacklist file per blacklist option (encode & mitochondria), so that e.g. RNA-seq and ATAC-seq workflows can be run in parallel and don't conflict on the blacklist.  
+- error messages don't show the full traceback anymore, making it (hopefully) more clear what is going wrong.
 
 ### Fixed
 
