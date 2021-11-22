@@ -39,6 +39,10 @@ peak_caller:
 #  genrich:
 #      -j -y -D -d 200 -q 0.05
 
+# how much should the peaks be extended around the summit for the count table
+# (e.g. 100 means a 200 bp wide peak)
+slop: 100
+
 ## differential accessibility analysis
 #contrasts:
 #  - 'biological_replicates_adult_embryo'
