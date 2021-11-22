@@ -44,7 +44,7 @@ properties:
     description: "Seurat object settings"
     properties:
       project_name:
-        description: "Project name for merged Seruat object"
+        description: "Project name for merged Seurat object"
         type: string
       min_cells:
         description: "Include features detected in at least this many cells"
