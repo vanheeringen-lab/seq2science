@@ -48,6 +48,8 @@ rule dupRadar_combine:
         # created by the first dupRadar rule
         good_example=expand("{qc_dir}/dupRadar/good_example.png",**config),
         bad_example=expand("{qc_dir}/dupRadar/bad_example.png",**config)
+    conda:
+        "../envs/imagemick.yaml"
     shell:
         """
         convert {params.good_example} {params.bad_example} {input} -append {output} 2> {log}

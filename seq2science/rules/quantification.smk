@@ -1,5 +1,6 @@
 import os
 import glob
+import os.path
 
 from seq2science.util import get_bustools_rid
 
@@ -274,17 +275,25 @@ elif config["quantifier"] == "kallistobus":
         else:
             return directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/", **config))
         
-        
+
+    def get_kb_reads(wildcards):
+        if wildcards.sample in merged_treps:
+            return expand(f"{{trimmed_dir}}/{wildcards.sample}_{{fqext}}_trimmed.{{fqsuffix}}.gz", **config)
+        else:
+            return rules.fastq_pair.output.reads
+            
+            
     rule kallistobus_count:
             """
             Align reads against a transcriptome (index) with kallistobus and output a quantification file per sample.
             """
             input:
                 basedir=get_kb_dir,
-                reads=rules.fastq_pair.output.reads,
+                reads=get_kb_reads,
                 barcodefile=config.get("barcodefile",[]),
             output:
-                dir=directory(expand("{result_dir}/{quantifier}/{{assembly}}-{{sample}}",**config))
+                dir=expand("{result_dir}/{quantifier}/{{assembly}}-{{sample}}/{file}",**{**config,
+                                                                                         **{"file": ["inspect.json", "run_info.json", "output.bus"]}})
             log:
                 expand("{log_dir}/kallistobus_count/{{assembly}}-{{sample}}.log", **config),
             benchmark:
@@ -299,20 +308,68 @@ elif config["quantifier"] == "kallistobus":
             params:
                 basename=lambda wildcards, input: f"{input.basedir[0]}/{wildcards.assembly}",
                 barcode_arg=lambda wildcards, input: ("-w " + input.barcodefile) if input.barcodefile else "", 
-                options=config.get("count")
+                options=config.get("count"),
+                outdir=lambda wildcards, input, output: os.path.dirname(output[0])
             shell:
                 """
                 kb count \
                 -i {params.basename}.idx \
                 -t {threads} -g {params.basename}_t2g.txt \
-                -o {output} -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
+                -o {params.outdir} -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
                 {params.barcode_arg} {params.options} {input.reads} > {log} 2>&1
+                # Validate output
+                if grep -q 'ERROR\|bad_alloc' "{log}"; then
+                  exit 1
+                fi  
                 """                
-                 
-                 
+                
+                
+    rule export_seurat_obj:
+        """
+        Read kb count output into Seurat object, add meta-data and export to RData format.
+        """
+        input:
+            counts=rules.kallistobus_count.output.dir[0]
+        output:
+            rds=expand("{result_dir}/seurat/{quantifier}/{{assembly}}-{{sample}}_seu_obj.RData", **config)
+        log:
+            expand("{log_dir}/seurat/{{assembly}}-{{sample}}_seu_obj.log", **config),
+        priority: 1
+        conda:
+            "../envs/seurat.yaml"
+        params:
+            isvelo=lambda wildcards, input: True if "--workflow lamanno" in config.get("count", "") else False,
+            iskite=lambda wildcards, input: True if "--workflow kite" in config.get("count", "") else False,
+            sample=lambda wildcards, input: wildcards.sample
+        resources:
+            R_scripts=1, # conda's R can have issues when starting multiple times
+        script:
+            f"{config['rule_dir']}/../scripts/seurat/read_kb_counts.R"          
+    
+    
+    rule merge_seurat_obj:
+        """
+        Gather and merge multiple Seurat objects into a combined object and export to RData format. 
+        """
+        input:
+            seu_objs=expand([f"{{result_dir}}/seurat/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}_seu_obj.RData" for trep in treps.index], **config)
+        output:
+            rds=f"{config['result_dir']}/seurat/{{quantifier}}/{{assembly}}_seu_merged.RData",
+        log:
+            expand("{log_dir}/seurat/{{quantifier}}/{{assembly}}_seu_merged.log", **config),
+        priority: 1
+        conda:
+            "../envs/seurat.yaml"
+        params:
+            isvelo=lambda wildcards, input: True if "--workflow lamanno" in config.get("count", "") else False
+        resources:
+            R_scripts=1, # conda's R can have issues when starting multiple times
+        script:
+            f"{config['rule_dir']}/../scripts/seurat/merge_seurat_objs.R"    
+            
     rule kb_seurat_pp:
         input:
-            expand([f"{{result_dir}}/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}" for trep in treps.index], **config)
+            expand([f"{{result_dir}}/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}/run_info.json" for trep in treps.index], **config)
         output:
             html=f"{config['result_dir']}/kb_seurat_pp/{{quantifier}}/{{assembly}}/kb_seurat_pp.html",
             qc_dir=directory(f"{config['result_dir']}/kb_seurat_pp/{{quantifier}}/{{assembly}}/qc")

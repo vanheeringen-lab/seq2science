@@ -1,6 +1,3 @@
-import os.path
-import yaml
-
 if not config.get("explain_rule"):
     def explain_rule(name):
         """
@@ -9,6 +6,10 @@ if not config.get("explain_rule"):
         return None
 
 else:
+    import os.path
+    import yaml
+    import genomepy
+
     REFERENCES = {
         'apeglm': 'https://doi.org/10.1093/bioinformatics/bty895',
         'ashr': 'https://doi.org/10.1093/biostatistics/kxw041',
@@ -36,6 +37,7 @@ else:
         'macs2': 'https://doi.org/10.1186/gb-2008-9-9-r137',
         'multiqc': 'http://dx.doi.org/10.1093/bioinformatics/btw354',
         'picard': 'http://broadinstitute.github.io/picard',
+        'pysradb': 'https://doi.org/10.12688/f1000research.18676.1',
         'rseqc': 'https://doi.org/10.1093/bioinformatics/bts356',
         'salmon': 'https://doi.org/10.1038/nmeth.4197',
         'sambamba': 'https://doi.org/10.1093/bioinformatics/btv098',
@@ -125,9 +127,11 @@ else:
             text_join(start="Mapped reads were removed if they ",
                 lst=[f"did not have a minimum mapping quality of {config['min_mapping_quality']}" if config.get("min_mapping_quality",0) > 0 else "",
                      "were a (secondary) multimapper" if config.get("only_primary_align") else "",
+                     "were a PCR/optical duplicate" if config.get("remove_dups") else "",
                      f"aligned inside the {hyperref('ENCODE blacklist')}" if config.get("remove_blacklist") else "",
-                     f"had a template length longer than {config['max_template_length']} bp and shorter than {config['min_template_length']} bp" if config.get("filter_on_size") else ""],
-                end=" and finally were tn5 bias shifted by seq2science." if config.get("tn5_shift",0) > 0 else "."),
+                     f"had a template length longer than {config['max_template_length']} bp and shorter than {config['min_template_length']} bp" if config.get("filter_on_size") else "",
+                    ],
+                 end=" and finally were tn5 bias shifted by seq2science." if config.get("tn5_shift",0) > 0 else "."),
         "sambamba_sort": f"Bam files were sorted with {href_v('sambamba')}.",
         "mark_duplicates": f"Afterwards, duplicate reads were {'removed' if 'REMOVE_DUPLICATES=true' in options('markduplicates') else 'marked'} with {href_v('picard',text='Picard MarkDuplicates')}.",
         "bam2cram": f"Bam files were converted to cram format with samtools {href_v('samtools')}.",
@@ -140,7 +144,7 @@ else:
                          f"shrinkage estimator {href_v('ashr',env='deseq2')}. " if deseq_opts['shrinkage_estimator'] == "ashr" else
                             "the normal prior distribution provided by DESeq2.")],sep=" ",final_sep=" "),
         "count_matrix_txi": f"Transcript abundance estimations were aggregated and converted to gene counts using {href_v('tximeta')}.",
-        "run2sra": f"Public samples were downloaded from the {hyperref('Sequence Read Archive')} with help of the ncbi e-utilities.",
+        "run2sra": f"Public samples were downloaded from the {hyperref('Sequence Read Archive')} with help of the ncbi e-utilities and {hyperref('pysradb')}.",
         "get_genome": f"Genome assembly {{wildcards.raw_assembly}} was downloaded with {hyperref('genomepy',text=f'genomepy {genomepy.__version__}')}.",
         "custom_extension": "The genome and gene annotations was extended with custom regions.",
         "call_peak_genrich": f"Peaks were called with {href_v('genrich')}{options('peak_caller','genrich')}.",
@@ -171,5 +175,5 @@ else:
         "combine_peaks": f"A consensus set of summits was made with {href_v('gimmemotifs',text='gimmemotifs.combine_peaks',env='gimme')}.",
         "bed_slop": f"All summits were extended with {config.get('slop')} bp to get a consensus peakset.",
         "coverage_table": f"Finally, a count table from the consensus peakset with gimmemotifs.",  # already cited in "combine_peaks"
-        "kb_seurat_pp": f"scRNA count post-processing was performed using the {hyperref('seurat')} based {hyperref('kb_seurat_pp')} markdown.",
+        "kb_seurat_pp": f"scRNA count post-processing was performed using the {hyperref('seurat')} based {hyperref('kb_seurat_pp')} markdown."
     }

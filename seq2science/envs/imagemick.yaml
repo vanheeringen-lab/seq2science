@@ -1,7 +1,7 @@
-name: khmer
+name: imagemick
 channels:
   - conda-forge
   - bioconda
   - defaults
 dependencies:
-  - bioconda::khmer=2.0
+  - conda-forge::imagemagick>=7.0

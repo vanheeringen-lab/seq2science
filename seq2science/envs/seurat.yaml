@@ -1,0 +1,9 @@
+name: seurat
+channels:
+  - r
+  - conda-forge
+  - defaults
+dependencies: 
+  - r::r-base=3.5.1
+  - r::r-matrix=1.2_14
+  - conda-forge::r-seurat=3.1.5

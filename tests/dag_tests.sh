@@ -110,6 +110,7 @@ if [ $1 = "alignment" ]; then
   assert_rulecount $1 sieve_bam 1
   seq2science run alignment -nr --configfile tests/$WF/alignmentsieve_off.yaml --snakemakeOptions quiet=True| tee tests/local_test_results/${1}_dag
   assert_rulecount $1 sieve_bam 0
+  assert_rulecount $1 cp_unsieved2sieved 1
 
   printf "\nsorting\n"
   seq2science run alignment -nr --configfile tests/$WF/samtools_coordinate.yaml --snakemakeOptions quiet=True| tee tests/local_test_results/${1}_dag
@@ -222,10 +223,8 @@ if [ $1 = "atac-seq" ]; then
   assert_rulecount $1 mark_duplicates 1
 
   seq2science run atac-seq -nr --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={create_qc_report:True,min_template_length:150} | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 mark_duplicates 2
-
-  seq2science run atac-seq -nr --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={create_qc_report:True,max_template_length:150} | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 mark_duplicates 2
+  assert_rulecount $1 mark_duplicates 1
+  assert_rulecount $1 sieve_bam 1
 
   printf "\ncustom assembly\n"
   seq2science run atac-seq -nr --configfile tests/$WF/macs2.yaml --snakemakeOptions quiet=True config={custom_genome_extension:tests/local_test_results/ERCC92.fa} | tee tests/local_test_results/${1}_dag
@@ -506,6 +505,15 @@ if [ $1 = "scrna-seq" ]; then
   assert_rulecount $1 fastq_pair 2
   assert_rulecount $1 kallistobus_ref 1
   assert_rulecount $1 kallistobus_count 2
+  assert_rulecount $1 multiqc 1
+  
+  printf "\nscrna-seq replicates\n"
+  seq2science run scrna-seq -nr --configfile tests/scrna_seq/config_treps.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 fastp_SE 2
+  assert_rulecount $1 fastq_pair 2
+  assert_rulecount $1 merge_replicates 2
+  assert_rulecount $1 kallistobus_ref 1
+  assert_rulecount $1 kallistobus_count 1
   assert_rulecount $1 multiqc 1
 
   test_ran=1
