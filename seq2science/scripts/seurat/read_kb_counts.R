@@ -87,7 +87,7 @@ if (iskite) {
     
 } else {
   seu <- CreateSeuratObject(counts = read_count_output(kb_dir, name="cells_x_genes"), assay = "RNA", project = sample, 
-                                                      min.cells = seu_min_cells, min.features = seu_min_features)
+                                                       min.cells = seu_min_cells, min.features = seu_min_features)
   seu@meta.data <- prep_cell_meta(seu, sample_sheet)
   saveRDS(seu, file = rds)
 }

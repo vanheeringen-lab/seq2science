@@ -6,6 +6,7 @@ suppressMessages({
 seu_dir <- paste0(snakemake@config$result_dir,"/seurat/kallistobus")
 rds <- snakemake@output[[1]] 
 isvelo <- snakemake@params$isvelo
+seu_proj_name <- snakemake@config$seu_project_name
 log_file <- snakemake@log[[1]]
 seu_rdata <- snakemake@input$seu_objs   
 
@@ -19,6 +20,7 @@ cat('# variables used for this analysis:\n')
 cat('seu_dir      <- "', seu_dir,         '"\n', sep = "")
 cat('rds          <- "', rds,             '"\n', sep = "")
 cat('isvelo       <- "', isvelo,          '"\n', sep = "")
+cat('seu_proj_name    <- "', seu_proj_name,          '"\n', sep = "")
 cat('seu_rdata    <- c("', paste(seu_rdata, collapse='","'), '")\n', sep = "")
 cat('\n')
 
@@ -31,7 +33,7 @@ merge_seu_objects <- function(res){
       merge(x = res[[1]],
             y = res[2:length(res)],
             add.cell.ids = names(res),
-            project = "merge")
+            project = seu_proj_name)
   }  else {
     seu_obj <- res[[1]]
   }

@@ -34,23 +34,29 @@ properties:
   run_kb_seurat_pp:
     default: false
     type: boolean
-      
+  
   export_seu_objects:
     description: "Export scRNA count tables to Seurat objects and save in RDS format"
+    type: boolean   
     default: false
-    type: boolean 
-  
-  seu_min_cells:
-    description: "Include features detected in at least this many cells"
-    default: 0
-    type: integer
-  
-  seu_min_features:
-    description: "Include cells where at least this many features are detected"
-    default: 0
-    type: integer
-  
     
+  seurat_object:
+    description: "Seurat object settings"
+    properties:
+      seu_project_name:
+        description: "Project name for merged Seruat object"
+        default: merge
+      seu_min_cells:
+        description: "Include features detected in at least this many cells"
+        type: integer
+      seu_min_features:
+        description: "Include cells where at least this many features are detected"
+        type: integer
+      default:
+        seu_project_name: merged
+        seu_min_cells: 0
+        seu_min_features: 0
+        
   # Exploratory data analysis for in-house Celseq2
   seurat:
     description: Seurat rmd for exploratory data analysis
