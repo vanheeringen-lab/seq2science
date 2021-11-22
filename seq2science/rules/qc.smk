@@ -730,8 +730,11 @@ def get_qc_files(wildcards):
                                            "variable 'quality_control' exists and contains all the "\
                                            "relevant quality control functions."
     qc['files'] = set(expand(['{qc_dir}/samplesconfig_mqc.html',
-                              '{log_dir}/workflow_explanation_mqc.html',
-                              f'{{qc_dir}}/assembly_{wildcards.assembly}_stats_mqc.html'], **config))
+                              '{log_dir}/workflow_explanation_mqc.html'], **config))
+
+    # no assembly stats for single-cell kallisto|bustools kite workflow
+    if 'kite' not in config.get('ref',""):
+        qc['files'].update(expand(f'{{qc_dir}}/assembly_{wildcards.assembly}_stats_mqc.html', **config))
 
     # trimming qc on individual samples
     if get_trimming_qc in quality_control:
