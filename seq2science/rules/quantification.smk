@@ -283,7 +283,8 @@ elif config["quantifier"] == "kallistobus":
             return expand(f"{{trimmed_dir}}/{wildcards.sample}_{{fqext}}_trimmed.{{fqsuffix}}.gz", **config)
         else:
             return rules.fastq_pair.output.reads
-
+            
+            
     rule kallistobus_count:
             """
             Align reads against a transcriptome (index) with kallistobus and output a quantification file per sample.
@@ -323,8 +324,51 @@ elif config["quantifier"] == "kallistobus":
                   exit 1
                 fi  
                 """                
-                 
-                 
+                
+                
+    rule export_seurat_obj:
+        """
+        Read kb count output into Seurat object, add meta-data and export to RData format.
+        """
+        input:
+            counts=rules.kallistobus_count.output.dir[0]
+        output:
+            rds=expand("{result_dir}/seurat/{quantifier}/{{assembly}}-{{sample}}_seu_obj.RData", **config)
+        log:
+            expand("{log_dir}/seurat/{{assembly}}-{{sample}}_seu_obj.log", **config),
+        priority: 1
+        conda:
+            "../envs/seurat.yaml"
+        params:
+            isvelo=lambda wildcards, input: True if "--workflow lamanno" in config.get("count", "") else False,
+            iskite=lambda wildcards, input: True if "--workflow kite" in config.get("count", "") else False,
+            sample=lambda wildcards, input: wildcards.sample
+        resources:
+            R_scripts=1, # conda's R can have issues when starting multiple times
+        script:
+            f"{config['rule_dir']}/../scripts/seurat/read_kb_counts.R"          
+    
+    
+    rule merge_seurat_obj:
+        """
+        Gather and merge multiple Seurat objects into a combined object and export to RData format. 
+        """
+        input:
+            seu_objs=expand([f"{{result_dir}}/seurat/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}_seu_obj.RData" for trep in treps.index], **config)
+        output:
+            rds=f"{config['result_dir']}/seurat/{{quantifier}}/{{assembly}}_seu_merged.RData",
+        log:
+            expand("{log_dir}/seurat/{{quantifier}}/{{assembly}}_seu_merged.log", **config),
+        priority: 1
+        conda:
+            "../envs/seurat.yaml"
+        params:
+            isvelo=lambda wildcards, input: True if "--workflow lamanno" in config.get("count", "") else False
+        resources:
+            R_scripts=1, # conda's R can have issues when starting multiple times
+        script:
+            f"{config['rule_dir']}/../scripts/seurat/merge_seurat_objs.R"    
+            
     rule kb_seurat_pp:
         input:
             expand([f"{{result_dir}}/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}/run_info.json" for trep in treps.index], **config)
