@@ -43,19 +43,19 @@ properties:
   seurat_object:
     description: "Seurat object settings"
     properties:
-      seu_project_name:
+      project_name:
         description: "Project name for merged Seruat object"
-        default: merge
-      seu_min_cells:
+        type: string
+      min_cells:
         description: "Include features detected in at least this many cells"
         type: integer
-      seu_min_features:
+      min_features:
         description: "Include cells where at least this many features are detected"
         type: integer
       default:
-        seu_project_name: merged
-        seu_min_cells: 0
-        seu_min_features: 0
+        project_name: merged
+        min_cells: 0
+        min_features: 0
         
   # Exploratory data analysis for in-house Celseq2
   seurat:

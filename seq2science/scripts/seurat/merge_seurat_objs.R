@@ -6,7 +6,7 @@ suppressMessages({
 seu_dir <- paste0(snakemake@config$result_dir,"/seurat/kallistobus")
 rds <- snakemake@output[[1]] 
 isvelo <- snakemake@params$isvelo
-seu_proj_name <- snakemake@config$seu_project_name
+seu_proj_name <- snakemake@config$seurat_object$project_name
 log_file <- snakemake@log[[1]]
 seu_rdata <- snakemake@input$seu_objs   
 

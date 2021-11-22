@@ -11,8 +11,8 @@ isvelo <- snakemake@params$isvelo
 iskite <- snakemake@params$iskite
 log_file <- snakemake@log[[1]]
 samples_tsv <- snakemake@config$samples
-seu_min_cells <- snakemake@config$seu_min_cells
-seu_min_features <- snakemake@config$seu_min_features
+seu_min_cells <- snakemake@config$seurat_object$min_cells
+seu_min_features <- snakemake@config$seurat_object$min_features
 # Log all console output
 log <- file(log_file, open="wt")
 sink(log)
