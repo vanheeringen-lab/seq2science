@@ -11,6 +11,8 @@ isvelo <- snakemake@params$isvelo
 iskite <- snakemake@params$iskite
 log_file <- snakemake@log[[1]]
 samples_tsv <- snakemake@config$samples
+seu_min_cells <- snakemake@config$seu_min_cells
+seu_min_features <- snakemake@config$seu_min_features
 # Log all console output
 log <- file(log_file, open="wt")
 sink(log)
@@ -29,6 +31,9 @@ cat('rds          <- "', rds,             '"\n', sep = "")
 cat('sample       <- "', sample,          '"\n', sep = "")
 cat('isvelo       <- "', isvelo,          '"\n', sep = "")
 cat('iskite       <- "', iskite,          '"\n', sep = "")
+cat('seu_min_cells  <- "', seu_min_cells, '"\n', sep = "")
+cat('seu_min_features <- "', seu_min_features,  '"\n', sep = "")
+
 
 cat('\n')
 
@@ -64,13 +69,16 @@ read_count_output <- function(dir, name) {
 
 # Create Seurat objects based on input kb workflow argument and set assay
 if (iskite) {
-  seu <- CreateSeuratObject(counts = read_count_output(kb_dir, name="cells_x_features"), assay = "ADT", project = sample)
+  seu <- CreateSeuratObject(counts = read_count_output(kb_dir, name="cells_x_features"), assay = "ADT", project = sample, 
+                                                       min.cells = seu_min_cells, min.features = seu_min_features)
   seu@meta.data <- prep_cell_meta(seu, sample_sheet)
   saveRDS(seu, file = rds)
 
 } else if (isvelo) {
-  seu.sf <- CreateSeuratObject(counts = read_count_output(kb_dir, name="spliced"), assay = "sf", project = sample)
-  seu.uf <- CreateSeuratObject(counts = read_count_output(kb_dir, name="unspliced"), assay = "uf", project = sample)
+  seu.sf <- CreateSeuratObject(counts = read_count_output(kb_dir, name="spliced"), assay = "sf", project = sample, 
+                                                          min.cells = seu_min_cells, min.features = seu_min_features)
+  seu.uf <- CreateSeuratObject(counts = read_count_output(kb_dir, name="unspliced"), assay = "uf", project = sample, 
+                                                          min.cells = seu_min_cells, min.features = seu_min_features)
   seu.sf@meta.data <- prep_cell_meta(seu.sf, sample_sheet)
   seu.uf@meta.data <- prep_cell_meta(seu.uf, sample_sheet)
   seu_objs <- c(seu.sf, seu.uf)
@@ -78,7 +86,8 @@ if (iskite) {
   saveRDS(seu_objs, file = rds) 
     
 } else {
-  seu <- CreateSeuratObject(counts = read_count_output(kb_dir, name="cells_x_genes"), assay = "RNA", project = sample)
+  seu <- CreateSeuratObject(counts = read_count_output(kb_dir, name="cells_x_genes"), assay = "RNA", project = sample, 
+                                                      min.cells = seu_min_cells, min.features = seu_min_features)
   seu@meta.data <- prep_cell_meta(seu, sample_sheet)
   saveRDS(seu, file = rds)
 }

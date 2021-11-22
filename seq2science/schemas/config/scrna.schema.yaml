@@ -39,6 +39,17 @@ properties:
     description: "Export scRNA count tables to Seurat objects and save in RDS format"
     default: false
     type: boolean 
+  
+  seu_min_cells:
+    description: "Include features detected in at least this many cells"
+    default: 0
+    type: integer
+  
+  seu_min_features:
+    description: "Include cells where at least this many features are detected"
+    default: 0
+    type: integer
+  
     
   # Exploratory data analysis for in-house Celseq2
   seurat:
