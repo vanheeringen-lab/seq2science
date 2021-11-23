@@ -92,17 +92,19 @@ elif config["trimmer"] == "fastp":
         all_single_samples = [sample for sample in all_samples if sampledict[sample]["layout"] == "SINGLE"]
         assert len(all_single_samples) == 0, "Seq2science does not support scRNA-seq samples that are single-ended"
         #Check kallisto bustools read id
-        read_id = get_bustools_rid(config.get("count"))
-        if read_id == 0:
-            all_single_samples = [sample + f"_{config['fqext1']}" for sample in all_samples if sampledict[sample]["layout"] == "PAIRED"]
-        elif read_id == 1:
+        if config['quantifier'] == 'kallistobus':
+            read_id = get_bustools_rid(config.get("count"))
+            if read_id == 0:
+                all_single_samples = [sample + f"_{config['fqext1']}" for sample in all_samples if sampledict[sample]["layout"] == "PAIRED"]
+            elif read_id == 1:
+                all_single_samples = [sample + f"_{config['fqext2']}" for sample in all_samples if sampledict[sample]["layout"] == "PAIRED"]
+        # cite-seq-count
+        elif config['quantifier'] == 'citeseqcount':
             all_single_samples = [sample + f"_{config['fqext2']}" for sample in all_samples if sampledict[sample]["layout"] == "PAIRED"]
         else:
             logger.error(f"Seq2science encountered an unexpected error with inferring the read id ({read_id})."
                           "Please make an issue on github if this is unexpected behaviour!")
             sys.exit(1)
-
-
         all_paired_samples = []
     else:
         all_single_samples = [sample for sample in all_samples if sampledict[sample]["layout"] == "SINGLE"]
