@@ -1,0 +1,5 @@
+name: cite-seq-count
+channels:
+  - guillaumecharbonnier
+dependencies: 
+  - guillaumecharbonnier::cite-seq-count=1.4.3 
