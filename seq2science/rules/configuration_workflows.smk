@@ -100,7 +100,7 @@ if config.get("bam_sorter", False):
 
 # ...for scrna quantification
 if get_workflow() == "scrna_seq":
-    if quant not in ["kallistobus", "citeseqcount"]:
+    if config['quantifier'] not in ["kallistobus", "citeseqcount"]:
         logger.error(f"Invalid quantifier selected"
                   "Please select a supported scrna quantifier (kallistobus or citeseqcount)!")
         sys.exit(1)
