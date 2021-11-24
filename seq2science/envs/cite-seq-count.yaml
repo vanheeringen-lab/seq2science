@@ -1,5 +1,5 @@
 name: cite-seq-count
 channels:
-  - guillaumecharbonnier
+  - bioconda
 dependencies: 
-  - guillaumecharbonnier::cite-seq-count=1.4.4 
+  - bioconda::cite-seq-count=1.4.4
