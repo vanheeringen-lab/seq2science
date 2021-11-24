@@ -736,8 +736,8 @@ def get_qc_files(wildcards):
                               '{log_dir}/workflow_explanation_mqc.html'], **config))
 
     # no assembly stats for single-cell kallisto|bustools kite workflow
-    if ('kite' not in config.get('ref',"")) or \ 
-        config['quantifier'].get("citeseqcount", ""):
+    if ('kite' not in config.get('ref',"")) and \ 
+        config.get("quantifier") != "citeseqcount":
         qc['files'].update(expand(f'{{qc_dir}}/assembly_{wildcards.assembly}_stats_mqc.html', **config))
     # trimming qc on individual samples
     if get_trimming_qc in quality_control:
@@ -977,7 +977,8 @@ def get_scrna_qc(sample):
     output = []
 
     # add kallistobus qc
-    output.extend(expand(f"{{result_dir}}/{{quantifier}}/{{{{assembly}}}}-{sample}/inspect.json", **config))
+    if config.get('quantifier',"") == "kallistobus":
+        output.extend(expand(f"{{result_dir}}/{{quantifier}}/{{{{assembly}}}}-{sample}/inspect.json", **config))
 
     return output
 
