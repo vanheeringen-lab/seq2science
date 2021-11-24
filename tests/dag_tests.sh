@@ -520,7 +520,7 @@ if [ $1 = "scrna-seq" ]; then
   seq2science run scrna-seq -nr --configfile tests/scrna_seq/cite-seq-count/config.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 fastp_SE 2
   assert_rulecount $1 fastq_pair 2
-  assert_rulecount $1 citeseqcount 1
+  assert_rulecount $1 citeseqcount 2
   assert_rulecount $1 multiqc 1
   
   test_ran=1
