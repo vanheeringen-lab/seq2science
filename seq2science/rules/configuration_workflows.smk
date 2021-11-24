@@ -103,7 +103,7 @@ if get_workflow() == "scrna_seq":
     if quant not in ["kallistobus", "citeseqcount"]:
         logger.error(f"Invalid quantifier selected"
                   "Please select a supported scrna quantifier (kallistobus or citeseqcount)!")
-    sys.exit(1)
+        sys.exit(1)
 
 
 # make sure that our samples.tsv and configuration work together...
