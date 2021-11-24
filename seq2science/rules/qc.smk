@@ -736,9 +736,9 @@ def get_qc_files(wildcards):
                               '{log_dir}/workflow_explanation_mqc.html'], **config))
 
     # no assembly stats for single-cell kallisto|bustools kite workflow
-    if 'kite' not in config.get('ref',""):
+    if ('kite' not in config.get('ref',"")) or \ 
+        config['quantifier'].get("citeseqcount", ""):
         qc['files'].update(expand(f'{{qc_dir}}/assembly_{wildcards.assembly}_stats_mqc.html', **config))
-
     # trimming qc on individual samples
     if get_trimming_qc in quality_control:
         # scatac seq only on treps, not on single samples
@@ -870,21 +870,30 @@ def get_trimming_qc(sample):
             # single-cell RNA seq does weird things with barcodes in the fastq file
             # therefore we can not just always start trimming paired-end even though
             # the samples are paired-end (ish)
-            read_id = get_bustools_rid(config.get("count"))
-            if read_id == 0:
-                return expand([f"{{qc_dir}}/fastqc/{sample}_{{fqext1}}_fastqc.zip",
-                               f"{{qc_dir}}/fastqc/{sample}_{{fqext1}}_trimmed_fastqc.zip",
-                               f"{{qc_dir}}/trimming/{sample}_{{fqext1}}.{{fqsuffix}}.gz_trimming_report.txt"],
-                              **config)
-            elif read_id == 1:
+            if config['quantifier'] == "kallistobus":
+                read_id = get_bustools_rid(config.get("count"))
+                if read_id == 0:
+                    return expand([f"{{qc_dir}}/fastqc/{sample}_{{fqext1}}_fastqc.zip",
+                                   f"{{qc_dir}}/fastqc/{sample}_{{fqext1}}_trimmed_fastqc.zip",
+                                   f"{{qc_dir}}/trimming/{sample}_{{fqext1}}.{{fqsuffix}}.gz_trimming_report.txt"],
+                                  **config)
+                elif read_id == 1:
+                    return expand([f"{{qc_dir}}/fastqc/{sample}_{{fqext2}}_fastqc.zip",
+                                f"{{qc_dir}}/fastqc/{sample}_{{fqext2}}_trimmed_fastqc.zip",
+                                f"{{qc_dir}}/trimming/{sample}_{{fqext2}}.{{fqsuffix}}.gz_trimming_report.txt"],
+                                **config)
+                else:
+                    logger.error(f"Something went wrong parsing the read id. "
+                                  "Please make an issue on github if this is unexpected behaviour!")
+                    sys.exit(1)
+            # Check if quantifier
+            if config['quantifier'] == "citeseqcount":
                 return expand([f"{{qc_dir}}/fastqc/{sample}_{{fqext2}}_fastqc.zip",
                             f"{{qc_dir}}/fastqc/{sample}_{{fqext2}}_trimmed_fastqc.zip",
                             f"{{qc_dir}}/trimming/{sample}_{{fqext2}}.{{fqsuffix}}.gz_trimming_report.txt"],
                             **config)
-            else:
-                logger.error(f"Something went wrong parsing the read id. "
-                              "Please make an issue on github if this is unexpected behaviour!")
-                sys.exit(1)
+            
+
         else:
             if sampledict[sample]['layout'] == 'SINGLE':
                 return expand([f"{{qc_dir}}/fastqc/{sample}_fastqc.zip",
@@ -899,15 +908,23 @@ def get_trimming_qc(sample):
 
     elif config["trimmer"] == "fastp":
         if get_workflow() == "scrna_seq":
-            read_id = get_bustools_rid(config.get("count"))
-            if read_id == 0:
-                return expand(f"{{qc_dir}}/trimming/{sample}_{{fqext1}}.fastp.json", **config)
-            elif read_id == 1:
+            # Check if quantifier is set to kallistobus
+            if config['quantifier'] == "kallistobus":
+                read_id = get_bustools_rid(config.get("count"))
+                if read_id == 0:
+                    return expand(f"{{qc_dir}}/trimming/{sample}_{{fqext1}}.fastp.json", **config)
+                elif read_id == 1:
+                    return expand(f"{{qc_dir}}/trimming/{sample}_{{fqext2}}.fastp.json", **config)
+                else:
+                    logger.error(f"Something went wrong parsing the read id. "
+                                  "Please make an issue on github if this is unexpected behaviour!")
+                    sys.exit(1)
+            # Check if quantifier is set to citeseqcount
+            if config['quantifier'] == "citeseqcount":
                 return expand(f"{{qc_dir}}/trimming/{sample}_{{fqext2}}.fastp.json", **config)
-            else:
-                logger.error(f"Something went wrong parsing the read id. "
-                              "Please make an issue on github if this is unexpected behaviour!")
-                sys.exit(1)
+                
+
+            
         # not sure how fastp should work with scatac here
         return expand(f"{{qc_dir}}/trimming/{sample}.fastp.json", **config)
 
