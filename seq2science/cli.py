@@ -586,3 +586,18 @@ def setup_seq2science_logger(parsed_args):
         logger.get_logfile = lambda: seq2science_logfile
         logger.logfile_handler = _logging.FileHandler(seq2science_logfile)
         logger.logger.addHandler(logger.logfile_handler)
+
+
+import re
+
+import snakemake
+
+workflow = "atac-seq"
+
+try:
+    raise snakemake.exceptions.IncompleteFilesException(["a", "b", "c"])
+except snakemake.exceptions.IncompleteFilesException as e:
+    print(re.sub("snakemake --cleanup-metadata <filenames>", f"seq2science run {workflow} --cleanup-metadata <filenames>", str(e)))
+except
+except Exception as e:
+    raise e
