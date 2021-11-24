@@ -1,6 +1,6 @@
 # tab-separated file of the samples
-samples: tests/scrna_seq/samples.tsv
-barcodefile: tests/scrna_seq/barcodes.txt
+samples: tests/scrna_seq/kallistobus/samples_treps.tsv
+barcodefile: tests/scrna_seq/kallistobus/barcodes.txt
 
 # pipeline file locations
 result_dir: ./results  # where to store results
