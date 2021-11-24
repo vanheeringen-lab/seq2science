@@ -1,3 +1,7 @@
+"""
+all rules/logic related downloading public fastqs should be here.
+"""
+
 import glob
 import os
 

@@ -1,3 +1,7 @@
+"""
+all rules/logic related to counting/quantification of genes should be here.
+"""
+
 import os
 import glob
 import os.path

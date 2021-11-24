@@ -1,3 +1,7 @@
+"""
+all rules/logic related to rna-specific quality control should be here.
+"""
+
 rule dupRadar:
     """
     visualize fraction of artifactual reads to normal read duplication
