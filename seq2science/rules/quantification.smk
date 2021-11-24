@@ -143,8 +143,9 @@ if config["quantifier"] == "salmon":
             --threads {threads} > {log} 2>&1
             """
             
-if config["quantifier"] == "citeseqcount" or config["quantifier"] == "kallistobus":
-    
+            
+elif  "scrna_seq" == get_workflow():
+
     def get_fastq_pair_reads(wildcards):
         
         """
@@ -213,170 +214,176 @@ if config["quantifier"] == "citeseqcount" or config["quantifier"] == "kallistobu
             gzip -c {output.intermediates3[1]} > {output.reads[1]} 2>> {log}
         """
         
-    def get_kb_reads(wildcards):
+    def get_final_reads(wildcards):
         if wildcards.sample in merged_treps:
             return expand(f"{{trimmed_dir}}/{wildcards.sample}_{{fqext}}_trimmed.{{fqsuffix}}.gz", **config)
         else:
             return rules.fastq_pair.output.reads
-            
-    
-if config["quantifier"] == "citeseqcount":
-    ruleorder: citeseqcount > get_genome
-    
-    rule citeseqcount:
-        """
-        ADT mapping and quantification with cite-seq-count and output a umi/read matrix per sample.
-        """
-        input:
-            reads=get_kb_reads,
-            barcodefile=config.get("barcodefile",[]),
-            tags=expand("{genome_dir}/{{assembly}}.csv", **config)
-
-        output:
-            dir=expand("{result_dir}/{quantifier}/{{assembly}}-{{sample}}/{file}",**{**config,
-                                                                                     **{"file": ["run_report.yaml", "unmapped.csv"]}})                                                                                                                                                      
-        log:
-            expand("{log_dir}/citeseqcount/{{assembly}}-{{sample}}.log", **config),
-        benchmark:
-            expand("{benchmark_dir}/citeseqcount/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
-        priority: 1
-        conda:
-            "../envs/cite-seq-count.yaml"
-        threads: 8
-        #message: explain_rule("kallistobus-count")
-        resources:
-            mem_gb=66,
-        params:
-            barcode_arg=lambda wildcards, input: ("-wl " + input.barcodefile) if input.barcodefile else "", 
-            options=config.get("count"),
-            outdir=lambda wildcards, input, output: os.path.dirname(output[0])
-        shell:
-            """
-            CITE-seq-Count -R1 {input.reads[0]} -R2 {input.reads[1]} -t {input.tags} {params.barcode_arg} -T {threads} {params.options} -o {params.outdir} > {log} 2>&1
-            """                
-    
-
-if config["quantifier"] == "kallistobus":
-    if 'kite' in config.get('ref',""):
-        ruleorder: kallistobus_ref_kite > get_genome
-        ruleorder: kallistobus_ref_kite > kallistobus_ref
-    else:
-        ruleorder: kallistobus_ref > kallistobus_ref_kite
-        
-        
-    rule kallistobus_ref:
-        """
-        Make a genome index for kallistobus. This index is required for counting.
-        """
-        input:
-            fa=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
-            gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
-        output:
-            directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/", **config)),
-        log:
-            expand("{log_dir}/kallistobus_index/{{assembly}}.log", **config),
-        benchmark:
-            expand("{benchmark_dir}/kallistobus_index/{{assembly}}.benchmark.txt", **config)[0]
-        priority: 1
-        conda:
-            "../envs/kallistobus.yaml"
-        resources:
-            mem_gb=88,
-        params:
-            basename=lambda wildcards, output: f"{output[0]}{wildcards.assembly}",
-            options=config.get("ref")
-        shell:
-            """
-            kb ref \
-            {input.fa} {input.gtf} \
-            -i {params.basename}.idx -g {params.basename}_t2g.txt -f1 {params.basename}_cdna.fa \
-            -f2 {params.basename}_intron.fa \
-            -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
-            {params.options} > {log} 2>&1
-            """
-                
-                
-    rule kallistobus_ref_kite:
-        """
-        Make a mismatch index for kallistobus. This index is required to count feature barcodes, such as antibody tags. 
-        """
-        input:
-            featurebarcodes=expand("{genome_dir}/{{assembly}}.tsv", **config)
-        output:
-            directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/kite/", **config)),
-        log:    
-            expand("{log_dir}/kallistobus_index_kite/{{assembly}}.log", **config),    
-        conda:
-            "../envs/kallistobus.yaml"  
-        resources:
-            mem_gb=12, 
-        params:    
-            basename=lambda wildcards, output: f"{output[0]}{wildcards.assembly}",
-            options=config.get("ref")
-        priority: 1
-        shell:
-            """
-            mkdir -p {params.basename}
-            kb ref  \
-            {input.featurebarcodes} \
-            {params.options} \
-            -i {params.basename}.idx -g {params.basename}_t2g.txt -f1 {params.basename}_cdna.fa > {log} 2>&1 
-            """    
-            
-    def get_kb_dir(wildcards):
+                                            
+                                            
+    if config["quantifier"] == "kallistobus":
         if 'kite' in config.get('ref',""):
-            return directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/kite/", **config))     
+            ruleorder: kallistobus_ref_kite > get_genome
+            ruleorder: kallistobus_ref_kite > kallistobus_ref
         else:
-            return directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/", **config))
+            ruleorder: kallistobus_ref > kallistobus_ref_kite
             
             
-    rule kallistobus_count:
+        rule kallistobus_ref:
             """
-            Align reads against a transcriptome (index) with kallistobus and output a quantification file per sample.
+            Make a genome index for kallistobus. This index is required for counting.
             """
             input:
-                basedir=get_kb_dir,
-                reads=get_kb_reads,
-                barcodefile=config.get("barcodefile",[]),
+                fa=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+                gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
             output:
-                dir=expand("{result_dir}/{quantifier}/{{assembly}}-{{sample}}/{file}",**{**config,
-                                                                                         **{"file": ["inspect.json", "run_info.json", "output.bus"]}})
+                directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/", **config)),
             log:
-                expand("{log_dir}/kallistobus_count/{{assembly}}-{{sample}}.log", **config),
+                expand("{log_dir}/kallistobus_index/{{assembly}}.log", **config),
             benchmark:
-                expand("{benchmark_dir}/kallistobus_count/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
+                expand("{benchmark_dir}/kallistobus_index/{{assembly}}.benchmark.txt", **config)[0]
             priority: 1
             conda:
                 "../envs/kallistobus.yaml"
+            resources:
+                mem_gb=88,
+            params:
+                basename=lambda wildcards, output: f"{output[0]}{wildcards.assembly}",
+                options=config.get("ref")
+            shell:
+                """
+                kb ref \
+                {input.fa} {input.gtf} \
+                -i {params.basename}.idx -g {params.basename}_t2g.txt -f1 {params.basename}_cdna.fa \
+                -f2 {params.basename}_intron.fa \
+                -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
+                {params.options} > {log} 2>&1
+                """
+                    
+                    
+        rule kallistobus_ref_kite:
+            """
+            Make a mismatch index for kallistobus. This index is required to count feature barcodes, such as antibody tags. 
+            """
+            input:
+                featurebarcodes=expand("{genome_dir}/{{assembly}}.tsv", **config)
+            output:
+                directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/kite/", **config)),
+            log:    
+                expand("{log_dir}/kallistobus_index_kite/{{assembly}}.log", **config),    
+            conda:
+                "../envs/kallistobus.yaml"  
+            resources:
+                mem_gb=12, 
+            params:    
+                basename=lambda wildcards, output: f"{output[0]}{wildcards.assembly}",
+                options=config.get("ref")
+            priority: 1
+            shell:
+                """
+                mkdir -p {params.basename}
+                kb ref  \
+                {input.featurebarcodes} \
+                {params.options} \
+                -i {params.basename}.idx -g {params.basename}_t2g.txt -f1 {params.basename}_cdna.fa > {log} 2>&1 
+                """    
+                
+        def get_kb_dir(wildcards):
+            if 'kite' in config.get('ref',""):
+                return directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/kite/", **config))     
+            else:
+                return directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/", **config))
+                
+        rule kallistobus_count:
+                """
+                Align reads against a transcriptome (index) with kallistobus and output a quantification file per sample.
+                """
+                input:
+                    basedir=get_kb_dir,
+                    reads=get_final_reads,
+                    barcodefile=config.get("barcodefile",[]),
+                output:
+                    dir=expand("{result_dir}/{quantifier}/{{assembly}}-{{sample}}/{file}",**{**config,
+                                                                                             **{"file": ["inspect.json", "run_info.json", "output.bus"]}})
+                log:
+                    expand("{log_dir}/kallistobus_count/{{assembly}}-{{sample}}.log", **config),
+                benchmark:
+                    expand("{benchmark_dir}/kallistobus_count/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
+                priority: 1
+                conda:
+                    "../envs/kallistobus.yaml"
+                threads: 8
+                message: explain_rule("kallistobus-count")
+                resources:
+                    mem_gb=66,
+                params:
+                    basename=lambda wildcards, input: f"{input.basedir[0]}/{wildcards.assembly}",
+                    barcode_arg=lambda wildcards, input: ("-w " + input.barcodefile) if input.barcodefile else "", 
+                    options=config.get("count"),
+                    outdir=lambda wildcards, input, output: os.path.dirname(output[0])
+                shell:
+                    """
+                    kb count \
+                    -i {params.basename}.idx \
+                    -t {threads} -g {params.basename}_t2g.txt \
+                    -o {params.outdir} -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
+                    {params.barcode_arg} {params.options} {input.reads} > {log} 2>&1
+                    # Validate output
+                    if grep -q 'ERROR\|bad_alloc' "{log}"; then
+                      exit 1
+                    fi  
+                    """ 
+                    
+                    
+    if config["quantifier"] == "citeseqcount":
+        ruleorder: citeseqcount > get_genome
+        
+        rule citeseqcount:
+            """
+            ADT mapping and quantification with cite-seq-count and output a umi/read matrix per sample.
+            """
+            input:
+                reads=get_final_reads,
+                barcodefile=config.get("barcodefile",[]),
+                tags=expand("{genome_dir}/{{assembly}}.csv", **config)
+    
+            output:
+                dir=expand("{result_dir}/{quantifier}/{{assembly}}-{{sample}}/_tag_counts/{file}",**{**config,
+                                                                                         **{"file": ["run_report.yaml", "unmapped.csv"]}})                                                                                                                                                      
+            log:
+                expand("{log_dir}/citeseqcount/{{assembly}}-{{sample}}.log", **config),
+            benchmark:
+                expand("{benchmark_dir}/citeseqcount/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
+            priority: 1
+            conda:
+                "../envs/cite-seq-count.yaml"
             threads: 8
-            message: explain_rule("kallistobus-count")
+            message: explain_rule("citeseqcount")
             resources:
                 mem_gb=66,
             params:
-                basename=lambda wildcards, input: f"{input.basedir[0]}/{wildcards.assembly}",
-                barcode_arg=lambda wildcards, input: ("-w " + input.barcodefile) if input.barcodefile else "", 
+                barcode_arg=lambda wildcards, input: ("-wl " + input.barcodefile) if input.barcodefile else "", 
                 options=config.get("count"),
                 outdir=lambda wildcards, input, output: os.path.dirname(output[0])
             shell:
                 """
-                kb count \
-                -i {params.basename}.idx \
-                -t {threads} -g {params.basename}_t2g.txt \
-                -o {params.outdir} -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
-                {params.barcode_arg} {params.options} {input.reads} > {log} 2>&1
-                # Validate output
-                if grep -q 'ERROR\|bad_alloc' "{log}"; then
-                  exit 1
-                fi  
-                """                
-                
-                
+                CITE-seq-Count -R1 {input.reads[0]} -R2 {input.reads[1]} \
+                -t {input.tags} {params.barcode_arg} -T {threads} \
+                {params.options} -o {params.outdir} > {log} 2>&1
+                """                                
+                    
+    def get_count_dir(wildcards):
+        if config['quantifier'] == 'kallistobus':
+            return rules.kallistobus_count.output.dir[0]
+        else:
+            return rules.citeseqcount.output.dir[0]
+                           
     rule export_seurat_obj:
         """
-        Read kb count output into Seurat object, add meta-data and export to RData format.
+        Read scRNA count output into Seurat object, add meta-data and export to RData format.
         """
         input:
-            counts=rules.kallistobus_count.output.dir[0]
+            counts=get_count_dir
         output:
             rds=expand("{result_dir}/seurat/{quantifier}/{{assembly}}-{{sample}}_seu_obj.RData", **config)
         log:
@@ -387,11 +394,12 @@ if config["quantifier"] == "kallistobus":
         params:
             isvelo=lambda wildcards, input: True if "--workflow lamanno" in config.get("count", "") else False,
             iskite=lambda wildcards, input: True if "--workflow kite" in config.get("count", "") else False,
+            iscite=lambda wildcards, input: True if config['quantifier'] == 'citeseqcount' else False,
             sample=lambda wildcards, input: wildcards.sample
         resources:
             R_scripts=1, # conda's R can have issues when starting multiple times
         script:
-            f"{config['rule_dir']}/../scripts/seurat/read_kb_counts.R"          
+            f"{config['rule_dir']}/../scripts/seurat/read_kb_counts.R"       
     
     
     rule merge_seurat_obj:
@@ -412,8 +420,9 @@ if config["quantifier"] == "kallistobus":
         resources:
             R_scripts=1, # conda's R can have issues when starting multiple times
         script:
-            f"{config['rule_dir']}/../scripts/seurat/merge_seurat_objs.R"    
-            
+            f"{config['rule_dir']}/../scripts/seurat/merge_seurat_objs.R"             
+                  
+                  
     rule kb_seurat_pp:
         input:
             expand([f"{{result_dir}}/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}/run_info.json" for trep in treps.index], **config)

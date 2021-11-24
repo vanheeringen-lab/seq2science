@@ -51,6 +51,7 @@ else:
         'ucsc genome browser': 'http://www.genome.org/cgi/doi/10.1101/gr.229102',
         'seurat': 'https://satijalab.org/seurat/',
         'kb_seurat_pp': 'https://github.com/Rebecza/scRNA-seq',
+        'citeseqcount': 'https://hoohm.github.io/CITE-seq-Count'
     }
 
     def explain_rule(name):
