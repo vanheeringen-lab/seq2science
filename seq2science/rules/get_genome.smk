@@ -156,22 +156,6 @@ rule gene_id2name:
         f"{config['rule_dir']}/../scripts/gene_id2name.py"
 
 
-rule unzip_annotation:
-    """
-    Unzip (b)gzipped files.
-    """
-    input:
-        "{filepath}.gz"
-    output:
-        "{filepath}"
-    wildcard_constraints:
-        filepath=".*(\.annotation)(\.gtf|\.bed)(?<!\.gz)$"  # filepath may not end with ".gz"
-    priority: 1
-    run:
-        import genomepy.utils
-        genomepy.utils.gunzip_and_name(input[0])
-
-
 rule get_effective_genome_size:
     """
     Get the effective genome size for a kmer length. Some tools (e.g. macs2) require
