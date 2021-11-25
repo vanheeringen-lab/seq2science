@@ -333,7 +333,7 @@ def _run(args, base_dir, workflows_dir, config_path):
                     "seq2science needs to re-run any jobs.")
 
         with seq2science.util.CaptureStdout() as targets, seq2science.util.CaptureStderr() as errors:
-            exit_code = run_snakemake(args.workflow.replace("-", "_"), **{**parsed_args, **{
+            exit_code = run_snakemake(args.workflow.replace("-", "_"), {**parsed_args, **{
                 "list_params_changes": True,
                 "quiet": False,
                 "log_handler": lambda x: None,  # don't show any of the logs
@@ -365,7 +365,7 @@ def _run(args, base_dir, workflows_dir, config_path):
     parsed_args["config"]["no_config_log"] = True
 
     #   5. start the "real" run where jobs actually get started
-    exit_code = run_snakemake(args.workflow.replace("-", "_"), **parsed_args)
+    exit_code = run_snakemake(args.workflow.replace("-", "_"), parsed_args)
     sys.exit(0) if exit_code else sys.exit(1)
 
 
@@ -425,7 +425,7 @@ def _explain(args, base_dir, workflows_dir, config_path):
     # run snakemake (silently)
     with open(os.devnull, "w") as null:
         with contextlib.redirect_stdout(null), contextlib.redirect_stderr(null):
-            success = run_snakemake(args.workflow.replace("-", "_"), **parsed_args)
+            success = run_snakemake(args.workflow.replace("-", "_"), parsed_args)
     if success:
         print(" ".join(rules_used.values()))
         sys.exit(0)
