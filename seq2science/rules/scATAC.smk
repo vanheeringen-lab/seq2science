@@ -1,3 +1,7 @@
+"""
+all rules/logic specific to the single cell ATAC workflow should be here.
+"""
+
 rule create_SNAP_object:
     """
     Create a snapobject for each BAM file. 

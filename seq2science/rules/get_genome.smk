@@ -1,3 +1,7 @@
+"""
+all rules/logic related to downloading public assemblies and preprocessing of assemblies should be here.
+"""
+
 localrules: extend_genome, get_genome_support_files
 
 support_exts = [".fa.fai", ".fa.sizes", ".gaps.bed"]

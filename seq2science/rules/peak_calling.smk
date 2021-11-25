@@ -1,3 +1,7 @@
+"""
+all rules/logic related to the genomic peak calling should be here.
+"""
+
 def get_peak_ftype(peak_caller):
     """
     Get the filetype (narrowpeak, broadpeak, gappedpeak) for a peak caller.

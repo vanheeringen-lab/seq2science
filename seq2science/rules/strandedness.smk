@@ -1,3 +1,7 @@
+"""
+all rules/logic related to the RNA-seq strandedness should be here.
+"""
+
 rule infer_strandedness:
     """
     use RSeqQC's infer_experiment.py to determine strandedness af a sample

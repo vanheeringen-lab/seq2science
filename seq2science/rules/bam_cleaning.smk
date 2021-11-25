@@ -1,3 +1,7 @@
+"""
+All rules/logic related to filtering (sieving) after alignment to a genome should be here.
+"""
+
 from seq2science.util import sieve_bam
 
 
