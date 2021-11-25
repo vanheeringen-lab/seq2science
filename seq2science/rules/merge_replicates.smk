@@ -118,10 +118,9 @@ if "technical_replicates" in samples:
         benchmark:
             expand("{benchmark_dir}/merge_replicates/{{replicate}}{{fqext}}.benchmark.txt", **config)[0]
         run:
-            printcmd = "zcat"
             for rep in input:
                 rep_name = re.findall("\/([^\/_]+)_", rep)[-1]
 
                 shell(
-                    """{printcmd} {rep} | awk '{{if (NR%4==1) {{gsub(/^@/, "@{rep_name}:"); print}} else {{print}}}}' | gzip >> {output}"""
+                    """zcat {rep} | awk '{{if (NR%4==1) {{gsub(/^@/, "@{rep_name}:"); print}} else {{print}}}}' | gzip >> {output}"""
                 )
