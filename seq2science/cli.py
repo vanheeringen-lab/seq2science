@@ -333,7 +333,7 @@ def _run(args, base_dir, workflows_dir, config_path):
                     "seq2science needs to re-run any jobs.")
 
         with seq2science.util.CaptureStdout() as targets, seq2science.util.CaptureStderr() as errors:
-            exit_code = snakemake.snakemake(**{**parsed_args, **{
+            exit_code = run_snakemake(args.workflow.replace("-", "_"), **{**parsed_args, **{
                 "list_params_changes": True,
                 "quiet": False,
                 "log_handler": lambda x: None,  # don't show any of the logs
@@ -365,7 +365,7 @@ def _run(args, base_dir, workflows_dir, config_path):
     parsed_args["config"]["no_config_log"] = True
 
     #   5. start the "real" run where jobs actually get started
-    exit_code = snakemake.snakemake(**parsed_args)
+    exit_code = run_snakemake(args.workflow.replace("-", "_"), **parsed_args)
     sys.exit(0) if exit_code else sys.exit(1)
 
 
@@ -425,7 +425,7 @@ def _explain(args, base_dir, workflows_dir, config_path):
     # run snakemake (silently)
     with open(os.devnull, "w") as null:
         with contextlib.redirect_stdout(null), contextlib.redirect_stderr(null):
-            success = snakemake.snakemake(**parsed_args)
+            success = run_snakemake(args.workflow.replace("-", "_"), **parsed_args)
     if success:
         print(" ".join(rules_used.values()))
         sys.exit(0)
@@ -588,16 +588,27 @@ def setup_seq2science_logger(parsed_args):
         logger.logger.addHandler(logger.logfile_handler)
 
 
-import re
-
-import snakemake
-
-workflow = "atac-seq"
-
-try:
-    raise snakemake.exceptions.IncompleteFilesException(["a", "b", "c"])
-except snakemake.exceptions.IncompleteFilesException as e:
-    print(re.sub("snakemake --cleanup-metadata <filenames>", f"seq2science run {workflow} --cleanup-metadata <filenames>", str(e)))
-except
-except Exception as e:
-    raise e
+def run_snakemake(workflow, config):
+    try:
+        exit_code = snakemake.snakemake(**config)
+    except snakemake.exceptions.IncompleteFilesException as e:
+        exception = str(e)
+        exception = re.sub("snakemake --cleanup-metadata <filenames>",
+                           f"seq2science run {workflow} --cleanup-metadata <filenames>",
+                           exception)
+        logger.error(exception)
+        sys.exit(1)
+    except snakemake.exceptions.LockException as e:
+        exception = str(e)
+        exception = re.sub("no other Snakemake process",
+                           "no other seq2science process",
+                           exception)
+        exception = re.sub("no other instances of snakemake are",
+                           "no other instances of seq2science are",
+                           exception)
+        logger.error(exception)
+        sys.exit(1)
+    except Exception as e:
+        raise e
+    finally:
+        return exit_code
