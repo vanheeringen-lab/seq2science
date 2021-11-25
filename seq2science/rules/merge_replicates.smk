@@ -118,8 +118,6 @@ if "technical_replicates" in samples:
         benchmark:
             expand("{benchmark_dir}/merge_replicates/{{replicate}}{{fqext}}.benchmark.txt", **config)[0]
         run:
-            # all workflows use gzipped fastq files, however scRNA-seq uses unzipped fastqs
-            # due to trimming + pairing, that's why we set the printcmd
             printcmd = "zcat"
             for rep in input:
                 rep_name = re.findall("\/([^\/_]+)_", rep)[-1]
