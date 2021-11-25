@@ -1,3 +1,7 @@
+"""
+all rules/logic related to peak count tables should be here.
+"""
+
 ruleorder: macs2_callpeak > narrowpeak_summit
 
 def count_table_output():

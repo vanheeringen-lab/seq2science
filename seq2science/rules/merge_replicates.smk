@@ -1,3 +1,7 @@
+"""
+all rules/logic related to the merging of technical replicates (and a bit for biological replicates) should be here.
+"""
+
 # dataframe with all technical replicates collapsed
 cols = ["sample", "assembly"]
 subset = ["sample", "assembly"]

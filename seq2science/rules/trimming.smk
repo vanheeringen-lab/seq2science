@@ -1,3 +1,7 @@
+"""
+all rules/logic related to read trimming should be here.
+"""
+
 from seq2science.util import get_bustools_rid
 
 if config["trimmer"] == "trimgalore":

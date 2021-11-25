@@ -1,3 +1,7 @@
+"""
+all logic not related to any specific workflows should be here.
+"""
+
 import os.path
 import pickle
 import re
