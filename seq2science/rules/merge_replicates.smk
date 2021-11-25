@@ -120,7 +120,7 @@ if "technical_replicates" in samples:
         run:
             # all workflows use gzipped fastq files, however scRNA-seq uses unzipped fastqs
             # due to trimming + pairing, that's why we set the printcmd
-            printcmd = "cat" if get_workflow() == "scrna_seq" else "zcat"
+            printcmd = "zcat"
             for rep in input:
                 rep_name = re.findall("\/([^\/_]+)_", rep)[-1]
 
