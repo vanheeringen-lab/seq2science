@@ -1,3 +1,9 @@
+"""
+all rules/logic
+"""
+
+import sys
+
 from seq2science.util import expand_contrasts
 
 
@@ -9,23 +15,20 @@ def get_contrasts():
         return []
 
     contrasts=expand_contrasts(samples, config)
-    all_contrasts = expand(
-        "{deseq2_dir}/{assemblies}-{contrasts}.diffexp.tsv",
-        **{**config, **{'assemblies': all_assemblies, 'contrasts': contrasts}}
-    )
-    # remove contrasts for assemblies where they dont apply
+    all_contrasts = list()
+
     for de_contrast in contrasts:
         # parse groups
         target, reference = de_contrast.split("_")[-2:]
+        column = de_contrast[:de_contrast.find(f"_{target}_{reference}")]
 
         # parse column
-        n = de_contrast.find(f"_{target}_{reference}")
-        column = de_contrast[:n]
         if "+" in column:
             column = column.split("+")[1]
+            
         if column not in samples:
             backup_columns = {
-                "technical_replicates": "_trep",
+                "technical_replicates": "_trep",  # is trep technically possible? You need multiple reps right?
                 "biological_replicates": "_brep",
                 "descriptive_name": "_dname"
             }
@@ -33,8 +36,8 @@ def get_contrasts():
 
         for assembly in all_assemblies:
             groups = set(samples[samples.assembly == assembly][column].to_list())
-            if target not in groups or reference not in groups:
-                all_contrasts = [f for f in all_contrasts if f"/{assembly}-" not in f]
+            if target in groups and reference in groups:
+                all_contrasts.append(f"{config['deseq2_dir']}/{assembly}-{de_contrast}.diffexp.tsv")
     return all_contrasts
 
 
@@ -50,12 +53,14 @@ active PR: https://github.com/conda/conda/pull/8776
 def deseq_input(wildcards):
     if "rna" in get_workflow():
         return expand("{counts_dir}/{{assembly}}-counts.tsv", **config)
-    elif "atac"  in get_workflow() or "chip" in get_workflow():
+    elif "atac" in get_workflow() or "chip" in get_workflow():
         # only uses a single peak caller ------------------------------------------v
         # TODO different peak callers can probably be supported with wildcard_constraint peak_caller (.*) <-- empty allowed
         return expand("{counts_dir}/{peak_caller}/{{assembly}}_raw.tsv", **config)[0],
     else:
-        raise NotImplementedError
+        logger.error(f"The workflow you are running ({get_workflow()}) does not support deseq2. "
+                      "Please make an issue on github if this is unexpected behaviour!")
+        sys.exit(1)
 
 
 # TODO once fixed the resource R_scripts can be removed

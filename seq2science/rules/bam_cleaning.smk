@@ -1,3 +1,7 @@
+"""
+All rules/logic related to filtering (sieving) after alignment to a genome should be here.
+"""
+
 from seq2science.util import sieve_bam
 
 
@@ -135,7 +139,8 @@ rule sieve_bam:
         * remove multimappers
         * remove reads inside the blacklist
         * remove duplicates
-        * filter paired-end reads on transcript length     
+        * filter paired-end reads on transcript length
+    
     """
     input:
         bam=rules.mark_duplicates.output.bam,

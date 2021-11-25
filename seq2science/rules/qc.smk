@@ -1,3 +1,8 @@
+"""
+all rules/logic related to quality control and the final multiQC report should be here.
+"""
+
+import sys
 import re
 
 import seq2science
@@ -265,7 +270,9 @@ def get_descriptive_names(wildcards, input):
         elif trep.find("_summits.bed") != -1:
             trep = trep[:trep.find("_summits.bed")]
         else:
-            raise ValueError
+            logger.error(f"Something unexpected happened inferring descriptive names! "
+                          "Please make an issue on github.")
+            sys.exit(1)
 
         if trep in breps.index:
             if len(treps_from_brep[(trep, wildcards.assembly)]) == 1 and trep in samples.index:
@@ -604,6 +611,30 @@ rule multiqc_explain:
                     f"{explanation}")
 
 
+def assembly_stats_input(wildcards):
+    req_input = dict()
+
+    assembly = wildcards.assembly
+    req_input["genome"] = expand(f"{{genome_dir}}/{assembly}/{assembly}.fa", **config)[0]
+    req_input["index"] = expand(f"{{genome_dir}}/{assembly}/{assembly}.fa.fai", **config)[0]
+    if has_annotation(assembly):
+        req_input["annotation"] = expand(f"{{genome_dir}}/{assembly}/{assembly}.annotation.gtf", **config)[0]
+    return req_input
+
+
+rule multiqc_assembly_stats:
+    input:
+        unpack(assembly_stats_input)
+    output:
+        expand('{qc_dir}/assembly_{{assembly}}_stats_mqc.html', **config)
+    conda:
+        "../envs/assembly_stats.yaml"
+    params:
+        genomes_dir=config["genome_dir"]
+    script:
+        f"{config['rule_dir']}/../scripts/assembly_stats.py"
+
+
 rule multiqc_rename_buttons:
     """
     Generate rename buttons for the multiqc report.
@@ -707,6 +738,10 @@ def get_qc_files(wildcards):
                                            "relevant quality control functions."
     qc['files'] = set(expand(['{qc_dir}/samplesconfig_mqc.html',
                               '{log_dir}/workflow_explanation_mqc.html'], **config))
+
+    # no assembly stats for single-cell kallisto|bustools kite workflow
+    if 'kite' not in config.get('ref',""):
+        qc['files'].update(expand(f'{{qc_dir}}/assembly_{wildcards.assembly}_stats_mqc.html', **config))
 
     # trimming qc on individual samples
     if get_trimming_qc in quality_control:
@@ -851,7 +886,9 @@ def get_trimming_qc(sample):
                             f"{{qc_dir}}/trimming/{sample}_{{fqext2}}.{{fqsuffix}}.gz_trimming_report.txt"],
                             **config)
             else:
-                raise NotImplementedError
+                logger.error(f"Something went wrong parsing the read id. "
+                              "Please make an issue on github if this is unexpected behaviour!")
+                sys.exit(1)
         else:
             if sampledict[sample]['layout'] == 'SINGLE':
                 return expand([f"{{qc_dir}}/fastqc/{sample}_fastqc.zip",
@@ -872,7 +909,9 @@ def get_trimming_qc(sample):
             elif read_id == 1:
                 return expand(f"{{qc_dir}}/trimming/{sample}_{{fqext2}}.fastp.json", **config)
             else:
-                raise NotImplementedError
+                logger.error(f"Something went wrong parsing the read id. "
+                              "Please make an issue on github if this is unexpected behaviour!")
+                sys.exit(1)
         # not sure how fastp should work with scatac here
         return expand(f"{{qc_dir}}/trimming/{sample}.fastp.json", **config)
 

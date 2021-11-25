@@ -1,3 +1,7 @@
+"""
+all logic necessary to make an explanation of what has/will be done should be here.
+"""
+
 if not config.get("explain_rule"):
     def explain_rule(name):
         """
@@ -175,5 +179,5 @@ else:
         "combine_peaks": f"A consensus set of summits was made with {href_v('gimmemotifs',text='gimmemotifs.combine_peaks',env='gimme')}.",
         "bed_slop": f"All summits were extended with {config.get('slop')} bp to get a consensus peakset.",
         "coverage_table": f"Finally, a count table from the consensus peakset with gimmemotifs.",  # already cited in "combine_peaks"
-        "kb_seurat_pp": f"scRNA count post-processing was performed using the {hyperref('seurat')} based {hyperref('kb_seurat_pp')} markdown.",
+        "kb_seurat_pp": f"scRNA count post-processing was performed using the {hyperref('seurat')} based {hyperref('kb_seurat_pp')} markdown."
     }

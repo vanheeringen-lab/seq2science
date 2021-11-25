@@ -1,3 +1,7 @@
+"""
+all logic not related to any specific workflows should be here.
+"""
+
 import os.path
 import pickle
 import re
@@ -7,6 +11,7 @@ import json
 import requests
 from functools import lru_cache
 import yaml
+import sys
 
 import xdg
 import pandas as pd
@@ -108,10 +113,10 @@ except Exception as e:
                     logger.error(f"  line {digits[1]} columns: {line}")
                     break
         logger.info("\n(if this was intentional, you can give this column an arbitrary name such as 'notes')")
-        os._exit(0)
+        sys.exit(1)
     else:
         logger.error("")
-        raise e
+        sys.exit(1)
 samples.columns = samples.columns.str.strip()
 
 assert all([col[0:7] not in ["Unnamed", ''] for col in samples]), \
@@ -136,7 +141,7 @@ if len(errors):
     for error in errors:
         logger.error(error)
     logger.error("")  # empty line
-    raise TerminatedException
+    sys.exit(1)
 
 # for each of these functional columns, if found in samples.tsv:
 # 1) if it is incomplete, fill the blanks with replicate/sample names
@@ -249,8 +254,10 @@ if "assembly" in samples:
     _has_annot = dict()
     for assembly in local_assemblies:
         _has_annot[assembly] = is_local(assembly, "annotation", config)
+        _has_annot[assembly+config["custom_assembly_suffix"]] = _has_annot[assembly]
     for assembly in remote_assemblies:
         _has_annot[assembly] = bool(providers[assembly]["annotation"])
+        _has_annot[assembly+config["custom_assembly_suffix"]] = _has_annot[assembly]
 
     @lru_cache(maxsize=None)
     def has_annotation(assembly):
@@ -323,7 +330,7 @@ for _ in range(2):
             if len(missing_samples) > 0:
                 sampledict.update(samples2metadata(missing_samples, config, logger))
 
-            pickle.dump(sampledict, open(pysradb_cache, "wb"))
+            pickle.dump({k: v for k, v in sampledict.items() if k.startswith(("ERR", "ERX", "SRR", "SRX", "GSM", "DRX", "DRR"))}, open(pysradb_cache, "wb"))
 
             # only keep samples for this run
             sampledict = {sample: values for sample, values in sampledict.items() if sample in all_samples}
@@ -332,7 +339,7 @@ for _ in range(2):
         time.sleep(1)
 else:
     logger.error("There were some problems with locking the seq2science cache. Please try again in a bit.")
-    raise TerminatedException
+    sys.exit(1)
 
 if not config.get("no_config_log"):
     logger.info("Done!\n\n")
@@ -374,7 +381,7 @@ if len(failed_samples):
         for sample in samples:
             logger.error(f"\t{sample}: {sampledict[sample]['layout']}")
         logger.error("\n")
-    raise TerminatedException
+    sys.exit(1)
 
 
 # workflow
@@ -466,4 +473,4 @@ if config.get("create_trackhub"):
             time.sleep(1)
     else:
         logger.error("There were some problems with locking the seq2science cache. Please try again in a bit.")
-        raise TerminatedException
+        sys.exit(1)

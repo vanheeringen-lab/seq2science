@@ -1,3 +1,7 @@
+"""
+all logic related to logging to stdout/file should be here.
+"""
+
 import os
 import shutil
 
