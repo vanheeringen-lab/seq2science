@@ -1,3 +1,8 @@
+"""
+All rules/logic related to converting filetypes from uncompressed to compressed
+(big as UCSC calls it). E.g. a from .peak -> .bigpeak
+"""
+
 import sys
 
 

@@ -1,3 +1,7 @@
+"""
+all rules/logic
+"""
+
 import sys
 
 from seq2science.util import expand_contrasts

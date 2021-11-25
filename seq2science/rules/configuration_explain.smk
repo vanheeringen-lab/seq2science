@@ -1,3 +1,7 @@
+"""
+all logic necessary to make an explanation of what has/will be done should be here.
+"""
+
 if not config.get("explain_rule"):
     def explain_rule(name):
         """

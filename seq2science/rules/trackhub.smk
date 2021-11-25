@@ -1,3 +1,7 @@
+"""
+all rules/logic related to the final UCSC trackhub (or assembly hub) should be here.
+"""
+
 import os.path
 from Bio import SeqIO
 from multiprocessing import Pool

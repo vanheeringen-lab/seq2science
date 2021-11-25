@@ -1,3 +1,7 @@
+"""
+all rules/logic related to quality control and the final multiQC report should be here.
+"""
+
 import sys
 import re
 

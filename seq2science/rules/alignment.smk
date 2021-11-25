@@ -1,3 +1,7 @@
+"""
+All rules/logic related to aligning to a genome should be here.
+"""
+
 def get_reads(wildcards):
     """
     Function that returns the reads for any aligner.
