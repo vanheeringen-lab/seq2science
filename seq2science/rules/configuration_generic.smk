@@ -208,7 +208,7 @@ samples.index = samples.index.map(str)
 
 
 def get_workflow():
-    return workflow.snakefile.split('/')[-2]
+    return workflow.main_snakefile.split('/')[-2]
 
 sequencing_protocol = get_workflow()\
     .replace('alignment',  'Alignment')\
