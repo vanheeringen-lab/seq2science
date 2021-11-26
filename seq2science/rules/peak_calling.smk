@@ -141,9 +141,6 @@ def get_control_macs(wildcards):
 
 def get_genome_size(wildcards):
     read_length = get_read_length(wildcards.sample)
-    #print("I got read length", read_length)
-    #print(expand("{genome_dir}/{{assembly}}/{{assembly}}.kmer_" + str(read_length) + ".genome_size", **config))
-    read_legnth = 33
     return expand("{genome_dir}/{{assembly}}/{{assembly}}.kmer_" + str(read_length) + ".genome_size", **config)
 
 
