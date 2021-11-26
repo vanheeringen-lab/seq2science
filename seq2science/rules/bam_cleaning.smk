@@ -1,3 +1,7 @@
+"""
+All rules/logic related to filtering (sieving) after alignment to a genome should be here.
+"""
+
 from seq2science.util import sieve_bam
 
 
@@ -92,15 +96,7 @@ rule mark_duplicates:
         sample=f"""({any_given("sample", "technical_replicates", "control")})(_allsizes)?""",
     shell:
         """
-        # use the TMPDIR if set, and not given in the config
-        if [[ ${{TMPDIR:=F}} == "F" ]] || [[ "{params}" == *TMP_DIR* ]]
-        then
-            tmpdir=""
-        else 
-            tmpdir=TMP_DIR=$TMPDIR
-        fi
-
-        picard MarkDuplicates $tmpdir {params} INPUT={input} \
+        picard MarkDuplicates TMP_DIR={resources.tmpdir} {params} INPUT={input} \
         OUTPUT={output.bam} METRICS_FILE={output.metrics} > {log} 2>&1
         """
 

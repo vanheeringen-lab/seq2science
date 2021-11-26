@@ -1,3 +1,9 @@
+"""
+all rules/logic
+"""
+
+import sys
+
 from seq2science.util import expand_contrasts
 
 
@@ -47,12 +53,14 @@ active PR: https://github.com/conda/conda/pull/8776
 def deseq_input(wildcards):
     if "rna" in get_workflow():
         return expand("{counts_dir}/{{assembly}}-counts.tsv", **config)
-    elif "atac"  in get_workflow() or "chip" in get_workflow():
+    elif "atac" in get_workflow() or "chip" in get_workflow():
         # only uses a single peak caller ------------------------------------------v
         # TODO different peak callers can probably be supported with wildcard_constraint peak_caller (.*) <-- empty allowed
         return expand("{counts_dir}/{peak_caller}/{{assembly}}_raw.tsv", **config)[0],
     else:
-        raise NotImplementedError
+        logger.error(f"The workflow you are running ({get_workflow()}) does not support deseq2. "
+                      "Please make an issue on github if this is unexpected behaviour!")
+        sys.exit(1)
 
 
 # TODO once fixed the resource R_scripts can be removed

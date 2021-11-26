@@ -1,3 +1,7 @@
+"""
+all rules/logic related to peak count tables should be here.
+"""
+
 ruleorder: macs2_callpeak > narrowpeak_summit
 
 def count_table_output():
@@ -32,11 +36,12 @@ def count_table_output():
 def get_peakfile_for_summit(wildcards):
     ftype = get_peak_ftype(wildcards.peak_caller)
     if ftype != "narrowPeak":
-        raise NotImplementedError(
+        logger.error(
             "Narrowpeak to summit conversion is not supported for anything other than narrowpeak files. "
             "This means that we do not support peak counts for broadpeaks & gappedpeak format. This should not "
             "happen and please file a bug report!"
         )
+        sys.exit(1)
     return expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}_peaks.narrowPeak", **config)
 
 
@@ -132,7 +137,9 @@ def get_coverage_table_replicates(file_ext):
                 **config,
             )
         else:
-            raise NotImplementedError
+            logger.error(f"Seq2science is not supporting your peak caller ({wildcards.peak_caller}) for the coverage table. "
+                          "Please make an issue on github if this is unexpected behaviour!")
+            sys.exit(1)
 
     return wrapped
 

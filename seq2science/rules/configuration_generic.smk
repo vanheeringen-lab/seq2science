@@ -1,3 +1,7 @@
+"""
+all logic not related to any specific workflows should be here.
+"""
+
 import os.path
 import pickle
 import re
@@ -7,6 +11,7 @@ import json
 import requests
 from functools import lru_cache
 import yaml
+import sys
 
 import xdg
 import pandas as pd
@@ -108,10 +113,10 @@ except Exception as e:
                     logger.error(f"  line {digits[1]} columns: {line}")
                     break
         logger.info("\n(if this was intentional, you can give this column an arbitrary name such as 'notes')")
-        os._exit(0)
+        sys.exit(1)
     else:
         logger.error("")
-        raise e
+        sys.exit(1)
 samples.columns = samples.columns.str.strip()
 
 assert all([col[0:7] not in ["Unnamed", ''] for col in samples]), \
@@ -136,7 +141,7 @@ if len(errors):
     for error in errors:
         logger.error(error)
     logger.error("")  # empty line
-    raise TerminatedException
+    sys.exit(1)
 
 # for each of these functional columns, if found in samples.tsv:
 # 1) if it is incomplete, fill the blanks with replicate/sample names
@@ -203,7 +208,7 @@ samples.index = samples.index.map(str)
 
 
 def get_workflow():
-    return workflow.snakefile.split('/')[-2]
+    return workflow.main_snakefile.split('/')[-2]
 
 sequencing_protocol = get_workflow()\
     .replace('alignment',  'Alignment')\
@@ -334,7 +339,7 @@ for _ in range(2):
         time.sleep(1)
 else:
     logger.error("There were some problems with locking the seq2science cache. Please try again in a bit.")
-    raise TerminatedException
+    sys.exit(1)
 
 if not config.get("no_config_log"):
     logger.info("Done!\n\n")
@@ -376,7 +381,7 @@ if len(failed_samples):
         for sample in samples:
             logger.error(f"\t{sample}: {sampledict[sample]['layout']}")
         logger.error("\n")
-    raise TerminatedException
+    sys.exit(1)
 
 
 # workflow
@@ -468,4 +473,4 @@ if config.get("create_trackhub"):
             time.sleep(1)
     else:
         logger.error("There were some problems with locking the seq2science cache. Please try again in a bit.")
-        raise TerminatedException
+        sys.exit(1)

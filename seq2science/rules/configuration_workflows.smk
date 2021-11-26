@@ -1,3 +1,7 @@
+"""
+all rules/logic related to differential gene expression with deseq2 should be here.
+"""
+
 import math
 import os
 import hashlib
