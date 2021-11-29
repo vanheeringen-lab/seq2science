@@ -136,9 +136,12 @@ if config.get("contrasts"):
 
 def get_read_length(sample):
     """
-
+    This function returns the read length for a sample.
+    
+    Depending on the fastq qc tool it raises a checkpoint exception, waits for that
+    checkpoint to have been executed, and then checks in the qc summary of the sample
+    what the (average) read length is after trimming.
     """
-    #print("1")
     # trimgalore
     if config["trimmer"] == "trimgalore":
         if sampledict[sample]["layout"] == "SINGLE":
@@ -151,8 +154,6 @@ def get_read_length(sample):
         import zipfile
         import re
 
-        #print(2, qc_file)
-        #print(3, zip_name)
         qc_report = zipfile.ZipFile(qc_file, 'r').read(zip_name)
 
         kmer_size = re.search("Sequence length\\t(\d+)", qc_report.decode("utf-8")).group(1)
@@ -166,10 +167,8 @@ def get_read_length(sample):
 
         import json
 
-        #print(qc_file, type(qc_file))
         with open(qc_file) as f:
             data = json.load(f)
         kmer_size = data["summary"]["after_filtering"]["read1_mean_length"]
 
-    #print("kmer!", kmer_size, type(kmer_size))
     return kmer_size
