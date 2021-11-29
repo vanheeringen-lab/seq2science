@@ -59,6 +59,8 @@ def main():
         _clean(base_dir)
     elif args.command == "docs":
         _docs()
+    elif args.command == "deseq2":
+        _deseq(args, base_dir)
 
 
 def seq2science_parser(workflows_dir="./seq2science/workflows/"):
@@ -105,6 +107,11 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         description="The docs command tries to open your browser and open the docs' webpage, "
         "if that didn't work it prints the url.",
         help="Take me to the docs!",
+    )
+    deseq2 = subparsers.add_parser(
+        "deseq2",
+        help="DESeq2 wrapper.",
+        description="DESeq2 wrapper that works with s2s samples.tsv and counts.tsv",
     )
 
     # init, run and explain can use all workflows
@@ -197,6 +204,38 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
             metavar="FILE",
             help="The path to the config file.",
         )
+
+    # DESeq2 wrapper arguments
+    deseq2.add_argument(
+        "-d",
+        "--design",
+        default="",  # must be an empty string for R's arg checking + docs CLI argument
+        help="design contrast (e.g. column_knockouts_controls)",
+    )
+    deseq2.add_argument(
+        "-s",
+        "--samples",
+        default="",  # must be an empty string for R's arg checking + docs CLI argument
+        help="samples.tsv with a column containing the contrast arguments "
+             "(sample order consistent with the counts.tsv)",
+    )
+    deseq2.add_argument(
+        "-c",
+        "--counts",
+        default="",  # must be an empty string for R's arg checking + docs CLI argument
+        help="counts.tsv (sample order consistent with the samples.tsv)",
+    )
+    deseq2.add_argument(
+        "-o",
+        "--outdir",
+        default="",  # must be an empty string for R's arg checking + docs CLI argument
+        help="output directory",
+    )
+    deseq2.add_argument(
+        "--docs",
+        action='store_true',
+        help="open de DESeq2 wrapper documentation (with examples!)",
+    )
 
     # enable tab completion
     # exclusion only works on the main parser unfortunately, but it's better than nothing,
@@ -586,3 +625,51 @@ def setup_seq2science_logger(parsed_args):
         logger.get_logfile = lambda: seq2science_logfile
         logger.logfile_handler = _logging.FileHandler(seq2science_logfile)
         logger.logger.addHandler(logger.logfile_handler)
+
+
+def _deseq(args, base_dir):
+    if args.docs is True:
+        url = "https://vanheeringen-lab.github.io/seq2science/content/DESeq2.html"
+        if not webbrowser.open(url):
+            print(url)
+        return
+
+    import hashlib
+    import subprocess as sp
+
+    def conda_path(yml):
+        """
+        Find the path to a snakemake conda environment
+        Does not work with singularity.
+        """
+        env_file = os.path.abspath(yml)
+        env_dir = os.path.join(os.getcwd(), ".snakemake")  # is this correct?
+
+        md5hash = hashlib.md5()
+        md5hash.update(env_dir.encode())
+        with open(env_file, 'rb') as f:
+            content = f.read()
+        md5hash.update(content)
+        dir_hash = md5hash.hexdigest()  # [:8]
+        path = os.path.join(env_dir, dir_hash)
+        return path
+
+    def subprocess_run(_cmd):
+        retcode = sp.call(_cmd, shell=True)
+        print("")  # no newline otherwise
+        if retcode != 0:
+            sys.exit(retcode)
+
+    # find/create the deseq2 conda env
+    yamlfile = os.path.join(base_dir, "envs", "deseq2.yaml")
+    env_prefix = conda_path(yamlfile)
+    if not os.path.exists(env_prefix):
+        logger.info(f"Creating conda environment seq2science/envs/deseq2.yaml...")
+        cmd = f"mamba env create -p {env_prefix} -f {yamlfile} -q"
+        subprocess_run(cmd)
+
+    # we don't even need to activate the env
+    rscript = os.path.join(env_prefix, "bin", "Rscript")
+    script = os.path.join(base_dir, "scripts", "deseq2", "deseq2.R")
+    cmd = f"{rscript} {script} {args.design} {args.samples} {args.counts} {args.outdir}"
+    subprocess_run(cmd)
