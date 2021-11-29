@@ -7,7 +7,7 @@ dependencies:
   - conda-forge::python=3.8
   - bioconda::snakemake-minimal==6.12.0
   - conda-forge::conda=4.11.0
-  - conda-forge::mamba=0.18.2
+  - conda-forge::mamba=0.17  # higher versions are currently bugged with snakemake (6.12)
   - bioconda::genomepy=0.11.0
   - conda-forge::biopython=1.79
   - conda-forge::filelock=3.4.0
