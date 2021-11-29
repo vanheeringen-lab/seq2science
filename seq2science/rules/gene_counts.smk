@@ -1,3 +1,7 @@
+"""
+all rules/logic related to making gene count tables should be here.
+"""
+
 if config["quantifier"] == "salmon":
 
     def get_counts(wildcards):

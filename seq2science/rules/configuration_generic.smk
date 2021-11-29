@@ -1,3 +1,7 @@
+"""
+all logic not related to any specific workflows should be here.
+"""
+
 import os.path
 import pickle
 import re
@@ -204,7 +208,7 @@ samples.index = samples.index.map(str)
 
 
 def get_workflow():
-    return workflow.snakefile.split('/')[-2]
+    return workflow.main_snakefile.split('/')[-2]
 
 sequencing_protocol = get_workflow()\
     .replace('alignment',  'Alignment')\
@@ -250,10 +254,10 @@ if "assembly" in samples:
     _has_annot = dict()
     for assembly in local_assemblies:
         _has_annot[assembly] = is_local(assembly, "annotation", config)
-        _has_annot[assembly+config["custom_assembly_suffix"]] = _has_annot[assembly]
+        _has_annot[assembly+config.get("custom_assembly_suffix", "")] = _has_annot[assembly]
     for assembly in remote_assemblies:
         _has_annot[assembly] = bool(providers[assembly]["annotation"])
-        _has_annot[assembly+config["custom_assembly_suffix"]] = _has_annot[assembly]
+        _has_annot[assembly+config.get("custom_assembly_suffix", "")] = _has_annot[assembly]
 
     @lru_cache(maxsize=None)
     def has_annotation(assembly):
