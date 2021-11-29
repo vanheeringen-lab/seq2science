@@ -151,7 +151,6 @@ if config["quantifier"] == "salmon":
 elif  "scrna_seq" == get_workflow():
 
     def get_fastq_pair_reads(wildcards):
-        
         """
         Extracts the correct combination of R1/R2 (trimmed and barcodes) for fastq_pair 
         based on Kallisto bustools settings.
@@ -176,7 +175,9 @@ elif  "scrna_seq" == get_workflow():
             logger.error(f"Something went wrong parsing the read id for fastq_pair. "
                           "Please make an issue on github if this is unexpected behaviour!")
             sys.exit(1)
+            
         return reads
+            
             
     rule fastq_pair:       
         """
@@ -191,7 +192,6 @@ elif  "scrna_seq" == get_workflow():
             intermediates1=temp(expand("{fastq_clean_dir}/{{sample}}_clean_{fqext}.{fqsuffix}", **config)),
             intermediates2=temp(expand("{fastq_clean_dir}/{{sample}}_clean_{fqext}.{fqsuffix}.single.fq", **config)),
             intermediates3=temp(expand("{fastq_clean_dir}/{{sample}}_clean_{fqext}.{fqsuffix}.paired.fq", **config))
-
         priority: 1
         log:
             expand("{log_dir}/fastq_pair/{{sample}}.log", **config),
@@ -217,6 +217,7 @@ elif  "scrna_seq" == get_workflow():
             gzip -c {output.intermediates3[0]} > {output.reads[0]} 2> {log}
             gzip -c {output.intermediates3[1]} > {output.reads[1]} 2>> {log}
         """
+        
         
     def get_final_reads(wildcards):
         if wildcards.sample in merged_treps:
@@ -292,11 +293,14 @@ elif  "scrna_seq" == get_workflow():
                 -i {params.basename}.idx -g {params.basename}_t2g.txt -f1 {params.basename}_cdna.fa > {log} 2>&1 
                 """    
                 
+                
         def get_kb_dir(wildcards):
+            #Get the correct assembly directory for ADT/Genome based workflows
             if 'kite' in config.get('ref',""):
                 return directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/kite/", **config))     
             else:
                 return directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/", **config))
+                
                 
         rule kallistobus_count:
                 """
@@ -376,11 +380,14 @@ elif  "scrna_seq" == get_workflow():
                 {params.options} -o {params.outdir} > {log} 2>&1
                 """                                
                     
+                    
     def get_count_dir(wildcards):
+        # Return quantifier specific output directory
         if config['quantifier'] == 'kallistobus':
             return rules.kallistobus_count.output.dir[0]
         else:
             return rules.citeseqcount.output.dir[0]
+                           
                            
     rule export_seurat_obj:
         """

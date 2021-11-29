@@ -927,8 +927,7 @@ def get_trimming_qc(sample):
             if config['quantifier'] == "citeseqcount":
                 return expand(f"{{qc_dir}}/trimming/{sample}_{{fqext2}}.fastp.json", **config)
                 
-
-            
+          
         # not sure how fastp should work with scatac here
         return expand(f"{{qc_dir}}/trimming/{sample}.fastp.json", **config)
 
