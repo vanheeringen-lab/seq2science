@@ -102,6 +102,14 @@ if config.get("bam_sorter", False):
     config["bam_sorter"] = list(config["bam_sorter"].keys())[0]
 
 
+# ...for scrna quantification
+if get_workflow() == "scrna_seq":
+    if config['quantifier'] not in ["kallistobus", "citeseqcount"]:
+        logger.error(f"Invalid quantifier selected"        
+                      "Please select a supported scrna quantifier (kallistobus or citeseqcount)!")
+        sys.exit(1)
+
+
 # make sure that our samples.tsv and configuration work together...
 # ...on biological replicates
 if "biological_replicates" in samples:

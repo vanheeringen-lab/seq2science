@@ -500,7 +500,7 @@ if [ $1 = "scrna-seq" ]; then
   WF=scrna_seq
 
   printf "\nscrna-seq default\n"
-  seq2science run scrna-seq -nr --configfile tests/scrna_seq/config.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
+  seq2science run scrna-seq -nr --configfile tests/scrna_seq/kallistobus/config.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 fastp_SE 2
   assert_rulecount $1 fastq_pair 2
   assert_rulecount $1 kallistobus_ref 1
@@ -508,14 +508,21 @@ if [ $1 = "scrna-seq" ]; then
   assert_rulecount $1 multiqc 1
   
   printf "\nscrna-seq replicates\n"
-  seq2science run scrna-seq -nr --configfile tests/scrna_seq/config_treps.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
+  seq2science run scrna-seq -nr --configfile tests/scrna_seq/kallistobus/config_treps.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 fastp_SE 2
   assert_rulecount $1 fastq_pair 2
   assert_rulecount $1 merge_replicates 2
   assert_rulecount $1 kallistobus_ref 1
   assert_rulecount $1 kallistobus_count 1
   assert_rulecount $1 multiqc 1
-
+  
+  printf "\ncite-seq-count default\n"
+  seq2science run scrna-seq -nr --configfile tests/scrna_seq/cite-seq-count/config.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 fastp_SE 2
+  assert_rulecount $1 fastq_pair 2
+  assert_rulecount $1 citeseqcount 2
+  assert_rulecount $1 multiqc 1
+  
   test_ran=1
 fi
 
