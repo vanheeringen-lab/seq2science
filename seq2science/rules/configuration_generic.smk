@@ -234,7 +234,8 @@ if "assembly" in samples:
 
     # custom assemblies without provider (for local/remote annotations)
     if "scrna_seq" in get_workflow() and \
-        'kite' in config['quantifier'].get('kallistobus', {}).get('ref', ""):
+       ('kite' in config['quantifier'].get('kallistobus', {}).get('ref', "") or \
+       config['quantifier'].get("citeseqcount", False)):
         remote_assemblies = []
         search_assemblies = []
 
@@ -254,10 +255,10 @@ if "assembly" in samples:
     _has_annot = dict()
     for assembly in local_assemblies:
         _has_annot[assembly] = is_local(assembly, "annotation", config)
-        _has_annot[assembly+config["custom_assembly_suffix"]] = _has_annot[assembly]
+        _has_annot[assembly+config.get("custom_assembly_suffix", "")] = _has_annot[assembly]
     for assembly in remote_assemblies:
         _has_annot[assembly] = bool(providers[assembly]["annotation"])
-        _has_annot[assembly+config["custom_assembly_suffix"]] = _has_annot[assembly]
+        _has_annot[assembly+config.get("custom_assembly_suffix", "")] = _has_annot[assembly]
 
     @lru_cache(maxsize=None)
     def has_annotation(assembly):

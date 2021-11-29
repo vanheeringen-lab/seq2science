@@ -53,8 +53,9 @@ else:
         'trim-galore': 'http://www.bioinformatics.babraham.ac.uk/projects/trim_galore/',
         'tximeta': 'https://doi.org/10.1101/777888',
         'ucsc genome browser': 'http://www.genome.org/cgi/doi/10.1101/gr.229102',
-        'seurat': 'https://satijalab.org/seurat/',
+        'seurat': 'https://doi.org/10.1038/nbt.4096',
         'kb_seurat_pp': 'https://github.com/Rebecza/scRNA-seq',
+        'citeseqcount': 'https://zenodo.org/record/2590196'
     }
 
     def explain_rule(name):

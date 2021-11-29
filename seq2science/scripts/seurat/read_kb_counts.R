@@ -4,9 +4,11 @@ suppressMessages({
 })
 
 # Snakemake variables
-kb_dir <- dirname(snakemake@input$counts)
+count_dir <- dirname(snakemake@input$counts)
 rds <- snakemake@output[[1]] 
 sample <- snakemake@params$sample
+quantifier <- snakemake@config$quantifier
+iscite <- snakemake@params$iscite
 isvelo <- snakemake@params$isvelo
 iskite <- snakemake@params$iskite
 log_file <- snakemake@log[[1]]
@@ -19,16 +21,16 @@ sink(log)
 sink(log, type="message")
 
 # Read samplesheet
-
 sample_sheet <- read.table(samples_tsv, sep = '\t', header = TRUE)
 
 # Log all variables for debugging purposes
 cat('# variables used for this analysis:\n')
 cat('sample_sheet <- "', samples_tsv,     '"\n', sep = "")
 cat('log_file     <- "', log_file,        '"\n', sep = "")
-cat('kb_dir       <- "', kb_dir,          '"\n', sep = "")
+cat('count_dir       <- "', count_dir,          '"\n', sep = "")
 cat('rds          <- "', rds,             '"\n', sep = "")
 cat('sample       <- "', sample,          '"\n', sep = "")
+cat('iscite       <- "', iscite,          '"\n', sep = "")
 cat('isvelo       <- "', isvelo,          '"\n', sep = "")
 cat('iskite       <- "', iskite,          '"\n', sep = "")
 cat('seu_min_cells  <- "', seu_min_cells, '"\n', sep = "")
@@ -67,27 +69,52 @@ read_count_output <- function(dir, name) {
   return(m)
 }
 
-# Create Seurat objects based on input kb workflow argument and set assay
-if (iskite) {
-  seu <- CreateSeuratObject(counts = read_count_output(kb_dir, name="cells_x_features"), assay = "ADT", project = sample, 
-                                                       min.cells = seu_min_cells, min.features = seu_min_features)
-  seu@meta.data <- prep_cell_meta(seu, sample_sheet)
-  saveRDS(seu, file = rds)
+# Read cite-seq-count output
+# https://hoohm.github.io/CITE-seq-Count/Reading-the-output/
+read_cite_output <- function(dir="", name="umi_count") {
+  matrix_dir=paste0(dir,"/",name,"/")
+  barcode.path <- paste0(matrix_dir, "barcodes.tsv.gz")
+  features.path <- paste0(matrix_dir, "features.tsv.gz")
+  matrix.path <- paste0(matrix_dir, "matrix.mtx.gz")
+  mat <- readMM(file = matrix.path)
+  feature.names = read.delim(features.path, header = FALSE, stringsAsFactors = FALSE)
+  barcode.names = read.delim(barcode.path, header = FALSE, stringsAsFactors = FALSE)
+  colnames(mat) = barcode.names$V1
+  rownames(mat) = feature.names$V
+  return(mat)
+}
 
-} else if (isvelo) {
-  seu.sf <- CreateSeuratObject(counts = read_count_output(kb_dir, name="spliced"), assay = "sf", project = sample, 
-                                                          min.cells = seu_min_cells, min.features = seu_min_features)
-  seu.uf <- CreateSeuratObject(counts = read_count_output(kb_dir, name="unspliced"), assay = "uf", project = sample, 
-                                                          min.cells = seu_min_cells, min.features = seu_min_features)
-  seu.sf@meta.data <- prep_cell_meta(seu.sf, sample_sheet)
-  seu.uf@meta.data <- prep_cell_meta(seu.uf, sample_sheet)
-  seu_objs <- c(seu.sf, seu.uf)
-  names(seu_objs) <- c("sf","uf")
-  saveRDS(seu_objs, file = rds) 
-    
-} else {
-  seu <- CreateSeuratObject(counts = read_count_output(kb_dir, name="cells_x_genes"), assay = "RNA", project = sample, 
-                                                       min.cells = seu_min_cells, min.features = seu_min_features)
+# Create Seurat objects based on cite input arguments and set assay
+if (quantifier == "citeseqcount") {
+  seu <- CreateSeuratObject(counts = read_cite_output(dir=count_dir), assay = "ADT", project = sample, 
+                                                      min.cells = seu_min_cells, min.features = seu_min_features)
   seu@meta.data <- prep_cell_meta(seu, sample_sheet)
-  saveRDS(seu, file = rds)
+  saveRDS(seu, file = rds)  
+} 
+# Create Seurat objects based on input kb workflow argument and set assay
+if (quantifier == "kallistobus") {
+  # kb count with '--workflow kite' parameter
+  if (iskite) {
+    seu <- CreateSeuratObject(counts = read_count_output(count_dir, name="cells_x_features"), assay = "ADT", project = sample, 
+                                                       min.cells = seu_min_cells, min.features = seu_min_features)
+    seu@meta.data <- prep_cell_meta(seu, sample_sheet)
+    saveRDS(seu, file = rds)
+    # kb count with '--workflow Lamanno'
+  } else if (isvelo) {
+    seu.sf <- CreateSeuratObject(counts = read_count_output(count_dir, name="spliced"), assay = "sf", project = sample, 
+                                                            min.cells = seu_min_cells, min.features = seu_min_features)
+    seu.uf <- CreateSeuratObject(counts = read_count_output(count_dir, name="unspliced"), assay = "uf", project = sample, 
+                                                            min.cells = seu_min_cells, min.features = seu_min_features)
+    seu.sf@meta.data <- prep_cell_meta(seu.sf, sample_sheet)
+    seu.uf@meta.data <- prep_cell_meta(seu.uf, sample_sheet)
+    seu_objs <- c(seu.sf, seu.uf)
+    names(seu_objs) <- c("sf","uf")
+    saveRDS(seu_objs, file = rds) 
+    # kb count without '--workflow' argument   
+  } else {
+    seu <- CreateSeuratObject(counts = read_count_output(count_dir, name="cells_x_genes"), assay = "RNA", project = sample, 
+                                                         min.cells = seu_min_cells, min.features = seu_min_features)
+    seu@meta.data <- prep_cell_meta(seu, sample_sheet)
+    saveRDS(seu, file = rds)
+  }
 }
