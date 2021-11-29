@@ -1,10 +1,10 @@
 # tab-separated file of the samples
-samples: tests/scrna_seq/samples.tsv
-barcodefile: tests/scrna_seq/barcodes.txt
+samples: tests/scrna_seq/cite-seq-count/samples.tsv
+barcodefile: tests/scrna_seq/cite-seq-count/barcodes.tab
 
 # pipeline file locations
 result_dir: ./results  # where to store results
-genome_dir: ./genomes  # where to look for or download the genomes
+genome_dir: tests/scrna_seq/cite-seq-count/genomes  # where to look for or download the genomes
 # fastq_dir: (default is inside result_dir) # where to look for fastqs
 
 # contact info for multiqc report and trackhub
@@ -16,7 +16,7 @@ technical_replicates: merge
 # scRNA options
 # seq2science does currently not support scrna-seq platforms that generate more than two fastq files, such as 10xv1.
 quantifier:
-  kallistobus:
+  citeseqcount:
     ## Quantification example ##
     #count: '-x 0,8,16:0,0,8:1,0,0 --h5ad --verbose'
     #count: '-x 10XV3 --h5ad --verbose'
@@ -24,5 +24,5 @@ quantifier:
     ## Velocity example ##
     #ref: '--workflow lamanno'
     #count: '-x 0,8,16:0,0,8:1,0,0 --h5ad --verbose --workflow lamanno'
-    count: '-x 10XV3 --verbose --h5ad --workflow lamanno'
+    count: '-cbf 9 -cbl 16 -umif 1 -umil 8 -cells 372 --max-error 1 --bc_collapsing_dist 1 --umi_collapsing_dist 1'
 

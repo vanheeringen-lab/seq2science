@@ -234,7 +234,8 @@ if "assembly" in samples:
 
     # custom assemblies without provider (for local/remote annotations)
     if "scrna_seq" in get_workflow() and \
-        'kite' in config['quantifier'].get('kallistobus', {}).get('ref', ""):
+       ('kite' in config['quantifier'].get('kallistobus', {}).get('ref', "") or \
+       config['quantifier'].get("citeseqcount", False)):
         remote_assemblies = []
         search_assemblies = []
 
