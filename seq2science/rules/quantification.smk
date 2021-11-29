@@ -241,7 +241,7 @@ elif  "scrna_seq" == get_workflow():
                 fa=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
                 gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
             output:
-                directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/", **config)),
+                directory(expand("{genome_dir}/{{assembly}}/index/kallistobus", **config)),
             log:
                 expand("{log_dir}/kallistobus_index/{{assembly}}.log", **config),
             benchmark:
@@ -252,7 +252,7 @@ elif  "scrna_seq" == get_workflow():
             resources:
                 mem_gb=88,
             params:
-                basename=lambda wildcards, output: f"{output[0]}{wildcards.assembly}",
+                basename=lambda wildcards, output: f"{output[0]}/{wildcards.assembly}",
                 options=config.get("ref")
             shell:
                 """
@@ -272,7 +272,7 @@ elif  "scrna_seq" == get_workflow():
             input:
                 featurebarcodes=expand("{genome_dir}/{{assembly}}.tsv", **config)
             output:
-                directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/kite/", **config)),
+                directory(expand("{genome_dir}/{{assembly}}/index/kallistobus", **config)),
             log:    
                 expand("{log_dir}/kallistobus_index_kite/{{assembly}}.log", **config),    
             conda:
@@ -280,7 +280,7 @@ elif  "scrna_seq" == get_workflow():
             resources:
                 mem_gb=12, 
             params:    
-                basename=lambda wildcards, output: f"{output[0]}{wildcards.assembly}",
+                basename=lambda wildcards, output: f"{output[0]}/{wildcards.assembly}",
                 options=config.get("ref")
             priority: 1
             shell:
@@ -292,21 +292,13 @@ elif  "scrna_seq" == get_workflow():
                 -i {params.basename}.idx -g {params.basename}_t2g.txt -f1 {params.basename}_cdna.fa > {log} 2>&1 
                 """    
                 
-                
-        def get_kb_dir(wildcards):
-            #Get the correct assembly directory for ADT/Genome based workflows
-            if 'kite' in config.get('ref',""):
-                return directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/kite/", **config))     
-            else:
-                return directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/", **config))
-                
-                
+                            
         rule kallistobus_count:
                 """
                 Align reads against a transcriptome (index) with kallistobus and output a quantification file per sample.
                 """
                 input:
-                    basedir=get_kb_dir,
+                    basedir=expand("{genome_dir}/{{assembly}}/index/kallistobus/", **config),
                     reads=get_final_reads,
                     barcodefile=config.get("barcodefile",[]),
                 output:
