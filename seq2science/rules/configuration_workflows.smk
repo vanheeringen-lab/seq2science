@@ -150,6 +150,10 @@ def get_read_length(sample):
     checkpoint to have been executed, and then checks in the qc summary of the sample
     what the (average) read length is after trimming.
     """
+    # if dryrunning just pretend we know already
+    if workflow.persistence.dag.dryrun:
+        return 40
+
     # trimgalore
     if config["trimmer"] == "trimgalore":
         if sampledict[sample]["layout"] == "SINGLE":
