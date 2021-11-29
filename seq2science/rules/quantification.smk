@@ -224,8 +224,7 @@ elif  "scrna_seq" == get_workflow():
             return expand(f"{{trimmed_dir}}/{wildcards.sample}_{{fqext}}_trimmed.{{fqsuffix}}.gz", **config)
         else:
             return rules.fastq_pair.output.reads
-                                            
-                                            
+                                                         
     if config["quantifier"] == "kallistobus":
         if 'kite' in config.get('ref',""):
             ruleorder: kallistobus_ref_kite > get_genome
@@ -341,7 +340,6 @@ elif  "scrna_seq" == get_workflow():
                       exit 1
                     fi  
                     """ 
-                    
                     
     if config["quantifier"] == "citeseqcount":
         ruleorder: citeseqcount > get_genome
