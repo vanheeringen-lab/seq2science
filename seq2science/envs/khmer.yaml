@@ -1,4 +1,4 @@
-name: macs2
+name: khmer
 channels:
   - conda-forge
   - bioconda

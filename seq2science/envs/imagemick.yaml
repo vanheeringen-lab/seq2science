@@ -1,0 +1,7 @@
+name: imagemick
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - conda-forge::imagemagick>=7.0

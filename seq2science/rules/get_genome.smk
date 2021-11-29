@@ -1,4 +1,10 @@
-localrules: extend_genome, get_genome_support_files, unzip_annotation
+"""
+all rules/logic related to downloading public assemblies and preprocessing of assemblies should be here.
+"""
+
+localrules: extend_genome, get_genome_support_files
+
+support_exts = [".fa.fai", ".fa.sizes", ".gaps.bed"]
 
 rule get_genome:
     """
@@ -8,8 +14,6 @@ rule get_genome:
         expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa", **config),
     log:
         expand("{log_dir}/get_genome/{{raw_assembly}}.genome.log", **config),
-    benchmark:
-        expand("{benchmark_dir}/get_genome/{{raw_assembly}}.genome.benchmark.txt", **config)[0]
     message: explain_rule("get_genome")
     params:
         providers=providers,
@@ -19,7 +23,7 @@ rule get_genome:
         genomepy_downloads=1,
     priority: 1
     script:
-        f"{config['rule_dir']}/../scripts/get_genome.py"
+        f"{config['rule_dir']}/../scripts/genomepy/get_genome.py"
 
 
 rule get_genome_blacklist:
@@ -28,9 +32,7 @@ rule get_genome_blacklist:
     """
     input:
         expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa", **config),
-        # get_genome_support_files must have finished
-        expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa.fai", **config),
-        expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa.sizes", **config),
+        ancient(expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}{exts}", exts=support_exts, **config)),
     output:
         expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.blacklist.bed", **config),
     log:
@@ -42,7 +44,7 @@ rule get_genome_blacklist:
         genomepy_downloads=1,
     priority: 1
     script:
-        f"{config['rule_dir']}/../scripts/get_genome_blacklist.py"
+        f"{config['rule_dir']}/../scripts/genomepy/get_genome_blacklist.py"
 
 
 rule get_genome_annotation:
@@ -50,18 +52,13 @@ rule get_genome_annotation:
     Download a gene annotation through genomepy.
     """
     input:
-        # these should be ancient(), but snakemake simply ignores ancient items (bug)
         expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa", **config),
-        # get_genome_support_files must have finished
-        expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa.fai", **config),
-        expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa.sizes", **config),
+        ancient(expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}{exts}", exts=support_exts, **config)),
     output:
-        gtf=expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.annotation.gtf.gz", **config),
-        bed=expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.annotation.bed.gz", **config),
+        gtf=expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.annotation.gtf", **config),
+        bed=expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.annotation.bed", **config),
     log:
-        expand("{log_dir}/get_annotation/{{raw_assembly}}.genome.log", **config),
-    benchmark:
-        expand("{benchmark_dir}/get_annotation/{{raw_assembly}}.genome.benchmark.txt", **config)[0]
+        expand("{log_dir}/get_genome/{{raw_assembly}}.annotation.log", **config),
     resources:
         parallel_downloads=1,
         genomepy_downloads=1,
@@ -70,7 +67,7 @@ rule get_genome_annotation:
         genome_dir=config["genome_dir"]
     priority: 1
     script:
-        f"{config['rule_dir']}/../scripts/get_genome_annotation.py"
+        f"{config['rule_dir']}/../scripts/genomepy/get_genome_annotation.py"
 
 
 rule extend_genome:
@@ -148,7 +145,7 @@ rule get_genome_support_files:
     params:
         genome_dir=config["genome_dir"]
     script:
-        f"{config['rule_dir']}/../scripts/get_genome_support.py"
+        f"{config['rule_dir']}/../scripts/genomepy/get_genome_support.py"
 
 
 rule gene_id2name:
@@ -159,62 +156,8 @@ rule gene_id2name:
         expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
     output:
         expand("{genome_dir}/{{assembly}}/gene_id2name.tsv", **config),
-    run:
-        def can_convert():
-            """check if we can make a conversion table at all"""
-            with open(input[0]) as gtf:
-                for n, line in enumerate(gtf):
-                    line = line.lower()
-                    if "gene_id" in line and "gene_name" in line:
-                        return True
-                    if n > 100:
-                        break
-                return False
-
-        if not can_convert():
-            with open(output[0], "w") as out:
-                out.write("assembly does not contain both gene_ids and gene_names\n")
-        else:
-
-            # loop over the gtf and store the conversion in the table
-            table = dict()
-            with open(input[0]) as gtf:
-                for line in gtf:
-                    try:
-                        attributes = line.split("\t")[8].split(";")
-                        id = name = None
-                        for attribute in attributes:
-                            attribute = attribute.strip()
-                            if attribute.lower().startswith("gene_id"):
-                                id = attribute.split(" ")[1].strip('"')
-                            if attribute.lower().startswith("gene_name"):
-                                name = attribute.split(" ")[1].strip('"')
-                        if id and name:
-                            table[id] = name
-                    except IndexError:
-                        # skip lines that are too short/misformatted
-                        continue
-
-            # save the dict
-            with open(output[0], "w") as out:
-                for k,v in table.items():
-                    out.write(f"{k}\t{v}\n")
-
-
-rule unzip_annotation:
-    """
-    Unzip (b)gzipped files.
-    """
-    input:
-        "{filepath}.gz"
-    output:
-        "{filepath}"
-    wildcard_constraints:
-        filepath=".*(\.annotation)(\.gtf|\.bed)(?<!\.gz)$"  # filepath may not end with ".gz"
-    priority: 1
-    run:
-        import genomepy.utils
-        genomepy.utils.gunzip_and_name(input[0])
+    script:
+        f"{config['rule_dir']}/../scripts/gene_id2name.py"
 
 
 rule get_effective_genome_size:
@@ -237,5 +180,5 @@ rule get_effective_genome_size:
         expand("{benchmark_dir}/get_genome_size/{{assembly}}_{{kmer_size}}.benchmark.txt", **config)[0]
     shell:
         """
-        unique-kmers.py {input} -k $kmer_size --quiet 2>&1 | grep -P -o '(?<=\.fa: ).*' > {output} 2> {log}
+        unique-kmers.py {input} -k {wildcards.kmer_size} --quiet 2>&1 | grep -P -o '(?<=\.fa: ).*' > {output} 2> {log}
         """

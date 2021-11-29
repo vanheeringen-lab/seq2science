@@ -4,4 +4,5 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - conda-forge::pretty_html_table=0.9.dev0
+  - conda-forge::pretty_html_table=0.9.11
+  - pandas=1.2.5

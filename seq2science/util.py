@@ -1,6 +1,7 @@
 """
 Utility functions for seq2science
 """
+import contextlib
 import re
 import os
 import sys
@@ -15,6 +16,7 @@ from typing import List
 from math import ceil, floor
 
 from filelock import FileLock
+import genomepy
 import matplotlib.colors as mcolors
 import numpy as np
 import pandas as pd
@@ -37,7 +39,7 @@ class UniqueKeyLoader(yaml.SafeLoader):
             key = self.construct_object(key_node, deep=deep).lower()
             if key in mapping:
                 logger.error(f"Duplicate key found in the config.yaml: {key}\n")
-                raise TerminatedException
+                sys.exit(1)
             mapping.append(key)
         return super().construct_mapping(node, deep)
 
@@ -88,7 +90,7 @@ def samples2metadata_local(samples: List[str], config: dict, logger) -> dict:
                          + extend_msg +
                          f"Since the sample did not start with either GSM, SRX, SRR, ERR, and DRR we "
                          f"couldn't find it online..\n")
-            raise TerminatedException
+            sys.exit(1)
 
     return sampledict
 
@@ -133,7 +135,7 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
                          "are overloaded or slow. Please try again in a bit...\n"
                          "Another possible option is that you try to access samples that do not exist or are protected, and "
                          "seq2science does not support downloading those..\n\n")
-            raise TerminatedException
+            sys.exit(1)
 
         sample2clean = dict(zip(df_geo.experiment_alias, df_geo.experiment_accession))
     else:
@@ -150,7 +152,7 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
                      "are overloaded or slow. Please try again in a bit...\n"
                      "Another possible option is that you try to access samples that do not exist or are protected, and "
                      "seq2science does not support downloading those..\n\n")
-        raise TerminatedException
+        sys.exit(1)
 
     # keep track of not-supported samples
     not_supported_formats = ["ABI_SOLID"]
@@ -363,7 +365,8 @@ def get_bustools_rid(params):
         tech = re.search(bus_regex_short, params).group(0)
         read_id = kb_tech_dict[tech.lower()]
     else:
-        raise Exception("Not a valid BUS(barcode:umi:set) string. Please check -x argument")
+        logger.error("Not a valid BUS(barcode:umi:set) string. Please check -x argument")
+        sys.exit(1)
     return read_id
 
 
@@ -421,7 +424,7 @@ def color_parser(color: str, color_dicts: list=None) -> tuple:
             return rgb_to_hsv(value)
 
     logger.error(f"Color not recognized: {color}")
-    raise ValueError
+    sys.exit(1)
 
 
 def color_picker(n, min_h=0, max_h=0.85, s=1.00, v=0.75, alternate=True):
@@ -565,7 +568,7 @@ def retry_pickling(func):
                 time.sleep(1)
         else:
             logger.error("There were some problems with locking the seq2science cache. Please try again in a bit.")
-            raise TerminatedException
+            sys.exit(1)
     return wrap
 
 
@@ -589,3 +592,75 @@ class PickleDict(dict):
         prep_filelock(self.filelock, 30)
         with FileLock(self.filelock):
             pickle.dump(self, open(self.file, "wb"))
+
+    def search(self, search_assemblies: list):
+        """
+        Check the genomepy database for a provider stat serves both genome and annotation for an assembly.
+        If impossible, settle with the first provider that serves the genome.
+        """
+        logger.info("Determining assembly providers")
+        for assembly in search_assemblies:
+            if assembly not in self:
+                self[assembly] = {"genome": None, "annotation": None}
+
+        with open(logger.logfile, 'w') as log:
+            with contextlib.redirect_stdout(log), contextlib.redirect_stderr(log):
+                genomepy.logger.remove()
+                genomepy.logger.add(
+                    log,
+                    format="<green>{time:HH:mm:ss}</green> <bold>|</bold> <blue>{level}</blue> <bold>|</bold> {message}",
+                    level="INFO",
+                )
+                for p in genomepy.providers.online_providers():
+                    search_assemblies = [a for a in search_assemblies if self[a]["annotation"] is None]
+                    for assembly in search_assemblies:
+                        if assembly not in p.genomes:
+                            continue  # check again next provider
+
+                        if p.annotation_links(assembly):
+                            self[assembly]["genome"] = p.name
+                            self[assembly]["annotation"] = p.name
+
+                        elif self[assembly]["genome"] is None:
+                            self[assembly]["genome"] = p.name
+
+                    if all(self[a]["annotation"] for a in search_assemblies):
+                        break  # don't load the next provider
+
+        # store added assemblies
+        self.save()
+
+    def check(self, assemblies: list, annotation_required: bool, verbose: bool):
+        """
+        Check if the genome (and the annotation if required) can be downloaded for each specified assembly.
+        """
+        for assembly in assemblies:
+            if self[assembly]["genome"] is None:
+                logger.warning(
+                    f"Could not download assembly {assembly}.\n"
+                    f"Find alternative assemblies with `genomepy search {assembly}`"
+                )
+                exit(1)
+
+            if self[assembly]["annotation"] is None:
+                if verbose:
+                    logger.warning(
+                        f"No annotation for assembly {assembly} can be downloaded. Another provider (and "
+                        f"thus another assembly name) might have a gene annotation.\n"
+                        f"Find alternative assemblies with `genomepy search {assembly}`\n"
+                    )
+                if annotation_required:
+                    exit(1)
+
+
+def is_local(assembly: str, ftype: str, config: dict) -> bool:
+    """checks if genomic file(s) are present locally"""
+    file = os.path.join(config['genome_dir'], assembly, assembly)
+    local_fasta = os.path.exists(f"{file}.fa")
+    local_gtf = os.path.exists(f"{file}.annotation.gtf")
+    local_bed = os.path.exists(f"{file}.annotation.bed")
+    if ftype == "genome":
+        return local_fasta
+    if ftype == "annotation":
+        # check genome and annotations, as genome is always needed
+        return local_gtf and local_bed and local_fasta

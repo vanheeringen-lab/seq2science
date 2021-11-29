@@ -1,3 +1,7 @@
+"""
+all rules/logic related downloading public fastqs should be here.
+"""
+
 import glob
 import os
 
@@ -42,6 +46,15 @@ rule run2sra:
             prefetch --max-size 999999999999 --output-directory ./ --log-level debug --progress {wildcards.run} >> {log} 2>&1 && break
             sleep 10
         done
+
+        # TODO: this is the strangest bug, in that on some machines (ocimum) prefetch downloads
+        # to a different location. Not sure what causes this, but this should fix that. Could simply
+        # be a global setting that we haven't discovered yet...
+        # bug report: https://github.com/ncbi/sra-tools/issues/533
+        if [[ -f "{params.outdir}/{wildcards.run}.sra" ]]; then
+            mkdir {params.outdir}/{wildcards.run}
+            mv {params.outdir}/{wildcards.run}.sra {output}
+        fi
         """
 
 
@@ -238,6 +251,7 @@ def sample_to_rename(wildcards):
         return "$a"  # do not use this rule
 
     # assumption: incompatible paired-ended samples are lexicographically ordered (R1>R2)
+    local_fastqs.sort()
     local_fastq = local_fastqs[0]
     if len(local_fastqs) == 2 and config["fqext2"] in wildcards.suffix:
         local_fastq = local_fastqs[1]

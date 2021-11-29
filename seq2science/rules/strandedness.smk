@@ -1,3 +1,7 @@
+"""
+all rules/logic related to the RNA-seq strandedness should be here.
+"""
+
 rule infer_strandedness:
     """
     use RSeqQC's infer_experiment.py to determine strandedness af a sample
@@ -36,7 +40,7 @@ def samples_to_infer(wildcards):
         for sample in set(col):
             if samples[col == sample].strandedness not in ["yes", "forward", "reverse", "no"]:
                 files.append(f"{{qc_dir}}/strandedness/{samples[col == sample].assembly[0]}{suffix}-{sample}.strandedness.txt")
-    return expand(files, **config)
+    return list(sorted(expand(files, **config)))
 
 
 checkpoint strandedness_report:

@@ -20,6 +20,7 @@ tn5_shift: true
 min_mapping_quality: 30
 only_primary_align: True
 max_template_length: 1000
+remove_dups: true
 
 # which trimmer to use
 trimmer: fastp

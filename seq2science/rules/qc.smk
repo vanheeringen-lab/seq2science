@@ -1,3 +1,8 @@
+"""
+all rules/logic related to quality control and the final multiQC report should be here.
+"""
+
+import sys
 import re
 
 import seq2science
@@ -8,7 +13,7 @@ localrules: multiqc_header_info, multiqc_rename_buttons, multiqc_filter_buttons,
 
 def samtools_stats_input(wildcards):
     if wildcards.directory == config["aligner"]:
-        return expand("{result_dir}/{{directory}}/{{assembly}}-{{sample}}.samtools-coordinate-unsieved.bam", **config)
+        return expand("{result_dir}/{{directory}}/{{assembly}}-{{sample}}.samtools-coordinate-dupmarked.bam", **config)
     return expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config)
 
 
@@ -95,8 +100,8 @@ if config["trimmer"] == "trimgalore":
         input:
             get_fastqc_input
         output:
-            f"{config['qc_dir']}/fastqc/{{fname}}_fastqc.html",
-            f"{config['qc_dir']}/fastqc/{{fname}}_fastqc.zip"
+            html=f"{config['qc_dir']}/fastqc/{{fname}}_fastqc.html",
+            zip=f"{config['qc_dir']}/fastqc/{{fname}}_fastqc.zip"
         message:explain_rule("fastqc")
         log:
             f"{config['log_dir']}/fastqc/{{fname}}.log"
@@ -243,6 +248,8 @@ def fingerprint_multiBamSummary_input(wildcards):
             output["bams"].update(expand(f"{{final_bam_dir}}/{wildcards.assembly}-{control}.samtools-coordinate.bam", **config))
             output["bais"].update(expand(f"{{final_bam_dir}}/{wildcards.assembly}-{control}.samtools-coordinate.bam.bai", **config))
 
+    output["bams"] = list(sorted(output["bams"]))
+    output["bais"] = list(sorted(output["bais"]))
     return output
 
 
@@ -263,7 +270,9 @@ def get_descriptive_names(wildcards, input):
         elif trep.find("_summits.bed") != -1:
             trep = trep[:trep.find("_summits.bed")]
         else:
-            raise ValueError
+            logger.error(f"Something unexpected happened inferring descriptive names! "
+                          "Please make an issue on github.")
+            sys.exit(1)
 
         if trep in breps.index:
             if len(treps_from_brep[(trep, wildcards.assembly)]) == 1 and trep in samples.index:
@@ -315,7 +324,7 @@ def computeMatrix_input(wildcards):
             output.append(expand(f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{trep}.bw", **config)[0])
         treps_seen.add(trep)
 
-    return output
+    return list(sorted(output))
 
 
 rule computeMatrix_gene:
@@ -416,7 +425,7 @@ rule plotHeatmap_peak:
     resources:
         deeptools_limit=lambda wildcards, threads: threads
     params: 
-        params=config.get("heatmap_deeptools_options", ""),
+        params=config.get("deeptools_heatmap_options", ""),
         slop=config.get("heatmap_slop", 0)
     shell:
         """
@@ -575,8 +584,18 @@ rule multiqc_explain:
 
         # remove run specific commands
         cli_call = [arg for arg in cli_call if arg not in {"--unlock", "--rerun-incomplete", "-k", "--keep-going", "--skip-rerun", "--reason", "-r", "--dryrun", "-n"}]
-        cores_index = cli_call.index("--cores" if "--cores" in cli_call else "-j")
-        del cli_call[cores_index:cores_index+2]
+        if "--cores" in cli_call:
+            cores_index = cli_call.index("--cores")
+            del cli_call[cores_index:cores_index+2]
+        elif "-j" in cli_call:
+            cores_index = cli_call.index("-j")
+            del cli_call[cores_index:cores_index+2]
+        elif bool([i for i, x in enumerate(cli_call) if re.match('-j\d+', x)]):
+            cores_index = [i for i, x in enumerate(cli_call) if re.match('-j\d+', x)][0]
+            del cli_call[cores_index]
+
+        #cores_index = cli_call.index("--cores" if "--cores" in cli_call else "-j")
+        #del cli_call[cores_index:cores_index+2]
         
         # make sure to get pretty hyperrefs
         cli_call.append("--hyperref")
@@ -590,6 +609,30 @@ rule multiqc_explain:
                     "section_name: 'Workflow explanation'\n" 
                     "-->\n"
                     f"{explanation}")
+
+
+def assembly_stats_input(wildcards):
+    req_input = dict()
+
+    assembly = wildcards.assembly
+    req_input["genome"] = expand(f"{{genome_dir}}/{assembly}/{assembly}.fa", **config)[0]
+    req_input["index"] = expand(f"{{genome_dir}}/{assembly}/{assembly}.fa.fai", **config)[0]
+    if has_annotation(assembly):
+        req_input["annotation"] = expand(f"{{genome_dir}}/{assembly}/{assembly}.annotation.gtf", **config)[0]
+    return req_input
+
+
+rule multiqc_assembly_stats:
+    input:
+        unpack(assembly_stats_input)
+    output:
+        expand('{qc_dir}/assembly_{{assembly}}_stats_mqc.html', **config)
+    conda:
+        "../envs/assembly_stats.yaml"
+    params:
+        genomes_dir=config["genome_dir"]
+    script:
+        f"{config['rule_dir']}/../scripts/assembly_stats.py"
 
 
 rule multiqc_rename_buttons:
@@ -616,8 +659,14 @@ rule multiqc_filter_buttons:
         samples  # helps resolve changed params if e.g. descriptive names change
     run:
         with open(output[0], "w") as f:
-            f.write("Read Group 1 & Alignment\thide\t_R2\n"
-                    "Read Group 2\tshow\t_R2\n")
+            if config.get("trimmer", "") == "trimgalore":
+                f.write(f"Read Group 1 & Alignment\thide\t_{config.get('fqext2')}\n"
+                        f"Read Group 2\tshow\t_{config.get('fqext2')}\n")
+            if len([x for x in merged_treps if treps.loc[x, "assembly"] == wildcards.assembly]):
+                _merged_treps = [x for x in treps[treps["assembly"] == wildcards.assembly].index]
+                _real_treps = [rep for rep in samples.index if rep not in merged_treps and samples.loc[rep, "assembly"] == wildcards.assembly]
+                f.write(f"Pre-merge technical replicates\tshow\t" + "\t".join(_real_treps) + "\n")
+                f.write(f"Merged technical replicates\tshow\t" + "\t".join(_merged_treps) + "\n")
 
 
 rule multiqc_samplesconfig:
@@ -636,6 +685,7 @@ rule multiqc_samplesconfig:
     script:
         f"{config['rule_dir']}/../scripts/multiqc_samplesconfig.py"
 
+
 rule multiqc_schema:
     """
     Generate a multiqc config schema. Used for the ordering of modules.
@@ -643,6 +693,31 @@ rule multiqc_schema:
     output:
         temp(expand('{qc_dir}/schema.yaml', **config))
     run:
+        from seq2science.util import expand_contrasts
+
+        order = -954
+        deseq2_imgs = ""
+        deseq2_order = ""
+        for contrast in expand_contrasts(samples, config):
+            deseq2_imgs += f"""\
+    {contrast}.combined_ma_volcano:
+        section_name: 'DESeq2 - MA plot for contrast {contrast}'
+        description: 'A MA plot shows the relation between the (normalized) mean counts for each gene, and the log2 fold change between the conditions. Genes that are significantly differentially expressed are coloured blue. Similarily a volcano plot shows the relation between the log2 fold change between contrasts and their p-value.'
+    {contrast}.pca_plot:
+        section_name: 'DESeq2 - PCA plot for {contrast}'
+        description: 'This PCA plot shows the relation among samples along the two most principal components, coloured by condition. PCA transforms the data from the normalized high dimensions (e.g. 20.000 gene counts, or 100.000 peak expressions) to a low dimension (PC1 and PC2). It does so by maximizing the variance along these two components. Generally you expect there to be more variance between samples from different conditions, than within conditions. This means that you would "expect" similar samples closeby each other on PC1 and PC2.' 
+"""
+            deseq2_order += f"""\
+  {contrast}_combined_ma_volcano:
+    order: {order}
+  {contrast}_pca_plot:
+    order: {order-1}
+"""
+            order -= 2
+
+        deseq2_order = deseq2_order.replace("+", "_").rstrip("\n")
+        deseq2_imgs = deseq2_imgs.rstrip("\n")
+
         with open(f'{config["rule_dir"]}/../schemas/multiqc_config.yaml') as cookie_schema:
             cookie = cookie_schema.read()
         
@@ -664,6 +739,10 @@ def get_qc_files(wildcards):
     qc['files'] = set(expand(['{qc_dir}/samplesconfig_mqc.html',
                               '{log_dir}/workflow_explanation_mqc.html'], **config))
 
+    # no assembly stats for single-cell kallisto|bustools kite workflow
+    if ('kite' not in config.get('ref',"")) and \ 
+        config.get("quantifier") != "citeseqcount":
+        qc['files'].update(expand(f'{{qc_dir}}/assembly_{wildcards.assembly}_stats_mqc.html', **config))
     # trimming qc on individual samples
     if get_trimming_qc in quality_control:
         # scatac seq only on treps, not on single samples
@@ -698,7 +777,8 @@ def get_qc_files(wildcards):
             qc['files'].update(expand("{qc_dir}/dupRadar/{{assembly}}-dupRadar_mqc.png",**config))
 
     # DESeq2 sample distance/correlation cluster heatmaps
-    if (get_peak_calling_qc in quality_control or get_rna_qc in quality_control) and len(treps.index) > 2:
+    if ((get_peak_calling_qc in quality_control and "narrowPeak" in [get_peak_ftype(pc) for pc in list(config["peak_caller"].keys())])
+    or get_rna_qc in quality_control) and len(treps.index) > 2:
         plots = ["sample_distance_clustering", "pearson_correlation_clustering", "spearman_correlation_clustering"]
         files = expand("{qc_dir}/plotCorrelation/{{assembly}}-DESeq2_{plots}_mqc.png", plots=plots, **config)
         # only perform clustering if there are 2 or more groups in the assembly
@@ -706,6 +786,17 @@ def get_qc_files(wildcards):
             if len(treps[treps.assembly == assembly].index) < 2:
                 files = [f for f in files if f"clustering/{assembly}-" not in f]
         qc['files'].update(files)
+
+    # DESeq2 all contrast plots
+    if "get_contrasts" in globals():
+        contrast_files = [contrast.replace(config.get("deseq2_dir", ""), config.get("qc_dir", "")+"/deseq2") for contrast in get_contrasts()]
+        qc['files'].update(contrast.replace(".diffexp.tsv", ".combined_ma_volcano_mqc.png") for contrast in contrast_files)
+        qc['files'].update(contrast.replace(".diffexp.tsv", ".pca_plot_mqc.png") for contrast in contrast_files)
+
+    if get_scrna_qc in quality_control:
+        for trep in treps[treps['assembly'] == ori_assembly(wildcards.assembly)].index:
+            qc['files'].update(get_scrna_qc(trep))
+
 
     return qc
 
@@ -725,7 +816,7 @@ def get_qc_schemas(wildcards):
     qc['header'] = expand('{qc_dir}/header_info.yaml', **config)[0]
     qc['sample_names'] = expand('{qc_dir}/sample_names_{{assembly}}.tsv', **config)[0]
     qc['schema'] = expand('{qc_dir}/schema.yaml', **config)[0]
-    if config["trimmer"] == "trimgalore":
+    if config["trimmer"] == "trimgalore" or len([x for x in merged_treps if treps.loc[x, "assembly"] == wildcards.assembly]):
         qc['filter_buttons'] = expand('{qc_dir}/sample_filters_{{assembly}}.tsv', **config)[0]
     return qc
 
@@ -783,19 +874,30 @@ def get_trimming_qc(sample):
             # single-cell RNA seq does weird things with barcodes in the fastq file
             # therefore we can not just always start trimming paired-end even though
             # the samples are paired-end (ish)
-            read_id = get_bustools_rid(config.get("count"))
-            if read_id == 0:
-                return expand([f"{{qc_dir}}/fastqc/{sample}_{{fqext1}}_fastqc.zip",
-                               f"{{qc_dir}}/fastqc/{sample}_{{fqext1}}_trimmed_fastqc.zip",
-                               f"{{qc_dir}}/trimming/{sample}_{{fqext1}}.{{fqsuffix}}.gz_trimming_report.txt"],
-                              **config)
-            elif read_id == 1:
+            if config['quantifier'] == "kallistobus":
+                read_id = get_bustools_rid(config.get("count"))
+                if read_id == 0:
+                    return expand([f"{{qc_dir}}/fastqc/{sample}_{{fqext1}}_fastqc.zip",
+                                   f"{{qc_dir}}/fastqc/{sample}_{{fqext1}}_trimmed_fastqc.zip",
+                                   f"{{qc_dir}}/trimming/{sample}_{{fqext1}}.{{fqsuffix}}.gz_trimming_report.txt"],
+                                  **config)
+                elif read_id == 1:
+                    return expand([f"{{qc_dir}}/fastqc/{sample}_{{fqext2}}_fastqc.zip",
+                                f"{{qc_dir}}/fastqc/{sample}_{{fqext2}}_trimmed_fastqc.zip",
+                                f"{{qc_dir}}/trimming/{sample}_{{fqext2}}.{{fqsuffix}}.gz_trimming_report.txt"],
+                                **config)
+                else:
+                    logger.error(f"Something went wrong parsing the read id. "
+                                  "Please make an issue on github if this is unexpected behaviour!")
+                    sys.exit(1)
+            # Check if quantifier
+            if config['quantifier'] == "citeseqcount":
                 return expand([f"{{qc_dir}}/fastqc/{sample}_{{fqext2}}_fastqc.zip",
                             f"{{qc_dir}}/fastqc/{sample}_{{fqext2}}_trimmed_fastqc.zip",
                             f"{{qc_dir}}/trimming/{sample}_{{fqext2}}.{{fqsuffix}}.gz_trimming_report.txt"],
                             **config)
-            else:
-                raise NotImplementedError
+            
+
         else:
             if sampledict[sample]['layout'] == 'SINGLE':
                 return expand([f"{{qc_dir}}/fastqc/{sample}_fastqc.zip",
@@ -809,14 +911,23 @@ def get_trimming_qc(sample):
                                **config)
 
     elif config["trimmer"] == "fastp":
-        if get_workflow() == "scrna_seq": 
-            read_id = get_bustools_rid(config.get("count"))
-            if read_id == 0:
-                return expand(f"{{qc_dir}}/trimming/{sample}_{{fqext1}}.fastp.json", **config)
-            elif read_id == 1:
+        if get_workflow() == "scrna_seq":
+            # Check if quantifier is set to kallistobus
+            if config['quantifier'] == "kallistobus":
+                read_id = get_bustools_rid(config.get("count"))
+                if read_id == 0:
+                    return expand(f"{{qc_dir}}/trimming/{sample}_{{fqext1}}.fastp.json", **config)
+                elif read_id == 1:
+                    return expand(f"{{qc_dir}}/trimming/{sample}_{{fqext2}}.fastp.json", **config)
+                else:
+                    logger.error(f"Something went wrong parsing the read id. "
+                                  "Please make an issue on github if this is unexpected behaviour!")
+                    sys.exit(1)
+            # Check if quantifier is set to citeseqcount
+            if config['quantifier'] == "citeseqcount":
                 return expand(f"{{qc_dir}}/trimming/{sample}_{{fqext2}}.fastp.json", **config)
-            else:
-                raise NotImplementedError
+                
+          
         # not sure how fastp should work with scatac here
         return expand(f"{{qc_dir}}/trimming/{sample}.fastp.json", **config)
 
@@ -827,7 +938,7 @@ def get_alignment_qc(sample):
     # add samtools stats
     output.append(f"{{qc_dir}}/markdup/{{{{assembly}}}}-{sample}.samtools-coordinate.metrics.txt")
     output.append(f"{{qc_dir}}/samtools_stats/{{aligner}}/{{{{assembly}}}}-{sample}.samtools-coordinate.samtools_stats.txt")
-    
+
     # if Salmon is used, the sieving does not effect the expression values, so adding it to the MultiQC is confusing
     if sieve_bam(config) and \
             not (get_workflow() == "rna_seq" and config.get('quantifier') == 'salmon'):
@@ -862,6 +973,15 @@ def get_rna_qc(sample):
     col = samples.technical_replicates if "technical_replicates" in samples else samples.index
     if "strandedness" not in samples or samples[col == sample].strandedness[0] == "nan":
         output += expand(f"{{qc_dir}}/strandedness/{{{{assembly}}}}-{sample}.strandedness.txt",**config)
+
+    return output
+
+def get_scrna_qc(sample):
+    output = []
+
+    # add kallistobus qc
+    if config.get('quantifier',"") == "kallistobus":
+        output.extend(expand(f"{{result_dir}}/{{quantifier}}/{{{{assembly}}}}-{sample}/inspect.json", **config))
 
     return output
 

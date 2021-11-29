@@ -45,7 +45,7 @@ if [ $1 = "download" ]; then
 
   # test basic downloading 1 PE and 1 SE
   printf "\ndownload SE and PE fastqs\n"
-  seq2science run download-fastq --cores $CORES -r --configfile tests/$WF/default_config.yaml --snakemakeOptions show_failed_logs=True
+  seq2science run download-fastq --cores $CORES -r --configfile tests/$WF/default_config.yaml --snakemakeOptions show_failed_logs=True printshellcmds=True
 
   WF=alignment
 

@@ -9,6 +9,11 @@ properties:
     default: true
     type: boolean
 
+  trackhub_dir:
+    description: directory where to store the trackhub (defaults inside the result dir)
+    default: trackhub
+    type: string
+
   bigwig_dir:
     description: directory where to store the bigwigs used by the trackhub (defaults inside the result dir)
     default: bigwigs

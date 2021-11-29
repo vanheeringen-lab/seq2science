@@ -1,3 +1,7 @@
+"""
+all rules/logic related to the merging of technical replicates (and a bit for biological replicates) should be here.
+"""
+
 # dataframe with all technical replicates collapsed
 cols = ["sample", "assembly"]
 subset = ["sample", "assembly"]
@@ -73,18 +77,20 @@ def rep_to_descriptive(rep, brep=False):
 if "technical_replicates" in samples:
 
     def get_merge_replicates(wildcards):
-        input_files = expand(
-            [
-                f"{{trimmed_dir}}/{sample}{wildcards.fqext}_trimmed.{{fqsuffix}}.gz"
-                for sample in samples[samples["technical_replicates"] == wildcards.replicate].index
-            ],
-            **config,
-        )
+        input_files = list()
+        for sample in samples[samples["technical_replicates"] == wildcards.replicate].index:
+            if get_workflow() == "scrna_seq":
+                input_files.append(f"{{fastq_clean_dir}}/{sample}_clean{wildcards.fqext}.{{fqsuffix}}.paired.fq")
+            else:
+                input_files.append(f"{{trimmed_dir}}/{sample}{wildcards.fqext}_trimmed.{{fqsuffix}}.gz")
+
+        input_files = expand(input_files, **config)
         if len(input_files) == 0:
             return ["Something went wrong, and we tried to merge replicates but there were no replicates?!"]
 
         return input_files
 
+    # scrna-seq uses the fastq paired files
     if config["trimmer"] == "fastp":
         ruleorder: merge_replicates > fastp_PE > fastp_SE
     elif config["trimmer"] == "trimgalore":
@@ -118,6 +124,7 @@ if "technical_replicates" in samples:
         run:
             for rep in input:
                 rep_name = re.findall("\/([^\/_]+)_", rep)[-1]
+
                 shell(
                     """zcat {rep} | awk '{{if (NR%4==1) {{gsub(/^@/, "@{rep_name}:"); print}} else {{print}}}}' | gzip >> {output}"""
                 )

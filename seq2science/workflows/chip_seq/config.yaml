@@ -27,13 +27,18 @@ aligner: bwa-mem2
 remove_blacklist: true
 min_mapping_quality: 30
 only_primary_align: true
+remove_dups: true
 
 # peak caller
 peak_caller:
   macs2:
-      --keep-dup 1 --buffer-size 10000
+      --buffer-size 10000
 #  genrich:
-#      -y
+#      -y -q 0.05
+
+# how much should the peaks be extended around the summit for the count table
+# (e.g. 100 means a 200 bp wide peak)
+slop: 100
 
 ## differential peak analysis
 #contrasts:

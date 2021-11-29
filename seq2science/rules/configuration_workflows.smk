@@ -1,3 +1,7 @@
+"""
+all rules/logic related to differential gene expression with deseq2 should be here.
+"""
+
 import math
 import os
 import hashlib
@@ -99,6 +103,14 @@ if config.get("bam_sorter", False):
     config["bam_sorter"] = list(config["bam_sorter"].keys())[0]
 
 
+# ...for scrna quantification
+if get_workflow() == "scrna_seq":
+    if config['quantifier'] not in ["kallistobus", "citeseqcount"]:
+        logger.error(f"Invalid quantifier selected"        
+                      "Please select a supported scrna quantifier (kallistobus or citeseqcount)!")
+        sys.exit(1)
+
+
 # make sure that our samples.tsv and configuration work together...
 # ...on biological replicates
 if "biological_replicates" in samples:
@@ -132,21 +144,25 @@ if config.get("contrasts"):
 
 def get_read_length(sample):
     """
-
+    This function returns the read length for a sample.
+    
+    Depending on the fastq qc tool it raises a checkpoint exception, waits for that
+    checkpoint to have been executed, and then checks in the qc summary of the sample
+    what the (average) read length is after trimming.
     """
     # trimgalore
     if config["trimmer"] == "trimgalore":
         if sampledict[sample]["layout"] == "SINGLE":
-            qc_file = checkpoints.fastqc.get(fname=f"{sample}_R1_trimmed").output.qc[0]
-            zip_name = sample
+            qc_file = checkpoints.fastqc.get(fname=f"{sample}_R1_trimmed").output.zip
+            zip_name = f"{sample}_trimmed_fastqc/fastqc_data.txt"
         if sampledict[sample]["layout"] == "PAIRED":
-            qc_file = checkpoints.fastqc.get(fname=f"{sample}_R1_trimmed").output.qc[0]
-            zip_name = f"{sample}_{config['fqext1']}"
+            qc_file = checkpoints.fastqc.get(fname=f"{sample}_R1_trimmed").output.zip
+            zip_name = f"{sample}_{config['fqext1']}_trimmed_fastqc/fastqc_data.txt"
 
         import zipfile
         import re
 
-        archive = zipfile.ZipFile(qc_file, 'r').read(zip_name)
+        qc_report = zipfile.ZipFile(qc_file, 'r').read(zip_name)
 
         kmer_size = re.search("Sequence length\\t(\d+)", qc_report.decode("utf-8")).group(1)
 

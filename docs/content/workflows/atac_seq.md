@@ -108,8 +108,14 @@ These setting can be changed in the `config.yaml`.
 #### Assembly column
 Here you simply add the name of the assembly you want your samples aligned against and the workflow will download it for you.
 
-#### Control column
-In the `control` column you can (optionally) add the "sample name" of the input control, although it is not common to generate this for ATAC-seq. 
+#### Control (input) column
+In the `control` column you can (optionally) add the "sample name" of the input control, although it is not common to generate this for ATAC-seq.
+Doing so looks like this:
+
+```
+sample    assembly    control
+GSM123    GRCh38      GSMabc
+```
 
 #### Descriptive_name column
 The descriptive\_name column is used for the trackhub and multiqc report.
