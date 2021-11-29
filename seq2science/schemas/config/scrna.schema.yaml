@@ -16,6 +16,10 @@ properties:
   quantifier:
     description: which quantifier to use
     properties:
+      citeseqcount:
+        properties:
+          count: 
+            default: '-cbf 9 -cbl 16 -umif 1 -umil 8 -cells 372 --max-error 1 --bc_collapsing_dist 1 --umi_collapsing_dist 1'
       kallistobus:
         properties:
           ref:

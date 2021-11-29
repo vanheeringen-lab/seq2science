@@ -3,7 +3,7 @@ suppressMessages({
 })
 
 # Snakemake variables
-seu_dir <- paste0(snakemake@config$result_dir,"/seurat/kallistobus")
+seu_dir <- paste0(snakemake@config$result_dir,"/seurat/",snakemake@config$quantifier)
 rds <- snakemake@output[[1]] 
 isvelo <- snakemake@params$isvelo
 seu_proj_name <- snakemake@config$seurat_object$project_name
@@ -24,7 +24,7 @@ cat('seu_proj_name    <- "', seu_proj_name,          '"\n', sep = "")
 cat('seu_rdata    <- c("', paste(seu_rdata, collapse='","'), '")\n', sep = "")
 cat('\n')
 
-# Helper function to merge Seurat objects
+# Helper function to merge multiple Seurat objects
 merge_seu_objects <- function(res){
   cell.ids <- lapply(res,attr, which="project.name")
   names(res) <- unlist(cell.ids)
@@ -39,7 +39,7 @@ merge_seu_objects <- function(res){
   }
 }                             
 
-# Read velocity data if detected (Lamanno workflow argument)
+# Read velocity data if detected (kb with '--workflow Lamanno' argument)
 if (isvelo) {
   spliced <- c()
   unspliced <- c()
