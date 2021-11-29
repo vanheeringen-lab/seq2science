@@ -24,5 +24,10 @@ quantifier:
     #ref: '--workflow lamanno'
     #count: '-x 0,8,16:0,0,8:1,0,0 --h5ad --verbose --workflow lamanno'
     count: '-x 10XV3 --verbose --h5ad --workflow lamanno'
+    
+    ## cite-seq-count ADT quantification (comment kallistobus)
+    #citeseqcount:
+    #count: '-cbf 9 -cbl 16 -umif 1 -umil 8 -cells 372 --max-error 1 --bc_collapsing_dist 1 --umi_collapsing_dist 1'
+    
 
 barcodefile: "barcodes.txt"
