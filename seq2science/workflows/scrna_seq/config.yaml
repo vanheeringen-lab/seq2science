@@ -30,7 +30,7 @@ quantifier:
     #count: '-x 10XV3 --verbose --h5ad --workflow kite'
 
     ## cite-seq-count ADT quantification (comment kallistobus)
-    #citeseqcount:
+  #citeseqcount:
     #count: '-cbf 9 -cbl 16 -umif 1 -umil 8 -cells 372 --max-error 1 --bc_collapsing_dist 1 --umi_collapsing_dist 1'
     
 barcodefile: "barcodes.txt"
