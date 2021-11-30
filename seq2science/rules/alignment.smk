@@ -206,33 +206,33 @@ elif config["aligner"] == "chromap":
             chromap --build-index --min-frag-length {wildcards.kmer_size} --ref {input} --output {output} > {log} 2>&1
             """
 
-        rule chromap:
+    rule chromap:
+        """
+        Align reads against a genome (index) with chromap, and pipe the output to the required sorter(s).
+        """
+        input:
+            reads=get_reads,
+            index=expand("{genome_dir}/{{assembly}}/index/{aligner}/index_kmer", **config)
+        output:
+            pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.chromap-coordinate.sam", **config)[0])
+        log:
+            expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}.log", **config),
+        benchmark:
+            expand("{benchmark_dir}/{aligner}_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
+        message: explain_rule(f"{config['aligner']}_align")
+        params:
+            params=config["align"],
+            reads=lambda wildcards, input: f"--reads1 {input}" if len(input) == 1 else f"--reads1 {input[0]} --reads2 {input[1]}"
+        resources:
+            mem_gb=40,
+        priority: 0
+        threads: 6
+        conda:
+            "../envs/chromap.yaml"
+        shell:
             """
-            Align reads against a genome (index) with chromap, and pipe the output to the required sorter(s).
+            chromap --index {input.index} {params.reads} {params.params} -t {threads}  2> {log} | tee {output} 1> /dev/null 2>> {log}
             """
-            input:
-                reads=get_reads,
-                index=expand("{genome_dir}/{{assembly}}/index/{aligner}/index_kmer", **config)
-            output:
-                pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.chromap-coordinate.sam", **config)[0])
-            log:
-                expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}.log", **config),
-            benchmark:
-                expand("{benchmark_dir}/{aligner}_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
-            message: explain_rule(f"{config['aligner']}_align")
-            params:
-                params=config["align"],
-                reads=lambda wildcards, input: f"--reads1 {input}" if len(input) == 1 else f"--reads1 {input[0]} --reads2 {input[1]}"
-            resources:
-                mem_gb=40,
-            priority: 0
-            threads: 6
-            conda:
-                "../envs/chromap.yaml"
-            shell:
-                """
-                chromap --index {input.index} {params.reads} {params.params} -t {threads}  2> {log} | tee {output} 1> /dev/null 2>> {log}
-                """
 
 
 elif config["aligner"] == "hisat2":
