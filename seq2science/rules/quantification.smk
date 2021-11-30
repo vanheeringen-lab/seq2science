@@ -275,7 +275,7 @@ elif  "scrna_seq" == get_workflow():
             input:
                 featurebarcodes=expand("{genome_dir}/{{assembly}}.tsv", **config)
             output:
-                directory(expand("{genome_dir}/{{assembly}}/index/kallistobus", **config)),
+                directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/kite", **config)),
             log:    
                 expand("{log_dir}/kallistobus_index_kite/{{assembly}}.log", **config),    
             conda:
@@ -293,7 +293,15 @@ elif  "scrna_seq" == get_workflow():
                 {input.featurebarcodes} \
                 {params.options} \
                 -i {params.basename}.idx -g {params.basename}_t2g.txt -f1 {params.basename}_cdna.fa > {log} 2>&1 
-                """    
+                """
+                
+                
+        def get_kb_dir(wildcards):
+            #Get the correct assembly directory for ADT/Genome based workflows
+            if 'kite' in config.get('ref',""):
+                return directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/kite/", **config))     
+            else:
+                return directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/", **config))
                 
                             
         rule kallistobus_count:
@@ -301,7 +309,7 @@ elif  "scrna_seq" == get_workflow():
                 Align reads against a transcriptome (index) with kallistobus and output a quantification file per sample.
                 """
                 input:
-                    basedir=expand("{genome_dir}/{{assembly}}/index/kallistobus/", **config),
+                    basedir=get_kb_dir,
                     reads=get_final_reads,
                     barcodefile=config.get("barcodefile",[]),
                 output:
