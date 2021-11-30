@@ -214,7 +214,7 @@ elif config["aligner"] == "chromap":
             reads=get_reads,
             index=expand("{genome_dir}/{{assembly}}/index/{aligner}/index_kmer", **config)
         output:
-            pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.chromap-coordinate.sam", **config)[0])
+            pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0]),
         log:
             expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}.log", **config),
         benchmark:

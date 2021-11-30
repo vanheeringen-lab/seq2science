@@ -111,7 +111,7 @@ if [ $1 = "bwa-mem2" ]; then
   test_ran=1
 fi
 
-if [ $1 = "bwa-mem2" ]; then
+if [ $1 = "chromap" ]; then
 
   ALIGNER=chromap
   WF=alignment
