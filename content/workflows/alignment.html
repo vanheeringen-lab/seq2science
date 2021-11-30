@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Alignment &mdash; seq2science  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -107,27 +106,27 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="alignment">
+  <div class="section" id="alignment">
 <h1>Alignment<a class="headerlink" href="#alignment" title="Permalink to this headline">¶</a></h1>
 <p>Aligning samples has never been easier!</p>
-<section id="pipeline-steps">
+<div class="section" id="pipeline-steps">
 <h2>Pipeline steps<a class="headerlink" href="#pipeline-steps" title="Permalink to this headline">¶</a></h2>
 <p align="center">
   <img src="../../_static/alignment.png">
-</p><section id="downloading-of-sample-s">
+</p><div class="section" id="downloading-of-sample-s">
 <h3>Downloading of sample(s)<a class="headerlink" href="#downloading-of-sample-s" title="Permalink to this headline">¶</a></h3>
 <p>Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples.
 You control which samples are used in the <a class="reference external" href="#filling-out-the-samples-tsv">samples.tsv</a>.
 Background on public data can be found <a class="reference external" href="./download_fastq.html#download-sra-file">here</a>.</p>
-</section>
-<section id="read-trimming">
+</div>
+<div class="section" id="read-trimming">
 <h3>Read trimming<a class="headerlink" href="#read-trimming" title="Permalink to this headline">¶</a></h3>
 <p>The pipeline starts by trimming the reads with Trim Galore! or Fastp (the default).
 The trimmer will automatically trim the low quality 3’ ends of reads, and removes short reads.
 During the quality trimming it automatically detects which adapter was used, and trims this as well.
 Trimming parameters for the pipeline can be set in the configuration.</p>
-</section>
-<section id="alignment-sorting">
+</div>
+<div class="section" id="alignment-sorting">
 <h3>Alignment &amp; Sorting<a class="headerlink" href="#alignment-sorting" title="Permalink to this headline">¶</a></h3>
 <p>After trimming the reads are aligned against an assembly. Currently we support <em>bowtie2</em>, <em>bwa</em>, <em>bwa-mem2</em>, <em>hisat2</em> and <em>STAR</em> as aligners. Choosing which aligner is as easy as setting the <em>aligner</em> variable in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>, for example: <code class="docutils literal notranslate"><span class="pre">aligner:</span> <span class="pre">bwa</span></code>. Sensible defaults have been set for every aligner, but can be overwritten for either (or both) the indexing and alignment by specifying them in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>:</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>aligner:
@@ -139,31 +138,31 @@ Trimming parameters for the pipeline can be set in the configuration.</p>
 <p>The pipeline will check if the assembly you specified is present in the <em>genome_dir</em>, and otherwise will download it for you through <a class="reference external" href="https://github.com/vanheeringen-lab/genomepy">genomepy</a>.
 All these aligners require an index to be formed first for each assembly, but don’t worry, the pipeline does this for you.</p>
 <p>The outputted alignment.bam is immediately sorted by either samtools or sambamba (<em>bam_sorter</em>) either in <em>queryname</em> or <em>coordinate</em> (default) order.</p>
-</section>
-<section id="custom-assembly-extensions">
+</div>
+<div class="section" id="custom-assembly-extensions">
 <h3>Custom assembly extensions<a class="headerlink" href="#custom-assembly-extensions" title="Permalink to this headline">¶</a></h3>
 <p>The genome and/or gene annotation can be extended with custom files, such as ERCC spike-ins for scRNA-seq. To do so, add <code class="docutils literal notranslate"><span class="pre">custom_genome_extension:</span> <span class="pre">path/to/spike_in.fa</span></code> and <code class="docutils literal notranslate"><span class="pre">custom_annotation_extension:</span> <span class="pre">path/to/spike_in.gtf</span></code> to the config.
 Seq2science will place the customized assembly in a separate folder in the <code class="docutils literal notranslate"><span class="pre">genome_dir</span></code>.</p>
-</section>
-<section id="mark-duplicates">
+</div>
+<div class="section" id="mark-duplicates">
 <h3>Mark duplicates<a class="headerlink" href="#mark-duplicates" title="Permalink to this headline">¶</a></h3>
 <p>After aligning &amp; sorting the bam duplicate reads are being ‘marked’ by picard Markduplicates. You can change the call by setting <em>markduplicates</em> in config.yaml.</p>
-</section>
-<section id="samtools-index">
+</div>
+<div class="section" id="samtools-index">
 <h3>Samtools index<a class="headerlink" href="#samtools-index" title="Permalink to this headline">¶</a></h3>
 <p>Many downstream tools require an index of the deduplicated bam. The pipeline automatically generates these for you.</p>
-</section>
-<section id="quality-report">
+</div>
+<div class="section" id="quality-report">
 <h3>Quality report<a class="headerlink" href="#quality-report" title="Permalink to this headline">¶</a></h3>
 <p>It is always a good idea to check the quality of your samples. Along the way different quality control steps are taken, and are outputted in a single <a class="reference external" href="https://multiqc.info/">multiqc report</a> in the <code class="docutils literal notranslate"><span class="pre">qc</span></code> folder. Make sure to always check the report, and take a look at <a class="reference external" href="../results.html#multiqc-quality-report">interpreting the multiqc report</a>!</p>
-</section>
-<section id="trackhub">
+</div>
+<div class="section" id="trackhub">
 <h3>Trackhub<a class="headerlink" href="#trackhub" title="Permalink to this headline">¶</a></h3>
 <p>A UCSC compatible trackhub can be generated for this workflow.
 See the <a class="reference external" href="../results.html#trackhub">trackhub page</a><span class="raw-html-m2r"><!-- @IGNORE PREVIOUS: link --></span> for more information!</p>
-</section>
-</section>
-<section id="filling-out-the-samples-tsv">
+</div>
+</div>
+<div class="section" id="filling-out-the-samples-tsv">
 <h2>Filling out the samples.tsv<a class="headerlink" href="#filling-out-the-samples-tsv" title="Permalink to this headline">¶</a></h2>
 <p>Before running a workflow you will have to specify which samples you want to run the workflow on.
 Each workflow starts with a <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> as an example, and you should adapt it to your specific needs.
@@ -176,7 +175,7 @@ GSMxzy    danRer11    stage_8      stage_8
 GSM890    danRer11    stage_9      stage_9
 </pre></div>
 </div>
-<section id="sample-column">
+<div class="section" id="sample-column">
 <h3>Sample column<a class="headerlink" href="#sample-column" title="Permalink to this headline">¶</a></h3>
 <p>If you use the pipeline on <strong>public data</strong> this should be the name of the accession (e.g. GSM2837484).
 Accepted formats start with “GSM”, “SRR”, “SRX”, “DRR”, “DRX”, “ERR” or “ERX”.</p>
@@ -193,18 +192,18 @@ Seq2science will attempt to recognize these files based on the sample name <code
 The directory where seq2science will store (or look for) fastqs is determined by the <code class="docutils literal notranslate"><span class="pre">fastq_dir</span></code> config option.
 In the example above, the <code class="docutils literal notranslate"><span class="pre">fastq_dir</span></code> should be set to <code class="docutils literal notranslate"><span class="pre">/home/user/myfastqs</span></code>.
 These setting can be changed in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>.</p>
-</section>
-<section id="assembly-column">
+</div>
+<div class="section" id="assembly-column">
 <h3>Assembly column<a class="headerlink" href="#assembly-column" title="Permalink to this headline">¶</a></h3>
 <p>Here you simply add the name of the assembly you want your samples aligned against and the workflow will download it for you.</p>
-</section>
-<section id="descriptive-name-column">
+</div>
+<div class="section" id="descriptive-name-column">
 <h3>Descriptive_name column<a class="headerlink" href="#descriptive-name-column" title="Permalink to this headline">¶</a></h3>
 <p>The descriptive_name column is used for the trackhub and multiqc report.
 In the trackhub your tracks will be called after the descriptive name, and in the multiqc report there will be a button to rename your samples after this column.
-The descriptive name can not contain ‘-’ characters, but underscores ‘_’ are allowed.</p>
-</section>
-<section id="technical-replicates-column">
+The descriptive name can not contain ‘-‘ characters, but underscores ‘_’ are allowed.</p>
+</div>
+<div class="section" id="technical-replicates-column">
 <h3>technical_replicates column<a class="headerlink" href="#technical-replicates-column" title="Permalink to this headline">¶</a></h3>
 <p>Technical replicates, or any fastq file you may wish to merge, are set using the <code class="docutils literal notranslate"><span class="pre">technical_replicates</span></code> column in the samples.tsv file.
 All samples with the same name in the <code class="docutils literal notranslate"><span class="pre">technical_replicates</span></code> column will be concatenated into one file with the replicate name.</p>
@@ -219,32 +218,32 @@ GSM890    GRCh38
 <p>Using this file in the alignment workflow will output <em>heart.bam</em>, <em>stage8.bam</em> and <em>GSM890.bam</em>.
 The MultiQC will inform you of the trimming steps performed on all samples, and subsequent information of the ‘replicate’ files (of which only <em>heart</em> is merged).</p>
 <p>Note: If you are working with multiple assemblies in one workflow, replicate names have to be unique between assemblies (you will receive a warning if names overlap).</p>
-<section id="keep">
+<div class="section" id="keep">
 <h4>keep<a class="headerlink" href="#keep" title="Permalink to this headline">¶</a></h4>
 <p>Replicate merging is turned on by default. It can be turned off by setting <code class="docutils literal notranslate"><span class="pre">technical_replicates</span></code> in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> to <code class="docutils literal notranslate"><span class="pre">keep</span></code>.</p>
-</section>
-</section>
-<section id="colors-column">
+</div>
+</div>
+<div class="section" id="colors-column">
 <h3>Colors column<a class="headerlink" href="#colors-column" title="Permalink to this headline">¶</a></h3>
 <p>If you are visualizing your data on the UCSC trackhub you can optionally specify the colors of each track.
 To do so, you can add the color by name (google “matplotlib colors” for the options), or RGB values, in the “colors” column. Empty fields are considered black.</p>
-</section>
-<section id="final-notes">
+</div>
+<div class="section" id="final-notes">
 <h3>Final notes<a class="headerlink" href="#final-notes" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>Make sure that the samples.tsv is a tab separated values file when running the pipeline.</p></li>
 <li><p>Feel free to delete or add columns to your liking.</p></li>
 </ul>
-</section>
-</section>
-<section id="filling-out-the-config-yaml">
+</div>
+</div>
+<div class="section" id="filling-out-the-config-yaml">
 <h2>Filling out the config.yaml<a class="headerlink" href="#filling-out-the-config-yaml" title="Permalink to this headline">¶</a></h2>
 <p>Every workflow has many configurable options, and can be set in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file. In each <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> we highlighted a couple options that we think are relevant for that specific workflow, and set (we think) <strong>reasonable default</strong> values.</p>
 <p>When a workflow starts it prints the complete configuration, and (almost) all these values can be added in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> and changed to your liking. You can see the complete set of configurable options in the <a class="reference external" href="../schemas.html">extensive docs</a>.</p>
-</section>
-<section id="best-practices">
+</div>
+<div class="section" id="best-practices">
 <h2>Best practices<a class="headerlink" href="#best-practices" title="Permalink to this headline">¶</a></h2>
-<section id="bam-mapping-quality-filtering">
+<div class="section" id="bam-mapping-quality-filtering">
 <h3>BAM mapping quality filtering<a class="headerlink" href="#bam-mapping-quality-filtering" title="Permalink to this headline">¶</a></h3>
 <p>All aligners pass a mapping quality (MAPQ) score to the reads. This score reflects the certainty that a read belongs to a certain genomic position. This score can then be used by <a class="reference external" href="https://deeptools.readthedocs.io/en/develop/">deeptools</a> to only keep reads of which the aligner is certain where it aligns, and to limit multimappers. You can set the minimum mapq score by using the configuration variable <code class="docutils literal notranslate"><span class="pre">min_mapping_quality</span></code>. Unfortunately, most aligners use a different scoring system. This problem has been nicely summarized <a class="reference external" href="https://sequencing.qcfail.com/articles/mapq-values-are-really-useful-but-their-implementation-is-a-mess/">here</a>.</p>
 <p>For the default aligners (BWA and STAR), a minimal quality score has been set to select uniquely mapped reads only. For other aligners, we suggest the following scores to filter for uniquely mapped reads:</p>
@@ -276,13 +275,13 @@ To do so, you can add the color by name (google “matplotlib colors” for the 
 </tr>
 </tbody>
 </table>
-</section>
-<section id="cram-support">
+</div>
+<div class="section" id="cram-support">
 <h3>Cram support<a class="headerlink" href="#cram-support" title="Permalink to this headline">¶</a></h3>
 <p>For the edge-case where you want to work with cram files instead of bams, there is an option <code class="docutils literal notranslate"><span class="pre">cram_no_bam</span></code> which will convert your bam files to cram (saves around 60% storage).</p>
-</section>
-</section>
-</section>
+</div>
+</div>
+</div>
 
 
            </div>

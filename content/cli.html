@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Command line interface &mdash; seq2science  documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -96,24 +95,24 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="command-line-interface">
+  <div class="section" id="command-line-interface">
 <h1>Command line interface<a class="headerlink" href="#command-line-interface" title="Permalink to this headline">¶</a></h1>
-<section id="init">
+<div class="section" id="init">
 <h2>init<a class="headerlink" href="#init" title="Permalink to this headline">¶</a></h2>
 <p><p>Each workflow requires a configuration and samples file to run. Running “seq2science init {workflow}” initialises a default configuration and samples file for the specific workflow.</p>
 </p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">seq2science</span> <span class="n">init</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="nb">dir</span> <span class="n">PATH</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">f</span><span class="p">]</span> <span class="n">WORKFLOW</span>
 </pre></div>
 </div>
-<section id="Positional Arguments">
+<div class="section" id="Positional Arguments">
 <h3>Positional Arguments<a class="headerlink" href="#Positional Arguments" title="Permalink to this headline">¶</a></h3>
 <dl class="option-list">
 <dt><kbd>WORKFLOW</kbd></dt>
-<dd><p>Possible choices: download-fastq, scatac-seq, alignment, chip-seq, rna-seq, atac-seq, scrna-seq</p>
+<dd><p>Possible choices: scatac-seq, scrna-seq, atac-seq, chip-seq, download-fastq, alignment, rna-seq</p>
 </dd>
 </dl>
-</section>
-<section id="Named Arguments">
+</div>
+<div class="section" id="Named Arguments">
 <h3>Named Arguments<a class="headerlink" href="#Named Arguments" title="Permalink to this headline">¶</a></h3>
 <dl class="option-list">
 <dt><kbd>--dir</kbd></dt>
@@ -125,10 +124,10 @@
 <p>Default: False</p>
 </dd>
 </dl>
-</section>
-</section>
+</div>
+</div>
 <hr class="docutils" />
-<section id="run">
+<div class="section" id="run">
 <h2>run<a class="headerlink" href="#run" title="Permalink to this headline">¶</a></h2>
 <p><p>Run a complete workflow. This requires that a config and samples file are either present in the current directory, or passed as an argument.</p>
 </p>
@@ -139,15 +138,15 @@
                        <span class="n">WORKFLOW</span>
 </pre></div>
 </div>
-<section id="Positional Arguments">
+<div class="section" id="Positional Arguments">
 <h3>Positional Arguments<a class="headerlink" href="#Positional Arguments" title="Permalink to this headline">¶</a></h3>
 <dl class="option-list">
 <dt><kbd>WORKFLOW</kbd></dt>
-<dd><p>Possible choices: download-fastq, scatac-seq, alignment, chip-seq, rna-seq, atac-seq, scrna-seq</p>
+<dd><p>Possible choices: scatac-seq, scrna-seq, atac-seq, chip-seq, download-fastq, alignment, rna-seq</p>
 </dd>
 </dl>
-</section>
-<section id="Named Arguments">
+</div>
+<div class="section" id="Named Arguments">
 <h3>Named Arguments<a class="headerlink" href="#Named Arguments" title="Permalink to this headline">¶</a></h3>
 <dl class="option-list">
 <dt><kbd>-j, --cores</kbd></dt>
@@ -188,10 +187,10 @@
 <p>Default: “./config.yaml”</p>
 </dd>
 </dl>
-</section>
-</section>
+</div>
+</div>
 <hr class="docutils" />
-<section id="clean">
+<div class="section" id="clean">
 <h2>clean<a class="headerlink" href="#clean" title="Permalink to this headline">¶</a></h2>
 <p><p>At the start of each workflow run, seq2science starts with installing environments for each rule. It also stores the GEO soft files of public samples in its cache. These environments can get large and it might be best to remove them when you are done with an analysis. 
 seq2science clean will clean up these files for you.</p>
@@ -199,9 +198,9 @@ seq2science clean will clean up these files for you.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">seq2science</span> <span class="n">clean</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span>
 </pre></div>
 </div>
-</section>
+</div>
 <hr class="docutils" />
-<section id="explain">
+<div class="section" id="explain">
 <h2>explain<a class="headerlink" href="#explain" title="Permalink to this headline">¶</a></h2>
 <p><p>Explains what has/will be done for the workflow. This prints a string which can serve as a skeleton for your material &amp; methods section.</p>
 </p>
@@ -211,15 +210,15 @@ seq2science clean will clean up these files for you.</p>
                            <span class="n">WORKFLOW</span>
 </pre></div>
 </div>
-<section id="Positional Arguments">
+<div class="section" id="Positional Arguments">
 <h3>Positional Arguments<a class="headerlink" href="#Positional Arguments" title="Permalink to this headline">¶</a></h3>
 <dl class="option-list">
 <dt><kbd>WORKFLOW</kbd></dt>
-<dd><p>Possible choices: download-fastq, scatac-seq, alignment, chip-seq, rna-seq, atac-seq, scrna-seq</p>
+<dd><p>Possible choices: scatac-seq, scrna-seq, atac-seq, chip-seq, download-fastq, alignment, rna-seq</p>
 </dd>
 </dl>
-</section>
-<section id="Named Arguments">
+</div>
+<div class="section" id="Named Arguments">
 <h3>Named Arguments<a class="headerlink" href="#Named Arguments" title="Permalink to this headline">¶</a></h3>
 <dl class="option-list">
 <dt><kbd>--hyperref</kbd></dt>
@@ -237,18 +236,18 @@ seq2science clean will clean up these files for you.</p>
 <p>Default: “./config.yaml”</p>
 </dd>
 </dl>
-</section>
-</section>
+</div>
+</div>
 <hr class="docutils" />
-<section id="docs">
+<div class="section" id="docs">
 <h2>docs<a class="headerlink" href="#docs" title="Permalink to this headline">¶</a></h2>
 <p><p>The docs command tries to open your browser and open the docs’ webpage, if that didn’t work it prints the url.</p>
 </p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">seq2science</span> <span class="n">docs</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span>
 </pre></div>
 </div>
-</section>
-</section>
+</div>
+</div>
 
 
            </div>

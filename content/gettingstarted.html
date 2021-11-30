@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Getting started &mdash; seq2science  documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -81,11 +80,11 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="getting-started">
+  <div class="section" id="getting-started">
 <h1>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
-<section id="installation">
+<div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
-<section id="seq2science-requires-anaconda">
+<div class="section" id="seq2science-requires-anaconda">
 <h3>seq2science requires anaconda<a class="headerlink" href="#seq2science-requires-anaconda" title="Permalink to this headline">¶</a></h3>
 <p>Download and install <a class="reference external" href="https://www.anaconda.com/">miniconda</a> if not yet installed:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">user@comp:~$ </span>wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
@@ -99,15 +98,15 @@
 <span class="gp">user@comp:~$ </span>conda config --add channels conda-forge
 </pre></div>
 </div>
-</section>
-<section id="easy-and-recommended-installation-bioconda">
+</div>
+<div class="section" id="easy-and-recommended-installation-bioconda">
 <h3>Easy and recommended installation (bioconda)<a class="headerlink" href="#easy-and-recommended-installation-bioconda" title="Permalink to this headline">¶</a></h3>
 <p>The most straightforward way to install seq2science is by using <a class="reference external" href="https://docs.continuum.io/anaconda/">conda</a> using the <a class="reference external" href="https://bioconda.github.io/">bioconda</a> channel. To install seq2science in a fresh environment using bioconda:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(base)</span> <span class="gp">user@comp:~$ </span>conda create -n seq2science seq2science
 </pre></div>
 </div>
-</section>
-<section id="install-from-source-not-recommended">
+</div>
+<div class="section" id="install-from-source-not-recommended">
 <h3>Install from source (not recommended)<a class="headerlink" href="#install-from-source-not-recommended" title="Permalink to this headline">¶</a></h3>
 <p>To install the latest (potentially unreleased) version of seq2science you can install from source:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(base)</span> <span class="gp">user@comp:~$ </span>git clone https://github.com/vanheeringen-lab/seq2science
@@ -117,9 +116,9 @@
 <span class="gp gp-VirtualEnv">(seq2science)</span> <span class="gp">user@comp:~/seq2science$ </span>pip install .
 </pre></div>
 </div>
-</section>
-</section>
-<section id="running-a-workflow">
+</div>
+</div>
+<div class="section" id="running-a-workflow">
 <h2>Running a workflow<a class="headerlink" href="#running-a-workflow" title="Permalink to this headline">¶</a></h2>
 <p>A typical setup and run of a workflow looks like this, where you start with activating the seq2science environment.</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(base)</span> <span class="gp">user@comp:~$ </span>conda activate seq2science
@@ -137,16 +136,16 @@
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(seq2science)</span> <span class="gp">user@comp:~.my_project$ </span>seq2science run <span class="o">{</span>workflow<span class="o">}</span> --cores <span class="m">24</span>
 </pre></div>
 </div>
-</section>
-<section id="getting-an-explanation-of-what-seq2science-did">
+</div>
+<div class="section" id="getting-an-explanation-of-what-seq2science-did">
 <h2>Getting an explanation of what seq2science did<a class="headerlink" href="#getting-an-explanation-of-what-seq2science-did" title="Permalink to this headline">¶</a></h2>
 <p>Seq2science has a function to write an explanation of what has/will be done with the configuration file for a workflow:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(seq2science)</span> <span class="gp">user@comp:~.my_project$ </span>seq2science explain <span class="o">{</span>workflow<span class="o">}</span>
 </pre></div>
 </div>
 <p>This will print an extensive (quite technical) explanation that can also serve as a starting point for a material and methods section. This is not a replacement for the documentation, which we definitely recommend you to always read!</p>
-</section>
-<section id="where-does-seq2science-store-results-and-looks-for-starting-points">
+</div>
+<div class="section" id="where-does-seq2science-store-results-and-looks-for-starting-points">
 <h2>Where does seq2science store results and looks for ‘starting points’?<a class="headerlink" href="#where-does-seq2science-store-results-and-looks-for-starting-points" title="Permalink to this headline">¶</a></h2>
 <p>We recommend that for a typical run of seq2science you use a folder structure like this:</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>root
@@ -161,8 +160,8 @@
 </pre></div>
 </div>
 <p>This structure is the default setting of seq2science, however can be adjusted to your liking in the config.yaml.</p>
-</section>
-<section id="what-is-snakemake">
+</div>
+<div class="section" id="what-is-snakemake">
 <h2>What is Snakemake?<a class="headerlink" href="#what-is-snakemake" title="Permalink to this headline">¶</a></h2>
 <p>Since <em>under-the-hood</em> seq2science is based on <a class="reference external" href="https://snakemake.readthedocs.io/en/stable/">snakemake</a>, we thought it might be nice to give a little introduction to snakemake.</p>
 <p>Snakemake is a pipeline tool that allows users to specify <em>rules</em>. Each rule is defined with what it requires as input, what it will output, and what command it needs to run to generate the output from the input. This design allows for the linking of many rules, where the input of one rule is the output of another. When invoking Snakemake it will then decide itself which rules need to be run for the output you specified.</p>
@@ -194,8 +193,8 @@ rule two:
 </div>
 <p>It will see that rule two needs to be run, takes a look at the required input for this rule, and checks whether file1.txt already exists. If it does, it will immediatly execute rule two, if file1.txt does not already exist it will execute rule one first.</p>
 <p>We highly recommend everyone interested in automating a part of their analysis to take a look at snakemake! For a more complete explanation of how snakemake works see the <a class="reference external" href="https://snakemake.readthedocs.io/">snakemake docs</a>.</p>
-</section>
-</section>
+</div>
+</div>
 
 
            </div>

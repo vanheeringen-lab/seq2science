@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Differential gene/peak analysis &mdash; seq2science  documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -85,7 +84,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="differential-gene-peak-analysis">
+  <div class="section" id="differential-gene-peak-analysis">
 <h1>Differential gene/peak analysis<a class="headerlink" href="#differential-gene-peak-analysis" title="Permalink to this headline">¶</a></h1>
 <p>Seq2science outputs counts matrices for each assembly in any bulk-sequencing workflow, which can optionally can be used for differential gene/peak analysis with <a class="reference external" href="https://genomebiology.biomedcentral.com/articles/10.1186/s13059-014-0550-8">DESeq2</a>.
 To do so, add one or more contrast design(s) in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file, with matching identifiers in the <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> file.</p>
@@ -94,7 +93,7 @@ Alternatively, you can call the DESeq2 script from the command line.
 To get started with the command line script, try out <code class="docutils literal notranslate"><span class="pre">Rscript</span> <span class="pre">/path/to/seq2science/scripts/deseq2/deseq2.R</span> <span class="pre">--help</span></code>.</p>
 <p>This section details how the contrast designs are created.
 Examples are given <a class="reference external" href="./DESeq2.html#deseq2-contrast-designs">below</a>, and each <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> contains a commented-out example contrast design at the bottom.</p>
-<section id="overview-of-the-deseq2-method">
+<div class="section" id="overview-of-the-deseq2-method">
 <h2>Overview of the DESeq2 method<a class="headerlink" href="#overview-of-the-deseq2-method" title="Permalink to this headline">¶</a></h2>
 <p>DESeq2 automatically performs library bias correction when loading your data, and batch correction is performed if it is included in the contrast design.
 After calculating differentially expressed genes/peaks, a multiple testing procedure is applied, which is either the Benjamini-Hochberg procedure (the default) or Independent Hypothesis Weighing.
@@ -102,8 +101,8 @@ The False Discovery Rate cutoff is set by alpha, which is 0.1 by default.
 Finally, count values are log transformed and shrunk (by default using the apeglm method).
 These defaults can be changed in the <a class="reference external" href="./schemas.html#deseq2">config.yaml</a>, under the <code class="docutils literal notranslate"><span class="pre">deseq2</span></code> variables using the <code class="docutils literal notranslate"><span class="pre">multiple_testing_procedure</span></code>, <code class="docutils literal notranslate"><span class="pre">alpha_value</span></code> and <code class="docutils literal notranslate"><span class="pre">shrinkage_estimator</span></code> options respectively.</p>
 <p>For more information, check out the steps in this <a class="reference external" href="https://www.bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html">vignette</a>, which Seq2science follows.</p>
-</section>
-<section id="output">
+</div>
+<div class="section" id="output">
 <h2>Output<a class="headerlink" href="#output" title="Permalink to this headline">¶</a></h2>
 <p>For each contrast design, the list of <em>all</em> genes/peaks is saved to file, with analysis results for expressed genes. Briefly, these include:</p>
 <ul class="simple">
@@ -115,15 +114,15 @@ These defaults can be changed in the <a class="reference external" href="./schem
 <p>If the design includes a batch effect, several PCA plots are generated to visualize the effect of the batch correction.</p>
 <p>DESeq2 models the batch effect in their package, but downstream methods may not.
 For this reason, seq2science will produce a batch-corrected counts matrix (and a batch corrected TPM matrix if quantified with Salmon).</p>
-</section>
-<section id="contrast-designs">
+</div>
+<div class="section" id="contrast-designs">
 <h2>Contrast designs<a class="headerlink" href="#contrast-designs" title="Permalink to this headline">¶</a></h2>
 <p>The following section will guide you through the process of creating a DESeq2 contrast using only the samples.tsv and the config.yaml.</p>
 <p>A contrast contains a <strong>condition</strong>, which is the variable you wish to analyse, and which contains 2 or more <strong>groups.</strong>
 Additionally, a contrast can optionally contain a <strong>batch</strong> effect, which you want to correct for.
 To determine differentially expressed genes/accessible peaks, DESeq2 requires at least two samples per group.
 A design contrast therefore requires at least 2x2 samples.</p>
-<section id="conditions">
+<div class="section" id="conditions">
 <h3>Conditions<a class="headerlink" href="#conditions" title="Permalink to this headline">¶</a></h3>
 <p>In the samples.tsv, add a column for every property you wish to test in your samples.
 Next, add labels to the samples involved in the test. You can leave labels empty, or add labels and not use them.
@@ -204,8 +203,8 @@ contrasts:
 In the example <code class="docutils literal notranslate"><span class="pre">stages_3_1</span></code>, a gene upregulated at stage 3 has a positive expression fold change.
 In contrast <code class="docutils literal notranslate"><span class="pre">stages_1_3</span></code>, a gene upregulated at stage 3 has a negative expression fold change.
 Other values are unaffected.</p>
-</section>
-<section id="batches">
+</div>
+<div class="section" id="batches">
 <h3>Batches<a class="headerlink" href="#batches" title="Permalink to this headline">¶</a></h3>
 <p>If your data has batch effects, DESeq2 can try to account for these. Note that this can only be done if the batch effects are spread over different conditions.</p>
 <p>Similar to conditions, add a column to samples.tsv and note the batch of each sample:</p>
@@ -243,17 +242,17 @@ Other values are unaffected.</p>
 <p>In this example, the sequencing_month may have caused a batch effect.
 Since the (potential) batch effect is spread over the test conditions (control vs treatment) it can be taken into account during DE analysis.
 The contrast design to do this would be <code class="docutils literal notranslate"><span class="pre">sequencing_month</span> <span class="pre">+</span> <span class="pre">conditions_treatment_control</span></code>.</p>
-</section>
-</section>
-<section id="more-design-contrast-examples">
+</div>
+</div>
+<div class="section" id="more-design-contrast-examples">
 <h2>More design contrast examples<a class="headerlink" href="#more-design-contrast-examples" title="Permalink to this headline">¶</a></h2>
 <p>The example design <code class="docutils literal notranslate"><span class="pre">sequencing_month</span> <span class="pre">+</span> <span class="pre">conditions_treatment_control</span></code> may also be written as <code class="docutils literal notranslate"><span class="pre">sequencing_month</span> <span class="pre">+</span> <span class="pre">conditions_all_control</span></code>.
 In each case, seq2science will understand “control” is the reference group, and compare it against the other groups in the “conditions” columns.</p>
 <p>For consistency with regular DESeq2 contrast designs, designs may start with <code class="docutils literal notranslate"><span class="pre">~</span></code>, examples:
 <code class="docutils literal notranslate"><span class="pre">~conditions_knockout_wildtype</span></code> and <code class="docutils literal notranslate"><span class="pre">~</span> <span class="pre">sequencing_month</span> <span class="pre">+</span> <span class="pre">conditions_treatment_control</span></code>.</p>
 <p>Our gremlins will carefully unpack all of your input and pass only unique designs to DESeq2.</p>
-</section>
-</section>
+</div>
+</div>
 
 
            </div>
