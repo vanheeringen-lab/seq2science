@@ -206,13 +206,19 @@ elif config["aligner"] == "chromap":
             chromap --build-index --min-frag-length {wildcards.kmer_size} --ref {input} --output {output} > {log} 2>&1
             """
 
+
+    def get_chromap_index(wildcards):
+        avg_read_len = get_read_length(wildcards.sample)
+        return expand(f"{{genome_dir}}/{wildcards.assembly}/index/{{aligner}}/index_{avg_read_len}", **config)
+
+
     rule chromap:
         """
         Align reads against a genome (index) with chromap, and pipe the output to the required sorter(s).
         """
         input:
             reads=get_reads,
-            index=expand("{genome_dir}/{{assembly}}/index/{aligner}/index_kmer", **config)
+            index=get_chromap_index
         output:
             pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0]),
         log:
@@ -231,7 +237,8 @@ elif config["aligner"] == "chromap":
             "../envs/chromap.yaml"
         shell:
             """
-            chromap --index {input.index} {params.reads} {params.params} -t {threads}  2> {log} | tee {output} 1> /dev/null 2>> {log}
+            chromap --index {input.index} {params.reads} {params.params} --num-threads {threads} --SAM \
+            --MAPQ-threshold 0 --max-insert-size 0 --min-read-length 0 2> {log} | tee {output} 1> /dev/null 2>> {log}
             """
 
 
