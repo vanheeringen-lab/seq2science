@@ -191,7 +191,7 @@ elif config["aligner"] == "chromap":
         input:
             expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
         output:
-            directory(expand("{genome_dir}/{{assembly}}/index/{aligner}/index_{{kmer_size}}", **config)),
+            expand("{genome_dir}/{{assembly}}/index/{aligner}/index_{{kmer_size}}", **config),
         log:
             expand("{log_dir}/{aligner}_index/{{assembly}}_{{kmer_size}}.log", **config),
         benchmark:
@@ -218,7 +218,8 @@ elif config["aligner"] == "chromap":
         """
         input:
             reads=get_reads,
-            index=get_chromap_index
+            index=get_chromap_index,
+            genome=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
         output:
             pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0]),
         log:
@@ -228,7 +229,7 @@ elif config["aligner"] == "chromap":
         message: explain_rule(f"{config['aligner']}_align")
         params:
             params=config["align"],
-            reads=lambda wildcards, input: f"--reads1 {input}" if len(input) == 1 else f"--reads1 {input[0]} --reads2 {input[1]}"
+            reads=lambda wildcards, input: f"--read1 {input}" if len(input) == 1 else f"--read1 {input[0]} --read2 {input[1]}"
         resources:
             mem_gb=40,
         priority: 0
@@ -237,8 +238,8 @@ elif config["aligner"] == "chromap":
             "../envs/chromap.yaml"
         shell:
             """
-            chromap --index {input.index} {params.reads} {params.params} --num-threads {threads} --SAM \
-            --MAPQ-threshold 0 --max-insert-size 0 --min-read-length 0 2> {log} | tee {output} 1> /dev/null 2>> {log}
+            chromap --ref {input.genome} --index {input.index} {params.reads} {params.params} --num-threads {threads} --SAM \
+            --MAPQ-threshold 0 --max-insert-size 0 --min-read-length 0 --output {output} > {log} 2>&1
             """
 
 
