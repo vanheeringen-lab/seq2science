@@ -259,6 +259,7 @@ elif  "scrna_seq" == get_workflow():
                 f2=lambda wildcards, output: f"-f2 {output[0]}/{wildcards.assembly}_intron.fa" if "lamanno" in config.get("ref") else ""
             shell:
                 """
+                mkdir -p {output}
                 kb ref \
                 {input.fa} {input.gtf} \
                 -i {params.basename}.idx -g {params.basename}_t2g.txt -f1 {params.basename}_cdna.fa \
@@ -287,7 +288,7 @@ elif  "scrna_seq" == get_workflow():
             priority: 1
             shell:
                 """
-                mkdir -p {params.basename}
+                mkdir -p {output}
                 kb ref  \
                 {input.featurebarcodes} \
                 {params.options} \
