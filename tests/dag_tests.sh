@@ -198,6 +198,7 @@ if [ $1 = "atac-seq" ]; then
   printf "\natac-seq default\n"
   seq2science run atac-seq -nr --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 macs2_callpeak 1
+  assert_rulecount $1 get_effective_genome_size 1
 
   printf "\npeak callers\n"
   # seq2science run atac-seq -nr --configfile tests/$WF/macs2.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag  # default
