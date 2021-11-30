@@ -141,7 +141,7 @@ def get_control_macs(wildcards):
 
 def get_genome_size(wildcards):
     read_length = get_read_length(wildcards.sample)
-    return expand("{genome_dir}/{{assembly}}/{{assembly}}.kmer_" + str(read_length) + ".genome_size", **config)
+    return expand("{genome_dir}/{{assembly}}/genome_sizes/kmer_" + str(read_length) + ".genome_size", **config)
 
 
 rule macs2_callpeak:
