@@ -4,4 +4,4 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - bioconda::chromap=0.1
+  - bioconda::chromap=0.1.3
