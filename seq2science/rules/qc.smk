@@ -116,11 +116,11 @@ if config["trimmer"] == "trimgalore":
             """
 
 
-elif config["trimmer"] == "fastp" or "kmer_estimation" in config:
+elif config["trimmer"] == "fastp":
     ruleorder: fastp_qc_PE> fastp_qc_SE > fastp_PE > fastp_SE
 
 
-    checkpoint fastp_qc_SE:
+    rule fastp_qc_SE:
         """
         Get quality scores for (technical) replicates
         """
