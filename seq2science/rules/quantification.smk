@@ -321,13 +321,15 @@ elif  "scrna_seq" == get_workflow():
                     basename=lambda wildcards, input: f"{input.basedir[0]}/{wildcards.assembly}",
                     barcode_arg=lambda wildcards, input: ("-w " + input.barcodefile) if input.barcodefile else "", 
                     options=config.get("count"),
-                    outdir=lambda wildcards, input, output: os.path.dirname(output[0])
+                    outdir=lambda wildcards, input, output: os.path.dirname(output[0]),
+                    c1=lambda wildcards, input: f"-c1 {input[0]}/{wildcards.assembly}_cdna_t2c.txt" if "lamanno" in config.get("ref") else "",
+                    c2=lambda wildcards, input: f"-c2 {input[0]}/{wildcards.assembly}_intron_t2c.txt" if "lamanno" in config.get("ref") else ""
                 shell:
                     """
                     kb count \
                     -i {params.basename}.idx \
                     -t {threads} -g {params.basename}_t2g.txt \
-                    -o {params.outdir} -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
+                    -o {params.outdir} {params.c1} {params.c2} \
                     {params.barcode_arg} {params.options} {input.reads} > {log} 2>&1
                     # Validate output
                     if grep -q 'ERROR\|bad_alloc' "{log}"; then
