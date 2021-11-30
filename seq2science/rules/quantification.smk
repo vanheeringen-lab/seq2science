@@ -254,9 +254,9 @@ elif  "scrna_seq" == get_workflow():
             params:
                 basename=lambda wildcards, output: f"{output[0]}/{wildcards.assembly}",
                 options=config.get("ref"),
-                c1=lambda wildcards, output: f"-c1 {output[0]}/{wildcards.assembly}_cdna_t2c.txt" if "lamanno" in config.get("ref") else "",
-                c2=lambda wildcards, output: f"-c2 {output[0]}/{wildcards.assembly}_intron_t2c.txt" if "lamanno" in config.get("ref") else "",
-                f2=lambda wildcards, output: f"-f2 {output[0]}/{wildcards.assembly}_intron.fa" if "lamanno" in config.get("ref") else ""
+                c1=lambda wildcards, output: f"-c1 {output[0]}/{wildcards.assembly}_cdna_t2c.txt" if ("lamanno" or "nucleus") in config.get("ref") else "",
+                c2=lambda wildcards, output: f"-c2 {output[0]}/{wildcards.assembly}_intron_t2c.txt" if ("lamanno" or "nucleus") in config.get("ref") else "",
+                f2=lambda wildcards, output: f"-f2 {output[0]}/{wildcards.assembly}_intron.fa" if ("lamanno" or "nucleus") in config.get("ref") else ""
             shell:
                 """
                 mkdir -p {output}
@@ -323,8 +323,8 @@ elif  "scrna_seq" == get_workflow():
                     barcode_arg=lambda wildcards, input: ("-w " + input.barcodefile) if input.barcodefile else "", 
                     options=config.get("count"),
                     outdir=lambda wildcards, input, output: os.path.dirname(output[0]),
-                    c1=lambda wildcards, input: f"-c1 {input[0]}/{wildcards.assembly}_cdna_t2c.txt" if "lamanno" in config.get("ref") else "",
-                    c2=lambda wildcards, input: f"-c2 {input[0]}/{wildcards.assembly}_intron_t2c.txt" if "lamanno" in config.get("ref") else ""
+                    c1=lambda wildcards, input: f"-c1 {input[0]}/{wildcards.assembly}_cdna_t2c.txt" if ("lamanno" or "nucleus") in config.get("count") else "",
+                    c2=lambda wildcards, input: f"-c2 {input[0]}/{wildcards.assembly}_intron_t2c.txt" if ("lamanno" or "nucleus") in config.get("count") else ""
                 shell:
                     """
                     kb count \
