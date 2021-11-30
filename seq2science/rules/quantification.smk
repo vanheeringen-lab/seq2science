@@ -253,14 +253,16 @@ elif  "scrna_seq" == get_workflow():
                 mem_gb=88,
             params:
                 basename=lambda wildcards, output: f"{output[0]}/{wildcards.assembly}",
-                options=config.get("ref")
+                options=config.get("ref"),
+                c1=lambda wildcards, output: f"-c1 {output[0]}/{wildcards.assembly}_cdna_t2c.txt" if "lamanno" in config.get("ref") else "",
+                c2=lambda wildcards, output: f"-c2 {output[0]}/{wildcards.assembly}_intron_t2c.txt" if "lamanno" in config.get("ref") else "",
+                f2=lambda wildcards, output: f"-f2 {output[0]}/{wildcards.assembly}_intron.fa" if "lamanno" in config.get("ref") else ""
             shell:
                 """
                 kb ref \
                 {input.fa} {input.gtf} \
                 -i {params.basename}.idx -g {params.basename}_t2g.txt -f1 {params.basename}_cdna.fa \
-                -f2 {params.basename}_intron.fa \
-                -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
+                {params.f2} {params.c1} {params.c2} \
                 {params.options} > {log} 2>&1
                 """
                     
