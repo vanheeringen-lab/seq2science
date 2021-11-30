@@ -299,9 +299,9 @@ elif  "scrna_seq" == get_workflow():
         def get_kb_dir(wildcards):
             #Get the correct assembly directory for ADT/Genome based workflows
             if 'kite' in config.get('ref',""):
-                return directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/kite/", **config))     
+                return directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/kite", **config))     
             else:
-                return directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/", **config))
+                return directory(expand("{genome_dir}/{{assembly}}/index/kallistobus", **config))
                 
                             
         rule kallistobus_count:
