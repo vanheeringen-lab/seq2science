@@ -182,6 +182,66 @@ elif config["aligner"] == "bwa-mem2":
             bwa-mem2 mem {params.params} -t {threads} {params.index_dir} {input.reads} 2> {log} | tee {output} 1> /dev/null 2>> {log}
             """
 
+elif config["aligner"] == "chromap":
+
+    rule chromap_index:
+        """
+        Make a genome index for chromap. This index is required for alignment.
+        """
+        input:
+            expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+        output:
+            expand("{genome_dir}/{{assembly}}/index/{aligner}/index_{{kmer_size}}", **config),
+        log:
+            expand("{log_dir}/{aligner}_index/{{assembly}}_{{kmer_size}}.log", **config),
+        benchmark:
+            expand("{benchmark_dir}/{aligner}_index/{{assembly}}_{{kmer_size}}.benchmark.txt", **config)[0]
+        priority: 1
+        resources:
+            mem_gb=20,
+        conda:
+            "../envs/chromap.yaml"
+        shell:
+            """
+            chromap --build-index --min-frag-length {wildcards.kmer_size} --ref {input} --output {output} > {log} 2>&1
+            """
+
+
+    def get_chromap_index(wildcards):
+        avg_read_len = get_read_length(wildcards.sample)
+        return expand(f"{{genome_dir}}/{wildcards.assembly}/index/{{aligner}}/index_{avg_read_len}", **config)
+
+
+    rule chromap:
+        """
+        Align reads against a genome (index) with chromap, and pipe the output to the required sorter(s).
+        """
+        input:
+            reads=get_reads,
+            index=get_chromap_index,
+            genome=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+        output:
+            pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0]),
+        log:
+            expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}.log", **config),
+        benchmark:
+            expand("{benchmark_dir}/{aligner}_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
+        message: explain_rule(f"{config['aligner']}_align")
+        params:
+            params=config["align"],
+            reads=lambda wildcards, input: f"--read1 {input}" if len(input) == 1 else f"--read1 {input[0]} --read2 {input[1]}"
+        resources:
+            mem_gb=40,
+        priority: 0
+        threads: 6
+        conda:
+            "../envs/chromap.yaml"
+        shell:
+            """
+            chromap --ref {input.genome} --index {input.index} {params.reads} {params.params} --num-threads {threads} --SAM \
+            --MAPQ-threshold 0 --max-insert-size 0 --min-read-length 0 --output {output} > {log} 2>&1
+            """
+
 
 elif config["aligner"] == "hisat2":
 

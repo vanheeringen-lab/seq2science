@@ -144,7 +144,7 @@ if config.get("contrasts"):
 
 def get_read_length(sample):
     """
-    This function returns the read length for a sample.
+    This function returns the (average) read length for a sample.
     
     Depending on the fastq qc tool it raises a checkpoint exception, waits for that
     checkpoint to have been executed, and then checks in the qc summary of the sample
