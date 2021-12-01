@@ -7,6 +7,7 @@ suppressMessages({
 count_dir <- dirname(snakemake@input$counts)
 rds <- snakemake@output[[1]] 
 sample <- snakemake@params$sample
+replicates <- snakemake@params$replicates
 quantifier <- snakemake@config$quantifier
 iscite <- snakemake@params$iscite
 isvelo <- snakemake@params$isvelo
@@ -30,6 +31,7 @@ cat('log_file     <- "', log_file,        '"\n', sep = "")
 cat('count_dir       <- "', count_dir,          '"\n', sep = "")
 cat('rds          <- "', rds,             '"\n', sep = "")
 cat('sample       <- "', sample,          '"\n', sep = "")
+cat('replicates       <- "', replicats,          '"\n', sep = "")
 cat('iscite       <- "', iscite,          '"\n', sep = "")
 cat('isvelo       <- "', isvelo,          '"\n', sep = "")
 cat('iskite       <- "', iskite,          '"\n', sep = "")
@@ -88,7 +90,7 @@ read_cite_output <- function(dir="", name="umi_count") {
 if (quantifier == "citeseqcount") {
   seu <- CreateSeuratObject(counts = read_cite_output(dir=count_dir), assay = "ADT", project = sample, 
                                                       min.cells = seu_min_cells, min.features = seu_min_features)
-  if (!"technical_replicates" %in% colnames(sample_sheet)) {
+  if (!replicates) {
     seu@meta.data <- prep_cell_meta(seu, sample_sheet)
   }
   saveRDS(seu, file = rds)  
@@ -99,7 +101,7 @@ if (quantifier == "kallistobus") {
   if (iskite) {
     seu <- CreateSeuratObject(counts = read_count_output(count_dir, name="cells_x_features"), assay = "ADT", project = sample, 
                                                        min.cells = seu_min_cells, min.features = seu_min_features)
-    if (!"technical_replicates" %in% colnames(sample_sheet)) {
+    if (!replicates)) {
       seu@meta.data <- prep_cell_meta(seu, sample_sheet)
     }
     saveRDS(seu, file = rds)
@@ -109,7 +111,7 @@ if (quantifier == "kallistobus") {
                                                             min.cells = seu_min_cells, min.features = seu_min_features)
     seu.uf <- CreateSeuratObject(counts = read_count_output(count_dir, name="unspliced"), assay = "uf", project = sample, 
                                                             min.cells = seu_min_cells, min.features = seu_min_features)
-    if (!"technical_replicates" %in% colnames(sample_sheet)) {
+    if (!replicates) {
       seu.sf@meta.data <- prep_cell_meta(seu.sf, sample_sheet)
       seu.uf@meta.data <- prep_cell_meta(seu.uf, sample_sheet)
     }
@@ -121,7 +123,7 @@ if (quantifier == "kallistobus") {
     seu <- CreateSeuratObject(counts = read_count_output(count_dir, name="cells_x_genes"), assay = "RNA", project = sample, 
                                                          min.cells = seu_min_cells, min.features = seu_min_features)
     
-    if (!"technical_replicates" %in% colnames(sample_sheet)) {
+    if (replicates)) {
       seu@meta.data <- prep_cell_meta(seu, sample_sheet)
     }
     saveRDS(seu, file = rds)
