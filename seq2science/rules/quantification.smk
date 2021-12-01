@@ -241,7 +241,7 @@ elif  "scrna_seq" == get_workflow():
                 fa=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
                 gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
             output:
-                directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/", **config)),
+                directory(expand("{genome_dir}/{{assembly}}/index/kallistobus", **config)),
             log:
                 expand("{log_dir}/kallistobus_index/{{assembly}}.log", **config),
             benchmark:
@@ -252,15 +252,18 @@ elif  "scrna_seq" == get_workflow():
             resources:
                 mem_gb=88,
             params:
-                basename=lambda wildcards, output: f"{output[0]}{wildcards.assembly}",
-                options=config.get("ref")
+                basename=lambda wildcards, output: f"{output[0]}/{wildcards.assembly}",
+                options=config.get("ref"),
+                c1=lambda wildcards, output: f"-c1 {output[0]}/{wildcards.assembly}_cdna_t2c.txt" if ("lamanno" or "nucleus") in config.get("ref") else "",
+                c2=lambda wildcards, output: f"-c2 {output[0]}/{wildcards.assembly}_intron_t2c.txt" if ("lamanno" or "nucleus") in config.get("ref") else "",
+                f2=lambda wildcards, output: f"-f2 {output[0]}/{wildcards.assembly}_intron.fa" if ("lamanno" or "nucleus") in config.get("ref") else ""
             shell:
                 """
+                mkdir -p {output}
                 kb ref \
                 {input.fa} {input.gtf} \
                 -i {params.basename}.idx -g {params.basename}_t2g.txt -f1 {params.basename}_cdna.fa \
-                -f2 {params.basename}_intron.fa \
-                -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
+                {params.f2} {params.c1} {params.c2} \
                 {params.options} > {log} 2>&1
                 """
                     
@@ -272,7 +275,7 @@ elif  "scrna_seq" == get_workflow():
             input:
                 featurebarcodes=expand("{genome_dir}/{{assembly}}.tsv", **config)
             output:
-                directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/kite/", **config)),
+                directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/kite", **config)),
             log:    
                 expand("{log_dir}/kallistobus_index_kite/{{assembly}}.log", **config),    
             conda:
@@ -280,27 +283,27 @@ elif  "scrna_seq" == get_workflow():
             resources:
                 mem_gb=12, 
             params:    
-                basename=lambda wildcards, output: f"{output[0]}{wildcards.assembly}",
+                basename=lambda wildcards, output: f"{output[0]}/{wildcards.assembly}",
                 options=config.get("ref")
             priority: 1
             shell:
                 """
-                mkdir -p {params.basename}
+                mkdir -p {output}
                 kb ref  \
                 {input.featurebarcodes} \
                 {params.options} \
                 -i {params.basename}.idx -g {params.basename}_t2g.txt -f1 {params.basename}_cdna.fa > {log} 2>&1 
-                """    
+                """
                 
                 
         def get_kb_dir(wildcards):
             #Get the correct assembly directory for ADT/Genome based workflows
             if 'kite' in config.get('ref',""):
-                return directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/kite/", **config))     
+                return directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/kite", **config))     
             else:
-                return directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/", **config))
+                return directory(expand("{genome_dir}/{{assembly}}/index/kallistobus", **config))
                 
-                
+                            
         rule kallistobus_count:
                 """
                 Align reads against a transcriptome (index) with kallistobus and output a quantification file per sample.
@@ -327,13 +330,15 @@ elif  "scrna_seq" == get_workflow():
                     basename=lambda wildcards, input: f"{input.basedir[0]}/{wildcards.assembly}",
                     barcode_arg=lambda wildcards, input: ("-w " + input.barcodefile) if input.barcodefile else "", 
                     options=config.get("count"),
-                    outdir=lambda wildcards, input, output: os.path.dirname(output[0])
+                    outdir=lambda wildcards, input, output: os.path.dirname(output[0]),
+                    c1=lambda wildcards, input: f"-c1 {input[0]}/{wildcards.assembly}_cdna_t2c.txt" if ("lamanno" or "nucleus") in config.get("count") else "",
+                    c2=lambda wildcards, input: f"-c2 {input[0]}/{wildcards.assembly}_intron_t2c.txt" if ("lamanno" or "nucleus") in config.get("count") else ""
                 shell:
                     """
                     kb count \
                     -i {params.basename}.idx \
                     -t {threads} -g {params.basename}_t2g.txt \
-                    -o {params.outdir} -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
+                    -o {params.outdir} {params.c1} {params.c2} \
                     {params.barcode_arg} {params.options} {input.reads} > {log} 2>&1
                     # Validate output
                     if grep -q 'ERROR\|bad_alloc' "{log}"; then
