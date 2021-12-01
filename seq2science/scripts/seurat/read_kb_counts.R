@@ -41,14 +41,9 @@ cat('\n')
 
 # Read cell meta data from samplesheet
 prep_cell_meta <- function(seu, sample_sheet) {
-  blacklist <- c("descriptive_name")
+  blacklist <- c("descriptive_name", "technical_replicates")
   meta <- colnames(sample_sheet[setdiff(names(sample_sheet),blacklist)])
-  #Lookup samples based on sample name/merged replicate name
-  if ("technical_replicates" %in% colnames(sample_sheet)) {
-    sample.meta <- sample_sheet[sample_sheet$technical_replicates==seu@project.name,][1,]
-  } else {
-    sample.meta <- sample_sheet[sample_sheet$sample==seu@project.name,]
-  }
+  sample.meta <- sample_sheet[sample_sheet$sample==seu@project.name,]
   sample.meta <- sample.meta[meta]
   sample.meta <- sample.meta[rep(seq_len(nrow(sample.meta)), each = ncol(seu)),]
   rownames(sample.meta) <- rownames(FetchData(seu,"ident"))
@@ -93,7 +88,9 @@ read_cite_output <- function(dir="", name="umi_count") {
 if (quantifier == "citeseqcount") {
   seu <- CreateSeuratObject(counts = read_cite_output(dir=count_dir), assay = "ADT", project = sample, 
                                                       min.cells = seu_min_cells, min.features = seu_min_features)
-  seu@meta.data <- prep_cell_meta(seu, sample_sheet)
+  if (!"technical_replicates" %in% colnames(sample_sheet)) {
+    seu@meta.data <- prep_cell_meta(seu, sample_sheet)
+  }
   saveRDS(seu, file = rds)  
 } 
 # Create Seurat objects based on input kb workflow argument and set assay
@@ -102,7 +99,9 @@ if (quantifier == "kallistobus") {
   if (iskite) {
     seu <- CreateSeuratObject(counts = read_count_output(count_dir, name="cells_x_features"), assay = "ADT", project = sample, 
                                                        min.cells = seu_min_cells, min.features = seu_min_features)
-    seu@meta.data <- prep_cell_meta(seu, sample_sheet)
+    if (!"technical_replicates" %in% colnames(sample_sheet)) {
+      seu@meta.data <- prep_cell_meta(seu, sample_sheet)
+    }
     saveRDS(seu, file = rds)
     # kb count with '--workflow Lamanno'
   } else if (isvelo) {
@@ -110,8 +109,10 @@ if (quantifier == "kallistobus") {
                                                             min.cells = seu_min_cells, min.features = seu_min_features)
     seu.uf <- CreateSeuratObject(counts = read_count_output(count_dir, name="unspliced"), assay = "uf", project = sample, 
                                                             min.cells = seu_min_cells, min.features = seu_min_features)
-    seu.sf@meta.data <- prep_cell_meta(seu.sf, sample_sheet)
-    seu.uf@meta.data <- prep_cell_meta(seu.uf, sample_sheet)
+    if (!"technical_replicates" %in% colnames(sample_sheet)) {
+      seu.sf@meta.data <- prep_cell_meta(seu.sf, sample_sheet)
+      seu.uf@meta.data <- prep_cell_meta(seu.uf, sample_sheet)
+    }
     seu_objs <- c(seu.sf, seu.uf)
     names(seu_objs) <- c("sf","uf")
     saveRDS(seu_objs, file = rds) 
@@ -119,7 +120,10 @@ if (quantifier == "kallistobus") {
   } else {
     seu <- CreateSeuratObject(counts = read_count_output(count_dir, name="cells_x_genes"), assay = "RNA", project = sample, 
                                                          min.cells = seu_min_cells, min.features = seu_min_features)
-    seu@meta.data <- prep_cell_meta(seu, sample_sheet)
+    
+    if (!"technical_replicates" %in% colnames(sample_sheet)) {
+      seu@meta.data <- prep_cell_meta(seu, sample_sheet)
+    }
     saveRDS(seu, file = rds)
   }
 }
