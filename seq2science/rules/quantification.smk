@@ -410,7 +410,7 @@ elif  "scrna_seq" == get_workflow():
             iskite=lambda wildcards, input: True if "--workflow kite" in config.get("count", "") else False,
             iscite=lambda wildcards, input: True if config['quantifier'] == 'citeseqcount' else False,
             sample=lambda wildcards, input: wildcards.sample,
-            replicates=True if "technical_replicates" in samples else False,
+            replicates=True if "technical_replicates" in samples else False
         resources:
             R_scripts=1, # conda's R can have issues when starting multiple times
         script:
