@@ -26,6 +26,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - edge-case where local samples are in the cache, but not present in the fastq_dir
 - bug with differential peak/gene expression across multiple assemblies
 - bug with kb ref not creating index for non-velocity analysis
+- bug with count import in read_kb_counts.R after technical replicate merging
 
 ## [0.5.6] - 2021-10-19
 
