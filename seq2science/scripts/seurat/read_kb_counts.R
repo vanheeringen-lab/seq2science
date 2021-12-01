@@ -90,9 +90,7 @@ read_cite_output <- function(dir="", name="umi_count") {
 if (quantifier == "citeseqcount") {
   seu <- CreateSeuratObject(counts = read_cite_output(dir=count_dir), assay = "ADT", project = sample, 
                                                       min.cells = seu_min_cells, min.features = seu_min_features)
-  if (!replicates) {
-    seu@meta.data <- cbind(seu@meta.data, prep_cell_meta(seu, sample_sheet))
-  }
+  seu <- AddMetaData(seu, prep_cell_meta(seu, sample_sheet))
   saveRDS(seu, file = rds)  
 } 
 # Create Seurat objects based on input kb workflow argument and set assay
@@ -101,9 +99,7 @@ if (quantifier == "kallistobus") {
   if (iskite) {
     seu <- CreateSeuratObject(counts = read_count_output(count_dir, name="cells_x_features"), assay = "ADT", project = sample, 
                                                        min.cells = seu_min_cells, min.features = seu_min_features)
-    if (!replicates)) {
-      seu@meta.data <- cbind(seu@meta.data, prep_cell_meta(seu, sample_sheet))
-    }
+    seu <- AddMetaData(seu, prep_cell_meta(seu, sample_sheet))
     saveRDS(seu, file = rds)
     # kb count with '--workflow Lamanno'
   } else if (isvelo) {
@@ -111,10 +107,8 @@ if (quantifier == "kallistobus") {
                                                             min.cells = seu_min_cells, min.features = seu_min_features)
     seu.uf <- CreateSeuratObject(counts = read_count_output(count_dir, name="unspliced"), assay = "uf", project = sample, 
                                                             min.cells = seu_min_cells, min.features = seu_min_features)
-    if (!replicates) {
-      seu@meta.data <- cbind(seu@meta.data, prep_cell_meta(seu, sample_sheet))
-      seu@meta.data <- cbind(seu@meta.data, prep_cell_meta(seu, sample_sheet))
-    }
+    seu.sf <- AddMetaData(seu.sf, prep_cell_meta(seu.sf, sample_sheet))
+    seu.uf <- AddMetaData(seu.uf, prep_cell_meta(seu.uf, sample_sheet))
     seu_objs <- c(seu.sf, seu.uf)
     names(seu_objs) <- c("sf","uf")
     saveRDS(seu_objs, file = rds) 
@@ -123,9 +117,7 @@ if (quantifier == "kallistobus") {
     seu <- CreateSeuratObject(counts = read_count_output(count_dir, name="cells_x_genes"), assay = "RNA", project = sample, 
                                                          min.cells = seu_min_cells, min.features = seu_min_features)
     
-    if (!replicates)) {
-      seu@meta.data <- cbind(seu@meta.data, prep_cell_meta(seu, sample_sheet))
-    }
+    seu <- AddMetaData(seu, prep_cell_meta(seu, sample_sheet))
     saveRDS(seu, file = rds)
   }
 }
