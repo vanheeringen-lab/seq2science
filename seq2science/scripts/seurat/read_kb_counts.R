@@ -41,9 +41,14 @@ cat('\n')
 
 # Read cell meta data from samplesheet
 prep_cell_meta <- function(seu, sample_sheet) {
-  blacklist <- c("descriptive_name","technical_replicates")
+  blacklist <- c("descriptive_name")
   meta <- colnames(sample_sheet[setdiff(names(sample_sheet),blacklist)])
-  sample.meta <- sample_sheet[sample_sheet$sample==seu@project.name,]
+  #Lookup samples based on sample name/merged replicate name
+  if ("technical_replicates" %in% colnames(sample_sheet)) {
+    sample.meta <- sample_sheet[sample_sheet$technical_replicates==seu@project.name,][1,]
+  } else {
+    sample.meta <- sample_sheet[sample_sheet$sample==seu@project.name,]
+  }
   sample.meta <- sample.meta[meta]
   sample.meta <- sample.meta[rep(seq_len(nrow(sample.meta)), each = ncol(seu)),]
   rownames(sample.meta) <- rownames(FetchData(seu,"ident"))
