@@ -49,10 +49,7 @@ cat('\n')
 
 #Prep cell metadata
 prep_cell_meta <- function(seu, sample_sheet) {
-  blacklist <- c("descriptive_name")
   sample.meta <- sample_sheet[rownames(sample_sheet) %in% seu@project.name,]
-  meta <- colnames(sample_sheet[setdiff(names(sample_sheet),blacklist)])
-  sample.meta <- sample.meta[meta]
   sample.meta <- sample.meta[rep(seq_len(nrow(sample.meta)), each = ncol(seu)),]
   rownames(sample.meta) <- rownames(FetchData(seu,"ident"))
   sample.meta <- sample.meta[match(rownames(FetchData(seu,"ident")),rownames(sample.meta)),]
@@ -107,9 +104,7 @@ if (quantifier == "kallistobus") {
   if (iskite) {
     seu <- CreateSeuratObject(counts = read_count_output(count_dir, name="cells_x_features"), assay = "ADT", project = sample, 
                                                        min.cells = seu_min_cells, min.features = seu_min_features)
-    meta <- prep_cell_meta(seu, sample_sheet)
-    print(meta)
-    seu <- AddMetaData(seu, meta)
+    seu <- AddMetaData(seu, prep_cell_meta(seu, sample_sheet))
     saveRDS(seu, file = rds)
     # kb count with '--workflow Lamanno'
   } else if (isvelo) {
