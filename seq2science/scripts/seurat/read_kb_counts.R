@@ -4,10 +4,12 @@ suppressMessages({
 })
 
 # Snakemake variables
+scripts_dir  <- snakemake@params$scripts_dir
 count_dir <- dirname(snakemake@input$counts)
 rds <- snakemake@output[[1]] 
 sample <- snakemake@params$sample
 replicates <- snakemake@params$replicates
+genome <- snakemake@wildcards$assembly
 quantifier <- snakemake@config$quantifier
 iscite <- snakemake@params$iscite
 isvelo <- snakemake@params$isvelo
@@ -16,21 +18,25 @@ log_file <- snakemake@log[[1]]
 samples_tsv <- snakemake@config$samples
 seu_min_cells <- snakemake@config$seurat_object$min_cells
 seu_min_features <- snakemake@config$seurat_object$min_features
+
 # Log all console output
 log <- file(log_file, open="wt")
 sink(log)
 sink(log, type="message")
 
-# Read samplesheet
-sample_sheet <- read.table(samples_tsv, sep = '\t', header = TRUE)
+#Load utils library
+deseq_utils <- file.path(scripts_dir,"utils.R")
+source(deseq_utils)
 
 # Log all variables for debugging purposes
 cat('# variables used for this analysis:\n')
 cat('sample_sheet <- "', samples_tsv,     '"\n', sep = "")
+cat('scripts_dir <- "', scripts_dir,     '"\n', sep = "")
 cat('log_file     <- "', log_file,        '"\n', sep = "")
 cat('count_dir       <- "', count_dir,          '"\n', sep = "")
 cat('rds          <- "', rds,             '"\n', sep = "")
 cat('sample       <- "', sample,          '"\n', sep = "")
+cat('genome       <- "', genome,          '"\n', sep = "")
 cat('replicates       <- "', replicates,          '"\n', sep = "")
 cat('iscite       <- "', iscite,          '"\n', sep = "")
 cat('isvelo       <- "', isvelo,          '"\n', sep = "")
@@ -41,11 +47,11 @@ cat('seu_min_features <- "', seu_min_features,  '"\n', sep = "")
 
 cat('\n')
 
-# Read cell meta data from samplesheet
+#Prep cell metadata
 prep_cell_meta <- function(seu, sample_sheet) {
-  blacklist <- c("descriptive_name", "technical_replicates")
+  blacklist <- c("descriptive_name")
+  sample.meta <- sample_sheet[rownames(sample_sheet) %in% seu@project.name,]
   meta <- colnames(sample_sheet[setdiff(names(sample_sheet),blacklist)])
-  sample.meta <- sample_sheet[sample_sheet$sample==seu@project.name,]
   sample.meta <- sample.meta[meta]
   sample.meta <- sample.meta[rep(seq_len(nrow(sample.meta)), each = ncol(seu)),]
   rownames(sample.meta) <- rownames(FetchData(seu,"ident"))
@@ -86,6 +92,8 @@ read_cite_output <- function(dir="", name="umi_count") {
   return(mat)
 }
 
+#Parse sample_sheet
+sample_sheet <- parse_samples(samples_tsv, genome, replicates)
 # Create Seurat objects based on cite input arguments and set assay
 if (quantifier == "citeseqcount") {
   seu <- CreateSeuratObject(counts = read_cite_output(dir=count_dir), assay = "ADT", project = sample, 
@@ -99,7 +107,9 @@ if (quantifier == "kallistobus") {
   if (iskite) {
     seu <- CreateSeuratObject(counts = read_count_output(count_dir, name="cells_x_features"), assay = "ADT", project = sample, 
                                                        min.cells = seu_min_cells, min.features = seu_min_features)
-    seu <- AddMetaData(seu, prep_cell_meta(seu, sample_sheet))
+    meta <- prep_cell_meta(seu, sample_sheet)
+    print(meta)
+    seu <- AddMetaData(seu, meta)
     saveRDS(seu, file = rds)
     # kb count with '--workflow Lamanno'
   } else if (isvelo) {
