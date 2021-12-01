@@ -80,7 +80,7 @@ if "technical_replicates" in samples:
         input_files = list()
         for sample in samples[samples["technical_replicates"] == wildcards.replicate].index:
             if get_workflow() == "scrna_seq":
-                input_files.append(f"{{fastq_clean_dir}}/{sample}_clean{wildcards.fqext}.{{fqsuffix}}.paired.fq")
+                input_files.append(f"{{fastq_clean_dir}}/{sample}_clean{wildcards.fqext}.{{fqsuffix}}.paired.fq.gz")
             else:
                 input_files.append(f"{{trimmed_dir}}/{sample}{wildcards.fqext}_trimmed.{{fqsuffix}}.gz")
 
