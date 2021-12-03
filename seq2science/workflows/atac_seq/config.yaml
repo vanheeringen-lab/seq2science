@@ -41,7 +41,7 @@ peak_caller:
 
 # how much the summits should be extended by (on each side) around the summit for the count table
 # (e.g. 100 means a 200 bp wide peak)
-peak_windowsize: 1000
+peak_windowsize: 100
 
 ## differential accessibility analysis
 #contrasts:
