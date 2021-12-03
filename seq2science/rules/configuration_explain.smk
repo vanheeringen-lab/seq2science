@@ -138,7 +138,7 @@ else:
                      f"had a template length longer than {config['max_template_length']} bp and shorter than {config['min_template_length']} bp" if config.get("filter_on_size") else "",
                     ],
                  end=" and finally were tn5 bias shifted by seq2science." if config.get("tn5_shift",0) > 0 else ".") +
-                    f"The bam file was downsampled to {config['subsample']} reads." if config.get("subsample") else "",
+                    f"Afterwards samples were downsampled to {config['subsample']} reads." if config.get("subsample") else "",
         "sambamba_sort": f"Bam files were sorted with {href_v('sambamba')}.",
         "mark_duplicates": f"Afterwards, duplicate reads were {'removed' if 'REMOVE_DUPLICATES=true' in options('markduplicates') else 'marked'} with {href_v('picard',text='Picard MarkDuplicates')}.",
         "bam2cram": f"Bam files were converted to cram format with samtools {href_v('samtools')}.",

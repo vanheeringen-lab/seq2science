@@ -14,12 +14,14 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - added the slop parameter to the config.yaml of atac-seq and chip-seq workflows, just so they are more visible.
 - added support for seurat object export and merging for kb workflow.
 - added support for CITE-seq-count for ADT quantification
+- added the option to downsample to a specific number of reads.
 
 ### Changed
 
 - Seq2science now makes a separate blacklist file per blacklist option (encode & mitochondria), so that e.g. RNA-seq and ATAC-seq workflows can be run in parallel and don't conflict on the blacklist.  
 - error messages don't show the full traceback anymore, making it (hopefully) more clear what is going wrong.
 - The effective genome size is now not calculated per sample, but per read length. When dealing with multiple samples (of similar) length this improves computational burden quite some. 
+- samtools environment updated to version 1.14
 
 ### Fixed
 
