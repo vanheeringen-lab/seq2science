@@ -22,12 +22,12 @@ properties:
     type: boolean
 
   peak_windowsize:
-    description: when combining narrowpeaks, how much each summit should be extended by (on each side) when considering overlapping peaks. A summit is expanded by the windowsize on each side, so the total width is twice the peak_windowsize.
+    description: when combining narrowpeaks, how much each summit should be extended by (on each side) when considering overlapping peaks. If for instance a peak_windowsize of 100 is chosen, the final peak width is 200.
     default: 100
     type: integer
 
   slop:
-    description: how much the summits should be extended by (on each side) for making a peak count table. If for instance a slop of 100 is chosen, the final peak width is 200. If None, use the value of peak_windowsize.
+    description: how much the narrowpeak summits should be extended by (on each side) for making a peak count table. If unset, the value of peak_windowsize is used. If for instance a slop of 100 is chosen, the final peak width is 200. 
     type: integer
 
   logbase:
