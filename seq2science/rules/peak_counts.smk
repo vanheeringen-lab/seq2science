@@ -103,7 +103,7 @@ rule combine_peaks:
 rule bedtools_slop:
     """
     After combine_peaks we end up with just a bed file of summits. We extend all peaks
-    to a total width of 200, for a fair comparison between peaks.
+    to the same width, for a fair comparison between peaks.
     """
     input:
         bedfile=rules.combine_peaks.output,
@@ -117,7 +117,7 @@ rule bedtools_slop:
     conda:
         "../envs/bedtools.yaml"
     params:
-        slop=config["slop"],
+        slop=config.get("slop", config["peak_windowsize"]),  # fallback: same width as the upstream files
         reps=lambda wildcards, input: input  # help resolve changes in input files
     message: explain_rule("bed_slop")
     shell:
@@ -161,13 +161,18 @@ rule coverage_table:
         expand("{benchmark_dir}/coverage_table/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     conda:
         "../envs/gimme.yaml"
+    params:
+        windowsize=2 * config["peak_windowsize"],  # same width as the upstream files
+        reps=lambda wildcards, input: input  # help resolve changes in input files
     resources:
         mem_gb=3,
+    threads: 12  # default of the function
     message: explain_rule("coverage_table")
     shell:
         """
         echo "# The number of reads under each peak" > {output} 
-        coverage_table -p {input.peaks} -d {input.replicates} 2> {log} | grep -vE "^#" 2>> {log} |  
+        coverage_table -p {input.peaks} -d {input.replicates} -w {params.windowsize} --nthreads {threads} \
+        2> {log} | grep -vE "^#" 2>> {log} |  
         awk 'BEGIN {{ FS = "@" }} NR==1{{gsub("{wildcards.assembly}-|.samtools-coordinate","",$0)}}; \
         {{print $0}}' >> {output}
         """
