@@ -28,7 +28,6 @@ properties:
 
   slop:
     description: how much the summits should be extended by (on each side) for making a peak count table. If for instance a slop of 100 is chosen, the final peak width is 200. If None, use the value of peak_windowsize.
-    default: None
     type: integer
 
   logbase:
