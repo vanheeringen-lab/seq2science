@@ -18,7 +18,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Changed
 
-- config option `slop` now uses the value of `peak_windowsize` if unset
+- the rule using config option `slop` now uses the value of `peak_windowsize` if `slop` is unset
 - replaced `slop` for `peak_windowsize` in the ChIP-seq and ATAC-seq config.yaml files
 - increased default `peak_windowsize` in ChIP-seq config.yaml from 100 to 1000 (matching the ANANSE default width)
 - Seq2science now makes a separate blacklist file per blacklist option (encode & mitochondria), so that e.g. RNA-seq and ATAC-seq workflows can be run in parallel and don't conflict on the blacklist.  
