@@ -186,7 +186,7 @@ rule sieve_bam:
         subsample=(
             lambda wildcards, input, output:
             f""" cat > {output.subsample}; nreads=$(samtools view -c {output.subsample}); \
-            if [[ $nreads -gt {config['subsample']} ]]; then samtools view -h -s $(echo $nreads | awk '{{print {config['subsample']}/$1}}') {output.subsample}; else samtools view -h {output.subsample}; fi | \
+            if [ $nreads -gt {config['subsample']} ]; then samtools view -h -s $(echo $nreads | awk '{{print {config['subsample']}/$1}}') {output.subsample}; else samtools view -h {output.subsample}; fi | \
             """
             if config["subsample"] > -1
             else ""

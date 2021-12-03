@@ -218,6 +218,6 @@ properties:
     type: integer
 
   subsample:
-    description: the maximum amount of reads allowed in the final bam file.
+    description: the maximum amount of reads allowed in the final bam file. When setting a value lower than zero, no subsampling happens (default).
     type: integer
     default: -1
