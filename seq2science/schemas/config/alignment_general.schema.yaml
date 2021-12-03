@@ -216,3 +216,8 @@ properties:
   max_template_length:
     description: the maximum template length for paired-end reads
     type: integer
+
+  subsample:
+    description: the maximum amount of reads allowed in the final bam file.
+    type: integer
+    default: -1

@@ -144,7 +144,8 @@ rule sieve_bam:
         * remove reads inside the blacklist
         * remove duplicates
         * filter paired-end reads on transcript length
-    
+        * subsample to have a maximum amount of reads (equal across samples)
+
     """
     input:
         bam=rules.mark_duplicates.output.bam,
@@ -184,11 +185,12 @@ rule sieve_bam:
         ),
         subsample=(
             lambda wildcards, input, output:
-            f""" cat > {output.subsample}; cat <(samtools view -SH {output.subsample}) <(samtools view -S {output.subsample} | shuf -n {config['subsample']}) | """
+            f""" cat > {output.subsample}; nreads=$(samtools view -c {output.subsample}); \
+            if [[ $nreads -gt {config['subsample']} ]]; then samtools view -h -s $(echo $nreads | awk '{{print {config['subsample']}/$1}}') {output.subsample}; else samtools view -h {output.subsample}; fi | \
+            """
             if config["subsample"] > -1
             else ""
         ),
-    shell:
         """
         samtools view -h {params.prim_align} {params.minqual} {params.blacklist} \
         {input.bam} | {params.atacshift} {params.sizesieve} {params.subsample}
