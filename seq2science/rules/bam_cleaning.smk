@@ -191,7 +191,7 @@ rule sieve_bam:
             if config["subsample"] > -1
             else ""
         ),
-        shell:
+    shell:
         """
         samtools view -h {params.prim_align} {params.minqual} {params.blacklist} \
         {input.bam} | {params.atacshift} {params.sizesieve} {params.subsample}
