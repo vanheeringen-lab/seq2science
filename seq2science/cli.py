@@ -123,11 +123,6 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         "if that didn't work it prints the url.",
         help="Take me to the docs!",
     )
-    deseq2 = subparsers.add_parser(
-        "deseq2",
-        help="DESeq2 wrapper.",
-        description="DESeq2 wrapper that works with s2s samples.tsv and counts.tsv",
-    )
 
     # init, run and explain can use all workflows
     for subparser in [init, run, explain]:
@@ -220,38 +215,6 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
             help="The path to the config file.",
         )
 
-    # DESeq2 wrapper arguments
-    deseq2.add_argument(
-        "-d",
-        "--design",
-        default="",  # must be an empty string for R's arg checking + docs CLI argument
-        help="design contrast (e.g. column_knockouts_controls)",
-    )
-    deseq2.add_argument(
-        "-s",
-        "--samples",
-        default="",  # must be an empty string for R's arg checking + docs CLI argument
-        help="samples.tsv with a column containing the contrast arguments "
-             "(sample order consistent with the counts.tsv)",
-    )
-    deseq2.add_argument(
-        "-c",
-        "--counts",
-        default="",  # must be an empty string for R's arg checking + docs CLI argument
-        help="counts.tsv (sample order consistent with the samples.tsv)",
-    )
-    deseq2.add_argument(
-        "-o",
-        "--outdir",
-        default="",  # must be an empty string for R's arg checking + docs CLI argument
-        help="output directory",
-    )
-    deseq2.add_argument(
-        "--docs",
-        action='store_true',
-        help="open de DESeq2 wrapper documentation (with examples!)",
-    )
-
     # enable tab completion
     # exclusion only works on the main parser unfortunately, but it's better than nothing,
     # plus it might be supported later?
@@ -297,6 +260,7 @@ def deseq2science_parser():
         action='store_true',
         help="open de DESeq2 wrapper documentation (with examples!)",
     )
+    argcomplete.autocomplete(parser)
 
     return parser
 
