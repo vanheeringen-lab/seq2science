@@ -33,6 +33,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - bug with differential peak/gene expression across multiple assemblies
 - bug with kb ref not creating index for non-velocity analysis
 - bug with count import in read_kb_counts.R for technical replicates and meta-data handling
+- deseq2 ordering in multiqc report
 
 ## [0.5.6] - 2021-10-19
 
