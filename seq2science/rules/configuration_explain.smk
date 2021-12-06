@@ -55,7 +55,8 @@ else:
         'ucsc genome browser': 'http://www.genome.org/cgi/doi/10.1101/gr.229102',
         'seurat': 'https://doi.org/10.1038/nbt.4096',
         'kb_seurat_pp': 'https://github.com/Rebecza/scRNA-seq',
-        'citeseqcount': 'https://zenodo.org/record/2590196'
+        'citeseqcount': 'https://zenodo.org/record/2590196',
+        'khmer': 'https://dx.doi.org/10.12688%2Ff1000research.6924.1'
     }
 
     def explain_rule(name):
@@ -136,7 +137,8 @@ else:
                      f"aligned inside the {hyperref('ENCODE blacklist')}" if config.get("remove_blacklist") else "",
                      f"had a template length longer than {config['max_template_length']} bp and shorter than {config['min_template_length']} bp" if config.get("filter_on_size") else "",
                     ],
-                 end=" and finally were tn5 bias shifted by seq2science." if config.get("tn5_shift",0) > 0 else "."),
+                 end=" and finally were tn5 bias shifted by seq2science." if config.get("tn5_shift",0) > 0 else ".") +
+                    f"Afterwards samples were downsampled to {config['subsample']} reads." if config.get("subsample") else "",
         "sambamba_sort": f"Bam files were sorted with {href_v('sambamba')}.",
         "mark_duplicates": f"Afterwards, duplicate reads were {'removed' if 'REMOVE_DUPLICATES=true' in options('markduplicates') else 'marked'} with {href_v('picard',text='Picard MarkDuplicates')}.",
         "bam2cram": f"Bam files were converted to cram format with samtools {href_v('samtools')}.",
@@ -150,6 +152,7 @@ else:
                             "the normal prior distribution provided by DESeq2.")],sep=" ",final_sep=" "),
         "count_matrix_txi": f"Transcript abundance estimations were aggregated and converted to gene counts using {href_v('tximeta')}.",
         "run2sra": f"Public samples were downloaded from the {hyperref('Sequence Read Archive')} with help of the ncbi e-utilities and {hyperref('pysradb')}.",
+        "get_effective_genome_size": f"The effective genome size was estimated per sample by {href_v('khmer')} by calculating the number of unique kmers with k being the average read length.",
         "get_genome": f"Genome assembly {{wildcards.raw_assembly}} was downloaded with {hyperref('genomepy',text=f'genomepy {genomepy.__version__}')}.",
         "custom_extension": "The genome and gene annotations was extended with custom regions.",
         "call_peak_genrich": f"Peaks were called with {href_v('genrich')}{options('peak_caller','genrich')}.",
