@@ -5,7 +5,9 @@ All rules/logic related to filtering (sieving) after alignment to a genome shoul
 from seq2science.util import sieve_bam
 
 
-localrules: setup_blacklist, complement_blacklist
+localrules:
+    setup_blacklist,
+    complement_blacklist,
 
 
 # the blacklist has different output depending on what it blacklists
@@ -25,7 +27,10 @@ rule setup_blacklist:
         blacklist=expand("{genome_dir}/{{assembly}}/{{assembly}}.blacklist.bed", **config),
         sizes=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
     output:
-        expand("{genome_dir}/{{assembly}}/{{assembly}}.seq2scienceblacklist_{types}.bed", **{**config, **{"types": blacklisted_filename}}),
+        expand(
+            "{genome_dir}/{{assembly}}/{{assembly}}.seq2scienceblacklist_{types}.bed",
+            **{**config, **{"types": blacklisted_filename}}
+        ),
     params:
         config.get("remove_blacklist"),  # helps resolve changed params
         config.get("remove_mito"),  # helps resolve changed params
@@ -55,7 +60,10 @@ rule complement_blacklist:
         blacklist=rules.setup_blacklist.output,
         sizes=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
     output:
-        expand("{genome_dir}/{{assembly}}/{{assembly}}.seq2scienceblacklist_complement_{types}.bed", **{**config, **{"types": blacklisted_filename}}),
+        expand(
+            "{genome_dir}/{{assembly}}/{{assembly}}.seq2scienceblacklist_complement_{types}.bed",
+            **{**config, **{"types": blacklisted_filename}}
+        ),
     params:
         config.get("remove_blacklist"),  # helps resolve changed params
         config.get("remove_mito"),  # helps resolve changed params
@@ -85,7 +93,8 @@ rule mark_duplicates:
         expand("{log_dir}/mark_duplicates/{{assembly}}-{{sample}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/mark_duplicates/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
-    message: explain_rule("mark_duplicates")
+    message:
+        explain_rule("mark_duplicates")
     params:
         config["markduplicates"],
     resources:
@@ -105,8 +114,9 @@ rule mark_duplicates:
 if config.get("tn5_shift"):
     shiftsieve = "-shifted"
 else:
-    ruleorder: sieve_bam > samtools_sort
     shiftsieve = ""
+
+    ruleorder: sieve_bam > samtools_sort
 
 
 # the output of sieving depends on different preprocessing steps
@@ -114,11 +124,15 @@ sieve_bam_output = {"final": f"{config['final_bam_dir']}/{{assembly}}-{{sample}}
 
 # if we filter on size, we make two files. One split on size, and one not.
 if config["filter_on_size"]:
-    sieve_bam_output["allsizes"] = temp(f"{config['final_bam_dir']}/{{assembly}}-{{sample}}_allsizes.samtools-coordinate{shiftsieve}.sam")
+    sieve_bam_output["allsizes"] = temp(
+        f"{config['final_bam_dir']}/{{assembly}}-{{sample}}_allsizes.samtools-coordinate{shiftsieve}.sam"
+    )
 
 # if we downsample to a maximum number of reads, we also need to store the results intermediately
 if config["subsample"] > -1:
-    sieve_bam_output["subsample"] = temp(f"{config['final_bam_dir']}/{{assembly}}-{{sample}}_presubsample.samtools-coordinate{shiftsieve}.sam")
+    sieve_bam_output["subsample"] = temp(
+        f"{config['final_bam_dir']}/{{assembly}}-{{sample}}_presubsample.samtools-coordinate{shiftsieve}.sam"
+    )
 
 # now that we know the output sieve bam, we can mark as temp based on whether we do tn5 shift
 if config.get("tn5_shift"):
@@ -152,42 +166,37 @@ rule sieve_bam:
         blacklist=rules.complement_blacklist.output,
         sizes=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
     output:
-        **sieve_bam_output
+        **sieve_bam_output,
     log:
         expand("{log_dir}/sieve_bam/{{assembly}}-{{sample}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/sieve_bam/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
-    message: explain_rule("sieve_bam")
+    message:
+        explain_rule("sieve_bam")
     conda:
         "../envs/samtools.yaml"
     threads: 2
     params:
         minqual=f"-q {config['min_mapping_quality']}",
         atacshift=(
-            lambda wildcards, input:
-            f" {config['rule_dir']}/../scripts/atacshift.pl /dev/stdin {input.sizes} | "
+            lambda wildcards, input: f" {config['rule_dir']}/../scripts/atacshift.pl /dev/stdin {input.sizes} | "
             if config["tn5_shift"]
             else ""
         ),
         blacklist=lambda wildcards, input: f"-L {input.blacklist}",
         prim_align=f"-F {sieve_flag}" if sieve_flag > 0 else "",
         sizesieve=(
-            lambda wildcards, input, output:
-            f""" tee {output.allsizes} | awk 'substr($0,1,1)=="@" || ($9>={config['min_template_length']} && $9<={config['max_template_length']}) || ($9<=-{config['min_template_length']} && $9>=-{config['max_template_length']})' | """
+            lambda wildcards, input, output: f""" tee {output.allsizes} | awk 'substr($0,1,1)=="@" || ($9>={config['min_template_length']} && $9<={config['max_template_length']}) || ($9<=-{config['min_template_length']} && $9>=-{config['max_template_length']})' | """
             if sampledict[wildcards.sample]["layout"] == "PAIRED" and config["filter_on_size"]
             else ""
         ),
         sizesieve_touch=(
-            lambda wildcards, input, output:
-            f"touch {output.allsizes}"
+            lambda wildcards, input, output: f"touch {output.allsizes}"
             if sampledict[wildcards.sample]["layout"] == "SINGLE" and config["filter_on_size"]
             else ""
         ),
         subsample=(
-            lambda wildcards, input, output:
-            f""" cat > {output.subsample}; nreads=$(samtools view -c {output.subsample}); \
-            if [ $nreads -gt {config['subsample']} ]; then samtools view -h -s $(echo $nreads | awk '{{print {config['subsample']}/$1}}') {output.subsample}; else samtools view -h {output.subsample}; fi | \
-            """
+            lambda wildcards, input, output: f""" cat > {output.subsample}; nreads=$(samtools view -c {output.subsample}); \             if [ $nreads -gt {config['subsample']} ]; then samtools view -h -s $(echo $nreads | awk '{{print {config['subsample']}/$1}}') {output.subsample}; else samtools view -h {output.subsample}; fi | \             """
             if config["subsample"] > -1
             else ""
         ),
@@ -196,20 +205,22 @@ rule sieve_bam:
         samtools view -h {params.prim_align} {params.minqual} {params.blacklist} \
         {input.bam} | {params.atacshift} {params.sizesieve} {params.subsample}
         samtools view -b > {output.final} 2> {log}
-        
+
         # single-end reads never output allsizes so just touch the file when filtering on size
         {params.sizesieve_touch}
         """
 
+
 if not sieve_bam(config):
+
     rule cp_unsieved2sieved:
         """
         Copy a bam file if no sieving is necessary. 
         """
         input:
-            rules.mark_duplicates.output.bam
+            rules.mark_duplicates.output.bam,
         output:
-            expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config)
+            expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config),
         shell:
             """
             cp {input} {output}
@@ -229,14 +240,15 @@ rule sambamba_sort:
     Sort the result of alignment or sieving with the sambamba sorter.
     """
     input:
-        expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config)
+        expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config),
     output:
         temp(expand("{final_bam_dir}/{{assembly}}-{{sample}}.sambamba-{{sorting}}.bam", **config)),
     wildcard_constraints:
         sieve="|-sievsort",
     log:
         expand("{log_dir}/sambamba_sort/{{assembly}}-{{sample}}-sambamba_{{sorting}}.log", **config),
-    message: explain_rule("sambamba_sort")
+    message:
+        explain_rule("sambamba_sort")
     benchmark:
         expand("{benchmark_dir}/sambamba_sort/{{assembly}}-{{sample}}-{{sorting}}.benchmark.txt", **config)[0]
     params:
@@ -259,7 +271,7 @@ rule samtools_sort:
     Sort the result of shiftsieving with the samtools sorter.
     """
     input:
-        rules.sieve_bam.output.final
+        rules.sieve_bam.output.final,
     output:
         expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-{{sorting}}.bam", **config),
     log:
@@ -306,14 +318,15 @@ rule samtools_index:
 
 
 if config["filter_on_size"]:
+
     rule sam2bam:
         """
         Convert a file in sam format into a bam format (binary)
         """
         input:
-            "{filepath}.sam"
+            "{filepath}.sam",
         output:
-            "{filepath}.bam"
+            "{filepath}.bam",
         conda:
             "../envs/samtools.yaml"
         shell:
@@ -331,7 +344,8 @@ rule bam2cram:
         assembly=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
     output:
         expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.cram", **config),
-    message: explain_rule("bam2cram")
+    message:
+        explain_rule("bam2cram")
     log:
         expand("{log_dir}/bam2cram/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config),
     benchmark:
@@ -358,7 +372,9 @@ rule samtools_index_cram:
     log:
         expand("{log_dir}/samtools_index_cram/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config),
     benchmark:
-        expand("{benchmark_dir}/samtools_index_cram/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.benchmark.txt", **config)[0]
+        expand(
+            "{benchmark_dir}/samtools_index_cram/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.benchmark.txt", **config
+        )[0]
     conda:
         "../envs/samtools.yaml"
     shell:

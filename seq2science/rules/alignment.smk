@@ -2,6 +2,7 @@
 All rules/logic related to aligning to a genome should be here.
 """
 
+
 def get_reads(wildcards):
     """
     Function that returns the reads for any aligner.
@@ -34,7 +35,7 @@ if config["aligner"] == "bowtie2":
         shell:
             """
             mkdir -p {output}
-            
+
             bowtie2-build {params} --threads {threads} {input} {output}/{wildcards.assembly} > {log} 2>&1
             """
 
@@ -44,14 +45,15 @@ if config["aligner"] == "bowtie2":
         """
         input:
             reads=get_reads,
-            index=expand("{genome_dir}/{{assembly}}/index/{aligner}/", **config)
+            index=expand("{genome_dir}/{{assembly}}/index/{aligner}/", **config),
         output:
             pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0]),
         log:
             expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}.log", **config),
         benchmark:
             expand("{benchmark_dir}/{aligner}_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
-        message: explain_rule(f"{config['aligner']}_align")
+        message:
+            explain_rule(f"{config['aligner']}_align")
         params:
             input=(
                 lambda wildcards, input: ["-U", input.reads]
@@ -94,7 +96,7 @@ elif config["aligner"] == "bwa-mem":
         shell:
             """
             mkdir -p {output}
-            
+
             bwa index -p {params.prefix} {params.params} {input} > {log} 2>&1
             """
 
@@ -104,14 +106,15 @@ elif config["aligner"] == "bwa-mem":
         """
         input:
             reads=get_reads,
-            index=expand("{genome_dir}/{{assembly}}/index/{aligner}/", **config)
+            index=expand("{genome_dir}/{{assembly}}/index/{aligner}/", **config),
         output:
             pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0]),
         log:
             expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}.log", **config),
         benchmark:
             expand("{benchmark_dir}/{aligner}_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
-        message: explain_rule(f"{config['aligner']}_align")
+        message:
+            explain_rule(f"{config['aligner']}_align")
         params:
             index_dir=expand("{genome_dir}/{{assembly}}/index/{aligner}/{{assembly}}", **config),
             params=config["align"],
@@ -125,6 +128,7 @@ elif config["aligner"] == "bwa-mem":
             """
             bwa mem {params.params} -t {threads} {params.index_dir} {input.reads} 2> {log} | tee {output} 1> /dev/null 2>> {log}
             """
+
 
 elif config["aligner"] == "bwa-mem2":
 
@@ -141,7 +145,7 @@ elif config["aligner"] == "bwa-mem2":
         benchmark:
             expand("{benchmark_dir}/{aligner}_index/{{assembly}}.benchmark.txt", **config)[0]
         params:
-            prefix="{genome_dir}/{{assembly}}/index/{aligner}/{{assembly}}".format(**config)
+            prefix="{genome_dir}/{{assembly}}/index/{aligner}/{{assembly}}".format(**config),
         priority: 1
         resources:
             mem_gb=40,
@@ -150,7 +154,7 @@ elif config["aligner"] == "bwa-mem2":
         shell:
             """
             mkdir -p {output}
-            
+
             bwa-mem2 index -p {params.prefix} {input} > {log} 2>&1
             """
 
@@ -160,14 +164,15 @@ elif config["aligner"] == "bwa-mem2":
         """
         input:
             reads=get_reads,
-            index=expand("{genome_dir}/{{assembly}}/index/{aligner}/", **config)
+            index=expand("{genome_dir}/{{assembly}}/index/{aligner}/", **config),
         output:
             pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0]),
         log:
             expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}.log", **config),
         benchmark:
             expand("{benchmark_dir}/{aligner}_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
-        message: explain_rule(f"{config['aligner']}_align")
+        message:
+            explain_rule(f"{config['aligner']}_align")
         params:
             index_dir=expand("{genome_dir}/{{assembly}}/index/{aligner}/{{assembly}}", **config),
             params=config["align"],
@@ -199,7 +204,8 @@ elif config["aligner"] == "hisat2":
             expand("{log_dir}/{aligner}_index/{{assembly}}.log", **config),
         benchmark:
             expand("{benchmark_dir}/{aligner}_index/{{assembly}}.benchmark.txt", **config)[0]
-        message: explain_rule("hisat_splice_aware")
+        message:
+            explain_rule("hisat_splice_aware")
         priority: 1
         threads: 8
         resources:
@@ -211,11 +217,11 @@ elif config["aligner"] == "hisat2":
         shell:
             """
             mkdir -p {output}
-            
+
             hp=$(which hisat2)
             python3 ${{hp}}_extract_splice_sites.py {input.gtf} > {output}/splice_sites.tsv 2>> {log}
             python3 ${{hp}}_extract_exons.py {input.gtf} > {output}/exons.tsv 2>> {log}
-            
+
             hisat2-build {params} -p {threads} --ss {output}/splice_sites.tsv --exon {output}/exons.tsv \
             {input.fasta} {output}/part >> {log} 2>&1
             """
@@ -243,9 +249,10 @@ elif config["aligner"] == "hisat2":
         shell:
             """
             mkdir -p {output}
-            
+
             hisat2-build {params} -p {threads} {input} {output}/part > {log} 2>&1
             """
+
 
     def get_hisat_index(wildcards):
         index = "{genome_dir}/{{assembly}}/index/{aligner}/"
@@ -259,14 +266,15 @@ elif config["aligner"] == "hisat2":
         """
         input:
             reads=get_reads,
-            index=get_hisat_index
+            index=get_hisat_index,
         output:
             pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0]),
         log:
             expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}.log", **config),
         benchmark:
             expand("{benchmark_dir}/{aligner}_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
-        message: explain_rule(f"{config['aligner']}_align")
+        message:
+            explain_rule(f"{config['aligner']}_align")
         params:
             input=(
                 lambda wildcards, input: ["-U", input.reads]
@@ -309,10 +317,9 @@ elif config["aligner"] == "minimap2":
         shell:
             """
             mkdir -p $(dirname {output})
-            
+
             minimap2 -t {threads} -d {output} {input} {params} > {log} 2>&1
             """
-
 
     rule minimap2_align:
         """
@@ -320,16 +327,17 @@ elif config["aligner"] == "minimap2":
         """
         input:
             reads=get_reads,
-            index=rules.minimap2_index.output
+            index=rules.minimap2_index.output,
         output:
             pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0]),
         log:
             expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}.log", **config),
         benchmark:
             expand("{benchmark_dir}/{aligner}_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
-        message: explain_rule(f"{config['aligner']}_align")
+        message:
+            explain_rule(f"{config['aligner']}_align")
         params:
-        #     input=lambda wildcards, input: input.reads if config["layout"][wildcards.sample] == "SINGLE" else input.reads[0:2],
+            # input=lambda wildcards, input: input.reads if config["layout"][wildcards.sample] == "SINGLE" else input.reads[0:2],
             params=config["align"],
         priority: 0
         threads: 10
@@ -421,7 +429,7 @@ elif config["aligner"] == "star":
         """
         input:
             reads=get_reads,
-            index=expand("{genome_dir}/{{assembly}}/index/{aligner}/", **config)
+            index=expand("{genome_dir}/{{assembly}}/index/{aligner}/", **config),
         output:
             pipe=pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0]),
             dir=directory(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}", **config)),
@@ -429,9 +437,12 @@ elif config["aligner"] == "star":
             directory(expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}", **config)),
         benchmark:
             expand("{benchmark_dir}/{aligner}_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
-        message: explain_rule(f"{config['aligner']}_align")
+        message:
+            explain_rule(f"{config['aligner']}_align")
         params:
-            input=lambda wildcards, input: input.reads if sampledict[wildcards.sample]["layout"] == "SINGLE" else input.reads[0:2],
+            input=lambda wildcards, input: input.reads
+            if sampledict[wildcards.sample]["layout"] == "SINGLE"
+            else input.reads[0:2],
             params=config["align"],
         priority: 0
         threads: 8

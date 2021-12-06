@@ -92,8 +92,12 @@ if "technical_replicates" in samples:
 
     # scrna-seq uses the fastq paired files
     if config["trimmer"] == "fastp":
+
         ruleorder: merge_replicates > fastp_PE > fastp_SE
+
+
     elif config["trimmer"] == "trimgalore":
+
         ruleorder: merge_replicates > trimgalore_PE > trimgalore_SE
 
     # true treps are treps combined of 2 samples or more
@@ -114,9 +118,9 @@ if "technical_replicates" in samples:
             temp(sorted(expand("{trimmed_dir}/{{replicate}}{{fqext}}_trimmed.{fqsuffix}.gz", **config))),
         wildcard_constraints:
             replicate="|".join(true_treps) if len(true_treps) else "$a",
-            fqext=f"_{config['fqext1']}|_{config['fqext2']}|", # nothing (SE), or fqext with an underscore (PE)
+            fqext=f"_{config['fqext1']}|_{config['fqext2']}|",  # nothing (SE), or fqext with an underscore (PE)
         params:
-            reps=lambda wildcards, input: input  # help resolve changes in input files
+            reps=lambda wildcards, input: input,  # help resolve changes in input files
         log:
             expand("{log_dir}/merge_replicates/{{replicate}}{{fqext}}.log", **config),
         benchmark:
