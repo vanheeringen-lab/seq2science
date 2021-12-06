@@ -409,7 +409,9 @@ elif  "scrna_seq" == get_workflow():
             isvelo=lambda wildcards, input: True if "--workflow lamanno" in config.get("count", "") else False,
             iskite=lambda wildcards, input: True if "--workflow kite" in config.get("count", "") else False,
             iscite=lambda wildcards, input: True if config['quantifier'] == 'citeseqcount' else False,
-            sample=lambda wildcards, input: wildcards.sample
+            sample=lambda wildcards, input: wildcards.sample,
+            replicates=True if "technical_replicates" in samples else False,
+            scripts_dir=f"{config['rule_dir']}/../scripts/deseq2"
         resources:
             R_scripts=1, # conda's R can have issues when starting multiple times
         script:
