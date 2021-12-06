@@ -755,15 +755,15 @@ rule multiqc_schema:
             deseq2_imgs += f"""\
     {contrast}.combined_ma_volcano:
         section_name: 'DESeq2 - MA plot for contrast {contrast}'
-        description: 'A MA plot shows the relation between the (normalized) mean counts for each gene, and the log2 fold change between the conditions. Genes that are significantly differentially expressed are coloured blue. Similarily a volcano plot shows the relation between the log2 fold change between contrasts and their p-value.'
+        description: 'A MA plot shows the relation between the (normalized) mean counts for each gene/peak, and the log2 fold change between the conditions. Genes/peaks that are significantly differentially expressed are coloured blue. Similarily a volcano plot shows the relation between the log2 fold change between contrasts and their p-value.'
     {contrast}.pca_plot:
         section_name: 'DESeq2 - PCA plot for {contrast}'
         description: 'This PCA plot shows the relation among samples along the two most principal components, coloured by condition. PCA transforms the data from the normalized high dimensions (e.g. 20.000 gene counts, or 100.000 peak expressions) to a low dimension (PC1 and PC2). It does so by maximizing the variance along these two components. Generally you expect there to be more variance between samples from different conditions, than within conditions. This means that you would "expect" similar samples closeby each other on PC1 and PC2.' 
 """
             deseq2_order += f"""\
-  {contrast}_combined_ma_volcano:
+  {contrast.replace(".", "_")}_combined_ma_volcano:
     order: {order}
-  {contrast}_pca_plot:
+  {contrast.replace(".", "_")}_pca_plot:
     order: {order-1}
 """
             order -= 2
