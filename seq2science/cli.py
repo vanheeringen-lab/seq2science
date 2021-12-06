@@ -34,7 +34,7 @@ def _import():
     import xdg
 
 
-def main():
+def seq2science_main():
     # set helpful paths
     base_dir = os.path.dirname(inspect.getfile(seq2science))
     workflows_dir = os.path.join(base_dir, "workflows")
@@ -61,6 +61,21 @@ def main():
         _docs()
     elif args.command == "deseq2":
         _deseq(args, base_dir)
+
+
+def deseq2science_main():
+    # set helpful paths
+    base_dir = os.path.dirname(inspect.getfile(seq2science))
+
+    parser = deseq2science_parser()
+    args = parser.parse_args()
+
+    # most imports after argparsing for faster tab-completion
+    _import()
+
+    # now run the command
+    _deseq(args, base_dir)
+
 
 
 def seq2science_parser(workflows_dir="./seq2science/workflows/"):
@@ -241,6 +256,47 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
     # exclusion only works on the main parser unfortunately, but it's better than nothing,
     # plus it might be supported later?
     argcomplete.autocomplete(parser, exclude=['-c', '-p', '-k' '-r' '-n', '-j', '-h', '-v'])
+
+    return parser
+
+def deseq2science_parser():
+    parser = argparse.ArgumentParser(
+        description="DESeq2 wrapper that works with s2s samples.tsv and counts.tsv",
+    )
+    parser.add_argument(
+        "-v", "--version", action="version", version=f"seq2science: v{seq2science.__version__}"
+    )
+    # DESeq2 wrapper arguments
+    parser.add_argument(
+        "-d",
+        "--design",
+        default="",  # must be an empty string for R's arg checking + docs CLI argument
+        help="design contrast (e.g. column_knockouts_controls)",
+    )
+    parser.add_argument(
+        "-s",
+        "--samples",
+        default="",  # must be an empty string for R's arg checking + docs CLI argument
+        help="samples.tsv with a column containing the contrast arguments "
+             "(sample order consistent with the counts.tsv)",
+    )
+    parser.add_argument(
+        "-c",
+        "--counts",
+        default="",  # must be an empty string for R's arg checking + docs CLI argument
+        help="counts.tsv (sample order consistent with the samples.tsv)",
+    )
+    parser.add_argument(
+        "-o",
+        "--outdir",
+        default="",  # must be an empty string for R's arg checking + docs CLI argument
+        help="output directory",
+    )
+    parser.add_argument(
+        "--docs",
+        action='store_true',
+        help="open de DESeq2 wrapper documentation (with examples!)",
+    )
 
     return parser
 
