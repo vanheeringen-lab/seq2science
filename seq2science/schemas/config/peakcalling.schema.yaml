@@ -29,6 +29,7 @@ properties:
   slop:
     description: how much each summit is extended by (on both sides) when making the final peak. For e.g. count tables it is important that all peaks are of the same size. If for instance a slop of 100 is chosen, the final peak width (for all peaks) is 200.
     type: integer
+    default: 100
 
   logbase:
     description: The log base of the number of reads under peak count tables
