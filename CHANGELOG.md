@@ -18,9 +18,6 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Changed
 
-- the rule using config option `slop` now uses the value of `peak_windowsize` if `slop` is unset
-- replaced `slop` for `peak_windowsize` in the ChIP-seq and ATAC-seq config.yaml files
-- increased default `peak_windowsize` in ChIP-seq config.yaml from 100 to 1000 (matching the ANANSE default width)
 - Seq2science now makes a separate blacklist file per blacklist option (encode & mitochondria), so that e.g. RNA-seq and ATAC-seq workflows can be run in parallel and don't conflict on the blacklist.  
 - error messages don't show the full traceback anymore, making it (hopefully) more clear what is going wrong.
 - The effective genome size is now not calculated per sample, but per read length. When dealing with multiple samples (of similar) length this improves computational burden quite some. 
@@ -34,6 +31,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - bug with kb ref not creating index for non-velocity analysis
 - bug with count import in read_kb_counts.R for technical replicates and meta-data handling
 - deseq2 ordering in multiqc report
+- issue with slop not being used for the final count table
 
 ## [0.5.6] - 2021-10-19
 

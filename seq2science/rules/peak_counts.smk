@@ -117,7 +117,7 @@ rule bedtools_slop:
     conda:
         "../envs/bedtools.yaml"
     params:
-        slop=config.get("slop", config["peak_windowsize"]),  # fallback: same width as the upstream files
+        slop=cofig["slop"],
         reps=lambda wildcards, input: input  # help resolve changes in input files
     message: explain_rule("bed_slop")
     shell:
@@ -162,7 +162,7 @@ rule coverage_table:
     conda:
         "../envs/gimme.yaml"
     params:
-        windowsize=2 * config["peak_windowsize"],  # same width as the upstream files
+        peak_width=2 * config["slop"],  # same width as the upstream files
         reps=lambda wildcards, input: input  # help resolve changes in input files
     resources:
         mem_gb=3,
@@ -171,7 +171,7 @@ rule coverage_table:
     shell:
         """
         echo "# The number of reads under each peak" > {output} 
-        coverage_table -p {input.peaks} -d {input.replicates} -w {params.windowsize} --nthreads {threads} \
+        coverage_table -p {input.peaks} -d {input.replicates} -w {params.peak_width} --nthreads {threads} \
         2> {log} | grep -vE "^#" 2>> {log} |  
         awk 'BEGIN {{ FS = "@" }} NR==1{{gsub("{wildcards.assembly}-|.samtools-coordinate","",$0)}}; \
         {{print $0}}' >> {output}

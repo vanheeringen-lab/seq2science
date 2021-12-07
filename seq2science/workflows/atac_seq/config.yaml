@@ -39,9 +39,9 @@ peak_caller:
 #  genrich:
 #      -j -y -D -d 200 -q 0.05
 
-# how much the summits should be extended by (on each side) around the summit for the count table
+# how much peak summits will be extended by (on each side) for the final count table
 # (e.g. 100 means a 200 bp wide peak)
-peak_windowsize: 100
+slop: 100
 
 ## differential accessibility analysis
 #contrasts:
