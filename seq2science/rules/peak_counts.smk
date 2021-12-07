@@ -117,7 +117,7 @@ rule bedtools_slop:
     conda:
         "../envs/bedtools.yaml"
     params:
-        slop=cofig["slop"],
+        slop=config["slop"],
         reps=lambda wildcards, input: input  # help resolve changes in input files
     message: explain_rule("bed_slop")
     shell:
