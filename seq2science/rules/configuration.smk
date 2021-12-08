@@ -6,6 +6,7 @@ The seq2science configuration/preprocessing is split into four parts:
 * logging: all logic related to logging to stdout/file
 """
 
+
 include: "../rules/configuration_generic.smk"
 include: "../rules/configuration_workflows.smk"
 include: "../rules/configuration_explain.smk"

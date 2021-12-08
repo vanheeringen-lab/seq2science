@@ -19,10 +19,12 @@ rule run2sra:
         expand("{log_dir}/run2sra/{{run}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/run2sra/{{run}}.benchmark.txt", **config)[0]
-    message: explain_rule("run2sra")
+    message:
+        explain_rule("run2sra")
     resources:
         parallel_downloads=1,
-    params: outdir= lambda wildcards: f"{config['sra_dir']}/{wildcards.run}"
+    params:
+        outdir=lambda wildcards: f"{config['sra_dir']}/{wildcards.run}",
     conda:
         "../envs/get_fastq.yaml"
     wildcard_constraints:
@@ -161,18 +163,18 @@ rule ena2fastq_SE:
     benchmark:
         expand("{benchmark_dir}/ena2fastq_SE/{{run}}.benchmark.txt", **config)[0]
     wildcard_constraints:
-        run="|".join(ena_single_end) if len(ena_single_end) else "$a"
+        run="|".join(ena_single_end) if len(ena_single_end) else "$a",
     run:
         shell("mkdir -p {config[fastq_dir]}/tmp/ >> {log} 2>&1")
         url = run2download[wildcards.run]
-        if config.get('ascp_path') and config.get('ascp_key'):
+        if config.get("ascp_path") and config.get("ascp_key"):
             shell("{config[ascp_path]} -QT -l 1G -P33001 -i {config[ascp_key]} {url} {output} >> {log} 2>&1")
         else:
             shell("wget {url} -O {output} --waitretry 20 >> {log} 2>&1")
 
         if not (os.path.exists(output[0]) and os.path.getsize(output[0]) > 0):
-            shell('echo \"Something went wrong.. The downloaded file was empty!\" >> {log} 2>&1')
-            shell('exit 1 >> {log} 2>&1')
+            shell('echo "Something went wrong.. The downloaded file was empty!" >> {log} 2>&1')
+            shell("exit 1 >> {log} 2>&1")
 
 
 rule ena2fastq_PE:
@@ -188,21 +190,25 @@ rule ena2fastq_PE:
     benchmark:
         expand("{benchmark_dir}/ena2fastq_PE/{{run}}.benchmark.txt", **config)[0]
     wildcard_constraints:
-        run="|".join(ena_paired_end) if len(ena_paired_end) else "$a"
+        run="|".join(ena_paired_end) if len(ena_paired_end) else "$a",
     run:
         shell("mkdir -p {config[fastq_dir]}/tmp >> {log} 2>&1")
         urls = run2download[wildcards.run]
-        if config.get('ascp_path') and config.get('ascp_key'):
+        if config.get("ascp_path") and config.get("ascp_key"):
             shell("{config[ascp_path]} -QT -l 1G -P33001 -i {config[ascp_key]} {urls[0]} {output[0]} >> {log} 2>&1")
             shell("{config[ascp_path]} -QT -l 1G -P33001 -i {config[ascp_key]} {urls[1]} {output[1]} >> {log} 2>&1")
         else:
             shell("wget {urls[0]} -O {output[0]} --waitretry 20 >> {log} 2>&1")
             shell("wget {urls[1]} -O {output[1]} --waitretry 20 >> {log} 2>&1")
 
-        if not (os.path.exists(output[0]) and (os.path.getsize(output[0]) > 0) and
-                os.path.exists(output[1]) and (os.path.getsize(output[1]) > 0)):
-            shell('echo \"Something went wrong.. The downloaded file(s) were empty!\" >> {log} 2>&1')
-            shell('exit 1 >> {log} 2>&1')
+        if not (
+            os.path.exists(output[0])
+            and (os.path.getsize(output[0]) > 0)
+            and os.path.exists(output[1])
+            and (os.path.getsize(output[1]) > 0)
+        ):
+            shell('echo "Something went wrong.. The downloaded file(s) were empty!" >> {log} 2>&1')
+            shell("exit 1 >> {log} 2>&1")
 
 
 ruleorder: rename_sample > runs2sample
@@ -224,7 +230,7 @@ rule runs2sample:
     Concatenate a single run or multiple runs together into a fastq
     """
     input:
-        get_runs_from_sample
+        get_runs_from_sample,
     output:
         expand("{fastq_dir}/{{sample}}{{suffix}}", **config),
     log:
@@ -232,7 +238,7 @@ rule runs2sample:
     benchmark:
         expand("{benchmark_dir}/run2sample/{{sample}}{{suffix}}.benchmark.txt", **config)[0]
     wildcard_constraints:
-        sample="|".join(public_samples) if len(public_samples) > 0 else "$a"
+        sample="|".join(public_samples) if len(public_samples) > 0 else "$a",
     run:
         shell("cp {input[0]} {output}")
 
@@ -243,9 +249,9 @@ rule runs2sample:
 
 
 def sample_to_rename(wildcards):
-    local_fastqs = glob.glob(os.path.join(config["fastq_dir"],f'{wildcards.sample}*{config["fqsuffix"]}*.gz'))
+    local_fastqs = glob.glob(os.path.join(config["fastq_dir"], f'{wildcards.sample}*{config["fqsuffix"]}*.gz'))
 
-    if len(local_fastqs) not in [1,2]:
+    if len(local_fastqs) not in [1, 2]:
         # <1: no local sample fastqs found
         # >2: too many files match the sample name: can't distinguish
         return "$a"  # do not use this rule
@@ -258,9 +264,9 @@ def sample_to_rename(wildcards):
 
     # only rename incompatible naming formats
     correctly_named_fastqs = [
-        os.path.join(config["fastq_dir"],f'{wildcards.sample}.{config["fqsuffix"]}.gz'),
-        os.path.join(config["fastq_dir"],f'{wildcards.sample}_{config["fqext1"]}.{config["fqsuffix"]}.gz'),
-        os.path.join(config["fastq_dir"],f'{wildcards.sample}_{config["fqext2"]}.{config["fqsuffix"]}.gz'),
+        os.path.join(config["fastq_dir"], f'{wildcards.sample}.{config["fqsuffix"]}.gz'),
+        os.path.join(config["fastq_dir"], f'{wildcards.sample}_{config["fqext1"]}.{config["fqsuffix"]}.gz'),
+        os.path.join(config["fastq_dir"], f'{wildcards.sample}_{config["fqext2"]}.{config["fqsuffix"]}.gz'),
     ]
     if local_fastq in correctly_named_fastqs:
         return "$a"  # do not use this rule
@@ -273,16 +279,18 @@ rule rename_sample:
     Rename local samples with incompatible naming formats
     """
     input:
-        sample_to_rename
+        sample_to_rename,
     output:
-        expand("{fastq_dir}/{{sample}}{{suffix}}",**config),
+        expand("{fastq_dir}/{{sample}}{{suffix}}", **config),
     wildcard_constraints:
         # only rename to compatible naming formats
-        suffix="|".join([
-            f'.{config["fqsuffix"]}.gz',
-            f'_{config["fqext1"]}.{config["fqsuffix"]}.gz',
-            f'_{config["fqext2"]}.{config["fqsuffix"]}.gz',
-        ])
+        suffix="|".join(
+            [
+                f'.{config["fqsuffix"]}.gz',
+                f'_{config["fqext1"]}.{config["fqsuffix"]}.gz',
+                f'_{config["fqext2"]}.{config["fqsuffix"]}.gz',
+            ]
+        ),
     shell:
         """
         mv {input[0]} {output[0]}
