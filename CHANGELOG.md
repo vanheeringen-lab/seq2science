@@ -25,7 +25,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Fixed
 
-- config option `peak_windowsize` is now passed along to each rule using it
+- config option `slop` is now passed along to each rule using it
 - edge-case where local samples are in the cache, but not present in the fastq_dir
 - bug with differential peak/gene expression across multiple assemblies
 - bug with kb ref not creating index for non-velocity analysis
