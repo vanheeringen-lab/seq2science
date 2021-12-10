@@ -86,8 +86,10 @@ def get_bigpeak_columns(wildcards):
         if len(treps_from_brep[(wildcards.sample, wildcards.assembly)]) == 1:
             return 9
         return 12
-    logger.error(f"Something went wrong inferring the correct column for bigpeak for peak type {get_peak_ftype(wildcards.peak_caller)}. "
-                  "Please make an issue on github if this is unexpected behaviour!")
+    logger.error(
+        f"Something went wrong inferring the correct column for bigpeak for peak type {get_peak_ftype(wildcards.peak_caller)}. "
+        "Please make an issue on github if this is unexpected behaviour!"
+    )
     sys.exit(1)
 
 
@@ -98,8 +100,10 @@ def get_bigpeak_type(wildcards):
         if len(treps_from_brep[(wildcards.sample, wildcards.assembly)]) == 1:
             return "bed6+3"
         return "bed12"
-    logger.error(f"Something went wrong inferring the correct bed format for bigpeaks for peak type {get_peak_ftype(wildcards.peak_caller)}. "
-                  "Please make an issue on github if this is unexpected behaviour!")
+    logger.error(
+        f"Something went wrong inferring the correct bed format for bigpeaks for peak type {get_peak_ftype(wildcards.peak_caller)}. "
+        "Please make an issue on github if this is unexpected behaviour!"
+    )
 
 
 def get_bigpeak_schema(wildcards):
@@ -109,8 +113,10 @@ def get_bigpeak_schema(wildcards):
         if len(treps_from_brep[(wildcards.sample, wildcards.assembly)]) == 1:
             return f"{config['rule_dir']}/../schemas/bigbroadPeak.as"
         return f"{config['rule_dir']}/../schemas/bigBed.as"
-    logger.error(f"Something went wrong inferring the correct schema for bigpeaks for peak type {get_peak_ftype(wildcards.peak_caller)}. "
-                  "Please make an issue on github if this is unexpected behaviour!")
+    logger.error(
+        f"Something went wrong inferring the correct schema for bigpeaks for peak type {get_peak_ftype(wildcards.peak_caller)}. "
+        "Please make an issue on github if this is unexpected behaviour!"
+    )
 
 
 rule peak_bigpeak:
@@ -127,7 +133,9 @@ rule peak_bigpeak:
     log:
         expand("{log_dir}/narrowpeak_bignarrowpeak/{{peak_caller}}/{{assembly}}-{{sample}}-{{peak}}.log", **config),
     benchmark:
-        expand("{benchmark_dir}/bedgraphish_to_bedgraph/{{assembly}}-{{sample}}-{{peak_caller}}-{{peak}}.log", **config)[0]
+        expand("{benchmark_dir}/bedgraphish_to_bedgraph/{{assembly}}-{{sample}}-{{peak_caller}}-{{peak}}.log", **config)[
+            0
+        ]
     conda:
         "../envs/ucsc.yaml"
     params:
@@ -169,11 +177,13 @@ rule bam_bigwig:
         strand_filter=set_strand,
     wildcard_constraints:
         sorting=config["bam_sort_order"] if config.get("bam_sort_order") else "",
-        strand='|.fwd|.rev',
+        strand="|.fwd|.rev",
     log:
         expand("{log_dir}/bam_bigwig/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}{{strand}}.log", **config),
     benchmark:
-        expand("{benchmark_dir}/bam_bigwig/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}{{strand}}.benchmark.txt", **config)[0]
+        expand(
+            "{benchmark_dir}/bam_bigwig/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}{{strand}}.benchmark.txt", **config
+        )[0]
     conda:
         "../envs/deeptools.yaml"
     threads: 16

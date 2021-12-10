@@ -2,9 +2,14 @@
 all rules/logic related to downloading public assemblies and preprocessing of assemblies should be here.
 """
 
-localrules: extend_genome, get_genome_support_files
+
+localrules:
+    extend_genome,
+    get_genome_support_files,
+
 
 support_exts = [".fa.fai", ".fa.sizes", ".gaps.bed"]
+
 
 rule get_genome:
     """
@@ -14,10 +19,11 @@ rule get_genome:
         expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa", **config),
     log:
         expand("{log_dir}/get_genome/{{raw_assembly}}.genome.log", **config),
-    message: explain_rule("get_genome")
+    message:
+        explain_rule("get_genome")
     params:
         providers=providers,
-        genome_dir=config["genome_dir"]
+        genome_dir=config["genome_dir"],
     resources:
         parallel_downloads=1,
         genomepy_downloads=1,
@@ -38,7 +44,7 @@ rule get_genome_blacklist:
     log:
         expand("{log_dir}/get_genome/{{raw_assembly}}.blacklist.log", **config),
     params:
-        genome_dir=config["genome_dir"]
+        genome_dir=config["genome_dir"],
     resources:
         parallel_downloads=1,
         genomepy_downloads=1,
@@ -64,7 +70,7 @@ rule get_genome_annotation:
         genomepy_downloads=1,
     params:
         providers=providers,
-        genome_dir=config["genome_dir"]
+        genome_dir=config["genome_dir"],
     priority: 1
     script:
         f"{config['rule_dir']}/../scripts/genomepy/get_genome_annotation.py"
@@ -78,13 +84,16 @@ rule extend_genome:
         genome=expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa", **config),
         extension=config.get("custom_genome_extension", []),
     output:
-        genome=expand("{genome_dir}/{{raw_assembly}}{custom_assembly_suffix}/{{raw_assembly}}{custom_assembly_suffix}.fa", **config),
-    message: explain_rule("custom_extension")
+        genome=expand(
+            "{genome_dir}/{{raw_assembly}}{custom_assembly_suffix}/{{raw_assembly}}{custom_assembly_suffix}.fa", **config
+        ),
+    message:
+        explain_rule("custom_extension")
     shell:
         """
         # extend the genome.fa
         cp {input.genome} {output.genome}
-        
+
         for FILE in {input.extension}; do
             cat $FILE >> {output.genome}
         done
@@ -98,7 +107,10 @@ rule extend_genome_blacklist:
     input:
         expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.blacklist.bed", **config),
     output:
-        expand("{genome_dir}/{{raw_assembly}}{custom_assembly_suffix}/{{raw_assembly}}{custom_assembly_suffix}.blacklist.bed", **config),
+        expand(
+            "{genome_dir}/{{raw_assembly}}{custom_assembly_suffix}/{{raw_assembly}}{custom_assembly_suffix}.blacklist.bed",
+            **config
+        ),
     shell:
         """
         cp {input} {output}
@@ -111,17 +123,29 @@ rule extend_genome_annotation:
     """
     input:
         gtf=expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.annotation.gtf", **config),
-        extension=config.get("custom_annotation_extension", [])
+        extension=config.get("custom_annotation_extension", []),
     output:
-        gtf=expand("{genome_dir}/{{raw_assembly}}{custom_assembly_suffix}/{{raw_assembly}}{custom_assembly_suffix}.annotation.gtf", **config),
-        bed=expand("{genome_dir}/{{raw_assembly}}{custom_assembly_suffix}/{{raw_assembly}}{custom_assembly_suffix}.annotation.bed", **config),
-        gp=temp(expand("{genome_dir}/{{raw_assembly}}{custom_assembly_suffix}/{{raw_assembly}}{custom_assembly_suffix}.annotation.gp", **config)),
-    message: explain_rule("custom_extension")
+        gtf=expand(
+            "{genome_dir}/{{raw_assembly}}{custom_assembly_suffix}/{{raw_assembly}}{custom_assembly_suffix}.annotation.gtf",
+            **config
+        ),
+        bed=expand(
+            "{genome_dir}/{{raw_assembly}}{custom_assembly_suffix}/{{raw_assembly}}{custom_assembly_suffix}.annotation.bed",
+            **config
+        ),
+        gp=temp(
+            expand(
+                "{genome_dir}/{{raw_assembly}}{custom_assembly_suffix}/{{raw_assembly}}{custom_assembly_suffix}.annotation.gp",
+                **config
+            )
+        ),
+    message:
+        explain_rule("custom_extension")
     shell:
         """
         # extend the genome.annotation.gtf
         cp {input.gtf} {output.gtf}
-        
+
         for FILE in {input.extension}; do
             cat $FILE >> {output.gtf}
         done
@@ -143,7 +167,7 @@ rule get_genome_support_files:
         expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
         expand("{genome_dir}/{{assembly}}/{{assembly}}.gaps.bed", **config),
     params:
-        genome_dir=config["genome_dir"]
+        genome_dir=config["genome_dir"],
     script:
         f"{config['rule_dir']}/../scripts/genomepy/get_genome_support.py"
 
@@ -171,8 +195,9 @@ rule get_effective_genome_size:
     input:
         expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
     output:
-        expand("{genome_dir}/{{assembly}}/genome_sizes/kmer_{{kmer_size}}.genome_size", **config)
-    message: explain_rule("get_effective_genome_size")
+        expand("{genome_dir}/{{assembly}}/genome_sizes/kmer_{{kmer_size}}.genome_size", **config),
+    message:
+        explain_rule("get_effective_genome_size")
     conda:
         "../envs/khmer.yaml"
     log:
