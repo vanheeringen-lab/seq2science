@@ -15,9 +15,6 @@ if (exists("snakemake")){
   this_script        <- sub("--file=", "", cli_args[grep("--file=", cli_args)])
   scripts_dir        <- dirname(this_script)
   deseq_init         <- file.path(scripts_dir, "run_as_standalone.R")
-  output_ma_plot     <- sub(".diffexp.tsv", ".ma_plot.png", output)
-  output_vol_plot    <- sub(".diffexp.tsv", ".volcano_plot.png", output)
-  output_pca_plot    <- sub(".diffexp.tsv", ".pca_plot.png", output)
 }
 deseq_utils <- file.path(scripts_dir, "utils.R")
 source(deseq_init)
