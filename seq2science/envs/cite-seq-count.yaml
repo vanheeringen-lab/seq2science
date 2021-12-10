@@ -5,3 +5,4 @@ channels:
   - defaults
 dependencies: 
   - bioconda::cite-seq-count=1.4.4
+  - conda-forge::python-levenshtein=0.12.0

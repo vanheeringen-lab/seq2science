@@ -106,11 +106,13 @@ if [ $1 = "alignment" ]; then
   assert_rulecount $1 star_index 1
 
   printf "\nalignmentsieve\n"
-  seq2science run alignment -nr --configfile tests/$WF/alignmentsieve.yaml --snakemakeOptions quiet=True| tee tests/local_test_results/${1}_dag
+  seq2science run alignment -nr --configfile tests/$WF/alignmentsieve.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 sieve_bam 1
-  seq2science run alignment -nr --configfile tests/$WF/alignmentsieve_off.yaml --snakemakeOptions quiet=True| tee tests/local_test_results/${1}_dag
+  seq2science run alignment -nr --configfile tests/$WF/alignmentsieve_off.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 sieve_bam 0
   assert_rulecount $1 cp_unsieved2sieved 1
+  seq2science run alignment -nr --configfile tests/$WF/alignmentsieve_off.yaml --snakemakeOptions quiet=True config={subsample:10000} | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 sieve_bam 0 1
 
   printf "\nsorting\n"
   seq2science run alignment -nr --configfile tests/$WF/samtools_coordinate.yaml --snakemakeOptions quiet=True| tee tests/local_test_results/${1}_dag
@@ -198,6 +200,7 @@ if [ $1 = "atac-seq" ]; then
   printf "\natac-seq default\n"
   seq2science run atac-seq -nr --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 macs2_callpeak 1
+  assert_rulecount $1 get_effective_genome_size 1
 
   printf "\npeak callers\n"
   # seq2science run atac-seq -nr --configfile tests/$WF/macs2.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag  # default

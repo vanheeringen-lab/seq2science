@@ -108,13 +108,17 @@ else:
     ruleorder: sieve_bam > samtools_sort
     shiftsieve = ""
 
+
+# the output of sieving depends on different preprocessing steps
+sieve_bam_output = {"final": f"{config['final_bam_dir']}/{{assembly}}-{{sample}}.samtools-coordinate{shiftsieve}.bam"}
+
 # if we filter on size, we make two files. One split on size, and one not.
-# We can use the full one to get insertsizemetrics!
 if config["filter_on_size"]:
-    sieve_bam_output = {"allsizes": temp(f"{config['final_bam_dir']}/{{assembly}}-{{sample}}_allsizes.samtools-coordinate{shiftsieve}.sam"),
-                        "final": f"{config['final_bam_dir']}/{{assembly}}-{{sample}}.samtools-coordinate{shiftsieve}.bam"}
-else:
-    sieve_bam_output = {"final": f"{config['final_bam_dir']}/{{assembly}}-{{sample}}.samtools-coordinate{shiftsieve}.bam"}
+    sieve_bam_output["allsizes"] = temp(f"{config['final_bam_dir']}/{{assembly}}-{{sample}}_allsizes.samtools-coordinate{shiftsieve}.sam")
+
+# if we downsample to a maximum number of reads, we also need to store the results intermediately
+if config["subsample"] > -1:
+    sieve_bam_output["subsample"] = temp(f"{config['final_bam_dir']}/{{assembly}}-{{sample}}_presubsample.samtools-coordinate{shiftsieve}.sam")
 
 # now that we know the output sieve bam, we can mark as temp based on whether we do tn5 shift
 if config.get("tn5_shift"):
@@ -140,7 +144,8 @@ rule sieve_bam:
         * remove reads inside the blacklist
         * remove duplicates
         * filter paired-end reads on transcript length
-    
+        * subsample to have a maximum amount of reads (equal across samples)
+
     """
     input:
         bam=rules.mark_duplicates.output.bam,
@@ -178,10 +183,18 @@ rule sieve_bam:
             if sampledict[wildcards.sample]["layout"] == "SINGLE" and config["filter_on_size"]
             else ""
         ),
+        subsample=(
+            lambda wildcards, input, output:
+            f""" cat > {output.subsample}; nreads=$(samtools view -c {output.subsample}); \
+            if [ $nreads -gt {config['subsample']} ]; then samtools view -h -s $(echo $nreads | awk '{{print {config['subsample']}/$1}}') {output.subsample}; else samtools view -h {output.subsample}; fi | \
+            """
+            if config["subsample"] > -1
+            else ""
+        ),
     shell:
         """
         samtools view -h {params.prim_align} {params.minqual} {params.blacklist} \
-        {input.bam} | {params.atacshift} {params.sizesieve}
+        {input.bam} | {params.atacshift} {params.sizesieve} {params.subsample}
         samtools view -b > {output.final} 2> {log}
         
         # single-end reads never output allsizes so just touch the file when filtering on size
@@ -255,7 +268,6 @@ rule samtools_sort:
         expand("{benchmark_dir}/samtools_sort/{{assembly}}-{{sample}}-{{sorting}}.benchmark.txt", **config)[0]
     params:
         sort_order=lambda wildcards: "-n" if wildcards.sorting == "queryname" else "",
-        out_dir=f"{config['result_dir']}/{config['aligner']}",
         memory=lambda wildcards, input, output, threads: f"-m {int(1000 * round(config['bam_sort_mem']/threads, 3))}M",
     wildcard_constraints:
         sample=f"""({any_given("sample", "technical_replicates", "control")})(_allsizes)?""",
@@ -267,11 +279,11 @@ rule samtools_sort:
     shell:
         """
         # we set this trap to remove temp files when prematurely ending the rule
-        trap "rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
-        rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2> {log}
+        trap "rm -f {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
+        rm -f {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2> {log}
 
         samtools sort {params.sort_order} -@ {threads} {params.memory} {input} -o {output} \
-        -T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
+        -T {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
         """
 
 
