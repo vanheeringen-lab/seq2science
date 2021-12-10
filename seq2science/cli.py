@@ -59,8 +59,6 @@ def seq2science_main():
         _clean(base_dir)
     elif args.command == "docs":
         _docs()
-    elif args.command == "deseq2":
-        _deseq(args, base_dir)
 
 
 def deseq2science_main():
@@ -75,7 +73,6 @@ def deseq2science_main():
 
     # now run the command
     _deseq(args, base_dir)
-
 
 
 def seq2science_parser(workflows_dir="./seq2science/workflows/"):
@@ -221,6 +218,7 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
     argcomplete.autocomplete(parser, exclude=['-c', '-p', '-k' '-r' '-n', '-j', '-h', '-v'])
 
     return parser
+
 
 def deseq2science_parser():
     parser = argparse.ArgumentParser(
@@ -648,10 +646,18 @@ def setup_seq2science_logger(parsed_args):
 
 
 def _deseq(args, base_dir):
+    # docs
     if args.docs is True:
         url = "https://vanheeringen-lab.github.io/seq2science/content/DESeq2.html"
         if not webbrowser.open(url):
             print(url)
+        return
+
+    # insufficient args
+    if not all(
+            len(a) > 0 for a in [args.counts, args.design, args.outdir, args.samples]
+    ):
+        logger.info("4 arguments expected: contrast, samples_file, counts_file and outdir.")
         return
 
     import hashlib
@@ -685,7 +691,7 @@ def _deseq(args, base_dir):
     env_prefix = conda_path(yamlfile)
     if not os.path.exists(env_prefix):
         logger.info(f"Creating conda environment seq2science/envs/deseq2.yaml...")
-        cmd = f"mamba env create -p {env_prefix} -f {yamlfile} -q"
+        cmd = f"mamba env create -p {env_prefix} -f {yamlfile} -q > /dev/null"
         subprocess_run(cmd)
 
     # we don't even need to activate the env
@@ -693,3 +699,11 @@ def _deseq(args, base_dir):
     script = os.path.join(base_dir, "scripts", "deseq2", "deseq2.R")
     cmd = f"{rscript} {script} {args.design} {args.samples} {args.counts} {args.outdir}"
     subprocess_run(cmd)
+
+    # example command:
+    #
+    # deseq2science \
+    # -d batch+condition_day2_day0 \
+    # -s tests/deseq2/rna/samples.tsv \
+    # -c tests/deseq2/rna/counts/GRCh38.p13-counts.tsv \
+    # -o tests/local_test_results/deseq2science
