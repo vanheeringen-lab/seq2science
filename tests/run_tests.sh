@@ -260,6 +260,27 @@ if [ $1 = "rna-seq" ]; then
   test_ran=1
 fi
 
+if [ $1 = "deseq2science" ]; then
+  outdir=tests/local_test_results/deseq2science
+
+  rm -rf $outdir
+
+  deseq2science \
+  -d batch+condition_day2_day0 \
+  -s tests/deseq2/rna/samples.tsv \
+  -c tests/deseq2/rna/counts/GRCh38.p13-counts.tsv \
+  -o $outdir
+
+  # very basic test: check if all output files are generated
+  fcount=$(ls -1q $outdir | wc -l)
+  if [[ ${fcount} -ne  "5" ]]; then
+    printf "\nmissing deseq2science output (5 files expected, found ${fcount})\n";
+    exit 1
+  fi
+
+  test_ran=1
+fi
+
 # check if any test has run
 if [ -z "$test_ran" ]; then
   printf "\nunrecognized input: ${1}\n"; exit
