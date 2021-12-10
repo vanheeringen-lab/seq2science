@@ -25,7 +25,7 @@ if config.get("peak_caller", False):
     # if hmmratac peak caller, check if all samples are paired-end
     if "hmmratac" in config["peak_caller"]:
         assert all(
-            [sampledict[sample]['layout'] == "PAIRED" for sample in samples.index]
+            [sampledict[sample]["layout"] == "PAIRED" for sample in samples.index]
         ), "HMMRATAC requires all samples to be paired end"
 
     config["macs2_types"] = ["control_lambda.bdg", "peaks.xls", "treat_pileup.bdg"]
@@ -90,8 +90,10 @@ for conf_dict in ["aligner", "quantifier", "trimmer"]:
 
 # ...for rna-seq
 if get_workflow() == "rna_seq":
-    assert config["aligner"] in ["star", "hisat2"], \
-        f"\nPlease select a splice aware aligner for the RNA-seq (STAR or HISAT2)\n"
+    assert config["aligner"] in [
+        "star",
+        "hisat2",
+    ], f"\nPlease select a splice aware aligner for the RNA-seq (STAR or HISAT2)\n"
 
     # regular dict is prettier in the log
     config["deseq2"] = dict(config["deseq2"])
@@ -105,9 +107,10 @@ if config.get("bam_sorter", False):
 
 # ...for scrna quantification
 if get_workflow() == "scrna_seq":
-    if config['quantifier'] not in ["kallistobus", "citeseqcount"]:
-        logger.error(f"Invalid quantifier selected"        
-                      "Please select a supported scrna quantifier (kallistobus or citeseqcount)!")
+    if config["quantifier"] not in ["kallistobus", "citeseqcount"]:
+        logger.error(
+            f"Invalid quantifier selected" "Please select a supported scrna quantifier (kallistobus or citeseqcount)!"
+        )
         sys.exit(1)
 
 
@@ -115,16 +118,25 @@ if get_workflow() == "scrna_seq":
 # ...on biological replicates
 if "biological_replicates" in samples:
     if "peak_caller" in config and "hmmratac" in config.get("peak_caller"):
-        assert config.get("biological_replicates", "") in ["idr", "keep"], f"HMMRATAC peaks can only be combined through idr"
+        assert config.get("biological_replicates", "") in [
+            "idr",
+            "keep",
+        ], f"HMMRATAC peaks can only be combined through idr"
 
     for condition in set(samples["biological_replicates"]):
         for assembly in set(samples[samples["biological_replicates"] == condition]["assembly"]):
             if "technical_replicates" in samples:
                 nr_samples = len(
-                    set(samples[(samples["biological_replicates"] == condition) & (samples["assembly"] == assembly)]["technical_replicates"])
+                    set(
+                        samples[(samples["biological_replicates"] == condition) & (samples["assembly"] == assembly)][
+                            "technical_replicates"
+                        ]
+                    )
                 )
             else:
-                nr_samples = len(samples[(samples["biological_replicates"] == condition) & (samples["assembly"] == assembly)])
+                nr_samples = len(
+                    samples[(samples["biological_replicates"] == condition) & (samples["assembly"] == assembly)]
+                )
 
             if config.get("biological_replicates", "") == "idr":
                 assert nr_samples <= 2, (
@@ -138,14 +150,15 @@ if config.get("contrasts"):
     for contrast in list(config["contrasts"]):
         assert len(contrast.split("_")) >= 3, (
             f"\nCould not parse DESeq2 contrast '{contrast}'.\n"
-            "A DESeq2 design contrast must be in the form '(batch+)column_target_reference'. See the docs for examples.\n")
-        _,_,_,_ = parse_contrast(contrast, samples, check=True)
+            "A DESeq2 design contrast must be in the form '(batch+)column_target_reference'. See the docs for examples.\n"
+        )
+        _, _, _, _ = parse_contrast(contrast, samples, check=True)
 
 
 def get_read_length(sample):
     """
     This function returns the read length for a sample.
-    
+
     Depending on the fastq qc tool it raises a checkpoint exception, waits for that
     checkpoint to have been executed, and then checks in the qc summary of the sample
     what the (average) read length is after trimming.
@@ -166,7 +179,7 @@ def get_read_length(sample):
         import zipfile
         import re
 
-        qc_report = zipfile.ZipFile(qc_file, 'r').read(zip_name)
+        qc_report = zipfile.ZipFile(qc_file, "r").read(zip_name)
 
         kmer_size = re.search("Sequence length\\t(\d+)", qc_report.decode("utf-8")).group(1)
 

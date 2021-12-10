@@ -2,7 +2,9 @@
 all rules/logic related to peak count tables should be here.
 """
 
+
 ruleorder: macs2_callpeak > narrowpeak_summit
+
 
 def count_table_output():
     """
@@ -13,8 +15,10 @@ def count_table_output():
         return []
 
     return expand(
-        ["{counts_dir}/{peak_caller}/{assemblies}_{normalization}.tsv",
-         "{counts_dir}/{peak_caller}/{assemblies}_onehotpeaks.tsv"],
+        [
+            "{counts_dir}/{peak_caller}/{assemblies}_{normalization}.tsv",
+            "{counts_dir}/{peak_caller}/{assemblies}_onehotpeaks.tsv",
+        ],
         **{
             **config,
             **{
@@ -91,8 +95,9 @@ rule combine_peaks:
         "../envs/gimme.yaml"
     params:
         windowsize=2 * config["peak_windowsize"],
-        reps=lambda wildcards, input: input  # help resolve changes in input files
-    message: explain_rule("combine_peaks")
+        reps=lambda wildcards, input: input,  # help resolve changes in input files
+    message:
+        explain_rule("combine_peaks")
     shell:
         """
         combine_peaks -i {input.summitfiles} -g {input.sizes} \
@@ -118,8 +123,9 @@ rule bedtools_slop:
         "../envs/bedtools.yaml"
     params:
         slop=config["slop"],
-        reps=lambda wildcards, input: input  # help resolve changes in input files
-    message: explain_rule("bed_slop")
+        reps=lambda wildcards, input: input,  # help resolve changes in input files
+    message:
+        explain_rule("bed_slop")
     shell:
         """
         bedtools slop -i {input.bedfile} -g {input.sizes} -b {params.slop} | uniq > {output} 2> {log}
@@ -137,8 +143,10 @@ def get_coverage_table_replicates(file_ext):
                 **config,
             )
         else:
-            logger.error(f"Seq2science is not supporting your peak caller ({wildcards.peak_caller}) for the coverage table. "
-                          "Please make an issue on github if this is unexpected behaviour!")
+            logger.error(
+                f"Seq2science is not supporting your peak caller ({wildcards.peak_caller}) for the coverage table. "
+                "Please make an issue on github if this is unexpected behaviour!"
+            )
             sys.exit(1)
 
     return wrapped
@@ -163,7 +171,8 @@ rule coverage_table:
         "../envs/gimme.yaml"
     resources:
         mem_gb=3,
-    message: explain_rule("coverage_table")
+    message:
+        explain_rule("coverage_table")
     shell:
         """
         echo "# The number of reads under each peak" > {output} 
@@ -191,7 +200,9 @@ rule quantile_normalization:
     log:
         expand("{log_dir}/quantile_normalization/{{assembly}}-{{peak_caller}}-quantilenorm.log", **config),
     benchmark:
-        expand("{benchmark_dir}/quantile_normalization/{{assembly}}-{{peak_caller}}-quantilenorm.benchmark.txt", **config)[0]
+        expand(
+            "{benchmark_dir}/quantile_normalization/{{assembly}}-{{peak_caller}}-quantilenorm.benchmark.txt", **config
+        )[0]
     conda:
         "../envs/qnorm.yaml"
     threads: 4
@@ -217,11 +228,13 @@ rule edgeR_normalization:
     log:
         expand("{log_dir}/edgeR_normalization/{{assembly}}-{{peak_caller}}-{{normalisation}}.log", **config),
     benchmark:
-        expand("{benchmark_dir}/edgeR_normalization/{{assembly}}-{{peak_caller}}-{{normalisation}}.benchmark.txt", **config)[0]
+        expand(
+            "{benchmark_dir}/edgeR_normalization/{{assembly}}-{{peak_caller}}-{{normalisation}}.benchmark.txt", **config
+        )[0]
     conda:
         "../envs/edger.yaml"
     resources:
-        R_scripts=1, # conda's R can have issues when starting multiple times
+        R_scripts=1,  # conda's R can have issues when starting multiple times
     script:
         f"{config['rule_dir']}/../scripts/edger_norm.R"
 
@@ -289,8 +302,10 @@ rule mean_center:
 
 
 def get_all_narrowpeaks(wildcards):
-    return [f"{config['result_dir']}/{{peak_caller}}/{{assembly}}-{replicate}_peaks.narrowPeak"
-        for replicate in breps[breps['assembly'] == ori_assembly(wildcards.assembly)].index]
+    return [
+        f"{config['result_dir']}/{{peak_caller}}/{{assembly}}-{replicate}_peaks.narrowPeak"
+        for replicate in breps[breps["assembly"] == ori_assembly(wildcards.assembly)].index
+    ]
 
 
 rule onehot_peaks:
@@ -299,10 +314,10 @@ rule onehot_peaks:
     """
     input:
         narrowpeaks=get_all_narrowpeaks,
-        combinedpeaks=rules.combine_peaks.output
+        combinedpeaks=rules.combine_peaks.output,
     output:
         real=expand("{counts_dir}/{{peak_caller}}/{{assembly}}_onehotpeaks.tsv", **config),
-        tmp=temp(expand("{counts_dir}/{{peak_caller}}/{{assembly}}_onehotpeaks.tsv.tmp", **config))
+        tmp=temp(expand("{counts_dir}/{{peak_caller}}/{{assembly}}_onehotpeaks.tsv.tmp", **config)),
     conda:
         "../envs/bedtools.yaml"
     log:
@@ -310,7 +325,7 @@ rule onehot_peaks:
     benchmark:
         expand("{benchmark_dir}/onehot_peaks/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     params:
-        reps=lambda wildcards, input: input  # help resolve changes in input files
+        reps=lambda wildcards, input: input,  # help resolve changes in input files
     shell:
         """
         awk '{{print $1":"$2"-"$3}}' {input.combinedpeaks} > {output.real} 2> {log}
@@ -323,7 +338,7 @@ rule onehot_peaks:
             paste {output.real} - > {output.tmp}
             mv {output.tmp} {output.real}
         done
-        
+
         echo -e "# onehot encoding of which condition contains which peaks\\n$(cat {output.real})" > {output.tmp} && cp {output.tmp} {output.real}
         """
 
@@ -336,7 +351,7 @@ rule random_subset_peaks:
         peaks=rules.combine_peaks.output,
         sizes=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
     output:
-        peaks=temp(expand("{qc_dir}/computeMatrix_peak/{{assembly}}-{{peak_caller}}_N{{nrpeaks}}.bed", **config))
+        peaks=temp(expand("{qc_dir}/computeMatrix_peak/{{assembly}}-{{peak_caller}}_N{{nrpeaks}}.bed", **config)),
     log:
         expand("{log_dir}/random_subset/{{assembly}}-{{peak_caller}}_N{{nrpeaks}}.log", **config),
     benchmark:
