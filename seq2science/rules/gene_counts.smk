@@ -30,7 +30,8 @@ if config["quantifier"] == "salmon":
             gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
             index_dir=get_salmon_index,
         output:
-            index=expand("{genome_dir}/{{assembly}}/index/tximeta/linked_txome.json", **config), # symlink=expand(f"{{genome_dir}}/{{{{assembly}}}}/index/tximeta/{config['tximeta']['organism']}.{{{{assembly}}}}.{config['tximeta']['release']}.gtf", **config)
+            # symlink=expand(f"{{genome_dir}}/{{{{assembly}}}}/index/tximeta/{config['tximeta']['organism']}.{{{{assembly}}}}.{config['tximeta']['release']}.gtf", **config)
+            index=expand("{genome_dir}/{{assembly}}/index/tximeta/linked_txome.json", **config),
         params:
             source=config["tximeta"]["source"],
             organism=config["tximeta"]["organism"],
@@ -40,7 +41,7 @@ if config["quantifier"] == "salmon":
         conda:
             "../envs/tximeta.yaml"
         resources:
-            R_scripts=1, # conda's R can have issues when starting multiple times
+            R_scripts=1,  # conda's R can have issues when starting multiple times
         script:
             f"{config['rule_dir']}/../scripts/generate_linked_txome.R"
 
@@ -62,15 +63,17 @@ if config["quantifier"] == "salmon":
             SCE=expand("{counts_dir}/{{assembly}}-se.rds", **config),
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-txi_counts_matrix.log", **config),
-        message: explain_rule("count_matrix_txi")
+        message:
+            explain_rule("count_matrix_txi")
         conda:
             "../envs/tximeta.yaml"
         params:
-            reps=lambda wildcards, input: input  # help resolve changes in input files
+            reps=lambda wildcards, input: input,  # help resolve changes in input files
         resources:
-            R_scripts=1, # conda's R can have issues when starting multiple times
+            R_scripts=1,  # conda's R can have issues when starting multiple times
         script:
             f"{config['rule_dir']}/../scripts/quant_to_counts.R"
+
 
 else:
 
@@ -85,11 +88,11 @@ else:
         Combine count tables into one count matrix per assembly
         """
         input:
-            cts=get_counts
+            cts=get_counts,
         output:
             expand("{counts_dir}/{{assembly}}-counts.tsv", **config),
         params:
-            reps=lambda wildcards, input: input  # help resolve changes in input files
+            reps=lambda wildcards, input: input,  # help resolve changes in input files
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-counts_matrix.log", **config),
         run:
@@ -107,7 +110,7 @@ else:
                         index_col=0,
                         header=None,
                         skiprows=2 if config["quantifier"] == "featurecounts" else 0,
-                        usecols=[0,6] if config["quantifier"] == "featurecounts" else [0,1],
+                        usecols=[0, 6] if config["quantifier"] == "featurecounts" else [0, 1],
                         skipfooter=5 if config["quantifier"] == "htseq" else 0,
                     )
                     sample_name = sample.split(wildcards.assembly + "-")[1].split(".counts.tsv")[0]
@@ -119,7 +122,6 @@ else:
 
 
 if config.get("dexseq"):
-
 
     def get_DEXSeq_counts(wildcards):
         count_tables = []
@@ -133,11 +135,11 @@ if config.get("dexseq"):
         for use in function `DEXSeqDataSet()`
         """
         input:
-            cts=get_DEXSeq_counts
+            cts=get_DEXSeq_counts,
         output:
             expand("{counts_dir}/{{assembly}}-DEXSeq_counts.tsv", **config),
         params:
-            reps=lambda wildcards, input: input  # help resolve changes in input files
+            reps=lambda wildcards, input: input,  # help resolve changes in input files
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-DEXSeq_counts_matrix.log", **config),
         run:
@@ -149,13 +151,7 @@ if config.get("dexseq"):
 
                 counts = pd.DataFrame()
                 for sample in input.cts:
-                    col = pd.read_csv(
-                        sample,
-                        sep="\t",
-                        index_col=0,
-                        header=None,
-                        skipfooter=5
-                    )
+                    col = pd.read_csv(sample, sep="\t", index_col=0, header=None, skipfooter=5)
                     sample_name = sample.split(wildcards.assembly + "-")[1].split(".DEXSeq_counts.tsv")[0]
                     col.columns = [sample_name]
                     counts = pd.concat([counts, col], axis=1)

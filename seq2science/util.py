@@ -21,7 +21,6 @@ import matplotlib.colors as mcolors
 import numpy as np
 import pandas as pd
 import pysradb
-from snakemake.exceptions import TerminatedException
 from snakemake.logging import logger
 
 # default colors in matplotlib. Order dictates the priority.
@@ -33,6 +32,7 @@ class UniqueKeyLoader(yaml.SafeLoader):
     YAML loader with duplicate key checking
     source: https://stackoverflow.com/questions/33490870/parsing-yaml-in-python-detect-duplicated-keys
     """
+
     def construct_mapping(self, node, deep=False):
         mapping = []
         for key_node, value_node in node.value:
@@ -55,8 +55,9 @@ def _sample_to_idxs(df: pd.DataFrame, sample: str) -> List[int]:
         idxs = df.index[df.experiment_accession == sample].tolist()
         assert len(idxs) >= 1, len(idxs)
     else:
-        assert False, f"sample {sample} not a run, this should not be able to happen!" \
-                      f" Please make an issue about this!"
+        assert False, (
+            f"sample {sample} not a run, this should not be able to happen!" f" Please make an issue about this!"
+        )
     return idxs
 
 
@@ -70,9 +71,11 @@ def samples2metadata_local(samples: List[str], config: dict, logger) -> dict:
         if len(local_fastqs) == 1:
             sampledict[sample] = dict()
             sampledict[sample]["layout"] = "SINGLE"
-        elif len(local_fastqs) == 2 \
-                and any([config["fqext1"] in os.path.basename(f) for f in local_fastqs]) \
-                and any([config["fqext2"] in os.path.basename(f) for f in local_fastqs]):
+        elif (
+            len(local_fastqs) == 2
+            and any([config["fqext1"] in os.path.basename(f) for f in local_fastqs])
+            and any([config["fqext2"] in os.path.basename(f) for f in local_fastqs])
+        ):
             sampledict[sample] = dict()
             sampledict[sample]["layout"] = "PAIRED"
         elif sample.startswith(("GSM", "DRX", "ERX", "SRX", "DRR", "ERR", "SRR")):
@@ -80,16 +83,19 @@ def samples2metadata_local(samples: List[str], config: dict, logger) -> dict:
         else:
             extend_msg = ""
             if len(local_fastqs) > 2:
-                extend_msg = (f"We found too many files matching ({len(local_fastqs)}) "
-                              "and could not distinguish them:\n"
-                              + ', '.join([os.path.basename(f) for f in local_fastqs]) + ".\n")
+                extend_msg = (
+                    f"We found too many files matching ({len(local_fastqs)}) "
+                    "and could not distinguish them:\n" + ", ".join([os.path.basename(f) for f in local_fastqs]) + ".\n"
+                )
 
-            logger.error(f"\nsample {sample} was not found..\n"
-                         f"We checked directory '{config['fastq_dir']}' "
-                         f"for gzipped files starting with '{sample}' and containing '{config['fqsuffix']}'.\n"
-                         + extend_msg +
-                         f"Since the sample did not start with either GSM, SRX, SRR, ERR, and DRR we "
-                         f"couldn't find it online..\n")
+            logger.error(
+                f"\nsample {sample} was not found..\n"
+                f"We checked directory '{config['fastq_dir']}' "
+                f"for gzipped files starting with '{sample}' and containing '{config['fqsuffix']}'.\n"
+                + extend_msg
+                + f"Since the sample did not start with either GSM, SRX, SRR, ERR, and DRR we "
+                f"couldn't find it online..\n"
+            )
             sys.exit(1)
 
     return sampledict
@@ -131,10 +137,12 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
         try:
             df_geo = db_sra.gsm_to_srx(geo_samples)
         except:
-            logger.error("We had trouble querying the SRA. This probably means that the SRA was unresponsive, and their servers "
-                         "are overloaded or slow. Please try again in a bit...\n"
-                         "Another possible option is that you try to access samples that do not exist or are protected, and "
-                         "seq2science does not support downloading those..\n\n")
+            logger.error(
+                "We had trouble querying the SRA. This probably means that the SRA was unresponsive, and their servers "
+                "are overloaded or slow. Please try again in a bit...\n"
+                "Another possible option is that you try to access samples that do not exist or are protected, and "
+                "seq2science does not support downloading those..\n\n"
+            )
             sys.exit(1)
 
         sample2clean = dict(zip(df_geo.experiment_alias, df_geo.experiment_accession))
@@ -148,10 +156,12 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
     try:
         df_sra = db_sra.sra_metadata(list(sample2clean.values()), detailed=True)
     except:
-        logger.error("We had trouble querying the SRA. This probably means that the SRA was unresponsive, and their servers "
-                     "are overloaded or slow. Please try again in a bit...\n"
-                     "Another possible option is that you try to access samples that do not exist or are protected, and "
-                     "seq2science does not support downloading those..\n\n")
+        logger.error(
+            "We had trouble querying the SRA. This probably means that the SRA was unresponsive, and their servers "
+            "are overloaded or slow. Please try again in a bit...\n"
+            "Another possible option is that you try to access samples that do not exist or are protected, and "
+            "seq2science does not support downloading those..\n\n"
+        )
         sys.exit(1)
 
     # keep track of not-supported samples
@@ -185,18 +195,20 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
             if layout[0] == "SINGLE":
                 sampledict[sample]["ena_fastq_ftp"][run] = df_sra[df_sra.run_accession == run].ena_fastq_ftp.tolist()
             elif layout[0] == "PAIRED":
-                sampledict[sample]["ena_fastq_ftp"][run] = df_sra[df_sra.run_accession == run].ena_fastq_ftp_1.tolist() + df_sra[
-                    df_sra.run_accession == run].ena_fastq_ftp_2.tolist()
+                sampledict[sample]["ena_fastq_ftp"][run] = (
+                    df_sra[df_sra.run_accession == run].ena_fastq_ftp_1.tolist()
+                    + df_sra[df_sra.run_accession == run].ena_fastq_ftp_2.tolist()
+                )
 
         # if any run from a sample is not found on ENA, better be safe, and assume that sample as a whole is not on ENA
         if any([any(pd.isna(urls)) for urls in sampledict[sample]["ena_fastq_ftp"].values()]):
             sampledict[sample]["ena_fastq_ftp"] = None
 
     # now report single message for all sample(s) that are from a sequencing platform that is not supported
-    assert len(not_supported_samples) == 0, \
-        f'Sample(s) {", ".join(not_supported_samples)} are not supported by seq2science. Samples that are one of ' \
+    assert len(not_supported_samples) == 0, (
+        f'Sample(s) {", ".join(not_supported_samples)} are not supported by seq2science. Samples that are one of '
         f'these formats; [{", ".join(not_supported_formats)}] are not supported.'
-
+    )
 
     return sampledict
 
@@ -211,7 +223,7 @@ def samples2metadata(samples: List[str], config: dict, logger) -> dict:
     # chop public samples into smaller chunks, doing large queries results into
     # pysradb decode errors..
     chunksize = 100
-    chunked_public = [public_samples[i:i+chunksize] for i in range(0, len(public_samples), chunksize)]
+    chunked_public = [public_samples[i : i + chunksize] for i in range(0, len(public_samples), chunksize)]
     sra_samples = dict()
     for chunk in chunked_public:
         sra_samples.update(samples2metadata_sra(chunk, logger))
@@ -289,8 +301,7 @@ def parse_contrast(contrast, samples, check=True):
         for group in [target, reference]:
             if group != "all":
                 assert group in all_groups, (
-                    f'\nIn DESeq2 contrast design "{contrast}", '
-                    f'group {group} cannot be found in column {column}.\n'
+                    f'\nIn DESeq2 contrast design "{contrast}", ' f"group {group} cannot be found in column {column}.\n"
                 )
 
     return batch, column, target, reference
@@ -335,7 +346,7 @@ def url_is_alive(url):
     for i in range(3):
         try:
             request = urllib.request.Request(url)
-            request.get_method = lambda: 'HEAD'
+            request.get_method = lambda: "HEAD"
 
             urllib.request.urlopen(request, timeout=5)
             return True
@@ -343,21 +354,29 @@ def url_is_alive(url):
             continue
     return False
 
-  
+
 def get_bustools_rid(params):
     """
     Extract the position of the fastq containig reads from the bustools -x argument.
     The read_id is the first pos of the last triplet in the bc:umi:read string or hard-coded
     for short-hand syntax.
-    In: -x 10xv3 -> read_id=1 
+    In: -x 10xv3 -> read_id=1
     In: -x 0,0,16:0,16,26:1,0,0 -> read_id=1
     """
-    kb_tech_dict = {'10xv2': 1, '10xv3': 1, 'celseq': 1, 'celseq2': 1,
-                    'dropseq': 1, 'scrubseq': 1, 'indropsv1': 1, 'indropsv2': 0 }   
-    #Check for occurence of short-hand tech
+    kb_tech_dict = {
+        "10xv2": 1,
+        "10xv3": 1,
+        "celseq": 1,
+        "celseq2": 1,
+        "dropseq": 1,
+        "scrubseq": 1,
+        "indropsv1": 1,
+        "indropsv2": 0,
+    }
+    # Check for occurence of short-hand tech
     bus_regex = "(?<!\S)([0-1],\d*,\d*:){2}([0-1],0,0)(?!\S)"
     bus_regex_short = "(?i)\\b(10XV2|10XV3|CELSEQ|CELSEQ2|DROPSEQ|SCRUBSEQ|INDROPSV1|INDROPSV2)\\b"
-    
+
     if re.search(bus_regex, params) != None:
         match = re.search(bus_regex, params).group(0)
         read_id = int(match.split(":")[-1].split(",")[0])
@@ -372,8 +391,8 @@ def get_bustools_rid(params):
 
 def hex_to_rgb(value):
     """In: hex(#ffffff). Out: tuple(255, 255, 255)"""
-    value = value.lstrip('#')
-    rgb = tuple(int(value[i:i + 2], 16) for i in (0, 2, 4))
+    value = value.lstrip("#")
+    rgb = tuple(int(value[i : i + 2], 16) for i in (0, 2, 4))
     return rgb
 
 
@@ -392,12 +411,12 @@ def hsv_to_ucsc(value):
     """
     # older versions of numpy hijack round and return a float, hence int()
     # see https://github.com/numpy/numpy/issues/11810
-    rgb = [int(round(n*255)) for n in mcolors.hsv_to_rgb(value)]
+    rgb = [int(round(n * 255)) for n in mcolors.hsv_to_rgb(value)]
     ucsc_rgb = f"{rgb[0]},{rgb[1]},{rgb[2]}"
     return ucsc_rgb
 
 
-def color_parser(color: str, color_dicts: list=None) -> tuple:
+def color_parser(color: str, color_dicts: list = None) -> tuple:
     """
     convert a string with RGB/matplotlib named colors to matplotlib HSV tuples.
 
@@ -437,7 +456,7 @@ def color_picker(n, min_h=0, max_h=0.85, s=1.00, v=0.75, alternate=True):
 
     hues = np.linspace(min_h, max_h, steps).tolist()[0:n]
     if alternate:
-        m = ceil(len(hues)/2)
+        m = ceil(len(hues) / 2)
         h1 = hues[:m]
         h2 = hues[m:]
         hues[::2] = h1
@@ -502,9 +521,9 @@ def shorten(string, max_length, methods="right"):
     if "right" in methods:
         string = string[:max_length]
     elif "left" in methods:
-        string = string[len(string)-max_length:]
+        string = string[len(string) - max_length :]
     elif "center" in methods:
-        string = string[:ceil(max_length/2)] + string[len(string)-floor(max_length/2):]
+        string = string[: ceil(max_length / 2)] + string[len(string) - floor(max_length / 2) :]
 
     return string
 
@@ -514,6 +533,7 @@ class CaptureStdout(list):
     Context manager that somehow manages to capture prints,
     and not snakemake log
     """
+
     def __enter__(self):
         self._stdout = sys.stdout
         sys.stdout = self._stringio = StringIO()
@@ -530,6 +550,7 @@ class CaptureStderr(list):
     Context manager that somehow manages to capture prints,
     and not snakemake log
     """
+
     def __enter__(self):
         self._stderr = sys.stderr
         sys.stderr = self._stringio = StringIO()
@@ -551,8 +572,7 @@ def prep_filelock(lock_file, max_age=10):
     # sometimes two jobs start in parallel and try to delete at the same time
     try:
         # ignore locks that are older than the max_age
-        if os.path.exists(lock_file) and \
-                time.time() - os.stat(lock_file).st_mtime > max_age:
+        if os.path.exists(lock_file) and time.time() - os.stat(lock_file).st_mtime > max_age:
             os.unlink(lock_file)
     except FileNotFoundError:
         pass
@@ -569,11 +589,13 @@ def retry_pickling(func):
         else:
             logger.error("There were some problems with locking the seq2science cache. Please try again in a bit.")
             sys.exit(1)
+
     return wrap
 
 
 class PickleDict(dict):
     """dict with builtin pickling utility"""
+
     def __init__(self, file):
         self.file = file
         self.filelock = f"{file}.p.lock"
@@ -603,7 +625,7 @@ class PickleDict(dict):
             if assembly not in self:
                 self[assembly] = {"genome": None, "annotation": None}
 
-        with open(logger.logfile, 'w') as log:
+        with open(logger.logfile, "w") as log:
             with contextlib.redirect_stdout(log), contextlib.redirect_stderr(log):
                 genomepy.logger.remove()
                 genomepy.logger.add(
@@ -655,7 +677,7 @@ class PickleDict(dict):
 
 def is_local(assembly: str, ftype: str, config: dict) -> bool:
     """checks if genomic file(s) are present locally"""
-    file = os.path.join(config['genome_dir'], assembly, assembly)
+    file = os.path.join(config["genome_dir"], assembly, assembly)
     local_fasta = os.path.exists(f"{file}.fa")
     local_gtf = os.path.exists(f"{file}.annotation.gtf")
     local_bed = os.path.exists(f"{file}.annotation.bed")
