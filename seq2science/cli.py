@@ -34,7 +34,7 @@ def _import():
     import xdg
 
 
-def main():
+def seq2science_main():
     # set helpful paths
     base_dir = os.path.dirname(inspect.getfile(seq2science))
     workflows_dir = os.path.join(base_dir, "workflows")
@@ -59,6 +59,20 @@ def main():
         _clean(base_dir)
     elif args.command == "docs":
         _docs()
+
+
+def deseq2science_main():
+    # set helpful paths
+    base_dir = os.path.dirname(inspect.getfile(seq2science))
+
+    parser = deseq2science_parser()
+    args = parser.parse_args()
+
+    # most imports after argparsing for faster tab-completion
+    _import()
+
+    # now run the command
+    _deseq(args, base_dir)
 
 
 def seq2science_parser(workflows_dir="./seq2science/workflows/"):
@@ -183,6 +197,49 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
     # exclusion only works on the main parser unfortunately, but it's better than nothing,
     # plus it might be supported later?
     argcomplete.autocomplete(parser, exclude=["-c", "-p", "-k" "-r" "-n", "-j", "-h", "-v"])
+
+    return parser
+
+
+def deseq2science_parser():
+    parser = argparse.ArgumentParser(
+        description="DESeq2 wrapper that works with s2s samples.tsv and counts.tsv",
+    )
+    parser.add_argument(
+        "-v", "--version", action="version", version=f"seq2science: v{seq2science.__version__}"
+    )
+    # DESeq2 wrapper arguments
+    parser.add_argument(
+        "-d",
+        "--design",
+        default="",  # must be an empty string for R's arg checking + docs CLI argument
+        help="design contrast (e.g. column_knockouts_controls)",
+    )
+    parser.add_argument(
+        "-s",
+        "--samples",
+        default="",  # must be an empty string for R's arg checking + docs CLI argument
+        help="samples.tsv with a column containing the contrast arguments "
+             "(sample order consistent with the counts.tsv)",
+    )
+    parser.add_argument(
+        "-c",
+        "--counts",
+        default="",  # must be an empty string for R's arg checking + docs CLI argument
+        help="counts.tsv (sample order consistent with the samples.tsv)",
+    )
+    parser.add_argument(
+        "-o",
+        "--outdir",
+        default="",  # must be an empty string for R's arg checking + docs CLI argument
+        help="output directory",
+    )
+    parser.add_argument(
+        "--docs",
+        action='store_true',
+        help="open de DESeq2 wrapper documentation (with examples!)",
+    )
+    argcomplete.autocomplete(parser)
 
     return parser
 
@@ -578,3 +635,68 @@ def setup_seq2science_logger(parsed_args):
         logger.get_logfile = lambda: seq2science_logfile
         logger.logfile_handler = _logging.FileHandler(seq2science_logfile)
         logger.logger.addHandler(logger.logfile_handler)
+
+
+def _deseq(args, base_dir):
+    # docs
+    if args.docs is True:
+        url = "https://vanheeringen-lab.github.io/seq2science/content/DESeq2.html"
+        if not webbrowser.open(url):
+            print(url)
+        return
+
+    # insufficient args
+    if not all(
+            len(a) > 0 for a in [args.counts, args.design, args.outdir, args.samples]
+    ):
+        logger.info("4 arguments expected: contrast, samples_file, counts_file and outdir.")
+        return
+
+    import hashlib
+    import subprocess as sp
+
+    def conda_path(yml):
+        """
+        Find the path to a snakemake conda environment.
+        Does not work with containers.
+        """
+        # mimic snakemake's conda env hashing:
+        # https://github.com/snakemake/snakemake/blob/
+        # 1349254de57ced0466bfe1e98f0f7c2a1b247d2d/snakemake/deployment/conda.py#L91
+        env_dir = os.path.dirname(os.path.dirname(yamlfile))
+        env_dir = os.path.join(env_dir, ".snakemake")
+        env_dir = os.path.realpath(env_dir)
+        md5hash = hashlib.md5()
+        md5hash.update(env_dir.encode())
+        md5hash.update(open(yml, "rb").read())
+        env_hash = md5hash.hexdigest()
+        path = os.path.join(env_dir, env_hash)
+        return path
+
+    def subprocess_run(_cmd):
+        retcode = sp.call(_cmd, shell=True)
+        print("")  # no newline otherwise
+        if retcode != 0:
+            sys.exit(retcode)
+
+    # find/create the deseq2 conda env
+    yamlfile = os.path.join(base_dir, "envs", "deseq2.yaml")
+    env_prefix = conda_path(yamlfile)
+    if not os.path.exists(env_prefix):
+        logger.info(f"Creating conda environment seq2science/envs/deseq2.yaml...")
+        cmd = f"mamba env create -p {env_prefix} -f {yamlfile} -q > /dev/null"
+        subprocess_run(cmd)
+
+    # we don't even need to activate the env
+    rscript = os.path.join(env_prefix, "bin", "Rscript")
+    script = os.path.join(base_dir, "scripts", "deseq2", "deseq2.R")
+    cmd = f"{rscript} {script} {args.design} {args.samples} {args.counts} {args.outdir}"
+    subprocess_run(cmd)
+
+    # example command:
+    #
+    # deseq2science \
+    # -d batch+condition_day2_day0 \
+    # -s tests/deseq2/rna/samples.tsv \
+    # -c tests/deseq2/rna/counts/GRCh38.p13-counts.tsv \
+    # -o tests/local_test_results/deseq2science

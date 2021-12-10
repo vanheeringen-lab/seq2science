@@ -148,6 +148,9 @@ if (is.na(batch)) {
   batchcorr_vst <- batch_corrected_vst(dds)
   g2 <- DESeq2::plotPCA(batchcorr_vst, intgroup=c("condition", "batch"))
 
+  # prevent plot() from generating Rplot.pdf in the working directory
+  pdf(NULL)
+
   # color by batch/condition. up to 6 shapes can be displayed too.
   condition_aes <- if (length(levels(blind_vst$batch)) < 7) {aes(color=condition, shape=batch)} else {aes(color=condition)}
   batch_aes <- if (length(levels(blind_vst$condition)) < 7) {aes(color=batch, shape=condition)} else {aes(color=batch)}
@@ -157,9 +160,9 @@ if (is.na(batch)) {
 
   plot3 <- plot(g2 + ggtitle("batch corrected PCA - color by condition") + condition_aes + theme(legend.position="bottom"))
   plot4 <- plot(g2 + ggtitle("batch corrected PCA - color by batch") + batch_aes + theme(legend.position="bottom"))
+
   png(output_pca_plot, width = 465, height = 225, units='mm', res = 300)
   gridExtra::grid.arrange(plot1, plot2, plot3, plot4, ncol=2, nrow=2)
-  
   invisible(dev.off())
   cat('-PCA plots saved\n\n')
 
