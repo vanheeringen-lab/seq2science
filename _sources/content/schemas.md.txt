@@ -374,6 +374,13 @@ max_template_length:
     description: the maximum template length for paired-end reads
     type: integer
 ```
+#####subsample
+```
+subsample:
+    description: the maximum amount of reads allowed in the final bam file. When setting a value lower than zero, no subsampling happens (default).
+    type: integer
+    default: -1
+```
 
 ## Workflow: Alignment
 #####bam_sorter
@@ -566,6 +573,10 @@ fastq-pair:
 quantifier:
     description: which quantifier to use
     properties:
+        citeseqcount:
+            properties:
+                count:
+                    default: -cbf 9 -cbl 16 -umif 1 -umil 8 -cells 372 --max-error 1 --bc_collapsing_dist 1 --umi_collapsing_dist 1
         kallistobus:
             properties:
                 ref:
@@ -587,6 +598,32 @@ barcodefile:
 run_kb_seurat_pp:
     default: False
     type: boolean
+```
+#####export_seu_objects
+```
+export_seu_objects:
+    description: Export scRNA count tables to Seurat objects and save in RDS format
+    type: boolean
+    default: False
+```
+#####seurat_object
+```
+seurat_object:
+    description: Seurat object settings
+    properties:
+        project_name:
+            description: Project name for merged Seurat object
+            type: string
+        min_cells:
+            description: Include features detected in at least this many cells
+            type: integer
+        min_features:
+            description: Include cells where at least this many features are detected
+            type: integer
+        default:
+            project_name: merged
+            min_cells: 0
+            min_features: 0
 ```
 #####seurat
 ```

@@ -72,17 +72,19 @@ bowtie2 {params.params} --threads {threads} -x {input.index}/{wildcards.assembly
 #### bowtie2_index
 Make a genome index for bowtie2. This index is required for alignment.
 ```
-mkdir -p {output}
+            mkdir -p {output}
 
-bowtie2-build {params} --threads {threads} {input} {output}/{wildcards.assembly} > {log} 2>&1
+            bowtie2-build {params} --threads {threads} {input} {output}/{wildcards.assembly} > {log} 2>&1
+            
 ```
 
 #### bwa_index
 Make a genome index for bwa (mem). This index is required for alignment.
 ```
-mkdir -p {output}
+            mkdir -p {output}
 
-bwa index -p {params.prefix} {params.params} {input} > {log} 2>&1
+            bwa index -p {params.prefix} {params.params} {input} > {log} 2>&1
+            
 ```
 
 #### bwa_mem
@@ -100,9 +102,10 @@ bwa-mem2 mem {params.params} -t {threads} {params.index_dir} {input.reads} 2> {l
 #### bwa_mem2_index
 Make a genome index for bwa-mem2. This index is required for alignment.
 ```
-mkdir -p {output}
+            mkdir -p {output}
 
-bwa-mem2 index -p {params.prefix} {input} > {log} 2>&1
+            bwa-mem2 index -p {params.prefix} {input} > {log} 2>&1
+            
 ```
 
 #### call_peak_genrich
@@ -113,6 +116,14 @@ Genrich -P -f {input.log} -o {output.narrowpeak} {params} -v > {log} 2>&1
 
 #### chipseeker
 Generate a multiqc header file with contact info and date of multiqc generation.
+
+#### citeseqcount
+ADT mapping and quantification with cite-seq-count and output a umi/read matrix per sample.
+```
+CITE-seq-Count -R1 {input.reads[0]} -R2 {input.reads[1]} \
+-t {input.tags} {params.barcode_arg} -T {threads} \
+{params.options} -o {params.outdir} > {log} 2>&1
+```
 
 #### combine_peaks
 Uses gimmemotifs' combine_peaks to "combine" peaks. This finds all peaks close
@@ -207,11 +218,11 @@ bedToBigBed -type=bed4 {output.cytoband_bd} -as={params.schema} \
 ```
 
 #### decoy_transcripts
-Generate decoy_transcripts.txt for Salmon indexing  
+Generate decoy_transcripts.txt for Salmon indexing
 
 script source: https://github.com/COMBINE-lab/SalmonTools
 ```
-Generate a decoy aware transcriptome index for Salmon.
+sh {params.script} -j {threads} -g {input.genome} -a {input.gtf} -t {input.transcripts} -o $(dirname {output[0]}) > {log} 2>&1
 ```
 
 #### deseq2
@@ -252,6 +263,9 @@ Download paired-end fastq files directly from the ENA.
 #### ena2fastq_SE
 Download single-end fastq files directly from the ENA.
 
+#### export_seurat_obj
+Read scRNA count output into Seurat object, add meta-data and export to RData format.
+
 #### extend_genome
 Append given file(s) to genome
 ```
@@ -286,18 +300,9 @@ cp {input} {output}
 
 #### fastp_PE
 Automated adapter detection, adapter trimming, and quality trimming through fastp (paired-end).
-```
-fastp -w {params.threads} --in1 {input[0]} --in2 {input[1]} \
---out1 {output.r1} --out2 {output.r2} -h {output.qc_html} -j {output.qc_json} \
-{params.config} > {log} 2>&1
-```
 
 #### fastp_SE
 Automated adapter detection, adapter trimming, and quality trimming through fastp (single-end).
-```
-fastp -w {params.threads} --in1 {input} --out1 {output.se} -h {output.qc_html} -j {output.qc_json} \
-{params.config} > {log} 2>&1
-```
 
 #### fastp_qc_PE
 Get quality scores for (technical) replicates
@@ -314,9 +319,9 @@ fastp -w {threads} --in1 {input} -h {output.qc_html} -j {output.qc_json} > {log}
 ```
 
 #### fastq_pair
-fastq_pair re-writes paired-end fastq files to ensure that each read has a mate and 
-dsicards singleton reads. This step is required after scRNA trimming since we only trim the fastq 
-containing reads and not the barcode fastq. 
+fastq_pair re-writes paired-end fastq files to ensure that each read has a mate and
+dsicards singleton reads. This step is required after scRNA trimming since we only trim the fastq
+containing reads and not the barcode fastq.
 ```
 gunzip -c {input.r1} > {output.intermediates1[0]} 2> {log}
 gunzip -c {input.r2} > {output.intermediates1[1]} 2>> {log}
@@ -328,14 +333,12 @@ else
   opts="-p -t "$(wc -l {input.r1} | grep -Po '^\d+' | awk '{{print int($1/4)}}')
 fi
 fastq_pair $opts {output.intermediates1} >> {log} 2>&1
-        
+gzip -c {output.intermediates3[0]} > {output.reads[0]} 2> {log}
+gzip -c {output.intermediates3[1]} > {output.reads[1]} 2>> {log}
 ```
 
 #### fastqc
 Generate quality control report for fastq files.
-```
-fastqc {input} -O {params} > {log} 2>&1
-```
 
 #### featureCounts
 Use featureCounts to generate the fraction reads in peaks score 
@@ -383,6 +386,16 @@ Genrich -X -t $input -f {output.log} {params.control} -k {output.bedgraphish} \
 {params.params} -v > {log} 2>&1
 ```
 
+#### get_effective_genome_size
+Get the effective genome size for a kmer length. Some tools (e.g. macs2) require
+an estimation of the effective genome size to better estimate how (un)likely it
+is to have a certain number of reads on a position. The actual genome size is
+not the best indication in these cases, since reads in repetitive regions
+(for a certain kmer length) can not possible align on some locations.
+```
+unique-kmers.py {input} -k {wildcards.kmer_size} --quiet 2>&1 | grep -P -o '(?<=\.fa: ).*' > {output} 2> {log}
+```
+
 #### get_genome
 Download a genome through genomepy.
 
@@ -409,23 +422,25 @@ hisat2 {params.params} --threads {threads} -x {input.index}/part {params.input} 
 #### hisat2_index
 Make a genome index for hisat2. This index is required for alignment.
 ```
-mkdir -p {output}
+            mkdir -p {output}
 
-hisat2-build {params} -p {threads} {input} {output}/part > {log} 2>&1
+            hisat2-build {params} -p {threads} {input} {output}/part > {log} 2>&1
+            
 ```
 
 #### hisat2_splice_aware_index
 Make an exon-junction and splice aware index for hisat2. 
 This index is required for alignment and quantification of RNA-seq data.
 ```
-mkdir -p {output}
+            mkdir -p {output}
 
-hp=$(which hisat2)
-python3 ${{hp}}_extract_splice_sites.py {input.gtf} > {output}/splice_sites.tsv 2>> {log}
-python3 ${{hp}}_extract_exons.py {input.gtf} > {output}/exons.tsv 2>> {log}
+            hp=$(which hisat2)
+            python3 ${{hp}}_extract_splice_sites.py {input.gtf} > {output}/splice_sites.tsv 2>> {log}
+            python3 ${{hp}}_extract_exons.py {input.gtf} > {output}/exons.tsv 2>> {log}
 
-hisat2-build {params} -p {threads} --ss {output}/splice_sites.tsv --exon {output}/exons.tsv \
-{input.fasta} {output}/part >> {log} 2>&1
+            hisat2-build {params} -p {threads} --ss {output}/splice_sites.tsv --exon {output}/exons.tsv \
+            {input.fasta} {output}/part >> {log} 2>&1
+            
 ```
 
 #### hmmratac
@@ -487,33 +502,33 @@ Align reads against a transcriptome (index) with kallistobus and output a quanti
 kb count \
 -i {params.basename}.idx \
 -t {threads} -g {params.basename}_t2g.txt \
--o {params.outdir} -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
+-o {params.outdir} {params.c1} {params.c2} \
 {params.barcode_arg} {params.options} {input.reads} > {log} 2>&1
 \# Validate output
 if grep -q 'ERROR\|bad_alloc' "{log}"; then
   exit 1
-fi  
+fi
 ```
 
 #### kallistobus_ref
 Make a genome index for kallistobus. This index is required for counting.
 ```
+mkdir -p {output}
 kb ref \
 {input.fa} {input.gtf} \
 -i {params.basename}.idx -g {params.basename}_t2g.txt -f1 {params.basename}_cdna.fa \
--f2 {params.basename}_intron.fa \
--c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
+{params.f2} {params.c1} {params.c2} \
 {params.options} > {log} 2>&1
 ```
 
 #### kallistobus_ref_kite
-Make a mismatch index for kallistobus. This index is required to count feature barcodes, such as antibody tags. 
+Make a mismatch index for kallistobus. This index is required to count feature barcodes, such as antibody tags.
 ```
-mkdir -p {params.basename}
+mkdir -p {output}
 kb ref  \
 {input.featurebarcodes} \
 {params.options} \
--i {params.basename}.idx -g {params.basename}_t2g.txt -f1 {params.basename}_cdna.fa > {log} 2>&1 
+-i {params.basename}.idx -g {params.basename}_t2g.txt -f1 {params.basename}_cdna.fa > {log} 2>&1
 ```
 
 #### kb_seurat_pp
@@ -538,13 +553,12 @@ Log1p normalization of a count table.
 Call peaks using macs2.
 Macs2 requires a genome size, which we estimate from the amount of unique kmers of the average read length.
 ```
-echo "preparing to run unique-kmers.py with -k $kmer_size" >> {log}
-GENSIZE=$(unique-kmers.py {params.genome} -k $kmer_size --quiet 2>&1 | grep -P -o '(?<=\.fa: ).*')
-echo "kmer size: $kmer_size, and effective genome size: $GENSIZE" >> {log}
+        GENSIZE=$(cat {input.genome_size})
 
-\# call peaks
-macs2 callpeak --bdg -t {input.bam} {params.control} --outdir {config[result_dir]}/macs2/ -n {wildcards.assembly}-{wildcards.sample} \
-{params.macs_params} -g $GENSIZE -f {params.format} >> {log} 2>&1
+        \# call peaks
+        macs2 callpeak --bdg -t {input.bam} {params.control} --outdir {config[result_dir]}/macs2/ -n {wildcards.assembly}-{wildcards.sample} \
+        {params.macs_params} -g $GENSIZE -f {params.format} >> {log} 2>&1
+        
 ```
 
 #### macs_bdgcmp
@@ -572,15 +586,7 @@ cat {output.tmppeaks} | tail -n +2 > {output.peaks}
 #### mark_duplicates
 Mark all duplicate reads in a bam file with picard MarkDuplicates
 ```
-\# use the TMPDIR if set, and not given in the config
-if [[ ${{TMPDIR:=F}} == "F" ]] || [[ "{params}" == *TMP_DIR* ]]
-then
-    tmpdir=""
-else 
-    tmpdir=TMP_DIR=$TMPDIR
-fi
-
-picard MarkDuplicates $tmpdir {params} INPUT={input} \
+picard MarkDuplicates TMP_DIR={resources.tmpdir} {params} INPUT={input} \
 OUTPUT={output.bam} METRICS_FILE={output.metrics} > {log} 2>&1
 ```
 
@@ -594,6 +600,9 @@ contain the name of the original replicate.
 Must happen after trimming due to trim-galore's automatic adapter trimming method 
 
 If a replicate has only 1 sample in it, simply move the file.
+
+#### merge_seurat_obj
+Gather and merge multiple Seurat objects into a combined object and export to RData format.
 
 #### merge_volcano_ma
 Combine the volcano and maplot resulting of the deseq2 rule into a single figure.
@@ -610,9 +619,10 @@ minimap2 -t {threads} -a {input.index} {input.reads} {params} > {output} 2> {log
 #### minimap2_index
 Make a genome index for minimap2. This index is required for alignment.
 ```
-mkdir -p $(dirname {output})
+            mkdir -p $(dirname {output})
 
-minimap2 -t {threads} -d {output} {input} {params} > {log} 2>&1
+            minimap2 -t {threads} -d {output} {input} {params} > {log} 2>&1
+            
 ```
 
 #### mt_nuc_ratio_calculator
@@ -664,7 +674,7 @@ Get onehot encodings of which peaks are found in which samples
             paste {output.real} - > {output.tmp}
             mv {output.tmp} {output.real}
         done
-        
+
         echo -e "\# onehot encoding of which condition contains which peaks\\n$(cat {output.real})" > {output.tmp} && cp {output.tmp} {output.real}
         
 ```
@@ -783,13 +793,21 @@ Concatenate a single run or multiple runs together into a fastq
 
 #### salmon_decoy_aware_index
 Generate a decoy aware transcriptome index for Salmon.
+```
+            mkdir -p {output}
+
+            salmon index -t {input.gentrome} -d {input.decoys} -i {output} {params} \
+            --threads {threads} > {log} 2>&1
+            
+```
 
 #### salmon_index
 Generate a transcriptome index for Salmon.
 ```
-mkdir -p {output}
+            mkdir -p {output}
 
-salmon index -t {input} -i {output} {params} --threads {threads} > {log} 2>&1
+            salmon index -t {input} -i {output} {params} --threads {threads} > {log} 2>&1
+            
 ```
 
 #### salmon_quant
@@ -828,22 +846,22 @@ samtools index {input} {output} > {log} 2>&1
 (Pre)sort the result of alignment with the samtools sorter.
 ```
 \# we set this trap to remove temp files when prematurely ending the rule
-trap "rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
-rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2> {log}
+trap "rm -f {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
+rm -f {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2> {log}
 
 samtools sort -@ {threads} {params.memory} {input} -o {output} \
--T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
+-T {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
 ```
 
 #### samtools_sort
 Sort the result of shiftsieving with the samtools sorter.
 ```
 \# we set this trap to remove temp files when prematurely ending the rule
-trap "rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
-rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2> {log}
+trap "rm -f {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
+rm -f {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2> {log}
 
 samtools sort {params.sort_order} -@ {threads} {params.memory} {input} -o {output} \
--T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
+-T {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
 ```
 
 #### samtools_stats
@@ -861,10 +879,11 @@ This rule does (at least) one of these:
 * remove multimappers
 * remove reads inside the blacklist
 * remove duplicates
-* filter paired-end reads on transcript length 
+* filter paired-end reads on transcript length
+* subsample to have a maximum amount of reads (equal across samples)
 ```
 samtools view -h {params.prim_align} {params.minqual} {params.blacklist} \
-{input.bam} | {params.atacshift} {params.sizesieve}
+{input.bam} | {params.atacshift} {params.sizesieve} {params.subsample}
 samtools view -b > {output.final} 2> {log}
 
 \# single-end reads never output allsizes so just touch the file when filtering on size
@@ -998,6 +1017,9 @@ echo $x
             --runThreadN {threads} $NBits $NBases {params} >> {log} 2>&1
             
 ```
+
+#### strandedness_report
+combine samples.tsv & infer_strandedness results (call strandedness if >60% of reads explains a direction)
 
 #### trackhub
 Generate a UCSC track hub/assembly hub. 

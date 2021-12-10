@@ -56,6 +56,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#bwa-mem2-index">bwa_mem2_index</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#call-peak-genrich">call_peak_genrich</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#chipseeker">chipseeker</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#citeseqcount">citeseqcount</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#combine-peaks">combine_peaks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#combine-qc-files">combine_qc_files</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#complement-blacklist">complement_blacklist</a></li>
@@ -76,6 +77,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#edger-normalization">edgeR_normalization</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ena2fastq-pe">ena2fastq_PE</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ena2fastq-se">ena2fastq_SE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#export-seurat-obj">export_seurat_obj</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#extend-genome">extend_genome</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#extend-genome-annotation">extend_genome_annotation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#extend-genome-blacklist">extend_genome_blacklist</a></li>
@@ -90,6 +92,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#gcpercent">gcPercent</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#gene-id2name">gene_id2name</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#genrich-pileup">genrich_pileup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#get-effective-genome-size">get_effective_genome_size</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#get-genome">get_genome</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#get-genome-annotation">get_genome_annotation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#get-genome-blacklist">get_genome_blacklist</a></li>
@@ -116,6 +119,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#mark-duplicates">mark_duplicates</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#mean-center">mean_center</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#merge-replicates">merge_replicates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#merge-seurat-obj">merge_seurat_obj</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#merge-volcano-ma">merge_volcano_ma</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#minimap2-align">minimap2_align</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#minimap2-index">minimap2_index</a></li>
@@ -316,6 +320,15 @@ bwa-mem2 index -p {params.prefix} {input} &gt; {log} 2&gt;&amp;1
 <h2>chipseeker<a class="headerlink" href="#chipseeker" title="Permalink to this headline">¶</a></h2>
 <p>Generate a multiqc header file with contact info and date of multiqc generation.</p>
 </div>
+<div class="section" id="citeseqcount">
+<h2>citeseqcount<a class="headerlink" href="#citeseqcount" title="Permalink to this headline">¶</a></h2>
+<p>ADT mapping and quantification with cite-seq-count and output a umi/read matrix per sample.</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>CITE-seq-Count -R1 {input.reads[0]} -R2 {input.reads[1]} \
+-t {input.tags} {params.barcode_arg} -T {threads} \
+{params.options} -o {params.outdir} &gt; {log} 2&gt;&amp;1
+</pre></div>
+</div>
+</div>
 <div class="section" id="combine-peaks">
 <h2>combine_peaks<a class="headerlink" href="#combine-peaks" title="Permalink to this headline">¶</a></h2>
 <p>Uses gimmemotifs’ combine_peaks to “combine” peaks. This finds all peaks close
@@ -421,7 +434,7 @@ bedToBigBed -type=bed4 {output.cytoband_bd} -as={params.schema} \
 <h2>decoy_transcripts<a class="headerlink" href="#decoy-transcripts" title="Permalink to this headline">¶</a></h2>
 <p>Generate decoy_transcripts.txt for Salmon indexing</p>
 <p>script source: <a class="reference external" href="https://github.com/COMBINE-lab/SalmonTools">https://github.com/COMBINE-lab/SalmonTools</a></p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Generate a decoy aware transcriptome index for Salmon.
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>sh {params.script} -j {threads} -g {input.genome} -a {input.gtf} -t {input.transcripts} -o $(dirname {output[0]}) &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
 </div>
@@ -470,6 +483,10 @@ RLE: is the scaling factor method proposed by Anders and Huber (2010). DEseq2 no
 <h2>ena2fastq_SE<a class="headerlink" href="#ena2fastq-se" title="Permalink to this headline">¶</a></h2>
 <p>Download single-end fastq files directly from the ENA.</p>
 </div>
+<div class="section" id="export-seurat-obj">
+<h2>export_seurat_obj<a class="headerlink" href="#export-seurat-obj" title="Permalink to this headline">¶</a></h2>
+<p>Read scRNA count output into Seurat object, add meta-data and export to RData format.</p>
+</div>
 <div class="section" id="extend-genome">
 <h2>extend_genome<a class="headerlink" href="#extend-genome" title="Permalink to this headline">¶</a></h2>
 <p>Append given file(s) to genome</p>
@@ -508,19 +525,10 @@ genePredToBed {output.gp} {output.bed}
 <div class="section" id="fastp-pe">
 <h2>fastp_PE<a class="headerlink" href="#fastp-pe" title="Permalink to this headline">¶</a></h2>
 <p>Automated adapter detection, adapter trimming, and quality trimming through fastp (paired-end).</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>fastp -w {params.threads} --in1 {input[0]} --in2 {input[1]} \
---out1 {output.r1} --out2 {output.r2} -h {output.qc_html} -j {output.qc_json} \
-{params.config} &gt; {log} 2&gt;&amp;1
-</pre></div>
-</div>
 </div>
 <div class="section" id="fastp-se">
 <h2>fastp_SE<a class="headerlink" href="#fastp-se" title="Permalink to this headline">¶</a></h2>
 <p>Automated adapter detection, adapter trimming, and quality trimming through fastp (single-end).</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>fastp -w {params.threads} --in1 {input} --out1 {output.se} -h {output.qc_html} -j {output.qc_json} \
-{params.config} &gt; {log} 2&gt;&amp;1
-</pre></div>
-</div>
 </div>
 <div class="section" id="fastp-qc-pe">
 <h2>fastp_qc_PE<a class="headerlink" href="#fastp-qc-pe" title="Permalink to this headline">¶</a></h2>
@@ -553,15 +561,14 @@ else
   opts=&quot;-p -t &quot;$(wc -l {input.r1} | grep -Po &#39;^\d+&#39; | awk &#39;{{print int($1/4)}}&#39;)
 fi
 fastq_pair $opts {output.intermediates1} &gt;&gt; {log} 2&gt;&amp;1
+gzip -c {output.intermediates3[0]} &gt; {output.reads[0]} 2&gt; {log}
+gzip -c {output.intermediates3[1]} &gt; {output.reads[1]} 2&gt;&gt; {log}
 </pre></div>
 </div>
 </div>
 <div class="section" id="fastqc">
 <h2>fastqc<a class="headerlink" href="#fastqc" title="Permalink to this headline">¶</a></h2>
 <p>Generate quality control report for fastq files.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>fastqc {input} -O {params} &gt; {log} 2&gt;&amp;1
-</pre></div>
-</div>
 </div>
 <div class="section" id="featurecounts">
 <h2>featureCounts<a class="headerlink" href="#featurecounts" title="Permalink to this headline">¶</a></h2>
@@ -609,6 +616,17 @@ processes have a very different computational footprint.</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>input=$(echo {input.reps} | tr &#39; &#39; &#39;,&#39;)
 Genrich -X -t $input -f {output.log} {params.control} -k {output.bedgraphish} \
 {params.params} -v &gt; {log} 2&gt;&amp;1
+</pre></div>
+</div>
+</div>
+<div class="section" id="get-effective-genome-size">
+<h2>get_effective_genome_size<a class="headerlink" href="#get-effective-genome-size" title="Permalink to this headline">¶</a></h2>
+<p>Get the effective genome size for a kmer length. Some tools (e.g. macs2) require
+an estimation of the effective genome size to better estimate how (un)likely it
+is to have a certain number of reads on a position. The actual genome size is
+not the best indication in these cases, since reads in repetitive regions
+(for a certain kmer length) can not possible align on some locations.</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>unique-kmers.py {input} -k {wildcards.kmer_size} --quiet 2&gt;&amp;1 | grep -P -o &#39;(?&lt;=\.fa: ).*&#39; &gt; {output} 2&gt; {log}
 </pre></div>
 </div>
 </div>
@@ -725,7 +743,7 @@ OUTPUT={output.tsv} H={output.pdf} &gt; {log} 2&gt;&amp;1
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>kb count \
 -i {params.basename}.idx \
 -t {threads} -g {params.basename}_t2g.txt \
--o {params.outdir} -c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
+-o {params.outdir} {params.c1} {params.c2} \
 {params.barcode_arg} {params.options} {input.reads} &gt; {log} 2&gt;&amp;1
 \# Validate output
 if grep -q &#39;ERROR\|bad_alloc&#39; &quot;{log}&quot;; then
@@ -737,11 +755,11 @@ fi
 <div class="section" id="kallistobus-ref">
 <h2>kallistobus_ref<a class="headerlink" href="#kallistobus-ref" title="Permalink to this headline">¶</a></h2>
 <p>Make a genome index for kallistobus. This index is required for counting.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>kb ref \
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>mkdir -p {output}
+kb ref \
 {input.fa} {input.gtf} \
 -i {params.basename}.idx -g {params.basename}_t2g.txt -f1 {params.basename}_cdna.fa \
--f2 {params.basename}_intron.fa \
--c1 {params.basename}_cdna_t2c.txt -c2 {params.basename}_intron_t2c.txt \
+{params.f2} {params.c1} {params.c2} \
 {params.options} &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
@@ -749,7 +767,7 @@ fi
 <div class="section" id="kallistobus-ref-kite">
 <h2>kallistobus_ref_kite<a class="headerlink" href="#kallistobus-ref-kite" title="Permalink to this headline">¶</a></h2>
 <p>Make a mismatch index for kallistobus. This index is required to count feature barcodes, such as antibody tags.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>mkdir -p {params.basename}
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>mkdir -p {output}
 kb ref  \
 {input.featurebarcodes} \
 {params.options} \
@@ -781,9 +799,7 @@ macs2 in this case only keeps the first in pair.</p>
 <h2>macs2_callpeak<a class="headerlink" href="#macs2-callpeak" title="Permalink to this headline">¶</a></h2>
 <p>Call peaks using macs2.
 Macs2 requires a genome size, which we estimate from the amount of unique kmers of the average read length.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>echo &quot;preparing to run unique-kmers.py with -k $kmer_size&quot; &gt;&gt; {log}
-GENSIZE=$(unique-kmers.py {params.genome} -k $kmer_size --quiet 2&gt;&amp;1 | grep -P -o &#39;(?&lt;=\.fa: ).*&#39;)
-echo &quot;kmer size: $kmer_size, and effective genome size: $GENSIZE&quot; &gt;&gt; {log}
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>GENSIZE=$(cat {input.genome_size})
 
 \# call peaks
 macs2 callpeak --bdg -t {input.bam} {params.control} --outdir {config[result_dir]}/macs2/ -n {wildcards.assembly}-{wildcards.sample} \
@@ -816,15 +832,7 @@ cat {output.tmppeaks} | tail -n +2 &gt; {output.peaks}
 <div class="section" id="mark-duplicates">
 <h2>mark_duplicates<a class="headerlink" href="#mark-duplicates" title="Permalink to this headline">¶</a></h2>
 <p>Mark all duplicate reads in a bam file with picard MarkDuplicates</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>\# use the TMPDIR if set, and not given in the config
-if [[ ${{TMPDIR:=F}} == &quot;F&quot; ]] || [[ &quot;{params}&quot; == *TMP_DIR* ]]
-then
-    tmpdir=&quot;&quot;
-else
-    tmpdir=TMP_DIR=$TMPDIR
-fi
-
-picard MarkDuplicates $tmpdir {params} INPUT={input} \
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>picard MarkDuplicates TMP_DIR={resources.tmpdir} {params} INPUT={input} \
 OUTPUT={output.bam} METRICS_FILE={output.metrics} &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
@@ -839,6 +847,10 @@ OUTPUT={output.bam} METRICS_FILE={output.metrics} &gt; {log} 2&gt;&amp;1
 contain the name of the original replicate.</p>
 <p>Must happen after trimming due to trim-galore’s automatic adapter trimming method</p>
 <p>If a replicate has only 1 sample in it, simply move the file.</p>
+</div>
+<div class="section" id="merge-seurat-obj">
+<h2>merge_seurat_obj<a class="headerlink" href="#merge-seurat-obj" title="Permalink to this headline">¶</a></h2>
+<p>Gather and merge multiple Seurat objects into a combined object and export to RData format.</p>
 </div>
 <div class="section" id="merge-volcano-ma">
 <h2>merge_volcano_ma<a class="headerlink" href="#merge-volcano-ma" title="Permalink to this headline">¶</a></h2>
@@ -1048,6 +1060,12 @@ fi
 <div class="section" id="salmon-decoy-aware-index">
 <h2>salmon_decoy_aware_index<a class="headerlink" href="#salmon-decoy-aware-index" title="Permalink to this headline">¶</a></h2>
 <p>Generate a decoy aware transcriptome index for Salmon.</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>mkdir -p {output}
+
+salmon index -t {input.gentrome} -d {input.decoys} -i {output} {params} \
+--threads {threads} &gt; {log} 2&gt;&amp;1
+</pre></div>
+</div>
 </div>
 <div class="section" id="salmon-index">
 <h2>salmon_index<a class="headerlink" href="#salmon-index" title="Permalink to this headline">¶</a></h2>
@@ -1099,11 +1117,11 @@ sambamba sort --nthreads {threads} {params} /dev/stdin -o {output}  2&gt; {log}
 <h2>samtools_presort<a class="headerlink" href="#samtools-presort" title="Permalink to this headline">¶</a></h2>
 <p>(Pre)sort the result of alignment with the samtools sorter.</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>\# we set this trap to remove temp files when prematurely ending the rule
-trap &quot;rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam&quot; INT;
-rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2&gt; {log}
+trap &quot;rm -f {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam&quot; INT;
+rm -f {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2&gt; {log}
 
 samtools sort -@ {threads} {params.memory} {input} -o {output} \
--T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2&gt; {log}
+-T {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp 2&gt; {log}
 </pre></div>
 </div>
 </div>
@@ -1111,11 +1129,11 @@ samtools sort -@ {threads} {params.memory} {input} -o {output} \
 <h2>samtools_sort<a class="headerlink" href="#samtools-sort" title="Permalink to this headline">¶</a></h2>
 <p>Sort the result of shiftsieving with the samtools sorter.</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>\# we set this trap to remove temp files when prematurely ending the rule
-trap &quot;rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam&quot; INT;
-rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2&gt; {log}
+trap &quot;rm -f {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam&quot; INT;
+rm -f {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2&gt; {log}
 
 samtools sort {params.sort_order} -@ {threads} {params.memory} {input} -o {output} \
--T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2&gt; {log}
+-T {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp 2&gt; {log}
 </pre></div>
 </div>
 </div>
@@ -1137,9 +1155,10 @@ samtools sort {params.sort_order} -@ {threads} {params.memory} {input} -o {outpu
 <li><p>remove multimappers</p></li>
 <li><p>remove reads inside the blacklist</p></li>
 <li><p>remove duplicates</p></li>
-<li><p>filter paired-end reads on transcript length
+<li><p>filter paired-end reads on transcript length</p></li>
+<li><p>subsample to have a maximum amount of reads (equal across samples)
 <a href="#id2"><span class="problematic" id="id3">``</span></a>`
-samtools view -h {params.prim_align} {params.minqual} {params.blacklist} {input.bam} | {params.atacshift} {params.sizesieve}
+samtools view -h {params.prim_align} {params.minqual} {params.blacklist} {input.bam} | {params.atacshift} {params.sizesieve} {params.subsample}
 samtools view -b &gt; {output.final} 2&gt; {log}</p></li>
 </ul>
 <p># single-end reads never output allsizes so just touch the file when filtering on size
@@ -1261,7 +1280,10 @@ STAR --runMode genomeGenerate --genomeFastaFiles {input.genome} --sjdbGTFfile {i
 --runThreadN {threads} $NBits $NBases {params} &gt;&gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>#### trackhub
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>#### strandedness_report
+combine samples.tsv &amp; infer_strandedness results (call strandedness if &gt;60% of reads explains a direction)
+
+#### trackhub
 Generate a UCSC track hub/assembly hub.
 
 To view the hub, the output directory must be hosted on an web accessible location,

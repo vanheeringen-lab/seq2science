@@ -137,3 +137,6 @@ For the default aligners (BWA and STAR), a minimal quality score has been set to
 
 #### Cram support
 For the edge-case where you want to work with cram files instead of bams, there is an option `cram_no_bam` which will convert your bam files to cram (saves around 60% storage).
+
+#### subsampling
+In some cases you might want to have the same number of reads between samples. By adding e.g. `subsample:1_000_000` seq2science will make sure that each sample contains at most a million reads. Seq2science always downsamples, never upsamples. 

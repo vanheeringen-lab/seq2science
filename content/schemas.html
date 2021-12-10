@@ -93,6 +93,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#deeptools-multibamsummary">deeptools_multibamsummary</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#min-template-length">min_template_length</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#max-template-length">max_template_length</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#subsample">subsample</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#workflow-alignment">Workflow: Alignment</a><ul>
@@ -129,6 +130,8 @@
 <li class="toctree-l4"><a class="reference internal" href="#id1">quantifier</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#barcodefile">barcodefile</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#run-kb-seurat-pp">run_kb_seurat_pp</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#export-seu-objects">export_seu_objects</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#seurat-object">seurat_object</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#seurat">seurat</a></li>
 </ul>
 </li>
@@ -644,6 +647,15 @@
 </pre></div>
 </div>
 </div>
+<div class="section" id="subsample">
+<h3>subsample<a class="headerlink" href="#subsample" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>subsample:
+    description: the maximum amount of reads allowed in the final bam file. When setting a value lower than zero, no subsampling happens (default).
+    type: integer
+    default: -1
+</pre></div>
+</div>
+</div>
 </div>
 <div class="section" id="workflow-alignment">
 <h2>Workflow: Alignment<a class="headerlink" href="#workflow-alignment" title="Permalink to this headline">¶</a></h2>
@@ -877,6 +889,10 @@
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>quantifier:
     description: which quantifier to use
     properties:
+        citeseqcount:
+            properties:
+                count:
+                    default: -cbf 9 -cbl 16 -umif 1 -umil 8 -cells 372 --max-error 1 --bc_collapsing_dist 1 --umi_collapsing_dist 1
         kallistobus:
             properties:
                 ref:
@@ -902,6 +918,36 @@
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>run_kb_seurat_pp:
     default: False
     type: boolean
+</pre></div>
+</div>
+</div>
+<div class="section" id="export-seu-objects">
+<h3>export_seu_objects<a class="headerlink" href="#export-seu-objects" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>export_seu_objects:
+    description: Export scRNA count tables to Seurat objects and save in RDS format
+    type: boolean
+    default: False
+</pre></div>
+</div>
+</div>
+<div class="section" id="seurat-object">
+<h3>seurat_object<a class="headerlink" href="#seurat-object" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>seurat_object:
+    description: Seurat object settings
+    properties:
+        project_name:
+            description: Project name for merged Seurat object
+            type: string
+        min_cells:
+            description: Include features detected in at least this many cells
+            type: integer
+        min_features:
+            description: Include cells where at least this many features are detected
+            type: integer
+        default:
+            project_name: merged
+            min_cells: 0
+            min_features: 0
 </pre></div>
 </div>
 </div>

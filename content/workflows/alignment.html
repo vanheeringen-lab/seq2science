@@ -64,6 +64,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#best-practices">Best practices</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#bam-mapping-quality-filtering">BAM mapping quality filtering</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#cram-support">Cram support</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#subsampling">subsampling</a></li>
 </ul>
 </li>
 </ul>
@@ -279,6 +280,10 @@ To do so, you can add the color by name (google “matplotlib colors” for the 
 <div class="section" id="cram-support">
 <h3>Cram support<a class="headerlink" href="#cram-support" title="Permalink to this headline">¶</a></h3>
 <p>For the edge-case where you want to work with cram files instead of bams, there is an option <code class="docutils literal notranslate"><span class="pre">cram_no_bam</span></code> which will convert your bam files to cram (saves around 60% storage).</p>
+</div>
+<div class="section" id="subsampling">
+<h3>subsampling<a class="headerlink" href="#subsampling" title="Permalink to this headline">¶</a></h3>
+<p>In some cases you might want to have the same number of reads between samples. By adding e.g. <code class="docutils literal notranslate"><span class="pre">subsample:1_000_000</span></code> seq2science will make sure that each sample contains at most a million reads. Seq2science always downsamples, never upsamples.</p>
 </div>
 </div>
 </div>

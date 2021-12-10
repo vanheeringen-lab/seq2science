@@ -1,3 +1,7 @@
+"""
+all rules/logic related to differential gene expression with deseq2 should be here.
+"""
+
 import math
 import os
 import hashlib
@@ -21,11 +25,12 @@ if config.get("peak_caller", False):
     # if hmmratac peak caller, check if all samples are paired-end
     if "hmmratac" in config["peak_caller"]:
         assert all(
-            [sampledict[sample]['layout'] == "PAIRED" for sample in samples.index]
+            [sampledict[sample]["layout"] == "PAIRED" for sample in samples.index]
         ), "HMMRATAC requires all samples to be paired end"
 
     config["macs2_types"] = ["control_lambda.bdg", "peaks.xls", "treat_pileup.bdg"]
     if "macs2" in config["peak_caller"]:
+        config["kmer_estimation"] = True
         params = config["peak_caller"]["macs2"].split(" ")
         invalid_params = [
             "-t",
@@ -85,8 +90,10 @@ for conf_dict in ["aligner", "quantifier", "trimmer"]:
 
 # ...for rna-seq
 if get_workflow() == "rna_seq":
-    assert config["aligner"] in ["star", "hisat2"], \
-        f"\nPlease select a splice aware aligner for the RNA-seq (STAR or HISAT2)\n"
+    assert config["aligner"] in [
+        "star",
+        "hisat2",
+    ], f"\nPlease select a splice aware aligner for the RNA-seq (STAR or HISAT2)\n"
 
     # regular dict is prettier in the log
     config["deseq2"] = dict(config["deseq2"])
@@ -98,20 +105,38 @@ if config.get("bam_sorter", False):
     config["bam_sorter"] = list(config["bam_sorter"].keys())[0]
 
 
+# ...for scrna quantification
+if get_workflow() == "scrna_seq":
+    if config["quantifier"] not in ["kallistobus", "citeseqcount"]:
+        logger.error(
+            f"Invalid quantifier selected" "Please select a supported scrna quantifier (kallistobus or citeseqcount)!"
+        )
+        sys.exit(1)
+
+
 # make sure that our samples.tsv and configuration work together...
 # ...on biological replicates
 if "biological_replicates" in samples:
     if "peak_caller" in config and "hmmratac" in config.get("peak_caller"):
-        assert config.get("biological_replicates", "") in ["idr", "keep"], f"HMMRATAC peaks can only be combined through idr"
+        assert config.get("biological_replicates", "") in [
+            "idr",
+            "keep",
+        ], f"HMMRATAC peaks can only be combined through idr"
 
     for condition in set(samples["biological_replicates"]):
         for assembly in set(samples[samples["biological_replicates"] == condition]["assembly"]):
             if "technical_replicates" in samples:
                 nr_samples = len(
-                    set(samples[(samples["biological_replicates"] == condition) & (samples["assembly"] == assembly)]["technical_replicates"])
+                    set(
+                        samples[(samples["biological_replicates"] == condition) & (samples["assembly"] == assembly)][
+                            "technical_replicates"
+                        ]
+                    )
                 )
             else:
-                nr_samples = len(samples[(samples["biological_replicates"] == condition) & (samples["assembly"] == assembly)])
+                nr_samples = len(
+                    samples[(samples["biological_replicates"] == condition) & (samples["assembly"] == assembly)]
+                )
 
             if config.get("biological_replicates", "") == "idr":
                 assert nr_samples <= 2, (
@@ -125,5 +150,50 @@ if config.get("contrasts"):
     for contrast in list(config["contrasts"]):
         assert len(contrast.split("_")) >= 3, (
             f"\nCould not parse DESeq2 contrast '{contrast}'.\n"
-            "A DESeq2 design contrast must be in the form '(batch+)column_target_reference'. See the docs for examples.\n")
-        _,_,_,_ = parse_contrast(contrast, samples, check=True)
+            "A DESeq2 design contrast must be in the form '(batch+)column_target_reference'. See the docs for examples.\n"
+        )
+        _, _, _, _ = parse_contrast(contrast, samples, check=True)
+
+
+def get_read_length(sample):
+    """
+    This function returns the read length for a sample.
+
+    Depending on the fastq qc tool it raises a checkpoint exception, waits for that
+    checkpoint to have been executed, and then checks in the qc summary of the sample
+    what the (average) read length is after trimming.
+    """
+    # if dryrunning just pretend we know already
+    if workflow.persistence.dag.dryrun:
+        return 40
+
+    # trimgalore
+    if config["trimmer"] == "trimgalore":
+        if sampledict[sample]["layout"] == "SINGLE":
+            qc_file = checkpoints.fastqc.get(fname=f"{sample}_R1_trimmed").output.zip
+            zip_name = f"{sample}_trimmed_fastqc/fastqc_data.txt"
+        if sampledict[sample]["layout"] == "PAIRED":
+            qc_file = checkpoints.fastqc.get(fname=f"{sample}_R1_trimmed").output.zip
+            zip_name = f"{sample}_{config['fqext1']}_trimmed_fastqc/fastqc_data.txt"
+
+        import zipfile
+        import re
+
+        qc_report = zipfile.ZipFile(qc_file, "r").read(zip_name)
+
+        kmer_size = re.search("Sequence length\\t(\d+)", qc_report.decode("utf-8")).group(1)
+
+    # fastp
+    if config["trimmer"] == "fastp":
+        if sampledict[sample]["layout"] == "SINGLE":
+            qc_file = checkpoints.fastp_SE.get(sample=sample).output.qc_json[0]
+        if sampledict[sample]["layout"] == "PAIRED":
+            qc_file = checkpoints.fastp_PE.get(sample=sample).output.qc_json[0]
+
+        import json
+
+        with open(qc_file) as f:
+            data = json.load(f)
+        kmer_size = data["summary"]["after_filtering"]["read1_mean_length"]
+
+    return kmer_size
