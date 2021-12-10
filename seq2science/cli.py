@@ -657,19 +657,20 @@ def _deseq(args, base_dir):
 
     def conda_path(yml):
         """
-        Find the path to a snakemake conda environment
-        Does not work with singularity.
+        Find the path to a snakemake conda environment.
+        Does not work with containers.
         """
-        env_file = os.path.abspath(yml)
-        env_dir = os.path.join(os.getcwd(), ".snakemake")  # is this correct?
-
+        # mimic snakemake's conda env hashing:
+        # https://github.com/snakemake/snakemake/blob/
+        # 1349254de57ced0466bfe1e98f0f7c2a1b247d2d/snakemake/deployment/conda.py#L91
+        env_dir = os.path.dirname(os.path.dirname(yamlfile))
+        env_dir = os.path.join(env_dir, ".snakemake")
+        env_dir = os.path.realpath(env_dir)
         md5hash = hashlib.md5()
         md5hash.update(env_dir.encode())
-        with open(env_file, 'rb') as f:
-            content = f.read()
-        md5hash.update(content)
-        dir_hash = md5hash.hexdigest()  # [:8]
-        path = os.path.join(env_dir, dir_hash)
+        md5hash.update(open(yml, "rb").read())
+        env_hash = md5hash.hexdigest()
+        path = os.path.join(env_dir, env_hash)
         return path
 
     def subprocess_run(_cmd):
