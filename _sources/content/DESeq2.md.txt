@@ -4,7 +4,7 @@ To do so, add one or more contrast design(s) in the `config.yaml` file, with mat
 
 After completing the workflow, rerunning Seq2science with new contrasts will only perform the new analyses.
 Alternatively, you can call the DESeq2 script from the command line.
-To get started with the command line script, try out `Rscript /path/to/seq2science/scripts/deseq2/deseq2.R --help`.
+To get started with the command line script, try out `deseq2science --help`.
 
 This section details how the contrast designs are created.
 Examples are given [below](./DESeq2.html#deseq2-contrast-designs), and each `config.yaml` contains a commented-out example contrast design at the bottom.

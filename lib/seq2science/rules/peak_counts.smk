@@ -108,7 +108,7 @@ rule combine_peaks:
 rule bedtools_slop:
     """
     After combine_peaks we end up with just a bed file of summits. We extend all peaks
-    to a total width of 200, for a fair comparison between peaks.
+    to the same width, for a fair comparison between peaks.
     """
     input:
         bedfile=rules.combine_peaks.output,
@@ -169,14 +169,18 @@ rule coverage_table:
         expand("{benchmark_dir}/coverage_table/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     conda:
         "../envs/gimme.yaml"
+    params:
+        peak_width=2 * config["slop"],  # same width as the upstream files
+        reps=lambda wildcards, input: input  # help resolve changes in input files
     resources:
         mem_gb=3,
-    message:
-        explain_rule("coverage_table")
+    threads: 12  # default of the function
+    message: explain_rule("coverage_table")
     shell:
         """
         echo "# The number of reads under each peak" > {output} 
-        coverage_table -p {input.peaks} -d {input.replicates} 2> {log} | grep -vE "^#" 2>> {log} |  
+        coverage_table -p {input.peaks} -d {input.replicates} -w {params.peak_width} --nthreads {threads} \
+        2> {log} | grep -vE "^#" 2>> {log} |  
         awk 'BEGIN {{ FS = "@" }} NR==1{{gsub("{wildcards.assembly}-|.samtools-coordinate","",$0)}}; \
         {{print $0}}' >> {output}
         """
@@ -325,7 +329,8 @@ rule onehot_peaks:
     benchmark:
         expand("{benchmark_dir}/onehot_peaks/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     params:
-        reps=lambda wildcards, input: input,  # help resolve changes in input files
+        reps=lambda wildcards, input: input, # help resolve changes in input files
+        names=lambda wildcards: "\t" + "\t".join([rep for rep in breps[breps["assembly"] == ori_assembly(wildcards.assembly)].index])
     shell:
         """
         awk '{{print $1":"$2"-"$3}}' {input.combinedpeaks} > {output.real} 2> {log}
@@ -339,7 +344,7 @@ rule onehot_peaks:
             mv {output.tmp} {output.real}
         done
 
-        echo -e "# onehot encoding of which condition contains which peaks\\n$(cat {output.real})" > {output.tmp} && cp {output.tmp} {output.real}
+        echo -e "# onehot encoding of which condition contains which peaks\\n{params.names}\n$(cat {output.real})" > {output.tmp} && cp {output.tmp} {output.real}
         """
 
 

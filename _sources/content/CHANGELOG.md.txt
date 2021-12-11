@@ -25,11 +25,14 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Fixed
 
+- config option `slop` is now passed along to each rule using it
 - edge-case where local samples are in the cache, but not present in the fastq_dir
 - bug with differential peak/gene expression across multiple assemblies
 - bug with kb ref not creating index for non-velocity analysis
 - bug with count import in read_kb_counts.R for technical replicates and meta-data handling
 - deseq2 ordering in multiqc report
+- issue with slop not being used for the final count table
+- bug with onehot peaks not reporting the sample names as columns
 
 ## [0.5.6] - 2021-10-19
 

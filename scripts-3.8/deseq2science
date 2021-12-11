@@ -1,0 +1,9 @@
+#!python
+# PYTHON_ARGCOMPLETE_OK
+"""
+This is the user's entry-point for the deseq2science command.
+"""
+from seq2science.cli import deseq2science_main
+
+if __name__ == "__main__":
+    deseq2science_main()

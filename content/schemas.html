@@ -716,7 +716,7 @@
 <div class="section" id="peak-windowsize">
 <h3>peak_windowsize<a class="headerlink" href="#peak-windowsize" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>peak_windowsize:
-    description: when combining narrowpeaks, how much each summit should be extended by when considering overlapping peaks. A summit is expanded by the windowsize on each side, so the total width is twice the peak_windowsize.
+    description: when merging narrowpeaks, how much each summit should be extended by (on each side) when considering overlapping peaks. If for instance a peak_windowsize of 100 is chosen, all peaks within 100 bps of each other will be merged.
     default: 100
     type: integer
 </pre></div>
@@ -725,9 +725,9 @@
 <div class="section" id="slop">
 <h3>slop<a class="headerlink" href="#slop" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>slop:
-    description: how much the summits should be extended by (on each side) for making a peak count table. If for instance a slop of 100 is chosen, the final peak&#39;s width is 200.
-    default: 100
+    description: how much each summit is extended by (on both sides) when making the final peak. For e.g. count tables it is important that all peaks are of the same size. If for instance a slop of 100 is chosen, the final peak width (for all peaks) is 200.
     type: integer
+    default: 100
 </pre></div>
 </div>
 </div>

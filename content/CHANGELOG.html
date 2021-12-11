@@ -237,11 +237,14 @@ and this project adheres to <a class="reference external" href="https://semver.o
 <div class="section" id="fixed">
 <h3>Fixed<a class="headerlink" href="#fixed" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
+<li><p>config option <code class="docutils literal notranslate"><span class="pre">slop</span></code> is now passed along to each rule using it</p></li>
 <li><p>edge-case where local samples are in the cache, but not present in the fastq_dir</p></li>
 <li><p>bug with differential peak/gene expression across multiple assemblies</p></li>
 <li><p>bug with kb ref not creating index for non-velocity analysis</p></li>
 <li><p>bug with count import in read_kb_counts.R for technical replicates and meta-data handling</p></li>
 <li><p>deseq2 ordering in multiqc report</p></li>
+<li><p>issue with slop not being used for the final count table</p></li>
+<li><p>bug with onehot peaks not reporting the sample names as columns</p></li>
 </ul>
 </div>
 </div>

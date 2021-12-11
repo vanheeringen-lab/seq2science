@@ -51,7 +51,7 @@ done
 
 #### bedtools_slop
 After combine_peaks we end up with just a bed file of summits. We extend all peaks
-to a total width of 200, for a fair comparison between peaks.
+to the same width, for a fair comparison between peaks.
 ```
 bedtools slop -i {input.bedfile} -g {input.sizes} -b {params.slop} | uniq > {output} 2> {log}
 ```
@@ -175,7 +175,8 @@ Use gimmemotif's coverage_table to generate a count table with the nr of reads
 under each peak per sample.
 ```
 echo "\# The number of reads under each peak" > {output} 
-coverage_table -p {input.peaks} -d {input.replicates} 2> {log} | grep -vE "^\#" 2>> {log} |  
+coverage_table -p {input.peaks} -d {input.replicates} -w {params.peak_width} --nthreads {threads} \
+2> {log} | grep -vE "^\#" 2>> {log} |  
 awk 'BEGIN {{ FS = "@" }} NR==1{{gsub("{wildcards.assembly}-|.samtools-coordinate","",$0)}}; \
 {{print $0}}' >> {output}
 ```
@@ -675,7 +676,7 @@ Get onehot encodings of which peaks are found in which samples
             mv {output.tmp} {output.real}
         done
 
-        echo -e "\# onehot encoding of which condition contains which peaks\\n$(cat {output.real})" > {output.tmp} && cp {output.tmp} {output.real}
+        echo -e "\# onehot encoding of which condition contains which peaks\\n{params.names}\n$(cat {output.real})" > {output.tmp} && cp {output.tmp} {output.real}
         
 ```
 

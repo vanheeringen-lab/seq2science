@@ -249,7 +249,7 @@ done
 <div class="section" id="bedtools-slop">
 <h2>bedtools_slop<a class="headerlink" href="#bedtools-slop" title="Permalink to this headline">¶</a></h2>
 <p>After combine_peaks we end up with just a bed file of summits. We extend all peaks
-to a total width of 200, for a fair comparison between peaks.</p>
+to the same width, for a fair comparison between peaks.</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>bedtools slop -i {input.bedfile} -g {input.sizes} -b {params.slop} | uniq &gt; {output} 2&gt; {log}
 </pre></div>
 </div>
@@ -385,7 +385,8 @@ for use in function <code class="docutils literal notranslate"><span class="pre"
 <p>Use gimmemotif’s coverage_table to generate a count table with the nr of reads
 under each peak per sample.</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>echo &quot;\# The number of reads under each peak&quot; &gt; {output}
-coverage_table -p {input.peaks} -d {input.replicates} 2&gt; {log} | grep -vE &quot;^\#&quot; 2&gt;&gt; {log} |
+coverage_table -p {input.peaks} -d {input.replicates} -w {params.peak_width} --nthreads {threads} \
+2&gt; {log} | grep -vE &quot;^\#&quot; 2&gt;&gt; {log} |
 awk &#39;BEGIN {{ FS = &quot;@&quot; }} NR==1{{gsub(&quot;{wildcards.assembly}-|.samtools-coordinate&quot;,&quot;&quot;,$0)}}; \
 {{print $0}}&#39; &gt;&gt; {output}
 </pre></div>
@@ -931,7 +932,7 @@ do
     mv {output.tmp} {output.real}
 done
 
-echo -e &quot;\# onehot encoding of which condition contains which peaks\\n$(cat {output.real})&quot; &gt; {output.tmp} &amp;&amp; cp {output.tmp} {output.real}
+echo -e &quot;\# onehot encoding of which condition contains which peaks\\n{params.names}\n$(cat {output.real})&quot; &gt; {output.tmp} &amp;&amp; cp {output.tmp} {output.real}
 </pre></div>
 </div>
 </div>
