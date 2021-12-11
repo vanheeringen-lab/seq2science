@@ -32,6 +32,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - bug with count import in read_kb_counts.R for technical replicates and meta-data handling
 - deseq2 ordering in multiqc report
 - issue with slop not being used for the final count table
+- bug with onehot peaks not reporting the sample names as columns
 
 ## [0.5.6] - 2021-10-19
 
