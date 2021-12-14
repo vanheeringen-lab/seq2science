@@ -56,9 +56,12 @@
 <li class="toctree-l4"><a class="reference internal" href="#sample-column">Sample column</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#assembly-column">Assembly column</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#descriptive-name-column">Descriptive_name column</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#filling-out-the-config-yaml">Filling out the config.yaml</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#examples">Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#filling-out-the-config-yaml">Filling out the config.yaml</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#custom-assembly-extensions">Custom assembly extensions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quantification-with-kallistobus">Quantification with kallistobus</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#seurat-input-preparation">Seurat input preparation</a></li>
 </ul>
 </li>
 </ul>
@@ -125,7 +128,7 @@ Therefore, we perform an intermediate step by running <code class="docutils lite
 </div>
 <div class="section" id="quantification">
 <h3>Quantification<a class="headerlink" href="#quantification" title="Permalink to this headline">¶</a></h3>
-<p>Quantification is performed by running the kb-python wrapper for Kallisto bustools.
+<p>Quantification is performed by running either the kb-python wrapper for Kallisto bustools or CITE-seq-Count for ADT tags.
 Kallisto bustools relies on pseudo-alignment of scRNA reads against a reference transcriptome index.
 The resulting count matrices can be further processed with scRNA toolkits, such as Seurat or Scanpy.</p>
 </div>
@@ -166,10 +169,20 @@ These setting can be changed in the <code class="docutils literal notranslate"><
 <p>The descriptive_name column is used for the multiqc report.
 In the multiqc report there will be a button to rename your samples after this column.</p>
 </div>
+</div>
 <div class="section" id="filling-out-the-config-yaml">
-<h3>Filling out the config.yaml<a class="headerlink" href="#filling-out-the-config-yaml" title="Permalink to this headline">¶</a></h3>
+<h2>Filling out the config.yaml<a class="headerlink" href="#filling-out-the-config-yaml" title="Permalink to this headline">¶</a></h2>
 <p>Every workflow has many configurable options, and can be set in the config.yaml file.
 In each config.yaml we highlighted a couple options that we think are relevant for that specific workflow, and set (we think) reasonable default values.</p>
+<div class="section" id="custom-assembly-extensions">
+<h3>Custom assembly extensions<a class="headerlink" href="#custom-assembly-extensions" title="Permalink to this headline">¶</a></h3>
+<p>The genome and/or gene annotation can be extended with custom files, such as ERCC spike-ins for scRNA-seq.
+To do so, add <code class="docutils literal notranslate"><span class="pre">custom_genome_extension:</span> <span class="pre">path/to/spike_in.fa</span></code> and <code class="docutils literal notranslate"><span class="pre">custom_annotation_extension:</span> <span class="pre">path/to/spike_in.gtf</span></code> to the config.
+Seq2science will place the customized assembly in a separate folder in the <code class="docutils literal notranslate"><span class="pre">genome_dir</span></code>.
+You can control the name of the customized assembly by setting <code class="docutils literal notranslate"><span class="pre">custom_assembly_suffix</span></code> in the config.</p>
+</div>
+<div class="section" id="quantification-with-kallistobus">
+<h3>Quantification with kallistobus<a class="headerlink" href="#quantification-with-kallistobus" title="Permalink to this headline">¶</a></h3>
 <p>After initializing your working directory and editing the <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> file, specify the desired arguments for kb-pyhon via the ref (kb ref) and count (kb count) properties except for the barcode whilteist (<code class="docutils literal notranslate"><span class="pre">-w</span></code>). The path to the barcode whiltelist can be supplied via the <code class="docutils literal notranslate"><span class="pre">barcodefile</span></code> property. This step is optional since kb python python provides several pre-installed whitelists for the following technologies.</p>
 <ul class="simple">
 <li><p>10XV1</p></li>
@@ -217,20 +230,15 @@ pbmc    fb
 </pre></div>
 </div>
 <p>An example of configuring kb-python for feature barcode analysis is shown below. Add the appropiate settings to your config.</p>
-</div>
-</div>
 <div class="section" id="examples">
-<h3>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h3>
-<div class="section" id="quantification-10xv3">
-<h4>Quantification (10XV3)<a class="headerlink" href="#quantification-10xv3" title="Permalink to this headline">¶</a></h4>
+<h5>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h5>
+<p><strong>RNA Quantification (10XV3)</strong></p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>quantifier:
   kallistobus:
     count: &#39;-x 10xv3 --h5ad --verbose&#39;
 </pre></div>
 </div>
-</div>
-<div class="section" id="rna-velocity-cel-seq2">
-<h4>RNA velocity (CEL-Seq2)<a class="headerlink" href="#rna-velocity-cel-seq2" title="Permalink to this headline">¶</a></h4>
+<p><strong>RNA velocity (CEL-Seq2)</strong></p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>quantifier:
   kallistobus:
     ref: &#39;--workflow lamanno&#39;
@@ -239,10 +247,8 @@ pbmc    fb
 barcodefile: &quot;1col_barcode_384.tab&quot;
 </pre></div>
 </div>
-<p><strong>Note</strong>: The RNA velocity workflow produces count matrices for unspliced/spliced mRNA counts.</p>
-</div>
-<div class="section" id="kite-feature-barcoding-cel-seq2">
-<h4>KITE feature barcoding (CEL-Seq2)<a class="headerlink" href="#kite-feature-barcoding-cel-seq2" title="Permalink to this headline">¶</a></h4>
+<p>The RNA velocity workflow produces count matrices for unspliced/spliced mRNA counts.</p>
+<p><strong>KITE feature barcoding (CEL-Seq2)</strong></p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>quantifier:
   kallistobus:
     ref: &#39;--workflow kite&#39;
@@ -252,13 +258,34 @@ barcodefile: &quot;1col_barcode_384.tab&quot;
 </pre></div>
 </div>
 </div>
+<div class="section" id="quantification-with-cite-seq-count">
+<h5>Quantification with CITE-seq-Count<a class="headerlink" href="#quantification-with-cite-seq-count" title="Permalink to this headline">¶</a></h5>
+<p><a class="reference external" href="https://hoohm.github.io/CITE-seq-Count/">CITE-seq-Count</a> count can be used as an alternative quantifier to pre-process ADT/Cell-hashing experiments and generate read/umi count matrices. This option cannot be used in conjunction with kallistobus.</p>
+<p>To enable quantification with CITE-Seq-count, add the following section to your config file</p>
+<p>Example</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>quantifier:
+  citeseqcount:
+    count: &#39;-cbf 9 -cbl 16 -umif 1 -umil 8 -cells 372 --max-error 1 --bc_collapsing_dist 1 --umi_collapsing_dist 1  -T 10 --debug&#39;
+
+barcodefile: &quot;barcodes.tab&quot;
+</pre></div>
 </div>
-<div class="section" id="custom-assembly-extensions">
-<h3>Custom assembly extensions<a class="headerlink" href="#custom-assembly-extensions" title="Permalink to this headline">¶</a></h3>
-<p>The genome and/or gene annotation can be extended with custom files, such as ERCC spike-ins for scRNA-seq.
-To do so, add <code class="docutils literal notranslate"><span class="pre">custom_genome_extension:</span> <span class="pre">path/to/spike_in.fa</span></code> and <code class="docutils literal notranslate"><span class="pre">custom_annotation_extension:</span> <span class="pre">path/to/spike_in.gtf</span></code> to the config.
-Seq2science will place the customized assembly in a separate folder in the <code class="docutils literal notranslate"><span class="pre">genome_dir</span></code>.
-You can control the name of the customized assembly by setting <code class="docutils literal notranslate"><span class="pre">custom_assembly_suffix</span></code> in the config.</p>
+</div>
+</div>
+</div>
+<div class="section" id="seurat-input-preparation">
+<h3>Seurat input preparation<a class="headerlink" href="#seurat-input-preparation" title="Permalink to this headline">¶</a></h3>
+<p>The seq2science scRNA workflow provides the option to automatically prepare S4 Seurat objects from kb or CITE-seq-Count workflow output.</p>
+<p>A Seurat object is created for each individual sample containing the raw UMI counts as default assay (RNA, ADT, spliced, unspliced). In the next step, sample-wise Seurat objects are combined and stored as a merged object. Moreover, any metadata column defined <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> will be automatically added to each sample-wise Seurat object before merging in its corresponding <code class="docutils literal notranslate"><span class="pre">&#64;meta.data</span></code> slot. The metadata fields are then assigned to each cell identifier.</p>
+<p>All objects are stored in RData format for convenient import into R with the <code class="docutils literal notranslate"><span class="pre">readRDS</span></code> function. To enable Seurat object export, add the following section to your config file and adjust the Seurat object parameters depending on your analysis.</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>export_seu_objects: True
+
+seurat_object:
+    project_name: merged
+    min_cells: 0
+    min_features: 0
+</pre></div>
+</div>
 </div>
 </div>
 </div>
