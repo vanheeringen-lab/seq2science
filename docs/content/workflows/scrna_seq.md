@@ -63,7 +63,7 @@ Here you simply add the name of the assembly you want your samples aligned again
 The descriptive_name column is used for the multiqc report.
 In the multiqc report there will be a button to rename your samples after this column.
 
-#### Filling out the config.yaml
+### Filling out the config.yaml
 Every workflow has many configurable options, and can be set in the config.yaml file.
 In each config.yaml we highlighted a couple options that we think are relevant for that specific workflow, and set (we think) reasonable default values.
 
