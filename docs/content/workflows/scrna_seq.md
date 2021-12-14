@@ -156,7 +156,9 @@ barcodefile: "1col_barcode_384.tab"
 ```
 
 ##### ADT quantification with CITE-seq-Count
-CITE-Seq count can be used as an alterntive to quantify ADT/Cell-hashing experiments with kb kite. Add the following section to your config file:
+[CITE-seq-Count](https://hoohm.github.io/CITE-seq-Count/) count can be used as an alternative quantifier to pre-process ADT/Cell-hashing experiments and generate read/umi count matrices. This option cannot be used in conjunction with kallistobus.
+
+To enable quantification with CITE-Seq-count, add the following section to your config file
 
 Example 
 ```
@@ -166,7 +168,6 @@ quantifier:
 
 barcodefile: "barcodes.tab"
 ```
-Consider the [CITE-seq-Count](https://hoohm.github.io/CITE-seq-Count/) manual for more information on parameter settings
 
 ##### Data preparation for scRNA post-processing with Seurat
 The seq2science scRNA workflow provides the option to automatically prepare S4 Seurat objects from kb or CITE-seq-Count workflow output. 
