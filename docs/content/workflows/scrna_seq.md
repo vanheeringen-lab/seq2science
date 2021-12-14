@@ -25,7 +25,7 @@ After trimming, the fastq containing the reads, usually R2, may contains less re
 Therefore, we perform an intermediate step by running `fastq-pair` to remove singleton reads before proceeding any further.
 
 #### Quantification
-Quantification is performed by running the kb-python wrapper for Kallisto bustools.
+Quantification is performed by running either the kb-python wrapper for Kallisto bustools or CITE-seq-Count for ADT tags.
 Kallisto bustools relies on pseudo-alignment of scRNA reads against a reference transcriptome index.
 The resulting count matrices can be further processed with scRNA toolkits, such as Seurat or Scanpy.
 
@@ -63,10 +63,17 @@ Here you simply add the name of the assembly you want your samples aligned again
 The descriptive_name column is used for the multiqc report.
 In the multiqc report there will be a button to rename your samples after this column.
 
-#### Filling out the config.yaml
+### Filling out the config.yaml
 Every workflow has many configurable options, and can be set in the config.yaml file.
 In each config.yaml we highlighted a couple options that we think are relevant for that specific workflow, and set (we think) reasonable default values.
 
+#### Custom assembly extensions
+The genome and/or gene annotation can be extended with custom files, such as ERCC spike-ins for scRNA-seq.
+To do so, add `custom_genome_extension: path/to/spike_in.fa` and `custom_annotation_extension: path/to/spike_in.gtf` to the config.
+Seq2science will place the customized assembly in a separate folder in the `genome_dir`.
+You can control the name of the customized assembly by setting `custom_assembly_suffix` in the config.
+
+#### Quantification with kallistobus
 After initializing your working directory and editing the `samples.tsv` file, specify the desired arguments for kb-pyhon via the ref (kb ref) and count (kb count) properties except for the barcode whilteist (`-w`). The path to the barcode whiltelist can be supplied via the `barcodefile` property. This step is optional since kb python python provides several pre-installed whitelists for the following technologies.
 
 - 10XV1
@@ -76,7 +83,7 @@ After initializing your working directory and editing the `samples.tsv` file, sp
 
 The white-list will be installed automatically if the appropiate technology argument is provided via the `-x` parameter in short-hand syntax.
 
-##### BUS (Barcode/UMI/Set) format
+###### BUS (Barcode/UMI/Set) format
 The `-x` argument indicates the read and file positions of the UMI and barcode. Kallisto bustools should auto-detect the correct settings barcode/umi layout for the following technologies if the name is supplied:
 
 ```
@@ -98,7 +105,7 @@ SMARTSEQ                                                      0,None,None 1,None
 
 Alternatively, the layout can be specified as a `bc:umi:set` triplet. The first position indicates the read, the second position the start of the feature and the third position the end of the feature. For more information and examples on the BUS format, consider the **Bus** section in the [Kallisto](https://pachterlab.github.io/kallisto/manual) manual.
 
-##### Input preparations for KITE workflow
+###### Input preparations for KITE workflow
 The steps to prepare a scRNA analysis for Feature Barcoding experiments deviates slighlty from the standard seq2science workflow. In essence, we quantify the abundance of sequence features, such as antibody barcodes, rather than a set of transcripts for a certain species. Therefore, our index does not rely on a particular assembly but is build from these sequence features. Please consider the offical [kite](https://github.com/pachterlab/kite) documentation for more details.
 
 **1**. Prepare a two-column, tab-delimited file with your feature barcode in the first column and feature names in the second.
@@ -123,16 +130,16 @@ pbmc    fb
 
 An example of configuring kb-python for feature barcode analysis is shown below. Add the appropiate settings to your config.
 
-#### Examples
+##### Examples 
 
-##### Quantification (10XV3)
+**RNA Quantification (10XV3)**
 ```
 quantifier:
   kallistobus:
     count: '-x 10xv3 --h5ad --verbose'
 ```
 
-##### RNA velocity (CEL-Seq2)
+**RNA velocity (CEL-Seq2)**
 ```
 quantifier:
   kallistobus:
@@ -141,11 +148,9 @@ quantifier:
 
 barcodefile: "1col_barcode_384.tab"   
 ```
+The RNA velocity workflow produces count matrices for unspliced/spliced mRNA counts.  
 
-**Note**: The RNA velocity workflow produces count matrices for unspliced/spliced mRNA counts.  
-
-
-##### KITE feature barcoding (CEL-Seq2)
+**KITE feature barcoding (CEL-Seq2)**
 ```
 quantifier:
   kallistobus:
@@ -155,8 +160,32 @@ quantifier:
 barcodefile: "1col_barcode_384.tab"    
 ```
 
-#### Custom assembly extensions
-The genome and/or gene annotation can be extended with custom files, such as ERCC spike-ins for scRNA-seq.
-To do so, add `custom_genome_extension: path/to/spike_in.fa` and `custom_annotation_extension: path/to/spike_in.gtf` to the config.
-Seq2science will place the customized assembly in a separate folder in the `genome_dir`.
-You can control the name of the customized assembly by setting `custom_assembly_suffix` in the config.
+##### Quantification with CITE-seq-Count
+[CITE-seq-Count](https://hoohm.github.io/CITE-seq-Count/) count can be used as an alternative quantifier to pre-process ADT/Cell-hashing experiments and generate read/umi count matrices. This option cannot be used in conjunction with kallistobus.
+
+To enable quantification with CITE-Seq-count, add the following section to your config file
+
+Example 
+```
+quantifier:
+  citeseqcount:
+    count: '-cbf 9 -cbl 16 -umif 1 -umil 8 -cells 372 --max-error 1 --bc_collapsing_dist 1 --umi_collapsing_dist 1  -T 10 --debug'
+
+barcodefile: "barcodes.tab"
+```
+
+#### Seurat input preparation
+The seq2science scRNA workflow provides the option to automatically prepare S4 Seurat objects from kb or CITE-seq-Count workflow output. 
+
+A Seurat object is created for each individual sample containing the raw UMI counts as default assay (RNA, ADT, spliced, unspliced). In the next step, sample-wise Seurat objects are combined and stored as a merged object. Moreover, any metadata column defined `samples.tsv` will be automatically added to each sample-wise Seurat object before merging in its corresponding `@meta.data` slot. The metadata fields are then assigned to each cell identifier. 
+
+All objects are stored in RData format for convenient import into R with the `readRDS` function. To enable Seurat object export, add the following section to your config file and adjust the Seurat object parameters depending on your analysis.
+
+```
+export_seu_objects: True
+
+seurat_object:
+    project_name: merged
+    min_cells: 0
+    min_features: 0
+```
