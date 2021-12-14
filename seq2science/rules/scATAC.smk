@@ -1,3 +1,8 @@
+"""
+all rules/logic specific to the single cell ATAC workflow should be here.
+"""
+
+
 rule create_SNAP_object:
     """
     Create a snapobject for each BAM file. 
@@ -42,7 +47,8 @@ rule create_bins_SNAP_object:
         expand("{benchmark_dir}/create_SNAP_object/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
     conda:
         "../envs/snaptools.yaml"
-    message: explain_rule("create_bins_SNAP_object")
+    message:
+        explain_rule("create_bins_SNAP_object")
     params:
         config["bin_opt"],
     shell:

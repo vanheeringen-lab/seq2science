@@ -204,3 +204,6 @@ When a workflow starts it prints the complete configuration, and (almost) all th
 ### Best practices
 #### Irreproducible Discovery Rate
 For idr to work properly, it needs a large portion of peaks that are actually not true peaks. Therefore we recommend to call peaks 'loosely'. One way of doing this is setting the [peak threshold q-value](https://github.com/taoliu/MACS#-q--pvalue) low for macs2 in the configuration.  The q-value controls the ratio of `false positives / (false positives + true positives)`. Setting a q-value of 1 guarantees you have plenty of false positives in your dataset for IDR to work properly.
+
+#### subsampling
+In some cases you might want to have the same number of reads between samples. By adding e.g. `subsample:1_000_000` seq2science will make sure that each sample contains at most a million reads. Seq2science always downsamples, never upsamples. 

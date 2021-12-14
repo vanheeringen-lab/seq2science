@@ -36,6 +36,10 @@ peak_caller:
 #  genrich:
 #      -y -q 0.05
 
+# how much peak summits will be extended by (on each side) for the final count table
+# (e.g. 100 means a 200 bp wide peak)
+slop: 100
+
 ## differential peak analysis
 #contrasts:
 #  - 'descriptive_name_all_HEL'

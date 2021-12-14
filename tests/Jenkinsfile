@@ -354,6 +354,18 @@ pipeline {
             }
         }
 
+        stage('deseq2science') {
+            steps {
+                sh '''#!/usr/bin/env bash
+                set -e
+                source $WORKSPACE/miniconda/etc/profile.d/conda.sh
+                conda activate s2s
+
+                bash ./tests/run_tests.sh deseq2science
+                '''
+            }
+        }
+
         stage('Code Style') {
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
