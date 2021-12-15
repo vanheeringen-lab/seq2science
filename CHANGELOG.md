@@ -8,6 +8,16 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+## [0.6.0] - 2021-12-12
+
+Release 0.6.0 is a mix of bug fixes, small changes, and bigger stuff. Most importantly:
+
+* added a deseq2science command to do differential expression analysis on user-supplied tables with seq2science settings
+* for single-cell RNA-seq ADT-quantification is possible
+* snakemake library updated, giving seq2science a new-ish look :) 
+
+The full changes are listed below:
+
 ### Added
 
 - added generic stats to the MultiQC report about the assembly, which might help pin point problems with the assembly used.
@@ -15,6 +25,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - added support for seurat object export and merging for kb workflow.
 - added support for CITE-seq-count for ADT quantification
 - added the option to downsample to a specific number of reads.
+- new deseq2science command
 
 ### Changed
 
@@ -476,7 +487,8 @@ Many minor bug- and quality of life fixes.
 ## [0.0.0] - 2020-06-11
 First release of seq2science!
 
-[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.6...develop
+[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.6.0...develop
+[0.6.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.6...v0.6.0
 [0.5.6]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.5...v0.5.6
 [0.5.5]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.4...v0.5.5
 [0.5.4]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.3...v0.5.4
