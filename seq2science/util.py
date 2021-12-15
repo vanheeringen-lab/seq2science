@@ -61,6 +61,48 @@ def _sample_to_idxs(df: pd.DataFrame, sample: str) -> List[int]:
     return idxs
 
 
+def parse_samples(samples: pd.DataFrame, config: dict) -> pd.DataFrame:
+    """
+    for each functional column, if found in samples.tsv:
+    1) if it is incomplete, fill the blanks with replicate/sample names
+       (sample names if replicates are not found/applicable)
+    2) drop column if it provides no information
+       (renamed in case it's used in a DE contrast)
+    """
+    if "technical_replicates" in samples:
+        samples["technical_replicates"] = samples["technical_replicates"].mask(pd.isnull, samples["sample"])
+        if (
+                len(samples["technical_replicates"].unique()) == len(samples["sample"].unique())
+                or config.get("technical_replicates") == "keep"
+        ):
+            samples.rename(columns={"technical_replicates": "_trep"}, inplace=True)
+    col = "technical_replicates" if "technical_replicates" in samples else "sample"
+    if "biological_replicates" in samples:
+        samples["biological_replicates"] = samples["biological_replicates"].mask(pd.isnull, samples[col])
+        if (
+                len(samples["biological_replicates"].unique()) == len(samples[col].unique())
+                or config.get("biological_replicates") == "keep"
+        ):
+            samples.rename(columns={"biological_replicates": "_brep"}, inplace=True)
+    if "descriptive_name" in samples:
+        samples["descriptive_name"] = samples["descriptive_name"].mask(pd.isnull, samples[col])
+        if samples["descriptive_name"].to_list() == samples[col].to_list():
+            samples.rename(columns={"descriptive_name": "_dname"}, inplace=True)
+    if "strandedness" in samples:
+        samples["strandedness"] = samples["strandedness"].mask(pd.isnull, "nan")
+        if config.get("ignore_strandedness", True) or not any(
+                [field in list(samples["strandedness"]) for field in ["yes", "forward", "reverse", "no"]]
+        ):
+            samples = samples.drop(columns=["strandedness"])
+    if "colors" in samples:
+        if config.get("create_trackhub", False):
+            samples["colors"] = samples["colors"].mask(pd.isnull, "0,0,0")  # nan -> black
+            samples["colors"] = [color_parser(c) for c in samples["colors"]]  # convert input to HSV color
+        else:
+            samples = samples.drop(columns=["colors"])
+    return samples
+
+
 def samples2metadata_local(samples: List[str], config: dict, logger) -> dict:
     """
     (try to) get the metadata of local samples
