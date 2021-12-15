@@ -349,16 +349,15 @@ def parse_contrast(contrast, samples, check=True):
     return batch, column, target, reference
 
 
-def expand_contrasts(samples, config):
+def expand_contrasts(samples: pd.DataFrame, contrasts: list or str) -> list:
     """
     splits contrasts that contain multiple comparisons
     """
-    old_contrasts = config.get("contrasts", [])
-    if isinstance(old_contrasts, str):
-        old_contrasts = [old_contrasts]
+    if isinstance(contrasts, str):
+        contrasts = [contrasts]
 
     new_contrasts = []
-    for contrast in old_contrasts:
+    for contrast in contrasts:
         batch, column, target, reference = parse_contrast(contrast, samples, check=False)
 
         if target == "all":
@@ -378,6 +377,39 @@ def expand_contrasts(samples, config):
     # get unique elements
     new_contrasts = list(set(new_contrasts))
     return new_contrasts
+
+
+def get_contrasts(samples: pd.DataFrame, config: dict, all_assemblies: list) -> list:
+    """
+    list all diffexp.tsv files we expect
+    """
+    if not config.get("contrasts"):
+        return []
+
+    contrasts = expand_contrasts(samples, config["contrasts"])
+    all_contrasts = list()
+    for de_contrast in contrasts:
+        # parse groups
+        target, reference = de_contrast.split("_")[-2:]
+        column = de_contrast[: de_contrast.find(f"_{target}_{reference}")]
+
+        # parse column
+        if "+" in column:
+            column = column.split("+")[1]
+
+        if column not in samples:
+            backup_columns = {
+                "technical_replicates": "_trep",  # is trep technically possible? You need multiple reps right?
+                "biological_replicates": "_brep",
+                "descriptive_name": "_dname",
+            }
+            column = backup_columns[column]
+
+        for assembly in all_assemblies:
+            groups = set(samples[samples.assembly == assembly][column].to_list())
+            if target in groups and reference in groups:
+                all_contrasts.append(f"{config['deseq2_dir']}/{assembly}-{de_contrast}.diffexp.tsv")
+    return all_contrasts
 
 
 def url_is_alive(url):

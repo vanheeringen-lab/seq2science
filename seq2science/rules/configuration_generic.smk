@@ -30,9 +30,9 @@ from seq2science.util import (
     samples2metadata,
     prep_filelock,
     url_is_alive,
-    color_parser,
     PickleDict,
     is_local,
+    get_contrasts,
 )
 
 
@@ -300,6 +300,8 @@ if "assembly" in samples:
             else (assembly + config["custom_assembly_suffix"])
         )
 
+    # list of DESeq2 output files
+    DE_contrasts = get_contrasts(samples, config, all_assemblies)
 
 else:
     modified = False
