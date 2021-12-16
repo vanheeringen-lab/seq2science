@@ -751,7 +751,7 @@ rule multiqc_schema:
         order = -954
         deseq2_imgs = ""
         deseq2_order = ""
-        for contrast in expand_contrasts(samples, config["contrasts"]):
+        for contrast in expand_contrasts(samples, config.get("contrasts")):
             deseq2_imgs += f"""\
     {contrast}.combined_ma_volcano:
         section_name: 'DESeq2 - MA plot for contrast {contrast}'

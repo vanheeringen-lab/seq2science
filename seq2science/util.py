@@ -353,6 +353,8 @@ def expand_contrasts(samples: pd.DataFrame, contrasts: list or str) -> list:
     """
     splits contrasts that contain multiple comparisons
     """
+    if contrasts is None:
+        return []
     if isinstance(contrasts, str):
         contrasts = [contrasts]
 
@@ -383,10 +385,7 @@ def get_contrasts(samples: pd.DataFrame, config: dict, all_assemblies: list) -> 
     """
     list all diffexp.tsv files we expect
     """
-    if not config.get("contrasts"):
-        return []
-
-    contrasts = expand_contrasts(samples, config["contrasts"])
+    contrasts = expand_contrasts(samples, config.get("contrasts"))
     all_contrasts = list()
     for de_contrast in contrasts:
         # parse groups
