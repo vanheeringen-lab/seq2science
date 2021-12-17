@@ -8,6 +8,12 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+## [0.6.1] - 2021-12-17
+
+### Fixed
+
+- corrupt environment creation with libcrypto in combination with strandedness rule
+
 ## [0.6.0] - 2021-12-12
 
 Release 0.6.0 is a mix of bug fixes, small changes, and bigger stuff. Most importantly:
@@ -487,7 +493,8 @@ Many minor bug- and quality of life fixes.
 ## [0.0.0] - 2020-06-11
 First release of seq2science!
 
-[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.6.0...develop
+[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.6.1...develop
+[0.6.1]: https://github.com/vanheeringen-lab/seq2science/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.6...v0.6.0
 [0.5.6]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.5...v0.5.6
 [0.5.5]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.4...v0.5.5
