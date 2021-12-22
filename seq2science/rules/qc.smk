@@ -494,12 +494,25 @@ rule multiBamSummary:
         """
 
 
+def get_plotCor_opts(lst):
+    opts = config["deeptools_plotcorrelation"]
+    n = len(lst)
+    if "--plotHeight" not in opts:
+        # default: 9.5
+        opts += f"--plotHeight {min(9.5, n*0.2}"
+    if "--plotWidth" not in opts:
+        # default: 11
+        opts += f"--plotWidth {min(11, 1.5+n*0.2}"
+    return opts
+
+
 rule plotCorrelation:
     """
     Calculate the correlation between bams with deepTools.
     """
     input:
-        rules.multiBamSummary.output,
+        unpack(fingerprint_multiBamSummary_input),
+        cordata=rules.multiBamSummary.output,
     output:
         expand("{qc_dir}/plotCorrelation/{{assembly}}-deepTools_{{method}}_correlation_clustering_mqc.png", **config),
     log:
@@ -516,10 +529,10 @@ rule plotCorrelation:
             if wildcards.method == "spearman"
             else '"Pearson Correlation of Read Counts"'
         ),
-        params=config["deeptools_plotcorrelation"],
+        params=lambda input: get_plotCor_opts(input.bams),
     shell:
         """
-        plotCorrelation --corData {input} --plotFile {output} -c {wildcards.method} \
+        plotCorrelation --corData {input.cordata} --plotFile {output} -c {wildcards.method} \
         -p heatmap --plotTitle {params.title} {params.params} > {log} 2>&1
         """
 
