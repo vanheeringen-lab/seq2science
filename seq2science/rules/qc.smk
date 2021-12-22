@@ -529,7 +529,7 @@ rule plotCorrelation:
             if wildcards.method == "spearman"
             else '"Pearson Correlation of Read Counts"'
         ),
-        params=lambda input: get_plotCor_opts(input.bams),
+        params=lambda wildcards, input: get_plotCor_opts(input.bams),
     shell:
         """
         plotCorrelation --corData {input.cordata} --plotFile {output} -c {wildcards.method} \
