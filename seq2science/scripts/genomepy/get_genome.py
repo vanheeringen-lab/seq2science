@@ -48,8 +48,8 @@ with open(logfile, "w") as log:
         except Exception as e:
             print(e)
             print("\nSomething went wrong while downloading the genome (see error message above). "
-                  "When this happens it is almost always because we had troubles connecting to the"
-                  "servers hosting the genome assemblies. Usually this is resolved by just running seq2science"
+                  "When this happens it is almost always because we had troubles connecting to the "
+                  "servers hosting the genome assemblies. Usually this is resolved by just running seq2science "
                   "again, either immediately or in a couple hours.\n\n"
                   "If the problem persists you could try running `seq2science clean` and see if that resolves the "
                   "issue.")
