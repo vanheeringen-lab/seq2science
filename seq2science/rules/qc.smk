@@ -557,6 +557,9 @@ def get_summits_bed(wildcards):
 
 
 rule chipseeker:
+    """
+    Make chipseeker plots, with the percentage of peaks in e.g. promoters.
+    """
     input:
         narrowpeaks=get_summits_bed,
         gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
@@ -575,6 +578,20 @@ rule chipseeker:
         R_scripts=1,  # conda's R can have issues when starting multiple times
     script:
         f"{config['rule_dir']}/../scripts/chipseeker.R"
+
+
+rule upset_plot_peaks:
+    """
+    make an upset plot which shows the distribution of peaks amongst the biological replicates.
+    """
+    input:
+        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_onehotpeaks.tsv", **config)
+    output:
+        expand("{qc_dir}/upset/{{assembly}}-{{peak_caller}}_upset_mqc.jpg", **config)
+    conda:
+        "../envs/upset.yaml"
+    script:
+        f"{config['rule_dir']}/../scripts/upset.py"
 
 
 rule multiqc_header_info:
@@ -820,7 +837,7 @@ def get_qc_files(wildcards):
     # qc on combined biological replicates/samples
     if get_peak_calling_qc in quality_control:
         for trep in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index:
-            qc["files"].update(get_peak_calling_qc(trep))
+            qc["files"].update(get_peak_calling_qc(trep, wildcards))
 
     if get_rna_qc in quality_control:
         # Skip if desired, or if no BAMs are made (no trackhub + Salmon)
@@ -1092,7 +1109,7 @@ def get_scrna_qc(sample):
     return output
 
 
-def get_peak_calling_qc(sample):
+def get_peak_calling_qc(sample, wildcards):
     output = []
 
     # add frips score (featurecounts)
@@ -1118,6 +1135,14 @@ def get_peak_calling_qc(sample):
             expand(
                 "{qc_dir}/plotHeatmap_peaks/N{heatmap_npeaks}-{{assembly}}-deepTools_{peak_caller}_heatmap_mqc.png",
                 **config,
+            )
+        )
+    # upset plot
+    if len(breps[breps["assembly"] == ori_assembly(wildcards.assembly)].index) > 1:
+        output.extend(
+            expand(
+                "{qc_dir}/upset/{{assembly}}-{peak_caller}_upset_mqc.jpg",
+                **config
             )
         )
 
