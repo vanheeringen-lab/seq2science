@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Fixed
+
+- corrupt environment creation with libreadline for edgeR normalization.
+
 ## [0.6.1] - 2021-12-17
 
 ### Fixed
