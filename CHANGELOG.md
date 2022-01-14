@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+# Added
+
+- upset plot as QC for peak calling. Should give a first feeling about the distribution of peaks between samples/conditions.
+
 ## [0.6.1] - 2021-12-17
 
 ### Fixed
