@@ -562,6 +562,7 @@ def create_trackhub():
 
                     # the technical replicate(s) that comprise this biological replicate
                     for n, trep in enumerate(treps_from_brep[(brep, asmbly)]):
+                        print("we started!")
                         file = f"{config['result_dir']}/{peak_caller}/{assembly}-{trep}.bw"
                         priority += 1.0
                         track = trackhub.Track(

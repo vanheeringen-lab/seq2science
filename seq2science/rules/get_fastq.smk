@@ -75,8 +75,8 @@ rule sra2fastq_SE:
     input:
         rules.run2sra.output,
     output:
-        fastq=temp(expand("{fastq_dir}/runs/{{run}}.{fqsuffix}.gz", **config)),
-        tmpdir=temp(directory(expand("{fastq_dir}/runs/tmp/{{run}}", **config))),
+        fastq=temp(expand("{fastq_dir}/{{run}}.{fqsuffix}.gz", **config)),
+        tmpdir=temp(directory(expand("{fastq_dir}/tmp/{{run}}", **config))),
     log:
         expand("{log_dir}/sra2fastq_SE/{{run}}.log", **config),
     benchmark:
@@ -116,8 +116,8 @@ rule sra2fastq_PE:
     input:
         rules.run2sra.output,
     output:
-        fastq=temp(expand("{fastq_dir}/runs/{{run}}_{fqext}.{fqsuffix}.gz", **config)),
-        tmpdir=temp(directory(expand("{fastq_dir}/runs/tmp/{{run}}", **config))),
+        fastq=temp(expand("{fastq_dir}/{{run}}_{fqext}.{fqsuffix}.gz", **config)),
+        tmpdir=temp(directory(expand("{fastq_dir}/tmp/{{run}}", **config))),
     log:
         expand("{log_dir}/sra2fastq_PE/{{run}}.log", **config),
     benchmark:
@@ -155,7 +155,7 @@ rule ena2fastq_SE:
     Download single-end fastq files directly from the ENA.
     """
     output:
-        temp(expand("{fastq_dir}/runs/{{run}}.{fqsuffix}.gz", **config)),
+        temp(expand("{fastq_dir}/{{run}}.{fqsuffix}.gz", **config)),
     resources:
         parallel_downloads=1,
     log:
@@ -182,7 +182,7 @@ rule ena2fastq_PE:
     Download paired-end fastq files directly from the ENA.
     """
     output:
-        temp(expand("{fastq_dir}/runs/{{run}}_{fqext}.{fqsuffix}.gz", **config)),
+        temp(expand("{fastq_dir}/{{run}}_{fqext}.{fqsuffix}.gz", **config)),
     resources:
         parallel_downloads=1,
     log:
@@ -217,7 +217,7 @@ ruleorder: rename_sample > runs2sample
 def get_runs_from_sample(wildcards):
     run_fastqs = []
     for run in sampledict[wildcards.sample]["runs"]:
-        run_fastqs.append(f"{config['fastq_dir']}/runs/{run}{wildcards.suffix}")
+        run_fastqs.append(f"{config['trimmed_dir']}/{run}{wildcards.suffix}")
 
     return run_fastqs
 
@@ -232,7 +232,7 @@ rule runs2sample:
     input:
         get_runs_from_sample,
     output:
-        expand("{fastq_dir}/{{sample}}{{suffix}}", **config),
+        expand("{trimmed_dir}/{{sample}}{{suffix}}", **config),
     log:
         expand("{log_dir}/run2sample/{{sample}}{{suffix}}.log", **config),
     benchmark:
