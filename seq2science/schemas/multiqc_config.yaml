@@ -59,14 +59,18 @@ report_section_order:
     order: -898
   deepTools_genrich_heatmap:
     order: -899
-  macs2_img1:
+  macs2_upset:
     order: -900
-  macs2_img2:
+  genrich_upset:
     order: -901
-  genrich_img1:
+  macs2_img1:
     order: -902
-  genrich_img2:
+  macs2_img2:
     order: -903
+  genrich_img1:
+    order: -904
+  genrich_img2:
+    order: -905
   dupRadar:
     order: -950
   DESeq2_sample_distance_clustering:
