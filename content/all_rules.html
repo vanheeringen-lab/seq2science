@@ -155,6 +155,17 @@
 <li class="toctree-l3"><a class="reference internal" href="#samtools-stats">samtools_stats</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#setup-blacklist">setup_blacklist</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#sieve-bam">sieve_bam</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#softmask-track-1">softmask_track_1</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#softmask-track-2">softmask_track_2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sra2fastq-pe">sra2fastq_PE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sra2fastq-se">sra2fastq_SE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#star-align">star_align</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#star-index">star_index</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#strandedness-report">strandedness_report</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trackhub">trackhub</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trackhub-index">trackhub_index</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trimgalore-pe">trimgalore_PE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trimgalore-se">trimgalore_SE</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#twobit">twobit</a></li>
 </ul>
 </li>
@@ -1157,195 +1168,226 @@ samtools sort {params.sort_order} -@ {threads} {params.memory} {input} -o {outpu
 <li><p>remove reads inside the blacklist</p></li>
 <li><p>remove duplicates</p></li>
 <li><p>filter paired-end reads on transcript length</p></li>
-<li><p>subsample to have a maximum amount of reads (equal across samples)
-<a href="#id2"><span class="problematic" id="id3">``</span></a>`
-samtools view -h {params.prim_align} {params.minqual} {params.blacklist} {input.bam} | {params.atacshift} {params.sizesieve} {params.subsample}
-samtools view -b &gt; {output.final} 2&gt; {log}</p></li>
+<li><p>subsample to have a maximum amount of reads (equal across samples)</p></li>
 </ul>
-<p># single-end reads never output allsizes so just touch the file when filtering on size
-{params.sizesieve_touch}</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>#### softmask_track_1
-Generate a track of all softmasked regions
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>samtools view -h {params.prim_align} {params.minqual} {params.blacklist} \
+{input.bam} | {params.atacshift} {params.sizesieve} {params.subsample}
+samtools view -b &gt; {output.final} 2&gt; {log}
 
-source: https://github.com/Gaius-Augustus/MakeHub/blob/master/make_hub.py
-
-#### softmask_track_2
-Generate a track of all softmasked regions
-
-source: https://github.com/Gaius-Augustus/MakeHub/blob/master/make_hub.py
+\# single-end reads never output allsizes so just touch the file when filtering on size
+{params.sizesieve_touch}
 </pre></div>
 </div>
+</div>
+<div class="section" id="softmask-track-1">
+<h2>softmask_track_1<a class="headerlink" href="#softmask-track-1" title="Permalink to this headline">¶</a></h2>
+<p>Generate a track of all softmasked regions</p>
+<p>source: <a class="reference external" href="https://github.com/Gaius-Augustus/MakeHub/blob/master/make_hub.py">https://github.com/Gaius-Augustus/MakeHub/blob/master/make_hub.py</a></p>
+</div>
+<div class="section" id="softmask-track-2">
+<h2>softmask_track_2<a class="headerlink" href="#softmask-track-2" title="Permalink to this headline">¶</a></h2>
+<p>Generate a track of all softmasked regions</p>
+<p>source: <a class="reference external" href="https://github.com/Gaius-Augustus/MakeHub/blob/master/make_hub.py">https://github.com/Gaius-Augustus/MakeHub/blob/master/make_hub.py</a></p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>bedSort {input.mask_unsorted} {output.maskbed} &gt;&gt; {log} 2&gt;&amp;1
 
 bedToBigBed -type=bed3 {output.maskbed} {input.sizes} {output.mask} &gt;&gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>#### sra2fastq_PE
-Downloaded (raw) SRAs are converted to paired-end fastq files.
-Forward and reverse samples will be switched if forward/reverse names are not lexicographically ordered.
+</div>
+<div class="section" id="sra2fastq-pe">
+<h2>sra2fastq_PE<a class="headerlink" href="#sra2fastq-pe" title="Permalink to this headline">¶</a></h2>
+<p>Downloaded (raw) SRAs are converted to paired-end fastq files.
+Forward and reverse samples will be switched if forward/reverse names are not lexicographically ordered.</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>\# move to output dir since somehow parallel-fastq-dump sometimes puts files in the cwd...
+mkdir -p {output.tmpdir}; cd {output.tmpdir}
+
+\# acquire the lock
+(
+    flock --timeout 30 200 || exit 1
+    sleep 3
+) 200&gt;{pysradb_cache_lock}
+
+\# dump to tmp dir
+parallel-fastq-dump -s {input} -O {output.tmpdir} \
+--threads {threads} --split-e --skip-technical --dumpbase \
+--readids --clip --read-filter pass --defline-seq &#39;@$ac.$si.$sg/$ri&#39; \
+--defline-qual &#39;+&#39; --gzip &gt;&gt; {log} 2&gt;&amp;1
+
+\# rename file and move to output dir
+mv {output.tmpdir}/*_1* {output.fastq[0]}
+mv {output.tmpdir}/*_2* {output.fastq[1]}
 </pre></div>
 </div>
-<p># move to output dir since somehow parallel-fastq-dump sometimes puts files in the cwd…
-mkdir -p {output.tmpdir}; cd {output.tmpdir}</p>
-<p># acquire the lock
-(</p>
-<blockquote>
-<div><p>flock –timeout 30 200 || exit 1
-sleep 3</p>
-</div></blockquote>
-<p>) 200&gt;{pysradb_cache_lock}</p>
-<p># dump to tmp dir
-parallel-fastq-dump -s {input} -O {output.tmpdir} –threads {threads} –split-e –skip-technical –dumpbase –readids –clip –read-filter pass –defline-seq <a class="reference external" href="mailto:'&#37;&#52;&#48;$ac&#46;$si&#46;$sg/$ri">‘<span>&#64;</span>$ac<span>&#46;</span>$si<span>&#46;</span>$sg/$ri</a>’ –defline-qual ‘+’ –gzip &gt;&gt; {log} 2&gt;&amp;1</p>
-<p># rename file and move to output dir
-mv {output.tmpdir}/<em>_1</em> {output.fastq[0]}
-mv {output.tmpdir}/<em>_2</em> {output.fastq[1]}</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>#### sra2fastq_SE
-Downloaded (raw) SRAs are converted to single-end fastq files.
+</div>
+<div class="section" id="sra2fastq-se">
+<h2>sra2fastq_SE<a class="headerlink" href="#sra2fastq-se" title="Permalink to this headline">¶</a></h2>
+<p>Downloaded (raw) SRAs are converted to single-end fastq files.</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>\# move to output dir since somehow parallel-fastq-dump sometimes puts files in the cwd...
+mkdir -p {output.tmpdir}; cd {output.tmpdir}
+
+\# acquire the lock
+(
+    flock --timeout 30 200 || exit 1
+    sleep 3
+) 200&gt;{pysradb_cache_lock}
+
+\# dump to tmp dir
+parallel-fastq-dump -s {input} -O {output.tmpdir} \
+--threads {threads} --split-spot --skip-technical --dumpbase --readids \
+--clip --read-filter pass --defline-seq &#39;@$ac.$si.$sg/$ri&#39; \
+--defline-qual &#39;+&#39; --gzip &gt;&gt; {log} 2&gt;&amp;1
+
+\# rename file and move to output dir
+mv {output.tmpdir}/*.fastq.gz {output.fastq}
 </pre></div>
 </div>
-<p># move to output dir since somehow parallel-fastq-dump sometimes puts files in the cwd…
-mkdir -p {output.tmpdir}; cd {output.tmpdir}</p>
-<p># acquire the lock
-(</p>
-<blockquote>
-<div><p>flock –timeout 30 200 || exit 1
-sleep 3</p>
-</div></blockquote>
-<p>) 200&gt;{pysradb_cache_lock}</p>
-<p># dump to tmp dir
-parallel-fastq-dump -s {input} -O {output.tmpdir} –threads {threads} –split-spot –skip-technical –dumpbase –readids –clip –read-filter pass –defline-seq <a class="reference external" href="mailto:'&#37;&#52;&#48;$ac&#46;$si&#46;$sg/$ri">‘<span>&#64;</span>$ac<span>&#46;</span>$si<span>&#46;</span>$sg/$ri</a>’ –defline-qual ‘+’ –gzip &gt;&gt; {log} 2&gt;&amp;1</p>
-<p># rename file and move to output dir
-mv {output.tmpdir}/<a href="#id4"><span class="problematic" id="id5">*</span></a>.fastq.gz {output.fastq}</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>#### star_align
-Align reads against a genome (index) with STAR, and pipe the output to the required sorter(s).
-</pre></div>
 </div>
-<p>trap “find {log} -type f ! -name Log* -exec rm {{}} ;” EXIT
+<div class="section" id="star-align">
+<h2>star_align<a class="headerlink" href="#star-align" title="Permalink to this headline">¶</a></h2>
+<p>Align reads against a genome (index) with STAR, and pipe the output to the required sorter(s).</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>trap &quot;find {log} -type f ! -name Log* -exec rm {{}} \;&quot; EXIT
 mkdir -p {log}
-mkdir -p {output.dir}</p>
-<p>STAR –genomeDir {input.index} –readFilesIn {params.input} –readFilesCommand gunzip -c –outSAMtype BAM Unsorted –outStd BAM_Unsorted –outFileNamePrefix {log}/ –outTmpDir {output.dir}/STARtmp –runThreadN {threads} {params.params} &gt; {output.pipe} 2&gt; {log}/Log.stderr.out</p>
-<p># move all non-log files to output directory (this way the log files are kept on error)
-find {log} -type f ! -name Log* -exec mv {{}} {output.dir} ;</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>#### star_index
-Make a genome index for STAR.
+mkdir -p {output.dir}
 
-Troubleshooting:
-1. sufficient RAM &amp; disk space?
-2. increase the RAM available (--limitGenomeGenerateRAM)
-3. reduce the number of threads (seq2science -j 5)
-4. reduce accuracy (--genomeSAsparseD 2)
+STAR --genomeDir {input.index} --readFilesIn {params.input} --readFilesCommand gunzip -c \
+--outSAMtype BAM Unsorted --outStd BAM_Unsorted \
+--outFileNamePrefix {log}/ --outTmpDir {output.dir}/STARtmp \
+--runThreadN {threads} {params.params} &gt; {output.pipe} 2&gt; {log}/Log.stderr.out
 
-In your config.yaml, add:
- aligner:
-  star:
-   index: --limitGenomeGenerateRAM 60000000000 --genomeSAsparseD 1
+\# move all non-log files to output directory (this way the log files are kept on error)
+find {log} -type f ! -name Log* -exec mv {{}} {output.dir} \;
 </pre></div>
 </div>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>function log2 {{
-</pre></div>
 </div>
-<p>local x=0
-for (( y=$1-1 ; $y &gt; 0; y &gt;&gt;= 1 )) ; do</p>
-<blockquote>
-<div><p>let x=$x+1</p>
-</div></blockquote>
-<p>done
-echo $x</p>
-<blockquote>
-<div><p>}}</p>
-</div></blockquote>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>\# set genome dependent variables
-NBits=&quot;&quot;
-NBases=&quot;&quot;
-GenomeLength=$(awk -F&quot;\t&quot; &#39;{{x+=$2}}END{{printf &quot;%i&quot;, x}}&#39; {input.sizefile})
-NumberOfReferences=$(awk &#39;END{{print NR}}&#39; {input.sizefile})
-if [ $NumberOfReferences -gt 5000 ]; then
-    \# for large genomes, --genomeChrBinNbits should be scaled to min(18,log2[max(GenomeLength/NumberOfReferences,ReadLength)])
-    \# ReadLength is skipped here, as it is unknown
-    LpR=$(log2 $((GenomeLength / NumberOfReferences)))
-    NBits=&quot;--genomeChrBinNbits $(($LpR&lt;18 ? $LpR : 18))&quot;
-    printf &quot;NBits: $NBits\n\n&quot; &gt;&gt; {log} 2&gt;&amp;1
-fi
-
-if [ $GenomeLength -lt 268435456 ]; then
-    \# for small genomes, --genomeSAindexNbases must be scaled down to min(14, log2(GenomeLength)/2-1)
-    logG=$(( $(log2 $GenomeLength) / 2 - 1 ))
-    NBases=&quot;--genomeSAindexNbases $(( $logG&lt;14 ? $logG : 14 ))&quot;
-    printf &quot;NBases: $NBases\n\n&quot; &gt;&gt; {log} 2&gt;&amp;1
-fi
-
-mkdir -p {output}
-
-STAR --runMode genomeGenerate --genomeFastaFiles {input.genome} --sjdbGTFfile {input.gtf} \
---genomeDir {output} --outFileNamePrefix {output}/ \
---runThreadN {threads} $NBits $NBases {params} &gt;&gt; {log} 2&gt;&amp;1
-</pre></div>
-</div>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>#### strandedness_report
-combine samples.tsv &amp; infer_strandedness results (call strandedness if &gt;60% of reads explains a direction)
-
-#### trackhub
-Generate a UCSC track hub/assembly hub.
-
-To view the hub, the output directory must be hosted on an web accessible location,
-and the location of the hub.txt file given the UCSC genome browser at
-My Data &gt; Track Hubs &gt; My Hubs
-
-#### trackhub_index
-Generate a searchable annotation &amp; index for each assembly
-
-sources: https://genome.ucsc.edu/goldenPath/help/hubQuickStartSearch.html,
-https://www.biostars.org/p/272649/
-</pre></div>
-</div>
-<p># generate annotation files
-gtfToGenePred -allErrors -ignoreGroupsWithoutExons -geneNameAsName2 -genePredExt {input.gtf} {output.genePred} -infoOut={output.info} &gt;&gt; {log} 2&gt;&amp;1</p>
-<p># check if gtf has gene_names &gt; if l!=0, use gene_name, else transcript_id
-l=$(head -n 100 {input.gtf} | (grep gene_name || true) | wc -l)</p>
-<p># switch columns 1 (transcript_id) and 12 (gene_name)
-awk -v len=$l ‘BEGIN {{ FS = “t” }}; {{ if(len!=”0”) {{ t = $1; $1 = $12; $12 = t; print; }} else {{ print; }} }}’ {output.genePred} &gt; {output.genePrednamed}</p>
-<p># remove lines with missing headers<span class="raw-html-m2r"><br></span>
-grep -v “^ ” {output.genePrednamed} &gt; {output.genePred}</p>
-<p>genePredToBed {output.genePred} {output.genePredbed} &gt;&gt; {log} 2&gt;&amp;1</p>
-<p>bedSort {output.genePredbed} {output.genePredbed} &gt;&gt; {log} 2&gt;&amp;1</p>
-<p>bedToBigBed -extraIndex=name {output.genePredbed} {input.sizes} {output.genePredbigbed} &gt;&gt; {log} 2&gt;&amp;1</p>
-<p># generate searchable indexes (by 1: transcriptID, 2: geneId, 8: proteinID, 9: geneName, 10: transcriptName)
-grep -v “^#” {output.info} | awk -v len=$l ‘BEGIN {{ FS = “t” }} ; {{ if(len!=”0”) {{print $9, $1, $2, $8, $9, $10}} else {{print $1, $1, $2, $8, $9, $10}} }}’ &gt; {output.indexinfo}</p>
-<p>ixIxx {output.indexinfo} {output.ix} {output.ixx} &gt;&gt; {log} 2&gt;&amp;1</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>#### trimgalore_PE
-Automated adapter detection, adapter trimming, and quality trimming through trim galore (paired-end).
-</pre></div>
-</div>
-<p>trim_galore –paired -j {threads} {params.config} -o $(dirname {output.r1}) {input.r1} {input.r2} &gt; {log} 2&gt;&amp;1</p>
-<p># now rename to proper output
-for f in $(find “$(dirname {output.r1})/” -name “{wildcards.sample}<a href="#id6"><span class="problematic" id="id7">**</span></a>val*<a href="#id8"><span class="problematic" id="id9">*</span></a>.fq.gz”); do</p>
-<blockquote>
-<div><p>mv “$f” “$(echo “$f” | sed s/.fq/.{params.fqsuffix}/)”; done</p>
-</div></blockquote>
+<div class="section" id="star-index">
+<h2>star_index<a class="headerlink" href="#star-index" title="Permalink to this headline">¶</a></h2>
+<p>Make a genome index for STAR.</p>
+<p>Troubleshooting:</p>
+<ol class="arabic simple">
+<li><p>sufficient RAM &amp; disk space?</p></li>
+<li><p>increase the RAM available (–limitGenomeGenerateRAM)</p></li>
+<li><p>reduce the number of threads (seq2science -j 5)</p></li>
+<li><p>reduce accuracy (–genomeSAsparseD 2)</p></li>
+</ol>
 <dl class="simple">
-<dt>for f in $(find “$(dirname {output.r1})/” -maxdepth 1 -name “{wildcards.sample}_*val_*.{params.fqsuffix}.gz”); do</dt><dd><p>mv “$f” “$(echo “$f” | sed s/<em>val</em>./_trimmed/)”; done</p>
+<dt>In your config.yaml, add:</dt><dd><dl class="simple">
+<dt>aligner:</dt><dd><dl class="simple">
+<dt>star:</dt><dd><p>index: –limitGenomeGenerateRAM 60000000000 –genomeSAsparseD 1</p>
 </dd>
 </dl>
-<p># move the trimming reports to qc directory
-for f in $(find “$(dirname {output.r1})/” -name “{wildcards.sample}_*.{params.fqsuffix}.gz_trimming_report.txt”); do</p>
-<blockquote>
-<div><p>mv “$f” “$(dirname {output.qc[0]})/$(basename $f)”; done</p>
-</div></blockquote>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>#### trimgalore_SE
-Automated adapter detection, adapter trimming, and quality trimming through trim galore (single-end).
+</dd>
+</dl>
+</dd>
+</dl>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>            function log2 {{
+local x=0
+for (( y=$1-1 ; $y &gt; 0; y &gt;&gt;= 1 )) ; do
+    let x=$x+1
+done
+echo $x
+            }}
+
+            \# set genome dependent variables
+            NBits=&quot;&quot;
+            NBases=&quot;&quot;
+            GenomeLength=$(awk -F&quot;\t&quot; &#39;{{x+=$2}}END{{printf &quot;%i&quot;, x}}&#39; {input.sizefile})
+            NumberOfReferences=$(awk &#39;END{{print NR}}&#39; {input.sizefile})
+            if [ $NumberOfReferences -gt 5000 ]; then
+                \# for large genomes, --genomeChrBinNbits should be scaled to min(18,log2[max(GenomeLength/NumberOfReferences,ReadLength)])
+                \# ReadLength is skipped here, as it is unknown
+                LpR=$(log2 $((GenomeLength / NumberOfReferences)))
+                NBits=&quot;--genomeChrBinNbits $(($LpR&lt;18 ? $LpR : 18))&quot;
+                printf &quot;NBits: $NBits\n\n&quot; &gt;&gt; {log} 2&gt;&amp;1
+            fi
+
+            if [ $GenomeLength -lt 268435456 ]; then
+                \# for small genomes, --genomeSAindexNbases must be scaled down to min(14, log2(GenomeLength)/2-1)
+                logG=$(( $(log2 $GenomeLength) / 2 - 1 ))
+                NBases=&quot;--genomeSAindexNbases $(( $logG&lt;14 ? $logG : 14 ))&quot;
+                printf &quot;NBases: $NBases\n\n&quot; &gt;&gt; {log} 2&gt;&amp;1
+            fi
+
+            mkdir -p {output}
+
+            STAR --runMode genomeGenerate --genomeFastaFiles {input.genome} --sjdbGTFfile {input.gtf} \
+            --genomeDir {output} --outFileNamePrefix {output}/ \
+            --runThreadN {threads} $NBits $NBases {params} &gt;&gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
-<p>trim_galore -j {threads} {params.config} -o $(dirname {output.se}) {input} &gt; {log} 2&gt;&amp;1</p>
-<p># now rename to proper output
-if [ “{params.fqsuffix}” != “fq” ]; then</p>
-<blockquote>
-<div><p>mv “$(dirname {output.se})/{wildcards.sample}_trimmed.fq.gz” {output.se}</p>
-</div></blockquote>
-<p>fi</p>
-<p># move the trimming report to qc directory
+</div>
+<div class="section" id="strandedness-report">
+<h2>strandedness_report<a class="headerlink" href="#strandedness-report" title="Permalink to this headline">¶</a></h2>
+<p>combine samples.tsv &amp; infer_strandedness results (call strandedness if &gt;60% of reads explains a direction)</p>
+</div>
+<div class="section" id="trackhub">
+<h2>trackhub<a class="headerlink" href="#trackhub" title="Permalink to this headline">¶</a></h2>
+<p>Generate a UCSC track hub/assembly hub.</p>
+<p>To view the hub, the output directory must be hosted on an web accessible location,
+and the location of the hub.txt file given the UCSC genome browser at
+My Data &gt; Track Hubs &gt; My Hubs</p>
+</div>
+<div class="section" id="trackhub-index">
+<h2>trackhub_index<a class="headerlink" href="#trackhub-index" title="Permalink to this headline">¶</a></h2>
+<p>Generate a searchable annotation &amp; index for each assembly</p>
+<p>sources: <a class="reference external" href="https://genome.ucsc.edu/goldenPath/help/hubQuickStartSearch.html">https://genome.ucsc.edu/goldenPath/help/hubQuickStartSearch.html</a>,
+<a class="reference external" href="https://www.biostars.org/p/272649/">https://www.biostars.org/p/272649/</a></p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>\# generate annotation files
+gtfToGenePred -allErrors -ignoreGroupsWithoutExons -geneNameAsName2 -genePredExt {input.gtf} {output.genePred} -infoOut={output.info} &gt;&gt; {log} 2&gt;&amp;1
+
+\# check if gtf has gene_names &gt; if l!=0, use gene_name, else transcript_id
+l=$(head -n 100 {input.gtf} | (grep gene_name || true) | wc -l)
+
+\# switch columns 1 (transcript_id) and 12 (gene_name)
+awk -v len=$l &#39;BEGIN {{ FS = &quot;\t&quot; }}; {{ if(len!=&quot;0&quot;) {{ t = $1; $1 = $12; $12 = t; print; }} else {{ print; }} }}&#39; {output.genePred} &gt; {output.genePrednamed}
+
+\# remove lines with missing headers
+grep -v &quot;^ &quot; {output.genePrednamed} &gt; {output.genePred}
+
+genePredToBed {output.genePred} {output.genePredbed} &gt;&gt; {log} 2&gt;&amp;1
+
+bedSort {output.genePredbed} {output.genePredbed} &gt;&gt; {log} 2&gt;&amp;1
+
+bedToBigBed -extraIndex=name {output.genePredbed} {input.sizes} {output.genePredbigbed} &gt;&gt; {log} 2&gt;&amp;1
+
+\# generate searchable indexes (by 1: transcriptID, 2: geneId, 8: proteinID, 9: geneName, 10: transcriptName)
+grep -v &quot;^\#&quot; {output.info} | awk -v len=$l &#39;BEGIN {{ FS = &quot;\t&quot; }} ; {{ if(len!=&quot;0&quot;) {{print $9, $1, $2, $8, $9, $10}} else {{print $1, $1, $2, $8, $9, $10}} }}&#39; &gt; {output.indexinfo}
+
+ixIxx {output.indexinfo} {output.ix} {output.ixx} &gt;&gt; {log} 2&gt;&amp;1
+</pre></div>
+</div>
+</div>
+<div class="section" id="trimgalore-pe">
+<h2>trimgalore_PE<a class="headerlink" href="#trimgalore-pe" title="Permalink to this headline">¶</a></h2>
+<p>Automated adapter detection, adapter trimming, and quality trimming through trim galore (paired-end).</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>trim_galore --paired -j {threads} {params.config} -o $(dirname {output.r1}) {input.r1} {input.r2} &gt; {log} 2&gt;&amp;1
+
+\# now rename to proper output
+for f in $(find &quot;$(dirname {output.r1})/&quot; -name &quot;{wildcards.sample}_*val_*.fq.gz&quot;); do
+    mv &quot;$f&quot; &quot;$(echo &quot;$f&quot; | sed s/.fq/.{params.fqsuffix}/)&quot;; done
+for f in $(find &quot;$(dirname {output.r1})/&quot; -maxdepth 1 -name &quot;{wildcards.sample}_*val_*.{params.fqsuffix}.gz&quot;); do
+    mv &quot;$f&quot; &quot;$(echo &quot;$f&quot; | sed s/_val_./_trimmed/)&quot;; done
+
+\# move the trimming reports to qc directory
+for f in $(find &quot;$(dirname {output.r1})/&quot; -name &quot;{wildcards.sample}_*.{params.fqsuffix}.gz_trimming_report.txt&quot;); do
+    mv &quot;$f&quot; &quot;$(dirname {output.qc[0]})/$(basename $f)&quot;; done
+</pre></div>
+</div>
+</div>
+<div class="section" id="trimgalore-se">
+<h2>trimgalore_SE<a class="headerlink" href="#trimgalore-se" title="Permalink to this headline">¶</a></h2>
+<p>Automated adapter detection, adapter trimming, and quality trimming through trim galore (single-end).</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>trim_galore -j {threads} {params.config} -o $(dirname {output.se}) {input} &gt; {log} 2&gt;&amp;1
+
+\# now rename to proper output
+if [ &quot;{params.fqsuffix}&quot; != &quot;fq&quot; ]; then
+  mv &quot;$(dirname {output.se})/{wildcards.sample}_trimmed.fq.gz&quot; {output.se}
+fi
+
+\# move the trimming report to qc directory
 report=$(dirname {output.se})/{wildcards.sample}.{params.fqsuffix}.gz_trimming_report.txt
 mv $report {output.qc}
-<a href="#id10"><span class="problematic" id="id11">``</span></a><a href="#id12"><span class="problematic" id="id13">`</span></a></p>
+</pre></div>
+</div>
 </div>
 <div class="section" id="twobit">
 <h2>twobit<a class="headerlink" href="#twobit" title="Permalink to this headline">¶</a></h2>
