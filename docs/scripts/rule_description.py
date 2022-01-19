@@ -79,13 +79,12 @@ for rules_file in os.listdir(path):
 for rule in sorted(all_rules_doc.keys()):
     docstring = all_rules_doc[rule]
 
-    final_md += f"#### {rule}\n"
-    final_md += f"{docstring}\n"
+    final_md += f"#### {rule}\n\n"
+    final_md += f"{docstring}\n\n"
     if rule in all_rules_shell:
         final_md += "```\n"
         final_md += f"{all_rules_shell[rule]}\n"
-        final_md += "```\n"
-    final_md += f"\n"
+        final_md += "```\n\n"
 
 with open("docs/content/all_rules.md", "w") as text_file:
     text_file.write(final_md)
