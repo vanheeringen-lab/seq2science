@@ -115,7 +115,7 @@ elif config["trimmer"] == "fastp":
         all_paired_samples = [sample for sample in all_samples if sampledict[sample]["layout"] == "PAIRED"]
 
 
-    checkpoint fastp_SE:
+    rule fastp_SE:
         """
         Automated adapter detection, adapter trimming, and quality trimming through fastp (single-end).
         """
@@ -146,7 +146,7 @@ elif config["trimmer"] == "fastp":
             """
 
 
-    checkpoint fastp_PE:
+    rule fastp_PE:
         """
         Automated adapter detection, adapter trimming, and quality trimming through fastp (paired-end).
         """

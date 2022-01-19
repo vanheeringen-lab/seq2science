@@ -205,7 +205,9 @@ samples.index = samples.index.map(str)
 
 
 def get_workflow():
-    return workflow.main_snakefile.split("/")[-2]
+    # snakemake 6+ uses main_snakefile
+    # return workflow.main_snakefile.split("/")[-2]
+    return workflow.snakefile.split("/")[-2]
 
 
 sequencing_protocol = (
@@ -474,7 +476,7 @@ wildcard_constraints:
 
 
 # make sure the snakemake version corresponds to version in environment
-min_version("6.12.3")
+min_version("5.18.1")
 
 
 # record which assembly trackhubs are found on UCSC

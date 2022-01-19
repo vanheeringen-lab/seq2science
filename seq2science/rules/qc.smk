@@ -108,7 +108,7 @@ def get_fastqc_input(wildcards):
 
 if config["trimmer"] == "trimgalore":
 
-    checkpoint fastqc:
+    rule fastqc:
         """
         Generate quality control report for fastq files.
         """
