@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Changed
+
+- downgraded the snakemake backend as snakemake 6+ is unstable for us
+
 ### Fixed
 
 - subsampling causing a crash caused by bad syntax
