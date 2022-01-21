@@ -22,4 +22,4 @@ f, ax = plt.subplots()
 ax.axis("off")
 upsetplot = plot(from_contents(data), fig=f)
 
-plt.savefig(snakemake.output[0], dpi=450)
+plt.savefig(snakemake.output[0], dpi=250)
