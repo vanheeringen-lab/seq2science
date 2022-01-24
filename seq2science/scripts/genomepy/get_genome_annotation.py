@@ -9,6 +9,7 @@ import genomepy
 logfile = snakemake.log[0]
 assembly = snakemake.wildcards.raw_assembly
 providers = snakemake.params.providers
+provider = snakemake.params.provider
 genome_dir = snakemake.params.genome_dir
 
 # redirect all messages to a logfile
@@ -27,8 +28,11 @@ with open(logfile, "w") as log:
             print("Deactivating user plugins")
             genomepy.manage_plugins("disable", active_plugins)
 
-        # select a provider with the annotation if possible
-        provider = providers[assembly]["annotation"]
+        # select user specified provider
+        if provider is None:
+            # select a provider with the annotation
+            provider = providers[assembly]["annotation"]
+
         try:
             genomepy.install_genome(
                 name=assembly,
