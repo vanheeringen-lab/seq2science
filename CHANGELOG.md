@@ -10,6 +10,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Fixed
 
+- corrupt environment creation with libreadline for edgeR normalization.
 - subsampling causing a crash caused by bad syntax
 
 ## [0.6.1] - 2021-12-17
