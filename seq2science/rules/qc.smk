@@ -499,10 +499,10 @@ def get_plotCor_opts(lst):
     n = len(lst)
     if "--plotHeight" not in opts:
         # default: 9.5 cm
-        opts += f"--plotHeight {max(9.5, n*0.2)}"
+        opts += f" --plotHeight {max(9.5, n*0.3)}"
     if "--plotWidth" not in opts:
         # default: 11 cm
-        opts += f"--plotWidth {max(11, 1.5+n*0.2)}"
+        opts += f" --plotWidth {max(11, 1.5+n*0.3)}"
     return opts
 
 
