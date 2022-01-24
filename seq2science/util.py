@@ -285,6 +285,7 @@ def sieve_bam(configdict):
         or configdict.get("remove_blacklist", False)
         or configdict.get("filter_on_size", False)
         or configdict.get("remove_mito", False)
+        or configdict.get("supsample", -1) > 0
     )
 
 
