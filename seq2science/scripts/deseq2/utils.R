@@ -108,6 +108,7 @@ batch_corrected_vst <- function(dds) {
 
   batchcorr_vst <- nonblind_vst
   SummarizedExperiment::assay(batchcorr_vst) <- mat
+  batchcorr_vst <- DESeq2::DESeqTransform(batchcorr_vst)
 
   return(batchcorr_vst)
 }
