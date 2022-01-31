@@ -15,6 +15,7 @@ include: f"{config['rule_dir']}/merge_replicates.smk"
 include: f"{config['rule_dir']}/peak_counts.smk"
 include: f"{config['rule_dir']}/peak_calling.smk"
 include: f"{config['rule_dir']}/qc.smk"
+include: f"{config['rule_dir']}/qc_peaks.smk"
 include: f"{config['rule_dir']}/trackhub.smk"
 include: f"{config['rule_dir']}/trimming.smk"
 

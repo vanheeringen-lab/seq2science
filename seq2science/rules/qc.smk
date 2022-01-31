@@ -47,56 +47,6 @@ rule samtools_stats:
         "samtools stats {input} 1> {output} 2> {log}"
 
 
-# TODO: featurecounts was not set up to accept hmmratac's gappedPeaks,
-#  I added this as it was sufficient for rule idr
-def get_featureCounts_bam(wildcards):
-    if wildcards.peak_caller in ["macs2", "hmmratac"]:
-        return expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config)
-    return expand("{final_bam_dir}/{{assembly}}-{{sample}}.sambamba-queryname.bam", **config)
-
-
-# TODO: featurecounts was not set up to accept hmmratac's gappedPeaks,
-#  I added this as it was sufficient for rule idr
-def get_featureCounts_peak(wildcards):
-    peak_sample = brep_from_trep[wildcards.sample]
-    ftype = get_peak_ftype(wildcards.peak_caller)
-    return expand(f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{peak_sample}_peaks.{ftype}", **config)
-
-
-rule featureCounts:
-    """
-    Use featureCounts to generate the fraction reads in peaks score 
-    (frips/assigned reads). See: https://www.biostars.org/p/337872/ and
-    https://www.biostars.org/p/228636/
-    """
-    input:
-        bam=get_featureCounts_bam,
-        peak=get_featureCounts_peak,
-    output:
-        tmp_saf=temp(expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}.saf", **config)),
-        real_out=expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}_featureCounts.txt", **config),
-        summary=expand("{qc_dir}/{{peak_caller}}/{{assembly}}-{{sample}}_featureCounts.txt.summary", **config),
-    message:
-        explain_rule("featureCounts_qc")
-    log:
-        expand("{log_dir}/featureCounts/{{assembly}}-{{sample}}-{{peak_caller}}.log", **config),
-    threads: 4
-    conda:
-        "../envs/subread.yaml"
-    shell:
-        """
-        # Make a custom "SAF" file which featureCounts needs:
-        awk 'BEGIN{{FS=OFS="\t"; print "GeneID\tChr\tStart\tEnd\tStrand"}}{{print $4, $1, $2+1, $3, "."}}' \
-        {input.peak} 1> {output.tmp_saf} 2> {log}
-
-        # run featureCounts
-        featureCounts -T {threads} -p -a {output.tmp_saf} -F SAF -o {output.real_out} {input.bam} > {log} 2>&1
-
-        # move the summary to qc directory
-        mv $(dirname {output.real_out})/$(basename {output.summary}) {output.summary}
-        """
-
-
 def get_fastqc_input(wildcards):
     if "_trimmed" in wildcards.fname:
         fqc_input = "{trimmed_dir}/{{fname}}.{fqsuffix}.gz"
@@ -435,33 +385,6 @@ rule computeMatrix_peak:
         """
 
 
-rule plotHeatmap_peak:
-    """
-    Plot the peak heatmap using deepTools.
-    """
-    input:
-        rules.computeMatrix_peak.output,
-    output:
-        img=expand(
-            "{qc_dir}/plotHeatmap_peaks/N{{nrpeaks}}-{{assembly}}-deepTools_{{peak_caller}}_heatmap_mqc.png", **config
-        ),
-    log:
-        expand("{log_dir}/plotHeatmap_peaks/{{assembly}}-{{peak_caller}}_N{{nrpeaks}}.log", **config),
-    benchmark:
-        expand("{benchmark_dir}/plotHeatmap_peaks/{{assembly}}-{{peak_caller}}_N{{nrpeaks}}.benchmark.txt", **config)[0]
-    conda:
-        "../envs/deeptools.yaml"
-    resources:
-        deeptools_limit=lambda wildcards, threads: threads,
-    params:
-        params=config.get("deeptools_heatmap_options", ""),
-        slop=config.get("heatmap_slop", 0),
-    shell:
-        """
-        plotHeatmap --matrixFile {input} --outFileName {output.img} {params.params} --startLabel="-{params.slop}" --endLabel={params.slop} > {log} 2>&1
-        """
-
-
 rule multiBamSummary:
     """
     Pre-compute a bam summary with deeptools.
@@ -567,27 +490,6 @@ def get_summits_bed(wildcards):
         ],
         **config,
     )
-
-
-rule chipseeker:
-    input:
-        narrowpeaks=get_summits_bed,
-        gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
-    output:
-        img1=expand("{qc_dir}/chipseeker/{{assembly}}-{{peak_caller}}_img1_mqc.png", **config),
-        img2=expand("{qc_dir}/chipseeker/{{assembly}}-{{peak_caller}}_img2_mqc.png", **config),
-    params:
-        names=lambda wildcards, input: get_descriptive_names(wildcards, input.narrowpeaks),
-    log:
-        expand("{log_dir}/chipseeker/{{assembly}}-{{peak_caller}}.log", **config),
-    conda:
-        "../envs/chipseeker.yaml"
-    message:
-        explain_rule("chipseeker")
-    resources:
-        R_scripts=1,  # conda's R can have issues when starting multiple times
-    script:
-        f"{config['rule_dir']}/../scripts/chipseeker.R"
 
 
 rule multiqc_header_info:
@@ -833,7 +735,7 @@ def get_qc_files(wildcards):
     # qc on combined biological replicates/samples
     if get_peak_calling_qc in quality_control:
         for trep in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index:
-            qc["files"].update(get_peak_calling_qc(trep))
+            qc["files"].update(get_peak_calling_qc(trep, wildcards))
 
     if get_rna_qc in quality_control:
         # Skip if desired, or if no BAMs are made (no trackhub + Salmon)
@@ -1105,7 +1007,7 @@ def get_scrna_qc(sample):
     return output
 
 
-def get_peak_calling_qc(sample):
+def get_peak_calling_qc(sample, wildcards):
     output = []
 
     # add frips score (featurecounts)
@@ -1131,6 +1033,14 @@ def get_peak_calling_qc(sample):
             expand(
                 "{qc_dir}/plotHeatmap_peaks/N{heatmap_npeaks}-{{assembly}}-deepTools_{peak_caller}_heatmap_mqc.png",
                 **config,
+            )
+        )
+    # upset plot
+    if len(breps[breps["assembly"] == ori_assembly(wildcards.assembly)].index) > 1:
+        output.extend(
+            expand(
+                "{qc_dir}/upset/{{assembly}}-{peak_caller}_upset_mqc.jpg",
+                **config
             )
         )
 
