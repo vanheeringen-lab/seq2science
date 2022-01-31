@@ -172,6 +172,12 @@ rule get_effective_genome_size:
         explain_rule("get_effective_genome_size")
     conda:
         "../envs/khmer.yaml"
+    params:
+        name=(
+            lambda wildcards, input: wildcards.sample
+            if sampledict[wildcards.sample]["layout"] == "SINGLE"
+            else [f"{wildcards.sample}_{config['fqext1']}"]
+        ),
     log:
         expand("{log_dir}/get_genome_size/{{assembly}}_{{sample}}.log", **config),
     benchmark:
