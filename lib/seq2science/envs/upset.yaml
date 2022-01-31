@@ -1,8 +1,7 @@
-name: khmer
+name: upset
 channels:
   - conda-forge
   - bioconda
   - defaults
 dependencies:
-  - bioconda::khmer=2.0
-  - conda-forge::jq=1.6
+  - conda-forge::upsetplot=0.6.0

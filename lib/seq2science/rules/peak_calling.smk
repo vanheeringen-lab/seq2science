@@ -149,20 +149,50 @@ def get_control_macs(wildcards):
     return {"control": expand(f"{{final_bam_dir}}/{control}-mates-{{{{assembly}}}}.samtools-coordinate.bam", **config)}
 
 
-def get_genome_size(wildcards):
-    read_length = get_read_length(wildcards.sample)
-    return expand("{genome_dir}/{{assembly}}/genome_sizes/kmer_" + str(read_length) + ".genome_size", **config)
+if config["trimmer"] == "trimgalore":
+    get_macs2_kmer = "kmer_size=$(unzip -p {input.fastq_qc} {params.name}_trimmed_fastqc/fastqc_data.txt  | grep -P -o '(?<=Sequence length\\t).*' | grep -P -o '\d+$')"
+elif config["trimmer"] == "fastp":
+    get_macs2_kmer = "kmer_size=$(jq -r .summary.after_filtering.read1_mean_length {input.fastq_qc})"
+
+
+rule get_effective_genome_size:
+    """
+    Get the effective genome size for a kmer length. Macs2 requires
+    an estimation of the effective genome size to better estimate how (un)likely it
+    is to have a certain number of reads on a position. The actual genome size is
+    not the best indication in these cases, since reads in repetitive regions
+    (for a certain kmer length) can not possible align on some locations.
+    """
+    input:
+        genome=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+        fastq_qc=get_fastq_qc_file,
+    output:
+        expand("{result_dir}/macs2/{{assembly}}-{{sample}}.genome_size", **config),
+    message:
+        explain_rule("get_effective_genome_size")
+    conda:
+        "../envs/khmer.yaml"
+    log:
+        expand("{log_dir}/get_genome_size/{{assembly}}_{{sample}}.log", **config),
+    benchmark:
+        expand("{benchmark_dir}/get_genome_size/{{assembly}}_{{sample}}.benchmark.txt", **config)[0]
+    shell:
+        # extract the kmer size, and get the effective genome size from it
+        get_macs2_kmer +
+        """
+        unique-kmers.py {input.genome} -k $kmer_size --quiet 2>&1 | grep -P -o '(?<=\.fa: ).*' > {output} 2> {log}
+        """
 
 
 rule macs2_callpeak:
     """
     Call peaks using macs2.
-    Macs2 requires a genome size, which we estimate from the amount of unique kmers of the average read length.
+    Macs2 requires a genome size, which is estimated from the amount of unique kmers of the average read length.
     """
     input:
         unpack(get_control_macs),
         bam=get_macs2_bam,
-        genome_size=get_genome_size,
+        genome_size=rules.get_effective_genome_size.output,
     output:
         expand("{result_dir}/macs2/{{assembly}}-{{sample}}_{macs2_types}", **config),
     log:
@@ -174,6 +204,12 @@ rule macs2_callpeak:
     wildcard_constraints:
         sample=any_given("sample", "technical_replicates"),
     params:
+        name=(
+            lambda wildcards, input: wildcards.sample
+            if sampledict[wildcards.sample]["layout"] == "SINGLE"
+            else [f"{wildcards.sample}_{config['fqext1']}"]
+        ),
+        genome=f"{config['genome_dir']}/{{assembly}}/{{assembly}}.fa",
         macs_params=config["peak_caller"].get("macs2", ""),
         format=(
             lambda wildcards: "BAMPE"

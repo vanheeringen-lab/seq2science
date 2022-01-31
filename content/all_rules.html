@@ -127,6 +127,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#multibamsummary">multiBamSummary</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multiqc-explain">multiqc_explain</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multiqc-filter-buttons">multiqc_filter_buttons</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multiqc-header-info">multiqc_header_info</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multiqc-samplesconfig">multiqc_samplesconfig</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multiqc-schema">multiqc_schema</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#narrowpeak-summit">narrowpeak_summit</a></li>
@@ -167,10 +168,12 @@
 <li class="toctree-l3"><a class="reference internal" href="#trimgalore-pe">trimgalore_PE</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#trimgalore-se">trimgalore_SE</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#twobit">twobit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#upset-plot-peaks">upset_plot_peaks</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="schemas.html">All configurable options</a></li>
 <li class="toctree-l2"><a class="reference internal" href="CHANGELOG.html">Changelog</a></li>
+<li class="toctree-l2"><a class="reference internal" href="CHANGELOG.html#added">Added</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../CONTRIBUTING.html">Contributing to seq2science</a></li>
 </ul>
 </li>
@@ -329,7 +332,7 @@ bwa-mem2 index -p {params.prefix} {input} &gt; {log} 2&gt;&amp;1
 </div>
 <div class="section" id="chipseeker">
 <h2>chipseeker<a class="headerlink" href="#chipseeker" title="Permalink to this headline">¶</a></h2>
-<p>Generate a multiqc header file with contact info and date of multiqc generation.</p>
+<p>Make chipseeker plots, with the percentage of peaks in e.g. promoters.</p>
 </div>
 <div class="section" id="citeseqcount">
 <h2>citeseqcount<a class="headerlink" href="#citeseqcount" title="Permalink to this headline">¶</a></h2>
@@ -537,10 +540,19 @@ genePredToBed {output.gp} {output.bed}
 <div class="section" id="fastp-pe">
 <h2>fastp_PE<a class="headerlink" href="#fastp-pe" title="Permalink to this headline">¶</a></h2>
 <p>Automated adapter detection, adapter trimming, and quality trimming through fastp (paired-end).</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>fastp -w {params.threads} --in1 {input[0]} --in2 {input[1]} \
+--out1 {output.r1} --out2 {output.r2} -h {output.qc_html} -j {output.qc_json} \
+{params.config} &gt; {log} 2&gt;&amp;1
+</pre></div>
+</div>
 </div>
 <div class="section" id="fastp-se">
 <h2>fastp_SE<a class="headerlink" href="#fastp-se" title="Permalink to this headline">¶</a></h2>
 <p>Automated adapter detection, adapter trimming, and quality trimming through fastp (single-end).</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>fastp -w {params.threads} --in1 {input} --out1 {output.se} -h {output.qc_html} -j {output.qc_json} \
+{params.config} &gt; {log} 2&gt;&amp;1
+</pre></div>
+</div>
 </div>
 <div class="section" id="fastp-qc-pe">
 <h2>fastp_qc_PE<a class="headerlink" href="#fastp-qc-pe" title="Permalink to this headline">¶</a></h2>
@@ -581,6 +593,9 @@ gzip -c {output.intermediates3[1]} &gt; {output.reads[1]} 2&gt;&gt; {log}
 <div class="section" id="fastqc">
 <h2>fastqc<a class="headerlink" href="#fastqc" title="Permalink to this headline">¶</a></h2>
 <p>Generate quality control report for fastq files.</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>fastqc {input} -O {params} &gt; {log} 2&gt;&amp;1
+</pre></div>
+</div>
 </div>
 <div class="section" id="featurecounts">
 <h2>featureCounts<a class="headerlink" href="#featurecounts" title="Permalink to this headline">¶</a></h2>
@@ -633,12 +648,12 @@ Genrich -X -t $input -f {output.log} {params.control} -k {output.bedgraphish} \
 </div>
 <div class="section" id="get-effective-genome-size">
 <h2>get_effective_genome_size<a class="headerlink" href="#get-effective-genome-size" title="Permalink to this headline">¶</a></h2>
-<p>Get the effective genome size for a kmer length. Some tools (e.g. macs2) require
+<p>Get the effective genome size for a kmer length. Macs2 requires
 an estimation of the effective genome size to better estimate how (un)likely it
 is to have a certain number of reads on a position. The actual genome size is
 not the best indication in these cases, since reads in repetitive regions
 (for a certain kmer length) can not possible align on some locations.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>unique-kmers.py {input} -k {wildcards.kmer_size} --quiet 2&gt;&amp;1 | grep -P -o &#39;(?&lt;=\.fa: ).*&#39; &gt; {output} 2&gt; {log}
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>unique-kmers.py {input.genome} -k $kmer_size --quiet 2&gt;&amp;1 | grep -P -o &#39;(?&lt;=\.fa: ).*&#39; &gt; {output} 2&gt; {log}
 </pre></div>
 </div>
 </div>
@@ -810,7 +825,7 @@ macs2 in this case only keeps the first in pair.</p>
 <div class="section" id="macs2-callpeak">
 <h2>macs2_callpeak<a class="headerlink" href="#macs2-callpeak" title="Permalink to this headline">¶</a></h2>
 <p>Call peaks using macs2.
-Macs2 requires a genome size, which we estimate from the amount of unique kmers of the average read length.</p>
+Macs2 requires a genome size, which is estimated from the amount of unique kmers of the average read length.</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>GENSIZE=$(cat {input.genome_size})
 
 \# call peaks
@@ -844,7 +859,14 @@ cat {output.tmppeaks} | tail -n +2 &gt; {output.peaks}
 <div class="section" id="mark-duplicates">
 <h2>mark_duplicates<a class="headerlink" href="#mark-duplicates" title="Permalink to this headline">¶</a></h2>
 <p>Mark all duplicate reads in a bam file with picard MarkDuplicates</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>picard MarkDuplicates TMP_DIR={resources.tmpdir} {params} INPUT={input} \
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>\# use the TMPDIR if set, and not given in the config
+if [[ ${{TMPDIR:=F}} == &quot;F&quot; ]] || [[ &quot;{params}&quot; == *TMP_DIR* ]]
+then
+    tmpdir=&quot;&quot;
+else
+    tmpdir=TMP_DIR=$TMPDIR
+fi
+picard MarkDuplicates $tmpdir {params} INPUT={input} \
 OUTPUT={output.bam} METRICS_FILE={output.metrics} &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
@@ -914,6 +936,10 @@ against either “chrM” or “MT”.</p>
 <h2>multiqc_filter_buttons<a class="headerlink" href="#multiqc-filter-buttons" title="Permalink to this headline">¶</a></h2>
 <p>Generate filter buttons.</p>
 </div>
+<div class="section" id="multiqc-header-info">
+<h2>multiqc_header_info<a class="headerlink" href="#multiqc-header-info" title="Permalink to this headline">¶</a></h2>
+<p>Generate a multiqc header file with contact info and date of multiqc generation.</p>
+</div>
 <div class="section" id="multiqc-samplesconfig">
 <h2>multiqc_samplesconfig<a class="headerlink" href="#multiqc-samplesconfig" title="Permalink to this headline">¶</a></h2>
 <p>Add a section in the multiqc report that reports the samples.tsv and config.yaml</p>
@@ -964,7 +990,7 @@ bedToBigBed -type={params.type} -as={params.schema} {output.tmp} \
 <div class="section" id="plotcorrelation">
 <h2>plotCorrelation<a class="headerlink" href="#plotcorrelation" title="Permalink to this headline">¶</a></h2>
 <p>Calculate the correlation between bams with deepTools.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>plotCorrelation --corData {input} --plotFile {output} -c {wildcards.method} \
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>plotCorrelation --corData {input.cordata} --plotFile {output} -c {wildcards.method} \
 -p heatmap --plotTitle {params.title} {params.params} &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
@@ -1129,11 +1155,11 @@ sambamba sort --nthreads {threads} {params} /dev/stdin -o {output}  2&gt; {log}
 <h2>samtools_presort<a class="headerlink" href="#samtools-presort" title="Permalink to this headline">¶</a></h2>
 <p>(Pre)sort the result of alignment with the samtools sorter.</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>\# we set this trap to remove temp files when prematurely ending the rule
-trap &quot;rm -f {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam&quot; INT;
-rm -f {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2&gt; {log}
+trap &quot;rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam&quot; INT;
+rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2&gt; {log}
 
 samtools sort -@ {threads} {params.memory} {input} -o {output} \
--T {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp 2&gt; {log}
+-T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2&gt; {log}
 </pre></div>
 </div>
 </div>
@@ -1141,11 +1167,11 @@ samtools sort -@ {threads} {params.memory} {input} -o {output} \
 <h2>samtools_sort<a class="headerlink" href="#samtools-sort" title="Permalink to this headline">¶</a></h2>
 <p>Sort the result of shiftsieving with the samtools sorter.</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>\# we set this trap to remove temp files when prematurely ending the rule
-trap &quot;rm -f {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam&quot; INT;
-rm -f {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2&gt; {log}
+trap &quot;rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam&quot; INT;
+rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2&gt; {log}
 
 samtools sort {params.sort_order} -@ {threads} {params.memory} {input} -o {output} \
--T {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp 2&gt; {log}
+-T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2&gt; {log}
 </pre></div>
 </div>
 </div>
@@ -1392,6 +1418,10 @@ mv $report {output.qc}
 <div class="section" id="twobit">
 <h2>twobit<a class="headerlink" href="#twobit" title="Permalink to this headline">¶</a></h2>
 <p>Generate a 2bit file for each assembly</p>
+</div>
+<div class="section" id="upset-plot-peaks">
+<h2>upset_plot_peaks<a class="headerlink" href="#upset-plot-peaks" title="Permalink to this headline">¶</a></h2>
+<p>make an upset plot which shows the distribution of peaks amongst the biological replicates.</p>
 </div>
 </div>
 

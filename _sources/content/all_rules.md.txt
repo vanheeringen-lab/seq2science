@@ -141,7 +141,7 @@ Genrich -P -f {input.log} -o {output.narrowpeak} {params} -v > {log} 2>&1
 
 #### chipseeker
 
-Generate a multiqc header file with contact info and date of multiqc generation.
+Make chipseeker plots, with the percentage of peaks in e.g. promoters.
 
 #### citeseqcount
 
@@ -370,9 +370,20 @@ cp {input} {output}
 
 Automated adapter detection, adapter trimming, and quality trimming through fastp (paired-end).
 
+```
+fastp -w {params.threads} --in1 {input[0]} --in2 {input[1]} \
+--out1 {output.r1} --out2 {output.r2} -h {output.qc_html} -j {output.qc_json} \
+{params.config} > {log} 2>&1
+```
+
 #### fastp_SE
 
 Automated adapter detection, adapter trimming, and quality trimming through fastp (single-end).
+
+```
+fastp -w {params.threads} --in1 {input} --out1 {output.se} -h {output.qc_html} -j {output.qc_json} \
+{params.config} > {log} 2>&1
+```
 
 #### fastp_qc_PE
 
@@ -417,9 +428,13 @@ gzip -c {output.intermediates3[1]} > {output.reads[1]} 2>> {log}
 
 Generate quality control report for fastq files.
 
+```
+fastqc {input} -O {params} > {log} 2>&1
+```
+
 #### featureCounts
 
-Use featureCounts to generate the fraction reads in peaks score 
+Use featureCounts to generate the fraction reads in peaks score
 (frips/assigned reads). See: https://www.biostars.org/p/337872/ and
 https://www.biostars.org/p/228636/
 
@@ -474,14 +489,14 @@ Genrich -X -t $input -f {output.log} {params.control} -k {output.bedgraphish} \
 
 #### get_effective_genome_size
 
-Get the effective genome size for a kmer length. Some tools (e.g. macs2) require
+Get the effective genome size for a kmer length. Macs2 requires
 an estimation of the effective genome size to better estimate how (un)likely it
 is to have a certain number of reads on a position. The actual genome size is
 not the best indication in these cases, since reads in repetitive regions
 (for a certain kmer length) can not possible align on some locations.
 
 ```
-unique-kmers.py {input} -k {wildcards.kmer_size} --quiet 2>&1 | grep -P -o '(?<=\.fa: ).*' > {output} 2> {log}
+unique-kmers.py {input.genome} -k $kmer_size --quiet 2>&1 | grep -P -o '(?<=\.fa: ).*' > {output} 2> {log}
 ```
 
 #### get_genome
@@ -671,7 +686,7 @@ Log1p normalization of a count table.
 #### macs2_callpeak
 
 Call peaks using macs2.
-Macs2 requires a genome size, which we estimate from the amount of unique kmers of the average read length.
+Macs2 requires a genome size, which is estimated from the amount of unique kmers of the average read length.
 
 ```
         GENSIZE=$(cat {input.genome_size})
@@ -713,7 +728,14 @@ cat {output.tmppeaks} | tail -n +2 > {output.peaks}
 Mark all duplicate reads in a bam file with picard MarkDuplicates
 
 ```
-picard MarkDuplicates TMP_DIR={resources.tmpdir} {params} INPUT={input} \
+\# use the TMPDIR if set, and not given in the config
+if [[ ${{TMPDIR:=F}} == "F" ]] || [[ "{params}" == *TMP_DIR* ]]
+then
+    tmpdir=""
+else
+    tmpdir=TMP_DIR=$TMPDIR
+fi
+picard MarkDuplicates $tmpdir {params} INPUT={input} \
 OUTPUT={output.bam} METRICS_FILE={output.metrics} > {log} 2>&1
 ```
 
@@ -791,6 +813,10 @@ Generate rename buttons for the multiqc report.
 
 Generate filter buttons.
 
+#### multiqc_header_info
+
+Generate a multiqc header file with contact info and date of multiqc generation.
+
 #### multiqc_samplesconfig
 
 Add a section in the multiqc report that reports the samples.tsv and config.yaml
@@ -847,7 +873,7 @@ bedToBigBed -type={params.type} -as={params.schema} {output.tmp} \
 Calculate the correlation between bams with deepTools.
 
 ```
-plotCorrelation --corData {input} --plotFile {output} -c {wildcards.method} \
+plotCorrelation --corData {input.cordata} --plotFile {output} -c {wildcards.method} \
 -p heatmap --plotTitle {params.title} {params.params} > {log} 2>&1
 ```
 
@@ -1032,11 +1058,11 @@ samtools index {input} {output} > {log} 2>&1
 
 ```
 \# we set this trap to remove temp files when prematurely ending the rule
-trap "rm -f {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
-rm -f {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2> {log}
+trap "rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
+rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2> {log}
 
 samtools sort -@ {threads} {params.memory} {input} -o {output} \
--T {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
+-T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
 ```
 
 #### samtools_sort
@@ -1045,11 +1071,11 @@ Sort the result of shiftsieving with the samtools sorter.
 
 ```
 \# we set this trap to remove temp files when prematurely ending the rule
-trap "rm -f {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
-rm -f {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2> {log}
+trap "rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
+rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2> {log}
 
 samtools sort {params.sort_order} -@ {threads} {params.memory} {input} -o {output} \
--T {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
+-T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
 ```
 
 #### samtools_stats
@@ -1303,4 +1329,8 @@ mv $report {output.qc}
 #### twobit
 
 Generate a 2bit file for each assembly
+
+#### upset_plot_peaks
+
+make an upset plot which shows the distribution of peaks amongst the biological replicates.
 

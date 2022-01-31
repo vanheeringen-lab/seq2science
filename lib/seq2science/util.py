@@ -61,6 +61,48 @@ def _sample_to_idxs(df: pd.DataFrame, sample: str) -> List[int]:
     return idxs
 
 
+def parse_samples(samples: pd.DataFrame, config: dict) -> pd.DataFrame:
+    """
+    for each functional column, if found in samples.tsv:
+    1) if it is incomplete, fill the blanks with replicate/sample names
+       (sample names if replicates are not found/applicable)
+    2) drop column if it provides no information
+       (renamed in case it's used in a DE contrast)
+    """
+    if "technical_replicates" in samples:
+        samples["technical_replicates"] = samples["technical_replicates"].mask(pd.isnull, samples["sample"])
+        if (
+                len(samples["technical_replicates"].unique()) == len(samples["sample"].unique())
+                or config.get("technical_replicates") == "keep"
+        ):
+            samples.rename(columns={"technical_replicates": "_trep"}, inplace=True)
+    col = "technical_replicates" if "technical_replicates" in samples else "sample"
+    if "biological_replicates" in samples:
+        samples["biological_replicates"] = samples["biological_replicates"].mask(pd.isnull, samples[col])
+        if (
+                len(samples["biological_replicates"].unique()) == len(samples[col].unique())
+                or config.get("biological_replicates") == "keep"
+        ):
+            samples.rename(columns={"biological_replicates": "_brep"}, inplace=True)
+    if "descriptive_name" in samples:
+        samples["descriptive_name"] = samples["descriptive_name"].mask(pd.isnull, samples[col])
+        if samples["descriptive_name"].to_list() == samples[col].to_list():
+            samples.rename(columns={"descriptive_name": "_dname"}, inplace=True)
+    if "strandedness" in samples:
+        samples["strandedness"] = samples["strandedness"].mask(pd.isnull, "nan")
+        if config.get("ignore_strandedness", True) or not any(
+                [field in list(samples["strandedness"]) for field in ["yes", "forward", "reverse", "no"]]
+        ):
+            samples = samples.drop(columns=["strandedness"])
+    if "colors" in samples:
+        if config.get("create_trackhub", False):
+            samples["colors"] = samples["colors"].mask(pd.isnull, "0,0,0")  # nan -> black
+            samples["colors"] = [color_parser(c) for c in samples["colors"]]  # convert input to HSV color
+        else:
+            samples = samples.drop(columns=["colors"])
+    return samples
+
+
 def samples2metadata_local(samples: List[str], config: dict, logger) -> dict:
     """
     (try to) get the metadata of local samples
@@ -243,6 +285,7 @@ def sieve_bam(configdict):
         or configdict.get("remove_blacklist", False)
         or configdict.get("filter_on_size", False)
         or configdict.get("remove_mito", False)
+        or configdict.get("supsample", -1) > 0
     )
 
 
@@ -307,16 +350,17 @@ def parse_contrast(contrast, samples, check=True):
     return batch, column, target, reference
 
 
-def expand_contrasts(samples, config):
+def expand_contrasts(samples: pd.DataFrame, contrasts: list or str) -> list:
     """
     splits contrasts that contain multiple comparisons
     """
-    old_contrasts = config.get("contrasts", [])
-    if isinstance(old_contrasts, str):
-        old_contrasts = [old_contrasts]
+    if contrasts is None:
+        return []
+    if isinstance(contrasts, str):
+        contrasts = [contrasts]
 
     new_contrasts = []
-    for contrast in old_contrasts:
+    for contrast in contrasts:
         batch, column, target, reference = parse_contrast(contrast, samples, check=False)
 
         if target == "all":
@@ -336,6 +380,36 @@ def expand_contrasts(samples, config):
     # get unique elements
     new_contrasts = list(set(new_contrasts))
     return new_contrasts
+
+
+def get_contrasts(samples: pd.DataFrame, config: dict, all_assemblies: list) -> list:
+    """
+    list all diffexp.tsv files we expect
+    """
+    contrasts = expand_contrasts(samples, config.get("contrasts"))
+    all_contrasts = list()
+    for de_contrast in contrasts:
+        # parse groups
+        target, reference = de_contrast.split("_")[-2:]
+        column = de_contrast[: de_contrast.find(f"_{target}_{reference}")]
+
+        # parse column
+        if "+" in column:
+            column = column.split("+")[1]
+
+        if column not in samples:
+            backup_columns = {
+                "technical_replicates": "_trep",  # is trep technically possible? You need multiple reps right?
+                "biological_replicates": "_brep",
+                "descriptive_name": "_dname",
+            }
+            column = backup_columns[column]
+
+        for assembly in all_assemblies:
+            groups = set(samples[samples.assembly == assembly][column].to_list())
+            if target in groups and reference in groups:
+                all_contrasts.append(f"{config['deseq2_dir']}/{assembly}-{de_contrast}.diffexp.tsv")
+    return all_contrasts
 
 
 def url_is_alive(url):

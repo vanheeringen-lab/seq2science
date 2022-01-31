@@ -4,42 +4,6 @@ all rules/logic
 
 import sys
 
-from seq2science.util import expand_contrasts
-
-
-def get_contrasts():
-    """
-    list all diffexp.tsv files we expect
-    """
-    if not config.get("contrasts"):
-        return []
-
-    contrasts = expand_contrasts(samples, config)
-    all_contrasts = list()
-
-    for de_contrast in contrasts:
-        # parse groups
-        target, reference = de_contrast.split("_")[-2:]
-        column = de_contrast[: de_contrast.find(f"_{target}_{reference}")]
-
-        # parse column
-        if "+" in column:
-            column = column.split("+")[1]
-
-        if column not in samples:
-            backup_columns = {
-                "technical_replicates": "_trep",  # is trep technically possible? You need multiple reps right?
-                "biological_replicates": "_brep",
-                "descriptive_name": "_dname",
-            }
-            column = backup_columns[column]
-
-        for assembly in all_assemblies:
-            groups = set(samples[samples.assembly == assembly][column].to_list())
-            if target in groups and reference in groups:
-                all_contrasts.append(f"{config['deseq2_dir']}/{assembly}-{de_contrast}.diffexp.tsv")
-    return all_contrasts
-
 
 """
 Current issue with R:

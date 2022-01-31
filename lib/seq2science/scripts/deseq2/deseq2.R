@@ -37,9 +37,10 @@ coldata[,"batch"]     <- if (!is.na(batch)) { coldata[batch] } else { NA }
 coldata <- coldata[c("condition", "batch")]
 
 # determine if we need to run batch correction on the whole assembly
-output_batch_corr_counts <- sub(paste0(contrast, ".diffexp.tsv"), paste0(batch, "+", condition, ".batch_corr_counts.tsv"), output, fixed=TRUE)
-output_batch_corr_tpm <- sub(paste0(contrast, ".diffexp.tsv"), paste0(batch, "+", condition, ".batch_corr_tpm.tsv"), output, fixed=TRUE)
-no_batch_correction_required <- is.na(batch) | (file.exists(output_batch_corr_counts) & (!salmon | file.exists(output_batch_corr_tpm)))
+output_batch_corr_counts <- sub(paste0(contrast, ".diffexp.tsv"), paste0(batch, ".batch_corr_counts.tsv"), output, fixed=TRUE)
+output_batch_corr_pca    <- sub(paste0(contrast, ".diffexp.tsv"), paste0(batch, ".batch_corr_pca.png"), output, fixed=TRUE)
+output_batch_corr_tpm    <- sub(paste0(contrast, ".diffexp.tsv"), paste0(batch, ".batch_corr_tpm.tsv"), output, fixed=TRUE)
+no_batch_correction_required <- is.na(batch) | (file.exists(output_batch_corr_counts) & file.exists(output_batch_corr_pca) & (!salmon | file.exists(output_batch_corr_tpm)))
 
 # filter out unused conditions & order data for DESeq
 if (no_batch_correction_required) {
@@ -48,6 +49,10 @@ if (no_batch_correction_required) {
   cat('\nbatch correction dataset selected\n\n')
   # for batch corrected counts we want all samples marked in the batch column
   coldata <- coldata[!is.na(coldata$batch),]
+  if (any(is.na(coldata$condition))) {
+    cat('Error: all samples marked for batch correction (in column "', batch,'") must have a condition (in column "', condition,'").')
+    quit(save = "no" , status = 1)
+  }
 }
 coldata$condition <- factor(coldata$condition)
 coldata$condition <- relevel(coldata$condition, ref = groups[2])
@@ -56,8 +61,7 @@ coldata$batch     <- factor(coldata$batch)
 
 ## filter counts to speed up DESeq
 counts <- read.table(counts_file, row.names = 1, header = T, stringsAsFactors = F, sep = '\t', check.names = F)
-reduced_counts <- counts[rowSums(counts) > 0, colnames(counts) %in% rownames(coldata)]
-
+reduced_counts <- counts[rowSums(counts) > 0, rownames(coldata)]
 
 ## DESeq2
 design <- if (!is.na(batch)){~ batch + condition} else {~ condition}
@@ -118,11 +122,12 @@ cat('-MA plot saved\n')
 
 
 png(output_vol_plot, width = 250, height = 250, units='mm', res = 300)
-EnhancedVolcano::EnhancedVolcano(resLFC,
-    lab = rownames(resLFC),
-    x = 'log2FoldChange',
-    y = 'pvalue',
-    title = title,
+EnhancedVolcano::EnhancedVolcano(
+  resLFC,
+  lab = rownames(resLFC),
+  x = 'log2FoldChange',
+  y = 'pvalue',
+  title = title
 )
 
 invisible(dev.off())
@@ -143,9 +148,38 @@ if (is.na(batch)) {
   # generate a PCA plots before and after batch correction
 
   blind_vst <- varianceStabilizingTransformation(dds, blind = TRUE)
-  g1 <- DESeq2::plotPCA(blind_vst, intgroup=c("condition", "batch"))
-
   batchcorr_vst <- batch_corrected_vst(dds)
+
+  if (!file.exists(output_batch_corr_pca)) {
+    g1 <- DESeq2::plotPCA(blind_vst, intgroup=c("condition", "batch"))
+    g2 <- DESeq2::plotPCA(batchcorr_vst, intgroup=c("condition", "batch"))
+
+    # prevent plot() from generating Rplot.pdf in the working directory
+    pdf(NULL)
+
+    # color by batch/condition. up to 6 shapes can be displayed too.
+    condition_aes <- if (length(levels(blind_vst$batch)) < 7) {aes(color=condition, shape=batch)} else {aes(color=condition)}
+    batch_aes <- if (length(levels(blind_vst$condition)) < 7) {aes(color=batch, shape=condition)} else {aes(color=batch)}
+
+    plot1 <- plot(g1 + ggtitle("blind PCA - color by condition") + condition_aes + theme(legend.position="bottom"))
+    plot2 <- plot(g1 + ggtitle("blind PCA - color by batch") + batch_aes + theme(legend.position="bottom"))
+
+    plot3 <- plot(g2 + ggtitle("batch corrected PCA - color by condition") + condition_aes + theme(legend.position="bottom"))
+    plot4 <- plot(g2 + ggtitle("batch corrected PCA - color by batch") + batch_aes + theme(legend.position="bottom"))
+
+    png(output_batch_corr_pca, width = 465, height = 225, units='mm', res = 300)
+    gridExtra::grid.arrange(plot1, plot2, plot3, plot4, ncol=2, nrow=2)
+    invisible(dev.off())
+    cat('-batch corrected PCA plots saved\n')
+  } else {
+    cat('-batch corrected PCA plots already exists\n')
+  }
+
+  # subset batch corrected data to contrast samples
+  blind_vst <- blind_vst[,rownames(coldata)[coldata$condition %in% c(groups[1], groups[2])]]
+  batchcorr_vst <- batchcorr_vst[,rownames(coldata)[coldata$condition %in% c(groups[1], groups[2])]]
+
+  g1 <- DESeq2::plotPCA(blind_vst, intgroup=c("condition", "batch"))
   g2 <- DESeq2::plotPCA(batchcorr_vst, intgroup=c("condition", "batch"))
 
   # prevent plot() from generating Rplot.pdf in the working directory
@@ -153,7 +187,7 @@ if (is.na(batch)) {
 
   # color by batch/condition. up to 6 shapes can be displayed too.
   condition_aes <- if (length(levels(blind_vst$batch)) < 7) {aes(color=condition, shape=batch)} else {aes(color=condition)}
-  batch_aes <- if (length(levels(blind_vst$condition)) < 7) {aes(color=batch, shape=condition)} else {aes(color=batch)}
+  batch_aes <- aes(color=batch, shape=condition)
 
   plot1 <- plot(g1 + ggtitle("blind PCA - color by condition") + condition_aes + theme(legend.position="bottom"))
   plot2 <- plot(g1 + ggtitle("blind PCA - color by batch") + batch_aes + theme(legend.position="bottom"))
