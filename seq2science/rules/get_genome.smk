@@ -23,6 +23,7 @@ rule get_genome:
         explain_rule("get_genome")
     params:
         providers=providers,
+        provider=config.get("provider"),
         genome_dir=config["genome_dir"],
     resources:
         parallel_downloads=1,
@@ -70,6 +71,7 @@ rule get_genome_annotation:
         genomepy_downloads=1,
     params:
         providers=providers,
+        provider=config.get("provider"),
         genome_dir=config["genome_dir"],
     priority: 1
     script:

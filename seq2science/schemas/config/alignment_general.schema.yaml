@@ -55,8 +55,8 @@ properties:
 
   # genomepy
   provider:
-    description: Specify provider to download new genomes from. Will try Ensembl > UCSC > NCBI if left blank.
-    enum: [Ensembl, UCSC, NCBI]
+    description: Specify provider to download new genomes from. Will try GENCODE > Ensembl > UCSC > NCBI if left blank.
+    enum: [GENCODE, Ensembl, UCSC, NCBI]
     type: string
 
   # aligner
