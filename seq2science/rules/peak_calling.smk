@@ -180,7 +180,7 @@ rule get_effective_genome_size:
         # extract the kmer size, and get the effective genome size from it
         get_macs2_kmer +
         """
-        unique-kmers.py {input.genome_size} -k $kmer_size --quiet 2>&1 | grep -P -o '(?<=\.fa: ).*' > {output} 2> {log}
+        unique-kmers.py {input.genome} -k $kmer_size --quiet 2>&1 | grep -P -o '(?<=\.fa: ).*' > {output} 2> {log}
         """
 
 
@@ -226,7 +226,7 @@ rule macs2_callpeak:
         "../envs/macs2.yaml"
     shell:
         """
-        GENSIZE=$(cat {input.genome_size)
+        GENSIZE=$(cat {input.genome_size})
 
         # call peaks
         macs2 callpeak --bdg -t {input.bam} {params.control} --outdir {config[result_dir]}/macs2/ -n {wildcards.assembly}-{wildcards.sample} \
