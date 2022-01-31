@@ -694,7 +694,7 @@ class PickleDict(dict):
         Check the genomepy database for a provider stat serves both genome and annotation for an assembly.
         If impossible, settle with the first provider that serves the genome.
         """
-        logger.info("Determining assembly providers")
+        logger.info("Determining assembly providers, this can take some time.")
         for assembly in search_assemblies:
             if assembly not in self:
                 self[assembly] = {"genome": None, "annotation": None}
