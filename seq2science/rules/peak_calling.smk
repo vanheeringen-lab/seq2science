@@ -155,15 +155,44 @@ elif config["trimmer"] == "fastp":
     get_macs2_kmer = "kmer_size=$(jq -r .summary.after_filtering.read1_mean_length {input.fastq_qc})"
 
 
+rule get_effective_genome_size:
+    """
+    Get the effective genome size for a kmer length. Macs2 requires
+    an estimation of the effective genome size to better estimate how (un)likely it
+    is to have a certain number of reads on a position. The actual genome size is
+    not the best indication in these cases, since reads in repetitive regions
+    (for a certain kmer length) can not possible align on some locations.
+    """
+    input:
+        genome=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+        fastq_qc=get_fastq_qc_file,
+    output:
+        expand("{result_dir}/macs2/{{assembly}}-{{sample}}.genome_size", **config),
+    message:
+        explain_rule("get_effective_genome_size")
+    conda:
+        "../envs/khmer.yaml"
+    log:
+        expand("{log_dir}/get_genome_size/{{assembly}}_{{sample}}.log", **config),
+    benchmark:
+        expand("{benchmark_dir}/get_genome_size/{{assembly}}_{{sample}}.benchmark.txt", **config)[0]
+    shell:
+        # extract the kmer size, and get the effective genome size from it
+        get_macs2_kmer +
+        """
+        unique-kmers.py {input.genome_size} -k $kmer_size --quiet 2>&1 | grep -P -o '(?<=\.fa: ).*' > {output} 2> {log}
+        """
+
+
 rule macs2_callpeak:
     """
     Call peaks using macs2.
-    Macs2 requires a genome size, which we estimate from the amount of unique kmers of the average read length.
+    Macs2 requires a genome size, which is estimated from the amount of unique kmers of the average read length.
     """
     input:
         unpack(get_control_macs),
         bam=get_macs2_bam,
-        fastq_qc=get_fastq_qc_file,
+        genome_size=rules.get_effective_genome_size.output,
     output:
         expand("{result_dir}/macs2/{{assembly}}-{{sample}}_{macs2_types}", **config),
     log:
@@ -196,12 +225,8 @@ rule macs2_callpeak:
     conda:
         "../envs/macs2.yaml"
     shell:
-        # extract the kmer size, and get the effective genome size from it
-        get_macs2_kmer +
         """
-        echo "preparing to run unique-kmers.py with -k $kmer_size" >> {log}
-        GENSIZE=$(unique-kmers.py {params.genome} -k $kmer_size --quiet 2>&1 | grep -P -o '(?<=\.fa: ).*')
-        echo "kmer size: $kmer_size, and effective genome size: $GENSIZE" >> {log}
+        GENSIZE=$(cat {input.genome_size)
 
         # call peaks
         macs2 callpeak --bdg -t {input.bam} {params.control} --outdir {config[result_dir]}/macs2/ -n {wildcards.assembly}-{wildcards.sample} \
