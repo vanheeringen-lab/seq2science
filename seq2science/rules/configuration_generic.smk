@@ -20,6 +20,8 @@ from filelock import FileLock
 from pandas_schema import Column, Schema
 from pandas_schema.validation import MatchesPatternValidation, IsDistinctValidation
 
+import snakemake
+from snakemake.exceptions import WorkflowError
 from snakemake.logging import logger
 from snakemake.utils import validate, min_version
 
@@ -205,7 +207,9 @@ samples.index = samples.index.map(str)
 
 
 def get_workflow():
-    return workflow.main_snakefile.split("/")[-2]
+    # snakemake 6+ uses main_snakefile
+    # return workflow.main_snakefile.split("/")[-2]
+    return workflow.snakefile.split("/")[-2]
 
 
 sequencing_protocol = (
@@ -474,8 +478,10 @@ wildcard_constraints:
 
 
 # make sure the snakemake version corresponds to version in environment
-min_version("6.12.3")
-
+if snakemake.__version__ != "5.18.1":
+    raise WorkflowError(
+        f"Expecting Snakemake version 5.18.1 (you are currently using {snakemake.__version__}"
+    )
 
 # record which assembly trackhubs are found on UCSC
 if config.get("create_trackhub"):
