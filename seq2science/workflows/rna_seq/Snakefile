@@ -36,4 +36,4 @@ rule seq2science:
              (["{counts_dir}/{assemblies}-counts.tsv"]) +
              (["{counts_dir}/{assemblies}-DEXSeq_counts.tsv"] if config['dexseq'] else []) +
              (["{genome_dir}/{assemblies}/gene_id2name.tsv"]), assemblies=all_assemblies, **config) +
-         get_contrasts()
+         DE_contrasts

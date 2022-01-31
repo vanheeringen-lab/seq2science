@@ -23,6 +23,7 @@ rule get_genome:
         explain_rule("get_genome")
     params:
         providers=providers,
+        provider=config.get("provider"),
         genome_dir=config["genome_dir"],
     resources:
         parallel_downloads=1,
@@ -70,6 +71,7 @@ rule get_genome_annotation:
         genomepy_downloads=1,
     params:
         providers=providers,
+        provider=config.get("provider"),
         genome_dir=config["genome_dir"],
     priority: 1
     script:
@@ -182,29 +184,3 @@ rule gene_id2name:
         expand("{genome_dir}/{{assembly}}/gene_id2name.tsv", **config),
     script:
         f"{config['rule_dir']}/../scripts/gene_id2name.py"
-
-
-rule get_effective_genome_size:
-    """
-    Get the effective genome size for a kmer length. Some tools (e.g. macs2) require
-    an estimation of the effective genome size to better estimate how (un)likely it
-    is to have a certain number of reads on a position. The actual genome size is
-    not the best indication in these cases, since reads in repetitive regions
-    (for a certain kmer length) can not possible align on some locations.
-    """
-    input:
-        expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
-    output:
-        expand("{genome_dir}/{{assembly}}/genome_sizes/kmer_{{kmer_size}}.genome_size", **config),
-    message:
-        explain_rule("get_effective_genome_size")
-    conda:
-        "../envs/khmer.yaml"
-    log:
-        expand("{log_dir}/get_genome_size/{{assembly}}_{{kmer_size}}.log", **config),
-    benchmark:
-        expand("{benchmark_dir}/get_genome_size/{{assembly}}_{{kmer_size}}.benchmark.txt", **config)[0]
-    shell:
-        """
-        unique-kmers.py {input} -k {wildcards.kmer_size} --quiet 2>&1 | grep -P -o '(?<=\.fa: ).*' > {output} 2> {log}
-        """

@@ -15,6 +15,7 @@ include: f"{config['rule_dir']}/merge_replicates.smk"
 include: f"{config['rule_dir']}/peak_counts.smk"
 include: f"{config['rule_dir']}/peak_calling.smk"
 include: f"{config['rule_dir']}/qc.smk"
+include: f"{config['rule_dir']}/qc_peaks.smk"
 include: f"{config['rule_dir']}/trackhub.smk"
 include: f"{config['rule_dir']}/trimming.smk"
 
@@ -32,5 +33,5 @@ rule seq2science:
             (["{trackhub_dir}"]                     if config['create_trackhub'] else []) +
             (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []),
             assemblies=all_assemblies, **config) +
-         count_table_output() + get_contrasts()
+         count_table_output() + DE_contrasts
 

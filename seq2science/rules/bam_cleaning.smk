@@ -105,7 +105,14 @@ rule mark_duplicates:
         sample=f"""({any_given("sample", "technical_replicates", "control")})(_allsizes)?""",
     shell:
         """
-        picard MarkDuplicates TMP_DIR={resources.tmpdir} {params} INPUT={input} \
+        # use the TMPDIR if set, and not given in the config
+        if [[ ${{TMPDIR:=F}} == "F" ]] || [[ "{params}" == *TMP_DIR* ]]
+        then
+            tmpdir=""
+        else
+            tmpdir=TMP_DIR=$TMPDIR
+        fi
+        picard MarkDuplicates $tmpdir {params} INPUT={input} \
         OUTPUT={output.bam} METRICS_FILE={output.metrics} > {log} 2>&1
         """
 
@@ -196,7 +203,7 @@ rule sieve_bam:
             else ""
         ),
         subsample=(
-            lambda wildcards, input, output: f""" cat > {output.subsample}; nreads=$(samtools view -c {output.subsample}); \             if [ $nreads -gt {config['subsample']} ]; then samtools view -h -s $(echo $nreads | awk '{{print {config['subsample']}/$1}}') {output.subsample}; else samtools view -h {output.subsample}; fi | \             """
+            lambda wildcards, input, output: f""" cat > {output.subsample}; nreads=$(samtools view -c {output.subsample}); if [ $nreads -gt {config['subsample']} ]; then samtools view -h -s $(echo $nreads | awk '{{print {config['subsample']}/$1}}') {output.subsample}; else samtools view -h {output.subsample}; fi | """
             if config["subsample"] > -1
             else ""
         ),
@@ -280,6 +287,7 @@ rule samtools_sort:
         expand("{benchmark_dir}/samtools_sort/{{assembly}}-{{sample}}-{{sorting}}.benchmark.txt", **config)[0]
     params:
         sort_order=lambda wildcards: "-n" if wildcards.sorting == "queryname" else "",
+        out_dir=f"{config['result_dir']}/{config['aligner']}",
         memory=lambda wildcards, input, output, threads: f"-m {int(1000 * round(config['bam_sort_mem']/threads, 3))}M",
     wildcard_constraints:
         sample=f"""({any_given("sample", "technical_replicates", "control")})(_allsizes)?""",
@@ -291,11 +299,11 @@ rule samtools_sort:
     shell:
         """
         # we set this trap to remove temp files when prematurely ending the rule
-        trap "rm -f {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
-        rm -f {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2> {log}
+        trap "rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
+        rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2> {log}
 
         samtools sort {params.sort_order} -@ {threads} {params.memory} {input} -o {output} \
-        -T {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
+        -T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
         """
 
 
