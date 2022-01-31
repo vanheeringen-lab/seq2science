@@ -273,8 +273,8 @@ if [ $1 = "deseq2science" ]; then
 
   # very basic test: check if all output files are generated
   fcount=$(ls -1q $outdir | wc -l)
-  if [[ ${fcount} -ne  "5" ]]; then
-    printf "\nmissing deseq2science output (5 files expected, found ${fcount})\n";
+  if [[ ${fcount} -ne  "6" ]]; then
+    printf "\nmissing deseq2science output (6 files expected, found ${fcount})\n";
     exit 1
   fi
 
