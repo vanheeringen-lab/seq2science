@@ -316,8 +316,7 @@ else:
 
 # check if a sample is single-end or paired end, and store it
 if not config.get("no_config_log"):
-    logger.info("Checking if samples are available online...")
-    logger.info("This can take some time.")
+    logger.info("Checking if samples are available online... This can take some time.")
 
 # make a collection of all samples
 all_samples = [sample for sample in samples.index]
