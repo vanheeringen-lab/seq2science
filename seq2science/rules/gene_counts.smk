@@ -2,20 +2,20 @@
 all rules/logic related to making gene count tables should be here.
 """
 
-if config["quantifier"] == "salmon":
+def get_salmon_index(wildcards):
+    index = f"{{genome_dir}}/{wildcards.assembly}/index/{{quantifier}}"
+    if config.get("decoy_aware_index"):
+        index += "_decoy_aware"
+    return expand(index, **config)
 
-    def get_counts(wildcards):
-        quant_dirs = []
-        if config["quantifier"] in ["salmon", "star"]:
-            for sample in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index:
-                quant_dirs.append(f"{{result_dir}}/{{quantifier}}/{wildcards.assembly}-{sample}")
-        return expand(quant_dirs, **config)
+def get_counts(wildcards):
+    quant_dirs = []
+    for sample in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index:
+        quant_dirs.append(f"{{result_dir}}/{{quantifier}}/{wildcards.assembly}-{sample}")
+    return expand(quant_dirs, **config)
 
-    def get_salmon_index(wildcards):
-        index = f"{{genome_dir}}/{wildcards.assembly}/index/{{quantifier}}"
-        if config["decoy_aware_index"]:
-            index += "_decoy_aware"
-        return expand(index, **config)
+
+if config["quantifier"] == "salmon" and config["tpm2counts"] == "tximeta":
 
     rule linked_txome:
         """
@@ -47,10 +47,10 @@ if config["quantifier"] == "salmon":
 
     rule count_matrix:
         """
-        Convert transcript abundance estimations to gene count estimations and merge 
+        Convert transcript abundance estimations to gene count estimations and merge
         gene counts per assembly.
 
-        Also outputs a single cell experiment object similar to ARMOR 
+        Also outputs a single cell experiment object similar to ARMOR
         (https://github.com/csoneson/ARMOR).
 
         Only works with Ensembl assemblies.
@@ -74,6 +74,78 @@ if config["quantifier"] == "salmon":
         script:
             f"{config['rule_dir']}/../scripts/quant_to_counts.R"
 
+
+elif config["quantifier"] == "salmon" and config["tpm2counts"] == "pytxi":
+
+    # def get_taxid(wildcards) -> int or None:
+    #     """reads the taxonomy ID from a genomepy README.txt"""
+    #     readme = os.path.join(config["genome_dir"], wildcards.assembly, "README.txt")
+    #     # returns "na" if no README.txt was found/parsed
+    #     metadata = genomepy.files.read_readme(readme)[0]
+    #     taxonomy = metadata["tax_id"]
+    #     if taxonomy == "na":
+    #         return None
+    #     return int(taxonomy)
+    #
+    # rule count_matrix:
+    #     """
+    #     Convert transcript abundance estimations to gene count estimations and merge
+    #     gene counts per assembly.
+    #
+    #     Only works with genomepy assemblies (requires a README.txt with taxid).
+    #     """
+    #     input:
+    #         cts=get_counts,
+    #     output:
+    #         expand("{counts_dir}/{{assembly}}-counts.tsv", **config),
+    #     conda:
+    #         "../envs/pytxi.yaml"
+    #     params:
+    #         reps=lambda wildcards, input: input,  # help resolve changes in input files
+    #         input=lambda wildcards: [f"{d}/quant.sf" for d in get_counts(wildcards)],
+    #         outdir=lambda wildcards: f"{config['counts_dir']}/{wildcards.assembly}",
+    #         taxid=lambda wildcards: get_taxid(wildcards),
+    #     log:
+    #         expand("{log_dir}/counts_matrix/{{assembly}}-counts_matrix.log", **config),
+    #     shell:
+    #         """
+    #         echo "full command:\npytxi {params.input} {params.outdir} -s {params.taxid}\n" > {log}
+    #
+    #         pytxi {params.input} {params.outdir} -s {params.taxid} >> {log} 2>&1
+    #
+    #         mv {params.outdir}/abundance.tsv {params.outdir}/../{wildcards.assembly}-abundance.tsv
+    #         mv {params.outdir}/counts.tsv    {params.outdir}/../{wildcards.assembly}-counts.tsv
+    #         mv {params.outdir}/length.tsv    {params.outdir}/../{wildcards.assembly}-length.tsv
+    #         rm -d {params.outdir}
+    #         """
+    def get_names(wildcards):
+        """get descriptive names of each sample/replicate, if given"""
+        names = []
+        for sample in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index:
+            names.append(rep_to_descriptive(sample))
+        return names
+
+    rule count_matrix:
+        """
+        Convert transcript abundance estimations to gene count estimations and merge 
+        gene counts per assembly.
+
+        Only works with genomepy assemblies (requires a README.txt with taxid).
+        """
+        input:
+            cts=get_counts,
+            fa=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+        output:
+            expand("{counts_dir}/{{assembly}}-counts.tsv",**config),
+        conda:
+            "../envs/pytxi.yaml"
+        params:
+            reps=lambda wildcards, input: input,# help resolve changes in input files
+            names=lambda wildcards: get_names(wildcards),
+        log:
+            expand("{log_dir}/counts_matrix/{{assembly}}-counts_matrix.log",**config),
+        script:
+            f"{config['rule_dir']}/../scripts/pytxi.py"
 
 else:
 

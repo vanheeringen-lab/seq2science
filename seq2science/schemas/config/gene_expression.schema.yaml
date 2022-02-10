@@ -34,6 +34,11 @@ properties:
       htseq:
         htseq_flags: ''
 
+  tpm2counts:
+    description: method to convert TPMs to gene counts?
+    options: tximeta, pytxi
+    default: pytxi
+
   tximeta:
     description: tximeta is used to convert salmon output to gene counts. If you are using an assembly from Ensembl or GENCODE, you can refine the output by specifying these fields.
     properties:

@@ -1,0 +1,10 @@
+name: pytxi
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - genomepy=0.11.1
+  - pip
+  - pip:
+    - git+https://github.com/vanheeringen-lab/pytxi.git@develop

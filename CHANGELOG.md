@@ -8,6 +8,15 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+## Added
+
+- TPM to gene counts conversion with pytxi
+- config option `tpm2counts` to chose which TPM to counts converter to use
+
+## Changed
+
+- pytxi is now the default TPM to counts converter (over tximeta)
+
 ## [0.7.1] - 2022-02-10
 
 ### Fixed
