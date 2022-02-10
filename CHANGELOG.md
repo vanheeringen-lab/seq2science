@@ -8,11 +8,13 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+## [0.7.1] - 2022-02-10
+
 ### Fixed
 
 - issue with broad peaks and upsetplots
 
-## [0.7.0]
+## [0.7.0] - 2022-02-02
 
 Biggest change is that we revert back to snakemake 5.18 since higher versioned snakemake's cause instability.
 
