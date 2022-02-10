@@ -1036,7 +1036,7 @@ def get_peak_calling_qc(sample, wildcards):
             )
         )
     # upset plot
-    if len(breps[breps["assembly"] == ori_assembly(wildcards.assembly)].index) > 1:
+    if narrowpeak_used and len(breps[breps["assembly"] == ori_assembly(wildcards.assembly)].index) > 1:
         output.extend(
             expand(
                 "{qc_dir}/upset/{{assembly}}-{peak_caller}_upset_mqc.jpg",

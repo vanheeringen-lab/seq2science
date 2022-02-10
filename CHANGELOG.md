@@ -8,11 +8,15 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Fixed
+
+- issue with broad peaks and upsetplots
+
 ## [0.7.0]
 
 Biggest change is that we revert back to snakemake 5.18 since higher versioned snakemake's cause instability.
 
-# Added
+### Added
 
 - upset plot as QC for peak calling. Should give a first feeling about the distribution of peaks between samples/conditions.
 
