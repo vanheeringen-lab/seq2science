@@ -77,47 +77,6 @@ if config["quantifier"] == "salmon" and config["tpm2counts"] == "tximeta":
 
 elif config["quantifier"] == "salmon" and config["tpm2counts"] == "pytxi":
 
-    # def get_taxid(wildcards) -> int or None:
-    #     """reads the taxonomy ID from a genomepy README.txt"""
-    #     readme = os.path.join(config["genome_dir"], wildcards.assembly, "README.txt")
-    #     # returns "na" if no README.txt was found/parsed
-    #     metadata = genomepy.files.read_readme(readme)[0]
-    #     taxonomy = metadata["tax_id"]
-    #     if taxonomy == "na":
-    #         return None
-    #     return int(taxonomy)
-    #
-    # rule count_matrix:
-    #     """
-    #     Convert transcript abundance estimations to gene count estimations and merge
-    #     gene counts per assembly.
-    #
-    #     Only works with genomepy assemblies (requires a README.txt with taxid).
-    #     """
-    #     input:
-    #         cts=get_counts,
-    #     output:
-    #         expand("{counts_dir}/{{assembly}}-counts.tsv", **config),
-    #     conda:
-    #         "../envs/pytxi.yaml"
-    #     params:
-    #         reps=lambda wildcards, input: input,  # help resolve changes in input files
-    #         input=lambda wildcards: [f"{d}/quant.sf" for d in get_counts(wildcards)],
-    #         outdir=lambda wildcards: f"{config['counts_dir']}/{wildcards.assembly}",
-    #         taxid=lambda wildcards: get_taxid(wildcards),
-    #     log:
-    #         expand("{log_dir}/counts_matrix/{{assembly}}-counts_matrix.log", **config),
-    #     shell:
-    #         """
-    #         echo "full command:\npytxi {params.input} {params.outdir} -s {params.taxid}\n" > {log}
-    #
-    #         pytxi {params.input} {params.outdir} -s {params.taxid} >> {log} 2>&1
-    #
-    #         mv {params.outdir}/abundance.tsv {params.outdir}/../{wildcards.assembly}-abundance.tsv
-    #         mv {params.outdir}/counts.tsv    {params.outdir}/../{wildcards.assembly}-counts.tsv
-    #         mv {params.outdir}/length.tsv    {params.outdir}/../{wildcards.assembly}-length.tsv
-    #         rm -d {params.outdir}
-    #         """
     def get_names(wildcards):
         """get descriptive names of each sample/replicate, if given"""
         names = []
