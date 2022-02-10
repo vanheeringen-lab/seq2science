@@ -222,10 +222,6 @@ if [ $1 = "atac-seq" ]; then
   seq2science run atac-seq -nr --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={create_qc_report:True,trimmer:trimgalore} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 fastqc 4
 
-  printf "\nmultiqc report and broad peaks\n"
-  seq2science run atac-seq -nr --configfile tests/alignment/macs2_broad.yaml --snakemakeOptions quiet=True config={create_qc_report:True} | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 multiqc 1   
-
   printf "\natac-seq template length filter\n"
   seq2science run atac-seq -nr --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={create_qc_report:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 mark_duplicates 1
@@ -247,6 +243,10 @@ if [ $1 = "atac-seq" ]; then
   printf "\nbroad peaks\n"
   seq2science run atac-seq -n --configfile tests/$WF/macs2_broad.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 macs2_callpeak 1
+
+  printf "\nmultiqc report and broad peaks\n"
+  seq2science run atac-seq -nr --configfile tests/$WF/macs2_broad.yaml --snakemakeOptions quiet=True config={create_qc_report:True} | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 multiqc 1   
 
   printf "\nmultiple peak callers\n"
   seq2science run atac-seq -nr --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
