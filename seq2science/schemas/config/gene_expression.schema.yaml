@@ -35,27 +35,37 @@ properties:
         htseq_flags: ''
 
   tpm2counts:
-    description: method to convert TPMs to gene counts?
-    options: tximeta, pytxi
-    default: pytxi
-
-  tximeta:
-    description: tximeta is used to convert salmon output to gene counts. If you are using an assembly from Ensembl or GENCODE, you can refine the output by specifying these fields.
+    description: how do you wish to convert TPMs to gene counts?
     properties:
-      source:
-        description: the source of transcriptome
-        enum: [Ensembl, GENCODE, de-novo]
-        default: de-novo
-      organism:
-        description: organism (e.g. "Homo sapiens")
-        default: tximeta_file
-      release:
-        description: release number of the source database (e.g. "101")
-        default: 42
+      tximeta:
+        description: Tximeta uses Ensembl/GENCODE assemblies to convert TPMs to gene counts, and produces an additional R object with the various contents.
+        properties:
+          source:
+            description: the source of transcriptome
+            enum: [ Ensembl, GENCODE, de-novo ]
+            default: de-novo
+          organism:
+            description: organism (e.g. "Homo sapiens")
+            default: tximeta_file
+          release:
+            description: release number of the source database (e.g. "101")
+            default: 42
+        default:
+          source: de-novo
+          organism: tximeta_file
+          release: 42
+      pytxi:
+        description: Pytxi uses genomepy assemblies to convert TPMs to gene counts (using either the GTF file or MyGene.info).
+        properties:
+          tx2gene_from_gtf:
+            description: try to convert to gene names (symbols) using the GTF file. If false (or the GTF cannot help), pytxi uses MyGene.info.
+            type: boolean
+            default: true
+        default:
+          tx2gene_from_gtf: true
     default:
-      source: de-novo
-      organism: tximeta_file
-      release: 42
+      pytxi:
+        tx2gene_from_gtf: true
 
   ignore_strandedness:
     description: ignore/dont infer strand-specificity?

@@ -102,6 +102,7 @@ elif config["quantifier"] == "salmon" and config["tpm2counts"] == "pytxi":
         params:
             reps=lambda wildcards, input: input,# help resolve changes in input files
             names=lambda wildcards: get_names(wildcards),
+            from_gtf=config["tx2gene_from_gtf"],
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-counts_matrix.log",**config),
         script:

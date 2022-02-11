@@ -11,6 +11,8 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Added
 
 - TPM to gene counts conversion with pytxi
+  - by default attempts to use the GTF file to convert transcript_ids to gene_names
+  - otherwise will use MyGene.info
 - config option `tpm2counts` to chose which TPM to counts converter to use
 
 ### Changed
