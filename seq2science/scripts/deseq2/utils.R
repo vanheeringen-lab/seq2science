@@ -176,6 +176,7 @@ heatmap_aesthetics <- function(num_samples){
     list(
       "cell_dimensions"=cell_dimensions,
       "fontsize"=fontsize,
+      "fontsize_number"=fontsize_number,
       "show_colnames"=show_colnames,
       "show_rownames"=show_rownames,
       "colors"=colors
@@ -204,7 +205,8 @@ heatmap_plot <- function(mat, title, heatmap_aes, legend_aes, out_pdf) {
     fontsize = heatmap_aes$fontsize,
     legend_breaks = legend_aes$breaks,
     legend_labels = legend_aes$labels,
-    display_numbers = T,
+    display_numbers = T,  # show values in the plot
+    fontsize_number = heatmap_aes$fontsize_number,
     cellwidth  = heatmap_aes$cell_dimensions,
     cellheight = heatmap_aes$cell_dimensions,
     color = heatmap_aes$colors,
