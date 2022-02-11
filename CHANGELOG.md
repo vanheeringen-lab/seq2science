@@ -15,7 +15,9 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Changed
 
-- pytxi is now the default TPM to counts converter (over tximeta)
+- pytxi is now the default TPM to gene counts converter (over tximeta)
+- gene counts tables now use descriptive names (if given)
+- DESeq2 correlation plots now display correlation metrics in the figure
 
 ## [0.7.1] - 2022-02-10
 

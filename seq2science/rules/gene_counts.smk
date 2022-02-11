@@ -2,17 +2,25 @@
 all rules/logic related to making gene count tables should be here.
 """
 
+def get_counts(wildcards):
+    """return the salmon directories of the samples"""
+    quant_dirs = []
+    for sample in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index:
+        quant_dirs.append(f"{{result_dir}}/{{quantifier}}/{wildcards.assembly}-{sample}")
+    return expand(quant_dirs, **config)
+
+def get_names(wildcards):
+    """return the descriptive>technical_replicate>sample names of the samples"""
+    names = []
+    for sample in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index:
+        names.append(rep_to_descriptive(sample))
+    return names
+
 def get_salmon_index(wildcards):
     index = f"{{genome_dir}}/{wildcards.assembly}/index/{{quantifier}}"
     if config.get("decoy_aware_index"):
         index += "_decoy_aware"
     return expand(index, **config)
-
-def get_counts(wildcards):
-    quant_dirs = []
-    for sample in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index:
-        quant_dirs.append(f"{{result_dir}}/{{quantifier}}/{wildcards.assembly}-{sample}")
-    return expand(quant_dirs, **config)
 
 
 if config["quantifier"] == "salmon" and config["tpm2counts"] == "tximeta":
@@ -30,7 +38,6 @@ if config["quantifier"] == "salmon" and config["tpm2counts"] == "tximeta":
             gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
             index_dir=get_salmon_index,
         output:
-            # symlink=expand(f"{{genome_dir}}/{{{{assembly}}}}/index/tximeta/{config['tximeta']['organism']}.{{{{assembly}}}}.{config['tximeta']['release']}.gtf", **config)
             index=expand("{genome_dir}/{{assembly}}/index/tximeta/linked_txome.json", **config),
         params:
             source=config["tximeta"]["source"],
@@ -69,6 +76,7 @@ if config["quantifier"] == "salmon" and config["tpm2counts"] == "tximeta":
             "../envs/tximeta.yaml"
         params:
             reps=lambda wildcards, input: input,  # help resolve changes in input files
+            names=lambda wildcards: get_names(wildcards),
         resources:
             R_scripts=1,  # conda's R can have issues when starting multiple times
         script:
@@ -76,13 +84,6 @@ if config["quantifier"] == "salmon" and config["tpm2counts"] == "tximeta":
 
 
 elif config["quantifier"] == "salmon" and config["tpm2counts"] == "pytxi":
-
-    def get_names(wildcards):
-        """get descriptive names of each sample/replicate, if given"""
-        names = []
-        for sample in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index:
-            names.append(rep_to_descriptive(sample))
-        return names
 
     rule count_matrix:
         """
@@ -145,7 +146,7 @@ else:
                         skipfooter=5 if config["quantifier"] == "htseq" else 0,
                     )
                     sample_name = sample.split(wildcards.assembly + "-")[1].split(".counts.tsv")[0]
-                    col.columns = [sample_name]
+                    col.columns = [rep_to_descriptive(sample_name)]
                     counts = pd.concat([counts, col], axis=1)
 
                 counts.index.name = "gene"
@@ -184,7 +185,7 @@ if config.get("dexseq"):
                 for sample in input.cts:
                     col = pd.read_csv(sample, sep="\t", index_col=0, header=None, skipfooter=5)
                     sample_name = sample.split(wildcards.assembly + "-")[1].split(".DEXSeq_counts.tsv")[0]
-                    col.columns = [sample_name]
+                    col.columns = [rep_to_descriptive(sample_name)]
                     counts = pd.concat([counts, col], axis=1)
 
                 counts.index.name = "exon"

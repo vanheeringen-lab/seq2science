@@ -45,7 +45,10 @@ coldata['assembly'] <- factor(as.character(seq_len(nrow(coldata))))
 
 # filter counts to speed up DESeq
 counts <- read.table(counts_file, row.names = 1, header = T, stringsAsFactors = F, sep = '\t', check.names = F)
-reduced_counts <- counts[rowSums(counts) > 0, colnames(counts) %in% rownames(coldata)]
+# has_descriptive <- "descriptive_name" %in% colnames(coldata)
+# names <- if (has_descriptive) {coldata$descriptive_name} else {rownames(coldata)}
+# reduced_counts <- counts[rowSums(counts) > 0, colnames(counts) %in% names]
+reduced_counts <- counts[rowSums(counts) > 0, rownames(coldata)]
 
 
 ## DESeq2
