@@ -10,6 +10,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Added
 
+- MultiQC DESeq2 plots now show their values, similar to Deeptools plots.
 - TPM to gene counts conversion with pytxi
   - by default attempts to use the GTF file to convert transcript_ids to gene_names
   - otherwise will use MyGene.info
