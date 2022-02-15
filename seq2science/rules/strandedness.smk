@@ -49,7 +49,7 @@ def samples_to_infer(wildcards):
     return list(sorted(expand(files, **config)))
 
 
-checkpoint strandedness_report:
+rule strandedness_report:
     """
     combine samples.tsv & infer_strandedness results (call strandedness if >60% of reads explains a direction)
     """
@@ -77,7 +77,7 @@ checkpoint strandedness_report:
                         fwd_val = float(line.strip().split(": ")[1])
 
             if fwd_val > 0.6:
-                return "forward"
+                return "yes"
             elif 1 - (fwd_val + fail_val) > 0.6:
                 return "reverse"
             else:
@@ -104,26 +104,3 @@ checkpoint strandedness_report:
         )
         strandedness.set_index("sample", inplace=True)
         strandedness.to_csv(output[0], sep="\t")
-
-
-def _strandedness_report(wildcards):
-    strandreport = checkpoints.strandedness_report.get().output
-    return strandreport[0]
-
-
-def strandedness_to_quant(wildcards, tool):
-    """
-    translate strandedness to quantifiers nomenclature
-    """
-    out = {
-        "htseq": ["no", "yes", "reverse"],
-        "featurecounts": ["0", "1", "2"],
-        "dexseq": ["no", "yes", "reverse"],
-    }
-
-    strandedness = pd.read_csv(_strandedness_report(wildcards), sep="\t", dtype="str", index_col=0)
-    if wildcards.sample not in strandedness.index:
-        return "new samples added, start rerun"
-    s = strandedness[strandedness.index == wildcards.sample].strandedness[0]
-    n = 1 if s in ["yes", "forward"] else (2 if s == "reverse" else 0)
-    return out[tool][n]

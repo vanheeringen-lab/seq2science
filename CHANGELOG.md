@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Changed
+
+- using awful practices to eliminate checkpoint strandedness
+
 ## [0.7.1] - 2022-02-10
 
 ### Fixed

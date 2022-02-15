@@ -154,42 +154,72 @@ rule peak_bigpeak:
         """
 
 
-def set_strand(wildcards):
-    if wildcards.strand == ".fwd":
-        return "--filterRNAstrand forward"
-    elif wildcards.strand == ".rev":
-        return "--filterRNAstrand reverse"
-    return ""
-
-
-rule bam_bigwig:
-    """
-    Convert a bam file into a bigwig file.
-    Can output strand specific bam
-    """
-    input:
-        bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config),
-        bai=expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam.bai", **config),
-    output:
-        expand("{bigwig_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}{{strand}}.bw", **config),
-    params:
-        flags=config["deeptools_flags"],
-        strand_filter=set_strand,
-    wildcard_constraints:
-        sorting=config["bam_sort_order"] if config.get("bam_sort_order") else "",
-        strand="|.fwd|.rev",
-    log:
-        expand("{log_dir}/bam_bigwig/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}{{strand}}.log", **config),
-    benchmark:
-        expand(
-            "{benchmark_dir}/bam_bigwig/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}{{strand}}.benchmark.txt", **config
-        )[0]
-    conda:
-        "../envs/deeptools.yaml"
-    threads: 16
-    resources:
-        deeptools_limit=lambda wildcards, threads: threads,
-    shell:
+if get_workflow != "rna_seq":
+    rule bam_bigwig:
         """
-        bamCoverage --bam {input.bam} --outFileName {output} {params.strand_filter} --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1
+        Convert a bam file into a bigwig file.
         """
+        input:
+            bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config),
+            bai=expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam.bai", **config),
+        output:
+            expand("{bigwig_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bw", **config),
+        params:
+            flags=config["deeptools_bamcoverage"],
+        wildcard_constraints:
+            sorting=config["bam_sort_order"] if config.get("bam_sort_order") else "",
+        log:
+            expand("{log_dir}/bam_bigwig/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.log", **config),
+        benchmark:
+            expand(
+                "{benchmark_dir}/bam_bigwig/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.benchmark.txt", **config
+            )[0]
+        conda:
+            "../envs/deeptools.yaml"
+        threads: 16
+        resources:
+            deeptools_limit=lambda wildcards, threads: threads,
+        shell:
+            """
+            bamCoverage --bam {input.bam} --outFileName {output} --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1
+            """
+
+else:
+    rule bam_bigwig:
+        """
+        Convert a bam file into a bigwig file(s).
+        Can output strand specific bams. The reverse bam is created "secretly" to avoid checkpoints.
+        """
+        input:
+            bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam",**config),
+            bai=expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam.bai",**config),
+            report=rules.strandedness_report.output
+        output:
+            expand("{bigwig_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bw",**config),
+        params:
+            flags=config["deeptools_bamcoverage"],
+        wildcard_constraints:
+            sorting=config["bam_sort_order"] if config.get("bam_sort_order") else "",
+        log:
+            expand("{log_dir}/bam_bigwig/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.log",**config),
+        benchmark:
+            expand("{benchmark_dir}/bam_bigwig/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.benchmark.txt",**config)[0]
+        conda:
+            "../envs/deeptools.yaml"
+        threads: 16
+        resources:
+            deeptools_limit=lambda wildcards, threads: threads,
+        shell:
+            """
+            strandedness=$(cat {input.report} | grep -sw {wildcards.sample} | cut -f2 -)
+            echo "{wildcards.sample} strandedness: $strandedness" > {log}
+            
+            if [[ "$strandedness" == "no" ]]; then
+              bamCoverage --bam {input.bam} --outFileName {output} --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1
+            else
+              rev=$(echo "${{out/{wildcards.sorting}.bw/{wildcards.sorting}.rev.bw}}")
+              rm -f $rev  # in case of a rerun
+              bamCoverage --bam {input.bam} --outFileName $rev     --filterRNAstrand reverse --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1
+              bamCoverage --bam {input.bam} --outFileName {output} --filterRNAstrand forward --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1
+            fi
+            """

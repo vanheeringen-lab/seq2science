@@ -19,6 +19,6 @@ properties:
     default: bigwigs
     type: string
 
-  deeptools_flags:
+  deeptools_bamcoverage:
     description: flags for bam to bigwig conversions with deeptools bamCoverage
     default: '--normalizeUsing BPM'  # Bins Per Million mapped reads, same as TPM in RNA-seq

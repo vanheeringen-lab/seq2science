@@ -6,7 +6,7 @@ suppressMessages({
 log_file       <- snakemake@log[[1]]
 bam_file       <- snakemake@input$bam
 gtf_file       <- snakemake@input$gtf
-strandedness   <- as.numeric(snakemake@params$strandedness)
+report         <- snakemake@input$report
 paired         <- snakemake@params$paired
 sample         <- snakemake@wildcards$sample
 threads        <- snakemake@threads[[1]]
@@ -22,7 +22,7 @@ cat('# variables used for this analysis:\n')
 cat('log_file     <- "', log_file,      '"\n', sep = "")
 cat('bam_file     <- "', bam_file,      '"\n', sep = "")
 cat('gtf_file     <- "', gtf_file,      '"\n', sep = "")
-cat('strandedness <- ',  strandedness,   '\n', sep = "")
+cat('report       <- "', report,        '"\n', sep = "")
 cat('paired       <- ',  paired,         '\n', sep = "")
 cat('sample       <- "', sample,        '"\n', sep = "")
 cat('threads      <- ',  threads,        '\n', sep = "")
@@ -62,6 +62,18 @@ if (!file.exists(good_example)){
   dev.off()
 
   rm(dm)
+}
+
+# get the sample's strandedness
+report <- read.delim(report, sep = "\t", na.strings = "", comment.char = "#", stringsAsFactors = F, row.names = "sample")
+strandedness <- report[sample, "strandedness"]
+# convert to featurecount format
+if (strandedness == "yes"){
+  strandedness <- 1
+} else if (strandedness == "reverse") {
+  strandedness <- 2
+} else {
+  strandedness <- 0
 }
 
 # Analysis
