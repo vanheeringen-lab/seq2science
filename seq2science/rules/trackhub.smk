@@ -308,14 +308,17 @@ def strandedness_in_assembly(assembly):
     If the strandedness report has not been made yet, return False.
     This is to avoid using buggy checkpoints.
     """
+    if get_workflow() != "rna_seq":
+        return False
+
     strand_report = rules.strandedness_report.output[0]
     if not os.path.exists(strand_report):
         return False
-    else:
-        strandedness = pd.read_csv(strand_report, sep="\t", dtype="str", index_col=0)
-        samples_in_assembly = treps[treps["assembly"] == assembly].index
-        strandedness_in_assembly = strandedness.filter(samples_in_assembly, axis=0).strandedness
-        return not strandedness_in_assembly.str.fullmatch("no").all()
+
+    strandedness = pd.read_csv(strand_report, sep="\t", dtype="str", index_col=0)
+    samples_in_assembly = treps[treps["assembly"] == assembly].index
+    strandedness_in_assembly = strandedness.filter(samples_in_assembly, axis=0).strandedness
+    return not strandedness_in_assembly.str.fullmatch("no").all()
 
 
 def create_trackhub():
@@ -674,11 +677,8 @@ trackhub_files = []
 if config.get("create_trackhub"):
     trackhub_files = create_trackhub()["files"]
 
-# def get_trackhub_files(wildcards):
-#     """
-#     all files used in create_trackhub()
-#     """
-#     return create_trackhub()["files"]
+    if get_workflow() == "rna_seq":
+        trackhub_files.append(rules.strandedness_report.output[0])
 
 
 rule trackhub:
@@ -690,8 +690,7 @@ rule trackhub:
     My Data > Track Hubs > My Hubs
     """
     input:
-        trackhub_files,  # get_trackhub_files,
-        report=rules.strandedness_report.output
+        trackhub_files,
     output:
         directory(config["trackhub_dir"]),
     message:

@@ -154,7 +154,7 @@ rule peak_bigpeak:
         """
 
 
-if get_workflow != "rna_seq":
+if get_workflow() != "rna_seq":
     rule bam_bigwig:
         """
         Convert a bam file into a bigwig file.
@@ -187,7 +187,7 @@ if get_workflow != "rna_seq":
 else:
     rule bam_bigwig:
         """
-        Convert a bam file into a bigwig file(s).
+        Convert a bam file into a bigwig file (or two).
         Can output strand specific bams. The reverse bam is created "secretly" to avoid checkpoints.
         """
         input:
