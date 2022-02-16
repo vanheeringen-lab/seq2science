@@ -40,9 +40,9 @@ if config["quantifier"] == "salmon" and config["tpm2counts"] == "tximeta":
         output:
             index=expand("{genome_dir}/{{assembly}}/index/tximeta/linked_txome.json", **config),
         params:
-            source=config["tximeta"]["source"],
-            organism=config["tximeta"]["organism"],
-            release=config["tximeta"]["release"],
+            source=config["txi_source"],
+            organism=config["txi_organism"],
+            release=config["txi_release"],
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-linked_txome.log", **config),
         conda:
