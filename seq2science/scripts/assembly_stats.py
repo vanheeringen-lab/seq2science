@@ -52,6 +52,7 @@ ax.plot(range(1, len(sizes) + 1), sizes, marker='o')
 ax.set_title("Contig size distribution")
 ax.set_xlabel("contig number (ordered by size)")
 ax.set_ylabel("contig size")
+ax.set_ylim((1, 15*max(sizes)))
 plt.xscale("log")
 plt.yscale("log")
 
