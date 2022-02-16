@@ -6,7 +6,7 @@ suppressMessages({
 log_file       <- snakemake@log[[1]]
 bam_file       <- snakemake@input$bam
 gtf_file       <- snakemake@input$gtf
-strandedness   <- snakemake@params$strandedness
+strandedness   <- as.numeric(snakemake@params$strandedness)
 paired         <- snakemake@params$paired
 sample         <- snakemake@wildcards$sample
 threads        <- snakemake@threads[[1]]
@@ -22,7 +22,7 @@ cat('# variables used for this analysis:\n')
 cat('log_file     <- "', log_file,      '"\n', sep = "")
 cat('bam_file     <- "', bam_file,      '"\n', sep = "")
 cat('gtf_file     <- "', gtf_file,      '"\n', sep = "")
-cat('strandedness <- "', strandedness,  '"\n', sep = "")
+cat('strandedness <- ', strandedness,    '\n', sep = "")
 cat('paired       <- ',  paired,         '\n', sep = "")
 cat('sample       <- "', sample,        '"\n', sep = "")
 cat('threads      <- ',  threads,        '\n', sep = "")

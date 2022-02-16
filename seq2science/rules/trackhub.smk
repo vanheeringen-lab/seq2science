@@ -2,8 +2,8 @@
 all rules/logic related to the final UCSC trackhub (or assembly hub) should be here.
 """
 
-import os.path
 import glob
+import os.path
 import logging
 
 from Bio import SeqIO
