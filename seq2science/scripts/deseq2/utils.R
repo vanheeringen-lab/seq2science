@@ -33,7 +33,7 @@ parse_contrast <- function(contrast) {
 #' collapse technical replicates (if present) and
 #' convert to descriptive names (if present).
 parse_samples <- function(samples_file, assembly_name, replicates) {
-  samples <- read.delim(samples_file, sep = "\t", na.strings = "", comment.char = "#", stringsAsFactors = F, row.names = "sample")
+  samples <- read.delim(samples_file, sep = "\t", na.strings = "", comment.char = "#", stringsAsFactors = F, row.names = "sample", check.names = F)
   colnames(samples) <- gsub("\\s+", "", colnames(samples))  # strip whitespace from column names
   samples <- subset(samples, assembly == assembly_name)
 
