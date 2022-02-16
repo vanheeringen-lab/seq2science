@@ -62,15 +62,14 @@ def rep_to_descriptive(rep, brep=False):
     """
     Return the descriptive name for a replicate.
     """
-    if "descriptive_name" in samples:
-        if brep and "biological_replicates" in samples:
-            rep = samples[samples.biological_replicates == rep].biological_replicates[0]
+    if brep and "biological_replicates" in samples:
+        rep = samples[samples.biological_replicates == rep].biological_replicates[0]
+    elif "descriptive_name" in samples:
+        if "technical_replicates" in samples:
+            col = samples.technical_replicates
         else:
-            if "technical_replicates" in samples:
-                col = samples.technical_replicates
-            else:
-                col = samples.index
-            rep = samples[col == rep].descriptive_name[0]
+            col = samples.index
+        rep = samples[col == rep].descriptive_name[0]
     return rep
 
 
