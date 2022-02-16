@@ -11,6 +11,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Changed
 
 - using awful practices to eliminate checkpoint strandedness
+- rna-seq trackhub per base tracks by default instead of bins per 50
 
 ## [0.7.1] - 2022-02-10
 
