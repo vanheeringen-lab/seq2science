@@ -162,11 +162,11 @@ heatmap_aesthetics <- function(num_samples){
   } else if (num_samples < 32) {
     cell_dimensions <- as.integer(25 - 0.625*num_samples)  # linear shrink
     fontsize        <- 8 - 0.15*num_samples
-    fontsize_number <- 8 - 0.15*num_samples
+    fontsize_number <- 7 - 0.15*num_samples
   } else {
     cell_dimensions <- 5  # minimal size
     fontsize        <- 3.2
-    fontsize_number <- 3.2
+    fontsize_number <- 2.5
   }
   show_colnames <- ifelse(num_samples > 28, TRUE, FALSE)
   show_rownames <- !show_colnames
