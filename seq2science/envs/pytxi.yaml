@@ -7,4 +7,4 @@ dependencies:
   - genomepy=0.11.1
   - pip
   - pip:
-    - git+https://github.com/vanheeringen-lab/pytxi.git@develop
+    - git+https://github.com/vanheeringen-lab/pytxi.git@3522d3f
