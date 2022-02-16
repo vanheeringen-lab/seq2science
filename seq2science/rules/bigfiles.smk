@@ -193,10 +193,11 @@ else:
         input:
             bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam",**config),
             bai=expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam.bai",**config),
-            report=rules.strandedness_report.output
+            report=rules.infer_strandedness.output,
         output:
             expand("{bigwig_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bw",**config),
         params:
+            strandedness=lambda wildcards, input: get_strandedness(input.report[0]),
             flags=config["deeptools_bamcoverage"],
         wildcard_constraints:
             sorting=config["bam_sort_order"] if config.get("bam_sort_order") else "",
@@ -211,12 +212,11 @@ else:
             deeptools_limit=lambda wildcards, threads: threads,
         shell:
             """
-            strandedness=$(cat {input.report} | grep -sw {wildcards.sample} | cut -f2 -)
-            echo "{wildcards.sample} strandedness: $strandedness" > {log}
-            
-            if [[ "$strandedness" == "no" ]]; then
+            if [[ "{params.strandedness}" == "no" ]]; then
+              echo "generating unstranded bam" > {log}
               bamCoverage --bam {input.bam} --outFileName {output} --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1
             else
+              echo "generating stranded bams" > {log}
 			  out={output}
               rev=$(echo "${{out/{wildcards.sorting}.bw/{wildcards.sorting}.rev.bw}}")
               rm -f $rev  # in case of a rerun

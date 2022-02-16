@@ -1,11 +1,12 @@
 """
 all rules/logic related to the RNA-seq strandedness should be here.
 """
+import os
 
 
 rule infer_strandedness:
     """
-    use RSeqQC's infer_experiment.py to determine strandedness af a sample
+    Use RSeqQC's infer_experiment.py to determine the strandedness of a sample
     """
     input:
         bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config),
@@ -27,80 +28,21 @@ rule infer_strandedness:
         """
 
 
-def samples_to_infer(wildcards):
+def get_strandedness(report_file, fmt="htseq"):
     """
-    list all samples for which strandedness must be inferred
+    Read RSeQC strandedness info into HTSeq/featurecount format.
     """
-    col = samples.technical_replicates if "technical_replicates" in samples else samples.index
-    if config["ignore_strandedness"] or ("strandedness" in samples and "nan" not in set(samples.strandedness)):
-        files = []
-    elif "strandedness" not in samples:
-        files = [
-            f"{{qc_dir}}/strandedness/{samples[col == sample].assembly[0]}{suffix}-{sample}.strandedness.txt"
-            for sample in set(col)
-        ]
-    else:
-        files = []
-        for sample in set(col):
-            if samples[col == sample].strandedness not in ["yes", "forward", "reverse", "no"]:
-                files.append(
-                    f"{{qc_dir}}/strandedness/{samples[col == sample].assembly[0]}{suffix}-{sample}.strandedness.txt"
-                )
-    return list(sorted(expand(files, **config)))
+    if not os.path.exists(report_file):
+        return "placeholder"
 
+    cutoff = 0.6
+    with open(report_file) as rf:
+        fwd, rev = rf.read().splitlines()[2:4]
 
-rule strandedness_report:
-    """
-    combine samples.tsv & infer_strandedness results (call strandedness if >60% of reads explains a direction)
-    """
-    input:
-        samples_to_infer,
-    output:
-        expand("{qc_dir}/strandedness/inferred_strandedness.tsv", **config),
-    params:
-        input=lambda wildcards, input: input,  # help resolve changes in input files
-        reps=treps,
-    run:
-        import pandas as pd
-
-
-        def get_strand(sample):
-            report_file = [f for f in input if f.endswith(f"-{sample}.strandedness.txt")][0]
-            with open(report_file) as report:
-                fail_val = fwd_val = 0
-                for line in report:
-                    if line.startswith("Fraction of reads failed"):
-                        fail_val = float(line.strip().split(": ")[1])
-                    elif line.startswith(
-                        ("""Fraction of reads explained by "1++""", """Fraction of reads explained by "++""")
-                    ):
-                        fwd_val = float(line.strip().split(": ")[1])
-
-            if fwd_val > 0.6:
-                return "yes"
-            elif 1 - (fwd_val + fail_val) > 0.6:
-                return "reverse"
-            else:
-                return "no"
-
-
-        strands = []
-        method = []
-        col = samples.technical_replicates if "technical_replicates" in samples else samples.index
-        for sample in set(col):
-            s = samples[col == sample].strandedness[0] if "strandedness" in samples else "nan"
-            m = "user_specification"
-            if config["ignore_strandedness"]:
-                s = "no"
-                m = "ignored"
-            elif s == "nan":
-                s = get_strand(sample)
-                m = "inferred"
-            strands.append(s)
-            method.append(m)
-
-        strandedness = pd.DataFrame(
-            {"sample": list(set(col)), "strandedness": strands, "determined_by": method}, dtype="str"
-        )
-        strandedness.set_index("sample", inplace=True)
-        strandedness.to_csv(output[0], sep="\t")
+    fwd = float(fwd.split(": ")[1])
+    if fwd > cutoff:
+        return "yes" if fmt=="htseq" else 1
+    rev = float(rev.split(": ")[1])
+    if rev > cutoff:
+        return "reverse" if fmt=="htseq" else 2
+    return "no" if fmt=="htseq" else 0

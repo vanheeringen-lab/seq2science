@@ -504,10 +504,11 @@ elif config["quantifier"] == "htseq":
         input:
             bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam",**config),
             gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf",**config),
-            report=rules.strandedness_report.output
+            report=rules.infer_strandedness.output,
         output:
             expand("{counts_dir}/{{assembly}}-{{sample}}.counts.tsv",**config),
         params:
+            strandedness=lambda wildcards, input: get_strandedness(input.report[0]),
             user_flags=config["htseq_flags"],
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-{{sample}}.counts.log",**config),
@@ -518,9 +519,7 @@ elif config["quantifier"] == "htseq":
             "../envs/gene_counts.yaml"
         shell:
             """
-            strandedness=$(cat {input.report} | grep -sw {wildcards.sample} | cut -f2 -)
-
-            htseq-count {input.bam} {input.gtf} -r pos -s $strandedness {params.user_flags} -n {threads} -c {output} > {log} 2>&1
+            htseq-count {input.bam} {input.gtf} -r pos -s {params.strandedness} {params.user_flags} -n {threads} -c {output} > {log} 2>&1
             """
 
 
@@ -533,10 +532,11 @@ elif config["quantifier"] == "featurecounts":
         input:
             bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam",**config),
             gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf",**config),
-            report=rules.strandedness_report.output
+            report=rules.infer_strandedness.output,
         output:
             expand("{counts_dir}/{{assembly}}-{{sample}}.counts.tsv",**config),
         params:
+            strandedness=lambda wildcards, input: get_strandedness(input.report[0], fmt="fc"),
             endedness=lambda wildcards: "" if sampledict[wildcards.sample]["layout"] == "SINGLE" else "-p",
             user_flags=config["featurecounts_flags"],
         log:
@@ -548,13 +548,7 @@ elif config["quantifier"] == "featurecounts":
             "../envs/gene_counts.yaml"
         shell:
             """
-            strandedness=$(cat {input.report} | grep -sw {wildcards.sample} | cut -f2 -)
-            # convert to featurecount format
-            strandedness=$(echo "${{strandedness/no/0}}")
-            strandedness=$(echo "${{strandedness/yes/1}}")
-            strandedness=$(echo "${{strandedness/reverse/2}}")
-
-            featureCounts -a {input.gtf} {input.bam} {params.endedness} -s $strandedness {params.user_flags} -T {threads} -o {output} > {log} 2>&1
+            featureCounts -a {input.gtf} {input.bam} {params.endedness} -s {params.strandedness} {params.user_flags} -T {threads} -o {output} > {log} 2>&1
             """
 
 if config.get("dexseq"):
@@ -586,7 +580,7 @@ if config.get("dexseq"):
             bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam",**config),
             bai=expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam.bai",**config),
             gff=expand("{genome_dir}/{{assembly}}/{{assembly}}.DEXseq_annotation.gff",**config),
-            report=rules.strandedness_report.output
+            report=rules.infer_strandedness.output,
         output:
             expand("{counts_dir}/{{assembly}}-{{sample}}.DEXSeq_counts.tsv",**config),
         log:
@@ -594,6 +588,7 @@ if config.get("dexseq"):
         message:
             explain_rule("dexseq")
         params:
+            strandedness=lambda wildcards, input: get_strandedness(input.report[0]),
             endedness=lambda wildcards: "" if sampledict[wildcards.sample]["layout"] == "SINGLE" else "-p yes",
         conda:
             "../envs/dexseq.yaml"
@@ -602,7 +597,5 @@ if config.get("dexseq"):
             current_conda_env=$(conda env list | grep \* | cut -d "*" -f2-)
             DEXseq_path=${{current_conda_env}}/lib/R/library/DEXSeq/python_scripts
 
-            strandedness=$(cat {input.report} | grep -sw {wildcards.sample} | cut -f2 -)
-
-            python ${{DEXseq_path}}/dexseq_count.py -f bam -r pos {params.endedness} -s $strandedness {input.gff} {input.bam} {output} > {log} 2>&1
+            python ${{DEXseq_path}}/dexseq_count.py -f bam -r pos {params.endedness} -s {params.strandedness} {input.gff} {input.bam} {output} > {log} 2>&1
             """

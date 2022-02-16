@@ -3,12 +3,13 @@ all rules/logic related to the final UCSC trackhub (or assembly hub) should be h
 """
 
 import os.path
+import glob
+import logging
+
 from Bio import SeqIO
 from multiprocessing import Pool
 from seq2science.util import color_picker, color_gradient, hsv_to_ucsc, unique, shorten
-
 import trackhub
-import logging
 
 # remove the logger created by trackhub (in trackhub.upload)
 # (it adds global logging of all stdout messages, duplicating snakemake's logging)
@@ -305,20 +306,18 @@ def strandedness_in_assembly(assembly):
     """
     Check if there are any stranded samples for this assembly.
 
-    If the strandedness report has not been made yet, return False.
-    This is to avoid using buggy checkpoints.
+    Returns False if no reports have been generated yet.
     """
     if get_workflow() != "rna_seq":
         return False
 
-    strand_report = rules.strandedness_report.output[0]
-    if not os.path.exists(strand_report):
+    reports = glob.glob(f"{config['qc_dir']}/strandedness/{assembly}-*.strandedness.txt")
+    for rep in reports:
+        strandedness = get_strandedness(rep)
+        if strandedness != "no":
+            return True
+    else:
         return False
-
-    strandedness = pd.read_csv(strand_report, sep="\t", dtype="str", index_col=0)
-    samples_in_assembly = treps[treps["assembly"] == assembly].index
-    strandedness_in_assembly = strandedness.filter(samples_in_assembly, axis=0).strandedness
-    return not strandedness_in_assembly.str.fullmatch("no").all()
 
 
 def create_trackhub():
@@ -577,7 +576,7 @@ def create_trackhub():
                         signal_view.add_tracks(track)
 
         elif get_workflow() in ["alignment", "rna_seq"]:
-            has_strandedness =  strandedness_in_assembly(asmbly)
+            has_strandedness =  strandedness_in_assembly(assembly)
 
             # one composite track to rule them all...
             name = f"{sequencing_protocol} samples"
@@ -676,9 +675,6 @@ def create_trackhub():
 trackhub_files = []
 if config.get("create_trackhub"):
     trackhub_files = create_trackhub()["files"]
-
-    if get_workflow() == "rna_seq":
-        trackhub_files.append(rules.strandedness_report.output[0])
 
 
 rule trackhub:
