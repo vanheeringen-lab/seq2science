@@ -48,11 +48,11 @@ for i, size in enumerate(cum_sizes):
 # make an image off the size distribution of contigs
 # make the actual plot
 fig, ax = plt.subplots()
-ax.plot(sizes)
+ax.plot(sizes, marker='o')
 ax.set_title("Contig size distribution")
 ax.set_xlabel("contig number (ordered by size)")
 ax.set_ylabel("contig size")
-plt.xscale("log")
+plt.yscale("log")
 
 # now save the image as html text
 img = io.BytesIO()

@@ -14,6 +14,9 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - deeptools_flags renamed to deeptools_bamcoverage
 - rna-seq trackhub per base tracks by default instead of bins per 50
 
+### Fixed
+- assembly stats log scale on the y-axis
+
 ## [0.7.1] - 2022-02-10
 
 ### Fixed
