@@ -16,6 +16,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Fixed
 - assembly stats log scale on the y-axis
+- s2s explain wont tell you about subsampling to -1 (all) reads
 
 ## [0.7.1] - 2022-02-10
 

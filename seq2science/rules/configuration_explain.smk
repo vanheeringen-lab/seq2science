@@ -145,7 +145,7 @@ else:
             end=" and finally were tn5 bias shifted by seq2science." if config.get("tn5_shift", 0) > 0 else ".",
         )
         + f"Afterwards samples were downsampled to {config['subsample']} reads."
-        if config.get("subsample")
+        if config.get("subsample", -1) != -1
         else "",
         "sambamba_sort": f"Bam files were sorted with {href_v('sambamba')}.",
         "mark_duplicates": f"Afterwards, duplicate reads were {'removed' if 'REMOVE_DUPLICATES=true' in options('markduplicates') else 'marked'} with {href_v('picard',text='Picard MarkDuplicates')}.",
