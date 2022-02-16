@@ -217,6 +217,7 @@ else:
             if [[ "$strandedness" == "no" ]]; then
               bamCoverage --bam {input.bam} --outFileName {output} --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1
             else
+			  out={output}
               rev=$(echo "${{out/{wildcards.sorting}.bw/{wildcards.sorting}.rev.bw}}")
               rm -f $rev  # in case of a rerun
               bamCoverage --bam {input.bam} --outFileName $rev     --filterRNAstrand reverse --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1
