@@ -52,6 +52,7 @@ ax.plot(sizes, marker='o')
 ax.set_title("Contig size distribution")
 ax.set_xlabel("contig number (ordered by size)")
 ax.set_ylabel("contig size")
+plt.xscale("log")
 plt.yscale("log")
 
 # now save the image as html text
