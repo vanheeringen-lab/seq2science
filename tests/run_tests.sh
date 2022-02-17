@@ -252,7 +252,7 @@ if [ $1 = "rna-seq" ]; then
 
   printf "\nrna-seq default - trackhub\n"
   # deeptools: removed normalization due to test samples being too small
-  seq2science run rna-seq --cores $CORES -r --configfile tests/alignment/default_config.yaml --snakemakeOptions config={samples:tests/alignment/stranded_sample.tsv,genome_dir:tests,fastq_dir:../tinyfastq,tpm2counts:tximeta,aligner:star,create_trackhub:True,custom_genome_extension:tests/tinydata/tinyERCC92.fa,custom_annotation_extension:tests/tinydata/tinyERCC92.gtf,deeptools_flags:-v} show_failed_logs=True
+  seq2science run rna-seq --cores $CORES -r --configfile tests/alignment/default_config.yaml --snakemakeOptions config={samples:tests/alignment/stranded_sample.tsv,genome_dir:tests,fastq_dir:../tinyfastq,tpm2counts:tximeta,aligner:star,create_trackhub:True,custom_genome_extension:tests/tinydata/tinyERCC92.fa,custom_annotation_extension:tests/tinydata/tinyERCC92.gtf,deeptools_bamcoverage:-v} show_failed_logs=True
 
   printf "\nrna-seq default - multiqc report\n"
   seq2science run rna-seq --cores $CORES -r --configfile tests/alignment/default_config.yaml --snakemakeOptions config={samples:tests/alignment/local_sample.tsv,genome_dir:tests,fastq_dir:../tinyfastq,tpm2counts:tximeta,aligner:star,create_qc_report:True,custom_genome_extension:tests/tinydata/tinyERCC92.fa,custom_annotation_extension:tests/tinydata/tinyERCC92.gtf} show_failed_logs=True

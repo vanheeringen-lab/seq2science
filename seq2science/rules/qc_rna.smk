@@ -11,7 +11,7 @@ rule dupRadar:
     input:
         bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config),
         gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
-        required=_strandedness_report,
+        report=rules.infer_strandedness.output,
     output:
         expand("{qc_dir}/dupRadar/{{assembly}}-{{sample}}.png", **config),
     log:
@@ -21,7 +21,7 @@ rule dupRadar:
     message:
         explain_rule("dupradar")
     params:
-        strandedness=lambda wildcards: strandedness_to_quant(wildcards, "featurecounts"),
+        strandedness=lambda wildcards, input: get_strandedness(input.report[0], fmt="fc"),
         paired=lambda wildcards: sampledict[wildcards.sample]["layout"] == "PAIRED",
     resources:
         R_scripts=1,  # conda's R can have issues when starting multiple times
