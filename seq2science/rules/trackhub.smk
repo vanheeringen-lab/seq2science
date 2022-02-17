@@ -2,13 +2,14 @@
 all rules/logic related to the final UCSC trackhub (or assembly hub) should be here.
 """
 
+import glob
 import os.path
+import logging
+
 from Bio import SeqIO
 from multiprocessing import Pool
 from seq2science.util import color_picker, color_gradient, hsv_to_ucsc, unique, shorten
-
 import trackhub
-import logging
 
 # remove the logger created by trackhub (in trackhub.upload)
 # (it adds global logging of all stdout messages, duplicating snakemake's logging)
@@ -301,29 +302,22 @@ def get_colors(asmbly):
     return palletes
 
 
-def strandedness_to_trackhub(sample):
-    """
-    translate strandedness to the name and number of bigwigs to include in the trackhub
-    """
-    if get_workflow() != "rna_seq":
-        return [""]
-    else:
-        strandedness = pd.read_csv(_strandedness_report(wildcards=None), sep="\t", dtype="str", index_col=0)
-        s = strandedness[strandedness.index == sample].strandedness[0]
-        return [".fwd", ".rev"] if s in ["yes", "forward", "reverse"] else [""]
-
-
 def strandedness_in_assembly(assembly):
     """
-    check if there are any stranded samples for this assembly. Returns bool.
+    Check if there are any stranded samples for this assembly.
+
+    Returns False if no reports have been generated yet.
     """
     if get_workflow() != "rna_seq":
         return False
+
+    reports = glob.glob(f"{config['qc_dir']}/strandedness/{assembly}-*.strandedness.txt")
+    for rep in reports:
+        strandedness = get_strandedness(rep)
+        if strandedness != "no":
+            return True
     else:
-        strandedness = pd.read_csv(_strandedness_report(wildcards=None), sep="\t", dtype="str", index_col=0)
-        samples_in_assembly = treps[treps["assembly"] == assembly].index
-        strandedness_in_assembly = strandedness.filter(samples_in_assembly, axis=0).strandedness
-        return not strandedness_in_assembly.str.fullmatch("no").all()
+        return False
 
 
 def create_trackhub():
@@ -352,7 +346,10 @@ def create_trackhub():
        ├──----brep1 trep1 view signal, subgroup brep
        └──----brep1 trep2 view signal, subgroup brep
     """
-    out = {"hub": None, "files": []}  # the complete trackhub  # the files required (for the snakemake input)
+    out = {
+        "hub": None,  # the complete trackhub
+        "files": []  # the files required (for the snakemake input)
+    }
 
     # universal hub file
     hub = trackhub.Hub(
@@ -579,6 +576,8 @@ def create_trackhub():
                         signal_view.add_tracks(track)
 
         elif get_workflow() in ["alignment", "rna_seq"]:
+            has_strandedness =  strandedness_in_assembly(assembly)
+
             # one composite track to rule them all...
             name = f"{sequencing_protocol} samples"
             safename = trackhub.helpers.sanitize(name)
@@ -609,7 +608,7 @@ def create_trackhub():
             composite.add_view(fwd_view)
 
             # ...one view to bring them all...
-            if strandedness_in_assembly(asmbly):  # only added if there are reverse strand bams
+            if has_strandedness:  # only added if there are reverse strand bams
                 rev_view_name = "reverse strand reads"
                 rev_view = trackhub.ViewTrack(
                     name=trackhub.helpers.sanitize(rev_view_name),
@@ -634,35 +633,48 @@ def create_trackhub():
                 safedescr = trackhub.helpers.sanitize(descriptive)
                 subgroup.mapping[safedescr] = descriptive
 
-                for n, bw in enumerate(strandedness_to_trackhub(trep)):
-                    view = rev_view if bw == ".rev" else fwd_view
-                    bigwig_suffix = "" if bw == "" else (" forward" if bw == ".fwd" else " reverse")
-                    bw_suffix = "" if bw == "" else (" fw" if bw == ".fwd" else " rv")
-                    file = f"{config['bigwig_dir']}/{assembly}-{trep}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw"
+                # unstranded/forward strand
+                file = f"{config['bigwig_dir']}/{assembly}-{trep}.{config['bam_sorter']}-{config['bam_sort_order']}.bw"
+                priority += 1.0
+                track = trackhub.Track(
+                    name=trackhub.helpers.sanitize(f"{descriptive}"),
+                    tracktype="bigWig",
+                    short_label=shorten(descriptive,17,["signs", "vowels", "center"]),  # <= 17 characters suggested
+                    long_label=descriptive,
+                    subgroups={"samples": safedescr},
+                    source=file,
+                    visibility="full",# full/squish/pack/dense/hide visibility of the track
+                    color=hsv_to_ucsc(palletes[trep][0]),
+                    priority=priority,# the order this track will appear in
+                )
+                out["files"].append(file)
+                fwd_view.add_tracks(track)
+
+                # reverse strand
+                if has_strandedness:
+                    file = f"{config['bigwig_dir']}/{assembly}-{trep}.{config['bam_sorter']}-{config['bam_sort_order']}.rev.bw"
                     priority += 1.0
                     track = trackhub.Track(
-                        name=trackhub.helpers.sanitize(f"{descriptive}{bigwig_suffix}"),
+                        name=trackhub.helpers.sanitize(f"{descriptive} reverse"),
                         tracktype="bigWig",
-                        short_label=shorten(descriptive, 17 - len(bw_suffix), ["signs", "vowels", "center"])
-                        + bw_suffix,  # <= 17 characters suggested
-                        long_label=descriptive + bigwig_suffix,
+                        short_label=shorten(descriptive,14,["signs", "vowels", "center"]) + " rv",# <= 17 characters suggested
+                        long_label=descriptive + " reverse",
                         subgroups={"samples": safedescr},
                         source=file,
-                        visibility="full",  # full/squish/pack/dense/hide visibility of the track
-                        color=hsv_to_ucsc(palletes[trep][n]),
-                        priority=priority,  # the order this track will appear in
+                        visibility="full",# full/squish/pack/dense/hide visibility of the track
+                        color=hsv_to_ucsc(palletes[trep][1]),
+                        priority=priority,# the order this track will appear in
                     )
-                    out["files"].append(file)
-                    view.add_tracks(track)
+                    # out["files"].append(file)
+                    rev_view.add_tracks(track)
 
     return out
 
 
-def get_trackhub_files(wildcards):
-    """
-    all files used in create_trackhub()
-    """
-    return create_trackhub()["files"]
+# generate the list once
+trackhub_files = []
+if config.get("create_trackhub"):
+    trackhub_files = create_trackhub()["files"]
 
 
 rule trackhub:
@@ -674,7 +686,7 @@ rule trackhub:
     My Data > Track Hubs > My Hubs
     """
     input:
-        get_trackhub_files,
+        trackhub_files,
     output:
         directory(config["trackhub_dir"]),
     message:

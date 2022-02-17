@@ -8,6 +8,17 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Changed
+
+- using awful practices to eliminate checkpoint strandedness
+- deeptools_flags renamed to deeptools_bamcoverage
+- rna-seq trackhub per base tracks by default instead of bins per 50
+
+### Fixed
+
+- assembly stats log scale on the y-axis
+- s2s explain wont tell you about subsampling to -1 (all) reads
+
 ## [0.7.1] - 2022-02-10
 
 ### Fixed

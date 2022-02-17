@@ -502,25 +502,25 @@ elif config["quantifier"] == "htseq":
         summarize reads to gene level. Outputs a counts table per bam file.
         """
         input:
-            bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config),
-            gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
-            required=_strandedness_report,
+            bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam",**config),
+            gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf",**config),
+            report=rules.infer_strandedness.output,
         output:
-            expand("{counts_dir}/{{assembly}}-{{sample}}.counts.tsv", **config),
+            expand("{counts_dir}/{{assembly}}-{{sample}}.counts.tsv",**config),
         params:
-            strandedness=lambda wildcards: strandedness_to_quant(wildcards, "htseq"),
+            strandedness=lambda wildcards, input: get_strandedness(input.report[0]),
             user_flags=config["htseq_flags"],
         log:
-            expand("{log_dir}/counts_matrix/{{assembly}}-{{sample}}.counts.log", **config),
+            expand("{log_dir}/counts_matrix/{{assembly}}-{{sample}}.counts.log",**config),
         message:
             explain_rule("htseq_count")
         threads: 1
         conda:
             "../envs/gene_counts.yaml"
         shell:
-             """
-             htseq-count {input.bam} {input.gtf} -r pos -s {params.strandedness} {params.user_flags} -n {threads} -c {output} > {log} 2>&1
-             """
+            """
+            htseq-count {input.bam} {input.gtf} -r pos -s {params.strandedness} {params.user_flags} -n {threads} -c {output} > {log} 2>&1
+            """
 
 
 elif config["quantifier"] == "featurecounts":
@@ -530,17 +530,17 @@ elif config["quantifier"] == "featurecounts":
         summarize reads to gene level. Outputs a counts table per bam file.
         """
         input:
-            bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config),
-            gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
-            required=_strandedness_report,
+            bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam",**config),
+            gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf",**config),
+            report=rules.infer_strandedness.output,
         output:
-            expand("{counts_dir}/{{assembly}}-{{sample}}.counts.tsv", **config),
+            expand("{counts_dir}/{{assembly}}-{{sample}}.counts.tsv",**config),
         params:
-            strandedness=lambda wildcards: strandedness_to_quant(wildcards, "featurecounts"),
+            strandedness=lambda wildcards, input: get_strandedness(input.report[0], fmt="fc"),
             endedness=lambda wildcards: "" if sampledict[wildcards.sample]["layout"] == "SINGLE" else "-p",
             user_flags=config["featurecounts_flags"],
         log:
-            expand("{log_dir}/counts_matrix/{{assembly}}-{{sample}}.counts.log", **config),
+            expand("{log_dir}/counts_matrix/{{assembly}}-{{sample}}.counts.log",**config),
         message:
             explain_rule("featurecounts_rna")
         threads: 1
@@ -551,19 +551,17 @@ elif config["quantifier"] == "featurecounts":
             featureCounts -a {input.gtf} {input.bam} {params.endedness} -s {params.strandedness} {params.user_flags} -T {threads} -o {output} > {log} 2>&1
             """
 
-
 if config.get("dexseq"):
-
     rule prepare_DEXseq_annotation:
         """
         generate a DEXseq annotation.gff from the annotation.gtf
         """
         input:
-            expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
+            expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf",**config),
         output:
-            expand("{genome_dir}/{{assembly}}/{{assembly}}.DEXseq_annotation.gff", **config),
+            expand("{genome_dir}/{{assembly}}/{{assembly}}.DEXseq_annotation.gff",**config),
         log:
-            expand("{log_dir}/counts_matrix/{{assembly}}.prepare_DEXseq_annotation.log", **config),
+            expand("{log_dir}/counts_matrix/{{assembly}}.prepare_DEXseq_annotation.log",**config),
         conda:
             "../envs/dexseq.yaml"
         shell:
@@ -579,18 +577,18 @@ if config.get("dexseq"):
         count exon usage
         """
         input:
-            bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config),
-            bai=expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam.bai", **config),
-            gff=expand("{genome_dir}/{{assembly}}/{{assembly}}.DEXseq_annotation.gff", **config),
-            required=_strandedness_report,
+            bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam",**config),
+            bai=expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam.bai",**config),
+            gff=expand("{genome_dir}/{{assembly}}/{{assembly}}.DEXseq_annotation.gff",**config),
+            report=rules.infer_strandedness.output,
         output:
-            expand("{counts_dir}/{{assembly}}-{{sample}}.DEXSeq_counts.tsv", **config),
+            expand("{counts_dir}/{{assembly}}-{{sample}}.DEXSeq_counts.tsv",**config),
         log:
-            expand("{log_dir}/counts_matrix/{{assembly}}-{{sample}}.DEXseq_counts.log", **config),
+            expand("{log_dir}/counts_matrix/{{assembly}}-{{sample}}.DEXseq_counts.log",**config),
         message:
             explain_rule("dexseq")
         params:
-            strandedness=lambda wildcards: strandedness_to_quant(wildcards, "dexseq"),
+            strandedness=lambda wildcards, input: get_strandedness(input.report[0]),
             endedness=lambda wildcards: "" if sampledict[wildcards.sample]["layout"] == "SINGLE" else "-p yes",
         conda:
             "../envs/dexseq.yaml"
