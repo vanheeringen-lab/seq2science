@@ -10,7 +10,6 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Added
 
-- MultiQC DESeq2 plots now show their values, similar to Deeptools plots.
 - TPM to gene counts conversion with pytxi
   - by default attempts to use the GTF file to convert transcript_ids to gene_names
   - otherwise will use MyGene.info
@@ -20,7 +19,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 - pytxi is now the default TPM to gene counts converter (over tximeta)
 - gene counts tables now use descriptive names (if given)
-- DESeq2 correlation plots now display correlation metrics in the figure
+- MultiQC DESeq2 correlation plots now display correlation metrics in the figure
 
 ## [0.7.1] - 2022-02-10
 
