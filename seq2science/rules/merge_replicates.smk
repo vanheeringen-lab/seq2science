@@ -65,10 +65,9 @@ def rep_to_descriptive(rep, brep=False):
     if brep and "biological_replicates" in samples:
         rep = samples[samples.biological_replicates == rep].biological_replicates[0]
     elif "descriptive_name" in samples:
+        col = samples.index
         if "technical_replicates" in samples:
-            col = samples.technical_replicates
-        else:
-            col = samples.index
+            col = samples.technical_replicates 
         rep = samples[col == rep].descriptive_name[0]
     return rep
 
