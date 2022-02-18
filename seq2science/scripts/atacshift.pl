@@ -52,7 +52,7 @@ while (my $line = <$in_sam>) {
   
   if (not ($read[1] & 0x04)) {  # read must be mapped to shift
 
-    # cut of unmapped reads & deletions
+    # cut of unmapped nucleotides & deletions
     # https://en.wikipedia.org/wiki/Sequence_alignment#Representations
     @cigar = split /(?<=[A-Z])/, $read[5];
     @cigar = grep {!/\d(D|N|S|H|P)/}  @cigar; 
