@@ -79,7 +79,7 @@ config["filter_on_size"] = filter_size = bool(config.get("min_template_length") 
 
 
 # ...for alignment and rna-seq
-for conf_dict in ["aligner", "quantifier", "trimmer"]:
+for conf_dict in ["aligner", "quantifier", "tpm2counts", "trimmer"]:
     if config.get(conf_dict, False):
         dict_key = list(config[conf_dict].keys())[0]
         for k, v in list(config[conf_dict].values())[0].items():

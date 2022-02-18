@@ -63,7 +63,7 @@ for key, value in config.items():
         config[key] = os.path.expanduser(value)
 
 # make sure that difficult data-types (yaml objects) are in correct data format
-for kw in ["aligner", "quantifier", "bam_sorter", "trimmer"]:
+for kw in ["aligner", "quantifier", "tpm2counts", "bam_sorter", "trimmer"]:
     if isinstance(config.get(kw, None), str):
         config[kw] = {config[kw]: {}}
 

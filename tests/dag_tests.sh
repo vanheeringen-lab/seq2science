@@ -404,6 +404,10 @@ if [ $1 = "rna-seq" ]; then
   seq2science run rna-seq --skip-rerun -nr --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions quiet=True config={samples:tests/alignment/dag_sample.tsv,fastq_dir:tests/local_test_results/fastq} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 decoy_transcripts 1
 
+  printf "\ndecoy tximeta\n"
+  seq2science run rna-seq --skip-rerun -nr --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=False config={aligner:star,quantifier:salmon,tpm2counts:tximeta} | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 linked_txome 1
+
   printf "\ntrackhub\n"
   seq2science run rna-seq --skip-rerun -nr --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={aligner:star,create_trackhub:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 salmon_quant 0
@@ -486,7 +490,6 @@ if [ $1 = "rna-seq" ]; then
   assert_rulecount $1 deseq2 1
   seq2science run rna-seq --skip-rerun -nr --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={quantifier:salmon,technical_replicates:merge,samples:tests/rna_seq/complex_samples.tsv} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 salmon_quant 8
-  assert_rulecount $1 linked_txome 2
   assert_rulecount $1 deseq2 1
 
   printf "\nmultiple assemblies and replicates - trackhub\n"

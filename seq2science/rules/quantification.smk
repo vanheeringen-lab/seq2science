@@ -3,7 +3,6 @@ all rules/logic related to counting/quantification of genes should be here.
 """
 
 import os
-import glob
 import os.path
 
 from seq2science.util import get_bustools_rid
@@ -30,7 +29,6 @@ if config["quantifier"] == "salmon":
         priority: 1
         shell:
             "gffread -w {output} -g {input.fa} {input.gtf} >> {log} 2>&1"
-
 
     rule decoy_transcripts:
         """
