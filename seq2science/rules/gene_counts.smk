@@ -2,20 +2,28 @@
 all rules/logic related to making gene count tables should be here.
 """
 
-if config["quantifier"] == "salmon":
+def get_counts(wildcards):
+    """return the salmon directories of the samples"""
+    quant_dirs = []
+    for sample in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index:
+        quant_dirs.append(f"{{result_dir}}/{{quantifier}}/{wildcards.assembly}-{sample}")
+    return expand(quant_dirs, **config)
 
-    def get_counts(wildcards):
-        quant_dirs = []
-        if config["quantifier"] in ["salmon", "star"]:
-            for sample in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index:
-                quant_dirs.append(f"{{result_dir}}/{{quantifier}}/{wildcards.assembly}-{sample}")
-        return expand(quant_dirs, **config)
+def get_names(wildcards):
+    """return the descriptive>technical_replicate>sample names of the samples"""
+    names = []
+    for sample in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index:
+        names.append(rep_to_descriptive(sample))
+    return names
 
-    def get_salmon_index(wildcards):
-        index = f"{{genome_dir}}/{wildcards.assembly}/index/{{quantifier}}"
-        if config["decoy_aware_index"]:
-            index += "_decoy_aware"
-        return expand(index, **config)
+def get_salmon_index(wildcards):
+    index = f"{{genome_dir}}/{wildcards.assembly}/index/{{quantifier}}"
+    if config.get("decoy_aware_index"):
+        index += "_decoy_aware"
+    return expand(index, **config)
+
+
+if config["quantifier"] == "salmon" and config["tpm2counts"] == "tximeta":
 
     rule linked_txome:
         """
@@ -30,12 +38,11 @@ if config["quantifier"] == "salmon":
             gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
             index_dir=get_salmon_index,
         output:
-            # symlink=expand(f"{{genome_dir}}/{{{{assembly}}}}/index/tximeta/{config['tximeta']['organism']}.{{{{assembly}}}}.{config['tximeta']['release']}.gtf", **config)
             index=expand("{genome_dir}/{{assembly}}/index/tximeta/linked_txome.json", **config),
         params:
-            source=config["tximeta"]["source"],
-            organism=config["tximeta"]["organism"],
-            release=config["tximeta"]["release"],
+            source=config["txi_source"],
+            organism=config["txi_organism"],
+            release=config["txi_release"],
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-linked_txome.log", **config),
         conda:
@@ -47,10 +54,10 @@ if config["quantifier"] == "salmon":
 
     rule count_matrix:
         """
-        Convert transcript abundance estimations to gene count estimations and merge 
+        Convert transcript abundance estimations to gene count estimations and merge
         gene counts per assembly.
 
-        Also outputs a single cell experiment object similar to ARMOR 
+        Also outputs a single cell experiment object similar to ARMOR
         (https://github.com/csoneson/ARMOR).
 
         Only works with Ensembl assemblies.
@@ -69,11 +76,37 @@ if config["quantifier"] == "salmon":
             "../envs/tximeta.yaml"
         params:
             reps=lambda wildcards, input: input,  # help resolve changes in input files
+            names=lambda wildcards: get_names(wildcards),
         resources:
             R_scripts=1,  # conda's R can have issues when starting multiple times
         script:
             f"{config['rule_dir']}/../scripts/quant_to_counts.R"
 
+
+elif config["quantifier"] == "salmon" and config["tpm2counts"] == "pytxi":
+
+    rule count_matrix:
+        """
+        Convert transcript abundance estimations to gene count estimations and merge 
+        gene counts per assembly.
+
+        Only works with genomepy assemblies (requires a README.txt with taxid).
+        """
+        input:
+            cts=get_counts,
+            fa=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+        output:
+            expand("{counts_dir}/{{assembly}}-counts.tsv",**config),
+        conda:
+            "../envs/pytxi.yaml"
+        params:
+            reps=lambda wildcards, input: input,# help resolve changes in input files
+            names=lambda wildcards: get_names(wildcards),
+            from_gtf=config["tx2gene_from_gtf"],
+        log:
+            expand("{log_dir}/counts_matrix/{{assembly}}-counts_matrix.log",**config),
+        script:
+            f"{config['rule_dir']}/../scripts/pytxi.py"
 
 else:
 
@@ -114,7 +147,7 @@ else:
                         skipfooter=5 if config["quantifier"] == "htseq" else 0,
                     )
                     sample_name = sample.split(wildcards.assembly + "-")[1].split(".counts.tsv")[0]
-                    col.columns = [sample_name]
+                    col.columns = [rep_to_descriptive(sample_name)]
                     counts = pd.concat([counts, col], axis=1)
 
                 counts.index.name = "gene"
@@ -153,7 +186,7 @@ if config.get("dexseq"):
                 for sample in input.cts:
                     col = pd.read_csv(sample, sep="\t", index_col=0, header=None, skipfooter=5)
                     sample_name = sample.split(wildcards.assembly + "-")[1].split(".DEXSeq_counts.tsv")[0]
-                    col.columns = [sample_name]
+                    col.columns = [rep_to_descriptive(sample_name)]
                     counts = pd.concat([counts, col], axis=1)
 
                 counts.index.name = "exon"

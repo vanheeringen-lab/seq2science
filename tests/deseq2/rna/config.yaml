@@ -20,6 +20,7 @@ trimmer: fastp
 
 # which quantifier to use
 quantifier: salmon
+tpm2counts: tximeta
 
 ##### aligner and filter options are not used for the gene counts matrix if the quantifier is Salmon
 

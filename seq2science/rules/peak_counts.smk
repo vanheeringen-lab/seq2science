@@ -151,6 +151,13 @@ def get_coverage_table_replicates(file_ext):
 
     return wrapped
 
+def get_names(wildcards):
+    names = [""]
+    for rep in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index:
+        names.append(rep_to_descriptive(rep, brep=False))
+    names = "\t".join(names)
+    return names
+
 
 rule coverage_table:
     """
@@ -171,6 +178,7 @@ rule coverage_table:
         "../envs/gimme.yaml"
     params:
         peak_width=2 * config["slop"],  # same width as the upstream files
+        names=lambda wildcards: get_names(wildcards),
         reps=lambda wildcards, input: input  # help resolve changes in input files
     resources:
         mem_gb=3,
@@ -183,6 +191,9 @@ rule coverage_table:
         2> {log} | grep -vE "^#" 2>> {log} |  
         awk 'BEGIN {{ FS = "@" }} NR==1{{gsub("{wildcards.assembly}-|.samtools-coordinate","",$0)}}; \
         {{print $0}}' >> {output}
+
+        # overwrite sample names with descriptive/replicate names
+        sed -i "2s/.*/{params.names}/" {output}
         """
 
 
@@ -330,7 +341,7 @@ rule onehot_peaks:
         expand("{benchmark_dir}/onehot_peaks/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     params:
         reps=lambda wildcards, input: input, # help resolve changes in input files
-        names=lambda wildcards: "\t" + "\t".join([rep for rep in breps[breps["assembly"] == ori_assembly(wildcards.assembly)].index])
+        names=lambda wildcards: "\t" + "\t".join([rep_to_descriptive(rep, True) for rep in breps[breps["assembly"] == ori_assembly(wildcards.assembly)].index])
     shell:
         """
         awk '{{print $1":"$2"-"$3}}' {input.combinedpeaks} > {output.real} 2> {log}

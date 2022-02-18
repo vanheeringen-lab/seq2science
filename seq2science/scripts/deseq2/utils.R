@@ -29,10 +29,11 @@ parse_contrast <- function(contrast) {
 
 
 #' load the samples.tsv file into a dataframe,
-#' filter for the right assembly, and
-#' collapse technical replicates (if present).
+#' filter for the right assembly,
+#' collapse technical replicates (if present) and
+#' convert to descriptive names (if present).
 parse_samples <- function(samples_file, assembly_name, replicates) {
-  samples <- read.delim(samples_file, sep = "\t", na.strings = "", comment.char = "#", stringsAsFactors = F, row.names = "sample")
+  samples <- read.delim(samples_file, sep = "\t", na.strings = "", comment.char = "#", stringsAsFactors = F, row.names = "sample", check.names = F)
   colnames(samples) <- gsub("\\s+", "", colnames(samples))  # strip whitespace from column names
   samples <- subset(samples, assembly == assembly_name)
 
@@ -50,6 +51,7 @@ parse_samples <- function(samples_file, assembly_name, replicates) {
   if ("descriptive_name" %in% colnames(samples)) {
     to_rename <- is.na(samples$descriptive_name)
     samples$descriptive_name[to_rename] <- as.character(rownames(samples)[to_rename])
+    rownames(samples) <- samples$descriptive_name
   }
 
   return(samples)
@@ -152,15 +154,19 @@ heatmap_aesthetics <- function(num_samples){
   if (num_samples < 16) {
     cell_dimensions <- as.integer(160/num_samples)  # minimal size to fit the legend
     fontsize        <- 8
+    fontsize_number <- 8
   } else if (num_samples < 24) {
     cell_dimensions <- 10  # pleasant size
     fontsize        <- 8
+    fontsize_number <- 8
   } else if (num_samples < 32) {
     cell_dimensions <- as.integer(25 - 0.625*num_samples)  # linear shrink
     fontsize        <- 8 - 0.15*num_samples
+    fontsize_number <- 7 - 0.15*num_samples
   } else {
     cell_dimensions <- 5  # minimal size
     fontsize        <- 3.2
+    fontsize_number <- 2.5
   }
   show_colnames <- ifelse(num_samples > 28, TRUE, FALSE)
   show_rownames <- !show_colnames
@@ -170,6 +176,7 @@ heatmap_aesthetics <- function(num_samples){
     list(
       "cell_dimensions"=cell_dimensions,
       "fontsize"=fontsize,
+      "fontsize_number"=fontsize_number,
       "show_colnames"=show_colnames,
       "show_rownames"=show_rownames,
       "colors"=colors
@@ -181,8 +188,7 @@ heatmap_aesthetics <- function(num_samples){
 #' assign names from coldata to the rows and columns of a matrix
 #' uses descriptive names if available, else rownames (can be technical replicates/sample names)
 heatmap_names <- function(mat, coldata) {
-  has_descriptive <- "descriptive_name" %in% colnames(coldata)
-  names <- if (has_descriptive) {coldata$descriptive_name} else {rownames(coldata)}
+  names <- rownames(coldata)
   rownames(mat) <- names
   colnames(mat) <- names
   return(mat)
@@ -199,6 +205,8 @@ heatmap_plot <- function(mat, title, heatmap_aes, legend_aes, out_pdf) {
     fontsize = heatmap_aes$fontsize,
     legend_breaks = legend_aes$breaks,
     legend_labels = legend_aes$labels,
+    display_numbers = T,  # show values in the plot
+    fontsize_number = heatmap_aes$fontsize_number,
     cellwidth  = heatmap_aes$cell_dimensions,
     cellheight = heatmap_aes$cell_dimensions,
     color = heatmap_aes$colors,

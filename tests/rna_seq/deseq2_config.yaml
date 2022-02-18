@@ -17,6 +17,7 @@ aligner: star
 quantifier:
   salmon:
     decoy_aware_index: True
+tpm2counts: tximeta
 
 # differential expression analysis
 contrasts:
