@@ -18,6 +18,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 - assembly stats log scale on the y-axis
 - s2s explain wont tell you about subsampling to -1 (all) reads
+- tn5 shift cigar string parsing edge-case (reference deletions/insertions)
 
 ## [0.7.1] - 2022-02-10
 
