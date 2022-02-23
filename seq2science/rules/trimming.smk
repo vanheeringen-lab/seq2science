@@ -136,7 +136,6 @@ elif config["trimmer"] == "fastp":
         benchmark:
             expand("{benchmark_dir}/fastp_SE/{{sample}}.benchmark.txt", **config)[0]
         params:
-            fqsuffix=config["fqsuffix"],
             threads=lambda wildcards, threads: max(1, threads - 2),
             config=config["trimoptions"],
         shell:
