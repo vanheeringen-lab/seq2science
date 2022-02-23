@@ -390,13 +390,15 @@ def _run(args, base_dir, workflows_dir, config_path):
         #   3. check which files would need a rerun, and exclude files we do
         #      not want to consider:
         #      - genome files, since provider will change to local
-        #      - trimming files, since these are always marked (TODO: why?)
+        #      - trimming files, since temp() output may be gone
+        #      - samtools_presort, since temp() output may be gone
         regex_patterns = [
             "(\/.+){2}.*\.(fa(\.fai|.sizes)?|gaps\.bed)$",  # match genome files
             "(\/.+){2}.*\.annotation\.(bed|gtf)$",  # match gene annotations
             ".*/.*_trimmed.*\.gz$",  # match trimming output
             ".*/trimming/.*\.fastp\.(json|html)$",  # match trimming qc output
             ".*/trimming/.*\.gz_trimming_report\.txt$",  # match trimming qc output
+            ".*\.samtools-coordinate-unsieved\.bam$",  # match samtools_presort
         ]
         targets = [target for target in targets if not any(re.match(pattern, target) for pattern in regex_patterns)]
 
