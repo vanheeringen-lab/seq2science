@@ -499,7 +499,7 @@ rule multiqc_header_info:
     output:
         temp(expand("{qc_dir}/header_info.yaml", **config)),
     params:
-        config={k: v for k, v in config.items() if k not in ["no_config_log", "cli_call"]},  # helps resolve changed config options, ignore no_config_log
+        config={k: v for k, v in config.items() if k not in ["no_config_log", "cli_call", "cores"]},  # helps resolve changed config options, ignore no_config_log
     run:
         import os
         from datetime import date
@@ -523,7 +523,7 @@ rule multiqc_explain:
     output:
         expand("{log_dir}/workflow_explanation_mqc.html", **config),
     params:
-        config={k: v for k, v in config.items() if k not in ["no_config_log", "cli_call"]},  # helps resolve changed config options, ignore no_config_log
+        config={k: v for k, v in config.items() if k not in ["no_config_log", "cli_call", "cores"]},  # helps resolve changed config options, ignore no_config_log
     run:
         import subprocess
 
@@ -647,7 +647,7 @@ rule multiqc_samplesconfig:
         config_used=len(workflow.overwrite_configfiles) > 0,
         configfile=workflow.overwrite_configfiles[-1],
         sanitized_samples=sanitized_samples,  # helps resolve changed config options
-        config={k: v for k, v in config.items() if k not in ["no_config_log", "cli_call"]},  # helps resolve changed config options, ignore no_config_log
+        config={k: v for k, v in config.items() if k not in ["no_config_log", "cli_call", "cores"]},  # helps resolve changed config options, ignore no_config_log
     conda:
         "../envs/htmltable.yaml"
     script:
