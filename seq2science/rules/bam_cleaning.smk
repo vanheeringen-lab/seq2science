@@ -288,7 +288,7 @@ rule samtools_sort:
     params:
         sort_order=lambda wildcards: "-n" if wildcards.sorting == "queryname" else "",
         out_dir=f"{config['result_dir']}/{config['aligner']}",
-        memory=lambda wildcards, input, output, threads: f"-m {int(1000 * round(config['bam_sort_mem']/threads, 3))}M",
+        memory=config['bam_sort_mem'],
     wildcard_constraints:
         sample=f"""({any_given("sample", "technical_replicates", "control")})(_allsizes)?""",
     threads: 2
@@ -302,7 +302,10 @@ rule samtools_sort:
         trap "rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
         rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2> {log}
 
-        samtools sort {params.sort_order} -@ {threads} {params.memory} {input} -o {output} \
+        # RAM per thread in MB
+        memory=$((1000*{params.memory}/{threads}))M
+
+        samtools sort {params.sort_order} -@ {threads} -m $memory {input} -o {output} \
         -T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
         """
 
