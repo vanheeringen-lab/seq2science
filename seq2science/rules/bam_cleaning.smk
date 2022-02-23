@@ -361,8 +361,6 @@ rule bam2cram:
         expand("{log_dir}/bam2cram/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/bam2cram/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.benchmark.txt", **config)[0]
-    params:
-        threads=lambda wildcards, input, output, threads: threads - 1,
     threads: 4
     conda:
         "../envs/samtools.yaml"
