@@ -17,11 +17,11 @@ sink(log, type="message")
 
 # log all variables for debugging purposes
 cat('# variables used for this analysis:\n')
-cat('seu_dir      <- "', seu_dir,         '"\n', sep = "")
-cat('rds          <- "', rds,             '"\n', sep = "")
-cat('isvelo       <- "', isvelo,          '"\n', sep = "")
-cat('seu_proj_name    <- "', seu_proj_name,          '"\n', sep = "")
-cat('seu_rdata    <- c("', paste(seu_rdata, collapse='","'), '")\n', sep = "")
+cat('seu_dir       <- "', seu_dir,         '"\n', sep = "")
+cat('rds           <- "', rds,             '"\n', sep = "")
+cat('isvelo        <- "', isvelo,          '"\n', sep = "")
+cat('seu_proj_name <- "', seu_proj_name,   '"\n', sep = "")
+cat('seu_rdata     <- c("', paste(seu_rdata, collapse='","'), '")\n', sep = "")
 cat('\n')
 
 # Helper function to merge multiple Seurat objects
