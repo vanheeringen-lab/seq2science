@@ -387,12 +387,16 @@ def _run(args, base_dir, workflows_dir, config_path):
         if not exit_code:
             sys.exit(1)
 
-        #   3. check which files would need a rerun, and clean remove files we do
-        #      not want to consider.
-        #      - genome files since provider will change to local
+        #   3. check which files would need a rerun, and exclude files we do
+        #      not want to consider:
+        #      - genome files, since provider will change to local
+        #      - trimming files, since these are always marked (TODO: why?)
         regex_patterns = [
-            "(\/.+){2}.*\.(fa|gaps)",  # match genome fasta
-            "(\/.+){2}.*\.annotation\.(bed|gtf)",  # match annotations
+            "(\/.+){2}.*\.(fa(\.fai|.sizes)?|gaps\.bed)$",  # match genome files
+            "(\/.+){2}.*\.annotation\.(bed|gtf)$",  # match gene annotations
+            ".*/.*_trimmed.*\.gz$",  # match trimming output
+            ".*/trimming/.*\.fastp\.(json|html)$",  # match trimming qc output
+            ".*/trimming/.*\.gz_trimming_report\.txt$",  # match trimming qc output
         ]
         targets = [target for target in targets if not any(re.match(pattern, target) for pattern in regex_patterns)]
 
