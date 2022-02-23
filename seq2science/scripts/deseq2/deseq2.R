@@ -214,6 +214,7 @@ if (is.na(batch)) {
     write.table(bcc, file=output_batch_corr_counts, quote = F, sep = '\t', row.names = F)
     cat('-batch corrected counts saved\n')
   } else {
+    batch_corr_counts <- read.table(output_batch_corr_counts, row.names = 1, header = T, stringsAsFactors = F, sep = '\t', check.names = F)
     cat('-batch corrected counts already exists\n')
   }
 

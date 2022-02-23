@@ -48,4 +48,4 @@ with open(logfile, "a") as log:  # appending because we mix streams (tqdm, logge
         txi.import_files(fnames, sample_names, tx2gene, species)
         txi.abundance.to_csv(f"{outdir}/{assembly}-TPM.tsv", sep="\t")
         txi.counts.to_csv(f"{outdir}/{assembly}-counts.tsv", sep="\t")
-        txi.length.to_csv(f"{outdir}/{assembly}-gene_length.tsv", sep="\t")
+        txi.length.to_csv(f"{outdir}/{assembly}-gene_lengths.tsv", sep="\t")
