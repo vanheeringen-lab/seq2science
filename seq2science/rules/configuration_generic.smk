@@ -521,3 +521,16 @@ if config.get("create_trackhub"):
     else:
         logger.error("There were some problems with locking the seq2science cache. Please try again in a bit.")
         sys.exit(1)
+
+
+def config_rerun_parser(configdict):
+    """
+    Makes a copy of the configdict with certain keys removed since they are not relevant
+    to rerunning inference.
+    """
+    configdict = copy.copy(configdict)
+    configdict.pop("no_config_log", None)
+    configdict.pop("cli_call", None)
+    configdict.pop("cores", None)
+
+    return configdict
