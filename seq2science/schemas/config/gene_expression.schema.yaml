@@ -3,16 +3,6 @@ $schema: "http://json-schema.org/draft-07/schema#"
 description: seq2science gene expression configuration
 
 properties:
-  # paths to store results
-  counts_dir:
-    description: directory where to store the gene counts for DGE analysis (defaults inside the result dir)
-    default: gene_counts
-    type: string
-  dge_dir:
-    description: directory where to store the workflow differential gene analysis output (defaults inside the result dir)
-    default: deseq2
-    type: string
-
   quantifier:
     description: which quantifier to use
     properties:
@@ -44,23 +34,38 @@ properties:
       htseq:
         htseq_flags: ''
 
-  tximeta:
-    description: tximeta is used to convert salmon output to gene counts. If you are using an assembly from Ensembl or GENCODE, you can refine the output by specifying these fields.
+  tpm2counts:
+    description: how do you wish to convert TPMs to gene counts?
     properties:
-      source:
-        description: the source of transcriptome
-        enum: [Ensembl, GENCODE, de-novo]
-        default: de-novo
-      organism:
-        description: organism (e.g. "Homo sapiens")
-        default: tximeta_file
-      release:
-        description: release number of the source database (e.g. "101")
-        default: 42
+      tximeta:
+        description: Tximeta uses Ensembl/GENCODE assemblies to convert TPMs to gene counts, and produces an additional R object with the various contents.
+        properties:
+          txi_source:
+            description: the source of transcriptome
+            enum: [ Ensembl, GENCODE, de-novo ]
+            default: de-novo
+          txi_organism:
+            description: organism (e.g. "Homo sapiens")
+            default: tximeta_file
+          txi_release:
+            description: release number of the source database (e.g. "101")
+            default: 42
+        default:
+          txi_source: de-novo
+          txi_organism: tximeta_file
+          txi_release: 42
+      pytxi:
+        description: Pytxi uses genomepy assemblies to convert TPMs to gene counts (using either the GTF file or MyGene.info).
+        properties:
+          tx2gene_from_gtf:
+            description: try to convert to gene names (symbols) using the GTF file. If false (or the GTF cannot help), pytxi uses MyGene.info.
+            type: boolean
+            default: true
+        default:
+          tx2gene_from_gtf: true
     default:
-      source: de-novo
-      organism: tximeta_file
-      release: 42
+      pytxi:
+        tx2gene_from_gtf: true
 
   ignore_strandedness:
     description: ignore/dont infer strand-specificity?
@@ -72,26 +77,3 @@ properties:
     description: output an exon counts matrix for use in DEXSeq.
     default: False
     type: boolean
-
-  # differential gene expression analysis
-  deseq2:
-    description: DESeq2 settings. See the DESeq2 vignette for details
-    properties:
-      multiple_testing_procedure:
-        default: BH
-        enum: [BH, IHW]
-        type: string
-      alpha_value:
-        default: 0.1
-        type: number
-      shrinkage_estimator:
-        default: apeglm
-        enum: [apeglm, ashr, normal]
-        type: string
-    default:
-      multiple_testing_procedure: BH
-      alpha_value: 0.1
-      shrinkage_estimator: apeglm
-
-  contrasts:
-    description: deseq2 design contrast(s)

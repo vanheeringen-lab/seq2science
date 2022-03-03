@@ -1,6 +1,6 @@
 # do onstart/onexit things
-sample_schemas = ['sample', 'assembly', 'strandedness', 'biological_replicate', 'technical_replicate']
-config_schemas = ['general', 'download', 'alignment_general', 'peakcalling', 'trackhub']
+sample_schemas = ['sample', 'assembly', 'technical_replicates', 'biological_replicates', 'strandedness']
+config_schemas = ['general', 'download', 'alignment_general', 'peakcalling', 'deseq2', 'trackhub']
 include: "../../rules/configuration.smk"
 
 
@@ -8,12 +8,14 @@ include: "../../rules/configuration.smk"
 include: f"{config['rule_dir']}/alignment.smk"
 include: f"{config['rule_dir']}/bam_cleaning.smk"
 include: f"{config['rule_dir']}/bigfiles.smk"
+include: f"{config['rule_dir']}/deseq2.smk"
 include: f"{config['rule_dir']}/get_genome.smk"
 include: f"{config['rule_dir']}/get_fastq.smk"
 include: f"{config['rule_dir']}/merge_replicates.smk"
 include: f"{config['rule_dir']}/peak_counts.smk"
 include: f"{config['rule_dir']}/peak_calling.smk"
 include: f"{config['rule_dir']}/qc.smk"
+include: f"{config['rule_dir']}/qc_peaks.smk"
 include: f"{config['rule_dir']}/trackhub.smk"
 include: f"{config['rule_dir']}/trimming.smk"
 
@@ -28,7 +30,7 @@ rule seq2science:
     """
     input:
         expand(
-            (["{result_dir}/trackhub"] if config['create_trackhub'] else []) +
+            (["{trackhub_dir}"]                     if config['create_trackhub'] else []) +
             (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []),
-            **{**config, **{'assemblies': all_assemblies}})
-        + count_table_output()
+            assemblies=all_assemblies, **config) +
+         count_table_output() + DE_contrasts

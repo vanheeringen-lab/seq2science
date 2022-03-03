@@ -1,4 +1,9 @@
-def get_ftype(peak_caller):
+"""
+all rules/logic related to the genomic peak calling should be here.
+"""
+
+
+def get_peak_ftype(peak_caller):
     """
     Get the filetype (narrowpeak, broadpeak, gappedpeak) for a peak caller.
     """
@@ -12,7 +17,11 @@ def get_ftype(peak_caller):
     elif "hmmratac" == peak_caller:
         ftype = "gappedPeak"
     else:
-        raise NotImplementedError()
+        logger.error(
+            f"The peak caller used for this workflow is not supported ({peak_caller}). "
+            "Please make an issue on github if this is unexpected behaviour!"
+        )
+        sys.exit(1)
     return ftype
 
 
@@ -36,8 +45,13 @@ def get_genrich_replicates(wildcards):
             if isinstance(control_names, str):  # single control, ignore nan
                 control = expand(f"{{final_bam_dir}}/{assembly}-{control_names}.sambamba-queryname.bam", **config)
             if isinstance(control_names, pd.Series):  # multiple controls
-                control = expand([f"{{final_bam_dir}}/{assembly}-{control_name}.sambamba-queryname.bam"
-                                  for control_name in control_names], **config)
+                control = expand(
+                    [
+                        f"{{final_bam_dir}}/{assembly}-{control_name}.sambamba-queryname.bam"
+                        for control_name in control_names
+                    ],
+                    **config,
+                )
         return {
             "control": control,
             "reps": expand(
@@ -69,7 +83,7 @@ rule genrich_pileup:
     params:
         params=config["peak_caller"].get("genrich", " "),
         control=lambda wildcards, input: f"-c {input.control}" if "control" in input else "",
-        reps=lambda wildcards, input: input  # help resolve changes in input files
+        reps=lambda wildcards, input: input,  # help resolve changes in input files
     resources:
         mem_gb=8,
     shell:
@@ -92,7 +106,8 @@ rule call_peak_genrich:
         expand("{log_dir}/call_peak_genrich/{{fname}}_peak.log", **config),
     benchmark:
         expand("{benchmark_dir}/call_peak_genrich/{{fname}}.benchmark.txt", **config)[0]
-    message: explain_rule("call_peak_genrich")
+    message:
+        explain_rule("call_peak_genrich")
     conda:
         "../envs/genrich.yaml"
     params:
@@ -113,6 +128,7 @@ def get_fastq_qc_file(wildcards):
         return sorted(expand("{qc_dir}/fastqc/{{sample}}_{fqext1}_trimmed_fastqc.zip", **config))
     elif config["trimmer"] == "fastp":
         return expand("{qc_dir}/trimming/{{sample}}.fastp.json", **config)
+
 
 def get_macs2_bam(wildcards):
     if not config["macs2_keep_mates"] is True or sampledict[wildcards.sample].get("layout") == "SINGLE":
@@ -139,24 +155,60 @@ elif config["trimmer"] == "fastp":
     get_macs2_kmer = "kmer_size=$(jq -r .summary.after_filtering.read1_mean_length {input.fastq_qc})"
 
 
+rule get_effective_genome_size:
+    """
+    Get the effective genome size for a kmer length. Macs2 requires
+    an estimation of the effective genome size to better estimate how (un)likely it
+    is to have a certain number of reads on a position. The actual genome size is
+    not the best indication in these cases, since reads in repetitive regions
+    (for a certain kmer length) can not possible align on some locations.
+    """
+    input:
+        genome=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+        fastq_qc=get_fastq_qc_file,
+    output:
+        expand("{result_dir}/macs2/{{assembly}}-{{sample}}.genome_size", **config),
+    message:
+        explain_rule("get_effective_genome_size")
+    conda:
+        "../envs/khmer.yaml"
+    params:
+        name=(
+            lambda wildcards, input: wildcards.sample
+            if sampledict[wildcards.sample]["layout"] == "SINGLE"
+            else [f"{wildcards.sample}_{config['fqext1']}"]
+        ),
+    log:
+        expand("{log_dir}/get_genome_size/{{assembly}}_{{sample}}.log", **config),
+    benchmark:
+        expand("{benchmark_dir}/get_genome_size/{{assembly}}_{{sample}}.benchmark.txt", **config)[0]
+    shell:
+        # extract the kmer size, and get the effective genome size from it
+        get_macs2_kmer +
+        """
+        unique-kmers.py {input.genome} -k $kmer_size --quiet 2>&1 | grep -P -o '(?<=\.fa: ).*' > {output} 2> {log}
+        """
+
+
 rule macs2_callpeak:
     """
     Call peaks using macs2.
-    Macs2 requires a genome size, which we estimate from the amount of unique kmers of the average read length.
+    Macs2 requires a genome size, which is estimated from the amount of unique kmers of the average read length.
     """
     input:
         unpack(get_control_macs),
         bam=get_macs2_bam,
-        fastq_qc=get_fastq_qc_file,
+        genome_size=rules.get_effective_genome_size.output,
     output:
         expand("{result_dir}/macs2/{{assembly}}-{{sample}}_{macs2_types}", **config),
     log:
         expand("{log_dir}/macs2_callpeak/{{assembly}}-{{sample}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/macs2_callpeak/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
-    message: explain_rule("macs2_callpeak")
+    message:
+        explain_rule("macs2_callpeak")
     wildcard_constraints:
-        sample=any_given("sample", "technical_replicate")
+        sample=any_given("sample", "technical_replicates"),
     params:
         name=(
             lambda wildcards, input: wildcards.sample
@@ -167,7 +219,10 @@ rule macs2_callpeak:
         macs_params=config["peak_caller"].get("macs2", ""),
         format=(
             lambda wildcards: "BAMPE"
-            if (sampledict[wildcards.sample]["layout"] == "PAIRED" and "--shift" not in config["peak_caller"].get("macs2", ""))
+            if (
+                sampledict[wildcards.sample]["layout"] == "PAIRED"
+                and "--shift" not in config["peak_caller"].get("macs2", "")
+            )
             else "BAM"
         ),
         control=lambda wildcards, input: f"-c {input.control}" if "control" in input else "",
@@ -176,12 +231,8 @@ rule macs2_callpeak:
     conda:
         "../envs/macs2.yaml"
     shell:
-        # extract the kmer size, and get the effective genome size from it
-        get_macs2_kmer +
         """
-        echo "preparing to run unique-kmers.py with -k $kmer_size" >> {log}
-        GENSIZE=$(unique-kmers.py {params.genome} -k $kmer_size --quiet 2>&1 | grep -P -o '(?<=\.fa: ).*')
-        echo "kmer size: $kmer_size, and effective genome size: $GENSIZE" >> {log}
+        GENSIZE=$(cat {input.genome_size})
 
         # call peaks
         macs2 callpeak --bdg -t {input.bam} {params.control} --outdir {config[result_dir]}/macs2/ -n {wildcards.assembly}-{wildcards.sample} \
@@ -199,7 +250,8 @@ rule keep_mates:
         expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config),
     output:
         expand("{final_bam_dir}/{{assembly}}-{{sample}}-mates.samtools-coordinate.bam", **config),
-    message: explain_rule("keep_mates")
+    message:
+        explain_rule("keep_mates")
     log:
         expand("{log_dir}/keep_mates/{{assembly}}-{{sample}}.log", **config),
     benchmark:
@@ -208,7 +260,6 @@ rule keep_mates:
         "../envs/pysam.yaml"
     script:
         f"{config['rule_dir']}/../scripts/keep_mates.py"
-
 
 
 rule hmmratac_genome_info:
@@ -266,14 +317,16 @@ rule hmmratac:
         """
 
 
-if "biological_replicate" in samples:
+if "biological_replicates" in samples:
     if config["biological_replicates"] == "idr":
+
         ruleorder: idr > macs2_callpeak > call_peak_genrich
+
 
         def get_idr_replicates(wildcards):
             reps = []
             for replicate in treps[
-                (treps["assembly"] == ori_assembly(wildcards.assembly)) & (treps["biological_replicate"] == wildcards.condition)
+                (treps["assembly"] == ori_assembly(wildcards.assembly)) & (treps["biological_replicates"] == wildcards.condition)
             ].index:
                 reps.append(
                     f"{config['result_dir']}/{wildcards.peak_caller}/{wildcards.assembly}-{replicate}_peaks.{wildcards.ftype}"
@@ -294,15 +347,18 @@ if "biological_replicate" in samples:
             output:
                 true=expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{condition}}_peaks.{{ftype}}", **config),
                 temp=temp(expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{condition}}_peaks.tmp.{{ftype}}", **config)),
-            message: explain_rule("idr")
+            message:
+                explain_rule("idr")
             log:
                 expand("{log_dir}/idr/{{assembly}}-{{condition}}-{{peak_caller}}-{{ftype}}.log", **config),
             benchmark:
-                expand("{benchmark_dir}/idr/{{assembly}}-{{condition}}-{{peak_caller}}-{{ftype}}.benchmark.txt", **config)[0]
+                expand(
+                    "{benchmark_dir}/idr/{{assembly}}-{{condition}}-{{peak_caller}}-{{ftype}}.benchmark.txt", **config
+                )[0]
             params:
                 rank=lambda wildcards: "--rank 13" if wildcards.peak_caller == "hmmratac" else "",
                 nr_reps=lambda wildcards, input: len(input),
-                reps=lambda wildcards, input: input  # help resolve changes in input files
+                reps=lambda wildcards, input: input,  # help resolve changes in input files
             conda:
                 "../envs/idr.yaml"
             shell:
@@ -323,6 +379,7 @@ if "biological_replicate" in samples:
 
     elif config.get("biological_replicates", "") == "fisher":
         if "macs2" in config["peak_caller"]:
+
             ruleorder: macs_cmbreps > macs2_callpeak > call_peak_genrich
 
             rule macs_bdgcmp:
@@ -341,7 +398,7 @@ if "biological_replicate" in samples:
                 resources:
                     mem_gb=4,
                 params:
-                    reps=lambda wildcards, input: input  # help resolve changes in input files
+                    reps=lambda wildcards, input: input,  # help resolve changes in input files
                 conda:
                     "../envs/macs2.yaml"
                 shell:
@@ -355,7 +412,8 @@ if "biological_replicate" in samples:
                     [
                         f"{{result_dir}}/macs2/{wildcards.assembly}-{replicate}_qvalues.bdg"
                         for replicate in treps[
-                            (treps["assembly"] == ori_assembly(wildcards.assembly)) & (treps["biological_replicate"] == wildcards.condition)
+                            (treps["assembly"] == ori_assembly(wildcards.assembly))
+                            & (treps["biological_replicates"] == wildcards.condition)
                         ].index
                     ],
                     **config,
@@ -364,7 +422,8 @@ if "biological_replicate" in samples:
             def get_macs_replicate(wildcards):
                 """the original peakfile, to link if there is only 1 sample for a condition"""
                 replicate = treps[
-                    (treps['assembly'] == ori_assembly(wildcards.assembly)) & (treps['biological_replicate'] == wildcards.condition)
+                    (treps["assembly"] == ori_assembly(wildcards.assembly))
+                    & (treps["biological_replicates"] == wildcards.condition)
                 ].index
                 return expand(
                     f"{{result_dir}}/macs2/{wildcards.assembly}-{replicate[0]}_peaks.{wildcards.ftype}",
@@ -381,10 +440,13 @@ if "biological_replicate" in samples:
                     bdgcmp=get_macs_replicates,
                     treatment=get_macs_replicate,
                 output:
-                    tmpbdg=temp(expand("{result_dir}/macs2/{{assembly,.+(?<!_qvalues)}}-{{condition}}-{{ftype}}.bdg", **config)),
+                    tmpbdg=temp(
+                        expand("{result_dir}/macs2/{{assembly,.+(?<!_qvalues)}}-{{condition}}-{{ftype}}.bdg", **config)
+                    ),
                     tmppeaks=temp(expand("{result_dir}/macs2/{{assembly}}-{{condition}}_peaks.temp.{{ftype}}", **config)),
                     peaks=expand("{result_dir}/macs2/{{assembly}}-{{condition}}_peaks.{{ftype}}", **config),
-                message: explain_rule("macs_cmbreps")
+                message:
+                    explain_rule("macs_cmbreps")
                 log:
                     expand("{log_dir}/macs_cmbreps/{{assembly}}-{{condition}}-{{ftype}}.log", **config),
                 benchmark:
@@ -395,7 +457,7 @@ if "biological_replicate" in samples:
                     nr_reps=lambda wildcards, input: len(input.bdgcmp),
                     function="bdgpeakcall" if "--broad" not in config["peak_caller"].get("macs2", "") else "bdgbroadcall",
                     config=config["macs_cmbreps"],
-                    reps=lambda wildcards, input: input  # help resolve changes in input files
+                    reps=lambda wildcards, input: input,  # help resolve changes in input files
                 resources:
                     mem_gb=4,
                 shell:

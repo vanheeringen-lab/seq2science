@@ -3,43 +3,47 @@
 This is the user's entry-point for the seq2science tool.
 """
 import os
+import re
 import sys
 import argparse
+import argcomplete
 import shutil
-import webbrowser
-import re
 import inspect
-import contextlib
-import yaml
-import psutil
-
-import xdg
 
 # we need to be able to get the parser from the file without a valid seq2science installation
 try:
-    import snakemake
-    from snakemake.logging import logger, setup_logger
-
     import seq2science
     from seq2science.logging import log_welcome
-
 except ImportError:
     pass
 
-try:
-    import mamba
-    conda_frontend = "mamba"
-except ImportError:
-    conda_frontend = "conda"
+
+def _import():
+    """
+    this function serves that we can do imports as late as possible, for faster auto-completion
+    """
+    global webbrowser, contextlib, yaml, psutil, snakemake, logger, setup_logger, xdg, datetime, _logging
+    import yaml
+    import psutil
+    import webbrowser
+    import contextlib
+    import datetime
+
+    import snakemake
+    from snakemake.logging import logger, setup_logger, _logging
+    import xdg
 
 
-def main():
+def seq2science_main():
     # set helpful paths
     base_dir = os.path.dirname(inspect.getfile(seq2science))
     workflows_dir = os.path.join(base_dir, "workflows")
 
     parser = seq2science_parser(workflows_dir)
     args = parser.parse_args()
+
+    # most imports after argparsing for faster tab-completion
+    _import()
 
     # now run the command
     if args.command == "init":
@@ -57,44 +61,56 @@ def main():
         _docs()
 
 
+def deseq2science_main():
+    # set helpful paths
+    base_dir = os.path.dirname(inspect.getfile(seq2science))
+
+    parser = deseq2science_parser()
+    args = parser.parse_args()
+
+    # most imports after argparsing for faster tab-completion
+    _import()
+
+    # now run the command
+    _deseq(args, base_dir)
+
+
 def seq2science_parser(workflows_dir="./seq2science/workflows/"):
     """
     Make the seq2science parser.
     """
     # setup the parser
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-v", "--version", action="version", version=f"seq2science: v{seq2science.__version__}"
-    )
+    parser.add_argument("-v", "--version", action="version", version=f"seq2science: v{seq2science.__version__}")
     subparsers = parser.add_subparsers(dest="command")
     subparsers.required = True
     init = subparsers.add_parser(
         "init",
         help="Initialise a workflow with an example config and samples file.",
         description="Each workflow requires a configuration and samples file to run. "
-                    'Running "seq2science init {workflow}" initialises a default '
-                    "configuration and samples file for the specific workflow."
+        'Running "seq2science init {workflow}" initialises a default '
+        "configuration and samples file for the specific workflow.",
     )
     global run
     run = subparsers.add_parser(
         "run",
         help="Run a complete workflow.",
         description="Run a complete workflow. This requires that a config and samples file "
-        "are either present in the current directory, or passed as an argument."
+        "are either present in the current directory, or passed as an argument.",
     )
     explain = subparsers.add_parser(
         "explain",
         help="Write a materials & methods section.",
         description="Explains what has/will be done for the workflow. This prints a string which can serve"
-                    " as a skeleton for your material & methods section."
+        " as a skeleton for your material & methods section.",
     )
     clean = subparsers.add_parser(
         "clean",
         help="Remove all cached sample files and conda environments.",
         description="At the start of each workflow run, seq2science starts with installing environments for each "
-                    "rule. It also stores the GEO soft files of public samples in its cache. These environments can get"
-                    " large and it might be best to remove them when you are done with an analysis. \n"
-                    "seq2science clean will clean up these files for you."
+        "rule. It also stores the GEO soft files of public samples in its cache. These environments can get"
+        " large and it might be best to remove them when you are done with an analysis. \n"
+        "seq2science clean will clean up these files for you.",
     )
     docs = subparsers.add_parser(
         "docs",
@@ -105,7 +121,9 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
 
     # init, run and explain can use all workflows
     for subparser in [init, run, explain]:
-        subparser.add_argument("workflow", choices=[dir.replace("_", "-") for dir in os.listdir(workflows_dir)])
+        subparser.add_argument(
+            "workflow", metavar="WORKFLOW", choices=[dir.replace("_", "-") for dir in os.listdir(workflows_dir)]
+        )
 
     # init arguments
     init.add_argument(
@@ -115,46 +133,38 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         help="The path to the directory where to initialise the config and samples files.",
     )
 
+    init.add_argument(
+        "-f",
+        "--force",
+        default=False,
+        help="Overwrite existing samples.tsv and config.yaml silently.",
+        action="store_true",
+    )
+
     global core_arg
     core_arg = run.add_argument(
-        "-j", "--cores",
+        "-j",
+        "--cores",
         metavar="N",
         type=int,
         # required=True,  # --dryruns and --profile can overwrite None
         help="Use at most N cores in parallel. Must be at least 2. When "
-             "executing on a cluster, this number controls the maximum number"
-             "of parallel jobs.",
+        "executing on a cluster, this number controls the maximum number"
+        "of parallel jobs.",
     )
     run.add_argument(
-        "-n", "--dryrun",
-        help="Do not execute anything, and display what would be done.",
-        action='store_true'
+        "-n", "--dryrun", help="Do not execute anything, and display what would be done.", action="store_true"
     )
+    run.add_argument("-r", "--reason", help="Print the reason for each executed rule.", action="store_true")
     run.add_argument(
-        "-r", "--reason",
-        help="Print the reason for each executed rule.",
-        action='store_true'
+        "--skip-rerun", help="Skip the check if samples or configuration has been changed.", action="store_true"
     )
+    run.add_argument("-k", "--keep-going", help="Go on with independent jobs if a job fails.", action="store_true")
     run.add_argument(
-        "--skip-rerun",
-        help="Skip the check if samples or configuration has been changed.",
-        action="store_true"
+        "--rerun-incomplete", help="Re-run all jobs the output of which is recognized as incomplete.", action="store_true"
     )
-    run.add_argument(
-        "-k", "--keep-going",
-        help="Go on with independent jobs if a job fails.",
-        action='store_true'
-    )
-    run.add_argument(
-        "--rerun-incomplete",
-        help="Re-run all jobs the output of which is recognized as incomplete.",
-        action='store_true'
-    )
-    run.add_argument(
-        "--unlock",
-        help="Remove a lock on the working directory.",
-        action='store_true'
-    )
+    run.add_argument("--unlock", help="Remove a lock on the working directory.", action="store_true")
+    explain.add_argument("--hyperref", help="Print urls as html hyperref", action="store_true")
     # run/explain arguments
     for subparser in [run, explain]:
         subparser.add_argument(
@@ -170,7 +180,8 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         )
         global profile_arg
         profile_arg = subparser.add_argument(
-            "-p", "--profile",
+            "-p",
+            "--profile",
             metavar="PROFILE NAME",
             help="Use a seq2science profile. Profiles can be taken from: https://github.com/s2s-profiles",
         )
@@ -181,6 +192,54 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
             metavar="FILE",
             help="The path to the config file.",
         )
+
+    # enable tab completion
+    # exclusion only works on the main parser unfortunately, but it's better than nothing,
+    # plus it might be supported later?
+    argcomplete.autocomplete(parser, exclude=["-c", "-p", "-k" "-r" "-n", "-j", "-h", "-v"])
+
+    return parser
+
+
+def deseq2science_parser():
+    parser = argparse.ArgumentParser(
+        description="DESeq2 wrapper that works with s2s samples.tsv and counts.tsv",
+    )
+    parser.add_argument(
+        "-v", "--version", action="version", version=f"seq2science: v{seq2science.__version__}"
+    )
+    # DESeq2 wrapper arguments
+    parser.add_argument(
+        "-d",
+        "--design",
+        default="",  # must be an empty string for R's arg checking + docs CLI argument
+        help="design contrast (e.g. column_knockouts_controls)",
+    )
+    parser.add_argument(
+        "-s",
+        "--samples",
+        default="",  # must be an empty string for R's arg checking + docs CLI argument
+        help="samples.tsv with a column containing the contrast arguments "
+             "(sample order consistent with the counts.tsv)",
+    )
+    parser.add_argument(
+        "-c",
+        "--counts",
+        default="",  # must be an empty string for R's arg checking + docs CLI argument
+        help="counts.tsv (sample order consistent with the samples.tsv)",
+    )
+    parser.add_argument(
+        "-o",
+        "--outdir",
+        default="",  # must be an empty string for R's arg checking + docs CLI argument
+        help="output directory",
+    )
+    parser.add_argument(
+        "--docs",
+        action='store_true',
+        help="open de DESeq2 wrapper documentation (with examples!)",
+    )
+    argcomplete.autocomplete(parser)
 
     return parser
 
@@ -194,12 +253,10 @@ def _init(args, workflows_dir, config_path):
         dest = os.path.join(os.path.dirname(config_path), file)
 
         copy_file = True
-        if os.path.exists(dest):
+        if os.path.exists(dest) and args.force is False:
             choices = {"yes": True, "y": True, "no": False, "n": False}
 
-            sys.stdout.write(
-                f"File: {dest} already exists. Do you want to overwrite it? (yes/no) "
-            )
+            sys.stdout.write(f"File: {dest} already exists. Do you want to overwrite it? (yes/no) ")
             while True:
                 choice = input().lower()
                 if choice in choices:
@@ -230,8 +287,12 @@ def add_profile_args(profile_file, parsed_args):
         if k not in parsed_args:
             parsed_args[k] = int(v) if isinstance(v, str) and v.isdigit() else v
 
+            # when reading e.g. resources it gets treated as a list, split it into key value pairs
+            if isinstance(parsed_args[k], list) and all("=" in item for item in parsed_args[k]):
+                parsed_args[k] = {item.split("=")[0]: float(item.split("=")[1]) for item in parsed_args[k]}
+
         elif k in parsed_args and isinstance(parsed_args[k], dict):
-            for k2, v2 in profile[k].items():
+            for k2, v2 in parsed_args[k].items():
                 if k2 not in parsed_args[k]:
                     parsed_args[k][k2] = int(v2) if isinstance(v2, str) and v2.isdigit() else v2
 
@@ -249,15 +310,17 @@ def _run(args, base_dir, workflows_dir, config_path):
         sys.exit(1)
 
     # parse the args
-    parsed_args = {"snakefile": os.path.join(workflows_dir, args.workflow.replace("-", "_"), "Snakefile"),
-                   "use_conda": True,
-                   "conda_frontend": conda_frontend,
-                   "conda_prefix": os.path.join(base_dir, ".snakemake"),
-                   "dryrun": args.dryrun,
-                   "printreason": args.reason,
-                   "keepgoing": args.keep_going,
-                   "unlock": args.unlock,
-                   "force_incomplete": args.rerun_incomplete}
+    parsed_args = {
+        "snakefile": os.path.join(workflows_dir, args.workflow.replace("-", "_"), "Snakefile"),
+        "use_conda": True,
+        "conda_frontend": "mamba",
+        "conda_prefix": os.path.join(base_dir, ".snakemake"),
+        "dryrun": args.dryrun,
+        "printreason": args.reason,
+        "keepgoing": args.keep_going,
+        "unlock": args.unlock,
+        "force_incomplete": args.rerun_incomplete,
+    }
 
     # get the additional snakemake options
     snakemake_options = args.snakemakeOptions if args.snakemakeOptions is not None else dict()
@@ -289,51 +352,69 @@ def _run(args, base_dir, workflows_dir, config_path):
     if "cluster" in parsed_args and not "nodes" in parsed_args:
         parsed_args["nodes"] = parsed_args["cores"]
 
+    # store how seq2science was called
+    parsed_args["config"]["cli_call"] = sys.argv
+
     core_parser(parsed_args)
     parsed_args["config"].update({"cores": parsed_args["cores"]})
     resource_parser(parsed_args)
 
     # run snakemake/seq2science
     #   1. pretty welcome message
-    setup_logger()
-    log_welcome(logger, parsed_args)
+    setup_seq2science_logger(parsed_args)
+    log_welcome(logger, args.workflow)
     if not args.skip_rerun or args.unlock:
         #   2. start a dryrun checking which files need to be created, and check if
         #      any params changed, which means we have to remove those files and
         #      continue from there
-        logger.info("Checking if seq2science was run already, if something in the configuration was changed, and if so, if "
-                    "seq2science needs to re-run any jobs.")
+        logger.info(
+            "Checking if seq2science was run already, if something in the configuration was changed, and if so, if "
+            "seq2science needs to re-run any jobs."
+        )
 
         with seq2science.util.CaptureStdout() as targets, seq2science.util.CaptureStderr() as errors:
-            exit_code = snakemake.snakemake(**{**parsed_args, **{
-                "list_params_changes": True,
-                "quiet": False,
-                "log_handler": lambda x: None,  # don't show any of the logs
-                "keep_logger": True
-            }})
+            exit_code = snakemake.snakemake(
+                **{
+                    **parsed_args,
+                    **{
+                        "list_params_changes": True,
+                        "quiet": False,
+                        "log_handler": lambda x: None,  # don't show any of the logs
+                        "keep_logger": True,
+                    },
+                }
+            )
         if not exit_code:
             sys.exit(1)
 
-        #   3. check which files would need a rerun, and clean remove files we do
-        #      not want to consider.
-        #      - genome files since provider will change to local
+        #   3. check which files would need a rerun, and exclude files we do
+        #      not want to consider:
+        #      - genome files, since provider will change to local
+        #      - trimming files, since temp() output may be gone
+        #      - samtools_presort, since temp() output may be gone
         regex_patterns = [
-            "(\/.+){2}[^_custom]+\.(fa|gaps)",  # match genome fasta
-            "(\/.+){2}.+\.annotation.(bed|gtf)",  # match annotations
+            "(\/.+){2}.*\.(fa(\.fai|.sizes)?|gaps\.bed)$",  # match genome files
+            "(\/.+){2}.*\.annotation\.(bed|gtf)$",  # match gene annotations
+            ".*/.*_trimmed.*\.gz$",  # match trimming output
+            ".*/trimming/.*\.fastp\.(json|html)$",  # match trimming qc output
+            ".*/trimming/.*\.gz_trimming_report\.txt$",  # match trimming qc output
+            ".*\.samtools-coordinate-unsieved\.bam$",  # match samtools_presort
         ]
         targets = [target for target in targets if not any(re.match(pattern, target) for pattern in regex_patterns)]
 
-        #   4. if there are any targets left, force to recreate those targets plus the final results (rule seq2science_
+        #   4. if there are any targets left, force to recreate those targets plus the final results (rule seq2science)
         if len(targets):
             targets += ["seq2science"]
             parsed_args["forcerun"] = targets
             parsed_args["targets"] = targets
             parsed_args["forcetargets"] = True
             parsed_args["keep_logger"] = True
+        logger.info("Done. Now starting the real run.")
 
-    logger.info("Done. Now starting the real run.")
+    logger.printreason = parsed_args["printreason"]
     logger.stream_handler.setStream(sys.stdout)
     parsed_args["config"]["no_config_log"] = True
+
     #   5. start the "real" run where jobs actually get started
     exit_code = snakemake.snakemake(**parsed_args)
 
@@ -354,10 +435,12 @@ def _explain(args, base_dir, workflows_dir, config_path):
         sys.exit(1)
 
     # parse the args
-    parsed_args = {"snakefile": os.path.join(workflows_dir, args.workflow.replace("-", "_"), "Snakefile"),
-                   "dryrun": True,
-                   "forceall": True,
-                   "quiet": False}
+    parsed_args = {
+        "snakefile": os.path.join(workflows_dir, args.workflow.replace("-", "_"), "Snakefile"),
+        "dryrun": True,
+        "forceall": True,
+        "quiet": False,
+    }
 
     # get the additional snakemake options
     snakemake_options = args.snakemakeOptions if args.snakemakeOptions is not None else dict()
@@ -374,13 +457,27 @@ def _explain(args, base_dir, workflows_dir, config_path):
 
     # cores
     parsed_args["cores"] = 999
+    parsed_args["config"]["hyperref"] = args.hyperref
 
     # starting message
-    rules_used = {"start": f"\nPreprocessing of reads was done automatically with workflow tool "
-                           f"seq2science v{seq2science.__version__} (https://doi.org/10.5281/zenodo.3921913)."}
+    if args.hyperref:
+        rules_used = {
+            "start": f"\nPreprocessing of reads was done automatically with workflow tool "
+            f"<a href=https://doi.org/10.5281/zenodo.3921913>seq2science v{seq2science.__version__}</a>."
+        }
+    else:
+        rules_used = {
+            "start": f"\nPreprocessing of reads was done automatically with workflow tool "
+            f"seq2science v{seq2science.__version__} (https://doi.org/10.5281/zenodo.3921913)."
+        }
 
     def log_handler(log):
-        if log["level"] == "job_info" and "msg" in log and log["msg"] is not None and log["name"] not in rules_used:
+        if (
+            log["level"] == "job_info"
+            and "msg" in log
+            and log["name"] not in rules_used
+            and log["msg"] not in (list(rules_used.values()) + [None])
+        ):
             rules_used[log["name"]] = log["msg"]
 
     parsed_args["log_handler"] = [log_handler]
@@ -394,7 +491,10 @@ def _explain(args, base_dir, workflows_dir, config_path):
         print(" ".join(rules_used.values()))
         sys.exit(0)
     else:
-        print("Oh no! Something went wrong... Please let us know: https://github.com/vanheeringen-lab/seq2science/issues ")
+        print(
+            "\nOh no! Something went wrong... "
+            "Please let us know: https://github.com/vanheeringen-lab/seq2science/issues "
+        )
         sys.exit(1)
 
 
@@ -409,7 +509,7 @@ def _clean(base_dir):
     shutil.rmtree(os.path.expanduser(os.path.join(xdg.XDG_CACHE_HOME, "seq2science")), ignore_errors=True)
 
     # remove historic seq2science cache location
-    shutil.rmtree(os.path.expanduser(f'~/.config/seq2science/'), ignore_errors=True)
+    shutil.rmtree(os.path.expanduser(f"~/.config/seq2science/"), ignore_errors=True)
 
     print("All cleaned up!")
 
@@ -432,9 +532,7 @@ class _StoreDictKeyPair(argparse.Action):
 
     def __init__(self, option_strings, dest, nargs=None, **kwargs):
         self._nargs = nargs
-        super(_StoreDictKeyPair, self).__init__(
-            option_strings, dest, nargs=nargs, **kwargs
-        )
+        super(_StoreDictKeyPair, self).__init__(option_strings, dest, nargs=nargs, **kwargs)
 
     def __call__(self, parser, namespace, values, option_string=None):
         # TODO: cleanup
@@ -443,16 +541,18 @@ class _StoreDictKeyPair(argparse.Action):
             k, v = kv.split("=")
 
             if ":" in v:
-                assert "}" in v if "{" in v else True, \
-                    f"\n\nThe dictionary you provided on the command line ('{k}') cannot be parsed:" \
+                assert "}" in v if "{" in v else True, (
+                    f"\n\nThe dictionary you provided on the command line ('{k}') cannot be parsed:"
                     f"\n'{v}' (TIP: is there a space in there perhaps?)\n"
-                pair = list(filter(None, re.split('{|:| |}', v)))
-                assert len(pair) == 2, \
-                    f"\n\nThe dictionary you provided on the command line ('{k}') cannot be parsed:" \
+                )
+                pair = list(filter(None, re.split("{|:| |}", v)))
+                assert len(pair) == 2, (
+                    f"\n\nThe dictionary you provided on the command line ('{k}') cannot be parsed:"
                     f"\n'{v}' contains a broken key-value pair: '{pair}' (TIP: is there a space in there perhaps?)\n"
-                if pair[1].lower() == 'true':
+                )
+                if pair[1].lower() == "true":
                     pair[1] = True
-                elif pair[1].lower() == 'false':
+                elif pair[1].lower() == "false":
                     pair[1] = False
                 elif isinstance(pair[1], str) and pair[1].isdigit():
                     pair[1] = int(pair[1])
@@ -460,9 +560,10 @@ class _StoreDictKeyPair(argparse.Action):
             elif "[" in v:
                 v = re.sub("\[|\]", "", v).split(",")
             else:
-                assert k != "config", \
-                    f"\n\nThe dictionary you provided on the command line ('{k}') cannot be parsed:" \
+                assert k != "config", (
+                    f"\n\nThe dictionary you provided on the command line ('{k}') cannot be parsed:"
                     f"\n'{v}' should be a key-value pair (TIP: use '{v}:True' perhaps?)\n"
+                )
 
             if k in my_dict:
                 my_dict[k].update(v)
@@ -479,7 +580,7 @@ def core_parser(parsed_args):
     """
     cores = parsed_args["cores"]
     sorters = ["samtools_presort"]
-    aligners = ["bwa_mem", "bwa_mem2", "bowtie2_align", "hisat2_align", "star_align"]
+    aligners = ["bowtie2_align", "bwa_mem", "bwa_mem2", "hisat2_align", "minimap2_align", "star_align"]
 
     d_sorters_threads = 2
     d_aligner_threads = 10
@@ -509,12 +610,14 @@ def resource_parser(parsed_args):
     Memory limit changes depending on local execution or cluster
     """
     # set some defaults
-    parsed_args["resources"] = {**{'parallel_downloads': 3, 'deeptools_limit': 16, 'R_scripts': 1},
-                                **parsed_args.get("resources", {})}
+    parsed_args["resources"] = {
+        **{"parallel_downloads": 3, "genomepy_downloads": 1, "deeptools_limit": 16, "R_scripts": 1},
+        **parsed_args.get("resources", {}),
+    }
 
     if "mem_mb" in parsed_args["resources"]:
         # convert memory to gigabytes
-        parsed_args["resources"]["mem_gb"] = round(parsed_args["resources"]["mem_mb"] / 1024.)
+        parsed_args["resources"]["mem_gb"] = round(parsed_args["resources"]["mem_mb"] / 1024.0)
         del parsed_args["resources"]["mem_mb"]
 
     # no need to get system limit when specified
@@ -528,3 +631,80 @@ def resource_parser(parsed_args):
         # otherwise assume system memory
         mem = psutil.virtual_memory().total / 1024 ** 3
         parsed_args["resources"]["mem_gb"] = round(mem)
+
+
+def setup_seq2science_logger(parsed_args):
+    setup_logger()
+    if not parsed_args["dryrun"]:
+        seq2science_logfile = os.path.abspath(
+            "seq2science." + datetime.datetime.now().isoformat().replace(":", "") + ".log"
+        )
+        logger.logfile = seq2science_logfile
+        logger.get_logfile = lambda: seq2science_logfile
+        logger.logfile_handler = _logging.FileHandler(seq2science_logfile)
+        logger.logger.addHandler(logger.logfile_handler)
+
+
+def _deseq(args, base_dir):
+    # docs
+    if args.docs is True:
+        url = "https://vanheeringen-lab.github.io/seq2science/content/DESeq2.html"
+        if not webbrowser.open(url):
+            print(url)
+        return
+
+    # insufficient args
+    if not all(
+            len(a) > 0 for a in [args.counts, args.design, args.outdir, args.samples]
+    ):
+        logger.info("4 arguments expected: contrast, samples_file, counts_file and outdir.")
+        return
+
+    import hashlib
+    import subprocess as sp
+
+    def conda_path(yml):
+        """
+        Find the path to a snakemake conda environment.
+        Does not work with containers.
+        """
+        # mimic snakemake's conda env hashing:
+        # https://github.com/snakemake/snakemake/blob/
+        # 1349254de57ced0466bfe1e98f0f7c2a1b247d2d/snakemake/deployment/conda.py#L91
+        env_dir = os.path.dirname(os.path.dirname(yamlfile))
+        env_dir = os.path.join(env_dir, ".snakemake")
+        env_dir = os.path.realpath(env_dir)
+        md5hash = hashlib.md5()
+        md5hash.update(env_dir.encode())
+        md5hash.update(open(yml, "rb").read())
+        env_hash = md5hash.hexdigest()
+        path = os.path.join(env_dir, env_hash)
+        return path
+
+    def subprocess_run(_cmd):
+        retcode = sp.call(_cmd, shell=True)
+        print("")  # no newline otherwise
+        if retcode != 0:
+            sys.exit(retcode)
+
+    # find/create the deseq2 conda env
+    yamlfile = os.path.join(base_dir, "envs", "deseq2.yaml")
+    env_prefix = conda_path(yamlfile)
+    if not os.path.exists(env_prefix):
+        logger.info(f"Creating conda environment seq2science/envs/deseq2.yaml...")
+        cmd = f"mamba env create -p {env_prefix} -f {yamlfile} -q > /dev/null"
+        subprocess_run(cmd)
+
+    # we don't even need to activate the env
+    rscript = os.path.join(env_prefix, "bin", "Rscript")
+    script = os.path.join(base_dir, "scripts", "deseq2", "deseq2.R")
+    cmd = f"{rscript} {script} {args.design} {args.samples} {args.counts} {args.outdir}"
+    subprocess_run(cmd)
+
+    # example command:
+    #
+    # deseq2science \
+    # -d batch+condition_day2_day0 \
+    # -s tests/deseq2/rna/samples.tsv \
+    # -c tests/deseq2/rna/counts/GRCh38.p13-counts.tsv \
+    # -o tests/local_test_results/deseq2science

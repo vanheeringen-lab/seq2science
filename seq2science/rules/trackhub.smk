@@ -1,10 +1,15 @@
+"""
+all rules/logic related to the final UCSC trackhub (or assembly hub) should be here.
+"""
+
+import glob
 import os.path
+import logging
+
 from Bio import SeqIO
 from multiprocessing import Pool
 from seq2science.util import color_picker, color_gradient, hsv_to_ucsc, unique, shorten
-
 import trackhub
-import logging
 
 # remove the logger created by trackhub (in trackhub.upload)
 # (it adds global logging of all stdout messages, duplicating snakemake's logging)
@@ -140,7 +145,9 @@ rule softmask_track_1:
             # seqIO.parse returns contig data.
             # Each contig is scanned by get_masked_regions (in parallel by imap_unordered).
             # As soon as a contig is scanned, the output is yielded and written to file.
-            for softmasked_regions_per_contig in p.imap_unordered(get_masked_regions, SeqIO.parse(genome_handle, "fasta")):
+            for softmasked_regions_per_contig in p.imap_unordered(
+                get_masked_regions, SeqIO.parse(genome_handle, "fasta")
+            ):
                 bed_handle.write(softmasked_regions_per_contig)
             p.close()
 
@@ -175,8 +182,8 @@ rule trackhub_index:
     """
     Generate a searchable annotation & index for each assembly
 
-    sources: https://genome.ucsc.edu/goldenPath/help/hubQuickStartSearch.html
-             https://www.biostars.org/p/272649/
+    sources: https://genome.ucsc.edu/goldenPath/help/hubQuickStartSearch.html, 
+    https://www.biostars.org/p/272649/
     """
     input:
         sizes=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
@@ -194,6 +201,8 @@ rule trackhub_index:
         expand("{log_dir}/trackhub/{{assembly}}.index.log", **config),
     benchmark:
         expand("{benchmark_dir}/trackhub/{{assembly}}.index.benchmark.txt", **config)[0]
+    message:
+        explain_rule("trackhub")
     conda:
         "../envs/ucsc.yaml"
     shell:
@@ -203,7 +212,7 @@ rule trackhub_index:
 
         # check if gtf has gene_names > if l!=0, use gene_name, else transcript_id
         l=$(head -n 100 {input.gtf} | (grep gene_name || true) | wc -l)
-        
+
         # switch columns 1 (transcript_id) and 12 (gene_name)
         awk -v len=$l 'BEGIN {{ FS = "\t" }}; {{ if(len!="0") {{ t = $1; $1 = $12; $12 = t; print; }} else {{ print; }} }}' {output.genePred} > {output.genePrednamed}
 
@@ -273,45 +282,44 @@ def get_colors(asmbly):
     # pick colors for each main track
     main_tracks = unique(breps[breps["assembly"] == asmbly].index)
     if "colors" in breps:
-        mc = breps[breps.index.isin(main_tracks)].colors\
-            .reset_index().drop_duplicates(breps.index.name).set_index(cols[0])\
-            ['colors'].to_list()
+        mc = (
+            breps[breps.index.isin(main_tracks)]
+            .colors.reset_index()
+            .drop_duplicates(breps.index.name)
+            .set_index(cols[0])["colors"]
+            .to_list()
+        )
     else:
         mc = color_picker(len(main_tracks))
 
     # create a gradient for each main track color
     for n, rep in enumerate(main_tracks):
-        tracks_per_main_track = (1 + len(treps_from_brep[(rep, asmbly)])) # ATAC-/ChIP-seq: 1 for breps + 1 per trep. RNA-seq: 1 for forward/reverse strand
+        tracks_per_main_track = 1 + len(
+            treps_from_brep[(rep, asmbly)]
+        )  # ATAC-/ChIP-seq: 1 for breps + 1 per trep. RNA-seq: 1 for forward/reverse strand
         palletes[rep] = color_gradient(mc[n], tracks_per_main_track)
 
     return palletes
 
 
-def strandedness_to_trackhub(sample):
-    """
-    translate strandedness to the name and number of bigwigs to include in the trackhub
-    """
-    if get_workflow() != "rna_seq":
-        return [""]
-    else:
-        strandedness = pd.read_csv(_strandedness_report(wildcards=None), sep='\t', dtype='str', index_col=0)
-        s = strandedness[strandedness.index == sample].strandedness[0]
-        return [".fwd", ".rev"] if s in ["yes", "forward", "reverse"] else [""]
-
-
 def strandedness_in_assembly(assembly):
     """
-    check if there are any stranded samples for this assembly. Returns bool.
+    Check if there are any stranded samples for this assembly.
+
+    Returns False if no reports have been generated yet.
     """
     if get_workflow() != "rna_seq":
         return False
-    else:
-        strandedness = pd.read_csv(_strandedness_report(wildcards=None), sep='\t', dtype='str', index_col=0)
-        samples_in_assembly = treps[treps["assembly"] == assembly].index
-        strandedness_in_assembly = strandedness.filter(samples_in_assembly, axis=0).strandedness
-        return not strandedness_in_assembly.str.fullmatch('no').all()
 
-    
+    reports = glob.glob(f"{config['qc_dir']}/strandedness/{assembly}-*.strandedness.txt")
+    for rep in reports:
+        strandedness = get_strandedness(rep)
+        if strandedness != "no":
+            return True
+    else:
+        return False
+
+
 def create_trackhub():
     """
     Create a UCSC trackhub.
@@ -340,13 +348,15 @@ def create_trackhub():
     """
     out = {
         "hub": None,  # the complete trackhub
-        "files": []   # the files required (for the snakemake input)
+        "files": []  # the files required (for the snakemake input)
     }
 
     # universal hub file
     hub = trackhub.Hub(
         hub=config.get("hubname", f"{sequencing_protocol}_trackhub"),
-        short_label=config.get("shortlabel", f"Seq2science {sequencing_protocol} hub"),  # title of the control box in the genome browser (for trackhubs)
+        short_label=config.get(
+            "shortlabel", f"Seq2science {sequencing_protocol} hub"
+        ),  # title of the control box in the genome browser (for trackhubs)
         long_label=config.get(
             "longlabel",
             f"Automated {sequencing_protocol} trackhub generated by seq2science: \nhttps://github.com/vanheeringen-lab/seq2scsience",
@@ -394,13 +404,13 @@ def create_trackhub():
                 name="annotation",
                 label="Gene and Genome Annotation",
                 priority=1,  # group priority overrules track priority
-                default_is_closed=True
+                default_is_closed=True,
             )
             hub_group = trackhub.groups.GroupDefinition(
                 name="trackhub",
                 label=config.get("shortlabel", f"seq2science {sequencing_protocol} hub"),
                 priority=2,  # group priority overrules track priority
-                default_is_closed=False
+                default_is_closed=False,
             )
             groups_file = trackhub.groups.GroupsFile([annotation_group, hub_group])
             genome.add_groups(groups_file)
@@ -468,7 +478,7 @@ def create_trackhub():
         # workflow specific data
         if get_workflow() in ["atac_seq", "chip_seq"]:
             for peak_caller in config["peak_caller"]:
-                ftype = get_ftype(peak_caller)
+                ftype = get_peak_ftype(peak_caller)
                 ttype = "bigNarrowPeak" if ftype == "narrowPeak" else "bigBed"
                 peak_caller_suffix = "" if len(config["peak_caller"]) == 1 else f" {peak_caller}"
                 pcs = shorten(peak_caller_suffix, 5)
@@ -498,7 +508,7 @@ def create_trackhub():
                     short_label=f"{pcp}peaks",  # <= 17 characters suggested
                     long_label=peaks_view_name,
                     view="peaks",
-                    visibility="dense",         # peaks aren't nice beyond dense
+                    visibility="dense",  # peaks aren't nice beyond dense
                     tracktype=ttype,
                 )
                 composite.add_view(peaks_view)
@@ -506,21 +516,19 @@ def create_trackhub():
                 # ...one view to bring them all...
                 signal_view_name = f"{peak_caller_prefix}signal"
                 signal_view = trackhub.ViewTrack(
-                        name=trackhub.helpers.sanitize(signal_view_name),
-                        short_label=f"{pcp}signal",    # <= 17 characters suggested
-                        long_label=signal_view_name,
-                        view="signal",
-                        visibility="full",             # default
-                        maxHeightPixels = "100:50:8",  # with 50 the y-axis is visible
-                        tracktype="bigWig",
-                    )
+                    name=trackhub.helpers.sanitize(signal_view_name),
+                    short_label=f"{pcp}signal",  # <= 17 characters suggested
+                    long_label=signal_view_name,
+                    view="signal",
+                    visibility="full",  # default
+                    maxHeightPixels="100:50:8",  # with 50 the y-axis is visible
+                    tracktype="bigWig",
+                )
                 composite.add_view(signal_view)
 
                 # ...and in subgroup bind them.
                 subgroup = trackhub.SubGroupDefinition(
-                    name='conditions',
-                    label='Conditions',
-                    mapping={}  # breps are added to this filter
+                    name="conditions", label="Conditions", mapping={}  # breps are added to this filter
                 )
                 composite.add_subgroups([subgroup])
 
@@ -533,18 +541,18 @@ def create_trackhub():
                     file = f"{config['result_dir']}/{peak_caller}/{assembly}-{brep}.big{ftype}"
                     priority += 1.0
                     track = trackhub.Track(
-                        name            = trackhub.helpers.sanitize(f"{descriptive}{peak_caller_suffix} pk"),
-                        tracktype       = ttype,
-                        short_label     = f"{shorten(descriptive, 14-len(pcs), ['signs', 'vowels', 'center'])}{pcs} pk",  # <= 17 characters suggested
-                        long_label      = f"{descriptive}{peak_caller_suffix} peaks",
-                        subgroups       = {"conditions": safedescr},
-                        source          = file,
-                        visibility      = "full",  # full/squish/pack/dense/hide visibility of the track
-                        color           = hsv_to_ucsc(palletes[brep][0]),
-                        priority        = priority  # the order this track will appear in
+                        name=trackhub.helpers.sanitize(f"{descriptive}{peak_caller_suffix} pk"),
+                        tracktype=ttype,
+                        short_label=f"{shorten(descriptive, 14-len(pcs), ['signs', 'vowels', 'center'])}{pcs} pk",  # <= 17 characters suggested
+                        long_label=f"{descriptive}{peak_caller_suffix} peaks",
+                        subgroups={"conditions": safedescr},
+                        source=file,
+                        visibility="full",  # full/squish/pack/dense/hide visibility of the track
+                        color=hsv_to_ucsc(palletes[brep][0]),
+                        priority=priority,  # the order this track will appear in
                     )
                     if ttype != "bigNarrowPeak":
-                        track.autoScale       = "on",  # allow the track to autoscale
+                        track.autoScale = ("on",)  # allow the track to autoscale
                         track.maxHeightPixels = "100:50:8"  # with 50 the y-axis is shown
                     out["files"].append(file)
                     peaks_view.add_tracks(track)
@@ -554,20 +562,22 @@ def create_trackhub():
                         file = f"{config['result_dir']}/{peak_caller}/{assembly}-{trep}.bw"
                         priority += 1.0
                         track = trackhub.Track(
-                            name            = trackhub.helpers.sanitize(f"{rep_to_descriptive(trep)}{peak_caller_suffix} bw"),
-                            tracktype       = "bigWig",
-                            short_label     = f"{shorten(rep_to_descriptive(trep), 14-len(pcs), ['signs', 'vowels', 'center'])}{pcs} bw",  # <= 17 characters suggested
-                            long_label      = f"{rep_to_descriptive(trep)}{peak_caller_suffix} bigWig",
-                            subgroups       = {"conditions": safedescr},
-                            source          = file,
-                            visibility      = "full",  # full/squish/pack/dense/hide visibility of the track
-                            color           = hsv_to_ucsc(palletes[brep][n+1]),
-                            priority        = priority  # the order this track will appear in
+                            name=trackhub.helpers.sanitize(f"{rep_to_descriptive(trep)}{peak_caller_suffix} bw"),
+                            tracktype="bigWig",
+                            short_label=f"{shorten(rep_to_descriptive(trep), 14-len(pcs), ['signs', 'vowels', 'center'])}{pcs} bw",  # <= 17 characters suggested
+                            long_label=f"{rep_to_descriptive(trep)}{peak_caller_suffix} bigWig",
+                            subgroups={"conditions": safedescr},
+                            source=file,
+                            visibility="full",  # full/squish/pack/dense/hide visibility of the track
+                            color=hsv_to_ucsc(palletes[brep][n + 1]),
+                            priority=priority,  # the order this track will appear in
                         )
                         out["files"].append(file)
                         signal_view.add_tracks(track)
 
         elif get_workflow() in ["alignment", "rna_seq"]:
+            has_strandedness =  strandedness_in_assembly(assembly)
+
             # one composite track to rule them all...
             name = f"{sequencing_protocol} samples"
             safename = trackhub.helpers.sanitize(name)
@@ -591,31 +601,29 @@ def create_trackhub():
                 short_label="fwd/all reads",  # <= 17 characters suggested
                 long_label=fwd_view_name,
                 view="forward",
-                visibility="full",             # default
-                maxHeightPixels = "100:50:8",  # with 50 the y-axis is visible
+                visibility="full",  # default
+                maxHeightPixels="100:50:8",  # with 50 the y-axis is visible
                 tracktype="bigWig",
             )
             composite.add_view(fwd_view)
 
             # ...one view to bring them all...
-            if strandedness_in_assembly(asmbly):  # only added if there are reverse strand bams
+            if has_strandedness:  # only added if there are reverse strand bams
                 rev_view_name = "reverse strand reads"
                 rev_view = trackhub.ViewTrack(
-                        name=trackhub.helpers.sanitize(rev_view_name),
-                        short_label="rev reads",    # <= 17 characters suggested
-                        long_label=rev_view_name,
-                        view="reverse",
-                        visibility="full",             # default
-                        maxHeightPixels = "100:50:8",  # with 50 the y-axis is visible
-                        tracktype="bigWig",
-                    )
+                    name=trackhub.helpers.sanitize(rev_view_name),
+                    short_label="rev reads",  # <= 17 characters suggested
+                    long_label=rev_view_name,
+                    view="reverse",
+                    visibility="full",  # default
+                    maxHeightPixels="100:50:8",  # with 50 the y-axis is visible
+                    tracktype="bigWig",
+                )
                 composite.add_view(rev_view)
 
             # ...and in subgroup bind them.
             subgroup = trackhub.SubGroupDefinition(
-                name='samples',
-                label='Samples',
-                mapping={}  # breps are added to this filter
+                name="samples", label="Samples", mapping={}  # breps are added to this filter
             )
             composite.add_subgroups([subgroup])
 
@@ -625,55 +633,70 @@ def create_trackhub():
                 safedescr = trackhub.helpers.sanitize(descriptive)
                 subgroup.mapping[safedescr] = descriptive
 
-                for n, bw in enumerate(strandedness_to_trackhub(trep)):
-                    view = rev_view if bw == ".rev" else fwd_view
-                    bigwig_suffix = "" if bw == "" else (" forward" if bw == ".fwd" else " reverse")
-                    bw_suffix = "" if bw == "" else (" fw" if bw == ".fwd" else " rv")
-                    file = f"{config['bigwig_dir']}/{assembly}-{trep}.{config['bam_sorter']}-{config['bam_sort_order']}{bw}.bw"
+                # unstranded/forward strand
+                file = f"{config['bigwig_dir']}/{assembly}-{trep}.{config['bam_sorter']}-{config['bam_sort_order']}.bw"
+                priority += 1.0
+                track = trackhub.Track(
+                    name=trackhub.helpers.sanitize(f"{descriptive}"),
+                    tracktype="bigWig",
+                    short_label=shorten(descriptive,17,["signs", "vowels", "center"]),  # <= 17 characters suggested
+                    long_label=descriptive,
+                    subgroups={"samples": safedescr},
+                    source=file,
+                    visibility="full",# full/squish/pack/dense/hide visibility of the track
+                    color=hsv_to_ucsc(palletes[trep][0]),
+                    priority=priority,# the order this track will appear in
+                )
+                out["files"].append(file)
+                fwd_view.add_tracks(track)
+
+                # reverse strand
+                if has_strandedness:
+                    file = f"{config['bigwig_dir']}/{assembly}-{trep}.{config['bam_sorter']}-{config['bam_sort_order']}.rev.bw"
                     priority += 1.0
                     track = trackhub.Track(
-                        name            = trackhub.helpers.sanitize(f"{descriptive}{bigwig_suffix}"),
-                        tracktype       = "bigWig",
-                        short_label     = shorten(descriptive, 17-len(bw_suffix), ['signs', 'vowels', 'center']) + bw_suffix,  # <= 17 characters suggested
-                        long_label      = descriptive + bigwig_suffix,
-                        subgroups       = {"samples": safedescr},
-                        source          = file,
-                        visibility      = "full",  # full/squish/pack/dense/hide visibility of the track
-                        color           = hsv_to_ucsc(palletes[trep][n]),
-                        priority        = priority  # the order this track will appear in
+                        name=trackhub.helpers.sanitize(f"{descriptive} reverse"),
+                        tracktype="bigWig",
+                        short_label=shorten(descriptive,14,["signs", "vowels", "center"]) + " rv",# <= 17 characters suggested
+                        long_label=descriptive + " reverse",
+                        subgroups={"samples": safedescr},
+                        source=file,
+                        visibility="full",# full/squish/pack/dense/hide visibility of the track
+                        color=hsv_to_ucsc(palletes[trep][1]),
+                        priority=priority,# the order this track will appear in
                     )
-                    out["files"].append(file)
-                    view.add_tracks(track)
+                    # out["files"].append(file)
+                    rev_view.add_tracks(track)
 
     return out
 
 
-def get_trackhub_files(wildcards):
-    """
-    all files used in create_trackhub()
-    """
-    return create_trackhub()["files"]
+# generate the list once
+trackhub_files = []
+if config.get("create_trackhub"):
+    trackhub_files = create_trackhub()["files"]
 
 
 rule trackhub:
     """
     Generate a UCSC track hub/assembly hub. 
-    
+
     To view the hub, the output directory must be hosted on an web accessible location, 
     and the location of the hub.txt file given the UCSC genome browser at 
     My Data > Track Hubs > My Hubs
     """
     input:
-        get_trackhub_files
+        trackhub_files,
     output:
-        directory(f"{config['result_dir']}/trackhub"),
-    message: explain_rule("trackhub")
+        directory(config["trackhub_dir"]),
+    message:
+        explain_rule("trackhub")
     log:
         expand("{log_dir}/trackhub/trackhub.log", **config),
     benchmark:
         expand("{benchmark_dir}/trackhub/trackhub.benchmark.txt", **config)[0]
     params:
-        samples  # helps resolve changed params if e.g. descriptive names change
+        samples,  # helps resolve changed params if e.g. descriptive names change
     run:
         import sys
         import trackhub
@@ -701,7 +724,7 @@ rule trackhub:
 
                 # add group scaling to the composite tracks
                 trackdb_file = f"{output[0]}/{get_ucsc_name(assembly)[1]}/trackDb.txt"
-                with open(trackdb_file , "r") as tf:
+                with open(trackdb_file, "r") as tf:
                     contents = tf.readlines()
 
                 with open(trackdb_file, "w") as tf:

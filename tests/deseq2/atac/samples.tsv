@@ -1,0 +1,11 @@
+# ATAC-test
+sample	assembly	technical_replicates	biological_replicates	batch	condition	note
+sample1	GRCh38.p13	C0_1	C0	C	day0
+sample2	GRCh38.p13	C0_2	C0	C	day0
+sample3	GRCh38.p13	C2_1	C2	C	day2
+sample4	GRCh38.p13	C2_2	C2	C	day2
+sample5	GRCh38.p13	H0_1	H0	H	day0
+sample6	GRCh38.p13	H0_2	H0	H	day0
+sample7	GRCh38.p13	H2_1	H2	H	day2
+sample8	GRCh38.p13	H2_2	H2	H	day2	these will be merged
+replicate	GRCh38.p13	H2_2	H2	H	day2	these will be merged

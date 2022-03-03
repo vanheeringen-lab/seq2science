@@ -1,0 +1,8 @@
+$schema: "http://json-schema.org/draft-06/schema#"
+
+description: an entry in the sample sheet
+
+properties:
+  biological_replicates:
+    type: string
+    description: which experimental condition the sample belongs to, allowing for group analysis through idr or fisher.

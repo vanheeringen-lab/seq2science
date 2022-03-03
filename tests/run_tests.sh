@@ -13,6 +13,7 @@ fi
 
 CORES=28
 set -e  # Exit immediately if a command exits with a non-zero status.
+touch -m tests/tinydata/*  # update testdata timestamps (prevent unexpected reruns)
 
 if [ $1 = "cleanup_files" ]; then
   rm -rf tests/local_test_results
@@ -25,9 +26,6 @@ if [ $1 = "cleanup_files" ]; then
   rm -rf tests/tinydata/gene_id2name.tsv
   rm -rf tests/tinydata/tinydata.2bit
   rm -rf tests/tinydata/tinydata.DEXseq*
-  rm -rf tests/tinydata/tinydata.fa.fai
-  rm -rf tests/tinydata/tinydata.fa.sizes
-  rm -rf tests/tinydata/tinydata.gaps.bed
   rm -rf tests/tinydata/tinydata.gc5Base.bw
   rm -rf tests/tinydata/tinydata.transcripts.fa
   rm -rf tests/tinydata/tinydata_softmasking.bb
@@ -47,13 +45,13 @@ if [ $1 = "download" ]; then
 
   # test basic downloading 1 PE and 1 SE
   printf "\ndownload SE and PE fastqs\n"
-  seq2science run download-fastq --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions show_failed_logs=True
+  seq2science run download-fastq --cores $CORES -r --configfile tests/$WF/default_config.yaml --snakemakeOptions show_failed_logs=True printshellcmds=True
 
   WF=alignment
 
   # test genome & annotation downloading
   printf "\ndownload genome & annotation\n"
-  seq2science run alignment --cores $CORES --configfile tests/$WF/remote_genome_n_sample.yaml --snakemakeOptions until=[get_genome_annotation] show_failed_logs=True
+  seq2science run alignment --cores $CORES -r --configfile tests/$WF/remote_genome_n_sample.yaml --snakemakeOptions until=[get_genome_annotation] show_failed_logs=True
 
   test_ran=1
 fi
@@ -63,12 +61,12 @@ if [ $1 = "prep_align" ]; then
   WF=alignment
 
   printf "\ncreating environments\n"
-  seq2science run $WF --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True conda_create_envs_only=true config={samples:tests/$WF/remote_genome_n_sample.tsv,aligner:bowtie2}
-  seq2science run $WF --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True conda_create_envs_only=true config={samples:tests/$WF/remote_genome_n_sample.tsv,aligner:bwa-mem}
-  seq2science run $WF --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True conda_create_envs_only=true config={samples:tests/$WF/remote_genome_n_sample.tsv,aligner:bwa-mem2}
-  seq2science run $WF --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True conda_create_envs_only=true config={samples:tests/$WF/remote_genome_n_sample.tsv,aligner:hisat2}
-  seq2science run $WF --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True conda_create_envs_only=true config={samples:tests/$WF/remote_genome_n_sample.tsv,aligner:minimap2}
-  seq2science run $WF --cores $CORES --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True conda_create_envs_only=true config={samples:tests/$WF/remote_genome_n_sample.tsv,aligner:star}
+  seq2science run $WF --cores $CORES -r --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True conda_create_envs_only=true config={samples:tests/$WF/remote_genome_n_sample.tsv,aligner:bowtie2}
+  seq2science run $WF --cores $CORES -r --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True conda_create_envs_only=true config={samples:tests/$WF/remote_genome_n_sample.tsv,aligner:bwa-mem}
+  seq2science run $WF --cores $CORES -r --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True conda_create_envs_only=true config={samples:tests/$WF/remote_genome_n_sample.tsv,aligner:bwa-mem2}
+  seq2science run $WF --cores $CORES -r --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True conda_create_envs_only=true config={samples:tests/$WF/remote_genome_n_sample.tsv,aligner:hisat2}
+  seq2science run $WF --cores $CORES -r --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True conda_create_envs_only=true config={samples:tests/$WF/remote_genome_n_sample.tsv,aligner:minimap2}
+  seq2science run $WF --cores $CORES -r --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True conda_create_envs_only=true config={samples:tests/$WF/remote_genome_n_sample.tsv,aligner:star}
 
   test_ran=1
 fi
@@ -79,9 +77,9 @@ if [ $1 = "bowtie2" ]; then
   WF=alignment
   RESULTS_DIR=tests/local_test_results/${ALIGNER}
   mkdir -p $RESULTS_DIR
-  let "c = $CORES / 5"
+  let "c = $CORES / 6"
 
-  seq2science run $WF --cores $c --configfile tests/$WF/default_config.yaml --snakemakeOptions config={samples:tests/alignment/local_sample.tsv,fastq_dir:../../tinyfastq,genome_dir:tests,result_dir:$RESULTS_DIR,aligner:$ALIGNER} show_failed_logs=True
+  seq2science run $WF --cores $c -r --configfile tests/$WF/default_config.yaml --snakemakeOptions config={samples:tests/alignment/local_sample.tsv,fastq_dir:../../tinyfastq,genome_dir:tests,result_dir:$RESULTS_DIR,aligner:$ALIGNER} show_failed_logs=True
 
   test_ran=1
 fi
@@ -94,7 +92,7 @@ if [ $1 = "bwa-mem1" ]; then
   mkdir -p $RESULTS_DIR
   let "c = $CORES / 6"
 
-  seq2science run $WF --cores $c --configfile tests/$WF/default_config.yaml --snakemakeOptions until=[samtools_presort] config={samples:tests/alignment/local_sample.tsv,fastq_dir:../../tinyfastq,genome_dir:tests,result_dir:$RESULTS_DIR,aligner:$ALIGNER} show_failed_logs=True
+  seq2science run $WF --cores $c -r --configfile tests/$WF/default_config.yaml --snakemakeOptions until=[samtools_presort] config={samples:tests/alignment/local_sample.tsv,fastq_dir:../../tinyfastq,genome_dir:tests,result_dir:$RESULTS_DIR,aligner:$ALIGNER} show_failed_logs=True
 
   test_ran=1
 fi
@@ -107,7 +105,7 @@ if [ $1 = "bwa-mem2" ]; then
   mkdir -p $RESULTS_DIR
   let "c = $CORES / 6"
 
-  seq2science run $WF --cores $c --configfile tests/$WF/default_config.yaml --snakemakeOptions until=[samtools_presort] resources={mem_gb:999} config={samples:tests/alignment/local_sample.tsv,fastq_dir:../../tinyfastq,genome_dir:tests,result_dir:$RESULTS_DIR,aligner:$ALIGNER} show_failed_logs=True
+  seq2science run $WF --cores $c -r --configfile tests/$WF/default_config.yaml --snakemakeOptions until=[samtools_presort] resources={mem_gb:999} config={samples:tests/alignment/local_sample.tsv,fastq_dir:../../tinyfastq,genome_dir:tests,result_dir:$RESULTS_DIR,aligner:$ALIGNER} show_failed_logs=True
 
   test_ran=1
 fi
@@ -120,7 +118,7 @@ if [ $1 = "hisat2" ]; then
   mkdir -p $RESULTS_DIR
   let "c = $CORES / 6"
 
-  seq2science run $WF --cores $c --configfile tests/$WF/default_config.yaml --snakemakeOptions until=[samtools_presort] config={samples:tests/alignment/local_sample.tsv,fastq_dir:../../tinyfastq,genome_dir:tests,result_dir:$RESULTS_DIR,aligner:$ALIGNER} show_failed_logs=True
+  seq2science run $WF --cores $c -r --configfile tests/$WF/default_config.yaml --snakemakeOptions until=[samtools_presort] config={samples:tests/alignment/local_sample.tsv,fastq_dir:../../tinyfastq,genome_dir:tests,result_dir:$RESULTS_DIR,aligner:$ALIGNER} show_failed_logs=True
 
   test_ran=1
 fi
@@ -133,7 +131,7 @@ if [ $1 = "minimap2" ]; then
   mkdir -p $RESULTS_DIR
   let "c = $CORES / 6"
 
-  seq2science run $WF --cores $c --configfile tests/$WF/default_config.yaml --snakemakeOptions until=[samtools_presort] resources={mem_gb:999} config={samples:tests/alignment/local_sample.tsv,fastq_dir:../../tinyfastq,genome_dir:tests,result_dir:$RESULTS_DIR,aligner:$ALIGNER} show_failed_logs=True
+  seq2science run $WF --cores $c -r --configfile tests/$WF/default_config.yaml --snakemakeOptions until=[samtools_presort] resources={mem_gb:999} config={samples:tests/alignment/local_sample.tsv,fastq_dir:../../tinyfastq,genome_dir:tests,result_dir:$RESULTS_DIR,aligner:$ALIGNER} show_failed_logs=True
 
   test_ran=1
 fi
@@ -146,7 +144,8 @@ if [ $1 = "star" ]; then
   mkdir -p $RESULTS_DIR
   let "c = $CORES / 6"
 
-  seq2science run $WF --cores $c --configfile tests/$WF/default_config.yaml --snakemakeOptions until=[samtools_presort] config={samples:tests/alignment/local_sample.tsv,fastq_dir:../../tinyfastq,genome_dir:tests,result_dir:$RESULTS_DIR,aligner:$ALIGNER} show_failed_logs=True
+  seq2science run $WF --cores $c -r --configfile tests/$WF/default_config.yaml --snakemakeOptions until=[samtools_presort] config={samples:tests/alignment/local_sample.tsv,fastq_dir:../../tinyfastq,genome_dir:tests,result_dir:$RESULTS_DIR,aligner:$ALIGNER} show_failed_logs=True
+  # seq2science run alignment -nr --configfile tests/alignment/default_config.yaml --snakemakeOptions until=[samtools_presort] config={samples:tests/alignment/local_sample.tsv,fastq_dir:../../tinyfastq,genome_dir:tests,result_dir:tests/local_test_results/star,aligner:star}
 
   test_ran=1
 fi
@@ -161,13 +160,35 @@ if [ $1 = "atac-seq" ]; then
 
 #  printf "\natac-seq default\n"
 #  skipped because the whole workflow needs to run again for multiqc
-#  seq2science run atac-seq --cores $CORES --configfile tests/alignment/remote_genome_n_sample.yaml --snakemakeOptions config={aligner:bowtie2}
+#  seq2science run atac-seq --cores $CORES -r --configfile tests/alignment/remote_genome_n_sample.yaml --snakemakeOptions config={aligner:bowtie2}
 
   printf "\natac-seq - multiqc report\n"
-  seq2science run atac-seq --cores $CORES --configfile tests/alignment/remote_genome_n_sample.yaml --snakemakeOptions config={aligner:bowtie2,create_qc_report:True,custom_genome_extension:tests/tinydata/tinyERCC92.fa} show_failed_logs=True
+  seq2science run atac-seq --cores $CORES -r --configfile tests/alignment/remote_genome_n_sample.yaml --snakemakeOptions config={aligner:bowtie2,create_qc_report:True,custom_genome_extension:tests/tinydata/tinyERCC92.fa,min_template_length:50} show_failed_logs=True
 
   printf "\natac-seq - trackhub\n"
-  seq2science run atac-seq --cores $CORES --configfile tests/alignment/remote_genome_n_sample.yaml --snakemakeOptions config={aligner:bowtie2,create_trackhub:True,custom_genome_extension:tests/tinydata/tinyERCC92.fa} show_failed_logs=True
+  seq2science run atac-seq --cores $CORES -r --configfile tests/alignment/remote_genome_n_sample.yaml --snakemakeOptions config={aligner:bowtie2,create_trackhub:True,custom_genome_extension:tests/tinydata/tinyERCC92.fa,max_template_length:150} show_failed_logs=True
+
+  # fake input data & fix timestamps
+  mkdir -p tests/local_test_results/GRCh38.p13
+  touch tests/local_test_results/GRCh38.p13/GRCh38.p13.fa
+  touch tests/local_test_results/GRCh38.p13/GRCh38.p13.annotation.gtf
+  touch tests/local_test_results/GRCh38.p13/GRCh38.p13.annotation.bed
+  mkdir -p tests/local_test_results/fastq
+  for ext in R1 R2; do
+    for n in 1 2 3 4 5 6 7 8; do
+      touch tests/local_test_results/fastq/sample${n}_${ext}.fastq.gz
+    done
+    touch tests/local_test_results/fastq/replicate_${ext}.fastq.gz
+  done
+  touch -m tests/deseq2/atac/macs2/GRCh38.p13_raw.tsv  # update timestamps
+  touch -m tests/deseq2/atac/macs2/GRCh38.p13_onehotpeaks.tsv
+  touch -m tests/deseq2/atac/macs2/GRCh38.p13_meancenter_log2_quantilenorm.tsv
+  touch -m tests/deseq2/atac/macs2/GRCh38.p13_meancenter_log2_TMM.tsv
+  touch -m tests/deseq2/atac/macs2/GRCh38.p13_meancenter_log2_RLE.tsv
+  touch -m tests/deseq2/atac/macs2/GRCh38.p13_meancenter_log2_upperquartile.tsv
+
+  # run DESeq2
+  seq2science run atac-seq --skip-rerun --cores $CORES -r --configfile tests/deseq2/atac/config.yaml --snakemakeOptions config={deseq2_dir:deseq_atac} show_failed_logs=True until=[deseq2]
 
   test_ran=1
 fi
@@ -189,31 +210,73 @@ if [ $1 = "rna-seq" ]; then
 
   # TODO: test samples are too similar for blind clustering and deseq2
   printf "\nrna-seq default - quantification\n"
-  seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions config={counts_dir:salmon_counts,custom_genome_extension:tests/tinydata/tinyERCC92.fa,custom_annotation_extension:tests/tinydata/tinyERCC92.gtf} show_failed_logs=True \
+  seq2science run rna-seq --cores $CORES -r --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions config={counts_dir:salmon_counts,custom_genome_extension:tests/tinydata/tinyERCC92.fa,custom_annotation_extension:tests/tinydata/tinyERCC92.gtf} show_failed_logs=True \
   omit_from=[blind_clustering]  # <- remove when fixed
 
   printf "\nrna-seq default - quantification deseq2\n"
-  seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/deseq2_config.yaml --snakemakeOptions config={counts_dir:salmon_counts} show_failed_logs=True \
-  omit_from=[blind_clustering,deseq2]  # <- remove when fixed
+#  seq2science run rna-seq --cores $CORES -r --configfile tests/rna_seq/deseq2_config.yaml --snakemakeOptions config={counts_dir:salmon_counts} show_failed_logs=True
+
+  # fake input data & fix timestamps
+  mkdir -p tests/local_test_results/GRCh38.p13
+  touch tests/local_test_results/GRCh38.p13/GRCh38.p13.fa
+  touch tests/local_test_results/GRCh38.p13/GRCh38.p13.annotation.gtf
+  touch tests/local_test_results/GRCh38.p13/GRCh38.p13.annotation.bed
+  touch tests/local_test_results/GRCh38.p13/gene_id2name.tsv
+  mkdir -p tests/local_test_results/fastq
+  for ext in R1 R2; do
+    for n in 1 2 3 4 5 6 7 8; do
+      touch tests/local_test_results/fastq/sample${n}_${ext}.fastq.gz
+    done
+    touch tests/local_test_results/fastq/replicate_${ext}.fastq.gz
+  done
+  touch -m tests/deseq2/rna/counts/GRCh38.p13-counts.tsv  # update timestamp
+
+  # run blind clustering
+  seq2science run rna-seq --skip-rerun --cores $CORES -r --configfile tests/deseq2/rna/config.yaml --snakemakeOptions config={deseq2_dir:deseq_rna,create_qc_report:true} show_failed_logs=True \
+  targets=[$(pwd)/tests/local_test_results/qc/plotCorrelation/GRCh38.p13-DESeq2_sample_distance_clustering_mqc.png]
+
+  # run DESeq2
+  seq2science run rna-seq --skip-rerun --cores $CORES -r --configfile tests/deseq2/rna/config.yaml --snakemakeOptions config={deseq2_dir:deseq_rna} show_failed_logs=True
 
   printf "\nrna-seq default - counting\n"
-  seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions config={quantifier:htseq,dexseq:True,custom_genome_extension:tests/tinydata/tinyERCC92.fa,custom_annotation_extension:tests/tinydata/tinyERCC92.gtf} show_failed_logs=True \
+  seq2science run rna-seq --cores $CORES -r --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions config={quantifier:htseq,dexseq:True,custom_genome_extension:tests/tinydata/tinyERCC92.fa,custom_annotation_extension:tests/tinydata/tinyERCC92.gtf} show_failed_logs=True \
   omit_from=[blind_clustering]  # <- remove when fixed
-  seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions config={quantifier:featurecounts,counts_dir:fc_counts} show_failed_logs=True \
+  seq2science run rna-seq --cores $CORES -r --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions config={quantifier:featurecounts,counts_dir:fc_counts} show_failed_logs=True \
   omit_from=[blind_clustering]  # <- remove when fixed
-  seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions config={aligner:hisat2,quantifier:htseq,final_bam_dir:hisat2_final_bam,counts_dir:hisat2_counts,custom_genome_extension:tests/tinydata/tinyERCC92.fa,custom_annotation_extension:tests/tinydata/tinyERCC92.gtf} show_failed_logs=True \
+  seq2science run rna-seq --cores $CORES -r --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions config={aligner:hisat2,quantifier:htseq,final_bam_dir:hisat2_final_bam,counts_dir:hisat2_counts,custom_genome_extension:tests/tinydata/tinyERCC92.fa,custom_annotation_extension:tests/tinydata/tinyERCC92.gtf} show_failed_logs=True \
   omit_from=[blind_clustering]  # <- remove when fixed
 
   printf "\nrna-seq default - counting deseq2\n"
-  seq2science run rna-seq --cores $CORES --configfile tests/rna_seq/deseq2_config.yaml --snakemakeOptions show_failed_logs=True \
+  seq2science run rna-seq --cores $CORES -r --configfile tests/rna_seq/deseq2_config.yaml --snakemakeOptions show_failed_logs=True \
   omit_from=[blind_clustering,deseq2]  # <- remove when fixed
 
   printf "\nrna-seq default - trackhub\n"
   # deeptools: removed normalization due to test samples being too small
-  seq2science run rna-seq --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions config={samples:tests/alignment/stranded_sample.tsv,genome_dir:tests,fastq_dir:../tinyfastq,aligner:star,create_trackhub:True,custom_genome_extension:tests/tinydata/tinyERCC92.fa,custom_annotation_extension:tests/tinydata/tinyERCC92.gtf,deeptools_flags:-v} show_failed_logs=True
+  seq2science run rna-seq --cores $CORES -r --configfile tests/alignment/default_config.yaml --snakemakeOptions config={samples:tests/alignment/stranded_sample.tsv,genome_dir:tests,fastq_dir:../tinyfastq,tpm2counts:tximeta,aligner:star,create_trackhub:True,custom_genome_extension:tests/tinydata/tinyERCC92.fa,custom_annotation_extension:tests/tinydata/tinyERCC92.gtf,deeptools_bamcoverage:-v} show_failed_logs=True
 
   printf "\nrna-seq default - multiqc report\n"
-  seq2science run rna-seq --cores $CORES --configfile tests/alignment/default_config.yaml --snakemakeOptions config={samples:tests/alignment/local_sample.tsv,genome_dir:tests,fastq_dir:../tinyfastq,aligner:star,create_qc_report:True,custom_genome_extension:tests/tinydata/tinyERCC92.fa,custom_annotation_extension:tests/tinydata/tinyERCC92.gtf} show_failed_logs=True
+  seq2science run rna-seq --cores $CORES -r --configfile tests/alignment/default_config.yaml --snakemakeOptions config={samples:tests/alignment/local_sample.tsv,genome_dir:tests,fastq_dir:../tinyfastq,tpm2counts:tximeta,aligner:star,create_qc_report:True,custom_genome_extension:tests/tinydata/tinyERCC92.fa,custom_annotation_extension:tests/tinydata/tinyERCC92.gtf} show_failed_logs=True
+
+  test_ran=1
+fi
+
+if [ $1 = "deseq2science" ]; then
+  outdir=tests/local_test_results/deseq2science
+
+  rm -rf $outdir
+
+  deseq2science \
+  -d batch+condition_day2_day0 \
+  -s tests/deseq2/rna/samples.tsv \
+  -c tests/deseq2/rna/counts/GRCh38.p13-counts.tsv \
+  -o $outdir
+
+  # very basic test: check if all output files are generated
+  fcount=$(ls -1q $outdir | wc -l)
+  if [[ ${fcount} -ne  "6" ]]; then
+    printf "\nmissing deseq2science output (6 files expected, found ${fcount})\n";
+    exit 1
+  fi
 
   test_ran=1
 fi

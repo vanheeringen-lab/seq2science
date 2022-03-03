@@ -1,6 +1,9 @@
+"""
+all rules/logic related downloading public fastqs should be here.
+"""
+
 import glob
 import os
-import re
 
 
 rule run2sra:
@@ -16,14 +19,16 @@ rule run2sra:
         expand("{log_dir}/run2sra/{{run}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/run2sra/{{run}}.benchmark.txt", **config)[0]
-    message: explain_rule("run2sra")
+    message:
+        explain_rule("run2sra")
     resources:
         parallel_downloads=1,
-    params: outdir= lambda wildcards: f"{config['sra_dir']}/{wildcards.run}"
+    params:
+        outdir=lambda wildcards: f"{config['sra_dir']}/{wildcards.run}",
     conda:
         "../envs/get_fastq.yaml"
     wildcard_constraints:
-        run="SRR\d+",
+        run="[DES]RR\d+",
     shell:
         """
         # move to output dir since somehow prefetch sometimes puts files in the cwd...
@@ -43,7 +48,24 @@ rule run2sra:
             prefetch --max-size 999999999999 --output-directory ./ --log-level debug --progress {wildcards.run} >> {log} 2>&1 && break
             sleep 10
         done
+
+        # TODO: this is the strangest bug, in that on some machines (ocimum) prefetch downloads
+        # to a different location. Not sure what causes this, but this should fix that. Could simply
+        # be a global setting that we haven't discovered yet...
+        # bug report: https://github.com/ncbi/sra-tools/issues/533
+        if [[ -f "{params.outdir}/{wildcards.run}.sra" ]]; then
+            mkdir {params.outdir}/{wildcards.run}
+            mv {params.outdir}/{wildcards.run}.sra {output}
+        fi
         """
+
+
+# ENA > SRA
+ruleorder: ena2fastq_SE > sra2fastq_SE
+ruleorder: ena2fastq_PE > sra2fastq_PE
+# PE > SE
+ruleorder: ena2fastq_PE > ena2fastq_SE
+ruleorder: sra2fastq_PE > sra2fastq_SE
 
 
 rule sra2fastq_SE:
@@ -60,7 +82,7 @@ rule sra2fastq_SE:
     benchmark:
         expand("{benchmark_dir}/sra2fastq_SE/{{run}}.benchmark.txt", **config)[0]
     wildcard_constraints:
-        run="|".join(sra_single_end) if len(sra_single_end) else "$a",
+        run="|".join(sra_single_end) if len(sra_single_end) else "$a",  # only try to dump (single-end) SRA samples
     threads: 8
     conda:
         "../envs/get_fastq.yaml"
@@ -102,7 +124,7 @@ rule sra2fastq_PE:
         expand("{benchmark_dir}/sra2fastq_PE/{{run}}.benchmark.txt", **config)[0]
     threads: 8
     wildcard_constraints:
-        run="|".join(sra_single_end) if len(sra_paired_end) else "$a",
+        run="|".join(sra_paired_end) if len(sra_paired_end) else "$a",  # only try to dump (paired-end) SRA samples
     conda:
         "../envs/get_fastq.yaml"
     shell:
@@ -128,48 +150,6 @@ rule sra2fastq_PE:
         """
 
 
-# NOTE: if the workflow fails it tends to blame this rule.
-# Set "debug: True" in the config to see the root cause.
-if not config.get("debug"):
-    ruleorder: renamefastq_PE > ena2fastq_PE > sra2fastq_PE
-
-    def get_wrong_fqext(wildcards):
-        """get all local samples with fqexts that do not match the config"""
-        fastqs = glob.glob(os.path.join(config["fastq_dir"], wildcards.sample + "*" + config["fqsuffix"] + ".gz"))
-        # exclude samples with the correct fqext
-        r1 = wildcards.sample + "_" + config["fqext1"] + "." + config["fqsuffix"] + ".gz"
-        r2 = wildcards.sample + "_" + config["fqext2"] + "." + config["fqsuffix"] + ".gz"
-        fastqs = [f for f in fastqs if not re.match(r1 + "|" + r2, f)]
-        if len(fastqs) == 0:
-            fastqs.append(
-                f"If you can read this, seq2science is looking for non-existing files (for sample {wildcards}) or in the wrong location. "
-                "Tip: Try removing the seq2science cache with 'seq2science clean'"
-            )
-        return sorted(fastqs)
-
-
-    rule renamefastq_PE:
-        """
-        Create symlinks to fastqs with incorrect fqexts (default R1/R2).
-        Forward and reverse samples will be switched if forward/reverse names are not 
-        lexicographically ordered.
-        """
-        input:
-            get_wrong_fqext,
-        output:
-            temp(expand("{fastq_dir}/{{sample}}_{fqext}.{fqsuffix}.gz", **config)),
-        shell:
-            """
-            ln {input[0]} {output[0]}
-            ln {input[1]} {output[1]}
-            """
-
-
-ruleorder: ena2fastq_SE > sra2fastq_SE
-ruleorder: ena2fastq_PE > sra2fastq_PE
-ruleorder: ena2fastq_PE > ena2fastq_SE
-
-
 rule ena2fastq_SE:
     """
     Download single-end fastq files directly from the ENA.
@@ -183,18 +163,18 @@ rule ena2fastq_SE:
     benchmark:
         expand("{benchmark_dir}/ena2fastq_SE/{{run}}.benchmark.txt", **config)[0]
     wildcard_constraints:
-        run="|".join(ena_single_end) if len(ena_single_end) else "$a"
+        run="|".join(ena_single_end) if len(ena_single_end) else "$a",
     run:
         shell("mkdir -p {config[fastq_dir]}/tmp/ >> {log} 2>&1")
         url = run2download[wildcards.run]
-        if config.get('ascp_path') and config.get('ascp_key'):
+        if config.get("ascp_path") and config.get("ascp_key"):
             shell("{config[ascp_path]} -QT -l 1G -P33001 -i {config[ascp_key]} {url} {output} >> {log} 2>&1")
         else:
             shell("wget {url} -O {output} --waitretry 20 >> {log} 2>&1")
 
         if not (os.path.exists(output[0]) and os.path.getsize(output[0]) > 0):
-            shell('echo \"Something went wrong.. The downloaded file was empty!\" >> {log} 2>&1')
-            shell('exit 1 >> {log} 2>&1')
+            shell('echo "Something went wrong.. The downloaded file was empty!" >> {log} 2>&1')
+            shell("exit 1 >> {log} 2>&1")
 
 
 rule ena2fastq_PE:
@@ -210,21 +190,28 @@ rule ena2fastq_PE:
     benchmark:
         expand("{benchmark_dir}/ena2fastq_PE/{{run}}.benchmark.txt", **config)[0]
     wildcard_constraints:
-        run="|".join(ena_paired_end) if len(ena_paired_end) else "$a"
+        run="|".join(ena_paired_end) if len(ena_paired_end) else "$a",
     run:
         shell("mkdir -p {config[fastq_dir]}/tmp >> {log} 2>&1")
         urls = run2download[wildcards.run]
-        if config.get('ascp_path') and config.get('ascp_key'):
+        if config.get("ascp_path") and config.get("ascp_key"):
             shell("{config[ascp_path]} -QT -l 1G -P33001 -i {config[ascp_key]} {urls[0]} {output[0]} >> {log} 2>&1")
             shell("{config[ascp_path]} -QT -l 1G -P33001 -i {config[ascp_key]} {urls[1]} {output[1]} >> {log} 2>&1")
         else:
             shell("wget {urls[0]} -O {output[0]} --waitretry 20 >> {log} 2>&1")
             shell("wget {urls[1]} -O {output[1]} --waitretry 20 >> {log} 2>&1")
 
-        if not (os.path.exists(output[0]) and (os.path.getsize(output[0]) > 0) and
-                os.path.exists(output[1]) and (os.path.getsize(output[1]) > 0)):
-            shell('echo \"Something went wrong.. The downloaded file(s) were empty!\" >> {log} 2>&1')
-            shell('exit 1 >> {log} 2>&1')
+        if not (
+            os.path.exists(output[0])
+            and (os.path.getsize(output[0]) > 0)
+            and os.path.exists(output[1])
+            and (os.path.getsize(output[1]) > 0)
+        ):
+            shell('echo "Something went wrong.. The downloaded file(s) were empty!" >> {log} 2>&1')
+            shell("exit 1 >> {log} 2>&1")
+
+
+ruleorder: rename_sample > runs2sample
 
 
 def get_runs_from_sample(wildcards):
@@ -243,7 +230,7 @@ rule runs2sample:
     Concatenate a single run or multiple runs together into a fastq
     """
     input:
-        get_runs_from_sample
+        get_runs_from_sample,
     output:
         expand("{fastq_dir}/{{sample}}{{suffix}}", **config),
     log:
@@ -251,7 +238,7 @@ rule runs2sample:
     benchmark:
         expand("{benchmark_dir}/run2sample/{{sample}}{{suffix}}.benchmark.txt", **config)[0]
     wildcard_constraints:
-        sample="|".join(public_samples) if len(public_samples) > 0 else "$a"
+        sample="|".join(public_samples) if len(public_samples) > 0 else "$a",
     run:
         shell("cp {input[0]} {output}")
 
@@ -259,3 +246,52 @@ rule runs2sample:
         for i in range(1, len(input)):
             inputfile = input[i]
             shell("cat {inputfile} >> {output}")
+
+
+def sample_to_rename(wildcards):
+    local_fastqs = glob.glob(os.path.join(config["fastq_dir"], f'{wildcards.sample}*{config["fqsuffix"]}*.gz'))
+
+    if len(local_fastqs) not in [1, 2]:
+        # <1: no local sample fastqs found
+        # >2: too many files match the sample name: can't distinguish
+        return "$a"  # do not use this rule
+
+    # assumption: incompatible paired-ended samples are lexicographically ordered (R1>R2)
+    local_fastqs.sort()
+    local_fastq = local_fastqs[0]
+    if len(local_fastqs) == 2 and config["fqext2"] in wildcards.suffix:
+        local_fastq = local_fastqs[1]
+
+    # only rename incompatible naming formats
+    correctly_named_fastqs = [
+        os.path.join(config["fastq_dir"], f'{wildcards.sample}.{config["fqsuffix"]}.gz'),
+        os.path.join(config["fastq_dir"], f'{wildcards.sample}_{config["fqext1"]}.{config["fqsuffix"]}.gz'),
+        os.path.join(config["fastq_dir"], f'{wildcards.sample}_{config["fqext2"]}.{config["fqsuffix"]}.gz'),
+    ]
+    if local_fastq in correctly_named_fastqs:
+        return "$a"  # do not use this rule
+
+    return local_fastq
+
+
+rule rename_sample:
+    """
+    Rename local samples with incompatible naming formats
+    """
+    input:
+        sample_to_rename,
+    output:
+        expand("{fastq_dir}/{{sample}}{{suffix}}", **config),
+    wildcard_constraints:
+        # only rename to compatible naming formats
+        suffix="|".join(
+            [
+                f'.{config["fqsuffix"]}.gz',
+                f'_{config["fqext1"]}.{config["fqsuffix"]}.gz',
+                f'_{config["fqext2"]}.{config["fqsuffix"]}.gz',
+            ]
+        ),
+    shell:
+        """
+        mv {input[0]} {output[0]}
+        """

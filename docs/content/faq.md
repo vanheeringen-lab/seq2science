@@ -13,6 +13,15 @@ A different type of CreateCondaEnvironmentException occurs when you have conda c
 ```console
 user@comp:~$ conda config --set channel_priority flexible
 ```
+## Encountered problems while solving (nothing provides ... needed by seq2science) 
+
+This error usually has something to do with not having all the channels properly added. Running this should resolve it:
+
+```console
+user@comp:~$ conda config --add channels defaults
+user@comp:~$ conda config --add channels bioconda
+user@comp:~$ conda config --add channels conda-forge
+```
 
 ## What if I change the configuration or samples file after running seq2science?
 Seq2science starts each run with checking if it was already run before, and if so, if any settings were changed. Seq2science then automatically derives which files need to be changed and only starts the necessary jobs.
@@ -44,6 +53,13 @@ let's say you want to download and trim reads with seq2science, but you do not w
 seq2science run alignment --cores 48 --snakemakeOptions until=["trim_galore_PE","trim_galore_SE"]
 ```
 
+## ChIP-seq: MACS2: Too few paired peaks so I can not build the model!
+This error is due to the fact that MACS2 cannot properly make its internal shifting model, it wants to shift since a peak might not have the same signal on both strands of the genome.
+This generally shouldn't happen with good samples with peaks/enrichment.
+Did you perhaps add the input/control as a sample?
+The input/control shouldn't really have any peaks, so macs2 will fail on those samples here.
+You should add the input/control in the `control` column of the samples.tsv, see the ChIP-seq docs.
+
 ## RNA-seq: this gene should be expressed!
 Seq2science supports 3 gene-quantifiers: HTSeq-count, FeatureCounts and Salmon.
 All three are valid methods, and a large population of the expressed genes is found by all quantifiers.
@@ -52,4 +68,16 @@ There are differences between these methods however, and caution is advised with
 Additionally, Seq2science employs strict quality checks by default.
 You could try reducing the `min_mapping_quality` (for HTSeq and FeatureCounts) or change the parameters to the quantifier.
 
-The biggest difference in expressed genes found is in switching to or from Salmon.
+The biggest differences in expressed genes can be found by switching gene annotation, followed by switching quantifier (to or from Salmon).
+
+## scRNA-seq: Kallisto|Bustools: \[~warn\] no reads pseudoaligned
+This error means that no reads were (pseudo)aligned to the reference genome! 
+Oh no! 
+This is probably because you did not specify the chemistry correctly. 
+Take a look at how to [specify the BUS format](https://vanheeringen-lab.github.io/seq2science/content/workflows/scrna_seq.html#bus-barcode-umi-set-format) for kallisto|bustools.
+
+## scRNA-seq: Kallisto|Bustools: what():  std::bad_alloc
+bad alloc generally means that kallisto|bustools tried to reserve some memory, but there was none left to be reserved...
+Are there other programs running that take up a lot of memory?
+For us (the developers) it also seems as if this rule sometimes happens, seemingly at random.
+Simply restarting seq2science might just solve the problem!

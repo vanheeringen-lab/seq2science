@@ -1,7 +1,7 @@
 [project]
 name = "seq2science"
 packages = ["seq2science"]
-package_data = "{'seq2science':['envs/*', 'imgs/*', 'rules/*', 'schemas/*', 'schemas/*/*', 'scripts/*', 'workflows/*/*']}"
+package_data = "{'seq2science':['envs/*', 'imgs/*', 'rules/*', 'schemas/*', 'schemas/*/*', 'scripts/*', 'scripts/**/*', 'workflows/*/*']}"
 include_package_data = true
 description = "seq2science: easy pre-processing of ngs data."
 author = [
@@ -10,7 +10,7 @@ author = [
 license = "MIT"
 license_file = "LICENSE"
 url = "https://vanheeringen-lab.github.io/seq2science"
-scripts = ["bin/seq2science"]
+scripts = ["bin/seq2science", "bin/deseq2science"]
 
 classifiers = [
     "Development Status :: 1 - Planning",

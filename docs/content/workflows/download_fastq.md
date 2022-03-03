@@ -7,25 +7,41 @@ Downloading public data in bulk from the NCBI, ENA, and DDBJ databases has never
 </p>
 
 #### Download SRA file
-The three largest databases that store sequencing data are National Center for Biotechnology Information (NCBI), the European Nucleotide Archive (ENA) and the DNA Data Bank of Japan (DDBJ). Only the ENA stores the actual fastq files, but all three of them store the raw data (as a sra file) from which a fastq can be derived. For this reason for each sample will first be checked if it can be downloaded from ENA. Otherwise we will download the samples in its raw format. To convert this data to a fastq it has to be "*dumped*". 
+The three largest databases that store sequencing data are National Center for Biotechnology Information (NCBI), the European Nucleotide Archive (ENA) and the DNA Data Bank of Japan (DDBJ).
+Only the ENA stores the actual fastq files, but all three of them store the raw data (as a sra file) from which a fastq can be derived.
+For this reason for each sample will first be checked if it can be downloaded from ENA.
+Otherwise we will download the samples in its raw format. To convert this data to a fastq it has to be "*dumped*".
 
 ### Filling out the samples.tsv
-Before running a workflow you will have to specify which samples you want to run the workflow on. Each workflow starts with a `samples.tsv` as an example, and you should adapt it to your specific needs. As an example, the `samples.tsv` could look something like this:
+Before running a workflow you will have to specify which samples you want to run the workflow on.
+Each workflow starts with a `samples.tsv` as an example, and you should adapt it to your specific needs.
+As an example, the `samples.tsv` could look something like this:
+
 ```
 sample
-GSM123
-GSM321
-GSMabc
-GSMxzy
-GSM890
+ERX123  <-- EBI ENA experiment
+ERR321  <-- EBI ENA run
+GSMabc  <-- GEO sample
+SRX456  <-- SRA experiment
+SRRxzy  <-- SRA run
+DRX890  <-- DDBJ experiment
+DRR890  <-- DDBJ run
 ```
 
 #### Sample column
-This column is necessary for all workflows, not just the atac-seq workflow. If you use the pipeline on public data this should be the name of the accession (e.g. GSM2837484), if you use the pipeline on local data this should be the *basename* of the file without the *extension*. For instance `/home/user/myfastqs/sample1.fastq.gz` would be `sample1`.
+If you use the pipeline on public data this should be the name of the accession (e.g. GSM2837484).
+(Accepted formats start with "GSM", "SRR", "SRX", "DRR", "DRX", "ERR" or "ERX")
 
 #### Final notes
 - Make sure that the samples.tsv is a tab separated values file when running the pipeline.
 - Feel free to add columns to your liking (these will be ignored).
+
+### Filling out the config.yaml
+Every workflow has many configurable options, and can be set in the `config.yaml` file.
+In each `config.yaml` we highlighted a couple options that we think are relevant for that specific workflow, and set (we think) **reasonable default** values.
+
+When a workflow starts it prints the configuration variables influencing the workflow, and (almost) all these values can be added in the `config.yaml` and changed to your liking.
+You can see the complete set of configurable options in the [extensive docs](../schemas.html).
 
 ### Best practices
 #### Downloading with ascp

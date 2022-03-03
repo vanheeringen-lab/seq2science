@@ -1,12 +1,16 @@
+"""
+all rules/logic related to the merging of technical replicates (and a bit for biological replicates) should be here.
+"""
+
 # dataframe with all technical replicates collapsed
 cols = ["sample", "assembly"]
 subset = ["sample", "assembly"]
-if "technical_replicate" in samples:
-    cols = ["technical_replicate", "assembly"]
-    subset = ["technical_replicate", "assembly"]
-if "biological_replicate" in samples:
-    cols.append("biological_replicate")
-    subset.append("biological_replicate")
+if "technical_replicates" in samples:
+    cols = ["technical_replicates", "assembly"]
+    subset = ["technical_replicates", "assembly"]
+if "biological_replicates" in samples:
+    cols.append("biological_replicates")
+    subset.append("biological_replicates")
 if "control" in samples:
     cols.append("control")
 if "colors" in samples:
@@ -27,22 +31,26 @@ if "control" in samples.columns:
 
 # dataframe with all replicates collapsed
 breps = treps
-if "biological_replicate" in treps:
-    breps = treps.reset_index(drop=True).drop_duplicates(subset=subset[1:]).set_index("biological_replicate")
+if "biological_replicates" in treps:
+    breps = treps.reset_index(drop=True).drop_duplicates(subset=subset[1:]).set_index("biological_replicates")
 
 
 # make a dict that returns the treps that belong to a brep
 treps_from_brep = dict()
-if "biological_replicate" in treps:
+if "biological_replicates" in treps:
     for brep, row in breps.iterrows():
         assembly = row["assembly"]
         treps_from_brep[(brep, assembly)] = list(
-            treps[(treps["assembly"] == assembly) & (treps["biological_replicate"] == brep)].index
+            treps[(treps["assembly"] == assembly) & (treps["biological_replicates"] == brep)].index
+        )
+        treps_from_brep[(brep, assembly + config.get("custom_assembly_suffix", ""))] = list(
+            treps[(treps["assembly"] == assembly) & (treps["biological_replicates"] == brep)].index
         )
 else:
     for brep, row in breps.iterrows():
         assembly = row["assembly"]
         treps_from_brep[(brep, assembly)] = [brep]
+        treps_from_brep[(brep, assembly + config.get("custom_assembly_suffix", ""))] = [brep]
 
 # and vice versa
 brep_from_trep = dict()
@@ -54,36 +62,40 @@ def rep_to_descriptive(rep, brep=False):
     """
     Return the descriptive name for a replicate.
     """
-    if "descriptive_name" in samples:
-        if brep and "biological_replicate" in samples:
-            rep = samples[samples.biological_replicate == rep].biological_replicate[0]
-        else:
-            if "technical_replicate" in samples:
-                col = samples.technical_replicate
-            else:
-                col = samples.index
-            rep = samples[col == rep].descriptive_name[0]
+    if brep and "biological_replicates" in samples:
+        rep = samples[samples.biological_replicates == rep].biological_replicates[0]
+    elif "descriptive_name" in samples:
+        col = samples.index
+        if "technical_replicates" in samples:
+            col = samples.technical_replicates 
+        rep = samples[col == rep].descriptive_name[0]
     return rep
 
 
-if "technical_replicate" in samples:
+if "technical_replicates" in samples:
 
     def get_merge_replicates(wildcards):
-        input_files = expand(
-            [
-                f"{{trimmed_dir}}/{sample}{wildcards.fqext}_trimmed.{{fqsuffix}}.gz"
-                for sample in samples[samples["technical_replicate"] == wildcards.replicate].index
-            ],
-            **config,
-        )
+        input_files = list()
+        for sample in samples[samples["technical_replicates"] == wildcards.replicate].index:
+            if get_workflow() == "scrna_seq":
+                input_files.append(f"{{fastq_clean_dir}}/{sample}_clean{wildcards.fqext}.{{fqsuffix}}.paired.fq.gz")
+            else:
+                input_files.append(f"{{trimmed_dir}}/{sample}{wildcards.fqext}_trimmed.{{fqsuffix}}.gz")
+
+        input_files = expand(input_files, **config)
         if len(input_files) == 0:
             return ["Something went wrong, and we tried to merge replicates but there were no replicates?!"]
 
         return input_files
 
+    # scrna-seq uses the fastq paired files
     if config["trimmer"] == "fastp":
+
         ruleorder: merge_replicates > fastp_PE > fastp_SE
+
+
     elif config["trimmer"] == "trimgalore":
+
         ruleorder: merge_replicates > trimgalore_PE > trimgalore_SE
 
     # true treps are treps combined of 2 samples or more
@@ -104,9 +116,9 @@ if "technical_replicate" in samples:
             temp(sorted(expand("{trimmed_dir}/{{replicate}}{{fqext}}_trimmed.{fqsuffix}.gz", **config))),
         wildcard_constraints:
             replicate="|".join(true_treps) if len(true_treps) else "$a",
-            fqext=f"_{config['fqext1']}|_{config['fqext2']}|", # nothing (SE), or fqext with an underscore (PE)
+            fqext=f"_{config['fqext1']}|_{config['fqext2']}|",  # nothing (SE), or fqext with an underscore (PE)
         params:
-            reps=lambda wildcards, input: input  # help resolve changes in input files
+            reps=lambda wildcards, input: input,  # help resolve changes in input files
         log:
             expand("{log_dir}/merge_replicates/{{replicate}}{{fqext}}.log", **config),
         benchmark:
@@ -114,6 +126,7 @@ if "technical_replicate" in samples:
         run:
             for rep in input:
                 rep_name = re.findall("\/([^\/_]+)_", rep)[-1]
+
                 shell(
                     """zcat {rep} | awk '{{if (NR%4==1) {{gsub(/^@/, "@{rep_name}:"); print}} else {{print}}}}' | gzip >> {output}"""
                 )

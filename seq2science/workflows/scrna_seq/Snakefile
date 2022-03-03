@@ -15,15 +15,18 @@ include: f"{config['rule_dir']}/quantification.smk"
 
 
 # set the quality_control functions
-quality_control = [get_trimming_qc]
-
+quality_control = [get_trimming_qc, get_scrna_qc]
 
 rule seq2science:
     """
     Make a QC report and map
     """
     input:
-        expand([f"{{result_dir}}/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}" for trep in treps.index] +
-               (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []),
+        expand(([f"{{result_dir}}/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}/run_info.json" for trep in treps.index] if config["quantifier"] == "kallistobus" else [] +
+                [f"{{result_dir}}/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}/_tag_counts/run_report.yaml" for trep in treps.index] if config["quantifier"] == "citeseqcount" else []) +
+                ([f"{{result_dir}}/seurat/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}_seu_obj.RData" for trep in treps.index] + 
+               ["{result_dir}/seurat/{quantifier}/{assemblies}_seu_merged.RData"] if config["export_seu_objects"] else []) + 
+               (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []) + 
+               (["{result_dir}/kb_seurat_pp/kallistobus/{assemblies}/kb_seurat_pp.html", "{result_dir}/kb_seurat_pp/kallistobus/{assemblies}/qc"] if config['run_kb_seurat_pp'] else []),
                **{**config,
                   **{'assemblies': all_assemblies}})

@@ -55,8 +55,8 @@ properties:
 
   # genomepy
   provider:
-    description: Specify provider to download new genomes from. Will try Ensembl > UCSC > NCBI if left blank.
-    enum: [Ensembl, UCSC, NCBI]
+    description: Specify provider to download new genomes from. Will try GENCODE > Ensembl > UCSC > NCBI if left blank.
+    enum: [GENCODE, Ensembl, UCSC, NCBI]
     type: string
 
   # aligner
@@ -131,7 +131,7 @@ properties:
   # picard markduplicates
   markduplicates:
     description: the parameters of picard markduplicates
-    default: REMOVE_DUPLICATES=true -Xms4G -Xmx6G MAX_FILE_HANDLES_FOR_READ_ENDS_MAP=999
+    default: -Xms4G -Xmx6G MAX_FILE_HANDLES_FOR_READ_ENDS_MAP=999
     type: string
 
   # only keep reads with a minimum mapping quality of..
@@ -161,6 +161,12 @@ properties:
   # whether or not to keep only primary aligned reads
   only_primary_align:
     description: whether or not to only keep primary aligned reads (no multimappers)
+    default: False
+    type: boolean
+
+  # whether or not to remove duplicate reads (either optical or PCR)
+  remove_dups:
+    description: whether or not to remove duplicate reads (either optical or PCR)
     default: False
     type: boolean
 
@@ -202,3 +208,16 @@ properties:
     description: Deeptools multiBamSummary params
     default: '--distanceBetweenBins 9000 --binSize 1000'
     type: string
+
+  min_template_length:
+    description: the minimum template length for paired-end reads
+    type: integer
+
+  max_template_length:
+    description: the maximum template length for paired-end reads
+    type: integer
+
+  subsample:
+    description: the maximum amount of reads allowed in the final bam file. When setting a value lower than zero, no subsampling happens (default).
+    type: integer
+    default: -1

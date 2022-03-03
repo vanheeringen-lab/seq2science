@@ -1,5 +1,5 @@
 # do onstart/onexit things
-sample_schemas = ['sample', 'assembly', 'technical_replicate', 'strandedness']
+sample_schemas = ['sample', 'assembly', 'technical_replicates', 'strandedness']
 config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific', 'trackhub']
 include: "../../rules/configuration.smk"
 
@@ -32,9 +32,9 @@ def get_bams():
     bamfiles['map'] = set(); bamfiles['ind'] = set()
 
     # get all the bams
-    if 'technical_replicate' in samples:
+    if 'technical_replicates' in samples:
         for assembly in all_assemblies:
-            for replicate in set(samples[samples['assembly'] == ori_assembly(assembly)]['technical_replicate']):
+            for replicate in set(samples[samples['assembly'] == ori_assembly(assembly)]['technical_replicates']):
                 bamfiles['map'].update([expand(f"{{final_bam_dir}}/{assembly}-{replicate}.{{bam_sorter}}-{{bam_sort_order}}.{map_ext}", **config)[0]])
                 bamfiles['ind'].update([expand(f"{{final_bam_dir}}/{assembly}-{replicate}.{{bam_sorter}}-{{bam_sort_order}}.{map_ext}.{map_idx}", **config)[0]])
                 # always output samtools-coordinate
@@ -58,6 +58,6 @@ rule seq2science:
          get_bams()['map'] if not config['create_trackhub'] else [],
          get_bams()['ind'] if not config['create_trackhub'] else [],
          expand(
-             (["{result_dir}/trackhub"] if config['create_trackhub'] else []) +
+             (["{trackhub_dir}"]                     if config['create_trackhub'] else []) +
              (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []),
              **{**config, **{'assemblies': all_assemblies}})

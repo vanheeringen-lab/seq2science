@@ -21,10 +21,10 @@ path = "seq2science/rules/"
 
 
 def get_dirty_docstrings(string):
-    splitter = re.compile("rule (.*):[\s\S]*?\"\"\"([\s\S]*?)\"\"\"", re.MULTILINE)
+    splitter = re.compile("(rule|checkpoint) (.*):[\s\S]*?\"\"\"([\s\S]*?)\"\"\"", re.MULTILINE)
     docstrings = {}
     for match in splitter.finditer(string):
-        docstrings[match.group(1)] = match.group(2)
+        docstrings[match.group(2)] = match.group(3)
     return docstrings
 
 
@@ -48,9 +48,10 @@ def cleanup_shell(dirty):
         firstline = shell.split("\n")[1]
 
         indentation = len(firstline) - len(firstline.lstrip())
-        docstring = "\n".join([shell_line.replace(" " * indentation, "", 1) for shell_line in shell.split("\n")])
-        docstring = docstring.strip("\n")
-        clean[rule] = docstring
+        shellstring = "\n".join([shell_line.replace(" " * indentation, "", 1) for shell_line in shell.split("\n")])
+        shellstring = shellstring.strip("\n")
+        shellstring = shellstring.replace("#", "\#")
+        clean[rule] = shellstring
 
     return clean
 
@@ -78,13 +79,12 @@ for rules_file in os.listdir(path):
 for rule in sorted(all_rules_doc.keys()):
     docstring = all_rules_doc[rule]
 
-    final_md += f"#### {rule}\n"
-    final_md += f"{docstring}\n"
+    final_md += f"#### {rule}\n\n"
+    final_md += f"{docstring}\n\n"
     if rule in all_rules_shell:
         final_md += "```\n"
         final_md += f"{all_rules_shell[rule]}\n"
-        final_md += "```\n"
-    final_md += f"\n"
+        final_md += "```\n\n"
 
 with open("docs/content/all_rules.md", "w") as text_file:
     text_file.write(final_md)

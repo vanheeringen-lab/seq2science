@@ -1,0 +1,38 @@
+# tab-separated file of the samples
+samples: tests/deseq2/atac/samples.tsv
+
+# pipeline file locations
+result_dir: tests/local_test_results  # where to store results
+counts_dir: tests/deseq2/atac
+genome_dir: tests/local_test_results
+fastq_dir: tests/local_test_results/fastq
+
+
+# produce a UCSC trackhub?
+create_trackhub: False
+create_qc_report: False
+
+# how to handle replicates
+biological_replicates: fisher
+technical_replicates: merge    # 9 samples, 8 replicates
+
+# which trimmer to use
+trimmer: fastp
+
+# which aligner to use
+aligner: bwa-mem2
+
+# peak callers (supported peak callers are macs2, and genrich)
+peak_caller:
+  macs2:
+      --shift -100 --extsize 200 --nomodel --keep-dup 1 --buffer-size 10000
+
+##### differential peak analysis (optional) #####
+
+# 5 total DESeq2 rules expected
+contrasts:
+  - condition_day2_day0
+#  - condition_day0_all  # adds nothing new
+#  - batch + condition_all_day0
+#  - biological_replicates_C0_H0
+#  - biological_replicates_all_H0 # adds H0 vs H2, H0 vs C2

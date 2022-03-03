@@ -1,16 +1,24 @@
+"""
+all rules/logic related to peak count tables should be here.
+"""
+
+
 ruleorder: macs2_callpeak > narrowpeak_summit
+
 
 def count_table_output():
     """
     get all the count table outputs.
     """
-    ftype = get_ftype(list(config["peak_caller"].keys())[0])
+    ftype = get_peak_ftype(list(config["peak_caller"].keys())[0])
     if ftype != "narrowPeak":
         return []
 
     return expand(
-        ["{result_dir}/count_table/{peak_caller}/{assemblies}_{normalization}.tsv", 
-         "{result_dir}/{peak_caller}/{assemblies}_onehotpeaks.tsv"],
+        [
+            "{counts_dir}/{peak_caller}/{assemblies}_{normalization}.tsv",
+            "{counts_dir}/{peak_caller}/{assemblies}_onehotpeaks.tsv",
+        ],
         **{
             **config,
             **{
@@ -30,12 +38,14 @@ def count_table_output():
 
 
 def get_peakfile_for_summit(wildcards):
-    ftype = get_ftype(wildcards.peak_caller)
+    ftype = get_peak_ftype(wildcards.peak_caller)
     if ftype != "narrowPeak":
-        raise NotImplementedError(
+        logger.error(
             "Narrowpeak to summit conversion is not supported for anything other than narrowpeak files. "
-            "This means that we do not support peak counts for broadpeaks & gappedpeak format. Turn off: TODO"
+            "This means that we do not support peak counts for broadpeaks & gappedpeak format. This should not "
+            "happen and please file a bug report!"
         )
+        sys.exit(1)
     return expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}_peaks.narrowPeak", **config)
 
 
@@ -85,8 +95,9 @@ rule combine_peaks:
         "../envs/gimme.yaml"
     params:
         windowsize=2 * config["peak_windowsize"],
-        reps=lambda wildcards, input: input  # help resolve changes in input files
-    message: explain_rule("combine_peaks")
+        reps=lambda wildcards, input: input,  # help resolve changes in input files
+    message:
+        explain_rule("combine_peaks")
     shell:
         """
         combine_peaks -i {input.summitfiles} -g {input.sizes} \
@@ -97,7 +108,7 @@ rule combine_peaks:
 rule bedtools_slop:
     """
     After combine_peaks we end up with just a bed file of summits. We extend all peaks
-    to a total width of 200, for a fair comparison between peaks.
+    to the same width, for a fair comparison between peaks.
     """
     input:
         bedfile=rules.combine_peaks.output,
@@ -112,8 +123,9 @@ rule bedtools_slop:
         "../envs/bedtools.yaml"
     params:
         slop=config["slop"],
-        reps=lambda wildcards, input: input  # help resolve changes in input files
-    message: explain_rule("bed_slop")
+        reps=lambda wildcards, input: input,  # help resolve changes in input files
+    message:
+        explain_rule("bed_slop")
     shell:
         """
         bedtools slop -i {input.bedfile} -g {input.sizes} -b {params.slop} | uniq > {output} 2> {log}
@@ -122,7 +134,7 @@ rule bedtools_slop:
 
 def get_coverage_table_replicates(file_ext):
     def wrapped(wildcards):
-        if wildcards.peak_caller == "macs2":
+        if wildcards.peak_caller in ["macs2", "genrich"]:
             return expand(
                 [
                     f"{{final_bam_dir}}/{wildcards.assembly}-{replicate}.samtools-coordinate.{file_ext}"
@@ -130,18 +142,21 @@ def get_coverage_table_replicates(file_ext):
                 ],
                 **config,
             )
-        elif wildcards.peak_caller == "genrich":
-            return expand(
-                [
-                    f"{{final_bam_dir}}/{wildcards.assembly}-{replicate}.sambamba-queryname.{file_ext}"
-                    for replicate in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index
-                ],
-                **config,
-            )
         else:
-            raise NotImplementedError
+            logger.error(
+                f"Seq2science is not supporting your peak caller ({wildcards.peak_caller}) for the coverage table. "
+                "Please make an issue on github if this is unexpected behaviour!"
+            )
+            sys.exit(1)
 
     return wrapped
+
+def get_names(wildcards):
+    names = [""]
+    for rep in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index:
+        names.append(rep_to_descriptive(rep, brep=False))
+    names = "\t".join(names)
+    return names
 
 
 rule coverage_table:
@@ -154,20 +169,31 @@ rule coverage_table:
         replicates=get_coverage_table_replicates("bam"),
         replicate_bai=get_coverage_table_replicates("bam.bai"),
     output:
-        expand("{result_dir}/count_table/{{peak_caller}}/{{assembly}}_raw.tsv", **config),
+        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_raw.tsv", **config),
     log:
         expand("{log_dir}/coverage_table/{{assembly}}-{{peak_caller}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/coverage_table/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     conda:
         "../envs/gimme.yaml"
+    params:
+        peak_width=2 * config["slop"],  # same width as the upstream files
+        names=lambda wildcards: get_names(wildcards),
+        reps=lambda wildcards, input: input  # help resolve changes in input files
+    resources:
+        mem_gb=3,
+    threads: 12  # default of the function
     message: explain_rule("coverage_table")
     shell:
         """
         echo "# The number of reads under each peak" > {output} 
-        coverage_table -p {input.peaks} -d {input.replicates} 2> {log} | grep -vE "^#" 2>> {log} |  
+        coverage_table -p {input.peaks} -d {input.replicates} -w {params.peak_width} --nthreads {threads} \
+        2> {log} | grep -vE "^#" 2>> {log} |  
         awk 'BEGIN {{ FS = "@" }} NR==1{{gsub("{wildcards.assembly}-|.samtools-coordinate","",$0)}}; \
         {{print $0}}' >> {output}
+
+        # overwrite sample names with descriptive/replicate names
+        sed -i "2s/.*/{params.names}/" {output}
         """
 
 
@@ -185,11 +211,13 @@ rule quantile_normalization:
     input:
         rules.coverage_table.output,
     output:
-        expand("{result_dir}/count_table/{{peak_caller}}/{{assembly}}_quantilenorm.tsv", **config),
+        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_quantilenorm.tsv", **config),
     log:
         expand("{log_dir}/quantile_normalization/{{assembly}}-{{peak_caller}}-quantilenorm.log", **config),
     benchmark:
-        expand("{benchmark_dir}/quantile_normalization/{{assembly}}-{{peak_caller}}-quantilenorm.benchmark.txt", **config)[0]
+        expand(
+            "{benchmark_dir}/quantile_normalization/{{assembly}}-{{peak_caller}}-quantilenorm.benchmark.txt", **config
+        )[0]
     conda:
         "../envs/qnorm.yaml"
     threads: 4
@@ -211,15 +239,17 @@ rule edgeR_normalization:
     input:
         rules.coverage_table.output,
     output:
-        expand("{result_dir}/count_table/{{peak_caller}}/{{assembly}}_{{normalisation,(TMM|RLE|upperquartile)}}.tsv", **config),
+        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_{{normalisation,(TMM|RLE|upperquartile)}}.tsv", **config),
     log:
         expand("{log_dir}/edgeR_normalization/{{assembly}}-{{peak_caller}}-{{normalisation}}.log", **config),
     benchmark:
-        expand("{benchmark_dir}/edgeR_normalization/{{assembly}}-{{peak_caller}}-{{normalisation}}.benchmark.txt", **config)[0]
+        expand(
+            "{benchmark_dir}/edgeR_normalization/{{assembly}}-{{peak_caller}}-{{normalisation}}.benchmark.txt", **config
+        )[0]
     conda:
         "../envs/edger.yaml"
     resources:
-        R_scripts=1, # conda's R can have issues when starting multiple times
+        R_scripts=1,  # conda's R can have issues when starting multiple times
     script:
         f"{config['rule_dir']}/../scripts/edger_norm.R"
 
@@ -229,9 +259,9 @@ rule log_normalization:
     Log1p normalization of a count table.
     """
     input:
-        expand("{result_dir}/count_table/{{peak_caller}}/{{assembly}}_{{normalisation}}.tsv", **config),
+        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_{{normalisation}}.tsv", **config),
     output:
-        expand("{result_dir}/count_table/{{peak_caller}}/{{assembly}}_log{{base}}_{{normalisation}}.tsv", **config),
+        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_log{{base}}_{{normalisation}}.tsv", **config),
     run:
         import pandas as pd
         import numpy as np
@@ -262,9 +292,9 @@ rule mean_center:
     Mean centering of a count table.
     """
     input:
-        expand("{result_dir}/count_table/{{peak_caller}}/{{assembly}}_log{{base}}_{{normalisation}}.tsv", **config),
+        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_log{{base}}_{{normalisation}}.tsv", **config),
     output:
-        expand("{result_dir}/count_table/{{peak_caller}}/{{assembly}}_meancenter_log{{base}}_{{normalisation}}.tsv", **config),
+        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_meancenter_log{{base}}_{{normalisation}}.tsv", **config),
     run:
         import pandas as pd
 
@@ -287,8 +317,10 @@ rule mean_center:
 
 
 def get_all_narrowpeaks(wildcards):
-    return [f"{config['result_dir']}/{{peak_caller}}/{{assembly}}-{replicate}_peaks.narrowPeak"
-        for replicate in breps[breps['assembly'] == ori_assembly(wildcards.assembly)].index]
+    return [
+        f"{config['result_dir']}/{{peak_caller}}/{{assembly}}-{replicate}_peaks.narrowPeak"
+        for replicate in breps[breps["assembly"] == ori_assembly(wildcards.assembly)].index
+    ]
 
 
 rule onehot_peaks:
@@ -297,10 +329,10 @@ rule onehot_peaks:
     """
     input:
         narrowpeaks=get_all_narrowpeaks,
-        combinedpeaks=rules.combine_peaks.output
+        combinedpeaks=rules.combine_peaks.output,
     output:
-        real=expand("{result_dir}/{{peak_caller}}/{{assembly}}_onehotpeaks.tsv", **config),
-        tmp=temp(expand("{result_dir}/{{peak_caller}}/{{assembly}}_onehotpeaks.tsv.tmp", **config))
+        real=expand("{counts_dir}/{{peak_caller}}/{{assembly}}_onehotpeaks.tsv", **config),
+        tmp=temp(expand("{counts_dir}/{{peak_caller}}/{{assembly}}_onehotpeaks.tsv.tmp", **config)),
     conda:
         "../envs/bedtools.yaml"
     log:
@@ -308,7 +340,8 @@ rule onehot_peaks:
     benchmark:
         expand("{benchmark_dir}/onehot_peaks/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     params:
-        reps=lambda wildcards, input: input  # help resolve changes in input files
+        reps=lambda wildcards, input: input, # help resolve changes in input files
+        names=lambda wildcards: "\t" + "\t".join([rep_to_descriptive(rep, True) for rep in breps[breps["assembly"] == ori_assembly(wildcards.assembly)].index])
     shell:
         """
         awk '{{print $1":"$2"-"$3}}' {input.combinedpeaks} > {output.real} 2> {log}
@@ -321,6 +354,29 @@ rule onehot_peaks:
             paste {output.real} - > {output.tmp}
             mv {output.tmp} {output.real}
         done
-        
-        echo -e "# onehot encoding of which condition contains which peaks\\n$(cat {output.real})" > {output.tmp} && cp {output.tmp} {output.real}
+
+        echo -e "# onehot encoding of which condition contains which peaks\\n{params.names}\n$(cat {output.real})" > {output.tmp} && cp {output.tmp} {output.real}
+        """
+
+
+rule random_subset_peaks:
+    """
+    Take a random subset of all summits, and make them all same width.
+    """
+    input:
+        peaks=rules.combine_peaks.output,
+        sizes=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
+    output:
+        peaks=temp(expand("{qc_dir}/computeMatrix_peak/{{assembly}}-{{peak_caller}}_N{{nrpeaks}}.bed", **config)),
+    log:
+        expand("{log_dir}/random_subset/{{assembly}}-{{peak_caller}}_N{{nrpeaks}}.log", **config),
+    benchmark:
+        expand("{benchmark_dir}/random_subset/{{assembly}}-{{peak_caller}}_N{{nrpeaks}}.benchmark.txt", **config)[0]
+    conda:
+        "../envs/bedtools.yaml"
+    params:
+        slop=config["heatmap_slop"],
+    shell:
+        """
+        shuf -n {wildcards.nrpeaks} {input.peaks} | bedtools slop -i stdin -g {input.sizes} -b {params.slop} > {output}
         """

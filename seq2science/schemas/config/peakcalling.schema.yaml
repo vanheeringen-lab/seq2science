@@ -22,16 +22,32 @@ properties:
     type: boolean
 
   peak_windowsize:
-    description: when combining narrowpeaks, how much each summit should be extended by when considering overlapping peaks. A summit is expanded by the windowsize on each side, so the total width is twice the peak_windowsize.
+    description: when merging narrowpeaks, how much each summit should be extended by (on each side) when considering overlapping peaks. If for instance a peak_windowsize of 100 is chosen, all peaks within 100 bps of each other will be merged.
     default: 100
     type: integer
 
   slop:
-    description: how much the summits should be extended by (on each side) for making a peak count table. When for instance a slop of 100 is chosen, the final peak's width is 200.
-    default: 100
+    description: how much each summit is extended by (on both sides) when making the final peak. For e.g. count tables it is important that all peaks are of the same size. If for instance a slop of 100 is chosen, the final peak width (for all peaks) is 200.
     type: integer
+    default: 100
 
   logbase:
     description: The log base of the number of reads under peak count tables
     default: 2
     type: number
+
+  heatmap_slop:
+    description: how much the summits should be extended by (on each side) for making a heatmap of peaks in the multiQC report. If for instance a slop of 1000 is chosen, the final peak's width is 2000.
+    default: 1000
+    type: integer
+
+  heatmap_npeaks:
+    description: The number of random peaks used for the heatmap. This at most visualizes all peaks found, so picking a number higher than the number of peaks has no effect. The reason to pick a smaller number is to limit computational resources.
+    default: 20000
+    type: integer
+
+  deeptools_heatmap_options:
+    description: the options passed to deeptools when visualizing the heatmap
+    default: --kmeans 6 --xAxisLabel "Summit distance (bp)"
+    type: string
+
