@@ -8,6 +8,28 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- TPM to gene counts conversion with pytxi
+  - by default attempts to use the GTF file to convert transcript_ids to gene_names
+  - otherwise will use MyGene.info
+- config option `tpm2counts` to chose which TPM to counts converter to use
+
+### Changed
+
+- pytxi is now the default TPM to gene counts converter (over tximeta)
+- peak/gene counts tables now use descriptive names (if given)
+- MultiQC DESeq2 correlation plots now display correlation metrics in the figure
+- using awful practices to eliminate checkpoint strandedness
+- deeptools_flags renamed to deeptools_bamcoverage
+- rna-seq trackhub per base tracks by default instead of bins per 50
+
+### Fixed
+
+- assembly stats log scale on the y-axis
+- s2s explain wont tell you about subsampling to -1 (all) reads
+- tn5 shift cigar string parsing edge-case (reference deletions/insertions)
+
 ## [0.7.1] - 2022-02-10
 
 ### Fixed

@@ -162,7 +162,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#sra2fastq-se">sra2fastq_SE</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#star-align">star_align</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#star-index">star_index</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#strandedness-report">strandedness_report</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#trackhub">trackhub</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#trackhub-index">trackhub_index</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#trimgalore-pe">trimgalore_PE</a></li>
@@ -217,9 +216,19 @@
 </div>
 <div class="section" id="bam-bigwig">
 <h2>bam_bigwig<a class="headerlink" href="#bam-bigwig" title="Permalink to this headline">¶</a></h2>
-<p>Convert a bam file into a bigwig file.
-Can output strand specific bam</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>bamCoverage --bam {input.bam} --outFileName {output} {params.strand_filter} --numberOfProcessors {threads} {params.flags} --verbose &gt;&gt; {log} 2&gt;&amp;1
+<p>Convert a bam file into a bigwig file (or two).
+Can output strand specific bams. The reverse bam is created “secretly” to avoid checkpoints.</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>            if [[ &quot;{params.strandedness}&quot; == &quot;no&quot; ]]; then
+echo &quot;generating unstranded bam&quot; &gt; {log}
+bamCoverage --bam {input.bam} --outFileName {output} --numberOfProcessors {threads} {params.flags} --verbose &gt;&gt; {log} 2&gt;&amp;1
+            else
+echo &quot;generating stranded bams&quot; &gt; {log}
+              out={output}
+rev=$(echo &quot;${{out/{wildcards.sorting}.bw/{wildcards.sorting}.rev.bw}}&quot;)
+rm -f $rev  \# in case of a rerun
+bamCoverage --bam {input.bam} --outFileName $rev     --filterRNAstrand reverse --numberOfProcessors {threads} {params.flags} --verbose &gt;&gt; {log} 2&gt;&amp;1
+bamCoverage --bam {input.bam} --outFileName {output} --filterRNAstrand forward --numberOfProcessors {threads} {params.flags} --verbose &gt;&gt; {log} 2&gt;&amp;1
+            fi
 </pre></div>
 </div>
 </div>
@@ -402,6 +411,9 @@ coverage_table -p {input.peaks} -d {input.replicates} -w {params.peak_width} --n
 2&gt; {log} | grep -vE &quot;^\#&quot; 2&gt;&gt; {log} |
 awk &#39;BEGIN {{ FS = &quot;@&quot; }} NR==1{{gsub(&quot;{wildcards.assembly}-|.samtools-coordinate&quot;,&quot;&quot;,$0)}}; \
 {{print $0}}&#39; &gt;&gt; {output}
+
+\# overwrite sample names with descriptive/replicate names
+sed -i &quot;2s/.*/{params.names}/&quot; {output}
 </pre></div>
 </div>
 </div>
@@ -448,9 +460,6 @@ bedToBigBed -type=bed4 {output.cytoband_bd} -as={params.schema} \
 <h2>decoy_transcripts<a class="headerlink" href="#decoy-transcripts" title="Permalink to this headline">¶</a></h2>
 <p>Generate decoy_transcripts.txt for Salmon indexing</p>
 <p>script source: <a class="reference external" href="https://github.com/COMBINE-lab/SalmonTools">https://github.com/COMBINE-lab/SalmonTools</a></p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>sh {params.script} -j {threads} -g {input.genome} -a {input.gtf} -t {input.transcripts} -o $(dirname {output[0]}) &gt; {log} 2&gt;&amp;1
-</pre></div>
-</div>
 </div>
 <div class="section" id="deseq2">
 <h2>deseq2<a class="headerlink" href="#deseq2" title="Permalink to this headline">¶</a></h2>
@@ -539,7 +548,9 @@ genePredToBed {output.gp} {output.bed}
 <div class="section" id="fastp-pe">
 <h2>fastp_PE<a class="headerlink" href="#fastp-pe" title="Permalink to this headline">¶</a></h2>
 <p>Automated adapter detection, adapter trimming, and quality trimming through fastp (paired-end).</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>fastp -w {params.threads} --in1 {input[0]} --in2 {input[1]} \
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>threads=$(( {threads} - 2  &gt; 1 ? {threads} - 2 : 1 ))
+
+fastp -w $threads --in1 {input[0]} --in2 {input[1]} \
 --out1 {output.r1} --out2 {output.r2} -h {output.qc_html} -j {output.qc_json} \
 {params.config} &gt; {log} 2&gt;&amp;1
 </pre></div>
@@ -548,7 +559,9 @@ genePredToBed {output.gp} {output.bed}
 <div class="section" id="fastp-se">
 <h2>fastp_SE<a class="headerlink" href="#fastp-se" title="Permalink to this headline">¶</a></h2>
 <p>Automated adapter detection, adapter trimming, and quality trimming through fastp (single-end).</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>fastp -w {params.threads} --in1 {input} --out1 {output.se} -h {output.qc_html} -j {output.qc_json} \
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>threads=$(( {threads} - 2  &gt; 1 ? {threads} - 2 : 1 ))
+
+fastp -w $threads --in1 {input} --out1 {output.se} -h {output.qc_html} -j {output.qc_json} \
 {params.config} &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
@@ -572,7 +585,7 @@ genePredToBed {output.gp} {output.bed}
 <div class="section" id="fastq-pair">
 <h2>fastq_pair<a class="headerlink" href="#fastq-pair" title="Permalink to this headline">¶</a></h2>
 <p>fastq_pair re-writes paired-end fastq files to ensure that each read has a mate and
-dsicards singleton reads. This step is required after scRNA trimming since we only trim the fastq
+discards singleton reads. This step is required after scRNA trimming since we only trim the fastq
 containing reads and not the barcode fastq.</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>gunzip -c {input.r1} &gt; {output.intermediates1[0]} 2&gt; {log}
 gunzip -c {input.r2} &gt; {output.intermediates1[1]} 2&gt;&gt; {log}
@@ -676,6 +689,11 @@ not the best indication in these cases, since reads in repetitive regions
 <h2>get_transcripts<a class="headerlink" href="#get-transcripts" title="Permalink to this headline">¶</a></h2>
 <p>Generate transcripts.fasta using gffread.</p>
 <p>Requires genome.fa and annotation.gtf (with matching chromosome/scaffold names)</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Generate decoy_transcripts.txt for Salmon indexing
+
+script source: https://github.com/COMBINE-lab/SalmonTools
+</pre></div>
+</div>
 </div>
 <div class="section" id="hisat2-align">
 <h2>hisat2_align<a class="headerlink" href="#hisat2-align" title="Permalink to this headline">¶</a></h2>
@@ -749,7 +767,7 @@ fi
 </div>
 <div class="section" id="infer-strandedness">
 <h2>infer_strandedness<a class="headerlink" href="#infer-strandedness" title="Permalink to this headline">¶</a></h2>
-<p>use RSeqQC’s infer_experiment.py to determine strandedness af a sample</p>
+<p>Use RSeqQC’s infer_experiment.py to determine the strandedness of a sample</p>
 <div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>infer_experiment.py -i {input.bam} -r {input.bed} -q {params} 2&gt; {log} | awk NF &gt; {output}
 </pre></div>
 </div>
@@ -1157,7 +1175,10 @@ sambamba sort --nthreads {threads} {params} /dev/stdin -o {output}  2&gt; {log}
 trap &quot;rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam&quot; INT;
 rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2&gt; {log}
 
-samtools sort -@ {threads} {params.memory} {input} -o {output} \
+\# RAM per thread in MB
+memory=$((1000*{params.memory}/{threads}))M
+
+samtools sort -@ {threads} -m $memory {input} -o {output} \
 -T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2&gt; {log}
 </pre></div>
 </div>
@@ -1169,7 +1190,10 @@ samtools sort -@ {threads} {params.memory} {input} -o {output} \
 trap &quot;rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam&quot; INT;
 rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2&gt; {log}
 
-samtools sort {params.sort_order} -@ {threads} {params.memory} {input} -o {output} \
+\# RAM per thread in MB
+memory=$((1000*{params.memory}/{threads}))M
+
+samtools sort {params.sort_order} -@ {threads} -m $memory {input} -o {output} \
 -T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2&gt; {log}
 </pre></div>
 </div>
@@ -1339,10 +1363,6 @@ echo $x
             --runThreadN {threads} $NBits $NBases {params} &gt;&gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
-</div>
-<div class="section" id="strandedness-report">
-<h2>strandedness_report<a class="headerlink" href="#strandedness-report" title="Permalink to this headline">¶</a></h2>
-<p>combine samples.tsv &amp; infer_strandedness results (call strandedness if &gt;60% of reads explains a direction)</p>
 </div>
 <div class="section" id="trackhub">
 <h2>trackhub<a class="headerlink" href="#trackhub" title="Permalink to this headline">¶</a></h2>

@@ -192,6 +192,11 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
             metavar="FILE",
             help="The path to the config file.",
         )
+        subparser.add_argument(
+            "--debug",
+            action="store_true",
+            help="""For developers "only": prints helpful error messages to debug issues.""",
+        )
 
     # enable tab completion
     # exclusion only works on the main parser unfortunately, but it's better than nothing,
@@ -384,15 +389,19 @@ def _run(args, base_dir, workflows_dir, config_path):
                     },
                 }
             )
+        if args.debug:
+            nl = "\n"
+            logger.info(f"""Targets:\n{nl.join(sorted(targets))}\n\n""")
+            logger.info(f"""Errors:\n{nl.join(sorted(errors))}\n\n""")
         if not exit_code:
             sys.exit(1)
 
-        #   3. check which files would need a rerun, and clean remove files we do
-        #      not want to consider.
-        #      - genome files since provider will change to local
+        #   3. check which files would need a rerun, and exclude files we do
+        #      not want to consider:
+        #      - genome files, since provider will change to local
         regex_patterns = [
-            "(\/.+){2}.*\.(fa|gaps)",  # match genome fasta
-            "(\/.+){2}.*\.annotation\.(bed|gtf)",  # match annotations
+            "(\/.+){2}.*\.(fa(\.fai|.sizes)?|gaps\.bed)$",  # match genome files
+            "(\/.+){2}.*\.annotation\.(bed|gtf)$",  # match gene annotations
         ]
         targets = [target for target in targets if not any(re.match(pattern, target) for pattern in regex_patterns)]
 
@@ -411,6 +420,8 @@ def _run(args, base_dir, workflows_dir, config_path):
 
     #   5. start the "real" run where jobs actually get started
     exit_code = snakemake.snakemake(**parsed_args)
+
+    #   6. output exit code 0 for success and 1 for failure
     sys.exit(0) if exit_code else sys.exit(1)
 
 
@@ -454,13 +465,15 @@ def _explain(args, base_dir, workflows_dir, config_path):
     # starting message
     if args.hyperref:
         rules_used = {
-            "start": f"\nPreprocessing of reads was done automatically with workflow tool "
-            f"<a href=https://doi.org/10.5281/zenodo.3921913>seq2science v{seq2science.__version__}</a>."
+            "start": f"Preprocessing of reads was done automatically by "
+            f"<a href=https://doi.org/10.5281/zenodo.3921913>seq2science v{seq2science.__version__}</a> "
+            f"using the {args.workflow} workflow."
         }
     else:
         rules_used = {
-            "start": f"\nPreprocessing of reads was done automatically with workflow tool "
-            f"seq2science v{seq2science.__version__} (https://doi.org/10.5281/zenodo.3921913)."
+            "start": f"Preprocessing of reads was done automatically by "
+            f"seq2science v{seq2science.__version__} (https://doi.org/10.5281/zenodo.3921913) "
+            f"using the {args.workflow} workflow."
         }
 
     def log_handler(log):
@@ -479,12 +492,16 @@ def _explain(args, base_dir, workflows_dir, config_path):
     with open(os.devnull, "w") as null:
         with contextlib.redirect_stdout(null), contextlib.redirect_stderr(null):
             success = snakemake.snakemake(**parsed_args)
+
+    if args.debug:
+        print(f"Explain output:\n{rules_used}\n\n")
+
     if success:
         print(" ".join(rules_used.values()))
         sys.exit(0)
     else:
         print(
-            "\nOh no! Something went wrong... "
+            "Oh no! Something went wrong... "
             "Please let us know: https://github.com/vanheeringen-lab/seq2science/issues "
         )
         sys.exit(1)

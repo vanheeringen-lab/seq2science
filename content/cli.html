@@ -134,7 +134,7 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">seq2science</span> <span class="n">run</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">j</span> <span class="n">N</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">n</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">r</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">skip</span><span class="o">-</span><span class="n">rerun</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">k</span><span class="p">]</span>
                        <span class="p">[</span><span class="o">--</span><span class="n">rerun</span><span class="o">-</span><span class="n">incomplete</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">unlock</span><span class="p">]</span>
                        <span class="p">[</span><span class="o">--</span><span class="n">snakemakeOptions</span> <span class="n">KEY</span><span class="o">=</span><span class="n">VAL</span> <span class="p">[</span><span class="n">KEY</span><span class="o">=</span><span class="n">VAL</span> <span class="o">...</span><span class="p">]]</span>
-                       <span class="p">[</span><span class="o">-</span><span class="n">p</span> <span class="n">PROFILE</span> <span class="n">NAME</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">c</span> <span class="n">FILE</span><span class="p">]</span>
+                       <span class="p">[</span><span class="o">-</span><span class="n">p</span> <span class="n">PROFILE</span> <span class="n">NAME</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">c</span> <span class="n">FILE</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">debug</span><span class="p">]</span>
                        <span class="n">WORKFLOW</span>
 </pre></div>
 </div>
@@ -186,6 +186,10 @@
 <dd><p>The path to the config file.</p>
 <p>Default: “./config.yaml”</p>
 </dd>
+<dt><kbd>--debug</kbd></dt>
+<dd><p>For developers “only”: prints helpful error messages to debug issues.</p>
+<p>Default: False</p>
+</dd>
 </dl>
 </div>
 </div>
@@ -206,7 +210,7 @@ seq2science clean will clean up these files for you.</p>
 </p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">seq2science</span> <span class="n">explain</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">hyperref</span><span class="p">]</span>
                            <span class="p">[</span><span class="o">--</span><span class="n">snakemakeOptions</span> <span class="n">KEY</span><span class="o">=</span><span class="n">VAL</span> <span class="p">[</span><span class="n">KEY</span><span class="o">=</span><span class="n">VAL</span> <span class="o">...</span><span class="p">]]</span>
-                           <span class="p">[</span><span class="o">-</span><span class="n">p</span> <span class="n">PROFILE</span> <span class="n">NAME</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">c</span> <span class="n">FILE</span><span class="p">]</span>
+                           <span class="p">[</span><span class="o">-</span><span class="n">p</span> <span class="n">PROFILE</span> <span class="n">NAME</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">c</span> <span class="n">FILE</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">debug</span><span class="p">]</span>
                            <span class="n">WORKFLOW</span>
 </pre></div>
 </div>
@@ -234,6 +238,10 @@ seq2science clean will clean up these files for you.</p>
 <dt><kbd>-c, --configfile</kbd></dt>
 <dd><p>The path to the config file.</p>
 <p>Default: “./config.yaml”</p>
+</dd>
+<dt><kbd>--debug</kbd></dt>
+<dd><p>For developers “only”: prints helpful error messages to debug issues.</p>
+<p>Default: False</p>
 </dd>
 </dl>
 </div>

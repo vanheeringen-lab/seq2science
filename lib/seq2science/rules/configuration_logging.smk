@@ -104,7 +104,7 @@ if not config.get("no_config_log"):
         ("aligner", no_aligners),
         ("bam_sort_order", no_aligners),
         ("bam_sorter", no_aligners),
-        ("deeptools_flags", no_aligners),
+        ("deeptools_bamcoverage", no_aligners),
         ("deeptools_multibamsummary", no_aligners),
         ("deeptools_plotcorrelation", no_aligners),
         ("deeptools_qc", no_aligners),

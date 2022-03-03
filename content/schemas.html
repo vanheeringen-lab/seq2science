@@ -114,7 +114,7 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#workflow-rna-seq">Workflow: RNA-seq</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#quantifier">quantifier</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#tximeta">tximeta</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tpm2counts">tpm2counts</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ignore-strandedness">ignore_strandedness</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#dexseq">dexseq</a></li>
 </ul>
@@ -146,7 +146,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#create-trackhub">create_trackhub</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#trackhub-dir">trackhub_dir</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#bigwig-dir">bigwig_dir</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#deeptools-flags">deeptools_flags</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#deeptools-bamcoverage">deeptools_bamcoverage</a></li>
 </ul>
 </li>
 </ul>
@@ -805,25 +805,40 @@
 </pre></div>
 </div>
 </div>
-<div class="section" id="tximeta">
-<h3>tximeta<a class="headerlink" href="#tximeta" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>tximeta:
-    description: tximeta is used to convert salmon output to gene counts. If you are using an assembly from Ensembl or GENCODE, you can refine the output by specifying these fields.
+<div class="section" id="tpm2counts">
+<h3>tpm2counts<a class="headerlink" href="#tpm2counts" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>tpm2counts:
+    description: how do you wish to convert TPMs to gene counts?
     properties:
-        source:
-            description: the source of transcriptome
-            enum: [&#39;Ensembl&#39;, &#39;GENCODE&#39;, &#39;de-novo&#39;]
-            default: de-novo
-        organism:
-            description: organism (e.g. &quot;Homo sapiens&quot;)
-            default: tximeta_file
-        release:
-            description: release number of the source database (e.g. &quot;101&quot;)
-            default: 42
+        tximeta:
+            description: Tximeta uses Ensembl/GENCODE assemblies to convert TPMs to gene counts, and produces an additional R object with the various contents.
+            properties:
+                txi_source:
+                    description: the source of transcriptome
+                    enum: [&#39;Ensembl&#39;, &#39;GENCODE&#39;, &#39;de-novo&#39;]
+                    default: de-novo
+                txi_organism:
+                    description: organism (e.g. &quot;Homo sapiens&quot;)
+                    default: tximeta_file
+                txi_release:
+                    description: release number of the source database (e.g. &quot;101&quot;)
+                    default: 42
+            default:
+                txi_source: de-novo
+                txi_organism: tximeta_file
+                txi_release: 42
+        pytxi:
+            description: Pytxi uses genomepy assemblies to convert TPMs to gene counts (using either the GTF file or MyGene.info).
+            properties:
+                tx2gene_from_gtf:
+                    description: try to convert to gene names (symbols) using the GTF file. If false (or the GTF cannot help), pytxi uses MyGene.info.
+                    type: boolean
+                    default: True
+            default:
+                tx2gene_from_gtf: True
     default:
-        source: de-novo
-        organism: tximeta_file
-        release: 42
+        pytxi:
+            tx2gene_from_gtf: True
 </pre></div>
 </div>
 </div>
@@ -1105,11 +1120,11 @@
 </pre></div>
 </div>
 </div>
-<div class="section" id="deeptools-flags">
-<h3>deeptools_flags<a class="headerlink" href="#deeptools-flags" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>deeptools_flags:
+<div class="section" id="deeptools-bamcoverage">
+<h3>deeptools_bamcoverage<a class="headerlink" href="#deeptools-bamcoverage" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>deeptools_bamcoverage:
     description: flags for bam to bigwig conversions with deeptools bamCoverage
-    default: --normalizeUsing BPM
+    default: --normalizeUsing BPM --binSize 1
 </pre></div>
 </div>
 </div>

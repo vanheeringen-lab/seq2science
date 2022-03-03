@@ -36,6 +36,11 @@ coldata[,"condition"] <- coldata[condition]
 coldata[,"batch"]     <- if (!is.na(batch)) { coldata[batch] } else { NA }
 coldata <- coldata[c("condition", "batch")]
 
+# log involved samples
+cat('samples per group\n')
+cat('reference (', groups[2],'):', rownames(coldata[coldata$condition %in% groups[2],]),'\n')
+cat('test (', groups[1],'):', rownames(coldata[coldata$condition %in% groups[1],]),'\n\n')
+
 # determine if we need to run batch correction on the whole assembly
 output_batch_corr_counts <- sub(paste0(contrast, ".diffexp.tsv"), paste0(batch, ".batch_corr_counts.tsv"), output, fixed=TRUE)
 output_batch_corr_pca    <- sub(paste0(contrast, ".diffexp.tsv"), paste0(batch, ".batch_corr_pca.png"), output, fixed=TRUE)
@@ -209,6 +214,7 @@ if (is.na(batch)) {
     write.table(bcc, file=output_batch_corr_counts, quote = F, sep = '\t', row.names = F)
     cat('-batch corrected counts saved\n')
   } else {
+    batch_corr_counts <- read.table(output_batch_corr_counts, row.names = 1, header = T, stringsAsFactors = F, sep = '\t', check.names = F)
     cat('-batch corrected counts already exists\n')
   }
 

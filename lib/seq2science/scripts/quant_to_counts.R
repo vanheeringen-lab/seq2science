@@ -8,6 +8,7 @@ suppressMessages({
 # snakemake variables
 linked_txome <- snakemake@input$linked_txome
 samples      <- snakemake@input$cts
+sample_names <- snakemake@params$names
 assembly     <- snakemake@wildcards$assembly
 out_matrix   <- snakemake@output$counts
 out_SCE      <- snakemake@output$SCE
@@ -22,6 +23,7 @@ sink(log, type="message")
 cat('# variables used for this analysis:\n')
 cat('linked_txome <- "', linked_txome, '"\n', sep = "")
 cat('samples      <- "', samples,      '"\n', sep = "")
+cat('sample_names <- "', sample_names, '"\n', sep = "")
 cat('assembly     <- "', assembly,     '"\n', sep = "")
 cat('out_matrix   <- "', out_matrix,   '"\n', sep = "")
 cat('out_SCE      <- "', out_SCE,      '"\n', sep = "")
@@ -36,8 +38,7 @@ cat('\n')
 ## Load linked_txome.json
 tximeta::loadLinkedTxome(linked_txome)
 
-samplenames <- gsub(paste0(assembly, '-'), '', basename(samples))
-coldata <- data.frame(files = file.path(samples, 'quant.sf'), names = samplenames, stringsAsFactors = F, check.names = F)
+coldata <- data.frame(files = file.path(samples, 'quant.sf'), names = sample_names, stringsAsFactors = F, check.names = F)
 
 ## import annotated abundances in transcript level
 st <- tximeta::tximeta(

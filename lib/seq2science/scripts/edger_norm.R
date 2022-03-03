@@ -14,7 +14,7 @@ sink(log)
 sink(log, type="message")
 
 # read count table
-counts <- read.delim(counts_tsv, sep = "\t", na.strings = "", comment.char = "#", stringsAsFactors = F, , row.names=1)
+counts <- read.delim(counts_tsv, sep = "\t", na.strings = "", comment.char = "#", stringsAsFactors = F, row.names=1, check.names = F)
 
 # normalize
 tryCatch(
