@@ -136,11 +136,12 @@ elif config["trimmer"] == "fastp":
         benchmark:
             expand("{benchmark_dir}/fastp_SE/{{sample}}.benchmark.txt", **config)[0]
         params:
-            threads=lambda wildcards, threads: max(1, threads - 2),
             config=config["trimoptions"],
         shell:
             """\
-            fastp -w {params.threads} --in1 {input} --out1 {output.se} -h {output.qc_html} -j {output.qc_json} \
+            threads=$(( {threads} - 2  > 1 ? {threads} - 2 : 1 ))
+            
+            fastp -w $threads --in1 {input} --out1 {output.se} -h {output.qc_html} -j {output.qc_json} \
             {params.config} > {log} 2>&1
             """
 
@@ -169,10 +170,11 @@ elif config["trimmer"] == "fastp":
             expand("{benchmark_dir}/fastp_PE/{{sample}}.benchmark.txt", **config)[0]
         params:
             config=config["trimoptions"],
-            threads=lambda wildcards, threads: max(1, threads - 2),
         shell:
             """\
-            fastp -w {params.threads} --in1 {input[0]} --in2 {input[1]} \
+            threads=$(( {threads} - 2  > 1 ? {threads} - 2 : 1 ))
+            
+            fastp -w $threads --in1 {input[0]} --in2 {input[1]} \
             --out1 {output.r1} --out2 {output.r2} -h {output.qc_html} -j {output.qc_json} \
             {params.config} > {log} 2>&1
             """
