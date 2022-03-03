@@ -454,13 +454,13 @@ def _explain(args, base_dir, workflows_dir, config_path):
     # starting message
     if args.hyperref:
         rules_used = {
-            "start": f"\nPreprocessing of reads was done automatically by "
+            "start": f"Preprocessing of reads was done automatically by "
             f"<a href=https://doi.org/10.5281/zenodo.3921913>seq2science v{seq2science.__version__}</a> "
             f"using the {args.workflow} workflow."
         }
     else:
         rules_used = {
-            "start": f"\nPreprocessing of reads was done automatically by "
+            "start": f"Preprocessing of reads was done automatically by "
             f"seq2science v{seq2science.__version__} (https://doi.org/10.5281/zenodo.3921913) "
             f"using the {args.workflow} workflow."
         }
@@ -486,7 +486,7 @@ def _explain(args, base_dir, workflows_dir, config_path):
         sys.exit(0)
     else:
         print(
-            "\nOh no! Something went wrong... "
+            "Oh no! Something went wrong... "
             "Please let us know: https://github.com/vanheeringen-lab/seq2science/issues "
         )
         sys.exit(1)
