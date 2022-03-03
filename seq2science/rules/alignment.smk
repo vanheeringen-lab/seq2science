@@ -480,7 +480,7 @@ rule samtools_presort:
         expand("{benchmark_dir}/samtools_presort/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
     params:
         out_dir=f"{config['result_dir']}/{config['aligner']}",
-        memory=lambda wildcards, input, output, threads: f"-m {int(1000 * round(config['bam_sort_mem']/threads, 3))}M",
+        memory=config['bam_sort_mem'],
     priority: 0
     threads: 2
     resources:
@@ -493,6 +493,9 @@ rule samtools_presort:
         trap "rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
         rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2> {log}
 
-        samtools sort -@ {threads} {params.memory} {input} -o {output} \
+        # RAM per thread in MB
+        memory=$((1000*{params.memory}/{threads}))M
+
+        samtools sort -@ {threads} -m $memory {input} -o {output} \
         -T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
         """
