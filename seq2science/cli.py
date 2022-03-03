@@ -454,13 +454,15 @@ def _explain(args, base_dir, workflows_dir, config_path):
     # starting message
     if args.hyperref:
         rules_used = {
-            "start": f"\nPreprocessing of reads was done automatically with workflow tool "
-            f"<a href=https://doi.org/10.5281/zenodo.3921913>seq2science v{seq2science.__version__}</a>."
+            "start": f"\nPreprocessing of reads was done automatically by "
+            f"<a href=https://doi.org/10.5281/zenodo.3921913>seq2science v{seq2science.__version__}</a> "
+            f"using the {args.workflow} workflow."
         }
     else:
         rules_used = {
-            "start": f"\nPreprocessing of reads was done automatically with workflow tool "
-            f"seq2science v{seq2science.__version__} (https://doi.org/10.5281/zenodo.3921913)."
+            "start": f"\nPreprocessing of reads was done automatically by "
+            f"seq2science v{seq2science.__version__} (https://doi.org/10.5281/zenodo.3921913) "
+            f"using the {args.workflow} workflow."
         }
 
     def log_handler(log):
