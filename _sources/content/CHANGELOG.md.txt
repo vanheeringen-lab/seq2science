@@ -8,6 +8,8 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+## [0.7.2] - 2022-03-04
+
 ### Added
 
 - TPM to gene counts conversion with pytxi
@@ -26,6 +28,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Fixed
 
+- edge-cases where seq2science was too strict with rerunning
 - assembly stats log scale on the y-axis
 - s2s explain wont tell you about subsampling to -1 (all) reads
 - tn5 shift cigar string parsing edge-case (reference deletions/insertions)
@@ -538,7 +541,10 @@ Many minor bug- and quality of life fixes.
 ## [0.0.0] - 2020-06-11
 First release of seq2science!
 
-[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.6.1...develop
+[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.7.2...develop
+[0.6.1]: https://github.com/vanheeringen-lab/seq2science/compare/v0.7.1...v0.7.2
+[0.6.1]: https://github.com/vanheeringen-lab/seq2science/compare/v0.7.0...v0.7.1
+[0.6.1]: https://github.com/vanheeringen-lab/seq2science/compare/v0.6.1...v0.7.0
 [0.6.1]: https://github.com/vanheeringen-lab/seq2science/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.6...v0.6.0
 [0.5.6]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.5...v0.5.6
