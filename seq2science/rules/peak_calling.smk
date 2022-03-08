@@ -358,7 +358,8 @@ if "biological_replicates" in samples:
             params:
                 rank=lambda wildcards: "--rank 13" if wildcards.peak_caller == "hmmratac" else "",
                 nr_reps=lambda wildcards, input: len(input),
-                reps=lambda wildcards, input: input,  # help resolve changes in input files
+                reps=lambda wildcards, input: input,  # help resolve changes in input files,
+                options=config.get("idr_options", "")
             conda:
                 "../envs/idr.yaml"
             shell:
@@ -367,7 +368,7 @@ if "biological_replicates" in samples:
                     cp {input} {output.true}
                     touch {output.temp}
                 else
-                    idr --samples {input} {params.rank} --output-file {output.temp} > {log} 2>&1
+                    idr --samples {input} {params.rank} --output-file {output.temp} {params.options} > {log} 2>&1
                     if [ "{wildcards.ftype}" == "narrowPeak" ]; then
                         awk 'IFS="\t",OFS="\t" {{$9=0; $10=int(($3 - $2) / 2); print}}' {output.temp} > {output.true} 2>> {log}
                     else

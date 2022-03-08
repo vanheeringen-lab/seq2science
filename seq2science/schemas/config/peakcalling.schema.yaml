@@ -51,3 +51,7 @@ properties:
     default: --kmeans 6 --xAxisLabel "Summit distance (bp)"
     type: string
 
+  idr_options:
+    description: the options passed to idr when combining peaks
+    default: ''
+    type: string
