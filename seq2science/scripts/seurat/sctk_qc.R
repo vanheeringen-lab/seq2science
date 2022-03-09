@@ -5,17 +5,16 @@ suppressMessages({
 })
 
 # Snakemake variables
-rds_in <- "/.RData"
-out_dir <-"/test"
-log_file <- "/log.txt"
+rds_in <- snakemake@input@rds_raw
+out_dir <-snakemake@params$out_dir
+log_file <- snakemake@log[[1]]
+sample <-  snakemake@params$sample
 data_type <- "droplet"
 mitoset <- "mouse-ensembl"
-sample <- "Processed"
-rds_out <- file.path(out_dir, paste0(sample, "_seu_processed.rds"), fsep="/" )
-qc_out <- file.path(out_dir,  paste0("SCTK_", sample,'_cellQC_summary.csv'), fsep="/" )
-pdf_out <- file.path(out_dir, paste0(sample, "_DropletQC_figures.pdf"), fsep="/" )
-#log_file <- snakemake@log[[1]]
-numCores <- 6
+rds_out <- file.path(out_dir, "seu_obj_processed.RData",    fsep="/" )
+qc_out <-  file.path(out_dir, "SCTK_cellQC_summary.csv",    fsep="/" )
+pdf_out <- file.path(out_dir, "SCTK_DropletQC_figures.pdf", fsep="/" )
+numCores <- 4
 
 # Log all console output
 log <- file(log_file, open="wt")
@@ -26,7 +25,14 @@ sink(log, type="message")
 cat('# variables used for this analysis:\n')
 cat('log_file         <- "', log_file,         '"\n', sep = "")
 cat('sample           <- "', sample,           '"\n', sep = "")
-cat('rds_in           <- "', rds_in,              '"\n', sep = "")
+cat('rds_in           <- "', rds_in,           '"\n', sep = "")
+cat('out_dir          <- "', out_dir,          '"\n', sep = "")
+cat('rds_out          <- "', out_dir,          '"\n', sep = "")
+cat('qc_out           <- "', qc_out,           '"\n', sep = "")
+cat('pdf_out          <- "', pdf_out,          '"\n', sep = "")
+cat('data_type        <- "', data_type,        '"\n', sep = "")
+cat('mitoset          <- "', mitoset,          '"\n', sep = "")
+
 
 # Setup parallel type
 # https://github.com/compbiomed/singleCellTK/blob/master/exec/SCTK_runQC.R

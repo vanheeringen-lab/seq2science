@@ -439,7 +439,35 @@ elif  "scrna_seq" == get_workflow():
             R_scripts=1,  # conda's R can have issues when starting multiple times
         script:
             f"{config['rule_dir']}/../scripts/seurat/read_kb_counts.R"
-
+    
+    
+    rule sctk_qc:
+        """
+        Read scRNA count output into Seurat object, add meta-data and export to RData format.
+        """
+        input:
+           rds_raw=rules.export_seurat_obj.output.rds
+           
+        output:
+            dir=expand(
+                "{result_dir}/sctk/{quantifier}/{{assembly}}-{{sample}}/{file}",
+                **{**config, **{"file": ["seu_obj_processed.RData", "SCTK_cellQC_summary.csv", "SCTK_DropletQC_figures.pdf"]}}
+            ),
+        log:
+            expand("{log_dir}/sctk/{{assembly}}-{{sample}}_seu_obj_processed.log", **config),
+        priority: 1
+        conda:
+            "../envs/sctk.yaml"
+        params:
+            sample=lambda wildcards, input: rep_to_descriptive(wildcards.sample),
+            outdir=lambda wildcards, input, output: os.path.dirname(output[0]),
+            scripts_dir=f"{config['rule_dir']}/../scripts/deseq2",
+        resources:
+            R_scripts=1,  # conda's R can have issues when starting multiple times
+        script:
+            f"{config['rule_dir']}/../scripts/seurat/read_kb_counts.R"
+    
+    
 
     rule merge_seurat_obj:
         """
