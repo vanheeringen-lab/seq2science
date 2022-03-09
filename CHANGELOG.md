@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- idr call is configurable (`idr_options`)
+
 ## [0.7.2] - 2022-03-04
 
 ### Added
