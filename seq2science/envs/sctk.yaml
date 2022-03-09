@@ -1,0 +1,17 @@
+name: sctk
+channels:
+  - bioconda
+  - defaults
+dependencies:
+  - bioconda::bioconductor-singlecelltk
+  - anaconda::scipy
+  - anaconda::astroid
+  - anacopnda::six
+  - anaconda::numpy
+  - pip
+  - pip:
+    - scrublet
+    - scanpy
+    - anndata
+    - bbknn
+    - scanorama
