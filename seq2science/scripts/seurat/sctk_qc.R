@@ -9,8 +9,8 @@ rds_in <- snakemake@input$rds_raw
 out_dir <-snakemake@params$outdir
 log_file <- snakemake@log[[1]]
 sample <-  snakemake@params$sample
-data_type <- "droplet"
-mitoset <- "mouse-ensembl"
+data_type <- snakemake@config$data_type
+mito_set <- snakemae@config$mito_set
 rds_out <- file.path(out_dir, "seu_obj_processed.RData",    fsep="/" )
 qc_out <-  file.path(out_dir, "SCTK_cellQC_summary.csv",    fsep="/" )
 pdf_out <- file.path(out_dir, "SCTK_DropletQC_figures.pdf", fsep="/" )

@@ -60,7 +60,12 @@ properties:
         project_name: merged
         min_cells: 0
         min_features: 0
-        
+  
+  sctk:
+    description: "Settings for singlecellTK"
+      data_type: "cell"
+      mito_set: "human-ensembl"
+    
   # Exploratory data analysis for in-house Celseq2
   seurat:
     description: Seurat rmd for exploratory data analysis
