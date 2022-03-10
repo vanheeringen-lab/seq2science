@@ -63,9 +63,17 @@ properties:
   
   sctk:
     description: "Settings for singlecellTK"
-      data_type: "cell"
-      mito_set: "human-ensembl"
-    
+    properties:
+      data_type: 
+       description: "Type of data, either cell or droplet"
+       type: string
+      mito_set:
+       description: "Mitochondrial gene set for quality control"
+       enum: ["human-ensembl", "mouse-ensembl", "human-entrez", "mouse-entrez", "human-symbol", "mouse-symbol"]
+      default:
+        data_type: cell
+        mito_set: human-ensembl
+        
   # Exploratory data analysis for in-house Celseq2
   seurat:
     description: Seurat rmd for exploratory data analysis

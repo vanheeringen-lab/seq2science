@@ -10,7 +10,7 @@ out_dir <-snakemake@params$outdir
 log_file <- snakemake@log[[1]]
 sample <-  snakemake@params$sample
 data_type <- snakemake@config$sctk$data_type
-mito_set <- snakemae@config$sctk$mito_set
+mito_set <- snakemake@config$sctk$mito_set
 rds_out <- file.path(out_dir, "seu_obj_processed.RData",    fsep="/" )
 qc_out <-  file.path(out_dir, "SCTK_cellQC_summary.csv",    fsep="/" )
 pdf_out <- file.path(out_dir, "SCTK_DropletQC_figures.pdf", fsep="/" )
@@ -31,7 +31,7 @@ cat('rds_out          <- "', out_dir,          '"\n', sep = "")
 cat('qc_out           <- "', qc_out,           '"\n', sep = "")
 cat('pdf_out          <- "', pdf_out,          '"\n', sep = "")
 cat('data_type        <- "', data_type,        '"\n', sep = "")
-cat('mitoset          <- "', mitoset,          '"\n', sep = "")
+cat('mito_set          <- "', mito_set,          '"\n', sep = "")
 
 
 # Setup parallel type
@@ -123,7 +123,7 @@ if(tolower(data_type) == "droplet") {
 }
 
 #Import Mito Gene set for Quality contro
-mitoset <- strsplit(mitoset,"-")[[1]]
+mitoset <- strsplit(mito_set,"-")[[1]]
 sce <- importMitoGeneSet(sce, reference = mitoset[1], id = mitoset[2], by = "rownames", collectionName = "mito")
 sce <- runCellQC(sce, sample = sce$technical_replicates,
                    algorithms = c("QCMetrics", "scDblFinder"),
