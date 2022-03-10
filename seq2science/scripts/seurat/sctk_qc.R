@@ -5,8 +5,8 @@ suppressMessages({
 })
 
 # Snakemake variables
-rds_in <- snakemake@input@rds_raw
-out_dir <-snakemake@params$out_dir
+rds_in <- snakemake@input$rds_raw
+out_dir <-snakemake@params$outdir
 log_file <- snakemake@log[[1]]
 sample <-  snakemake@params$sample
 data_type <- "droplet"
@@ -96,7 +96,7 @@ if(tolower(data_type) == "droplet") {
       sample = sce$technical_replicates,
       paramsList = Params
     )
-  reportDropletQC(inSCE = sce, output_dir = out_dir)
+  reportDropletQC(inSCE = sce, output_dir = out_dir, output_file = "DropletQC.html")
   # Filtering
   sce <-
     subsetSCECols(sce, colData = 'dropletUtils_BarcodeRank_Inflection == 1')
@@ -132,7 +132,7 @@ sce <- runCellQC(sce, sample = sce$technical_replicates,
                    paramsList=Params)
 sce <- getUMAP(inSCE = sce, reducedDimName = "QC_UMAP")
 #Generate HTML report for Cell analysis
-reportCellQC(sce, output_dir = out_dir)
+reportCellQC(sce, output_dir = out_dir, output_file = "CellQC.html")
 
 # Generate summary
 QCsummary <- sampleSummaryStats(sce, simple=FALSE, sample = sce$technical_replicates)

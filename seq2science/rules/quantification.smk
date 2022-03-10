@@ -461,11 +461,11 @@ elif  "scrna_seq" == get_workflow():
         params:
             sample=lambda wildcards, input: rep_to_descriptive(wildcards.sample),
             outdir=lambda wildcards, input, output: os.path.dirname(output[0]),
-            scripts_dir=f"{config['rule_dir']}/../scripts/deseq2",
         resources:
-            R_scripts=1,  # conda's R can have issues when starting multiple times
+            R_scripts=1,
+            mem_gb=50,# conda's R can have issues when starting multiple times
         script:
-            f"{config['rule_dir']}/../scripts/seurat/read_kb_counts.R"
+            f"{config['rule_dir']}/../scripts/seurat/sctk_qc.R"
     
     
 
