@@ -468,7 +468,6 @@ elif  "scrna_seq" == get_workflow():
             f"{config['rule_dir']}/../scripts/seurat/sctk_qc.R"
     
     
-
     rule merge_seurat_obj:
         """
         Gather and merge multiple Seurat objects into a combined object and export to RData format.
@@ -494,33 +493,8 @@ elif  "scrna_seq" == get_workflow():
             R_scripts=1,  # conda's R can have issues when starting multiple times
         script:
             f"{config['rule_dir']}/../scripts/seurat/merge_seurat_objs.R"
-
-
-    rule kb_seurat_pp:
-        input:
-            expand(
-                [
-                    f"{{result_dir}}/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}/run_info.json"
-                    for trep in treps.index
-                ],
-                **config,
-            ),
-        output:
-            html=f"{config['result_dir']}/kb_seurat_pp/{{quantifier}}/{{assembly}}/kb_seurat_pp.html",
-            qc_dir=directory(f"{config['result_dir']}/kb_seurat_pp/{{quantifier}}/{{assembly}}/qc"),
-        priority: 1
-        conda:
-            "../envs/kb_seurat_pp.yaml"
-        params:
-            isvelo=lambda wildcards, input: True if "--workflow" in config.get("count", "") else False,
-        message:
-            explain_rule("kb_seurat_pp")
-        resources:
-            R_scripts=1,  # conda's R can have issues when starting multiple times
-        script:
-            f"{config['rule_dir']}/../scripts/knit_kb_seurat_pp.R"
-
-
+            
+            
 elif config["quantifier"] == "htseq":
 
     rule htseq_count:
