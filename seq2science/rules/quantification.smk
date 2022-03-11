@@ -449,7 +449,6 @@ elif  "scrna_seq" == get_workflow():
         """
         input:
            rds_raw=rules.export_seurat_obj.output.rds
-           
         output:
             dir=expand(
                 "{result_dir}/sctk/{quantifier}/{{assembly}}-{{sample}}/{file}",
@@ -463,6 +462,7 @@ elif  "scrna_seq" == get_workflow():
         params:
             sample=lambda wildcards, input: rep_to_descriptive(wildcards.sample),
             outdir=lambda wildcards, input, output: os.path.dirname(output[0]),
+            isvelo=lambda wildcards, input: True if "--workflow lamanno" in config.get("count", "") else False,
         message:
             explain_rule("sctk")
         resources:

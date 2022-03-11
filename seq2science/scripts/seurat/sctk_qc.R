@@ -9,6 +9,7 @@ rds_in <- snakemake@input$rds_raw
 out_dir <-snakemake@params$outdir
 log_file <- snakemake@log[[1]]
 sample <-  snakemake@params$sample
+isvelo <- snakemake@params$isvelo
 data_type <- snakemake@config$sctk$data_type
 mito_set <- snakemake@config$sctk$mito_set
 rds_out <- file.path(out_dir, "seu_obj_processed.RData",    fsep="/" )
@@ -25,13 +26,14 @@ sink(log, type="message")
 cat('# variables used for this analysis:\n')
 cat('log_file         <- "', log_file,         '"\n', sep = "")
 cat('sample           <- "', sample,           '"\n', sep = "")
+cat('isvelo           <- "', isvelo,           '"\n', sep = "")
 cat('rds_in           <- "', rds_in,           '"\n', sep = "")
 cat('out_dir          <- "', out_dir,          '"\n', sep = "")
 cat('rds_out          <- "', out_dir,          '"\n', sep = "")
 cat('qc_out           <- "', qc_out,           '"\n', sep = "")
 cat('pdf_out          <- "', pdf_out,          '"\n', sep = "")
 cat('data_type        <- "', data_type,        '"\n', sep = "")
-cat('mito_set          <- "', mito_set,          '"\n', sep = "")
+cat('mito_set         <- "', mito_set,         '"\n', sep = "")
 
 
 # Setup parallel type
@@ -86,6 +88,11 @@ modifySCE <- function(seuratObj) {
 
 # read RDS object
 seu <- readRDS(rds_in)
+if(isvelo) {
+  #Extract the spliced assay
+  seu <- seu$sf
+}
+
 sce <- modifySCE(seu)
 #Perform filtering steps for Droplet based methods
 if(tolower(data_type) == "droplet") {
