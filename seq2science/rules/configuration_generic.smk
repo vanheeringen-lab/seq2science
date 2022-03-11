@@ -243,7 +243,12 @@ if "assembly" in samples:
     ):
         remote_assemblies = []
         search_assemblies = []
-
+        
+    # Check scRNA post-processing options
+    if config['run_sctk_qc'] and config['export_seu_objects']:
+        logger.error("Only one option is valid. Either select run_sctk_qc or export_seu_objs")
+        sys.exit(1)
+        
     # check if genomepy can download the required files
     if len(search_assemblies) > 0:
         providers.search(search_assemblies)
