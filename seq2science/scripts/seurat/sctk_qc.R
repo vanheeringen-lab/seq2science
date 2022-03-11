@@ -10,6 +10,7 @@ out_dir <-snakemake@params$outdir
 log_file <- snakemake@log[[1]]
 sample <-  snakemake@params$sample
 isvelo <- snakemake@params$isvelo
+replicates <- snakemake@params$replicates
 data_type <- snakemake@config$sctk$data_type
 mito_set <- snakemake@config$sctk$mito_set
 rds_out <- file.path(out_dir, "seu_obj_processed.RData",    fsep="/" )
@@ -26,6 +27,7 @@ sink(log, type="message")
 cat('# variables used for this analysis:\n')
 cat('log_file         <- "', log_file,         '"\n', sep = "")
 cat('sample           <- "', sample,           '"\n', sep = "")
+cat('replicates       <- "', replicates,       '"\n', sep = "")
 cat('isvelo           <- "', isvelo,           '"\n', sep = "")
 cat('rds_in           <- "', rds_in,           '"\n', sep = "")
 cat('out_dir          <- "', out_dir,          '"\n', sep = "")
@@ -88,19 +90,26 @@ modifySCE <- function(seuratObj) {
 
 # read RDS object
 seu <- readRDS(rds_in)
-if(isvelo) {
-  #Extract the spliced assay
+
+#Extract the spliced assay if necessary
+if (isvelo) {
   seu <- seu$sf
 }
-
+#Set sample col
+sample_col <- sce$sample
+if (replicates) {
+  sample_col <- sce$technical_replicates
+}
+#Modify sce object
 sce <- modifySCE(seu)
+
 #Perform filtering steps for Droplet based methods
 if(tolower(data_type) == "droplet") {
   sce <-
     runDropletQC(
       sce,
       algorithms = c("QCMetrics", "emptyDrops", "barcodeRanks"),
-      sample = sce$technical_replicates,
+      sample = sample_col,
       paramsList = Params
     )
   reportDropletQC(inSCE = sce, output_dir = out_dir, output_file = "DropletQC.html")
@@ -132,7 +141,7 @@ if(tolower(data_type) == "droplet") {
 #Import Mito Gene set for Quality contro
 mitoset <- strsplit(mito_set,"-")[[1]]
 sce <- importMitoGeneSet(sce, reference = mitoset[1], id = mitoset[2], by = "rownames", collectionName = "mito")
-sce <- runCellQC(sce, sample = sce$technical_replicates,
+sce <- runCellQC(sce, sample = sample_col,
                    algorithms = c("QCMetrics", "scDblFinder"),
                    collectionName = "mito",
                    geneSetListLocation = "rownames",
@@ -142,7 +151,7 @@ sce <- getUMAP(inSCE = sce, reducedDimName = "QC_UMAP")
 reportCellQC(sce, output_dir = out_dir, output_file = "CellQC.html")
 
 # Generate summary
-QCsummary <- sampleSummaryStats(sce, simple=FALSE, sample = sce$technical_replicates)
+QCsummary <- sampleSummaryStats(sce, simple=FALSE, sample = sample_col)
 write.csv(QCsummary, qc_out)
 
 #Save final Seurat object

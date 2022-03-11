@@ -463,6 +463,7 @@ elif  "scrna_seq" == get_workflow():
             sample=lambda wildcards, input: rep_to_descriptive(wildcards.sample),
             outdir=lambda wildcards, input, output: os.path.dirname(output[0]),
             isvelo=lambda wildcards, input: True if "--workflow lamanno" in config.get("count", "") else False,
+            replicates=True if "technical_replicates" in samples else False,
         message:
             explain_rule("sctk")
         resources:
