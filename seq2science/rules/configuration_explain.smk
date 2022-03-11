@@ -56,7 +56,7 @@ else:
         "tximeta": "https://doi.org/10.1101/777888",
         "ucsc genome browser": "http://www.genome.org/cgi/doi/10.1101/gr.229102",
         "seurat": "https://doi.org/10.1038/nbt.4096",
-        "kb_seurat_pp": "https://github.com/Rebecza/scRNA-seq",
+        "sctk": "https://www.biorxiv.org/content/10.1101/329755v1",
         "citeseqcount": "https://zenodo.org/record/2590196",
         "khmer": "https://dx.doi.org/10.12688%2Ff1000research.6924.1",
     }
@@ -203,5 +203,6 @@ else:
         "combine_peaks": f"A consensus set of summits was made with {href_v('gimmemotifs',text='gimmemotifs.combine_peaks',env='gimme')}.",
         "bed_slop": f"All summits were extended with {config.get('slop')} bp to get a consensus peakset.",
         "coverage_table": f"Finally, a count table from the consensus peakset with gimmemotifs.",  # already cited in "combine_peaks"
-        "kb_seurat_pp": f"scRNA count post-processing was performed using the {hyperref('seurat')} based {hyperref('kb_seurat_pp')} markdown.",
+        "seurat": f"{hyperref('seurat')} was used to generate S4 to store and merge count assays",
+        "sctk": f"scRNA count post-processing was performed using the {hyperref('sctk')} toolkit.",
     }

@@ -435,6 +435,8 @@ elif  "scrna_seq" == get_workflow():
             sample=lambda wildcards, input: rep_to_descriptive(wildcards.sample),
             replicates=True if "technical_replicates" in samples else False,
             scripts_dir=f"{config['rule_dir']}/../scripts/deseq2",
+        message:
+            explain_rule("seurat")
         resources:
             R_scripts=1,  # conda's R can have issues when starting multiple times
         script:
@@ -461,6 +463,8 @@ elif  "scrna_seq" == get_workflow():
         params:
             sample=lambda wildcards, input: rep_to_descriptive(wildcards.sample),
             outdir=lambda wildcards, input, output: os.path.dirname(output[0]),
+        message:
+            explain_rule("sctk")
         resources:
             R_scripts=1,
             mem_gb=50,# conda's R can have issues when starting multiple times
@@ -503,6 +507,8 @@ elif  "scrna_seq" == get_workflow():
             "../envs/seurat.yaml"
         params:
             isvelo=lambda wildcards, input: True if "--workflow lamanno" in config.get("count", "") else False,
+        message:
+            explain_rule("seurat")
         resources:
             R_scripts=1,  # conda's R can have issues when starting multiple times
         script:
