@@ -470,7 +470,7 @@ elif  "scrna_seq" == get_workflow():
     
     def get_merge_objs(wildcards):
         # Return quantifier specific output directory
-        if config["merge_seu_objects"]:
+        if config["run_sctk_qc"]:
             return expand(
                 [
                     f"{{result_dir}}/sctk/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}/seu_obj_processed.RData"
