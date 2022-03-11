@@ -39,6 +39,11 @@ properties:
     description: "Export scRNA count tables to Seurat objects and save in RDS format"
     type: boolean   
     default: false
+  
+  run_sctk_qc:
+    description: "Generate QC reports with singleCellTK"
+    type: boolean   
+    default: false
     
   seurat_object:
     description: "Seurat object settings"

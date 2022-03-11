@@ -468,18 +468,32 @@ elif  "scrna_seq" == get_workflow():
             f"{config['rule_dir']}/../scripts/seurat/sctk_qc.R"
     
     
-    rule merge_seurat_obj:
-        """
-        Gather and merge multiple Seurat objects into a combined object and export to RData format.
-        """
-        input:
-            seu_objs=expand(
+    def get_merge_objs(wildcards):
+        # Return quantifier specific output directory
+        if config["merge_seu_objects"]:
+            return expand(
+                [
+                    f"{{result_dir}}/sctk/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}/seu_obj_processed.RData"
+                    for trep in treps.index
+                ],
+                **config,
+            )
+        else:
+            return expand(
                 [
                     f"{{result_dir}}/seurat/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}_seu_obj.RData"
                     for trep in treps.index
                 ],
                 **config,
-            ),
+            )
+    
+    
+    rule merge_seurat_obj:
+        """
+        Gather and merge multiple Seurat objects into a combined object and export to RData format.
+        """
+        input:
+            seu_objs=get_merge_objs,
         output:
             rds=f"{config['result_dir']}/seurat/{{quantifier}}/{{assembly}}_seu_merged.RData",
         log:

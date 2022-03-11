@@ -44,3 +44,9 @@ seurat_object:
     min_cells: 0
     min_features: 0
 
+# Quality control with singleCellTK
+run_sctk_qc: False
+
+sctk:
+    data_type: cell
+    mito_set: human-ensembl

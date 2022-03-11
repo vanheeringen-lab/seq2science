@@ -4,6 +4,6 @@ channels:
   - conda-forge
   - defaults
 dependencies: 
-  - r::r-base=3.5.1
-  - r::r-matrix=1.2_14
-  - conda-forge::r-seurat=3.1.5
+  - r::r-base=4.1.2
+  - r::r-matrix=1.4.0
+  - conda-forge::r-seurat=4.1.0
