@@ -226,6 +226,7 @@ rule macs2_callpeak:
             else "BAM"
         ),
         control=lambda wildcards, input: f"-c {input.control}" if "control" in input else "",
+        keep_mates=config["macs2_keep_mates"]
     resources:
         mem_gb=4,
     conda:
