@@ -131,7 +131,7 @@ def get_fastq_qc_file(wildcards):
 
 
 def get_macs2_bam(wildcards):
-    if not config["macs2_keep_mates"] is True or sampledict[wildcards.sample].get("layout") == "SINGLE":
+    if not config["macs2_keep_mates"] or sampledict[wildcards.sample].get("layout") == "SINGLE":
         return expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config)
     return rules.keep_mates.output
 
