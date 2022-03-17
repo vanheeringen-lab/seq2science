@@ -12,6 +12,7 @@ include: f"{config['rule_dir']}/merge_replicates.smk"
 include: f"{config['rule_dir']}/qc.smk"
 include: f"{config['rule_dir']}/trimming.smk"
 include: f"{config['rule_dir']}/quantification.smk"
+include: f"{config['rule_dir']}/scRNA_qc.smk"
 
 
 # set the quality_control functions
