@@ -48,10 +48,10 @@ rule sctk_qc:
     output:
         dir=expand(
             "{result_dir}/sctk/{quantifier}/{{assembly}}-{{sample}}/{file}",
-            **{**config, **{"file": ["seu_obj_processed.RData", "SCTK_cellQC_summary.csv", "SCTK_DropletQC_figures.pdf"]}}
+            **{**config, **{"file": ["seu_obj_sctk.RData", "SCTK_CellQC_summary.csv", "SCTK_CellQC.html"]}}
         ),
     log:
-        expand("{log_dir}/sctk/{{assembly}}-{{sample}}_seu_obj_processed.log", **config),
+        expand("{log_dir}/sctk/{{assembly}}-{{sample}}_sctk.log", **config),
     priority: 1
     conda:
         "../envs/sctk.yaml"
@@ -74,7 +74,7 @@ def get_merge_objs(wildcards):
     if config["run_sctk_qc"]:
         return expand(
             [
-                f"{{result_dir}}/sctk/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}/seu_obj_processed.RData"
+                f"{{result_dir}}/sctk/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}/seu_obj_sctk.RData"
                 for trep in treps.index
             ],
             **config,

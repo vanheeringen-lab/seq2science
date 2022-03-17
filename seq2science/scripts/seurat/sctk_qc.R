@@ -13,8 +13,8 @@ isvelo <- snakemake@params$isvelo
 replicates <- snakemake@params$replicates
 data_type <- snakemake@config$sctk$data_type
 mito_set <- snakemake@config$sctk$mito_set
-rds_out <- file.path(out_dir, "seu_obj_processed.RData",    fsep="/" )
-qc_out <-  file.path(out_dir, "SCTK_cellQC_summary.csv",    fsep="/" )
+rds_out <- file.path(out_dir, "seu_obj_sctk.RData",    fsep="/" )
+qc_out <-  file.path(out_dir, "SCTK_CellQC_summary.csv",    fsep="/" )
 pdf_out <- file.path(out_dir, "SCTK_DropletQC_figures.pdf", fsep="/" )
 numCores <- 4
 
@@ -90,15 +90,15 @@ modifySCE <- function(seuratObj) {
 
 # read RDS object
 seu <- readRDS(rds_in)
-
+#print(head(seu@meta.data))
 #Extract the spliced assay if necessary
 if (isvelo) {
   seu <- seu$sf
 }
 #Set sample col
-sample_col <- sce$sample
+sample_col <- seu$orig.ident
 if (replicates) {
-  sample_col <- sce$technical_replicates
+  sample_col <- seu$technical_replicates
 }
 #Modify sce object
 sce <- modifySCE(seu)
@@ -112,7 +112,7 @@ if(tolower(data_type) == "droplet") {
       sample = sample_col,
       paramsList = Params
     )
-  reportDropletQC(inSCE = sce, output_dir = out_dir, output_file = "DropletQC.html")
+  reportDropletQC(inSCE = sce, output_dir = out_dir, output_file = "SCTK_DropletQC.html")
   # Filtering
   sce <-
     subsetSCECols(sce, colData = 'dropletUtils_BarcodeRank_Inflection == 1')
@@ -148,7 +148,7 @@ sce <- runCellQC(sce, sample = sample_col,
                    paramsList=Params)
 sce <- getUMAP(inSCE = sce, reducedDimName = "QC_UMAP")
 #Generate HTML report for Cell analysis
-reportCellQC(sce, output_dir = out_dir, output_file = "CellQC.html")
+reportCellQC(sce, output_dir = out_dir, output_file = "SCTK_CellQC.html")
 
 # Generate summary
 QCsummary <- sampleSummaryStats(sce, simple=FALSE, sample = sample_col)

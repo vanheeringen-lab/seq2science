@@ -28,7 +28,7 @@ rule seq2science:
                ([f"{{result_dir}}/seurat/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}_seu_obj.RData" for trep in treps.index] + 
                 ["{result_dir}/seurat/{quantifier}/{assemblies}_seu_merged.RData"] if config["export_seu_objects"] else []) +
                ([f"{{result_dir}}/seurat/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}_seu_obj.RData" for trep in treps.index] +  
-                [f"{{result_dir}}/sctk/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}/seu_obj_processed.RData" for trep in treps.index] +
+                [f"{{result_dir}}/sctk/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}/seu_obj_sctk.RData" for trep in treps.index] +
                 ["{result_dir}/seurat/{quantifier}/{assemblies}_seu_merged.RData"] if config["run_sctk_qc"] else []) +
                (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []),
                **{**config,
