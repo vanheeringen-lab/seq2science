@@ -68,9 +68,22 @@ properties:
       data_type: 
        description: "Type of data, either cell or droplet"
        type: string
+      detect_mito:
+        description: "Wheter to perform mitochondrial gene detection"
+        type: boolean
       mito_set:
        description: "Mitochondrial gene set for quality control"
        enum: ["human-ensembl", "mouse-ensembl", "human-entrez", "mouse-entrez", "human-symbol", "mouse-symbol"]
+      detect_cell:
+        description: "Wheter to perform cell calling for droplet based methods"
+        type: boolean
+        default: true
+      cell_calling:
+        description: "Type of cell calling method"
+        enum: ["EmptyDrops", "Knee"]
+
       default:
         data_type: cell
         mito_set: human-ensembl
+        detect_cell: true
+        cell_calling: Knee
