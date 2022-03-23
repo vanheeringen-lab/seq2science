@@ -95,27 +95,20 @@ modifySCE <- function(seuratObj) {
   return(sce)
   
 }
-
 # read RDS object
 seu <- readRDS(rds_in)
-
 #Extract the spliced assay if necessary
 if (isvelo) {
   seu <- seu$sf
 }
-
 #Set sample col
 sample_col <- ifelse(replicates,"technical_replicates","descriptive_name")
-
-
 #Modify sce object
 sce <- modifySCE(seu)
 rm(seu)
-
 # Select QC algorithms
 cellQCAlgos = c("QCMetrics", "scDblFinder")
 collectionName = NULL
-
 # Run cell QC algorithms
 if (tolower(data_type) == "cell") {
     message(paste0(date(), " .. Running cell QC"))
@@ -172,38 +165,82 @@ if (tolower(data_type) == "droplet") {
         cellSCE  <- getUMAP(inSCE = cellSCE, reducedDimName = "QC_UMAP")
   }
 }
-# Generate manual QC plot for Cell and droplet based QC
-if (tolower(data_type) == "droplet") {
-  pdf(pdf_out)
-  print(plotEmptyDropsResults(
-    inSCE = dropletSCE,
-    axisLabelSize = 20,
-    sample = dropletSCE$technical_replicates,
-    fdrCutoff = 0.01,
-    dotSize = 0.5,
-    defaultTheme = TRUE
-  ))
-  # Plot barcode rank scatter
-  print(plotBarcodeRankScatter(inSCE = dropletSCE,
-                               title = "BarcodeRanks Rank Plot",
-                               legendSize = 14))
-  #Generate HTML report for droplet
-  dev.off()
-  reportDropletQC(inSCE = dropletSCE, output_dir = out_dir, output_file = "SCTK_DropletQC.html")
-  reportCellQC(inSCE = cellSCE, output_dir = out_dir, output_file = "SCTK_CellQC.html")
-}
 
+#Merge result objects
 if (tolower(data_type) == "cell") {
-  reportCellQC(inSCE = cellSCE, output_dir = out_dir, output_file = "SCTK_CellQC.html")
+  mergedFilteredSCE <- cellSCE
+  # Generate report
+  message(paste0(date(), " .. Generating cell QC report"))
+  reportCellQC(inSCE = mergedFilteredSCE, output_dir = out_dir, output_file = "SCTK_CellQC.html")
+  #Generate QC summary
+  QCsummary <- sampleSummaryStats(mergedFilteredSCE, simple=FALSE, sample = mergedFilteredSCE[[sample_col]])
+  write.csv(QCsummary, qc_out)
+  # Save final rds objects
+  message(paste0(date(), " .. Exporting to rds format"))
+  seu.processed <- as.Seurat(mergedFilteredSCE, data = NULL)
+  saveRDS(seu.processed, file = rds_out)
 }
 
-#Generate QC summary
-QCsummary <- sampleSummaryStats(cellSCE, simple=FALSE, sample = cellSCE[[sample_col]])
-write.csv(QCsummary, qc_out)
+#Merge Droplet sce
+if (tolower(data_type) == "droplet") {
+  if (isTRUE(detect_cell)) {
+    mergedDropletSCE <- mergeSCEColData(dropletSCE, cellSCE)
+    mergedFilteredSCE <- mergeSCEColData(cellSCE, dropletSCE)
+    #Generate Report
+    message(paste0(date(), " .. Generating droplet QC report"))
+    pdf(pdf_out)
+    print(plotEmptyDropsResults(
+      inSCE = mergedDropletSCE,
+      axisLabelSize = 20,
+      sample = mergedDropletSCE$technical_replicates,
+      fdrCutoff = 0.01,
+      dotSize = 0.5,
+      defaultTheme = TRUE
+    ))
+    # Plot barcode rank scatter
+    print(plotBarcodeRankScatter(inSCE =  mergedDropletSCE,,
+                                 title = "BarcodeRanks Rank Plot",
+                                 legendSize = 14))
+    dev.off()
+    #Generate HTML report for dropletQC
+    reportDropletQC(inSCE = mergedDropletSCE, output_dir = out_dir, output_file = "SCTK_DropletQC.html")
+    # Generate Cell report
+    message(paste0(date(), " .. Generating cell QC report"))
+    reportCellQC(inSCE = mergedFilteredSCE, output_dir = out_dir, output_file = "SCTK_CellQC.html")
+    #Generate QC summary
+    QCsummary <- sampleSummaryStats(mergedFilteredSCE, simple=FALSE, sample = cellSCE[[sample_col]])
+    write.csv(QCsummary, qc_out) 
+    # Generate final rds objects
+    message(paste0(date(), " .. Exporting to rds format"))
+    seu_objs.processed <- c(as.Seurat(mergedFilteredSCE, data=NULL), as.Seurat(mergedDropletSCE, data=NULL))
+    names(seu_objs.processed) <- c("mergedFilteredSeu","mergedDropletSeu")
+    saveRDS(seu_objs.processed, file = rds_out)  
+  } else {
+    mergedDropletSCE <- dropletSCE
+    #Generate Report
+    message(paste0(date(), " .. Generating droplet QC report"))
+    pdf(pdf_out)
+    print(plotEmptyDropsResults(
+      inSCE = mergedDropletSCE,
+      axisLabelSize = 20,
+      sample = mergedDropletSCE$technical_replicates,
+      fdrCutoff = 0.01,
+      dotSize = 0.5,
+      defaultTheme = TRUE
+    ))
+    # Plot barcode rank scatter
+    print(plotBarcodeRankScatter(inSCE =  mergedDropletSCE,,
+                                 title = "BarcodeRanks Rank Plot",
+                                 legendSize = 14))
+    dev.off()
+    reportDropletQC(inSCE = mergedDropletSCE, output_dir = out_dir, output_file = "SCTK_DropletQC.html")
+    # Save final rds objects
+    message(paste0(date(), " .. Exporting to rds format"))
+    seu.processed <- as.Seurat(mergedFilteredSCE, data = NULL)
+    saveRDS(seu.processed, file = rds_out)
+  }
+}
 
-#Save final Seurat object
-seu.processed <- as.Seurat(cellSCE, data = NULL)
-saveRDS(seu.processed, file = rds_out)
 
 
 

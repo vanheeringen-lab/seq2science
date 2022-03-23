@@ -69,44 +69,44 @@ rule sctk_qc:
         f"{config['rule_dir']}/../scripts/seurat/sctk_qc.R"
 
 
-def get_merge_objs(wildcards):
-    # Return quantifier specific output directory
-    if config["run_sctk_qc"]:
-        return expand(
-            [
-                f"{{result_dir}}/sctk/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}/seu_obj_sctk.RData"
-                for trep in treps.index
-            ],
-            **config,
-        )
-    else:
-        return expand(
-            [
-                f"{{result_dir}}/seurat/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}_seu_obj.RData"
-                for trep in treps.index
-            ],
-            **config,
-        )
+# def get_merge_objs(wildcards):
+#     # Return quantifier specific output directory
+#     if config["run_sctk_qc"]:
+#         return expand(
+#             [
+#                 f"{{result_dir}}/sctk/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}/seu_obj_sctk.RData"
+#                 for trep in treps.index
+#             ],
+#             **config,
+#         )
+#     else:
+#         return expand(
+#             [
+#                 f"{{result_dir}}/seurat/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}_seu_obj.RData"
+#                 for trep in treps.index
+#             ],
+#             **config,
+#         )
 
 
-rule merge_seurat_obj:
-    """
-    Gather and merge multiple Seurat objects into a combined object and export to RData format.
-    """
-    input:
-        seu_objs=get_merge_objs,
-    output:
-        rds=f"{config['result_dir']}/seurat/{{quantifier}}/{{assembly}}_seu_merged.RData",
-    log:
-        expand("{log_dir}/seurat/{{quantifier}}/{{assembly}}_seu_merged.log", **config),
-    priority: 1
-    conda:
-        "../envs/seurat.yaml"
-    params:
-        isvelo=lambda wildcards, input: True if "--workflow lamanno" in config.get("count", "") else False,
-    message:
-        explain_rule("seurat")
-    resources:
-        R_scripts=1,  # conda's R can have issues when starting multiple times
-    script:
-        f"{config['rule_dir']}/../scripts/seurat/merge_seurat_objs.R"
+# rule merge_seurat_obj:
+#     """
+#     Gather and merge multiple Seurat objects into a combined object and export to RData format.
+#     """
+#     input:
+#         seu_objs=get_merge_objs,
+#     output:
+#         rds=f"{config['result_dir']}/seurat/{{quantifier}}/{{assembly}}_seu_merged.RData",
+#     log:
+#         expand("{log_dir}/seurat/{{quantifier}}/{{assembly}}_seu_merged.log", **config),
+#     priority: 1
+#     conda:
+#         "../envs/seurat.yaml"
+#     params:
+#         isvelo=lambda wildcards, input: True if "--workflow lamanno" in config.get("count", "") else False,
+#     message:
+#         explain_rule("seurat")
+#     resources:
+#         R_scripts=1,  # conda's R can have issues when starting multiple times
+#     script:
+#         f"{config['rule_dir']}/../scripts/seurat/merge_seurat_objs.R"
