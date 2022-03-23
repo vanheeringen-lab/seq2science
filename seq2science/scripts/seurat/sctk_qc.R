@@ -208,7 +208,7 @@ if (tolower(data_type) == "droplet") {
     message(paste0(date(), " .. Generating cell QC report"))
     reportCellQC(inSCE = mergedFilteredSCE, output_dir = out_dir, output_file = "SCTK_CellQC.html")
     #Generate QC summary
-    QCsummary <- sampleSummaryStats(mergedFilteredSCE, simple=FALSE, sample = cellSCE[[sample_col]])
+    QCsummary <- sampleSummaryStats(mergedFilteredSCE, simple=FALSE, sample = mergedFilteredSCE[[sample_col]])
     write.csv(QCsummary, qc_out) 
     # Generate final rds objects
     message(paste0(date(), " .. Exporting to rds format"))
@@ -223,7 +223,7 @@ if (tolower(data_type) == "droplet") {
     print(plotEmptyDropsResults(
       inSCE = mergedDropletSCE,
       axisLabelSize = 20,
-      sample = mergedDropletSCE$technical_replicates,
+      sample = mergedDropletSCE[[sample_col]],
       fdrCutoff = 0.01,
       dotSize = 0.5,
       defaultTheme = TRUE
