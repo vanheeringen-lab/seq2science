@@ -231,13 +231,20 @@ def deseq2science_parser():
         "-c",
         "--counts",
         default="",  # must be an empty string for R's arg checking + docs CLI argument
-        help="counts.tsv (sample order consistent with the samples.tsv)",
+        help="counts.tsv(.gz) (sample order consistent with the samples.tsv)",
     )
     parser.add_argument(
         "-o",
         "--outdir",
         default="",  # must be an empty string for R's arg checking + docs CLI argument
         help="output directory",
+    )
+    parser.add_argument(
+        "-sc",
+        "--single-cell",
+        action='store_true',
+        default=False,
+        help="use if the counts are Single Cell data",
     )
     parser.add_argument(
         "--docs",
@@ -664,7 +671,7 @@ def _deseq(args, base_dir):
 
     # insufficient args
     if not all(
-            len(a) > 0 for a in [args.counts, args.design, args.outdir, args.samples]
+            len(a) > 0 for a in [args.counts, args.design, args.outdir, args.samples, args.single_cell]
     ):
         logger.info("4 arguments expected: contrast, samples_file, counts_file and outdir.")
         return
@@ -707,7 +714,7 @@ def _deseq(args, base_dir):
     # we don't even need to activate the env
     rscript = os.path.join(env_prefix, "bin", "Rscript")
     script = os.path.join(base_dir, "scripts", "deseq2", "deseq2.R")
-    cmd = f"{rscript} {script} {args.design} {args.samples} {args.counts} {args.outdir}"
+    cmd = f"{rscript} {script} {args.design} {args.samples} {args.counts} {args.outdir} {args.single_cell}"
     subprocess_run(cmd)
 
     # example command:

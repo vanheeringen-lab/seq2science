@@ -59,7 +59,7 @@ parse_samples <- function(samples_file, assembly_name, replicates) {
 
 
 #' run DESeq2
-run_deseq2 <- function(counts, coldata, design, threads=1) {
+run_deseq2 <- function(counts, coldata, design, threads=1, single_cell=FALSE) {
   parallel <- FALSE
   if (threads > 1) {
     BiocParallel::register(
@@ -76,7 +76,49 @@ run_deseq2 <- function(counts, coldata, design, threads=1) {
     design = design,
   )
   cat('\nFinished constructing DESeq object.\n\n')
-  dds <- DESeq2::DESeq(dds, parallel=parallel)
+
+  if (single_cell) {
+    # source: DESeq2
+    # https://www.bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/
+    # DESeq2.html#recommendations-for-single-cell-analysis
+
+    # Model zero component using zinbwave
+    isZeroInfated = FALSE  # TODO: expose? It's unclear if zero inflation is a thing
+    if (isZeroInfated) {
+      # low count filter - at least 10 cells with a read count of 5 or more
+      keep <- rowSums(counts >= 5) >= 10
+      if (sum(keep) > 10) {zinb <- dds[keep,]} else {zinb <- dds}
+
+      # epsilon setting as recommended by the ZINB-WaVE integration paper
+      zinb <- zinbwave::zinbwave(
+        zinb,
+        K=0,
+        observationalWeights=TRUE,
+        BPPARAM=BiocParallel::SerialParam(),
+        epsilon=1e12,
+      )
+
+      dds <- DESeq2::DESeqDataSet(zinb, design=design)
+    }
+
+    # Estimate size factors
+    scr <- scran::computeSumFactors(dds)
+    DESeq2::sizeFactors(dds) <- DESeq2::sizeFactors(scr)
+
+    # Estimate dispersion and DE
+    dds <- DESeq2::DESeq(
+      dds,
+      test="LRT",
+      reduced=~1,  # required for LRT
+      useT=TRUE,
+      minmu=1e-6,
+      minReplicatesForReplace=Inf,
+      parallel=parallel,
+      fitType = "glmGamPoi",
+    )
+  } else {
+    dds <- DESeq2::DESeq(dds, parallel=parallel)
+  }
   cat('\n')
 
   return(dds)

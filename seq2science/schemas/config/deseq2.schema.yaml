@@ -27,10 +27,14 @@ properties:
         default: apeglm
         enum: [apeglm, ashr, normal]
         type: string
+      single_cell:
+        default: false
+        type: boolean
     default:
       multiple_testing_procedure: BH
       alpha_value: 0.1
       shrinkage_estimator: apeglm
+      single_cell: false
 
   contrasts:
     description: deseq2 design contrast(s)
