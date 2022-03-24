@@ -38,7 +38,7 @@ coldata <- coldata[c("condition", "batch")]
 
 # log involved samples
 cat('samples per group:\n')
-cat('  - test      (', groups[1],'):', rownames(coldata[coldata$condition %in% groups[1],]),'\n')
+cat('  - target    (', groups[1],'):', rownames(coldata[coldata$condition %in% groups[1],]),'\n')
 cat('  - reference (', groups[2],'):', rownames(coldata[coldata$condition %in% groups[2],]),'\n\n')
 
 # determine if we need to run batch correction on the whole assembly

@@ -27,19 +27,21 @@ For more information, check out the steps in this [vignette](https://www.biocond
 ##### Contrast designs
 The following section will guide you through the process of creating a DESeq2 contrast using only the samples.tsv and the config.yaml.
 
-A contrast contains a **condition**, which is the variable you wish to analyse, and which contains 2 or more **groups.**
+Here are some definitions: a **contrast** design tells us which samples to compare. It contains three or four parts: a **condition** (a column name in the samples.tsv), and two **groups** (labels in this column).
+The first group will be the **target**, and the second group will be the **reference**.
 Additionally, a contrast can optionally contain a **batch** effect, which you want to correct for.
+
 To determine differentially expressed genes/accessible peaks, DESeq2 requires at least two samples per group.
 A design contrast therefore requires at least 2x2 samples.
 
-#### Conditions
-In the samples.tsv, add a column for every property you wish to test in your samples.
+###### Contrast in the samples.tsv
+In the `samples.tsv`, add a column for every property you wish to test in your samples.
 Next, add labels to the samples involved in the test. You can leave labels empty, or add labels and not use them.
 For example:
 
-1. a column named 'conditions' with values ‘wildtype’ and ‘knockout’.
+1. a column named 'conditions' with values 'wildtype' and 'knockout'.
 2. a column named 'stages' with values 1, 2 and 3.
-3. a column named 'treatments' with values ‘control’, ‘treatmentA’ and ‘treatmentB’.
+3. a column named 'treatments' with values 'control', 'treatmentA' and 'treatmentB'.
 
 | sample   | assembly | conditions | stages | treatments |
 |----------|----------|------------|--------|------------|
@@ -50,6 +52,7 @@ For example:
 | sample_5 | hg38     |            | 3      | treatmentB |
 | sample_6 | hg38     | unused     | 3      | treatmentB |
 
+###### Contrast in the config.yaml
 Next, in the `config.yaml` add one or more contrasts:
 
 In order to compare two groups, the contrast condition is the column name, followed by the target group and finally the reference group.
@@ -67,16 +70,17 @@ contrasts:
   - 'treatments_all_control'
 ```
 
-##### Group order
-As a rule of thumb: the control group should be specified **last**.
+###### Group order
+As a rule of thumb: the reference group should be specified **last**.
 
-The order of the groups in a design contrast is important determines the direction of the expression fold change.
-In the example `stages_3_1`, a gene upregulated at stage 3 has a positive expression fold change.
-In contrast `stages_1_3`, a gene upregulated at stage 3 has a negative expression fold change.
+The order of the groups in a design contrast determines the direction of the expression log fold change.
+In the example `stages_3_1`, a gene upregulated at stage 3 has a *positive* expression fold change.
+In contrast `stages_1_3`, a gene upregulated at stage 3 has a *negative* expression fold change.
 Other values are unaffected.
 
-#### Batches
-If your data has batch effects, DESeq2 can try to account for these. Note that this can only be done if the batch effects are spread over different conditions.
+###### Batches
+If your data has batch effects, DESeq2 can try to account for these. 
+Note that this can only be done if the batch effects are spread over different conditions.
 
 Similar to conditions, add a column to samples.tsv and note the batch of each sample:
 
@@ -87,9 +91,14 @@ Similar to conditions, add a column to samples.tsv and note the batch of each sa
 | sample_3 | jan              | treatment  |
 | sample_4 | feb              | treatment  |
 
-In this example, the sequencing_month may have caused a batch effect.
+In this example, the `sequencing_month` may have caused a batch effect.
 Since the (potential) batch effect is spread over the test conditions (control vs treatment) it can be taken into account during DE analysis.
-The contrast design to do this would be `sequencing_month + conditions_treatment_control`.
+To correct for a batch, add the column and a plus sign in from of the regular contrast.
+```
+contrasts:
+  - 'conditions_treatment_control'
+  - 'sequencing_month + conditions_treatment_control'
+```
 
 ##### Output
 For each contrast design, the list of *all* genes/peaks is saved to file, with analysis results for expressed genes. Briefly, these include:
