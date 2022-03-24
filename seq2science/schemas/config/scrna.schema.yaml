@@ -35,8 +35,8 @@ properties:
   barcodefile:
     type: string
     
-  export_seu_objects:
-    description: "Export scRNA count tables to Seurat objects and save in RDS format"
+  export_sce_objects:
+    description: "Export scRNA count tables to SingleCellExperiment and save in RDS format"
     type: boolean   
     default: false
   
@@ -45,23 +45,6 @@ properties:
     type: boolean   
     default: false
     
-  seurat_object:
-    description: "Seurat object settings"
-    properties:
-      project_name:
-        description: "Project name for merged Seurat object"
-        type: string
-      min_cells:
-        description: "Include features detected in at least this many cells"
-        type: integer
-      min_features:
-        description: "Include cells where at least this many features are detected"
-        type: integer
-      default:
-        project_name: merged
-        min_cells: 0
-        min_features: 0
-  
   sctk:
     description: "Settings for singlecellTK"
     properties:

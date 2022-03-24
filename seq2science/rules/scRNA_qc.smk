@@ -11,19 +11,19 @@ def get_count_dir(wildcards):
         return rules.citeseqcount.output.dir[0]
 
 
-rule export_seurat_obj:
+rule export_sce_obj:
     """
     Read scRNA count output into Seurat object, add meta-data and export to RData format.
     """
     input:
         counts=get_count_dir,
     output:
-        rds=expand("{result_dir}/seurat/{quantifier}/{{assembly}}-{{sample}}_seu_obj.RData", **config),
+        rds=expand("{result_dir}/singlecellexperiment/{quantifier}/{{assembly}}-{{sample}}_sce_obj.RData", **config),
     log:
-        expand("{log_dir}/seurat/{{assembly}}-{{sample}}_seu_obj.log", **config),
+        expand("{log_dir}/singlecellexperiment/{{assembly}}-{{sample}}_sce_obj.log", **config),
     priority: 1
     conda:
-        "../envs/seurat.yaml"
+        "../envs/sce.yaml"
     params:
         isvelo=lambda wildcards, input: True if "--workflow lamanno" in config.get("count", "") else False,
         iskite=lambda wildcards, input: True if "--workflow kite" in config.get("count", "") else False,
@@ -36,7 +36,7 @@ rule export_seurat_obj:
     resources:
         R_scripts=1,  # conda's R can have issues when starting multiple times
     script:
-        f"{config['rule_dir']}/../scripts/seurat/read_kb_counts.R"
+        f"{config['rule_dir']}/../scripts/singlecell/read_kb_counts.R"
 
 
 rule sctk_qc:
@@ -44,11 +44,11 @@ rule sctk_qc:
     Read scRNA count output into Seurat object, add meta-data and export to RData format.
     """
     input:
-       rds_raw=rules.export_seurat_obj.output.rds
+       rds_raw=rules.export_sce_obj.output.rds
     output:
         dir=expand(
             "{result_dir}/sctk/{quantifier}/{{assembly}}-{{sample}}/{file}",
-            **{**config, **{"file": ["seu_obj_sctk.RData", "SCTK_CellQC_summary.csv", "SCTK_CellQC.html"]}}
+            **{**config, **{"file": ["sce_obj_sctk.RData", "SCTK_CellQC_summary.csv", "SCTK_CellQC.html"]}}
         ),
     log:
         expand("{log_dir}/sctk/{{assembly}}-{{sample}}_sctk.log", **config),
@@ -66,7 +66,7 @@ rule sctk_qc:
         R_scripts=1,
         mem_gb=50,# conda's R can have issues when starting multiple times
     script:
-        f"{config['rule_dir']}/../scripts/seurat/sctk_qc.R"
+        f"{config['rule_dir']}/../scripts/singlecell/sctk_qc.R"
 
 
 # def get_merge_objs(wildcards):
