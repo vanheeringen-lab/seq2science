@@ -40,7 +40,7 @@ peak_caller:
 # (e.g. 100 means a 200 bp wide peak)
 slop: 100
 
-# differential gene expression analysis
+# differential peak analysis
 # for explanation, see: https://vanheeringen-lab.github.io/seq2science/content/DESeq2.html
 #contrasts:
 #  - 'descriptive_name_all_HEL'
