@@ -114,7 +114,7 @@ run_deseq2 <- function(counts, coldata, design, threads=1, single_cell=FALSE) {
       minmu=1e-6,
       minReplicatesForReplace=Inf,
       parallel=parallel,
-      fitType = "glmGamPoi",
+#       fitType = "glmGamPoi",  # silently deactivated with parallel=TRUE
     )
   } else {
     dds <- DESeq2::DESeq(dds, parallel=parallel)

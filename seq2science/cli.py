@@ -670,9 +670,7 @@ def _deseq(args, base_dir):
         return
 
     # insufficient args
-    if not all(
-            len(a) > 0 for a in [args.counts, args.design, args.outdir, args.samples, args.single_cell]
-    ):
+    if not all(len(a) > 0 for a in [args.counts, args.design, args.outdir, args.samples]):
         logger.info("4 arguments expected: contrast, samples_file, counts_file and outdir.")
         return
 
@@ -693,7 +691,7 @@ def _deseq(args, base_dir):
         md5hash = hashlib.md5()
         md5hash.update(env_dir.encode())
         md5hash.update(open(yml, "rb").read())
-        env_hash = md5hash.hexdigest()
+        env_hash = md5hash.hexdigest()[:8]
         path = os.path.join(env_dir, env_hash)
         return path
 
