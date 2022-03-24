@@ -43,7 +43,7 @@ peak_caller:
 # (e.g. 100 means a 200 bp wide peak)
 slop: 100
 
-# differential gene expression analysis
+# differential accessibility analysis
 # for explanation, see: https://vanheeringen-lab.github.io/seq2science/content/DESeq2.html
 #contrasts:
 #  - 'biological_replicates_adult_embryo'
