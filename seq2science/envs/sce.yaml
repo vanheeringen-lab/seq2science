@@ -1,0 +1,8 @@
+name: sctk
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - bioconda::bioconductor-singlecellexperiment=1.16.0
+  - conda-forge::r-matrix=1.4.0 
