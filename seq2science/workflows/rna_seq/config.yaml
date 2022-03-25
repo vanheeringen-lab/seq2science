@@ -31,6 +31,7 @@ min_mapping_quality: 255  # (only keep uniquely mapped reads from STAR alignment
 only_primary_align: true
 remove_dups: false # keep duplicates (check dupRadar in the MultiQC)
 
-## differential gene expression analysis
+# differential gene expression analysis
+# for explanation, see: https://vanheeringen-lab.github.io/seq2science/content/DESeq2.html
 #contrasts:
 #  - 'stage_2_1'
