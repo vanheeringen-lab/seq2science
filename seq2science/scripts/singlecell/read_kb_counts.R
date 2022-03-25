@@ -122,7 +122,7 @@ if (quantifier == "kallistobus") {
     meta <- prep_cell_meta(sample, sample_sheet, colnames(mat.sf))
     sce <-
       SingleCellExperiment(
-        assays = list(spliced = mat.sf, unspliced = mat.uf),
+        assays = list(counts = mat.sf, unspliced = mat.uf),
         mainExpName = sample,
         colData = meta
     )
