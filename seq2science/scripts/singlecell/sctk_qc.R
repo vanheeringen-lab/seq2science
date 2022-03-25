@@ -2,7 +2,6 @@
 # https://github.com/compbiomed/singleCellTK/blob/master/exec/SCTK_runQC.R
 
 suppressMessages({
-  library(Seurat)
   library(singleCellTK)
   library("BiocParallel")
 })
