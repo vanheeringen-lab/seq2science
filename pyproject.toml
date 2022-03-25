@@ -26,7 +26,7 @@ classifiers = [
 python_requires = ">3.6"
 
 [build-system]
-requires = ["setuptools", "wheel", "toml"]
+requires = ["setuptools==59.4.0", "wheel", "toml"]
 build-backend = "setuptools.build_meta"
 
 # flake8 does not support pyproject.toml (yet?!)
