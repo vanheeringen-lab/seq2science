@@ -28,7 +28,9 @@ if config["quantifier"] == "salmon":
             "../envs/salmon.yaml"
         priority: 1
         shell:
-            "gffread -w {output} -g {input.fa} {input.gtf} >> {log} 2>&1"
+            """
+            gffread -w {output} -g {input.fa} {input.gtf} >> {log} 2>&1
+            """
 
     rule decoy_transcripts:
         """

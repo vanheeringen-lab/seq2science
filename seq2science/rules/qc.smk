@@ -44,7 +44,9 @@ rule samtools_stats:
     conda:
         "../envs/samtools.yaml"
     shell:
-        "samtools stats {input} 1> {output} 2> {log}"
+        """
+        samtools stats {input} 1> {output} 2> {log}
+        """
 
 
 def get_fastqc_input(wildcards):
@@ -108,7 +110,7 @@ elif config["trimmer"] == "fastp":
         params:
             fqsuffix=config["fqsuffix"],
         shell:
-            """\
+            """
             fastp -w {threads} --in1 {input} -h {output.qc_html} -j {output.qc_json} > {log} 2>&1
             """
 
@@ -135,7 +137,7 @@ elif config["trimmer"] == "fastp":
         params:
             config=config["trimoptions"],
         shell:
-            """\
+            """
             fastp -w {threads} --in1 {input[0]} --in2 {input[1]} \
             -h {output.qc_html} -j {output.qc_json} \
             {params.config} > {log} 2>&1

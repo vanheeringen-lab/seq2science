@@ -34,7 +34,9 @@ rule twobit:
     conda:
         "../envs/ucsc.yaml"
     shell:
-        "faToTwoBit {input} {output} >> {log} 2>&1"
+        """
+        faToTwoBit {input} {output} >> {log} 2>&1
+        """
 
 
 rule gcPercent:
