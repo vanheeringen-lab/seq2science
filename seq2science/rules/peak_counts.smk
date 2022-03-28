@@ -230,11 +230,8 @@ rule edgeR_normalization:
     edgeR supports three different types of normalization: TMM, RLE, and upperquartile.
 
     TMM: is the weighted trimmed mean of M-values proposed by Robinson and Oshlack (2010).
-    RLE: is the scaling factor method proposed by Anders and Huber (2010). DEseq2 normalisation
-         is based on this.
+    RLE: is the scaling factor method proposed by Anders and Huber (2010). DEseq2 normalisation is based on this.
     upperquartile: is the upper-quartile normalization method of Bullard et al (2010).
-
-    In addition to 
     """
     input:
         rules.coverage_table.output,

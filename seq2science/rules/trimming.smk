@@ -138,7 +138,7 @@ elif config["trimmer"] == "fastp":
         params:
             config=config["trimoptions"],
         shell:
-            """\
+            """
             threads=$(( {threads} - 2  > 1 ? {threads} - 2 : 1 ))
             
             fastp -w $threads --in1 {input} --out1 {output.se} -h {output.qc_html} -j {output.qc_json} \
@@ -171,7 +171,7 @@ elif config["trimmer"] == "fastp":
         params:
             config=config["trimoptions"],
         shell:
-            """\
+            """
             threads=$(( {threads} - 2  > 1 ? {threads} - 2 : 1 ))
             
             fastp -w $threads --in1 {input[0]} --in2 {input[1]} \
