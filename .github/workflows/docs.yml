@@ -24,13 +24,14 @@ jobs:
           $CONDA/bin/mamba install m2r2 sphinx sphinx_rtd_theme sphinx-argparse graphviz
           $CONDA/bin/pip install .
 
+      # -W = error on warning
       - name: Build 🔧
         run: |
           $CONDA/bin/python docs/scripts/schemas.py
           $CONDA/bin/python docs/scripts/rule_description.py
           ./docs/scripts/gen_dags
           cp CHANGELOG.md docs/content
-          $CONDA/bin/sphinx-build docs/ build
+          $CONDA/bin/sphinx-build docs/ build -W
           touch build/.nojekyll
 
       # only deploy
