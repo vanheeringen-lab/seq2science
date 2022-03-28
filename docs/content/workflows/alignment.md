@@ -123,17 +123,22 @@ When a workflow starts it prints the complete configuration, and (almost) all th
 
 ### Best practices
 #### BAM mapping quality filtering
-All aligners pass a mapping quality (MAPQ) score to the reads. This score reflects the certainty that a read belongs to a certain genomic position. This score can then be used by [deeptools](https://deeptools.readthedocs.io/en/develop/) to only keep reads of which the aligner is certain where it aligns, and to limit multimappers. You can set the minimum mapq score by using the configuration variable `min_mapping_quality`. Unfortunately, most aligners use a different scoring system. This problem has been nicely summarized [here](https://sequencing.qcfail.com/articles/mapq-values-are-really-useful-but-their-implementation-is-a-mess/). 
+All aligners pass a mapping quality (MAPQ) score to the reads. 
+This score reflects the certainty that a read belongs to a certain genomic position. 
+This score can then be used by [deeptools](https://deeptools.readthedocs.io/en/develop/) to only keep reads of which the aligner is certain where it aligns, and to limit multimappers. 
+You can set the minimum mapq score by using the configuration variable `min_mapping_quality`. 
+Unfortunately, most aligners use a different scoring system. 
+This problem has been nicely summarized [in this article](https://sequencing.qcfail.com/articles/mapq-values-are-really-useful-but-their-implementation-is-a-mess/). 
 
 For the default aligners (BWA and STAR), a minimal quality score has been set to select uniquely mapped reads only. For other aligners, we suggest the following scores to filter for uniquely mapped reads:
 
-|Aligner|min. MAPQ scores for uniquely mapped reads|
-|---|---|
-|Bowtie2|41|
-|Bwa-mem(2)|30|
-|Hisat2|44|
-|Minimap|0, but use `--secondary=no` as alignment option|
-|STAR|255|
+| Aligner    | min. MAPQ scores for uniquely mapped reads      |
+|------------|-------------------------------------------------|
+| Bowtie2    | 41                                              |
+| Bwa-mem(2) | 30                                              |
+| Hisat2     | 44                                              |
+| Minimap    | 0, but use `--secondary=no` as alignment option |
+| STAR       | 255                                             |
 
 #### Cram support
 For the edge-case where you want to work with cram files instead of bams, there is an option `cram_no_bam` which will convert your bam files to cram (saves around 60% storage).
