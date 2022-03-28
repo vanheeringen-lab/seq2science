@@ -21,7 +21,7 @@ path = "seq2science/rules/"
 
 
 def get_dirty_docstrings(string):
-    splitter = re.compile("(rule|checkpoint) (.*):[\s\S]*?\"\"\"([\s\S]*?)\"\"\"", re.MULTILINE)
+    splitter = re.compile(r"(rule|checkpoint) (.*):[\s\S]*?\"\"\"([\s\S]*?)\"\"\"", re.MULTILINE)
     docstrings = {}
     for match in splitter.finditer(string):
         docstrings[match.group(2)] = match.group(3)
@@ -42,6 +42,15 @@ def cleanup_docstring(dirty):
     return clean
 
 
+def get_dirty_shell(string):
+    splitter = re.compile(r"(rule|checkpoint) (.*):[\s\S]*?shell:[\s\S]*?\"\"\"\\?([\s\S]*?)\"\"\"", re.MULTILINE)
+    shell_cmds = {}
+    for substring in string.split("\n\n\n"):
+        for match in splitter.finditer(substring):
+            shell_cmds[match.group(2)] = match.group(3)
+    return shell_cmds
+
+
 def cleanup_shell(dirty):
     clean = {}
     for rule, shell in dirty.items():
@@ -50,19 +59,10 @@ def cleanup_shell(dirty):
         indentation = len(firstline) - len(firstline.lstrip())
         shellstring = "\n".join([shell_line.replace(" " * indentation, "", 1) for shell_line in shell.split("\n")])
         shellstring = shellstring.strip("\n")
-        shellstring = shellstring.replace("#", "\#")
+        # shellstring = shellstring.replace("#", "\#")
         clean[rule] = shellstring
 
     return clean
-
-
-def get_dirty_shell(string):
-    splitter = re.compile("rule (.*):[\s\S]*?shell:[\s\S]*?\"\"\"[\s\S]([\s\S]*?)\"\"\"", re.MULTILINE)
-    shell_cmds = {}
-    for substring in string.split("\n\n\n"):
-        for match in splitter.finditer(substring):
-            shell_cmds[match.group(1)] = match.group(2)
-    return shell_cmds
 
 
 all_rules_doc = {}
