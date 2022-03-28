@@ -166,7 +166,7 @@ The full changes are listed below:
 
 ### Changed
 
-- "biological_replicate" and "technical_replicate" renamed to *"_replicates" (matches between samples.tsv & config.yaml)
+- "biological_replicate" and "technical_replicate" renamed to "..._replicates" (matches between samples.tsv & config.yaml)
 - fixed bug with seq2science making a {output.allsizes} file
 - Changed explain to use 'passive style'
 - Genrich peak calling defaults
