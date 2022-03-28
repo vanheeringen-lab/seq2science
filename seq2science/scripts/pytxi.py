@@ -14,7 +14,9 @@ fnames = snakemake.input.cts
 assembly = snakemake.wildcards.assembly
 species = snakemake.input.fa[0]
 from_gtf = snakemake.params.from_gtf
-output = snakemake.output[0]
+out_counts = snakemake.output.counts[0]
+out_tpms = snakemake.output.tpms[0]
+out_lengths = snakemake.output.lengths[0]
 sample_names = snakemake.params.names
 
 # redirect all messages to a logfile
@@ -25,7 +27,7 @@ with open(logfile, "a") as log:  # appending because we mix streams (tqdm, logge
         pytxi.logger.add(logfile)
 
         fnames = [f"{d}/quant.sf" for d in fnames]
-        outdir = os.path.dirname(output)
+        outdir = os.path.dirname(out_counts)
         os.makedirs(outdir, exist_ok=True)
 
         tx2gene = None
@@ -46,6 +48,7 @@ with open(logfile, "a") as log:  # appending because we mix streams (tqdm, logge
 
         txi = pytxi.TxImport()
         txi.import_files(fnames, sample_names, tx2gene, species)
-        txi.abundance.to_csv(f"{outdir}/{assembly}-TPM.tsv", sep="\t")
-        txi.counts.to_csv(f"{outdir}/{assembly}-counts.tsv", sep="\t")
-        txi.length.to_csv(f"{outdir}/{assembly}-gene_lengths.tsv", sep="\t")
+
+        txi.abundance.to_csv(out_tpms, sep="\t")
+        txi.counts.to_csv(out_counts, sep="\t")
+        txi.length.to_csv(out_lengths, sep="\t")

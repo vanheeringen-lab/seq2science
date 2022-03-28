@@ -29,6 +29,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - using awful practices to eliminate checkpoint strandedness
 - deeptools_flags renamed to deeptools_bamcoverage
 - rna-seq trackhub per base tracks by default instead of bins per 50
+- rna-seq creates a TPM table for each quantification method 
 
 ### Fixed
 

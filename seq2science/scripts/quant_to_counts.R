@@ -10,7 +10,9 @@ linked_txome <- snakemake@input$linked_txome
 samples      <- snakemake@input$cts
 sample_names <- snakemake@params$names
 assembly     <- snakemake@wildcards$assembly
-out_matrix   <- snakemake@output$counts
+out_counts   <- snakemake@output$counts
+out_tpms     <- snakemake@output$counts
+out_lengths  <- snakemake@output$lengths
 out_SCE      <- snakemake@output$SCE
 log_file     <- snakemake@log[[1]]
 
@@ -25,7 +27,9 @@ cat('linked_txome <- "', linked_txome, '"\n', sep = "")
 cat('samples      <- "', samples,      '"\n', sep = "")
 cat('sample_names <- "', sample_names, '"\n', sep = "")
 cat('assembly     <- "', assembly,     '"\n', sep = "")
-cat('out_matrix   <- "', out_matrix,   '"\n', sep = "")
+cat('out_counts   <- "', out_counts,   '"\n', sep = "")
+cat('out_tpms     <- "', out_tpms,     '"\n', sep = "")
+cat('out_lengths  <- "', out_lengths,  '"\n', sep = "")
 cat('out_SCE      <- "', out_SCE,      '"\n', sep = "")
 cat('log_file     <- "', log_file,     '"\n', sep = "")
 cat('\n')
@@ -60,19 +64,17 @@ sg <- tximeta::summarizeToGene(st)
 
 ## Save TPM matrix
 TPM <- data.frame(assay(sg, "abundance"), stringsAsFactors = F, check.names = F) %>% rownames_to_column("gene")
-out_TPM_matrix <- sub("-counts.tsv", "-TPM.tsv", out_matrix)
-write.table(TPM, file=out_TPM_matrix, quote = F, sep = '\t', row.names = F)
+write.table(TPM, file=out_tpms, quote = F, sep = '\t', row.names = F)
 
 ## Save gene counts matrix
 counts <- assay(sg, "counts")
 mode(counts) <- "integer"
 counts <- data.frame(counts, stringsAsFactors = F, check.names = F) %>% rownames_to_column("gene")
-write.table(counts, file=out_matrix, quote = F, sep = '\t', row.names = F)
+write.table(counts, file=out_counts, quote = F, sep = '\t', row.names = F)
 
 ## Save gene length matrix
 lengths <- data.frame(assay(sg, "length"), stringsAsFactors = F, check.names = F) %>% rownames_to_column("gene")
-out_lengths_matrix <- sub("-counts.tsv", "-gene_lengths.tsv", out_matrix)
-write.table(lengths, file=out_lengths_matrix, quote = F, sep = '\t', row.names = F)
+write.table(lengths, file=out_lengths, quote = F, sep = '\t', row.names = F)
 
 ## Returning to source script
 

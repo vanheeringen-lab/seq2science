@@ -67,6 +67,8 @@ if config["quantifier"] == "salmon" and config["tpm2counts"] == "tximeta":
             cts=get_counts,
         output:
             counts=expand("{counts_dir}/{{assembly}}-counts.tsv", **config),
+            tpms=expand("{counts_dir}/{{assembly}}-TPM.tsv",**config),
+            lengths=expand("{counts_dir}/{{assembly}}-gene_lengths.tsv",**config),
             SCE=expand("{counts_dir}/{{assembly}}-se.rds", **config),
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-txi_counts_matrix.log", **config),
@@ -96,7 +98,9 @@ elif config["quantifier"] == "salmon" and config["tpm2counts"] == "pytxi":
             cts=get_counts,
             fa=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
         output:
-            expand("{counts_dir}/{{assembly}}-counts.tsv",**config),
+            counts=expand("{counts_dir}/{{assembly}}-counts.tsv",**config),
+            tpms=expand("{counts_dir}/{{assembly}}-TPM.tsv",**config),
+            lengths=expand("{counts_dir}/{{assembly}}-gene_lengths.tsv",**config),
         conda:
             "../envs/pytxi.yaml"
         params:
@@ -152,6 +156,21 @@ else:
 
                 counts.index.name = "gene"
                 counts.to_csv(output[0], sep="\t")
+
+    rule tpm_matrix:
+        """
+        Create a TPM table from a counts table.
+        """
+        input:
+            cts=rules.count_matrix.output,
+            gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf",**config),
+        output:
+            tpms = expand("{counts_dir}/{{assembly}}-TPM.tsv",**config),
+            lengths = expand("{counts_dir}/{{assembly}}-gene_lengths.tsv",**config),
+        log:
+            expand("{log_dir}/counts_matrix/{{assembly}}-tpm_matrix.log",**config),
+        script:
+            f"{config['rule_dir']}/../scripts/counts2tpm.py"
 
 
 if config.get("dexseq"):
