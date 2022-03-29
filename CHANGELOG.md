@@ -11,6 +11,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Added
 
 - idr call is configurable (`idr_options`)
+- single-cell DESeq2 (currently only via `deseq2science` with user-specified groups per cell)
 
 ## [0.7.2] - 2022-03-04
 

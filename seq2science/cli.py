@@ -231,13 +231,20 @@ def deseq2science_parser():
         "-c",
         "--counts",
         default="",  # must be an empty string for R's arg checking + docs CLI argument
-        help="counts.tsv (sample order consistent with the samples.tsv)",
+        help="counts.tsv(.gz) (sample order consistent with the samples.tsv)",
     )
     parser.add_argument(
         "-o",
         "--outdir",
         default="",  # must be an empty string for R's arg checking + docs CLI argument
         help="output directory",
+    )
+    parser.add_argument(
+        "-sc",
+        "--single-cell",
+        action='store_true',
+        default=False,
+        help="use if the counts are Single Cell data",
     )
     parser.add_argument(
         "--docs",
@@ -663,9 +670,7 @@ def _deseq(args, base_dir):
         return
 
     # insufficient args
-    if not all(
-            len(a) > 0 for a in [args.counts, args.design, args.outdir, args.samples]
-    ):
+    if not all(len(a) > 0 for a in [args.counts, args.design, args.outdir, args.samples]):
         logger.info("4 arguments expected: contrast, samples_file, counts_file and outdir.")
         return
 
@@ -686,7 +691,7 @@ def _deseq(args, base_dir):
         md5hash = hashlib.md5()
         md5hash.update(env_dir.encode())
         md5hash.update(open(yml, "rb").read())
-        env_hash = md5hash.hexdigest()
+        env_hash = md5hash.hexdigest()[:8]
         path = os.path.join(env_dir, env_hash)
         return path
 
@@ -707,7 +712,7 @@ def _deseq(args, base_dir):
     # we don't even need to activate the env
     rscript = os.path.join(env_prefix, "bin", "Rscript")
     script = os.path.join(base_dir, "scripts", "deseq2", "deseq2.R")
-    cmd = f"{rscript} {script} {args.design} {args.samples} {args.counts} {args.outdir}"
+    cmd = f"{rscript} {script} {args.design} {args.samples} {args.counts} {args.outdir} {args.single_cell}"
     subprocess_run(cmd)
 
     # example command:
