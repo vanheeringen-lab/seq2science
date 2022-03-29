@@ -92,11 +92,13 @@ elif config["quantifier"] == "salmon" and config["tpm2counts"] == "pytxi":
         Convert transcript abundance estimations to gene count estimations and merge 
         gene counts per assembly.
 
-        Only works with genomepy assemblies (requires a README.txt with taxid).
+        If the GTF is not used, a genomepy assembly with README.txt and valid 
+        taxonomy ID is required. 
         """
         input:
             cts=get_counts,
             fa=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+            gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf",**config),
         output:
             counts=expand("{counts_dir}/{{assembly}}-counts.tsv",**config),
             tpms=expand("{counts_dir}/{{assembly}}-TPM.tsv",**config),
@@ -109,6 +111,8 @@ elif config["quantifier"] == "salmon" and config["tpm2counts"] == "pytxi":
             from_gtf=config["tx2gene_from_gtf"],
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-counts_matrix.log",**config),
+        message:
+            explain_rule("count_matrix_pytxi")
         script:
             f"{config['rule_dir']}/../scripts/pytxi.py"
 
@@ -159,7 +163,7 @@ else:
 
     rule tpm_matrix:
         """
-        Create a TPM table from a counts table.
+        Create a TPM normalized table from a counts table.
         """
         input:
             cts=rules.count_matrix.output,
@@ -169,6 +173,8 @@ else:
             lengths = expand("{counts_dir}/{{assembly}}-gene_lengths.tsv",**config),
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-tpm_matrix.log",**config),
+        message:
+            explain_rule("tpm_matrix")
         script:
             f"{config['rule_dir']}/../scripts/counts2tpm.py"
 

@@ -13,6 +13,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - idr call is configurable (`idr_options`)
 - single-cell DESeq2 (currently only via `deseq2science` with user-specified groups per cell)
 
+### Changed
+
+- rna-seq creates a TPM table for each quantification method 
+
 ## [0.7.2] - 2022-03-04
 
 ### Added
@@ -30,7 +34,6 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - using awful practices to eliminate checkpoint strandedness
 - deeptools_flags renamed to deeptools_bamcoverage
 - rna-seq trackhub per base tracks by default instead of bins per 50
-- rna-seq creates a TPM table for each quantification method 
 
 ### Fixed
 
