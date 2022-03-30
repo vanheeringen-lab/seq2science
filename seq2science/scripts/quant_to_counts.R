@@ -11,7 +11,7 @@ samples      <- snakemake@input$cts
 sample_names <- snakemake@params$names
 assembly     <- snakemake@wildcards$assembly
 out_counts   <- snakemake@output$counts
-out_tpms     <- snakemake@output$counts
+out_tpms     <- snakemake@output$tpms
 out_lengths  <- snakemake@output$lengths
 out_SCE      <- snakemake@output$SCE
 log_file     <- snakemake@log[[1]]

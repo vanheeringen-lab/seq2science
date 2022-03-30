@@ -38,11 +38,11 @@ with open(log_file, "a") as log:  # appending because we mix streams (tqdm, logg
         test = ann.gtf["attribute"].head(100)
         name_overlap = 0
         if any(test.str.contains("gene_name")):
-            gtf_names = set(ann.from_attributes("gene_name").index)
+            gtf_names = set(ann.from_attributes("gene_name"))
             name_overlap = len(counts_names & gtf_names)
         id_overlap = 0
         if any(test.str.contains("gene_id")):
-            gtf_names = set(ann.from_attributes("gene_id").index)
+            gtf_names = set(ann.from_attributes("gene_id"))
             id_overlap = len(counts_names & gtf_names)
         if name_overlap == 0 and id_overlap == 0:
             raise ValueError(
@@ -58,5 +58,5 @@ with open(log_file, "a") as log:  # appending because we mix streams (tqdm, logg
         lengths = ann.lengths(attribute)
         tpms = counts2tpm(counts.join(lengths, how="inner"))
 
-        lengths.to_csv(out_tpms, sep="\t")
+        lengths.to_csv(out_lengths, sep="\t")
         tpms.to_csv(out_tpms, sep="\t")
