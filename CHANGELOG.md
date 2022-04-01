@@ -52,7 +52,6 @@ Biggest change is that we revert back to snakemake 5.18 since higher versioned s
 
 - upset plot as QC for peak calling. Should give a first feeling about the distribution of peaks between samples/conditions.
 
-
 ### Changed
 
 - downgraded the snakemake backend as snakemake 6+ is unstable for us.
