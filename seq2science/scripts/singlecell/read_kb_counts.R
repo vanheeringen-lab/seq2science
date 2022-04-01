@@ -146,7 +146,7 @@ if (quantifier == "kallistobus") {
   # Case for quantification/kite workflows
   } else {
     message(paste0(date(), " .. Preparing cell matrices from kallistobus (non-velocity) output!"))
-    mat_name <- ifelse(iskite, "cell_x_features", "cell_x_genes")
+    mat_name <- ifelse(iskite, "cells_x_features", "cells_x_genes")
     mat <- read_count_output(dir=count_dir, name=mat_name)
     mat.endo <- NULL
     if (use_alt_expr) {

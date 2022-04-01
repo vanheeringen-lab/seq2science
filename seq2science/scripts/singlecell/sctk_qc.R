@@ -14,12 +14,12 @@ log_file <- snakemake@log[[1]]
 sample <-  snakemake@params$sample
 isvelo <- snakemake@params$isvelo
 replicates <- snakemake@params$replicates
-data_type <- snakemake@config$sc_preproces$sctk_data_type
-mito_set <- snakemake@config$sc_preproces$sctk_mito_set
-detect_cell <- snakemake@config$sc_preproces$sctk_detect_cell
-detect_mito <- snakemake@config$sc_preproces$sctk_detect_mito
-cell_calling <- snakemake@config$sc_preproces$sctk_cell_calling
-use_alt_exp <-  snakemake@config$sc_preproces$use_alt_expr
+data_type <- snakemake@config$sc_preprocess$sctk_data_type
+mito_set <- snakemake@config$sc_preprocess$sctk_mito_set
+detect_cell <- snakemake@config$sc_preprocess$sctk_detect_cell
+detect_mito <- snakemake@config$sc_preprocess$sctk_detect_mito
+cell_calling <- snakemake@config$sc_preprocess$sctk_cell_calling
+use_alt_exp <-  snakemake@config$sc_preprocess$use_alt_expr
 rds_out <- file.path(out_dir, "export", "R", "SCTK_sce_obj.RData",    fsep="/" )
 qc_summary <-  file.path(out_dir, "SCTK_CellQC_summary.csv",    fsep="/" )
 qc_dir <- file.path(out_dir, "report", fsep="/")
@@ -48,7 +48,7 @@ cat('detect_mito      <- "', detect_mito,      '"\n', sep = "")
 cat('mito_set         <- "', mito_set,         '"\n', sep = "")
 cat('detect_cell      <- "', detect_cell,      '"\n', sep = "")
 cat('cell_calling     <- "', cell_calling,     '"\n', sep = "")
-
+cat('use_alt_exp      <- "', use_alt_exp,     '"\n', sep = "")
 
 # Setup parallel type
 # https://github.com/compbiomed/singleCellTK/blob/master/exec/SCTK_runQC.R
@@ -108,7 +108,7 @@ sce <- readRDS(rds_in)
 # Modify sce object
 sce <- modifySCE(sce)
 # Select QC algorithms
-cellQCAlgos = c("QCMetrics", "scDblFinder")
+cellQCAlgos = c("QCMetrics", "scDblFinder", "decontX")
 collectionName = NULL
 # Run cell QC algorithms
 if (tolower(data_type) == "cell") {
@@ -177,7 +177,9 @@ if (tolower(data_type) == "cell") {
   QCsummary <- sampleSummaryStats(mergedFilteredSCE, simple=FALSE, sample = mergedFilteredSCE[[sample_col]])
   write.csv(QCsummary, qc_summary)
   # Save final rds objects
-  plotAltExps(qc_dir, mergedFilteredSCE)
+  if (isTRUE(use_alt_exp)) {  
+    plotAltExps(qc_dir, mergedFilteredSCE)
+  }
   message(paste0(date(), " .. Exporting to rds format"))
   sce.processed <- mergedFilteredSCE
   saveRDS(sce.processed, file = rds_out)
@@ -189,7 +191,7 @@ if (tolower(data_type) == "droplet") {
     mergedDropletSCE <- mergeSCEColData(dropletSCE, cellSCE)
     mergedFilteredSCE <- mergeSCEColData(cellSCE, dropletSCE)
     #Generate Report
-    message(paste0(date(), " .. Generating droplet QC report"))
+    message(paste0(date(), " .. Generating DropletQC report"))
     pdf(file.path(qc_dir, "SCTK_DropletQC_figures.pdf", fsep="/"))
     print(plotEmptyDropsResults(
       inSCE = mergedDropletSCE,
@@ -205,7 +207,6 @@ if (tolower(data_type) == "droplet") {
                                  legendSize = 14))
     dev.off()
     #Generate HTML report for dropletQC
-    message(paste0(date(), " .. Generating DropletQC report"))
     reportDropletQC(inSCE = mergedDropletSCE, output_dir = qc_dir, output_file = "SCTK_DropletQC.html")
     # Generate Cell report
     message(paste0(date(), " .. Generating CellQC report"))
@@ -214,12 +215,13 @@ if (tolower(data_type) == "droplet") {
     QCsummary <- sampleSummaryStats(mergedFilteredSCE, simple=FALSE, sample = mergedFilteredSCE[[sample_col]])
     write.csv(QCsummary, qc_summary) 
     # Generate report for alternative experiments
-    plotAltExps(qc_dir, mergedFilteredSCE)
+    if (isTRUE(use_alt_exp)) {
+      plotAltExps(qc_dir, mergedFilteredSCE)
+    }
     # Generate final rds objects
     message(paste0(date(), " .. Exporting to rds format"))
-    sce_objs.processed <- c(mergedFilteredSCE, mergedDropletSCE)
-    names(sce_objs.processed) <- c("mergedFilteredSce","mergedDropletSce")
-    saveRDS(sce_objs.processed, file = rds_out)  
+    sce.processed <- list(cellsce=mergedFilteredSCE, dropletsce=mergedDropletSCE)
+    saveRDS(sce.processed, file = rds_out)  
   } else {
     mergedDropletSCE <- dropletSCE
     #Generate Report
@@ -234,14 +236,14 @@ if (tolower(data_type) == "droplet") {
       defaultTheme = TRUE
     ))
     # Plot barcode rank scatter
-    print(plotBarcodeRankScatter(inSCE =  mergedDropletSCE,,
+    print(plotBarcodeRankScatter(inSCE =  mergedDropletSCE,
                                  title = "BarcodeRanks Rank Plot",
                                  legendSize = 14))
     dev.off()
     reportDropletQC(inSCE = mergedDropletSCE, output_dir = out_dir, output_file = "SCTK_DropletQC.html")
     # Save final rds objects
     message(paste0(date(), " .. Exporting to rds format"))
-    sce.processed <- mergedFilteredSCE
+    sce.processed <- mergedDropletSCE
     saveRDS(sce.processed, file = rds_out)
   }
 }
