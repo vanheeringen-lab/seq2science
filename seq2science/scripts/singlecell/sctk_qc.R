@@ -20,8 +20,9 @@ detect_cell <- snakemake@config$sc_preproces$sctk_detect_cell
 detect_mito <- snakemake@config$sc_preproces$sctk_detect_mito
 cell_calling <- snakemake@config$sc_preproces$sctk_cell_calling
 use_alt_exp <-  snakemake@config$sc_preproces$use_alt_expr
-rds_out <- file.path(out_dir, "sce_obj_sctk.RData",    fsep="/" )
-qc_out <-  file.path(out_dir, "SCTK_CellQC_summary.csv",    fsep="/" )
+rds_out <- file.path(out_dir, "export", "R", "SCTK_sce_obj.RData",    fsep="/" )
+qc_summary <-  file.path(out_dir, "SCTK_CellQC_summary.csv",    fsep="/" )
+qc_dir <- file.path(out_dir, "report", fsep="/")
 pdf_out <- file.path(out_dir, "SCTK_DropletQC_figures.pdf", fsep="/" )
 numCores <- 4
 
@@ -39,7 +40,8 @@ cat('isvelo           <- "', isvelo,           '"\n', sep = "")
 cat('rds_in           <- "', rds_in,           '"\n', sep = "")
 cat('out_dir          <- "', out_dir,          '"\n', sep = "")
 cat('rds_out          <- "', out_dir,          '"\n', sep = "")
-cat('qc_out           <- "', qc_out,           '"\n', sep = "")
+cat('qc_dir           <- "', qc_dir,           '"\n', sep = "")
+cat('qc_summary       <- "', qc_summary,       '"\n', sep = "")
 cat('pdf_out          <- "', pdf_out,          '"\n', sep = "")
 cat('data_type        <- "', data_type,        '"\n', sep = "")
 cat('detect_mito      <- "', detect_mito,      '"\n', sep = "")
@@ -170,12 +172,12 @@ if (tolower(data_type) == "cell") {
   mergedFilteredSCE <- cellSCE
   # Generate report
   message(paste0(date(), " .. Generating cell QC report"))
-  reportCellQC(inSCE = mergedFilteredSCE, output_dir = out_dir, output_file = "SCTK_CellQC.html")
+  reportCellQC(inSCE = mergedFilteredSCE, output_dir = qc_dir, output_file = "SCTK_CellQC.html")
   #Generate QC summary
   QCsummary <- sampleSummaryStats(mergedFilteredSCE, simple=FALSE, sample = mergedFilteredSCE[[sample_col]])
-  write.csv(QCsummary, qc_out)
+  write.csv(QCsummary, qc_summary)
   # Save final rds objects
-  plotAltExps(out_dir, mergedFilteredSCE)
+  plotAltExps(qc_dir, mergedFilteredSCE)
   message(paste0(date(), " .. Exporting to rds format"))
   sce.processed <- mergedFilteredSCE
   saveRDS(sce.processed, file = rds_out)
@@ -188,7 +190,7 @@ if (tolower(data_type) == "droplet") {
     mergedFilteredSCE <- mergeSCEColData(cellSCE, dropletSCE)
     #Generate Report
     message(paste0(date(), " .. Generating droplet QC report"))
-    pdf(pdf_out)
+    pdf(file.path(qc_dir, "SCTK_DropletQC_figures.pdf", fsep="/"))
     print(plotEmptyDropsResults(
       inSCE = mergedDropletSCE,
       axisLabelSize = 20,
@@ -204,15 +206,15 @@ if (tolower(data_type) == "droplet") {
     dev.off()
     #Generate HTML report for dropletQC
     message(paste0(date(), " .. Generating DropletQC report"))
-    reportDropletQC(inSCE = mergedDropletSCE, output_dir = out_dir, output_file = "SCTK_DropletQC.html")
+    reportDropletQC(inSCE = mergedDropletSCE, output_dir = qc_dir, output_file = "SCTK_DropletQC.html")
     # Generate Cell report
     message(paste0(date(), " .. Generating CellQC report"))
-    reportCellQC(inSCE = mergedFilteredSCE, output_dir = out_dir, output_file = "SCTK_CellQC.html")
+    reportCellQC(inSCE = mergedFilteredSCE, output_dir = qc_dir, output_file = "SCTK_CellQC.html")
     #Generate QC summary
     QCsummary <- sampleSummaryStats(mergedFilteredSCE, simple=FALSE, sample = mergedFilteredSCE[[sample_col]])
-    write.csv(QCsummary, qc_out) 
+    write.csv(QCsummary, qc_summary) 
     # Generate report for alternative experiments
-    plotAltExps(out_dir, mergedFilteredSCE)
+    plotAltExps(qc_dir, mergedFilteredSCE)
     # Generate final rds objects
     message(paste0(date(), " .. Exporting to rds format"))
     sce_objs.processed <- c(mergedFilteredSCE, mergedDropletSCE)
@@ -221,8 +223,8 @@ if (tolower(data_type) == "droplet") {
   } else {
     mergedDropletSCE <- dropletSCE
     #Generate Report
-    message(paste0(date(), " .. Generating droplet QC report"))
-    pdf(pdf_out)
+    message(paste0(date(), " .. Generating DropletQC report"))
+    pdf(file.path(qc_dir, "SCTK_DropletQC_figures.pdf", fsep="/"))
     print(plotEmptyDropsResults(
       inSCE = mergedDropletSCE,
       axisLabelSize = 20,
@@ -243,16 +245,3 @@ if (tolower(data_type) == "droplet") {
     saveRDS(sce.processed, file = rds_out)
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

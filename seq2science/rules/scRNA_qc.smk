@@ -48,7 +48,7 @@ rule sctk_qc:
     output:
         dir=expand(
             "{result_dir}/sctk/{quantifier}/{{assembly}}-{{sample}}/{file}",
-            **{**config, **{"file": ["sce_obj_sctk.RData", "SCTK_CellQC_summary.csv", "SCTK_CellQC.html"]}}
+            **{**config, **{"file": ["export/R/SCTK_sce_obj.RData", "SCTK_CellQC_summary.csv", "report/SCTK_CellQC.html"]}}
         ),
     log:
         expand("{log_dir}/sctk/{{assembly}}-{{sample}}_sctk.log", **config),
@@ -57,7 +57,7 @@ rule sctk_qc:
         "../envs/sctk.yaml"
     params:
         sample=lambda wildcards, input: rep_to_descriptive(wildcards.sample),
-        outdir=lambda wildcards, input, output: os.path.dirname(output[0]),
+        outdir=lambda wildcards, input, output: os.path.dirname(output[1]),
         isvelo=lambda wildcards, input: True if "--workflow lamanno" in config.get("count", "") else False,
         replicates=True if "technical_replicates" in samples else False,
     message:
