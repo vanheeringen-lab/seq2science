@@ -105,14 +105,7 @@ rule mark_duplicates:
         sample=f"""({any_given("sample", "technical_replicates", "control")})(_allsizes)?""",
     shell:
         """
-        # use the TMPDIR if set, and not given in the config
-        if [[ ${{TMPDIR:=F}} == "F" ]] || [[ "{params}" == *TMP_DIR* ]]
-        then
-            tmpdir=""
-        else
-            tmpdir=TMP_DIR=$TMPDIR
-        fi
-        picard MarkDuplicates $tmpdir {params} INPUT={input} \
+        picard MarkDuplicates TMP_DIR={resources.tmpdir} {params} INPUT={input} \
         OUTPUT={output.bam} METRICS_FILE={output.metrics} > {log} 2>&1
         """
 
@@ -287,8 +280,6 @@ rule samtools_sort:
         expand("{benchmark_dir}/samtools_sort/{{assembly}}-{{sample}}-{{sorting}}.benchmark.txt", **config)[0]
     params:
         sort_order=lambda wildcards: "-n" if wildcards.sorting == "queryname" else "",
-        out_dir=f"{config['result_dir']}/{config['aligner']}",
-        memory=config['bam_sort_mem'],
     wildcard_constraints:
         sample=f"""({any_given("sample", "technical_replicates", "control")})(_allsizes)?""",
     threads: 2
@@ -299,14 +290,14 @@ rule samtools_sort:
     shell:
         """
         # we set this trap to remove temp files when prematurely ending the rule
-        trap "rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
-        rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2> {log}
+        trap "rm -f {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
+        rm -f {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2> {log}
 
         # RAM per thread in MB
-        memory=$((1000*{params.memory}/{threads}))M
+        memory=$((1000*{resources.memory}/{threads}))M
 
         samtools sort {params.sort_order} -@ {threads} -m $memory {input} -o {output} \
-        -T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
+        -T {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
         """
 
 

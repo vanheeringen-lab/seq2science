@@ -18,9 +18,7 @@ fi
 
 function assert_rulecount {
   # check if the DAG (stored with  | tee tests/local_test_results/${1}_dag  ) ran rule $2 exactly $3 times
-  # snakemake 6+ regex
-  # val=$(grep -wE $2 tests/local_test_results/${1}_dag | grep -Poi '(?<= )\d+' | head -n 1);
-  val=$(cat tests/local_test_results/${1}_dag | grep -wE $2$ | cut -f2);
+  val=$(grep -wE $2 tests/local_test_results/${1}_dag | grep -Poi '(?<= )\d+' | head -n 1);
   # check if the rule was found in the DAG at all
   if [ -z "$val" ]; then
     # if specified count is zero, that's OK
@@ -202,6 +200,7 @@ if [ $1 = "atac-seq" ]; then
   printf "\natac-seq default\n"
   seq2science run atac-seq -nr --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 macs2_callpeak 1
+  assert_rulecount $1 get_effective_genome_size 1
 
   printf "\npeak callers\n"
   # seq2science run atac-seq -nr --configfile tests/$WF/macs2.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag  # default

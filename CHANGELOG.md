@@ -52,14 +52,10 @@ Biggest change is that we revert back to snakemake 5.18 since higher versioned s
 
 - upset plot as QC for peak calling. Should give a first feeling about the distribution of peaks between samples/conditions.
 
-### Changed
-
-- downgraded the snakemake backend as snakemake 6+ is unstable for us.
-
 ### Fixed
 
 - corrupt environment creation with libreadline for edgeR normalization.
-- subsampling causing a crash caused by bad syntax.
+- subsampling causing a crash caused by bad syntax
 
 ## [0.6.1] - 2021-12-17
 
