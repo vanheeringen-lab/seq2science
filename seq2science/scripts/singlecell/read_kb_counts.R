@@ -16,8 +16,10 @@ isvelo <- snakemake@params$isvelo
 iskite <- snakemake@params$iskite
 log_file <- snakemake@log[[1]]
 samples_tsv <- snakemake@config$samples
-seu_min_cells <- snakemake@config$seurat_object$min_cells
-seu_min_features <- snakemake@config$seurat_object$min_features
+custom_assembly_suffix <- snakemake@config$custom_assembly_suffix
+use_alt_expr <- snakemake@config$single_cell_experiment$use_alt_expr
+alt_exp_name <- snakemake@config$single_cell_experiment$alt_exp_name
+alt_exp_reg <- snakemake@config$single_cell_experiment$alt_exp_reg
 
 # Log all console output
 log <- file(log_file, open="wt")
@@ -38,10 +40,14 @@ cat('count_dir        <- "', count_dir,        '"\n', sep = "")
 cat('rds              <- "', rds,              '"\n', sep = "")
 cat('sample           <- "', sample,           '"\n', sep = "")
 cat('genome           <- "', genome,           '"\n', sep = "")
+cat('custom_assembly_suffix  <- "', custom_assembly_suffix, '"\n', sep = "")
 cat('replicates       <- "', replicates,       '"\n', sep = "")
 cat('iscite           <- "', iscite,           '"\n', sep = "")
 cat('isvelo           <- "', isvelo,           '"\n', sep = "")
 cat('iskite           <- "', iskite,           '"\n', sep = "")
+cat('use_alt_expr     <- "', use_alt_expr,     '"\n', sep = "")
+cat('alt_exp_name     <- "', alt_exp_name,     '"\n', sep = "")
+cat('alt_exp_reg      <- "', alt_exp_reg,      '"\n', sep = "")
 
 cat('\n')
 
@@ -86,58 +92,99 @@ read_cite_output <- function(dir="", name="umi_count") {
   return(mat)
 }
 
-#Parse sample_sheet
+# Filter alt experiments from main experiment
+filter_alt <- function(alt_feature_prefix, mat, alt = FALSE) {
+  # Check if alternative experiments are present
+  alt.feature <- grepl(alt_feature_prefix, rownames(mat))
+  # Stop if the regex pattern cannot be founds
+  if (length(alt.feature[alt.feature == TRUE]) == 0 ) {
+    stop("Could not filter alt exp regex from gene names")
+  }
+  if (isTRUE(alt)) {
+    return(mat[alt.feature,])
+  }
+  else {
+    return(mat[!alt.feature,])
+  }
+}
+
+# Remove custom assembly suffix from genome for filteirng
+if (custom_assembly_suffix != "") {
+  genome <- gsub(custom_assembly_suffix, "", genome)
+}
+# Parse sample sheet
 sample_sheet <- parse_samples(samples_tsv, genome, replicates)
 # Create Seurat objects based on cite input arguments and set assay
-if (quantifier == "citeseqcount") {
-  mat <- read_cite_output(dir=count_dir)
-  meta <- prep_cell_meta(sample, sample_sheet, colnames(mat))
-  # Create SingleCellExperiment object
-  sce <-
-    SingleCellExperiment(
-      assays = list(counts = mat),
-      mainExpName = sample,
-      colData = meta
-    )
-  saveRDS(sce, file = rds)
-} 
+alt_exp <- list()
+assays <- list()
 # Create Seurat objects based on input kb workflow argument and set assay
 if (quantifier == "kallistobus") {
   # kb count with '--workflow kite' parameter
-  if (iskite) {
-    mat <- read_count_output(dir=count_dir, name="cells_x_features")
-    meta <- prep_cell_meta(sample, sample_sheet, colnames(mat))
-    # Create SingleCellExperiment object
-    sce <-
-      SingleCellExperiment(
-        assays = list(counts = mat),
-        mainExpName = sample,
-        colData = meta
-    )
-    saveRDS(sce, file = rds)
-    # kb count with '--workflow Lamanno'
-  } else if (isvelo) {
+  if (isvelo) {
+    message(paste0(date(), " .. Preparing cell matrices from kallistobus (velocity) output!"))
+    # Unspliced counts
+    mat.sf.endo <- NULL
+    mat.uf.endo <- NULL
     mat.sf <- read_count_output(count_dir, name="spliced")
     mat.uf <- read_count_output(count_dir, name="unspliced")
-    meta <- prep_cell_meta(sample, sample_sheet, colnames(mat.sf))
-    sce <-
-      SingleCellExperiment(
-        assays = list(counts = mat.sf, unspliced = mat.uf),
-        mainExpName = sample,
-        colData = meta
-    )
-    saveRDS(sce, file = rds)
-    # kb count without '--workflow' argument   
+    if (use_alt_expr) {
+      mat.sf.endo <- filter_alt(alt_exp_reg, mat.sf)
+      mat.uf.endo <- filter_alt(alt_exp_reg, mat.uf)
+      # Filter alt experiment from main experiment
+      mat.sf.alt <- filter_alt(alt_exp_reg, mat.sf, alt = TRUE)
+      mat.uf.alt <- filter_alt(alt_exp_reg, mat.uf, alt = TRUE)
+      # Store experiments for spliced and unsplaced assays
+      alt_exp[[paste0(alt_exp_name,"_sf")]] <- SummarizedExperiment(assay = list(counts=mat.sf.alt)) 
+      alt_exp[[paste0(alt_exp_name,"_uf")]] <- SummarizedExperiment(assay = list(counts=mat.uf.alt)) 
+    } else {
+      mat.sf.endo <- mat.sf
+      mat.uf.endo <- mat.uf
+    }
+    # create assays
+    assays <- list(counts = mat.sf.endo, unspliced = mat.uf.endo)
+  
+  # Case for quantification/kite workflows
   } else {
-    mat <- read_count_output(dir=count_dir, name="cells_x_genes")
-    meta <- prep_cell_meta(sample, sample_sheet, colnames(mat))
-    # Create SingleCellExperiment object
-    sce <-
-      SingleCellExperiment(
-        assays = list(counts = mat),
-        mainExpName = sample,
-        colData = meta
-    )
-    saveRDS(sce, file = rds)
-  }
+    message(paste0(date(), " .. Preparing cell matrices from kallistobus (non-velocity) output!"))
+    mat_name <- ifelse(iskite, "cell_x_features", "cell_x_genes")
+    mat <- read_count_output(dir=count_dir, name=mat_name)
+    mat.endo <- NULL
+    if (use_alt_expr) {
+      mat.endo <- filter_alt(alt_exp_reg, mat)
+      mat.alt <- filter_alt(alt_exp_reg, mat, alt = TRUE)
+      alt_exp[[alt_exp_name]] <- SummarizedExperiment(assay = list(counts=mat.alt)) 
+    } else {
+      mat.endo <- mat
+    }
+    assays <- list(counts = mat.endo)
+  }    
 }
+
+if (quantifier == "citeseqcount") {
+  message(paste0(date(), " .. Preparing cell matrices from citeseqcount output!"))
+  mat <- read_cite_output(dir=count_dir)
+  mat.endo <- NULL
+  if (use_alt_expr) {
+    mat.endo <- filter_alt(alt_exp_reg, mat)
+    mat.alt <- filter_alt(alt_exp_reg, mat, alt = TRUE)
+    alt_exp[[alt_exp_name]] <- SummarizedExperiment(assay = mat.alt) 
+  } else {
+    mat.endo <- mat
+  }
+  assays <- list(counts = mat.endo)
+}
+  
+# Create final sce object and store main and alternative experiments (if present) 
+message(paste0(date(), " .. Creating final SingleCellExperiment object!"))
+sce <-
+  SingleCellExperiment(
+    assays = assays,
+    mainExpName = sample,
+    colData = prep_cell_meta(sample, sample_sheet, colnames(assays$counts)),
+    altExps =  alt_exp)
+
+# Save RDS object
+message(paste0(date(), " .. Saving object to RDSD file!"))
+saveRDS(sce, file = rds)  
+
+

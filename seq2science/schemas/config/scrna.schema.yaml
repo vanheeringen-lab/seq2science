@@ -44,7 +44,25 @@ properties:
     description: "Generate QC reports with singleCellTK"
     type: boolean   
     default: false
-    
+  
+  single_cell_experiment:
+    description: "Settings for SingleCellExperiment export"
+    properties:
+      use_alt_expr:
+       description: "Store alternative experiments"  
+       type: boolean
+      alt_exp_name: 
+        description: "Name of the alternative experiment"
+        type: string
+      alt_exp_reg:
+        description: "Regex to fitler alt exp from main experiment"
+        type: string
+      
+      default:
+        use_alt_expr: false
+        alt_exp_name: ""
+        alt_exp_reg: ""
+        
   sctk:
     description: "Settings for singlecellTK"
     properties:

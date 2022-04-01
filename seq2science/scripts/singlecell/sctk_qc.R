@@ -4,6 +4,7 @@
 suppressMessages({
   library(singleCellTK)
   library("BiocParallel")
+  library(scater)
 })
 
 # Snakemake variables
@@ -18,6 +19,7 @@ mito_set <- snakemake@config$sctk$mito_set
 detect_cell <- snakemake@config$sctk$detect_cell
 detect_mito <- snakemake@config$sctk$detect_mito
 cell_calling <- snakemake@config$sctk$cell_calling
+use_alt_exp <-  snakemake@config$single_cell_experiment$use_alt_expr
 rds_out <- file.path(out_dir, "sce_obj_sctk.RData",    fsep="/" )
 qc_out <-  file.path(out_dir, "SCTK_CellQC_summary.csv",    fsep="/" )
 pdf_out <- file.path(out_dir, "SCTK_DropletQC_figures.pdf", fsep="/" )
@@ -82,11 +84,26 @@ modifySCE <- function(sce) {
   return(sce)
 }
 
+# Create scatter plot from alternative experiments
+plotAltExps <- function(out_dir, sce) {
+  pdf(file.path(out_dir, "SCTK_altexps.pdf", fsep="/" ))
+  for (n in altExpNames(sce)) {
+    x <- paste0("altexps_",n,"_percent")
+    y <- "detected"
+    print(plotColData(sce, x=x, y=y))
+  }
+  dev.off()
+}
 #Set sample col
 sample_col <- ifelse(replicates,"technical_replicates","descriptive_name")
-#Modify sce object
+
+# Generate QC stats for alternative experiments (if present)
+if (isTRUE(use_alt_exp)) {
+  Params$QCMetrics$use_altexps <- TRUE
+}
 # read RDS and modify raw sce object
 sce <- readRDS(rds_in)
+# Modify sce object
 sce <- modifySCE(sce)
 # Select QC algorithms
 cellQCAlgos = c("QCMetrics", "scDblFinder")
@@ -158,9 +175,10 @@ if (tolower(data_type) == "cell") {
   QCsummary <- sampleSummaryStats(mergedFilteredSCE, simple=FALSE, sample = mergedFilteredSCE[[sample_col]])
   write.csv(QCsummary, qc_out)
   # Save final rds objects
+  plotAltExps(out_dir, mergedFilteredSCE)
   message(paste0(date(), " .. Exporting to rds format"))
-  seu.processed <- as.Seurat(mergedFilteredSCE, data = NULL)
-  saveRDS(seu.processed, file = rds_out)
+  sce.processed <- mergedFilteredSCE
+  saveRDS(sce.processed, file = rds_out)
 }
 
 #Merge Droplet sce
@@ -185,13 +203,16 @@ if (tolower(data_type) == "droplet") {
                                  legendSize = 14))
     dev.off()
     #Generate HTML report for dropletQC
+    message(paste0(date(), " .. Generating DropletQC report"))
     reportDropletQC(inSCE = mergedDropletSCE, output_dir = out_dir, output_file = "SCTK_DropletQC.html")
     # Generate Cell report
-    message(paste0(date(), " .. Generating cell QC report"))
+    message(paste0(date(), " .. Generating CellQC report"))
     reportCellQC(inSCE = mergedFilteredSCE, output_dir = out_dir, output_file = "SCTK_CellQC.html")
     #Generate QC summary
     QCsummary <- sampleSummaryStats(mergedFilteredSCE, simple=FALSE, sample = mergedFilteredSCE[[sample_col]])
     write.csv(QCsummary, qc_out) 
+    # Generate report for alternative experiments
+    plotAltExps(out_dir, mergedFilteredSCE)
     # Generate final rds objects
     message(paste0(date(), " .. Exporting to rds format"))
     sce_objs.processed <- c(mergedFilteredSCE, mergedDropletSCE)
