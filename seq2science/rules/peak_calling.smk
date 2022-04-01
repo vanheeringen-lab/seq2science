@@ -157,7 +157,7 @@ def get_genome_size(wildcards):
 rule macs2_callpeak:
     """
     Call peaks using macs2.
-    Macs2 requires a genome size, which we estimate from the amount of unique kmers of the average read length.
+    Macs2 requires a genome size, which is estimated from the amount of unique kmers of the average read length.
     """
     input:
         unpack(get_control_macs),
