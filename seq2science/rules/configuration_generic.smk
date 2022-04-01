@@ -245,7 +245,7 @@ if "assembly" in samples:
         search_assemblies = []
         
     # Check scRNA post-processing options
-    if config['run_sctk_qc'] and config['export_sce_objects']:
+    if config["sc_preprocess"].get('run_sctk_qc',{}) and config["sc_preprocess"].get('export_sce_objects',{}):
         logger.error("Only one option is valid. Either select run_sctk_qc or export_sce_objs")
         sys.exit(1)
         

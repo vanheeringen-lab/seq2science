@@ -14,12 +14,12 @@ log_file <- snakemake@log[[1]]
 sample <-  snakemake@params$sample
 isvelo <- snakemake@params$isvelo
 replicates <- snakemake@params$replicates
-data_type <- snakemake@config$sctk$data_type
-mito_set <- snakemake@config$sctk$mito_set
-detect_cell <- snakemake@config$sctk$detect_cell
-detect_mito <- snakemake@config$sctk$detect_mito
-cell_calling <- snakemake@config$sctk$cell_calling
-use_alt_exp <-  snakemake@config$single_cell_experiment$use_alt_expr
+data_type <- snakemake@config$sc_preproces$sctk_data_type
+mito_set <- snakemake@config$sc_preproces$sctk_mito_set
+detect_cell <- snakemake@config$sc_preproces$sctk_detect_cell
+detect_mito <- snakemake@config$sc_preproces$sctk_detect_mito
+cell_calling <- snakemake@config$sc_preproces$sctk_cell_calling
+use_alt_exp <-  snakemake@config$sc_preproces$use_alt_expr
 rds_out <- file.path(out_dir, "sce_obj_sctk.RData",    fsep="/" )
 qc_out <-  file.path(out_dir, "SCTK_CellQC_summary.csv",    fsep="/" )
 pdf_out <- file.path(out_dir, "SCTK_DropletQC_figures.pdf", fsep="/" )

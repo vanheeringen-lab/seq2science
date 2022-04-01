@@ -17,9 +17,9 @@ iskite <- snakemake@params$iskite
 log_file <- snakemake@log[[1]]
 samples_tsv <- snakemake@config$samples
 custom_assembly_suffix <- snakemake@config$custom_assembly_suffix
-use_alt_expr <- snakemake@config$single_cell_experiment$use_alt_expr
-alt_exp_name <- snakemake@config$single_cell_experiment$alt_exp_name
-alt_exp_reg <- snakemake@config$single_cell_experiment$alt_exp_reg
+use_alt_expr <- snakemake@config$sc_preprocess$use_alt_expr
+alt_exp_name <- snakemake@config$sc_preprocess$alt_exp_name
+alt_exp_reg <- snakemake@config$sc_preprocess$alt_exp_reg
 
 # Log all console output
 log <- file(log_file, open="wt")
