@@ -18,9 +18,9 @@ rule export_sce_obj:
     input:
         counts=get_count_dir,
     output:
-        rds=expand("{result_dir}/singlecellexperiment/{quantifier}/{{assembly}}-{{sample}}_sce_obj.RData", **config),
+        rds=expand("{result_dir}/scrna-preprocess/{quantifier}/raw/export/R/{{assembly}}-{{sample}}_sce_obj.RData", **config),
     log:
-        expand("{log_dir}/singlecellexperiment/{{assembly}}-{{sample}}_sce_obj.log", **config),
+        expand("{log_dir}/scrna-preprocess/{quantifier}/raw/{{assembly}}-{{sample}}_sce_obj.log", **config),
     priority: 1
     conda:
         "../envs/sce.yaml"
@@ -47,11 +47,11 @@ rule sctk_qc:
        rds_raw=rules.export_sce_obj.output.rds
     output:
         dir=expand(
-            "{result_dir}/sctk/{quantifier}/{{assembly}}-{{sample}}/{file}",
+            "{result_dir}/scrna-preprocess/{quantifier}/sctk/{{assembly}}-{{sample}}/{file}",
             **{**config, **{"file": ["export/R/SCTK_sce_obj.RData", "SCTK_CellQC_summary.csv", "report/SCTK_CellQC.html"]}}
         ),
     log:
-        expand("{log_dir}/sctk/{{assembly}}-{{sample}}_sctk.log", **config),
+        expand("{log_dir}/scrna-preprocess/{quantifier}/sctk/{{assembly}}-{{sample}}_sctk.log", **config),
     priority: 1
     conda:
         "../envs/sctk.yaml"

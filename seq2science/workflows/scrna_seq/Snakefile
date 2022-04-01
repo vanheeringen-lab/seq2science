@@ -25,9 +25,9 @@ rule seq2science:
     input:
         expand(([f"{{result_dir}}/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}/run_info.json" for trep in treps.index] if config["quantifier"] == "kallistobus" else [] +
                 [f"{{result_dir}}/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}/_tag_counts/run_report.yaml" for trep in treps.index] if config["quantifier"] == "citeseqcount" else []) +
-               ([f"{{result_dir}}/singlecellexperiment/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}_sce_obj.RData" for trep in treps.index]  if config["sc_preprocess"].get("export_sce_objects",{}) else []) +
-               ([f"{{result_dir}}/singlecellexperiment/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}_sce_obj.RData" for trep in treps.index] +  
-                [f"{{result_dir}}/sctk/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}/export/R/SCTK_sce_obj.RData" for trep in treps.index] if config["sc_preprocess"].get("run_sctk_qc",{}) else []) +
+               ([f"{{result_dir}}/scrna-preprocess/{{quantifier}}/raw/export/R/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}_sce_obj.RData" for trep in treps.index]  if config["sc_preprocess"].get("export_sce_objects",{}) else []) +
+               ([f"{{result_dir}}/scrna-preprocess/{{quantifier}}/raw/export/R/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}_sce_obj.RData" for trep in treps.index] +  
+                [f"{{result_dir}}/scrna-preprocess/{{quantifier}}/sctk/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}/export/R/SCTK_sce_obj.RData" for trep in treps.index] if config["sc_preprocess"].get("run_sctk_qc",{}) else []) +
                (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []),
                **{**config,
                   **{'assemblies': all_assemblies}})
