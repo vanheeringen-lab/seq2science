@@ -1,4 +1,4 @@
-name: sctk
+name: sce
 channels:
   - bioconda
   - conda-forge
