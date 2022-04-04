@@ -161,7 +161,7 @@ if (tolower(data_type) == "cell") {
   reportCellQC(inSCE = mergedFilteredSCE, output_dir = qc_dir, output_file = "SCTK_CellQC.html")
   # Generate QC summary
   QCsummary <- sampleSummaryStats(mergedFilteredSCE, simple = FALSE, sample = NULL)
-  write.csv(QCsummary, qc_summary)
+  write.csv(QCsummary, qc_summary, quote = FALSE)
   # Save final rds objects
   if (isTRUE(use_alt_exp)) {
     plotAltExps(qc_dir, mergedFilteredSCE)
@@ -201,7 +201,7 @@ if (tolower(data_type) == "droplet") {
     reportCellQC(inSCE = mergedFilteredSCE, output_dir = qc_dir, output_file = "SCTK_CellQC.html")
     # Generate QC summary
     QCsummary <- sampleSummaryStats(mergedFilteredSCE, simple = FALSE, sample = NULL)
-    write.csv(QCsummary, qc_summary, quote())
+    write.csv(QCsummary, qc_summary, quote=FALSE)
     # Generate report for alternative experiments
     if (isTRUE(use_alt_exp)) {
       plotAltExps(qc_dir, mergedFilteredSCE)
