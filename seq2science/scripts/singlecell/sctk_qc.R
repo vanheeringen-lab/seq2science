@@ -55,24 +55,13 @@ cat('use_alt_exp      <- "', use_alt_exp, '"\n', sep = "")
 parallelType <- "MulticoreParam"
 Params <- list()
 
-if (numCores > 1) {
-  if (numCores > parallel::detectCores()) {
-    warning("numCores is greater than number of cores available. Set numCores as maximum number of cores available.")
-  }
-  numCores <- min(numCores, parallel::detectCores())
-  message(as.character(numCores), " cores are used for parallel computation.")
+message(paste0(date(), " .. Setting MulticoreParam for parallel computation to:", numCores))
+parallelParam <- MulticoreParam(workers = numCores)
 
-  if (parallelType == "MulticoreParam") {
-    parallelParam <- MulticoreParam(workers = numCores)
-  } else if (parallelType == "SnowParam") {
-    parallelParam <- SnowParam(workers = numCores)
-  } else {
-    stop("'--parallelType' should be 'MulticoreParam' or 'SnowParam'.")
-  }
-  Params$QCMetrics$BPPARAM <- parallelParam
-  Params$emptyDrops$BPPARAM <- parallelParam
-  Params$doubletFinder$nCores <- numCores
-}
+# Set BPARAM for individual QC components
+Params$QCMetrics$BPPARAM <- parallelParam
+Params$emptyDrops$BPPARAM <- parallelParam
+Params$doubletFinder$nCores <- numCores
 
 # Modify sce object
 modifySCE <- function(sce) {
