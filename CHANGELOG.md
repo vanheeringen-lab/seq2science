@@ -16,16 +16,17 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
   - cell calling/filtering with DropletUtils
   - mitochondrial gene set detection/filtering
   - doublet identification/filtering with scDblFinder
-  - processing of alternative experiments, such as spike-in expression.
+  - processing of alternative experiments, such as spike-in expression
   - qc report generation for cell/droplet based experiments
 
 ### Changed
 
-- raw/processed scRNA count tables are now stored and exported to SingleCellExperiment S4 objects instead of Seurat S4 objects. 
+- raw/processed scRNA count tables are now stored and exported to SingleCellExperiment S4 objects instead of Seurat S4 objects 
+- moved scRNA post processing to separate module
 
 ### Removed
 
-- removed scRNA merging rule due to memory issues with large and sparse samples. 
+- removed scRNA merging rule due to memory issues with large and sparse samples 
 - removed deprecated scRNA post-processing workflow (superseded by singleCellTK qc workflow)
 
 ## [0.7.2] - 2022-03-04
