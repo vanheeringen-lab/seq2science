@@ -86,9 +86,6 @@ plotAltExps <- function(out_dir, sce) {
   dev.off()
 }
 
-# Set sample col
-sample_col <- ifelse(replicates, "technical_replicates", "descriptive_name")
-
 # Generate QC stats for alternative experiments (if present)
 if (isTRUE(use_alt_exp)) {
   Params$QCMetrics$use_altexps <- TRUE
@@ -114,7 +111,7 @@ if (tolower(data_type) == "cell") {
   }
   # Run QC with mitochondrial gene collection
   cellSCE <- runCellQC(sce,
-    sample = sce[[sample_col]],
+    sample = NULL,
     algorithms = cellQCAlgos,
     collectionName = collectionName,
     geneSetListLocation = "rownames",
@@ -124,7 +121,7 @@ if (tolower(data_type) == "cell") {
 # Run droplet QC algorithms
 if (tolower(data_type) == "droplet") {
   message(paste0(date(), " .. Running DropletQC"))
-  dropletSCE <- runDropletQC(inSCE = sce, sample = sce[[sample_col]], paramsList = Params)
+  dropletSCE <- runDropletQC(inSCE = sce, sample = NULL, paramsList = Params)
   if (isTRUE(detect_cell)) {
     if (cell_calling == "EmptyDrops") {
       ix <- !is.na(dropletSCE$dropletUtils_emptyDrops_fdr) & dropletSCE$dropletUtils_emptyDrops_fdr < 0.01
@@ -135,7 +132,6 @@ if (tolower(data_type) == "droplet") {
     }
     # Needs filtering of meta Data (runCellQC) sample column
     cellSCE <- dropletSCE[, ix]
-    # sample_col <- cellSCE$technical_replicates
     message(paste0(date(), " .. Running CellQC"))
     # Detect mitochondrial genes
     if (isTRUE(detect_mito)) {
@@ -148,7 +144,7 @@ if (tolower(data_type) == "droplet") {
     }
     # Run QC with mitochondrial gene collection
     cellSCE <- runCellQC(cellSCE,
-      sample = cellSCE[[sample_col]],
+      sample = NULL,
       algorithms = cellQCAlgos,
       collectionName = collectionName,
       geneSetListLocation = "rownames",
@@ -164,7 +160,7 @@ if (tolower(data_type) == "cell") {
   message(paste0(date(), " .. Generating CellQC report"))
   reportCellQC(inSCE = mergedFilteredSCE, output_dir = qc_dir, output_file = "SCTK_CellQC.html")
   # Generate QC summary
-  QCsummary <- sampleSummaryStats(mergedFilteredSCE, simple = FALSE, sample = mergedFilteredSCE[[sample_col]])
+  QCsummary <- sampleSummaryStats(mergedFilteredSCE, simple = FALSE, sample = NULL)
   write.csv(QCsummary, qc_summary)
   # Save final rds objects
   if (isTRUE(use_alt_exp)) {
@@ -186,7 +182,7 @@ if (tolower(data_type) == "droplet") {
     print(plotEmptyDropsResults(
       inSCE = mergedDropletSCE,
       axisLabelSize = 20,
-      sample = mergedDropletSCE$technical_replicates,
+      sample = NULL,
       fdrCutoff = 0.01,
       dotSize = 0.5,
       defaultTheme = TRUE
@@ -204,8 +200,8 @@ if (tolower(data_type) == "droplet") {
     message(paste0(date(), " .. Generating CellQC report"))
     reportCellQC(inSCE = mergedFilteredSCE, output_dir = qc_dir, output_file = "SCTK_CellQC.html")
     # Generate QC summary
-    QCsummary <- sampleSummaryStats(mergedFilteredSCE, simple = FALSE, sample = mergedFilteredSCE[[sample_col]])
-    write.csv(QCsummary, qc_summary)
+    QCsummary <- sampleSummaryStats(mergedFilteredSCE, simple = FALSE, sample = NULL)
+    write.csv(QCsummary, qc_summary, quote())
     # Generate report for alternative experiments
     if (isTRUE(use_alt_exp)) {
       plotAltExps(qc_dir, mergedFilteredSCE)
@@ -222,7 +218,7 @@ if (tolower(data_type) == "droplet") {
     print(plotEmptyDropsResults(
       inSCE = mergedDropletSCE,
       axisLabelSize = 20,
-      sample = mergedDropletSCE[[sample_col]],
+      sample = NULL,
       fdrCutoff = 0.01,
       dotSize = 0.5,
       defaultTheme = TRUE
