@@ -26,3 +26,14 @@ quantifier:
     #count: '-x 0,8,16:0,0,8:1,0,0 --h5ad --verbose --workflow lamanno'
     count: '-x 10XV3 --verbose --h5ad --workflow lamanno'
 
+sc_preprocess:
+   export_sce_objects: False
+   run_sctk_qc: False
+   use_alt_expr: True
+   alt_exp_name: ERCC92
+   alt_exp_reg: ERCC-
+   sctk_data_type: cell
+   sctk_mito_set: human-ensembl
+   sctk_detect_mito: True
+   sctk_detect_cell: True
+   sctk_cell_calling: Knee
