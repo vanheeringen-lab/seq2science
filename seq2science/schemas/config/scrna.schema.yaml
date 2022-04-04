@@ -72,7 +72,7 @@ properties:
         enum: ["EmptyDrops", "Knee"]
         
     default:
-      export_sce_objects: True
+      export_sce_objects: False
       run_sctk_qc: False
       use_alt_expr: False
       alt_exp_name: ""
