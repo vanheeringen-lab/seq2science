@@ -32,7 +32,7 @@ rule export_sce_obj:
         replicates=True if "technical_replicates" in samples else False,
         scripts_dir=f"{config['rule_dir']}/../scripts/deseq2",
     message:
-        explain_rule("seurat")
+        explain_rule("sce")
     resources:
         R_scripts=1,  # conda's R can have issues when starting multiple times
     script:
