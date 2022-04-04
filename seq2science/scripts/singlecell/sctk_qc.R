@@ -69,7 +69,8 @@ modifySCE <- function(sce) {
   if (nrow(sce) == length(newnames)) {
     rownames(sce) <- newnames
   } else {
-    "Unequal gene sets: nrow(sce) != nrow(newnames)"
+    message(paste0(date(), " .. Unequal gene sets: nrow(sce) != nrow(newnames)"))
+    quit(status = 1, save = 0)
   }
   return(sce)
 }
