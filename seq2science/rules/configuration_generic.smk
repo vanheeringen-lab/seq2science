@@ -247,7 +247,7 @@ if "assembly" in samples:
     # Check scRNA post-processing options
     if "scrna_seq" in get_workflow() and config.get("sc_preprocess",{}):
         if config["sc_preprocess"].get('run_sctk_qc',{}) and config["sc_preprocess"].get('export_sce_objects',{}):
-            logger.error("Only one option is valid. Either select run_sctk_qc or export_sce_objs")
+            logger.error("Only one option is valid. Either select run_sctk_qc or export_sce_objects")
             sys.exit(1)
         
     # check if genomepy can download the required files
