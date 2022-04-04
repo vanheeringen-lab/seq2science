@@ -55,6 +55,7 @@ rule sctk_qc:
     priority: 1
     conda:
         "../envs/sctk.yaml"
+    threads: 4
     params:
         sample=lambda wildcards, input: rep_to_descriptive(wildcards.sample),
         outdir=lambda wildcards, input, output: os.path.dirname(output[1]),

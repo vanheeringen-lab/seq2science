@@ -24,7 +24,7 @@ rds_out <- file.path(out_dir, "export", "R", "SCTK_sce_obj.RData", fsep = "/")
 qc_summary <- file.path(out_dir, "SCTK_CellQC_summary.csv", fsep = "/")
 qc_dir <- file.path(out_dir, "report", fsep = "/")
 pdf_out <- file.path(out_dir, "SCTK_DropletQC_figures.pdf", fsep = "/")
-numCores <- 4
+numCores <- snakemake@threads
 
 # Log all console output
 log <- file(log_file, open = "wt")
@@ -112,7 +112,7 @@ cellQCAlgos <- c("QCMetrics", "scDblFinder", "decontX")
 collectionName <- NULL
 # Run cell QC algorithms
 if (tolower(data_type) == "cell") {
-  message(paste0(date(), " .. Running cell QC"))
+  message(paste0(date(), " .. Running CellQC"))
   # Import mitochondrial gene collection
   if (isTRUE(detect_mito)) {
     # Import mitoset
@@ -133,7 +133,7 @@ if (tolower(data_type) == "cell") {
 }
 # Run droplet QC algorithms
 if (tolower(data_type) == "droplet") {
-  message(paste0(date(), " .. Running droplet QC"))
+  message(paste0(date(), " .. Running DropletQC"))
   dropletSCE <- runDropletQC(inSCE = sce, sample = sce[[sample_col]], paramsList = Params)
   if (isTRUE(detect_cell)) {
     if (cell_calling == "EmptyDrops") {
@@ -146,7 +146,7 @@ if (tolower(data_type) == "droplet") {
     # Needs filtering of meta Data (runCellQC) sample column
     cellSCE <- dropletSCE[, ix]
     # sample_col <- cellSCE$technical_replicates
-    message(paste0(date(), " .. Running cell QC"))
+    message(paste0(date(), " .. Running CellQC"))
     # Detect mitochondrial genes
     if (isTRUE(detect_mito)) {
       # Import mitoset
@@ -171,7 +171,7 @@ if (tolower(data_type) == "droplet") {
 if (tolower(data_type) == "cell") {
   mergedFilteredSCE <- cellSCE
   # Generate report
-  message(paste0(date(), " .. Generating cell QC report"))
+  message(paste0(date(), " .. Generating CellQC report"))
   reportCellQC(inSCE = mergedFilteredSCE, output_dir = qc_dir, output_file = "SCTK_CellQC.html")
   # Generate QC summary
   QCsummary <- sampleSummaryStats(mergedFilteredSCE, simple = FALSE, sample = mergedFilteredSCE[[sample_col]])
