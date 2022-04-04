@@ -12,6 +12,21 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 - idr call is configurable (`idr_options`)
 - single-cell DESeq2 (currently only via `deseq2science` with user-specified groups per cell)
+- scRNA quality control workflow with singleCellTK
+  - cell calling/filtering with DropletUtils
+  - mitochondrial gene set detection/filtering
+  - doublet identification/filtering with scDblFinder
+  - processing of alternative experiments, such as spike-in expression.
+  - qc report generation for cell/droplet based experiments
+
+### Changed
+
+- raw/processed scRNA count tables are now stored and exported to SingleCellExperiment S4 objects instead of Seurat S4 objects. 
+
+### Removed
+
+- removed scRNA merging rule due to memory issues with large and sparse samples. 
+- removed deprecated scRNA post-processing workflow (superseded by singleCellTK qc workflow)
 
 ## [0.7.2] - 2022-03-04
 
