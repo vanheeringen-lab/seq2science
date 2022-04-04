@@ -9,9 +9,9 @@ suppressMessages({
 
 # Snakemake variables
 rds_in <- snakemake@input$rds_raw
-out_dir <-snakemake@params$outdir
+out_dir <- snakemake@params$outdir
 log_file <- snakemake@log[[1]]
-sample <-  snakemake@params$sample
+sample <- snakemake@params$sample
 isvelo <- snakemake@params$isvelo
 replicates <- snakemake@params$replicates
 data_type <- snakemake@config$sc_preprocess$sctk_data_type
@@ -19,36 +19,36 @@ mito_set <- snakemake@config$sc_preprocess$sctk_mito_set
 detect_cell <- snakemake@config$sc_preprocess$sctk_detect_cell
 detect_mito <- snakemake@config$sc_preprocess$sctk_detect_mito
 cell_calling <- snakemake@config$sc_preprocess$sctk_cell_calling
-use_alt_exp <-  snakemake@config$sc_preprocess$use_alt_expr
-rds_out <- file.path(out_dir, "export", "R", "SCTK_sce_obj.RData",    fsep="/" )
-qc_summary <-  file.path(out_dir, "SCTK_CellQC_summary.csv",    fsep="/" )
-qc_dir <- file.path(out_dir, "report", fsep="/")
-pdf_out <- file.path(out_dir, "SCTK_DropletQC_figures.pdf", fsep="/" )
+use_alt_exp <- snakemake@config$sc_preprocess$use_alt_expr
+rds_out <- file.path(out_dir, "export", "R", "SCTK_sce_obj.RData", fsep = "/")
+qc_summary <- file.path(out_dir, "SCTK_CellQC_summary.csv", fsep = "/")
+qc_dir <- file.path(out_dir, "report", fsep = "/")
+pdf_out <- file.path(out_dir, "SCTK_DropletQC_figures.pdf", fsep = "/")
 numCores <- 4
 
 # Log all console output
-log <- file(log_file, open="wt")
+log <- file(log_file, open = "wt")
 sink(log)
-sink(log, type="message")
+sink(log, type = "message")
 
 # Log all variables for debugging purposes
-cat('# variables used for this analysis:\n')
-cat('log_file         <- "', log_file,         '"\n', sep = "")
-cat('sample           <- "', sample,           '"\n', sep = "")
-cat('replicates       <- "', replicates,       '"\n', sep = "")
-cat('isvelo           <- "', isvelo,           '"\n', sep = "")
-cat('rds_in           <- "', rds_in,           '"\n', sep = "")
-cat('out_dir          <- "', out_dir,          '"\n', sep = "")
-cat('rds_out          <- "', out_dir,          '"\n', sep = "")
-cat('qc_dir           <- "', qc_dir,           '"\n', sep = "")
-cat('qc_summary       <- "', qc_summary,       '"\n', sep = "")
-cat('pdf_out          <- "', pdf_out,          '"\n', sep = "")
-cat('data_type        <- "', data_type,        '"\n', sep = "")
-cat('detect_mito      <- "', detect_mito,      '"\n', sep = "")
-cat('mito_set         <- "', mito_set,         '"\n', sep = "")
-cat('detect_cell      <- "', detect_cell,      '"\n', sep = "")
-cat('cell_calling     <- "', cell_calling,     '"\n', sep = "")
-cat('use_alt_exp      <- "', use_alt_exp,     '"\n', sep = "")
+cat("# variables used for this analysis:\n")
+cat('log_file         <- "', log_file, '"\n', sep = "")
+cat('sample           <- "', sample, '"\n', sep = "")
+cat('replicates       <- "', replicates, '"\n', sep = "")
+cat('isvelo           <- "', isvelo, '"\n', sep = "")
+cat('rds_in           <- "', rds_in, '"\n', sep = "")
+cat('out_dir          <- "', out_dir, '"\n', sep = "")
+cat('rds_out          <- "', out_dir, '"\n', sep = "")
+cat('qc_dir           <- "', qc_dir, '"\n', sep = "")
+cat('qc_summary       <- "', qc_summary, '"\n', sep = "")
+cat('pdf_out          <- "', pdf_out, '"\n', sep = "")
+cat('data_type        <- "', data_type, '"\n', sep = "")
+cat('detect_mito      <- "', detect_mito, '"\n', sep = "")
+cat('mito_set         <- "', mito_set, '"\n', sep = "")
+cat('detect_cell      <- "', detect_cell, '"\n', sep = "")
+cat('cell_calling     <- "', cell_calling, '"\n', sep = "")
+cat('use_alt_exp      <- "', use_alt_exp, '"\n', sep = "")
 
 # Setup parallel type
 # https://github.com/compbiomed/singleCellTK/blob/master/exec/SCTK_runQC.R
@@ -56,25 +56,22 @@ parallelType <- "MulticoreParam"
 Params <- list()
 
 if (numCores > 1) {
-    if (numCores > parallel::detectCores()) {
-        warning("numCores is greater than number of cores available. Set numCores as maximum number of cores available.")
-    }
+  if (numCores > parallel::detectCores()) {
+    warning("numCores is greater than number of cores available. Set numCores as maximum number of cores available.")
+  }
+  numCores <- min(numCores, parallel::detectCores())
+  message(as.character(numCores), " cores are used for parallel computation.")
 
-    numCores <- min(numCores, parallel::detectCores())
-    message(as.character(numCores), " cores are used for parallel computation.")
-
-    if (parallelType == "MulticoreParam") {
-        parallelParam <- MulticoreParam(workers = numCores)
-
-    } else if (parallelType == "SnowParam") {
-        parallelParam <- SnowParam(workers = numCores)
-    } else {
-        stop("'--parallelType' should be 'MulticoreParam' or 'SnowParam'.")
-    }
-    Params$QCMetrics$BPPARAM <- parallelParam
-    Params$emptyDrops$BPPARAM <- parallelParam
-    Params$doubletFinder$nCores <- numCores
-
+  if (parallelType == "MulticoreParam") {
+    parallelParam <- MulticoreParam(workers = numCores)
+  } else if (parallelType == "SnowParam") {
+    parallelParam <- SnowParam(workers = numCores)
+  } else {
+    stop("'--parallelType' should be 'MulticoreParam' or 'SnowParam'.")
+  }
+  Params$QCMetrics$BPPARAM <- parallelParam
+  Params$emptyDrops$BPPARAM <- parallelParam
+  Params$doubletFinder$nCores <- numCores
 }
 
 # Modify sce object
@@ -82,22 +79,25 @@ modifySCE <- function(sce) {
   newnames <- gsub(x = rownames(sce), pattern = "\\..*$", replacement = "")
   if (nrow(sce) == length(newnames)) {
     rownames(sce) <- newnames
-  } else {"Unequal gene sets: nrow(sce) != nrow(newnames)"}
+  } else {
+    "Unequal gene sets: nrow(sce) != nrow(newnames)"
+  }
   return(sce)
 }
 
 # Create scatter plot from alternative experiments
 plotAltExps <- function(out_dir, sce) {
-  pdf(file.path(out_dir, "SCTK_altexps.pdf", fsep="/" ))
+  pdf(file.path(out_dir, "SCTK_altexps.pdf", fsep = "/"))
   for (n in altExpNames(sce)) {
-    x <- paste0("altexps_",n,"_percent")
+    x <- paste0("altexps_", n, "_percent")
     y <- "detected"
-    print(plotColData(sce, x=x, y=y))
+    print(plotColData(sce, x = x, y = y))
   }
   dev.off()
 }
-#Set sample col
-sample_col <- ifelse(replicates,"technical_replicates","descriptive_name")
+
+# Set sample col
+sample_col <- ifelse(replicates, "technical_replicates", "descriptive_name")
 
 # Generate QC stats for alternative experiments (if present)
 if (isTRUE(use_alt_exp)) {
@@ -105,79 +105,79 @@ if (isTRUE(use_alt_exp)) {
 }
 # read RDS and modify raw sce object
 sce <- readRDS(rds_in)
-# Modify sce object
 sce <- modifySCE(sce)
+
 # Select QC algorithms
-cellQCAlgos = c("QCMetrics", "scDblFinder", "decontX")
-collectionName = NULL
+cellQCAlgos <- c("QCMetrics", "scDblFinder", "decontX")
+collectionName <- NULL
 # Run cell QC algorithms
 if (tolower(data_type) == "cell") {
-    message(paste0(date(), " .. Running cell QC"))
-    #Import mitochondrial gene collection
-    if (isTRUE(detect_mito)) {
-      #Import mitoset
-      mitoset <- strsplit(mito_set,"-")
-      subset_name <- stringr::str_to_title(mitoset[[1]])
-      subset_name <- paste(c(subset_name, 'Mito'), collapse='')
-      collectionName = subset_name
-      sce <- importMitoGeneSet(sce, reference = mitoset[[1]][1], id = mitoset[[1]][2], by = "rownames", collectionName = collectionName) 
-    }
-    # Run QC with mitochondrial gene collection
-    cellSCE <- runCellQC(sce, sample = sce[[sample_col]],
-                         algorithms = cellQCAlgos,
-                         collectionName = collectionName,
-                         geneSetListLocation = "rownames",
-                         paramsList=Params)
-    # Get UMAP
-    cellSCE  <- getUMAP(inSCE = cellSCE, reducedDimName = "QC_UMAP")
+  message(paste0(date(), " .. Running cell QC"))
+  # Import mitochondrial gene collection
+  if (isTRUE(detect_mito)) {
+    # Import mitoset
+    mitoset <- strsplit(mito_set, "-")
+    subset_name <- stringr::str_to_title(mitoset[[1]])
+    subset_name <- paste(c(subset_name, "Mito"), collapse = "")
+    collectionName <- subset_name
+    sce <- importMitoGeneSet(sce, reference = mitoset[[1]][1], id = mitoset[[1]][2], by = "rownames", collectionName = collectionName)
+  }
+  # Run QC with mitochondrial gene collection
+  cellSCE <- runCellQC(sce,
+    sample = sce[[sample_col]],
+    algorithms = cellQCAlgos,
+    collectionName = collectionName,
+    geneSetListLocation = "rownames",
+    paramsList = Params
+  )
 }
 # Run droplet QC algorithms
 if (tolower(data_type) == "droplet") {
-    message(paste0(date(), " .. Running droplet QC"))
-    dropletSCE <- runDropletQC(inSCE = sce, sample = sce[[sample_col]], paramsList=Params)
-    if (isTRUE(detect_cell)) {
-        if (cell_calling == "EmptyDrops") {
-            ix <- !is.na(dropletSCE$dropletUtils_emptyDrops_fdr) & dropletSCE$dropletUtils_emptyDrops_fdr < 0.01
-        } else if (cell_calling == "Knee") {
-            ix <- dropletSCE$dropletUtils_BarcodeRank_Knee == 1
-        } else {
-            ix <- dropletSCE$dropletUtils_BarcodeRank_Inflection == 1
-        }
-        # Needs filtering of meta Data (runCellQC) sample column
-        cellSCE <- dropletSCE[,ix]
-        #sample_col <- cellSCE$technical_replicates
-        message(paste0(date(), " .. Running cell QC"))
-        #Detect mitochondrial genes
-        if (isTRUE(detect_mito)) {
-          #Import mitoset
-          mitoset <- strsplit(mito_set,"-")
-          subset_name <- stringr::str_to_title(mitoset[[1]])
-          subset_name <- paste(c(subset_name, 'Mito'), collapse='')
-          collectionName = subset_name
-          cellSCE <- importMitoGeneSet(cellSCE, reference = mitoset[[1]][1], id = mitoset[[1]][2], by = "rownames", collectionName = collectionName)    
-        }
-        # Run QC with mitochondrial gene collection
-       cellSCE <- runCellQC(cellSCE, sample = cellSCE[[sample_col]],
-                         algorithms = cellQCAlgos,
-                         collectionName = collectionName,
-                         geneSetListLocation = "rownames",
-                         paramsList=Params)
-        #Get UMAP
-        cellSCE  <- getUMAP(inSCE = cellSCE, reducedDimName = "QC_UMAP")
+  message(paste0(date(), " .. Running droplet QC"))
+  dropletSCE <- runDropletQC(inSCE = sce, sample = sce[[sample_col]], paramsList = Params)
+  if (isTRUE(detect_cell)) {
+    if (cell_calling == "EmptyDrops") {
+      ix <- !is.na(dropletSCE$dropletUtils_emptyDrops_fdr) & dropletSCE$dropletUtils_emptyDrops_fdr < 0.01
+    } else if (cell_calling == "Knee") {
+      ix <- dropletSCE$dropletUtils_BarcodeRank_Knee == 1
+    } else {
+      ix <- dropletSCE$dropletUtils_BarcodeRank_Inflection == 1
+    }
+    # Needs filtering of meta Data (runCellQC) sample column
+    cellSCE <- dropletSCE[, ix]
+    # sample_col <- cellSCE$technical_replicates
+    message(paste0(date(), " .. Running cell QC"))
+    # Detect mitochondrial genes
+    if (isTRUE(detect_mito)) {
+      # Import mitoset
+      mitoset <- strsplit(mito_set, "-")
+      subset_name <- stringr::str_to_title(mitoset[[1]])
+      subset_name <- paste(c(subset_name, "Mito"), collapse = "")
+      collectionName <- subset_name
+      cellSCE <- importMitoGeneSet(cellSCE, reference = mitoset[[1]][1], id = mitoset[[1]][2], by = "rownames", collectionName = collectionName)
+    }
+    # Run QC with mitochondrial gene collection
+    cellSCE <- runCellQC(cellSCE,
+      sample = cellSCE[[sample_col]],
+      algorithms = cellQCAlgos,
+      collectionName = collectionName,
+      geneSetListLocation = "rownames",
+      paramsList = Params
+    )
   }
 }
 
-#Merge result objects
+# Merge result objects
 if (tolower(data_type) == "cell") {
   mergedFilteredSCE <- cellSCE
   # Generate report
   message(paste0(date(), " .. Generating cell QC report"))
   reportCellQC(inSCE = mergedFilteredSCE, output_dir = qc_dir, output_file = "SCTK_CellQC.html")
-  #Generate QC summary
-  QCsummary <- sampleSummaryStats(mergedFilteredSCE, simple=FALSE, sample = mergedFilteredSCE[[sample_col]])
+  # Generate QC summary
+  QCsummary <- sampleSummaryStats(mergedFilteredSCE, simple = FALSE, sample = mergedFilteredSCE[[sample_col]])
   write.csv(QCsummary, qc_summary)
   # Save final rds objects
-  if (isTRUE(use_alt_exp)) {  
+  if (isTRUE(use_alt_exp)) {
     plotAltExps(qc_dir, mergedFilteredSCE)
   }
   message(paste0(date(), " .. Exporting to rds format"))
@@ -185,14 +185,14 @@ if (tolower(data_type) == "cell") {
   saveRDS(sce.processed, file = rds_out)
 }
 
-#Merge Droplet sce
+# Merge Droplet sce
 if (tolower(data_type) == "droplet") {
   if (isTRUE(detect_cell)) {
     mergedDropletSCE <- mergeSCEColData(dropletSCE, cellSCE)
     mergedFilteredSCE <- mergeSCEColData(cellSCE, dropletSCE)
-    #Generate Report
+    # Generate Report
     message(paste0(date(), " .. Generating DropletQC report"))
-    pdf(file.path(qc_dir, "SCTK_DropletQC_figures.pdf", fsep="/"))
+    pdf(file.path(qc_dir, "SCTK_DropletQC_figures.pdf", fsep = "/"))
     print(plotEmptyDropsResults(
       inSCE = mergedDropletSCE,
       axisLabelSize = 20,
@@ -202,31 +202,33 @@ if (tolower(data_type) == "droplet") {
       defaultTheme = TRUE
     ))
     # Plot barcode rank scatter
-    print(plotBarcodeRankScatter(inSCE =  mergedDropletSCE,,
-                                 title = "BarcodeRanks Rank Plot",
-                                 legendSize = 14))
+    print(plotBarcodeRankScatter(
+      inSCE = mergedDropletSCE, ,
+      title = "BarcodeRanks Rank Plot",
+      legendSize = 14
+    ))
     dev.off()
-    #Generate HTML report for dropletQC
+    # Generate HTML report for dropletQC
     reportDropletQC(inSCE = mergedDropletSCE, output_dir = qc_dir, output_file = "SCTK_DropletQC.html")
     # Generate Cell report
     message(paste0(date(), " .. Generating CellQC report"))
     reportCellQC(inSCE = mergedFilteredSCE, output_dir = qc_dir, output_file = "SCTK_CellQC.html")
-    #Generate QC summary
-    QCsummary <- sampleSummaryStats(mergedFilteredSCE, simple=FALSE, sample = mergedFilteredSCE[[sample_col]])
-    write.csv(QCsummary, qc_summary) 
+    # Generate QC summary
+    QCsummary <- sampleSummaryStats(mergedFilteredSCE, simple = FALSE, sample = mergedFilteredSCE[[sample_col]])
+    write.csv(QCsummary, qc_summary)
     # Generate report for alternative experiments
     if (isTRUE(use_alt_exp)) {
       plotAltExps(qc_dir, mergedFilteredSCE)
     }
     # Generate final rds objects
     message(paste0(date(), " .. Exporting to rds format"))
-    sce.processed <- list(cellsce=mergedFilteredSCE, dropletsce=mergedDropletSCE)
-    saveRDS(sce.processed, file = rds_out)  
+    sce.processed <- list(cellsce = mergedFilteredSCE, dropletsce = mergedDropletSCE)
+    saveRDS(sce.processed, file = rds_out)
   } else {
     mergedDropletSCE <- dropletSCE
-    #Generate Report
+    # Generate Report
     message(paste0(date(), " .. Generating DropletQC report"))
-    pdf(file.path(qc_dir, "SCTK_DropletQC_figures.pdf", fsep="/"))
+    pdf(file.path(qc_dir, "SCTK_DropletQC_figures.pdf", fsep = "/"))
     print(plotEmptyDropsResults(
       inSCE = mergedDropletSCE,
       axisLabelSize = 20,
@@ -236,9 +238,11 @@ if (tolower(data_type) == "droplet") {
       defaultTheme = TRUE
     ))
     # Plot barcode rank scatter
-    print(plotBarcodeRankScatter(inSCE =  mergedDropletSCE,
-                                 title = "BarcodeRanks Rank Plot",
-                                 legendSize = 14))
+    print(plotBarcodeRankScatter(
+      inSCE = mergedDropletSCE,
+      title = "BarcodeRanks Rank Plot",
+      legendSize = 14
+    ))
     dev.off()
     reportDropletQC(inSCE = mergedDropletSCE, output_dir = out_dir, output_file = "SCTK_DropletQC.html")
     # Save final rds objects
