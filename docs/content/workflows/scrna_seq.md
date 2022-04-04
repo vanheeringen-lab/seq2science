@@ -111,10 +111,11 @@ The steps to prepare a scRNA analysis for Feature Barcoding experiments deviates
 **1**. Prepare a two-column, tab-delimited file with your feature barcode in the first column and feature names in the second.
 
 **Example**
-|sequence|name|
-|---|---|
-|AACAAGACCCTTGAG|barcode 1|
-|TACCCGTAATAGCGT|barcode 2|
+
+| sequence        | name      |
+|-----------------|-----------|
+| AACAAGACCCTTGAG | barcode 1 |
+| TACCCGTAATAGCGT | barcode 2 |
 
 
 We save this file as fb.tsv.

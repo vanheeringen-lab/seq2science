@@ -1,7 +1,5 @@
 suppressMessages({
-  library(DESeq2)
-  library(IHW)
-  library(ggplot2)
+  library(ggalt)  # for the volcano plots
 })
 
 # snakemake variables
@@ -11,10 +9,11 @@ counts_file     <- snakemake@input[[1]]
 samples_file    <- snakemake@params$samples
 replicates      <- snakemake@params$replicates
 contrast        <- snakemake@wildcards$contrast
+assembly        <- snakemake@wildcards$assembly
 mtp             <- snakemake@config$deseq2$multiple_testing_procedure
 fdr             <- snakemake@config$deseq2$alpha_value
 se              <- snakemake@config$deseq2$shrinkage_estimator
-assembly        <- snakemake@wildcards$assembly
+single_cell     <- snakemake@config$deseq2$single_cell
 salmon          <- snakemake@params$salmon
 output          <- snakemake@output[[1]]
 
@@ -31,14 +30,15 @@ cat('counts_file  <- "', counts_file,  '"\n', sep = "")
 cat('samples_file <- "', samples_file, '"\n', sep = "")
 cat('replicates   <- ',  replicates,   '\n',  sep = "")
 cat('contrast     <- "', contrast,     '"\n', sep = "")
+cat('assembly     <- "', assembly,     '"\n', sep = "")
 cat('mtp          <- "', mtp,          '"\n', sep = "")
 cat('fdr          <- ',  fdr,          '\n',  sep = "")
 cat('se           <- "', se,           '"\n', sep = "")
-cat('assembly     <- "', assembly,     '"\n', sep = "")
+cat('single_cell  <- ',  single_cell,  '\n',  sep = "")
 cat('salmon       <- ',  salmon,       '\n',  sep = "")
 cat('output       <- "', output,       '"\n', sep = "")
 cat('\n')
 
-cat('Sessioninfo:\n')
+cat('sessioninfo:\n')
 sessionInfo()
 cat('\n')

@@ -11,6 +11,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Added
 
 - idr call is configurable (`idr_options`)
+- single-cell DESeq2 (currently only via `deseq2science` with user-specified groups per cell)
 
 ## [0.7.2] - 2022-03-04
 
@@ -166,7 +167,7 @@ The full changes are listed below:
 
 ### Changed
 
-- "biological_replicate" and "technical_replicate" renamed to *"_replicates" (matches between samples.tsv & config.yaml)
+- "biological_replicate" and "technical_replicate" renamed to "..._replicates" (matches between samples.tsv & config.yaml)
 - fixed bug with seq2science making a {output.allsizes} file
 - Changed explain to use 'passive style'
 - Genrich peak calling defaults
