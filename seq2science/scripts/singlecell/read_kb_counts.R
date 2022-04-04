@@ -109,7 +109,7 @@ filter_alt <- function(alt_feature_prefix, mat, alt = FALSE) {
 
 # Remove custom assembly suffix from genome for filteirng
 if (custom_assembly_suffix != "") {
-  genome <- gsub(custom_assembly_suffix, "", genome)
+  genome <- substr(genome, 1, length(genome) - length(custom_assembly_suffix))
 }
 
 # Parse sample sheet
