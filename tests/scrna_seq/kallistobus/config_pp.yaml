@@ -29,7 +29,7 @@ quantifier:
 sc_preprocess:
    export_sce_objects: False
    run_sctk_qc: True
-   use_alt_expr: True
+   use_alt_expr: False
    alt_exp_name: ERCC92
    alt_exp_reg: ERCC-
    sctk_data_type: cell

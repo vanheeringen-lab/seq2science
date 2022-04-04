@@ -41,7 +41,7 @@ rule export_sce_obj:
 
 rule sctk_qc:
     """
-    Read scRNA count output into Seurat object, add meta-data and export to RData format.
+    Import scRNA count table output into SingleCellExperiment S4 object, add colData and export to RData format.
     """
     input:
        rds_raw=rules.export_sce_obj.output.rds
