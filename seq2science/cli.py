@@ -630,7 +630,6 @@ def core_parser(parsed_args):
                     parsed_args["overwrite_threads"][k] = v
 
         parsed_args["overwrite_threads"] = overwrite_threads
-        #parsed_args["overwrite_threads"] = [f"{rule}={threads}" for rule, threads in overwrite_threads.items()]
 
 
 def resource_parser(parsed_args):
