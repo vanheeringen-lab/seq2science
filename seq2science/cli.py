@@ -338,6 +338,14 @@ def _run(args, base_dir, workflows_dir, config_path):
     snakemake_options = args.snakemakeOptions if args.snakemakeOptions is not None else dict()
     snakemake_options.setdefault("config", {}).update({"rule_dir": os.path.join(base_dir, "rules")})
     snakemake_options["configfiles"] = [config_path]
+    for key, value in snakemake_options.items():
+        if not isinstance(value, str):
+           continue
+        if value.lower() == "true":
+           snakemake_options[key] = True
+        if value.lower() == "false":
+           snakemake_options[key] = False
+
     parsed_args.update(snakemake_options)
 
     # parse the profile
