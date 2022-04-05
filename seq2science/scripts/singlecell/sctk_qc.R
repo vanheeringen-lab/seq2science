@@ -22,7 +22,6 @@ cell_calling <- snakemake@config$sc_preprocess$sctk_cell_calling
 use_alt_exp <- snakemake@config$sc_preprocess$use_alt_expr
 rds_out <- file.path(out_dir, "export", "sctk_sce_obj.RData", fsep = "/")
 qc_summary <- file.path(out_dir, "SCTK_CellQC_summary.csv", fsep = "/")
-plot_dir <- file.path(out_dir, "plots", fsep = "/")
 pdf_out <- file.path(out_dir, "SCTK_DropletQC_figures.pdf", fsep = "/")
 numCores <- snakemake@threads
 
@@ -40,7 +39,7 @@ cat('isvelo           <- "', isvelo, '"\n', sep = "")
 cat('rds_in           <- "', rds_in, '"\n', sep = "")
 cat('out_dir          <- "', out_dir, '"\n', sep = "")
 cat('rds_out          <- "', out_dir, '"\n', sep = "")
-cat('plot_dir           <- "', plot_dir, '"\n', sep = "")
+cat('out_dir           <- "', out_dir, '"\n', sep = "")
 cat('qc_summary       <- "', qc_summary, '"\n', sep = "")
 cat('pdf_out          <- "', pdf_out, '"\n', sep = "")
 cat('data_type        <- "', data_type, '"\n', sep = "")
@@ -164,7 +163,7 @@ if (tolower(data_type) == "cell") {
   write.csv(QCsummary, qc_summary, quote = FALSE)
   # Save final rds objects
   if (isTRUE(use_alt_exp)) {
-    plotAltExps(plot_dir, mergedFilteredSCE)
+    plotAltExps(out_dir, mergedFilteredSCE)
   }
   message(paste0(date(), " .. Exporting to RDATA format"))
   sce.processed <- mergedFilteredSCE
@@ -178,7 +177,7 @@ if (tolower(data_type) == "droplet") {
     mergedFilteredSCE <- mergeSCEColData(cellSCE, dropletSCE)
     # Generate Report
     message(paste0(date(), " .. Generating DropletQC report"))
-    pdf(file.path(plot_dir, "SCTK_DropletQC_figures.pdf", fsep = "/"))
+    pdf(file.path(out_dir, "SCTK_DropletQC_figures.pdf", fsep = "/"))
     print(plotEmptyDropsResults(
       inSCE = mergedDropletSCE,
       axisLabelSize = 20,
@@ -204,7 +203,7 @@ if (tolower(data_type) == "droplet") {
     write.csv(QCsummary, qc_summary, quote = FALSE)
     # Generate report for alternative experiments
     if (isTRUE(use_alt_exp)) {
-      plotAltExps(plot_dir, mergedFilteredSCE)
+      plotAltExps(out_dir, mergedFilteredSCE)
     }
     # Generate final rds objects
     message(paste0(date(), " .. Exporting to RDATA format"))
@@ -214,7 +213,7 @@ if (tolower(data_type) == "droplet") {
     mergedDropletSCE <- dropletSCE
     # Generate Report
     message(paste0(date(), " .. Generating DropletQC report"))
-    pdf(file.path(plot_dir, "SCTK_DropletQC_figures.pdf", fsep = "/"))
+    pdf(file.path(out_dir, "SCTK_DropletQC_figures.pdf", fsep = "/"))
     print(plotEmptyDropsResults(
       inSCE = mergedDropletSCE,
       axisLabelSize = 20,
