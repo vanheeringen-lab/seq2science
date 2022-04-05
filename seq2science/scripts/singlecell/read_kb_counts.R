@@ -108,8 +108,11 @@ filter_alt <- function(alt_feature_prefix, mat, alt = FALSE) {
 }
 
 # Remove custom assembly suffix from genome for filteirng
-if (custom_assembly_suffix != "") {
+pattern <- paste0(".*", custom_assembly_suffix)
+if (isTRUE(grepl(pattern, genome))) {
   genome <- substr(genome, 1, length(genome) - length(custom_assembly_suffix))
+} else {
+  message(paste0(date(), "No custom assembly suffix found, using default genome:", genome))
 }
 
 # Parse sample sheet

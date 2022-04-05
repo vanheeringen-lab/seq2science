@@ -166,7 +166,7 @@ if (tolower(data_type) == "cell") {
   if (isTRUE(use_alt_exp)) {
     plotAltExps(qc_dir, mergedFilteredSCE)
   }
-  message(paste0(date(), " .. Exporting to rds format"))
+  message(paste0(date(), " .. Exporting to RDATA format"))
   sce.processed <- mergedFilteredSCE
   saveRDS(sce.processed, file = rds_out)
 }
@@ -201,13 +201,13 @@ if (tolower(data_type) == "droplet") {
     reportCellQC(inSCE = mergedFilteredSCE, output_dir = qc_dir, output_file = "SCTK_CellQC.html")
     # Generate QC summary
     QCsummary <- sampleSummaryStats(mergedFilteredSCE, simple = FALSE, sample = NULL)
-    write.csv(QCsummary, qc_summary, quote=FALSE)
+    write.csv(QCsummary, qc_summary, quote = FALSE)
     # Generate report for alternative experiments
     if (isTRUE(use_alt_exp)) {
       plotAltExps(qc_dir, mergedFilteredSCE)
     }
     # Generate final rds objects
-    message(paste0(date(), " .. Exporting to rds format"))
+    message(paste0(date(), " .. Exporting to RDATA format"))
     sce.processed <- list(cellsce = mergedFilteredSCE, dropletsce = mergedDropletSCE)
     saveRDS(sce.processed, file = rds_out)
   } else {
@@ -232,7 +232,7 @@ if (tolower(data_type) == "droplet") {
     dev.off()
     reportDropletQC(inSCE = mergedDropletSCE, output_dir = out_dir, output_file = "SCTK_DropletQC.html")
     # Save final rds objects
-    message(paste0(date(), " .. Exporting to rds format"))
+    message(paste0(date(), " .. Exporting to RDATA format"))
     sce.processed <- mergedDropletSCE
     saveRDS(sce.processed, file = rds_out)
   }
