@@ -491,7 +491,7 @@ rule samtools_presort:
         rm -f {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2> {log}
 
         # RAM per thread in MB
-        memory=$((1000*{resources.mem_gb}/{threads}))M
+        memory=$((1024*{resources.mem_gb}/{threads}))M
 
         samtools sort -@ {threads} -m $memory {input} -o {output} \
         -T {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
