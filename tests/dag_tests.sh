@@ -534,6 +534,16 @@ if [ $1 = "scrna-seq" ]; then
   assert_rulecount $1 citeseqcount 2
   assert_rulecount $1 multiqc 1
   
+  printf "\nscrna-seq-pp default\n"
+  seq2science run scrna-seq -nr --configfile tests/scrna_seq/kallistobus/config_pp.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 fastp_SE 2
+  assert_rulecount $1 fastq_pair 2
+  assert_rulecount $1 kallistobus_ref 1
+  assert_rulecount $1 kallistobus_count 2
+  assert_rulecount $1 export_sce_obj 2
+  assert_rulecount $1 sctk_qc 2
+  assert_rulecount $1 multiqc 1
+  
   test_ran=1
 fi
 
