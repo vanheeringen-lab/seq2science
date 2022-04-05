@@ -48,4 +48,3 @@ sc-preprocess:
   #sctk_detect_mito: True
   #sctk_detect_cell: True
   #sctk_cell_calling: Knee
-  
