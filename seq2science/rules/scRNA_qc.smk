@@ -68,4 +68,3 @@ rule sctk_qc:
         mem_gb=50,# conda's R can have issues when starting multiple times
     script:
         f"{config['rule_dir']}/../scripts/singlecell/sctk_qc.R"
-        
