@@ -20,6 +20,7 @@ from filelock import FileLock
 from pandas_schema import Column, Schema
 from pandas_schema.validation import MatchesPatternValidation, IsDistinctValidation
 
+from snakemake.dag import DAG
 from snakemake.logging import logger
 from snakemake.utils import validate, min_version
 
@@ -35,6 +36,10 @@ from seq2science.util import (
     get_contrasts,
 )
 
+
+# monkeypatch snakemake to not see which files are changed
+# since we fix that ourselves
+DAG.warn_about_changes = lambda *args: None
 
 # get the cache and config dirs
 CACHE_DIR = os.path.join(xdg.XDG_CACHE_HOME, "seq2science", seq2science.__version__)
