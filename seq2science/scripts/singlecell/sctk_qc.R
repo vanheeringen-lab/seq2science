@@ -20,9 +20,9 @@ detect_cell <- snakemake@config$sc_preprocess$sctk_detect_cell
 detect_mito <- snakemake@config$sc_preprocess$sctk_detect_mito
 cell_calling <- snakemake@config$sc_preprocess$sctk_cell_calling
 use_alt_exp <- snakemake@config$sc_preprocess$use_alt_expr
-rds_out <- file.path(out_dir, "export", "R", "SCTK_sce_obj.RData", fsep = "/")
+rds_out <- file.path(out_dir, "export", "sctk_sce_obj.RData", fsep = "/")
 qc_summary <- file.path(out_dir, "SCTK_CellQC_summary.csv", fsep = "/")
-qc_dir <- file.path(out_dir, "report", fsep = "/")
+plot_dir <- file.path(out_dir, "plots", fsep = "/")
 pdf_out <- file.path(out_dir, "SCTK_DropletQC_figures.pdf", fsep = "/")
 numCores <- snakemake@threads
 
@@ -40,7 +40,7 @@ cat('isvelo           <- "', isvelo, '"\n', sep = "")
 cat('rds_in           <- "', rds_in, '"\n', sep = "")
 cat('out_dir          <- "', out_dir, '"\n', sep = "")
 cat('rds_out          <- "', out_dir, '"\n', sep = "")
-cat('qc_dir           <- "', qc_dir, '"\n', sep = "")
+cat('plot_dir           <- "', plot_dir, '"\n', sep = "")
 cat('qc_summary       <- "', qc_summary, '"\n', sep = "")
 cat('pdf_out          <- "', pdf_out, '"\n', sep = "")
 cat('data_type        <- "', data_type, '"\n', sep = "")
@@ -158,13 +158,13 @@ if (tolower(data_type) == "cell") {
   mergedFilteredSCE <- cellSCE
   # Generate report
   message(paste0(date(), " .. Generating CellQC report"))
-  reportCellQC(inSCE = mergedFilteredSCE, output_dir = qc_dir, output_file = "SCTK_CellQC.html")
+  reportCellQC(inSCE = mergedFilteredSCE, output_dir = out_dir, output_file = "SCTK_CellQC.html")
   # Generate QC summary
   QCsummary <- sampleSummaryStats(mergedFilteredSCE, simple = FALSE, sample = NULL)
   write.csv(QCsummary, qc_summary, quote = FALSE)
   # Save final rds objects
   if (isTRUE(use_alt_exp)) {
-    plotAltExps(qc_dir, mergedFilteredSCE)
+    plotAltExps(plot_dir, mergedFilteredSCE)
   }
   message(paste0(date(), " .. Exporting to RDATA format"))
   sce.processed <- mergedFilteredSCE
@@ -178,7 +178,7 @@ if (tolower(data_type) == "droplet") {
     mergedFilteredSCE <- mergeSCEColData(cellSCE, dropletSCE)
     # Generate Report
     message(paste0(date(), " .. Generating DropletQC report"))
-    pdf(file.path(qc_dir, "SCTK_DropletQC_figures.pdf", fsep = "/"))
+    pdf(file.path(plot_dir, "SCTK_DropletQC_figures.pdf", fsep = "/"))
     print(plotEmptyDropsResults(
       inSCE = mergedDropletSCE,
       axisLabelSize = 20,
@@ -195,16 +195,16 @@ if (tolower(data_type) == "droplet") {
     ))
     dev.off()
     # Generate HTML report for dropletQC
-    reportDropletQC(inSCE = mergedDropletSCE, output_dir = qc_dir, output_file = "SCTK_DropletQC.html")
+    reportDropletQC(inSCE = mergedDropletSCE, output_dir = out_dir, output_file = "SCTK_DropletQC.html")
     # Generate Cell report
     message(paste0(date(), " .. Generating CellQC report"))
-    reportCellQC(inSCE = mergedFilteredSCE, output_dir = qc_dir, output_file = "SCTK_CellQC.html")
+    reportCellQC(inSCE = mergedFilteredSCE, output_dir = out_dir, output_file = "SCTK_CellQC.html")
     # Generate QC summary
     QCsummary <- sampleSummaryStats(mergedFilteredSCE, simple = FALSE, sample = NULL)
     write.csv(QCsummary, qc_summary, quote = FALSE)
     # Generate report for alternative experiments
     if (isTRUE(use_alt_exp)) {
-      plotAltExps(qc_dir, mergedFilteredSCE)
+      plotAltExps(plot_dir, mergedFilteredSCE)
     }
     # Generate final rds objects
     message(paste0(date(), " .. Exporting to RDATA format"))
@@ -214,7 +214,7 @@ if (tolower(data_type) == "droplet") {
     mergedDropletSCE <- dropletSCE
     # Generate Report
     message(paste0(date(), " .. Generating DropletQC report"))
-    pdf(file.path(qc_dir, "SCTK_DropletQC_figures.pdf", fsep = "/"))
+    pdf(file.path(plot_dir, "SCTK_DropletQC_figures.pdf", fsep = "/"))
     print(plotEmptyDropsResults(
       inSCE = mergedDropletSCE,
       axisLabelSize = 20,
