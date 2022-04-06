@@ -202,8 +202,10 @@ To enable the sctk_qc workflow, set `run_sctk_qc=True`. Alternatively, one can s
 
 Next, select the type of UMI count matrix with the `sctk_data_type` parameter. Valid options are either `cell` or `droplet`, depending on the type of input count matrix.
 
-- `droplet`: The UMI count matrix contains empty droplets. These empty droplets will be removed (cell calling) before further processing.  
-- `cell`: The UMI count matrix does not contain empty droplets but has not been processed yet.
+* `droplet`<br/> 
+The UMI count matrix contains empty droplets. These empty droplets will be removed (cell calling) before further processing.  
+* `cell`<br/> 
+The UMI count matrix does not contain empty droplets but has not been processed yet.
 
 We do not perform any gene/cell level filtering, except for empty droplets that are considered ambient RNA.
 
