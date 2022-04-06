@@ -445,7 +445,7 @@ elif config["aligner"] == "star":
             else input.reads[0:2],
             params=config["align"],
         priority: 0
-        threads: 8
+        threads: 10
         resources:
             mem_gb=30,
         conda:
