@@ -210,24 +210,24 @@ We do not perform any gene/cell level filtering, except for empty droplets that 
 #### Advanced settings
 
 To perform additional (optional) QC steps, consider the following parameters:
-* `sctk_detect_mito`
+* `sctk_detect_mito`<br/>
 Quantify the percentage of mitochondrial genes for each cell in your sample. 
-* `sctk_mito_set` 
+* `sctk_mito_set`<br/> 
 Mitochondrial gene set to use for quantification with syntax `[human,mouse]-[ensembl,entrez,symbol]`. At the moment, only human and mouse annotations are supported. This option is only considered when `sctk_detect_mito=True`
-* `sctk_detect_cell` 
+* `sctk_detect_cell`<br/> 
 Perform cell-calling for droplet based experiments. Empty droplet will not be removed if set to `False`.
-* `sctk_cell_calling` 
+* `sctk_cell_calling`<br/> 
 Method used for cell calling with [DropletUtils](https://bioconductor.org/packages/release/bioc/html/DropletUtils.html), either `Knee` or `EmptyDrops`. By default, EmptyDrops will use an FDR of 0.01 to identify empty droplets. If no option is provided, the inflection point will be used for cell calling. This option is only considered when `sctk_detect_cell=True`
 
 #### Alternative experiments
 Information about alternative sequencing features, such as ERCC spike-ins, can be provided as a separate experiment. These alternative experiments will be stored in the same SingleCellExperiment
 object as the main experiment but processed separately. To process alternative experiments, set the following options:
 
-* `use_alt_expr` 
+* `use_alt_expr`<br/> 
 Set to `True` if you wish to process alternative experiments
-* `alt_exp_name` 
+* `alt_exp_name`<br/> 
 The name/title of the alternative experiment. This option is only considered if `use_alt_expr=True`
-* `alt_exp_reg` 
+* `alt_exp_reg`<br/> 
 Regular expression to filter alternative features from main experiment (.i.e,; `"ERCC-*"`). This option is only considered when `use_alt_expr=True`
 
 A previous addition of alternative features to the gene assembly/model (see section on custom assembly extensions) is a prerequisite. 
