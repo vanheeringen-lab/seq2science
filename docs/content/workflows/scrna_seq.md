@@ -175,18 +175,50 @@ quantifier:
 barcodefile: "barcodes.tab"
 ```
 
-#### Seurat input preparation
-The seq2science scRNA workflow provides the option to automatically prepare S4 Seurat objects from kb or CITE-seq-Count workflow output. 
+#### scRNA-seq pre-processing and quality control
+The seq2science scRNA workflow provides the option to perform automated pre-processing on raw scRNA-seq UMI count matrices. This is achieved by incorporating several quality control steps from the [singleCellTK](https://camplab.net/sctk/v2.4.1/index.html) Bioconductor package, such as cell-calling, doublet detection and assessment of mtDNA expression. 
 
-A Seurat object is created for each individual sample containing the raw UMI counts as default assay (RNA, ADT, spliced, unspliced). In the next step, sample-wise Seurat objects are combined and stored as a merged object. Moreover, any metadata column defined `samples.tsv` will be automatically added to each sample-wise Seurat object before merging in its corresponding `@meta.data` slot. The metadata fields are then assigned to each cell identifier. 
+The QC results are reported in comprehensive R-markdown reports and processed count matrices are stored as [SingleCellExperiment](https://bioconductor.org/packages/release/bioc/html/SingleCellExperiment.html) S4 objects. Any sample level meta data that has been added to `samples.tsv` will be transfered to the `colData` slot of the correspoding SingleCellExperiment object. After running seq2science, these objects can be directly imported into R with the `readRDS` function for further down-stream analysis with Seurat or Scater.
 
-All objects are stored in RData format for convenient import into R with the `readRDS` function. To enable Seurat object export, add the following section to your config file and adjust the Seurat object parameters depending on your analysis.
+To perform scRNA pre-processing, add the following section to your seq2science `config.yaml`. In this example, we process a plate-based experiment from a human tissue.
 
 ```
-export_seu_objects: True
-
-seurat_object:
-    project_name: merged
-    min_cells: 0
-    min_features: 0
+sc_preprocess:
+   export_sce_objects: False
+   run_sctk_qc: True
+   sctk_data_type: cell
+   use_alt_expr: False
+   alt_exp_name: ""
+   alt_exp_reg: ""
+   sctk_mito_set: human-ensembl
+   sctk_detect_mito: True
+   sctk_detect_cell: False
+   sctk_cell_calling: Knee
 ```
+
+To enable the qc workflow, set the option `run_sctk_qc` to `True`. Alternatively, you can skip pre-proessing and export you count matrix to a SingleCellExperiment object by setting `export_sce_objects'
+to `True`. Beware, only one of the two options is valid. Next, select the type of UMI count matrix with the `sctk_data_type` parameter. Valid options are either `cell` or `droplet`, depending on the type of experiment.
+
+- `droplet`: The UMI count matrix contains empty droplets. These empty droplets will be removed (cell calling) before further processing.  
+- `cell`: The UMI count matrix does not contain empty droplets but has not been processed yet.
+
+We do not perform any gene/cell level filtering, except for empty droplets that are considered ambient RNA.
+
+#### Advanced settings
+
+To perform additional (optional) QC steps, consider the following parameters:
+- `sctk_detect_mito`: Quantify the percentage of mitochondrial genes for each cell in your sample
+- `sctk_mito_set`: Mitochondrial gene set to use for quantification with syntax `[human,mouse]-[ensembl,entrez,symbol]. Currently, only human and mouse annotations are supported.
+- `sctk_detect_cell`: Perform cell-calling for droplet based experiments. Empty droplet will not be removed if set to `False`
+- `sctk_cell_calling`. Method used for cell calling with [DropletUtils](https://bioconductor.org/packages/release/bioc/html/DropletUtils.html), either `Knee` or `EmptyDrops`. By default, EmptyDrops will use an FDR of 0.01 to identify empty doplets. If no option is provided, the inflection point will be used for filtering.  
+
+#### Alternative experiments
+Information about alternative sequencing features, such as ERCC spike-ins, can be provided as an alternative experiment. These alternative experiments will be stored in the same SingleCellExperiment
+object as the main experiment. To process alternative experiments, set the following options:
+
+- `use_alt_expr`: Set to `True` if you wish to process alternative experiments
+- `alt_exp_name`: The name/title of the alternative experiment
+- `alt_exp_reg`: Regular expression to filter alternative features from main experiment (.i.e,; "ERCC-*")
+
+Previous additon of the alternative features to the gene assembly/model (see section on custom assembly extensions) is a prerequisite. 
+
