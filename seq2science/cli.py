@@ -379,12 +379,13 @@ def _run(args, base_dir, workflows_dir, config_path):
     parsed_args["config"].update({"cores": parsed_args["cores"]})
     resource_parser(parsed_args)
 
-    # run snakemake/seq2science
-    #   1. pretty welcome message
     if args.debug:
+        # dump the parsed args as readable json
         import json
         logger.info(json.dumps(parsed_args, sort_keys=True, indent=2))
-
+    
+    # run snakemake/seq2science
+    #   1. pretty welcome message
     setup_seq2science_logger(parsed_args)
     log_welcome(logger, args.workflow)
     if not args.skip_rerun or args.unlock:
@@ -624,12 +625,12 @@ def core_parser(parsed_args):
         for sorter in sorters:
             overwrite_threads[sorter] = d_sorters_threads
 
-        if "overwrite_threads" in parsed_args:
-            for k, v in overwrite_threads.items():
-                if k not in parsed_args["overwrite_threads"]:
-                    parsed_args["overwrite_threads"][k] = v
+    if "overwrite_threads" in parsed_args:
+        for k, v in overwrite_threads.items():
+            if k not in parsed_args["overwrite_threads"]:
+                parsed_args["overwrite_threads"][k] = v
 
-        parsed_args["overwrite_threads"] = overwrite_threads
+    parsed_args["overwrite_threads"] = overwrite_threads
 
 
 def resource_parser(parsed_args):
