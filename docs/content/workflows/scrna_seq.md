@@ -238,10 +238,10 @@ A previous addition of alternative features to the gene assembly/model (see sect
 After running the scRNA QC workflow, the output can be found in the following locations:<br/>
 
 `path/to/results/scrna-preprocess/{quantifier}/export`:<br/>
-This folder contains the raw `SingleCellExperiment` object in RDATA format per sample, without any pre-processing applied. 
+This folder contains the raw SingleCellExperiment object in RDATA format per sample, without any pre-processing applied. 
 
 `path/to/results/scrna-preprocess/{quantifier}/sctk`:<br/>
-This folder contains the QC reports and processed SingleCellExperiments objects per sample, structured into several subfolders/files <br/>
+This folder contains the QC reports and processed SingleCellExperiments in RDATA format objects per sample, structured into several subfolders/files <br/>
 - `export`<br/>
 Subfolder containing the processed SingleCellExperiment object 
 - `SCTK_CellQC_summary.csv`<br/>
