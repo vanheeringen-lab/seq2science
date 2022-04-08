@@ -237,20 +237,20 @@ A previous addition of alternative features to the gene assembly/model (see sect
 #### QC report and output files
 After running the scRNA QC workflow, the output can be found in the following locations:<br/>
 
-`path/to/results/scrna-preprocess/`quantifier`/export`:<br/>
+`path/to/results/scrna-preprocess/{quantifier}/export`:<br/>
 This folder contains the raw `SingleCellExperiment` object in RDATA format per sample, without any pre-processing applied. 
 
-`path/to/results/scrna-preprocess/`quantifier`/sctk`:<br/>
+`path/to/results/scrna-preprocess/{quantifier}/sctk`:<br/>
 This folder contains the QC reports and processed SingleCellExperiments objects per sample, structured into several subfolders/files <br/>
 - `export`<br/>
 Subfolder containing the processed SingleCellExperiment object 
-- `SCTK_CellQC_summary.csv``<br/>
+- `SCTK_CellQC_summary.csv`<br/>
 Summary of CellQC analysis
 - `SCTK_CellQC.html`<br/>
 Cell-level QC report generate by [singleCellTK's](https://camplab.net/sctk/v2.4.1/index.html) [runCellQC](https://rdrr.io/github/compbiomed/singleCellTK/man/runCellQC.html) 
 - `SCTK_DropletQC.html`<br/>
 Droplet-level QC report generate by [singleCellTK's](https://camplab.net/sctk/v2.4.1/index.html) [runDropletQC](https://rdrr.io/github/compbiomed/singleCellTK/man/runDropletQC.html) 
-- `SCTK_DropletQC_figures.pdf`<br/>  
+- `SCTK_DropletQC_figures.pdf`<br/>
 Barcode rank plot for droplet based assays
 - `SCTK_altexps.pdf `(optional)<br/>
 Scatter plot showing the percentage alternative features vs. detected endogenous genes
