@@ -234,3 +234,19 @@ Regular expression to filter alternative features from main experiment (.i.e,; `
 
 A previous addition of alternative features to the gene assembly/model (see section on custom assembly extensions) is a prerequisite. 
 
+#### QC report and output files
+After running the scRNA QC workflow, the output can be found in the following locations:<br/>
+
+`path/to/results/scrna-preprocess/*quantifier*/export`:<br/>
+This folder contains the raw UMI count matrix in `SingleCellExperiment`format per sample, without any pre-processing applied. 
+
+`path/to/results/scrna-preprocess/*quantifier*/sctk`:<br/>
+This folder contains the QC reports and processed SingleCellExperiments objects per sample, structured into several subfolders/files <br/>
+- `export`<br/>
+Subfolder containing the processed SingleCellExperiment object 
+- `SCTK_CellQC.html`<br/>
+Cell-level QC report generate by [singleCellTK's](https://camplab.net/sctk/v2.4.1/index.html) [runCellQC](https://rdrr.io/github/compbiomed/singleCellTK/man/runCellQC.html) method<br\>
+- `SCTK_DropletQC.html`<br/>
+Droplet-level QC report generate by [singleCellTK's](https://camplab.net/sctk/v2.4.1/index.html) [runDropletQC](https://rdrr.io/github/compbiomed/singleCellTK/man/runDropletQC.html) method
+
+
