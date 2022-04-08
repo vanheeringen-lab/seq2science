@@ -89,10 +89,13 @@ plotAltExps <- function(out_dir, sce) {
 if (isTRUE(use_alt_exp)) {
   Params$QCMetrics$use_altexps <- TRUE
 }
-# read RDS and modify raw sce object
+# Read RDATA and modify raw sce object
 sce <- readRDS(rds_in)
+if (isTRUE(isvelo)) {
+  # Perform QC on spliced counts
+  sce <- sce$spliced
+}
 sce <- modifySCE(sce)
-
 # Select QC algorithms
 cellQCAlgos <- c("QCMetrics", "scDblFinder", "decontX")
 collectionName <- NULL
@@ -155,7 +158,7 @@ if (tolower(data_type) == "droplet") {
 # Merge result objects
 if (tolower(data_type) == "cell") {
   mergedFilteredSCE <- cellSCE
-  # Generate report
+  # Generate CellQC report
   message(paste0(date(), " .. Generating CellQC report"))
   reportCellQC(inSCE = mergedFilteredSCE, output_dir = out_dir, output_file = "SCTK_CellQC.html")
   # Generate QC summary
@@ -170,12 +173,12 @@ if (tolower(data_type) == "cell") {
   saveRDS(sce.processed, file = rds_out)
 }
 
-# Merge Droplet sce
+# Merge Droplet SingleCellExperiment object
 if (tolower(data_type) == "droplet") {
   if (isTRUE(detect_cell)) {
     mergedDropletSCE <- mergeSCEColData(dropletSCE, cellSCE)
     mergedFilteredSCE <- mergeSCEColData(cellSCE, dropletSCE)
-    # Generate Report
+    # Generate DropletQC Report
     message(paste0(date(), " .. Generating DropletQC report"))
     pdf(file.path(out_dir, "SCTK_DropletQC_figures.pdf", fsep = "/"))
     print(plotEmptyDropsResults(
@@ -193,9 +196,9 @@ if (tolower(data_type) == "droplet") {
       legendSize = 14
     ))
     dev.off()
-    # Generate HTML report for dropletQC
+    # Generate HTML report for DropletQC
     reportDropletQC(inSCE = mergedDropletSCE, output_dir = out_dir, output_file = "SCTK_DropletQC.html")
-    # Generate Cell report
+    # Generate CellQC report
     message(paste0(date(), " .. Generating CellQC report"))
     reportCellQC(inSCE = mergedFilteredSCE, output_dir = out_dir, output_file = "SCTK_CellQC.html")
     # Generate QC summary
@@ -205,13 +208,13 @@ if (tolower(data_type) == "droplet") {
     if (isTRUE(use_alt_exp)) {
       plotAltExps(out_dir, mergedFilteredSCE)
     }
-    # Generate final rds objects
+    # Generate final RDATA object
     message(paste0(date(), " .. Exporting to RDATA format"))
     sce.processed <- list(cellsce = mergedFilteredSCE, dropletsce = mergedDropletSCE)
     saveRDS(sce.processed, file = rds_out)
   } else {
     mergedDropletSCE <- dropletSCE
-    # Generate Report
+    # Generate DropletQC Report
     message(paste0(date(), " .. Generating DropletQC report"))
     pdf(file.path(out_dir, "SCTK_DropletQC_figures.pdf", fsep = "/"))
     print(plotEmptyDropsResults(
@@ -230,7 +233,7 @@ if (tolower(data_type) == "droplet") {
     ))
     dev.off()
     reportDropletQC(inSCE = mergedDropletSCE, output_dir = out_dir, output_file = "SCTK_DropletQC.html")
-    # Save final rds objects
+    # Save final RDATA objects
     message(paste0(date(), " .. Exporting to RDATA format"))
     sce.processed <- mergedDropletSCE
     saveRDS(sce.processed, file = rds_out)

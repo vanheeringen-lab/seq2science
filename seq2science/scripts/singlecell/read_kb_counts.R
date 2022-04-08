@@ -51,7 +51,7 @@ cat('alt_exp_reg      <- "', alt_exp_reg, '"\n', sep = "")
 
 cat("\n")
 
-# Prep cell metadata
+# Prepare data frame with cell metadata
 prep_cell_meta <- function(sample, sample_sheet, cell.names) {
   sample.meta <- sample_sheet[rownames(sample_sheet) %in% sample, ]
   sample.meta <- sample.meta[rep(seq_len(nrow(sample.meta)), each = length(cell.names)), ]
@@ -110,7 +110,7 @@ filter_alt <- function(alt_feature_prefix, mat, alt = FALSE) {
 # Remove custom assembly suffix from genome for filteirng
 pattern <- paste0(".*", custom_assembly_suffix)
 if (isTRUE(grepl(pattern, genome))) {
-  genome <- substr(genome, 1, length(genome) - length(custom_assembly_suffix))
+  genome <- substr(genome, 1, nchar(genome) - nchar(custom_assembly_suffix))
 } else {
   message(paste0(date(), "No custom assembly suffix found, using default genome:", genome))
 }
@@ -120,10 +120,10 @@ sample_sheet <- parse_samples(samples_tsv, genome, replicates)
 # Create Seurat objects based on cite input arguments and set assay
 alt_exp <- list()
 assays <- list()
-
-# Create Seurat objects based on input kb workflow argument and set assay
+assays_uns <- list()
+# Create SingleCellExperiment S4 object based on kb workflow parameter
 if (quantifier == "kallistobus") {
-  # kb count with '--workflow kite' parameter
+  # kb count with '--workflow lamanno' parameter
   if (isvelo) {
     message(paste0(date(), " .. Preparing cell matrices from kallistobus (velocity) output!"))
     # Unspliced counts
@@ -134,18 +134,19 @@ if (quantifier == "kallistobus") {
     if (use_alt_expr) {
       mat.sf.endo <- filter_alt(alt_exp_reg, mat.sf)
       mat.uf.endo <- filter_alt(alt_exp_reg, mat.uf)
-      # Filter alt experiment from main experiment
+      # Filter alternative experiment features from endogenous features
       mat.sf.alt <- filter_alt(alt_exp_reg, mat.sf, alt = TRUE)
       mat.uf.alt <- filter_alt(alt_exp_reg, mat.uf, alt = TRUE)
-      # Store experiments for spliced and unsplaced assays
+      # Store experiments for spliced/unspliced assays
       alt_exp[[paste0(alt_exp_name, "_sf")]] <- SummarizedExperiment(assay = list(counts = mat.sf.alt))
       # alt_exp[[paste0(alt_exp_name, "_uf")]] <- SummarizedExperiment(assay = list(counts = mat.uf.alt))
     } else {
       mat.sf.endo <- mat.sf
       mat.uf.endo <- mat.uf
     }
-    # create assays
-    assays <- list(counts = mat.sf.endo, unspliced = mat.uf.endo)
+    # Create count assays
+    assays <- list(counts = mat.sf.endo)
+    assays_uns <- list(counts = mat.uf.endo)
     # Case for quantification/kite workflows
   } else {
     message(paste0(date(), " .. Preparing cell matrices from kallistobus (non-velocity) output!"))
@@ -163,7 +164,7 @@ if (quantifier == "kallistobus") {
   }
 }
 
-# citeseq count scenario
+# Citeseq count
 if (quantifier == "citeseqcount") {
   message(paste0(date(), " .. Preparing cell matrices from citeseqcount output!"))
   mat <- read_cite_output(dir = count_dir)
@@ -178,18 +179,49 @@ if (quantifier == "citeseqcount") {
   assays <- list(counts = mat.endo)
 }
 
-# Create final sce object and store main and alternative experiments (if present)
+# Create final SingleCellExperiment S4 object and store assays
 message(paste0(date(), " .. Creating final SingleCellExperiment object!"))
-meta <- prep_cell_meta(sample, sample_sheet, colnames(assays$counts))
 # Create sce object
 sce <-
   SingleCellExperiment(
     assays = assays,
     mainExpName = sample,
-    colData = meta,
+    colData = prep_cell_meta(sample, sample_sheet, colnames(assays$counts)),
     altExps = alt_exp
   )
 
-# Save RDS object
-message(paste0(date(), " .. Saving object to RDSD file!"))
-saveRDS(sce, file = rds)
+# Prepare output
+out.sce <- NULL
+if (isTRUE(isvelo)) {
+  message(paste0(date(), " .. Creating SingleCellExperiments objects for spliced/unspliced velocity counts"))
+  # Spliced counts
+  sce.sf <-
+    SingleCellExperiment(
+      assays = assays,
+      mainExpName = sample,
+      colData = prep_cell_meta(sample, sample_sheet, colnames(assays$counts)),
+      altExps = alt_exp
+    )
+  # # Treat unspliced velocity output as a separate experiment
+  sce.us <-
+    SingleCellExperiment(
+      assays = assays_uns,
+      mainExpName = sample,
+      colData = prep_cell_meta(sample, sample_sheet, colnames(assays_uns$counts)),
+    )
+  out.sce <- list(spliced = sce.sf, unspliced = sce.us)
+} else {
+  message(paste0(date(), " .. Creating SingleCellExperiment object!"))
+  # Create sce object
+  sce <-
+    SingleCellExperiment(
+      assays = assays,
+      mainExpName = sample,
+      colData = prep_cell_meta(sample, sample_sheet, colnames(assays$counts)),
+      altExps = alt_exp
+    )
+  out.sce <- sce
+}
+# Save to RDATA format object
+message(paste0(date(), " .. Saving sce objects to RDATA file!"))
+saveRDS(out.sce, file = rds)
