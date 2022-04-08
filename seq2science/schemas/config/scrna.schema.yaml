@@ -74,11 +74,11 @@ properties:
     default:
       export_sce_objects: False
       run_sctk_qc: False
-      use_alt_expr: False
-      alt_exp_name: ""
-      alt_exp_reg: ""
       sctk_data_type: cell
-      sctk_mito_set: human-ensembl
-      sctk_detect_mito: True
       sctk_detect_cell: True
       sctk_cell_calling: Knee
+      sctk_detect_mito: True
+      sctk_mito_set: human-ensembl
+      use_alt_expr: False
+      alt_exp_name: "ALT"
+      alt_exp_reg: ""
