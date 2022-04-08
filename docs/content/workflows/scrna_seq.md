@@ -250,9 +250,9 @@ Summary of CellQC analysis
 Cell-level QC report generate by [singleCellTK's](https://camplab.net/sctk/v2.4.1/index.html) [runCellQC](https://rdrr.io/github/compbiomed/singleCellTK/man/runCellQC.html) 
 - `SCTK_DropletQC.html`<br/>
 Droplet-level QC report generate by [singleCellTK's](https://camplab.net/sctk/v2.4.1/index.html) [runDropletQC](https://rdrr.io/github/compbiomed/singleCellTK/man/runDropletQC.html) 
-- `SCTK_DropletQC_figures.pdf``<br/>  
+- `SCTK_DropletQC_figures.pdf`<br/>  
 Barcode rank plot for droplet based assays
-- `SCTK_altexps.pdf ` (optional)`<br/>
+- `SCTK_altexps.pdf `(optional)<br/>
 Scatter plot showing the percentage alternative features vs. detected endogenous genes
 
 
