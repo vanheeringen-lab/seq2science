@@ -39,32 +39,31 @@ properties:
     description: "Pre-processing settings for scRNA data"
     properties:
       export_sce_objects:
-        description: "Export scRNA count tables to SingleCellExperiment and save in RDS format"
+        description: "Export scRNA count tables to SingleCellExperiment and save in RDATA format"
         type: boolean   
       use_alt_expr:
-        description: "Store alternative experiments"  
+        description: "Process alternative experiments"  
         type: boolean
       alt_exp_name: 
         description: "Name of the alternative experiment"
         type: string
       alt_exp_reg:
-        description: "Regex to fitler alt exp from main experiment"
+        description: "Regular expression to extract alternative features"
         type: string
       run_sctk_qc:
         description: "Generate QC reports with singleCellTK"
         type: boolean   
-        default: false  
       sctk_data_type: 
-        description: "Type of data, either cell or droplet"
+        description: "Type of count matrix, either cell or droplet"
         type: string
       sctk_detect_mito:
-        description: "Wheter to perform mitochondrial gene detection"
+        description: "Perform mitochondrial gene detection"
         type: boolean
       sctk_mito_set:
         description: "Mitochondrial gene set for quality control"
         enum: ["human-ensembl", "mouse-ensembl", "human-entrez", "mouse-entrez", "human-symbol", "mouse-symbol"]
       sctk_detect_cell:
-        description: "Wheter to perform cell calling for droplet based methods"
+        description: "Perform cell calling for droplet based methods"
         type: boolean
         default: true
       sctk_cell_calling:
