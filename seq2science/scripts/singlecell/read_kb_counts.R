@@ -181,13 +181,12 @@ if (quantifier == "citeseqcount") {
 
 # Create final SingleCellExperiment S4 object and store assays
 message(paste0(date(), " .. Creating final SingleCellExperiment object!"))
-meta <- prep_cell_meta(sample, sample_sheet, colnames(assays$counts))
 # Create sce object
 sce <-
   SingleCellExperiment(
     assays = assays,
     mainExpName = sample,
-    colData = meta,
+    colData = prep_cell_meta(sample, sample_sheet, colnames(assays$counts)),
     altExps = alt_exp
   )
 
@@ -208,7 +207,7 @@ if (isTRUE(isvelo)) {
     SingleCellExperiment(
       assays = assays_uns,
       mainExpName = sample,
-      colData = prep_cell_meta(sample, sample_sheet, colnames(assays_uns$c)),
+      colData = prep_cell_meta(sample, sample_sheet, colnames(assays_uns$counts)),
     )
   out.sce <- list(spliced = sce.sf, unspliced = sce.us)
 } else {
