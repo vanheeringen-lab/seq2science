@@ -18,9 +18,12 @@ rule export_sce_obj:
     input:
         counts=get_count_dir,
     output:
-        rds=expand("{result_dir}/scrna-preprocess/{quantifier}/export/{{assembly}}-{{sample}}_raw_sce_obj.RData", **config),
+        dir=expand(
+            "{result_dir}/scrna-preprocess/{quantifier}/export/{{assembly}}-{{sample}}/{file}",
+            **{**config, **{"file": ["raw_sce_obj.RData", "raw_seu_obj.RData"]}}
+        ),
     log:
-        expand("{log_dir}/scrna-preprocess/{quantifier}/export/{{assembly}}-{{sample}}_raw_sce_obj.log", **config),
+        expand("{log_dir}/scrna-preprocess/{quantifier}/export/{{assembly}}-{{sample}}_raw_sce_export.log", **config),
     priority: 1
     conda:
         "../envs/sce.yaml"
@@ -31,6 +34,7 @@ rule export_sce_obj:
         sample=lambda wildcards, input: rep_to_descriptive(wildcards.sample),
         replicates=True if "technical_replicates" in samples else False,
         scripts_dir=f"{config['rule_dir']}/../scripts/deseq2",
+        outdir=lambda wildcards, input, output: os.path.dirname(output[0]),
     message:
         explain_rule("sce")
     resources:
@@ -44,7 +48,7 @@ rule sctk_qc:
     Perform scRNA QC with singleCellTK, store output in SingleCellExperiment object and export to RData format.
     """
     input:
-       rds_raw=rules.export_sce_obj.output.rds
+       rds_raw=rules.export_sce_obj.output.dir[0]
     output:
         dir=expand(
             "{result_dir}/scrna-preprocess/{quantifier}/sctk/{{assembly}}-{{sample}}/{file}",

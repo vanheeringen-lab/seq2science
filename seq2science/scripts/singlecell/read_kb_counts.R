@@ -1,12 +1,14 @@
 suppressMessages({
   library(Matrix)
+  library(singleCellTK)
   library(SingleCellExperiment)
+  library(Seurat)
 })
 
 # Snakemake variables
 scripts_dir <- snakemake@params$scripts_dir
 count_dir <- dirname(snakemake@input$counts)
-rds <- snakemake@output[[1]]
+out_dir <- snakemake@params$outdir
 sample <- snakemake@params$sample
 replicates <- snakemake@params$replicates
 genome <- snakemake@wildcards$assembly
@@ -36,8 +38,8 @@ cat('quantifier       <- "', quantifier, '"\n', sep = "")
 cat('sample_sheet     <- "', samples_tsv, '"\n', sep = "")
 cat('scripts_dir      <- "', scripts_dir, '"\n', sep = "")
 cat('log_file         <- "', log_file, '"\n', sep = "")
+cat('out_dir          <- "', out_dir, '"\n', sep = "")
 cat('count_dir        <- "', count_dir, '"\n', sep = "")
-cat('rds              <- "', rds, '"\n', sep = "")
 cat('sample           <- "', sample, '"\n', sep = "")
 cat('genome           <- "', genome, '"\n', sep = "")
 cat('custom_assembly_suffix  <- "', custom_assembly_suffix, '"\n', sep = "")
@@ -192,6 +194,7 @@ sce <-
 
 # Prepare output
 out.sce <- NULL
+out.seu <- NULL
 if (isTRUE(isvelo)) {
   message(paste0(date(), " .. Creating SingleCellExperiments objects for spliced/unspliced velocity counts"))
   # Spliced counts
@@ -202,6 +205,9 @@ if (isTRUE(isvelo)) {
       colData = prep_cell_meta(sample, sample_sheet, colnames(assays$counts)),
       altExps = alt_exp
     )
+  message(paste0(date(), " .. Converting spliced sce object to Seurat!"))
+  seu.sf <- convertSCEToSeurat(sce.sf, copyColData = TRUE)
+  Idents(seu.sf) <- sample
   # # Treat unspliced velocity output as a separate experiment
   sce.us <-
     SingleCellExperiment(
@@ -209,7 +215,11 @@ if (isTRUE(isvelo)) {
       mainExpName = sample,
       colData = prep_cell_meta(sample, sample_sheet, colnames(assays_uns$counts)),
     )
+  message(paste0(date(), " .. Converting unspliced sce object to Seurat!"))
+  seu.uf <- convertSCEToSeurat(sce.us, copyColData = TRUE)
+  Idents(seu.uf) <- sample
   out.sce <- list(spliced = sce.sf, unspliced = sce.us)
+  out.seu <- list(spliced = seu.sf, unspliced = seu.uf)
 } else {
   message(paste0(date(), " .. Creating SingleCellExperiment object!"))
   # Create sce object
@@ -221,7 +231,13 @@ if (isTRUE(isvelo)) {
       altExps = alt_exp
     )
   out.sce <- sce
+  message(paste0(date(), " .. Converting sce objects to Seurat and saving to RDATA file!"))
+  out.seu <- convertSCEToSeurat(out.sce, copyColData = TRUE)
+  Idents(out.seu) <- sample
 }
-# Save to RDATA format object
-message(paste0(date(), " .. Saving sce objects to RDATA file!"))
-saveRDS(out.sce, file = rds)
+# Save SCE to RDATA format object
+message(paste0(date(), " .. Saving sce object to RDATA file!"))
+saveRDS(out.sce, file = file.path(out_dir, "raw_sce_obj.RData", fsep = "/"))
+# convert SCE to Seurat object
+message(paste0(date(), " .. Saving seu object to RDATA file!"))
+saveRDS(out.seu, file = file.path(out_dir, "raw_seu_obj.RData", fsep = "/"))
