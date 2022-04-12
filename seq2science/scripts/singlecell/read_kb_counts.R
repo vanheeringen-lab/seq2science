@@ -126,11 +126,13 @@ sample_sheet <- parse_samples(samples_tsv, genome, replicates)
 # Create Seurat objects based on cite input arguments and set assay
 alt_exp <- list()
 assays <- list()
+# Result matrices
+mat.endo <- NULL
+mat <- NULL
+
 # Create SingleCellExperiment S4 object based on kb workflow parameter
 if (quantifier == "kallistobus") {
   # kb count with '--workflow lamanno' parameter
-  mat.endo <- NULL
-  mat <- NULL
   if (isvelo) {
     message(paste0(date(), " .. Preparing cell matrix from kallistobus (velocity) output!"))
     # Unspliced counts
@@ -151,14 +153,12 @@ if (quantifier == "kallistobus") {
     mat <- read_count_output(dir = count_dir, name = mat_name)
   }
 }
-
 # Citeseq count
 if (quantifier == "citeseqcount") {
   message(paste0(date(), " .. Preparing cell matrices from citeseqcount output!"))
   mat <- read_cite_output(dir = count_dir)
 }
-
-# Check if alt experiment are present
+# Check if alt experiments are present
 if (use_alt_expr) {
   mat.endo <- filter_alt(alt_exp_reg, mat)
   mat.alt <- filter_alt(alt_exp_reg, mat, alt = TRUE)
