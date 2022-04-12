@@ -379,15 +379,16 @@ def _run(args, base_dir, workflows_dir, config_path):
     parsed_args["config"].update({"cores": parsed_args["cores"]})
     resource_parser(parsed_args)
 
-    if args.debug:
-        # dump the parsed args as readable json
-        import json
-        logger.info(json.dumps(parsed_args, sort_keys=True, indent=2))
-    
     # run snakemake/seq2science
     #   1. pretty welcome message
     setup_seq2science_logger(parsed_args)
     log_welcome(logger, args.workflow)
+
+    if args.debug:
+        # dump the parsed args as readable json
+        import json
+        logger.info(json.dumps(parsed_args, sort_keys=True, indent=2))
+
     if not args.skip_rerun or args.unlock:
         #   2. start a dryrun checking which files need to be created, and check if
         #      any params changed, which means we have to remove those files and
