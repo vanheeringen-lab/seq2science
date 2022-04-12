@@ -113,14 +113,13 @@ rule mark_duplicates:
 # if doing tn5 shift, we need to re-sort afterwards!
 if config.get("tn5_shift"):
     shiftsieve = "-shifted"
+    sieve_bam_output = {"final": temp(f"{config['final_bam_dir']}/{{assembly}}-{{sample}}.samtools-coordinate{shiftsieve}.bam")}
 else:
     shiftsieve = ""
+    sieve_bam_output = {"final": f"{config['final_bam_dir']}/{{assembly}}-{{sample}}.samtools-coordinate.bam"}
 
     ruleorder: sieve_bam > samtools_sort
 
-
-# the output of sieving depends on different preprocessing steps
-sieve_bam_output = {"final": f"{config['final_bam_dir']}/{{assembly}}-{{sample}}.samtools-coordinate{shiftsieve}.bam"}
 
 # if we filter on size, we make two files. One split on size, and one not.
 if config["filter_on_size"]:
@@ -328,7 +327,7 @@ if config["filter_on_size"]:
         input:
             "{filepath}.sam",
         output:
-            "{filepath}.bam",
+            temp("{filepath}.bam"),
         conda:
             "../envs/samtools.yaml"
         shell:
