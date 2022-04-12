@@ -1,6 +1,7 @@
 """
 all logic not related to any specific workflows should be here.
 """
+container: "docker://continuumio/miniconda3:4.4.10"
 
 import os.path
 import pickle
