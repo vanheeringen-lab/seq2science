@@ -280,7 +280,7 @@ rule samtools_sort:
     params:
         sort_order=lambda wildcards: "-n" if wildcards.sorting == "queryname" else "",
     wildcard_constraints:
-        sample=f"""({any_given("sample", "technical_replicates", "control")})(_allsizes)?""",
+        sample=f"""({any_given("sample", "technical_replicates", "control")})""",
     threads: 2
     resources:
         mem_gb=config["bam_sort_mem"],
@@ -298,6 +298,45 @@ rule samtools_sort:
         samtools sort {params.sort_order} -@ {threads} -m $memory {input} -o {output} \
         -T {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
         """
+
+
+if config["filter_on_size"]:
+    rule samtools_sort_allsizes:
+        """
+        Sort the result of shiftsieving with the samtools sorter. This rule is identical to the
+        samtools_sort rule except that the output is temporary.
+        """
+        input:
+            rules.sieve_bam.output.final,
+        output:
+            temp(expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-{{sorting}}.bam", **config)),
+        log:
+            expand("{log_dir}/samtools_sort/{{assembly}}-{{sample}}-samtools_{{sorting}}.log", **config),
+        benchmark:
+            expand("{benchmark_dir}/samtools_sort/{{assembly}}-{{sample}}-{{sorting}}.benchmark.txt", **config)[0]
+        params:
+            sort_order=lambda wildcards: "-n" if wildcards.sorting == "queryname" else "",
+            out_dir=f"{config['result_dir']}/{config['aligner']}",
+            memory=config['bam_sort_mem'],
+        wildcard_constraints:
+            sample=f"""({any_given("sample", "technical_replicates", "control")})_allsizes""",
+        threads: 2
+        resources:
+            mem_gb=config["bam_sort_mem"],
+        conda:
+            "../envs/samtools.yaml"
+        shell:
+            """
+            # we set this trap to remove temp files when prematurely ending the rule
+            trap "rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
+            rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2> {log}
+
+            # RAM per thread in MB
+            memory=$((1000*{params.memory}/{threads}))M
+
+            samtools sort {params.sort_order} -@ {threads} -m $memory {input} -o {output} \
+            -T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
+            """
 
 
 rule samtools_index:
