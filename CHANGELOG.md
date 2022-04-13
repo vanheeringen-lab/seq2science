@@ -23,11 +23,16 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 - raw/processed scRNA count tables are now stored and exported to SingleCellExperiment S4 objects instead of Seurat S4 objects 
 - moved scRNA post processing to separate module
+- export unspliced velocity counts to separate sce object
 
 ### Removed
 
 - removed scRNA merging rule due to memory issues with large and sparse samples 
 - removed deprecated scRNA post-processing workflow (superseded by singleCellTK qc workflow)
+
+### Fixed
+
+- fixed bug causing incorrect genome string in `read_kb_counts.R`
 
 ## [0.7.2] - 2022-03-04
 

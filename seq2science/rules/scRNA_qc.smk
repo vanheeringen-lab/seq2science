@@ -13,7 +13,7 @@ def get_count_dir(wildcards):
 
 rule export_sce_obj:
     """
-    Read scRNA count output into Seurat object, add meta-data and export to RData format.
+    Read scRNA UMI counts into a SingleCellExperiment object, add colData and export to RData format.
     """
     input:
         counts=get_count_dir,
@@ -41,7 +41,7 @@ rule export_sce_obj:
 
 rule sctk_qc:
     """
-    Import scRNA count table output into SingleCellExperiment S4 object, add colData and export to RData format.
+    Perform scRNA QC with singleCellTK, store output in SingleCellExperiment object and export to RData format.
     """
     input:
        rds_raw=rules.export_sce_obj.output.rds
