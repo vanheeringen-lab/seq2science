@@ -204,6 +204,6 @@ if (tolower(data_type) == "droplet") {
     reportDropletQC(inSCE = mergedDropletSCE, output_dir = out_dir, output_file = "SCTK_DropletQC.html")
     # Export SCE objects
     message(paste0(date(), " .. Exporting SCE object!"))
-    exportSCEObjs(mergedFilteredSCE, out_dir = out_dir, prefix = "sctk")
+    exportSCEObjs(mergedDropletSCE, out_dir = out_dir, prefix = "sctk")
   }
 }
