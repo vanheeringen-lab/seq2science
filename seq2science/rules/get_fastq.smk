@@ -281,7 +281,7 @@ rule rename_sample:
     input:
         sample_to_rename,
     output:
-        expand("{fastq_dir}/{{sample}}{{suffix}}", **config),
+        temp(expand("{fastq_dir}/{{sample}}{{suffix}}", **config)),
     wildcard_constraints:
         # only rename to compatible naming formats
         suffix="|".join(
@@ -293,5 +293,5 @@ rule rename_sample:
         ),
     shell:
         """
-        mv {input[0]} {output[0]}
+        cp {input[0]} {output[0]}
         """
