@@ -1,8 +1,36 @@
 """
 all rules/logic related to read trimming should be here.
 """
+import glob
+import os
+import sys
 
 from seq2science.util import get_bustools_rid
+
+
+def se_fastq(wildcards):
+    local_fastqs = glob.glob(os.path.join(config["fastq_dir"],f'{wildcards.sample}*{config["fqsuffix"]}*.gz'))
+    if len(local_fastqs) == 1:
+        return local_fastqs[0]
+    return f"{config['fastq_dir']}/{wildcards.sample}.{config['fqsuffix']}.gz"
+
+
+def pe_fastq(wildcards):
+    local_fastqs = glob.glob(os.path.join(config["fastq_dir"],f'{wildcards.sample}*{config["fqsuffix"]}*.gz'))
+    if len(local_fastqs) == 2:
+        # assumption: incompatible paired-ended samples are lexicographically ordered (R1>R2)
+        local_fastqs.sort()
+        local_fastqs = {
+            "r1": local_fastqs[0],
+            "r2": local_fastqs[1],
+        }
+    else:
+        local_fastqs = {
+            "r1": os.path.join(config["fastq_dir"],f'{wildcards.sample}_{config["fqext1"]}.{config["fqsuffix"]}.gz'),
+            "r2": os.path.join(config["fastq_dir"],f'{wildcards.sample}_{config["fqext2"]}.{config["fqsuffix"]}.gz'),
+        }
+    return local_fastqs
+
 
 if config["trimmer"] == "trimgalore":
     if "scrna_seq" == get_workflow():
@@ -16,7 +44,7 @@ if config["trimmer"] == "trimgalore":
         Automated adapter detection, adapter trimming, and quality trimming through trim galore (single-end).
         """
         input:
-            expand("{fastq_dir}/{{sample}}.{fqsuffix}.gz", **config),
+            se_fastq,  # expand("{fastq_dir}/{{sample}}.{fqsuffix}.gz", **config),
         output:
             se=temp(expand("{trimmed_dir}/{{sample}}_trimmed.{fqsuffix}.gz", **config)),
             qc=expand("{qc_dir}/trimming/{{sample}}.{fqsuffix}.gz_trimming_report.txt", **config),
@@ -31,6 +59,8 @@ if config["trimmer"] == "trimgalore":
         params:
             config=config["trimoptions"],
             fqsuffix=config["fqsuffix"],
+        wildcard_constraints:
+            sample=any_given("sample"),
         shell:
             ("cpulimit --include-children -l {threads}00 --" if config.get("cpulimit", True) else "")+
             """\
@@ -52,8 +82,9 @@ if config["trimmer"] == "trimgalore":
         Automated adapter detection, adapter trimming, and quality trimming through trim galore (paired-end).
         """
         input:
-            r1=expand("{fastq_dir}/{{sample}}_{fqext1}.{fqsuffix}.gz", **config),
-            r2=expand("{fastq_dir}/{{sample}}_{fqext2}.{fqsuffix}.gz", **config),
+            unpack(pe_fastq),
+            # r1=expand("{fastq_dir}/{{sample}}_{fqext1}.{fqsuffix}.gz", **config),
+            # r2=expand("{fastq_dir}/{{sample}}_{fqext2}.{fqsuffix}.gz", **config),
         output:
             r1=temp(expand("{trimmed_dir}/{{sample}}_{fqext1}_trimmed.{fqsuffix}.gz", **config)),
             r2=temp(expand("{trimmed_dir}/{{sample}}_{fqext2}_trimmed.{fqsuffix}.gz", **config)),
@@ -120,7 +151,7 @@ elif config["trimmer"] == "fastp":
         Automated adapter detection, adapter trimming, and quality trimming through fastp (single-end).
         """
         input:
-            expand("{fastq_dir}/{{sample}}.{fqsuffix}.gz", **config),
+            se_fastq,
         output:
             se=temp(expand("{trimmed_dir}/{{sample}}_trimmed.{fqsuffix}.gz", **config)),
             qc_json=expand("{qc_dir}/trimming/{{sample}}.fastp.json", **config),
@@ -151,8 +182,7 @@ elif config["trimmer"] == "fastp":
         Automated adapter detection, adapter trimming, and quality trimming through fastp (paired-end).
         """
         input:
-            r1=expand("{fastq_dir}/{{sample}}_{fqext1}.{fqsuffix}.gz", **config),
-            r2=expand("{fastq_dir}/{{sample}}_{fqext2}.{fqsuffix}.gz", **config),
+            unpack(pe_fastq),
         output:
             r1=temp(expand("{trimmed_dir}/{{sample}}_{fqext1}_trimmed.{fqsuffix}.gz", **config)),
             r2=temp(expand("{trimmed_dir}/{{sample}}_{fqext2}_trimmed.{fqsuffix}.gz", **config)),
