@@ -29,11 +29,27 @@ modifySCE <- function(sce) {
 
 # Create scatter plot from alternative experiments
 plotAltExps <- function(out_dir, sce) {
-    pdf(file.path(out_dir, "SCTK_altexps.pdf", fsep = "/"))
+    out.pdf <- paste0("SCTK_altexps_", altExpNames(sce), ".pdf")
+    pdf(file.path(out_dir, out.pdf, fsep = "/"))
     for (n in altExpNames(sce)) {
-        x <- paste0("altexps_", n, "_percent")
-        y <- "detected"
-        print(plotColData(sce, x = x, y = y))
+        y <- paste0("altexps_", n, "_percent")
+        x <- "detected"
+        # Get values from colData
+        x_val <- colData(sce)[[x]]
+        y_val <- colData(sce)[[y]]
+        # Plot
+        p <- plotColData(sce, x = x, y = y) +
+            ggtitle("detected features vs. percentage alt expression") +
+            theme(plot.title = element_text(size = 20, face = "bold", hjust = 0.5)) +
+            geom_hline(yintercept = median(y_val), col = "red", lwd = 0.5) +
+            annotate("text", # Add text for mean
+                x = median(x_val),
+                y = max(y_val),
+                label = paste("Median =", round(median(y_val), 2)),
+                col = "red",
+                size = 6
+            )
+        print(p)
     }
     dev.off()
 }

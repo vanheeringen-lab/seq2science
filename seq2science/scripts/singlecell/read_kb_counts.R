@@ -126,6 +126,7 @@ sample_sheet <- parse_samples(samples_tsv, genome, replicates)
 # Create Seurat objects based on cite input arguments and set assay
 alt_exp <- list()
 assays <- list()
+
 # Result matrices
 mat.endo <- NULL
 mat <- NULL
