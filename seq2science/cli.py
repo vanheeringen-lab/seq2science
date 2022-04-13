@@ -176,7 +176,7 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
             "alignment --cores 12 --snakemakeOptions resources={mem_gb:100} local_cores=3. "
             "Here we pass local_cores as KEY=VALUE and additional resources can even be passed along in a dictionary. "
             "Take a look at the snakemake API  for a complete list of all possible options: "
-            "https://snakemake.readthedocs.io/en/latest/api_reference/snakemake.html",
+            "https://snakemake-api.readthedocs.io/en/latest/api_reference/snakemake.html",
         )
         global profile_arg
         profile_arg = subparser.add_argument(
