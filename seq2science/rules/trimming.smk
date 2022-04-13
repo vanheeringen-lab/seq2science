@@ -98,6 +98,8 @@ if config["trimmer"] == "trimgalore":
         params:
             config=config["trimoptions"],
             fqsuffix=config["fqsuffix"],
+        wildcard_constraints:
+            sample=any_given("sample"),
         shell:
             ("cpulimit --include-children -l {threads}00 --" if config.get("cpulimit", True) else "")+
             """\
