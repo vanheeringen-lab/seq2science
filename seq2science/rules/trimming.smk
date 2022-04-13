@@ -44,7 +44,7 @@ if config["trimmer"] == "trimgalore":
         Automated adapter detection, adapter trimming, and quality trimming through trim galore (single-end).
         """
         input:
-            se_fastq,  # expand("{fastq_dir}/{{sample}}.{fqsuffix}.gz", **config),
+            se_fastq,
         output:
             se=temp(expand("{trimmed_dir}/{{sample}}_trimmed.{fqsuffix}.gz", **config)),
             qc=expand("{qc_dir}/trimming/{{sample}}.{fqsuffix}.gz_trimming_report.txt", **config),
@@ -83,8 +83,6 @@ if config["trimmer"] == "trimgalore":
         """
         input:
             unpack(pe_fastq),
-            # r1=expand("{fastq_dir}/{{sample}}_{fqext1}.{fqsuffix}.gz", **config),
-            # r2=expand("{fastq_dir}/{{sample}}_{fqext2}.{fqsuffix}.gz", **config),
         output:
             r1=temp(expand("{trimmed_dir}/{{sample}}_{fqext1}_trimmed.{fqsuffix}.gz", **config)),
             r2=temp(expand("{trimmed_dir}/{{sample}}_{fqext2}_trimmed.{fqsuffix}.gz", **config)),

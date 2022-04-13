@@ -210,9 +210,6 @@ rule ena2fastq_PE:
             shell("exit 1 >> {log} 2>&1")
 
 
-# ruleorder: rename_sample > runs2sample
-
-
 def get_runs_from_sample(wildcards):
     run_fastqs = []
     for run in sampledict[wildcards.sample]["runs"]:
