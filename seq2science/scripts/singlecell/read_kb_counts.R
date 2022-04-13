@@ -180,6 +180,8 @@ sce <-
     colData = prep_cell_meta(sample, sample_sheet, colnames(assays$counts)),
     altExps = alt_exp
   )
+# Remove suffix from rownames
+sce <- modifySCE(sce)
 # Export SCE objects to various file formats
 message(paste0(date(), " .. Exporting SCE object!"))
 exportSCEObjs(sce, out_dir = out_dir, prefix = "raw")

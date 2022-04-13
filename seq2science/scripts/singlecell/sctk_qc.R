@@ -70,7 +70,7 @@ if (isTRUE(use_alt_exp)) {
 }
 # Read RDATA and modify raw sce object
 sce <- readRDS(rds_in)
-sce <- modifySCE(sce)
+
 # Select QC algorithms
 cellQCAlgos <- c("QCMetrics", "scDblFinder", "decontX")
 collectionName <- NULL

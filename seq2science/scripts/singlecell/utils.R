@@ -17,7 +17,7 @@ exportSCEObjs <- function(sce, out_dir, prefix = "sample") {
 
 # Modifies a SingleCellExperiment object by removing the numerical transcript suffix
 modifySCE <- function(sce) {
-    newnames <- gsub(x = rownames(sce), pattern = "\\..*$", replacement = "")
+    newnames <- stringr::str_remove(rownames(sce), pattern = "\\.\\d+")
     if (nrow(sce) == length(newnames)) {
         rownames(sce) <- newnames
     } else {
