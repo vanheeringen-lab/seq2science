@@ -13,14 +13,17 @@ def get_count_dir(wildcards):
 
 rule export_sce_obj:
     """
-    Read scRNA count output into Seurat object, add meta-data and export to RData format.
+    Read scRNA UMI counts into a SingleCellExperiment object, add colData and export to RData format.
     """
     input:
         counts=get_count_dir,
     output:
-        rds=expand("{result_dir}/scrna-preprocess/{quantifier}/export/{{assembly}}-{{sample}}_raw_sce_obj.RData", **config),
+        dir=expand(
+            "{result_dir}/scrna-preprocess/{quantifier}/raw/{{assembly}}-{{sample}}/{file}",
+            **{**config, **{"file": ["export/R/raw_SCE.RDS", "SCE_raw_summary.csv"]}}
+        ),
     log:
-        expand("{log_dir}/scrna-preprocess/{quantifier}/export/{{assembly}}-{{sample}}_raw_sce_obj.log", **config),
+        expand("{log_dir}/scrna-preprocess/{quantifier}/raw/{{assembly}}-{{sample}}_raw_sce.log", **config),
     priority: 1
     conda:
         "../envs/sce.yaml"
@@ -30,7 +33,8 @@ rule export_sce_obj:
         iscite=lambda wildcards, input: True if config["quantifier"] == "citeseqcount" else False,
         sample=lambda wildcards, input: rep_to_descriptive(wildcards.sample),
         replicates=True if "technical_replicates" in samples else False,
-        scripts_dir=f"{config['rule_dir']}/../scripts/deseq2",
+        scripts_dir=f"{config['rule_dir']}/../scripts",
+        outdir=lambda wildcards, input, output: os.path.dirname(output[1]),
     message:
         explain_rule("sce")
     resources:
@@ -41,14 +45,14 @@ rule export_sce_obj:
 
 rule sctk_qc:
     """
-    Import scRNA count table output into SingleCellExperiment S4 object, add colData and export to RData format.
+    Perform scRNA QC with singleCellTK, store output in SingleCellExperiment object and export to RData format.
     """
     input:
-       rds_raw=rules.export_sce_obj.output.rds
+       rds_raw=rules.export_sce_obj.output.dir[0]
     output:
         dir=expand(
             "{result_dir}/scrna-preprocess/{quantifier}/sctk/{{assembly}}-{{sample}}/{file}",
-            **{**config, **{"file": ["export/sctk_sce_obj.RData", "SCTK_CellQC_summary.csv", "SCTK_CellQC.html"]}}
+            **{**config, **{"file": ["export/R/sctk_SCE.RDS", "SCE_sctk_summary.csv"]}}
         ),
     log:
         expand("{log_dir}/scrna-preprocess/{quantifier}/sctk/{{assembly}}-{{sample}}_sctk.log", **config),
@@ -60,6 +64,7 @@ rule sctk_qc:
         sample=lambda wildcards, input: rep_to_descriptive(wildcards.sample),
         outdir=lambda wildcards, input, output: os.path.dirname(output[1]),
         isvelo=lambda wildcards, input: True if "--workflow lamanno" in config.get("count", "") else False,
+        scripts_dir=f"{config['rule_dir']}/../scripts",
         replicates=True if "technical_replicates" in samples else False,
     message:
         explain_rule("sctk")
