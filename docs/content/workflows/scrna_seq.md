@@ -221,7 +221,7 @@ Perform cell-calling for droplet based experiments. Empty droplet will not be re
 * `sctk_cell_calling` (*default*: `Knee`)<br/> 
 Method used for cell calling with [DropletUtils](https://bioconductor.org/packages/release/bioc/html/DropletUtils.html), either `Knee` or `EmptyDrops`. By default, EmptyDrops will use an FDR of 0.01 to identify empty droplets. If no option is provided, the inflection point will be used for cell calling. This option is only considered when `sctk_detect_cell=True`
 * `sctk_export_formats`: (*default*: `["Seurat"]`)<br/>
-List of file formats to export SingleCellExperiment objects. Valid options are Seurat, FlatFile and AnnData. Raw and processed sce objects will be exportee to rds format by default.
+List of file formats to export SingleCellExperiment objects. Valid options are Seurat, FlatFile and AnnData. Raw and processed sce objects will be exported to rds format by default.<br/>
 `sctk_qc_algos`: (*default*: `["QCMetrics", "scDblFinder", "decontX"]`)<br/>
 List of QC algorithms for [runCellQC's](https://rdrr.io/github/compbiomed/singleCellTK/man/runCellQC.html) `algorithm` parameter.
 `velo assay`: (*default*: `spliced`)<br/>
