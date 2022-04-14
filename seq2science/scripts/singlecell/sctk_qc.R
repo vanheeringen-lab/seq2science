@@ -24,6 +24,7 @@ use_alt_exp <- snakemake@config$sc_preprocess$use_alt_expr
 pdf_out <- file.path(out_dir, "SCTK_DropletQC_figures.pdf", fsep = "/")
 numCores <- snakemake@threads
 export_formats <- snakemake@config$sc_preprocess$sctk_export_formats
+cellQCAlgos <- snakemake@config$sc_preprocess$sctk_qc_algos
 
 # Log all console output
 log <- file(log_file, open = "wt")
@@ -51,6 +52,7 @@ cat('mito_set         <- "', mito_set, '"\n', sep = "")
 cat('detect_cell      <- "', detect_cell, '"\n', sep = "")
 cat('cell_calling     <- "', cell_calling, '"\n', sep = "")
 cat('use_alt_exp      <- "', use_alt_exp, '"\n', sep = "")
+cat('cellQCAlgos      <- "', toString(cellQCAlgos), '"\n', sep = "")
 cat('export_formats   <- "', toString(export_formats), '"\n', sep = "")
 
 # Setup parallel type
@@ -74,7 +76,6 @@ if (isTRUE(use_alt_exp)) {
 sce <- readRDS(rds_in)
 
 # Select QC algorithms
-cellQCAlgos <- c("QCMetrics", "scDblFinder", "decontX")
 collectionName <- NULL
 # Run cell QC algorithms
 if (tolower(data_type) == "cell") {
