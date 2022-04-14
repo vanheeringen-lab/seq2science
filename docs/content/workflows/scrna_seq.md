@@ -176,13 +176,13 @@ barcodefile: "barcodes.tab"
 ```
 
 #### scRNA-seq pre-processing and quality control
-The seq2science scRNA workflow provides the option to perform automated pre-processing of raw scRNA-seq UMI count matrices. This is achieved by incorporating several quality control steps from the [singleCellTK](https://camplab.net/sctk/v2.4.1/index.html) Bioconductor package, such as cell-calling, doublet detection and assessment of mitochondrial RNA expression. 
+The seq2science scRNA workflow provides the option to perform automated pre-processing of raw scRNA-seq UMI count matrices. This is achieved by incorporating several quality control steps from the [singleCellTK](https://camplab.net/sctk/v2.4.1/index.html) Bioconductor package, such as cell-calling, doublet detection and assessment of cell-wise mitochondrial RNA content. 
 
-The QC results are reported in comprehensive R-markdown reports and processed UMI count matrices are stored as [SingleCellExperiment](https://bioconductor.org/packages/release/bioc/html/SingleCellExperiment.html) S4 objects. Any sample level metadata that has been added to `samples.tsv` will be transferred to the `colData` slot of the corresponding object and assigned to each cell identifier. 
+The QC results are reported in comprehensive R Markdown reports and processed UMI count matrices are stored as [SingleCellExperiment](https://bioconductor.org/packages/release/bioc/html/SingleCellExperiment.html) S4 objects. Any sample level metadata that has been added to the `samples.tsv` file will be transferred to the `colData` slot of the corresponding object and assigned to each cell identifier. 
 
 After running seq2science, these objects can be directly imported into R with the `readRDS` function for further down-stream analysis with your favorite R packages.
 
-To perform scRNA-seq pre-processing, add the following section to your seq2science `config.yaml`. In this example, we pre-process a plate-based experiment from a human tissue.
+To perform scRNA-seq pre-processing, add the following section to your seq2science `config.yaml`. In this example, we pre-process a plate-based experiment from human tissue.
 
 ```
 sc_preprocess:
@@ -198,9 +198,9 @@ sc_preprocess:
    sctk_cell_calling: Knee
 ```
 
-To enable the sctk_qc workflow, set `run_sctk_qc=True`. Alternatively, one can skip quality control completely and export the UMI count matrix to a SingleCellExperiment object by setting `export_sce_objects=True`. However, these options are mutually exclusive. A raw SingleCellExperiment object will be generated as part of the quality control workflow and there is no need to set `export_sce_objects` manually.
+To enable the sctk_qc workflow, set `run_sctk_qc=True`. Alternatively, one can skip quality control and export the UMI count matrix to a SingleCellExperiment object by setting `export_sce_objects=True`. However, there is no need to set `export_sce_objects` manually when `run_sctk_qc` is enabled.
 
-Next, select the type of UMI count matrix with the `sctk_data_type` parameter. Valid options are either `cell` or `droplet`, depending on the type of input count matrix.
+Next, select the type of UMI count matrix with the `sctk_data_type` parameter. Valid options are either `cell` or `droplet`, depending on the type of experiment.
 
 * `droplet`<br/> 
 The UMI count matrix contains empty droplets. These empty droplets will be removed (cell calling) before further processing.  
@@ -213,11 +213,11 @@ We do not perform any gene/cell level filtering, except for empty droplets that 
 
 To perform additional (optional) QC steps, consider the following parameters:
 * `sctk_detect_mito` (*default*: `True`)<br/>
-Quantify the percentage of mitochondrial genes for each cell in your sample. 
+Quantify the percentage of mitochondrial RNA for each cell. 
 * `sctk_mito_set` (*default*: `human-ensembl`)<br/> 
-Mitochondrial gene set to use for quantification with syntax `[human,mouse]-[ensembl,entrez,symbol]`. At the moment, only human and mouse annotations are supported. This option is only considered when `sctk_detect_mito=True`
+The mitochondrial gene set to use for quantification with syntax `[human,mouse]-[ensembl,entrez,symbol]`. At the moment, only human and mouse gene annotations are supported. This option is only considered when `sctk_detect_mito=True`
 * `sctk_detect_cell` (*default*: `True`)<br/> 
-Perform cell-calling for droplet based experiments. Empty droplet will not be removed if set to `False`.
+Perform cell-calling for droplet based experiments. Empty droplets will not be removed if set to `False`.
 * `sctk_cell_calling` (*default*: `Knee`)<br/> 
 Method used for cell calling with [DropletUtils](https://bioconductor.org/packages/release/bioc/html/DropletUtils.html), either `Knee` or `EmptyDrops`. By default, EmptyDrops will use an FDR of 0.01 to identify empty droplets. If no option is provided, the inflection point will be used for cell calling. This option is only considered when `sctk_detect_cell=True`
 * `sctk_export_formats`: (*default*: `["Seurat"]`)<br/>
@@ -225,11 +225,10 @@ List of file formats to export SingleCellExperiment objects. Valid options are S
 `sctk_qc_algos`: (*default*: `["QCMetrics", "scDblFinder", "decontX"]`)<br/>
 List of QC algorithms for [runCellQC's](https://rdrr.io/github/compbiomed/singleCellTK/man/runCellQC.html) `algorithm` parameter.<br/>
 `velo assay`: (*default*: `spliced`)<br/>
-The assay to use for export/qc when kb is run in velocity mode with `--workflow lamanno` parameter.
+The assay to use for exporting and QC when kb is run in velocity mode with `--workflow lamanno` parameter.
 
 #### Alternative experiments
-Information about alternative sequencing features, such as ERCC spike-ins, can be provided as a separate experiment. These alternative experiments will be stored in the same SingleCellExperiment
-object as the main experiment but processed separately. To process alternative experiments, set the following options:
+Information about alternative sequencing features, such as ERCC spike-ins, can be provided as an alternative experiment. An alternative experiment will be stored within the same SingleCellExperiment object as the main experiment but processed separately. To process alternative experiments, set the following options:
 
 * `use_alt_expr` (*default*: `False`)<br/> 
 Set to `True` if you wish to process alternative experiments
@@ -240,14 +239,14 @@ Regular expression to filter alternative features from main experiment (.i.e,; `
 
 A previous addition of alternative features to the genome assembly (see section on custom assembly extensions) is a prerequisite. 
 
-#### QC report and output files
+#### Output files
 After running the scRNA QC workflow, the output can be found in the following locations:<br/>
 
 `path/to/results/scrna-preprocess/{quantifier}/export`:<br/>
-This folder contains the exported raw SingleCellExperiment object, without any qc applied. 
+This folder contains the exported raw SingleCellExperiment object, without any QC applied. 
 
 `path/to/results/scrna-preprocess/{quantifier}/sctk`:<br/>
-This folder contains the QC reports and exported SingleCellExperiment object, divided into several subfolders/files <br/>
+This folder contains the QC reports and exported SingleCellExperiment object, divided into several subfolders and files <br/>
 - `export`<br/>
 Subfolder containing the exported SingleCellExperiment object after qc and summary stats
 - `SCTK_CellQC.html`<br/>
@@ -257,7 +256,7 @@ Droplet-level QC report generate by [singleCellTK's](https://camplab.net/sctk/v2
 - `SCTK_DropletQC_figures.pdf`<br/>
 Barcode rank plot generated by [runBarcodeRankDrops](https://rdrr.io/github/compbiomed/singleCellTK/man/plotBarcodeRankScatter.html)
 - `SCTK_altexps.pdf `(optional)<br/>
-Scatter plot displaying the percentage alternative features vs. detected features
+Scatter plot displaying the percentage of alternative features vs. detected features
 
 
 
