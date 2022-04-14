@@ -223,7 +223,7 @@ Method used for cell calling with [DropletUtils](https://bioconductor.org/packag
 * `sctk_export_formats`: (*default*: `["Seurat"]`)<br/>
 List of file formats to export SingleCellExperiment objects. Valid options are Seurat, FlatFile and AnnData. Raw and processed sce objects will be exported to rds format by default.<br/>
 `sctk_qc_algos`: (*default*: `["QCMetrics", "scDblFinder", "decontX"]`)<br/>
-List of QC algorithms for [runCellQC's](https://rdrr.io/github/compbiomed/singleCellTK/man/runCellQC.html) `algorithm` parameter.
+List of QC algorithms for [runCellQC's](https://rdrr.io/github/compbiomed/singleCellTK/man/runCellQC.html) `algorithm` parameter.<br/>
 `velo assay`: (*default*: `spliced`)<br/>
 The assay to use for export/qc when kb is run in velocity mode with `--workflow lamanno` parameter.
 
