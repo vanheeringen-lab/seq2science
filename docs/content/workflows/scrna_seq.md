@@ -212,30 +212,31 @@ We do not perform any gene/cell level filtering, except for empty droplets that 
 #### Advanced settings
 
 To perform additional (optional) QC steps, consider the following parameters:
+
 * `sctk_detect_mito` (*default*: `True`)<br/>
 Quantify the percentage of mitochondrial RNA for each cell. 
 * `sctk_mito_set` (*default*: `human-ensembl`)<br/> 
-The mitochondrial gene set to use for quantification with syntax `[human,mouse]-[ensembl,entrez,symbol]`. At the moment, only human and mouse gene annotations are supported. This option is only considered when `sctk_detect_mito=True`
+The mitochondrial gene set to use for quantification with syntax `[human,mouse]-[ensembl,entrez,symbol]`. At the moment, only human and mouse gene annotations are supported. This option is only considered when `sctk_detect_mito=True`.
 * `sctk_detect_cell` (*default*: `True`)<br/> 
 Perform cell-calling for droplet based experiments. Empty droplets will not be removed if set to `False`.
 * `sctk_cell_calling` (*default*: `Knee`)<br/> 
-Method used for cell calling with [DropletUtils](https://bioconductor.org/packages/release/bioc/html/DropletUtils.html), either `Knee` or `EmptyDrops`. By default, EmptyDrops will use an FDR of 0.01 to identify empty droplets. If no option is provided, the inflection point will be used for cell calling. This option is only considered when `sctk_detect_cell=True`
+Method used for cell calling with [DropletUtils](https://bioconductor.org/packages/release/bioc/html/DropletUtils.html), either `Knee` or `EmptyDrops`. By default, EmptyDrops will use an FDR of 0.01 to identify empty droplets. If no option is provided, the inflection point will be used for cell calling. This option is only considered when `sctk_detect_cell=True`.
 * `sctk_export_formats`: (*default*: `["Seurat"]`)<br/>
 List of file formats to export SingleCellExperiment objects. Valid options are Seurat, FlatFile and AnnData. Raw and processed sce objects will be exported to rds format by default.<br/>
-`sctk_qc_algos`: (*default*: `["QCMetrics", "scDblFinder", "decontX"]`)<br/>
+* `sctk_qc_algos`: (*default*: `["QCMetrics", "scDblFinder", "decontX"]`)<br/>
 List of QC algorithms for [runCellQC's](https://rdrr.io/github/compbiomed/singleCellTK/man/runCellQC.html) `algorithm` parameter.<br/>
-`velo assay`: (*default*: `spliced`)<br/>
-The assay to use for exporting and QC when kb is run in velocity mode with `--workflow lamanno` parameter.
+* `velo assay`: (*default*: `spliced`)<br/>
+The assay to use for exporting and QC when kb is run in velocity mode with `--workflow lamanno` parameter. Valid options are either `spliced` or `unspliced`.
 
 #### Alternative experiments
 Information about alternative sequencing features, such as ERCC spike-ins, can be provided as an alternative experiment. An alternative experiment will be stored within the same SingleCellExperiment object as the main experiment but processed separately. To process alternative experiments, set the following options:
 
 * `use_alt_expr` (*default*: `False`)<br/> 
-Set to `True` if you wish to process alternative experiments
+Set to `True` if you wish to process alternative experiments.
 * `alt_exp_name` (*default*: `""`)<br/> 
-The name/title of the alternative experiment. This option is only considered if `use_alt_expr=True`
+The name/title of the alternative experiment. This option is only considered if `use_alt_expr=True`.
 * `alt_exp_reg` (*default*: `""`)<br/> 
-Regular expression to filter alternative features from main experiment (.i.e,; `"ERCC-*"`). This option is only considered when `use_alt_expr=True`
+Regular expression to filter alternative features from main experiment (.i.e,; `"ERCC-*"`). This option is only considered when `use_alt_expr=True`.
 
 A previous addition of alternative features to the genome assembly (see section on custom assembly extensions) is a prerequisite. 
 
@@ -246,17 +247,17 @@ After running the scRNA QC workflow, the output can be found in the following lo
 This folder contains the exported raw SingleCellExperiment object, without any QC applied. 
 
 `path/to/results/scrna-preprocess/{quantifier}/sctk`:<br/>
-This folder contains the QC reports and exported SingleCellExperiment object, divided into several subfolders and files <br/>
+This folder contains the QC reports and exported SingleCellExperiment object, divided into several subfolders and files. <br/>
 - `export`<br/>
-Subfolder containing the exported SingleCellExperiment object after qc and summary stats
+Subfolder containing the exported SingleCellExperiment object after QC and summary statistics.
 - `SCTK_CellQC.html`<br/>
-Cell-level QC report generate by [singleCellTK's](https://camplab.net/sctk/v2.4.1/index.html) [runCellQC](https://rdrr.io/github/compbiomed/singleCellTK/man/runCellQC.html) 
+Cell-level QC report generate by [singleCellTK's](https://camplab.net/sctk/v2.4.1/index.html) [runCellQC](https://rdrr.io/github/compbiomed/singleCellTK/man/runCellQC.html). 
 - `SCTK_DropletQC.html`<br/>
-Droplet-level QC report generate by [singleCellTK's](https://camplab.net/sctk/v2.4.1/index.html) [runDropletQC](https://rdrr.io/github/compbiomed/singleCellTK/man/runDropletQC.html) 
+Droplet-level QC report generate by [singleCellTK's](https://camplab.net/sctk/v2.4.1/index.html) [runDropletQC](https://rdrr.io/github/compbiomed/singleCellTK/man/runDropletQC.html). 
 - `SCTK_DropletQC_figures.pdf`<br/>
-Barcode rank plot generated by [runBarcodeRankDrops](https://rdrr.io/github/compbiomed/singleCellTK/man/plotBarcodeRankScatter.html)
+Barcode rank plot generated by [runBarcodeRankDrops](https://rdrr.io/github/compbiomed/singleCellTK/man/plotBarcodeRankScatter.html).
 - `SCTK_altexps.pdf `(optional)<br/>
-Scatter plot displaying the percentage of alternative features vs. detected features
+Scatter plot displaying the percentage of alternative features vs. detected features.
 
 
 
