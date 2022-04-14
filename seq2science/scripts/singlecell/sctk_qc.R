@@ -23,6 +23,7 @@ cell_calling <- snakemake@config$sc_preprocess$sctk_cell_calling
 use_alt_exp <- snakemake@config$sc_preprocess$use_alt_expr
 pdf_out <- file.path(out_dir, "SCTK_DropletQC_figures.pdf", fsep = "/")
 numCores <- snakemake@threads
+export_formats <- snakemake@config$sc_preprocess$sctk_export_formats
 
 # Log all console output
 log <- file(log_file, open = "wt")
@@ -50,6 +51,7 @@ cat('mito_set         <- "', mito_set, '"\n', sep = "")
 cat('detect_cell      <- "', detect_cell, '"\n', sep = "")
 cat('cell_calling     <- "', cell_calling, '"\n', sep = "")
 cat('use_alt_exp      <- "', use_alt_exp, '"\n', sep = "")
+cat('export_formats   <- "', toString(export_formats), '"\n', sep = "")
 
 # Setup parallel type
 # https://github.com/compbiomed/singleCellTK/blob/master/exec/SCTK_runQC.R
@@ -135,13 +137,13 @@ if (tolower(data_type) == "cell") {
   mergedFilteredSCE <- cellSCE
   # Generate CellQC report
   message(paste0(date(), " .. Generating CellQC report"))
-  reportCellQC(inSCE = mergedFilteredSCE, output_dir = out_dir, output_file = "SCTK_CellQC.html")
+  reportCellQC(inSCE = mergedFilteredSCE, subTitle = paste0("Sample: ", sample), output_dir = out_dir, output_file = "SCTK_CellQC.html")
   # Save final rds objects
   if (isTRUE(use_alt_exp)) {
     plotAltExps(out_dir, mergedFilteredSCE)
   }
   message(paste0(date(), " .. Exporting SCE object!"))
-  exportSCEObjs(mergedFilteredSCE, out_dir = out_dir, prefix = "sctk")
+  exportSCEObjs(mergedFilteredSCE, out_dir = out_dir, prefix = "sctk", formats = export_formats)
 }
 
 # Merge Droplet SingleCellExperiment object
@@ -168,10 +170,10 @@ if (tolower(data_type) == "droplet") {
     ))
     dev.off()
     # Generate HTML report for DropletQC
-    reportDropletQC(inSCE = mergedDropletSCE, output_dir = out_dir, output_file = "SCTK_DropletQC.html")
+    reportDropletQC(inSCE = mergedDropletSCE, subTitle = paste0("Sample: ", sample), output_dir = out_dir, output_file = "SCTK_DropletQC.html")
     # Generate CellQC report
     message(paste0(date(), " .. Generating CellQC report"))
-    reportCellQC(inSCE = mergedFilteredSCE, output_dir = out_dir, output_file = "SCTK_CellQC.html")
+    reportCellQC(inSCE = mergedFilteredSCE, subTitle = paste0("Sample: ", sample), output_dir = out_dir, output_file = "SCTK_CellQC.html")
     # Generate report for alternative experiments
     if (isTRUE(use_alt_exp)) {
       plotAltExps(out_dir, mergedFilteredSCE)
@@ -179,7 +181,7 @@ if (tolower(data_type) == "droplet") {
     # Generate final RDATA object
     message(paste0(date(), " .. Exporting SCE object!"))
     # sce.processed <- list(cellsce = mergedFilteredSCE, dropletsce = mergedDropletSCE)
-    exportSCEObjs(mergedFilteredSCE, out_dir = out_dir, prefix = "sctk")
+    exportSCEObjs(mergedFilteredSCE, out_dir = out_dir, prefix = "sctk", formats = export_formats)
   } else {
     mergedDropletSCE <- dropletSCE
     # Generate DropletQC Report
@@ -201,9 +203,9 @@ if (tolower(data_type) == "droplet") {
     ))
     dev.off()
     # Create DropletQC report
-    reportDropletQC(inSCE = mergedDropletSCE, output_dir = out_dir, output_file = "SCTK_DropletQC.html")
+    reportDropletQC(inSCE = mergedDropletSCE, subTitle = paste0("Sample: ", sample), output_dir = out_dir, output_file = "SCTK_DropletQC.html")
     # Export SCE objects
     message(paste0(date(), " .. Exporting SCE object!"))
-    exportSCEObjs(mergedDropletSCE, out_dir = out_dir, prefix = "sctk")
+    exportSCEObjs(mergedDropletSCE, out_dir = out_dir, prefix = "sctk", formats = export_formats)
   }
 }

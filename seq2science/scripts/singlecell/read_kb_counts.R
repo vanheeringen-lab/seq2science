@@ -21,6 +21,7 @@ use_alt_expr <- snakemake@config$sc_preprocess$use_alt_expr
 alt_exp_name <- snakemake@config$sc_preprocess$alt_exp_name
 alt_exp_reg <- snakemake@config$sc_preprocess$alt_exp_reg
 velo_assay <- snakemake@config$sc_preprocess$velo_assay
+export_formats <- snakemake@config$sc_preprocess$sctk_export_formats
 
 # Log all console output
 log <- file(log_file, open = "wt")
@@ -53,6 +54,7 @@ cat('velo_assay       <- "', velo_assay, '"\n', sep = "")
 cat('use_alt_expr     <- "', use_alt_expr, '"\n', sep = "")
 cat('alt_exp_name     <- "', alt_exp_name, '"\n', sep = "")
 cat('alt_exp_reg      <- "', alt_exp_reg, '"\n', sep = "")
+cat('export_formats   <- "', toString(export_formats), '"\n', sep = "")
 
 cat("\n")
 
@@ -184,4 +186,4 @@ sce <-
 sce <- modifySCE(sce)
 # Export SCE objects to various file formats
 message(paste0(date(), " .. Exporting SCE object!"))
-exportSCEObjs(sce, out_dir = out_dir, prefix = "raw")
+exportSCEObjs(sce, out_dir = out_dir, prefix = "raw", formats = export_formats)

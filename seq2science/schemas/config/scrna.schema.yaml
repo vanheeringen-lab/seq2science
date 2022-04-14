@@ -72,6 +72,9 @@ properties:
       sctk_cell_calling:
         description: "Type of cell calling method"
         enum: ["EmptyDrops", "Knee"]
+      sctk_export_formats:
+        description: "Additional file formats for SCE export"
+        array: ["Seurat","FlatFile", "AnnData"]
         
     default:
       export_sce_objects: False
@@ -82,6 +85,7 @@ properties:
       sctk_cell_calling: Knee
       sctk_detect_mito: True
       sctk_mito_set: human-ensembl
+      sctk_export_format: ["Seurat"]
       use_alt_expr: False
       alt_exp_name: "ALT"
       alt_exp_reg: ""

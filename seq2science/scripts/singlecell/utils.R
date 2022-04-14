@@ -3,16 +3,29 @@ suppressMessages({
 })
 
 # Export a SCE object to a variety of data types
-exportSCEObjs <- function(sce, out_dir, prefix = "sample") {
+exportSCEObjs <- function(sce, out_dir, prefix = "sample", formats = c("Seurat")) {
+    if (any(!formats %in% c("AnnData", "FlatFile", "Seurat")) & !length(formats)) {
+        message(paste0(date(), "Output Format(s) not supported"))
+        quit(status = 1, save = 0)
+    }
     # Write SCE to RDS objects
     saveRDS(object = sce, file = file.path(out_dir, "export", "R", paste0(prefix, "_", "SCE.RDS")))
-    # Export to SCE to Seurat object
-    exportSCEToSeurat(sce, outputDir = file.path(out_dir, "export", "R"), prefix = prefix, copyColData = TRUE, copyDecontX = TRUE, overwrite = TRUE)
-    # Export SCE to FlatFile
-    exportSCEtoFlatFile(sce, outputDir = file.path(out_dir, "export", "FlatFile"), prefix = prefix)
     # Generate some summary stats
     QCsummary <- sampleSummaryStats(sce, simple = FALSE, sample = NULL)
     write.csv(QCsummary, file.path(out_dir, paste0("SCE", "_", prefix, "_summary.csv")), quote = FALSE)
+    # Additional output formats
+    if ("Seurat" %in% formats) {
+        # Export to SCE to Seurat object
+        exportSCEToSeurat(sce, outputDir = file.path(out_dir, "export", "R"), prefix = prefix, copyColData = TRUE, copyDecontX = TRUE, overwrite = TRUE)
+    }
+    if ("FlatFile" %in% formats) {
+        # Export SCE to FlatFile
+        exportSCEtoFlatFile(sce, outputDir = file.path(out_dir, "export", "FlatFile"), prefix = prefix)
+    }
+    if ("AnnData" %in% formats) {
+        # Export SCE to FlatFile
+        exportSCEtoAnnData(sce, outputDir = file.path(out_dir, "export", "AnnData"), prefix = prefix)
+    }
 }
 
 # Modifies a SingleCellExperiment object by removing the numerical transcript suffix
