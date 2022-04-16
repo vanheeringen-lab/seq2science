@@ -85,8 +85,7 @@ if config["trimmer"] == "trimgalore":
 
 
 elif config["trimmer"] == "fastp":
-
-    ruleorder: fastp_qc_PE > fastp_qc_SE > fastp_PE > fastp_SE
+    ruleorder: fastp_qc_PE > fastp_qc_SE > fastp_PE > fastp_SE > fastp_reuse
 
     rule fastp_qc_SE:
         """
@@ -141,6 +140,34 @@ elif config["trimmer"] == "fastp":
             fastp -w {threads} --in1 {input[0]} --in2 {input[1]} \
             -h {output.qc_html} -j {output.qc_json} \
             {params.config} > {log} 2>&1
+            """
+
+
+    def get_runQC_from_sample(wildcards):
+        run_qc = dict()
+        run = samples_extended_with_runs[samples_extended_with_runs["technical_replicates"] == wildcards.sample].index
+        assert len(run) == 1
+
+        run_qc["qc_json"] = f"{config['qc_dir']}/trimming/{run[0]}.fastp.json",
+        run_qc["qc_html"] = f"{config['qc_dir']}/trimming/{run[0]}.fastp.html",
+        return run_qc
+
+    rule fastp_reuse:
+        """
+        REUSE TODO
+        """
+        input:
+            unpack(get_runQC_from_sample)
+        output:
+            qc_json=expand("{qc_dir}/trimming/{{sample}}.fastp.json", **config),
+            qc_html=expand("{qc_dir}/trimming/{{sample}}.fastp.html", **config),
+        wildcard_constraints:
+            sample="|".join(not_merged_treps) if len(not_merged_treps) else "$a",
+        priority: -10
+        shell:
+            """\
+            cp {input.qc_json} {output.qc_json}
+            cp {input.qc_html} {output.qc_html}
             """
 
 

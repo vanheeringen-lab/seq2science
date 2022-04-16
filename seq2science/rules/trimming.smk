@@ -16,18 +16,18 @@ if config["trimmer"] == "trimgalore":
         Automated adapter detection, adapter trimming, and quality trimming through trim galore (single-end).
         """
         input:
-            expand("{fastq_dir}/{{sample}}.{fqsuffix}.gz", **config),
+            expand("{fastq_dir}/{{run}}.{fqsuffix}.gz", **config),
         output:
-            se=temp(expand("{trimmed_dir}/{{sample}}_trimmed.{fqsuffix}.gz", **config)),
-            qc=expand("{qc_dir}/trimming/{{sample}}.{fqsuffix}.gz_trimming_report.txt", **config),
+            se=temp(expand("{trimmed_dir}/{{run}}_trimmed.{fqsuffix}.gz", **config)),
+            qc=expand("{qc_dir}/trimming/{{run}}.{fqsuffix}.gz_trimming_report.txt", **config),
         conda:
             "../envs/trimgalore.yaml"
         threads: 6
         message: explain_rule("trimgalore_SE")
         log:
-            expand("{log_dir}/trimgalore_SE/{{sample}}.log", **config),
+            expand("{log_dir}/trimgalore_SE/{{run}}.log", **config),
         benchmark:
-            expand("{benchmark_dir}/trimgalore_SE/{{sample}}.benchmark.txt", **config)[0]
+            expand("{benchmark_dir}/trimgalore_SE/{{run}}.benchmark.txt", **config)[0]
         params:
             config=config["trimoptions"],
             fqsuffix=config["fqsuffix"],
@@ -38,11 +38,11 @@ if config["trimmer"] == "trimgalore":
     
             # now rename to proper output
             if [ "{params.fqsuffix}" != "fq" ]; then
-              mv "$(dirname {output.se})/{wildcards.sample}_trimmed.fq.gz" {output.se}
+              mv "$(dirname {output.se})/{wildcards.run}_trimmed.fq.gz" {output.se}
             fi 
     
             # move the trimming report to qc directory
-            report=$(dirname {output.se})/{wildcards.sample}.{params.fqsuffix}.gz_trimming_report.txt
+            report=$(dirname {output.se})/{wildcards.run}.{params.fqsuffix}.gz_trimming_report.txt
             mv $report {output.qc}
             """
 
@@ -52,20 +52,20 @@ if config["trimmer"] == "trimgalore":
         Automated adapter detection, adapter trimming, and quality trimming through trim galore (paired-end).
         """
         input:
-            r1=expand("{fastq_dir}/{{sample}}_{fqext1}.{fqsuffix}.gz", **config),
-            r2=expand("{fastq_dir}/{{sample}}_{fqext2}.{fqsuffix}.gz", **config),
+            r1=expand("{fastq_dir}/{{run}}_{fqext1}.{fqsuffix}.gz", **config),
+            r2=expand("{fastq_dir}/{{run}}_{fqext2}.{fqsuffix}.gz", **config),
         output:
-            r1=temp(expand("{trimmed_dir}/{{sample}}_{fqext1}_trimmed.{fqsuffix}.gz", **config)),
-            r2=temp(expand("{trimmed_dir}/{{sample}}_{fqext2}_trimmed.{fqsuffix}.gz", **config)),
-            qc=expand("{qc_dir}/trimming/{{sample}}_{fqext}.{fqsuffix}.gz_trimming_report.txt", **config),
+            r1=temp(expand("{trimmed_dir}/{{run}}_{fqext1}_trimmed.{fqsuffix}.gz", **config)),
+            r2=temp(expand("{trimmed_dir}/{{run}}_{fqext2}_trimmed.{fqsuffix}.gz", **config)),
+            qc=expand("{qc_dir}/trimming/{{run}}_{fqext}.{fqsuffix}.gz_trimming_report.txt", **config),
         conda:
             "../envs/trimgalore.yaml"
         threads: 6
         message: explain_rule("trimgalore_PE")
         log:
-            expand("{log_dir}/trimgalorePE/{{sample}}.log", **config),
+            expand("{log_dir}/trimgalorePE/{{run}}.log", **config),
         benchmark:
-            expand("{benchmark_dir}/trimgalorePE/{{sample}}.benchmark.txt", **config)[0]
+            expand("{benchmark_dir}/trimgalorePE/{{run}}.benchmark.txt", **config)[0]
         params:
             config=config["trimoptions"],
             fqsuffix=config["fqsuffix"],
@@ -75,13 +75,13 @@ if config["trimmer"] == "trimgalore":
             trim_galore --paired -j {threads} {params.config} -o $(dirname {output.r1}) {input.r1} {input.r2} > {log} 2>&1
     
             # now rename to proper output
-            for f in $(find "$(dirname {output.r1})/" -name "{wildcards.sample}_*val_*.fq.gz"); do
+            for f in $(find "$(dirname {output.r1})/" -name "{wildcards.run}_*val_*.fq.gz"); do
                 mv "$f" "$(echo "$f" | sed s/.fq/.{params.fqsuffix}/)"; done
-            for f in $(find "$(dirname {output.r1})/" -maxdepth 1 -name "{wildcards.sample}_*val_*.{params.fqsuffix}.gz"); do
+            for f in $(find "$(dirname {output.r1})/" -maxdepth 1 -name "{wildcards.run}_*val_*.{params.fqsuffix}.gz"); do
                 mv "$f" "$(echo "$f" | sed s/_val_./_trimmed/)"; done
     
             # move the trimming reports to qc directory
-            for f in $(find "$(dirname {output.r1})/" -name "{wildcards.sample}_*.{params.fqsuffix}.gz_trimming_report.txt"); do
+            for f in $(find "$(dirname {output.r1})/" -name "{wildcards.run}_*.{params.fqsuffix}.gz_trimming_report.txt"); do
                 mv "$f" "$(dirname {output.qc[0]})/$(basename $f)"; done
             """
 
@@ -112,7 +112,10 @@ elif config["trimmer"] == "fastp":
         all_paired_samples = []
     else:
         all_single_samples = [sample for sample in all_samples if sampledict[sample]["layout"] == "SINGLE"]
+        all_single_runs = [run for sample in all_single_samples for run in sampledict[sample]["runs"]]
         all_paired_samples = [sample for sample in all_samples if sampledict[sample]["layout"] == "PAIRED"]
+        all_paired_runs = [run for sample in all_paired_samples for run in sampledict[sample]["runs"]]
+        print(all_paired_runs)
 
 
     rule fastp_SE:
@@ -120,21 +123,21 @@ elif config["trimmer"] == "fastp":
         Automated adapter detection, adapter trimming, and quality trimming through fastp (single-end).
         """
         input:
-            expand("{fastq_dir}/{{sample}}.{fqsuffix}.gz", **config),
+            expand("{fastq_dir}/{{run}}.{fqsuffix}.gz", **config),
         output:
-            se=temp(expand("{trimmed_dir}/{{sample}}_trimmed.{fqsuffix}.gz", **config)),
-            qc_json=expand("{qc_dir}/trimming/{{sample}}.fastp.json", **config),
-            qc_html=expand("{qc_dir}/trimming/{{sample}}.fastp.html", **config),
+            se=temp(expand("{trimmed_dir}/{{run}}_trimmed.{fqsuffix}.gz", **config)),
+            qc_json=expand("{qc_dir}/trimming/{{run}}.fastp.json", **config),
+            qc_html=expand("{qc_dir}/trimming/{{run}}.fastp.html", **config),
         conda:
             "../envs/fastp.yaml"
         threads: 4
         message: explain_rule("fastp_SE")
         wildcard_constraints:
-            sample="|".join(all_single_samples) if len(all_single_samples) else "$a"
+            run="|".join(all_single_runs) if len(all_single_runs) else "$a"
         log:
-            expand("{log_dir}/fastp_SE/{{sample}}.log", **config),
+            expand("{log_dir}/fastp_SE/{{run}}.log", **config),
         benchmark:
-            expand("{benchmark_dir}/fastp_SE/{{sample}}.benchmark.txt", **config)[0]
+            expand("{benchmark_dir}/fastp_SE/{{run}}.benchmark.txt", **config)[0]
         params:
             config=config["trimoptions"],
         shell:
@@ -151,23 +154,23 @@ elif config["trimmer"] == "fastp":
         Automated adapter detection, adapter trimming, and quality trimming through fastp (paired-end).
         """
         input:
-            r1=expand("{fastq_dir}/{{sample}}_{fqext1}.{fqsuffix}.gz", **config),
-            r2=expand("{fastq_dir}/{{sample}}_{fqext2}.{fqsuffix}.gz", **config),
+            r1=expand("{fastq_dir}/{{run}}_{fqext1}.{fqsuffix}.gz", **config),
+            r2=expand("{fastq_dir}/{{run}}_{fqext2}.{fqsuffix}.gz", **config),
         output:
-            r1=temp(expand("{trimmed_dir}/{{sample}}_{fqext1}_trimmed.{fqsuffix}.gz", **config)),
-            r2=temp(expand("{trimmed_dir}/{{sample}}_{fqext2}_trimmed.{fqsuffix}.gz", **config)),
-            qc_json=expand("{qc_dir}/trimming/{{sample}}.fastp.json", **config),
-            qc_html=expand("{qc_dir}/trimming/{{sample}}.fastp.html", **config),
+            r1=temp(expand("{trimmed_dir}/{{run}}_{fqext1}_trimmed.{fqsuffix}.gz", **config)),
+            r2=temp(expand("{trimmed_dir}/{{run}}_{fqext2}_trimmed.{fqsuffix}.gz", **config)),
+            qc_json=expand("{qc_dir}/trimming/{{run}}.fastp.json", **config),
+            qc_html=expand("{qc_dir}/trimming/{{run}}.fastp.html", **config),
         conda:
             "../envs/fastp.yaml"
         threads: 4
         wildcard_constraints:
-            sample="|".join(all_paired_samples) if len(all_paired_samples) else "$a"
+            run="|".join(all_paired_runs) if len(all_paired_runs) else "$a"
         message: explain_rule("fastp_PE")
         log:
-            expand("{log_dir}/fastp_PE/{{sample}}.log", **config),
+            expand("{log_dir}/fastp_PE/{{run}}.log", **config),
         benchmark:
-            expand("{benchmark_dir}/fastp_PE/{{sample}}.benchmark.txt", **config)[0]
+            expand("{benchmark_dir}/fastp_PE/{{run}}.benchmark.txt", **config)[0]
         params:
             config=config["trimoptions"],
         shell:

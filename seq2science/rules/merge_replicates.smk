@@ -5,7 +5,7 @@ all rules/logic related to the merging of technical replicates (and a bit for bi
 # dataframe with all technical replicates collapsed
 cols = ["sample", "assembly"]
 subset = ["sample", "assembly"]
-if "technical_replicates" in samples:
+if "technical_replicates" in samples or True:
     cols = ["technical_replicates", "assembly"]
     subset = ["technical_replicates", "assembly"]
 if "biological_replicates" in samples:
@@ -16,13 +16,16 @@ if "control" in samples:
 if "colors" in samples:
     cols.append("colors")
 
-treps = samples.reset_index()[cols].drop_duplicates(subset=subset).set_index(cols[0])
+treps = samples_extended_with_runs.reset_index()[cols].drop_duplicates(subset=subset).set_index(cols[0])
 assert treps.index.is_unique, "duplicate value found in treps"
 
 # treps that came from a merge
-merged_treps = [trep for trep in treps.index if trep not in samples.index]
+# merged_treps = [trep for trep in treps.index if trep not in samples.index]
+print("merged treps")
+print(merged_treps)
 merged_treps_single = [trep for trep in merged_treps if sampledict[trep]["layout"] == "SINGLE"]
 merged_treps_paired = [trep for trep in merged_treps if sampledict[trep]["layout"] == "PAIRED"]
+print(merged_treps_paired)
 
 # all samples (including controls)
 all_samples = [sample for sample in samples.index]
@@ -57,6 +60,11 @@ brep_from_trep = dict()
 for (brep, _assembly), _treps in treps_from_brep.items():
     brep_from_trep.update({trep: brep for trep in _treps})
 
+print(treps)
+print(merged_treps)
+print(treps_from_brep)
+
+print(brep_from_trep)
 
 def rep_to_descriptive(rep, brep=False):
     """

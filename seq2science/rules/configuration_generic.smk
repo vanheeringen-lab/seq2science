@@ -402,11 +402,41 @@ for sample, values in sampledict.items():
             else:
                 run2download[run] = values["ena_fastq_ftp"][run]
 
+
+# TODO EXPLAIN!
+rows = list()
+merged_treps = set()
+for sample, row in samples.iterrows():
+    if len(sampledict[sample]["runs"]) > 0:
+        for i, run in enumerate(sampledict[sample]["runs"]):
+            row_dict = dict()
+            rows.append(row_dict)
+
+            row_dict["sample"] = run
+            row_dict["technical_replicates"] = sample
+            if "descriptive_name" in row:
+                row_dict["descriptive_name"] = row.descriptive_name + f"_{i}"
+            for col, value in [(col, value) for col, value in row.iteritems() if col not in ["sample", "descriptive_name", "technical_replicates"]]:
+                row_dict[col] = value
+
+            if i >= 1:
+                merged_treps.add(sample)
+
+    else:
+        assert False
+
+not_merged_treps = set(samples.index) - merged_treps
+samples_extended_with_runs = pd.DataFrame(rows)
+samples_extended_with_runs = samples_extended_with_runs.set_index("sample")
+samples_extended_with_runs
+
+
+
 # if samples are merged add the layout of the technical replicate to the config
 failed_samples = dict()
-if "technical_replicates" in samples:
-    for sample in samples.index:
-        replicate = samples.loc[sample, "technical_replicates"]
+if "technical_replicates" in samples_extended_with_runs:
+    for replicate in samples_extended_with_runs.index:
+        # replicate = samples.loc[sample, "technical_replicates"]
         if replicate not in sampledict:
             sampledict[replicate] = {"layout": sampledict[sample]["layout"]}
         elif sampledict[replicate]["layout"] != sampledict[sample]["layout"]:
