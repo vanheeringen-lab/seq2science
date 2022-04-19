@@ -5,3 +5,4 @@ channels:
   - defaults
 dependencies:
   - bioconda::pysam=0.15.3
+  - conda-forge::conda-ecosystem-user-package-isolation=1.0

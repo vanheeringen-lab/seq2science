@@ -5,3 +5,4 @@ channels:
   - defaults
 dependencies:
   - bioconda::fastqc=0.11.8
+  - conda-forge::conda-ecosystem-user-package-isolation=1.0
