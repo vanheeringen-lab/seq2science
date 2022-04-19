@@ -10,6 +10,7 @@ suppressMessages({
 # Snakemake variables
 rds_in <- snakemake@input$rds_raw
 out_dir <- snakemake@params$outdir
+scripts_dir <- snakemake@params$scripts_dir
 log_file <- snakemake@log[[1]]
 sample <- snakemake@params$sample
 isvelo <- snakemake@params$isvelo
@@ -20,27 +21,30 @@ detect_cell <- snakemake@config$sc_preprocess$sctk_detect_cell
 detect_mito <- snakemake@config$sc_preprocess$sctk_detect_mito
 cell_calling <- snakemake@config$sc_preprocess$sctk_cell_calling
 use_alt_exp <- snakemake@config$sc_preprocess$use_alt_expr
-rds_out <- file.path(out_dir, "export", "sctk_sce_obj.RData", fsep = "/")
-qc_summary <- file.path(out_dir, "SCTK_CellQC_summary.csv", fsep = "/")
 pdf_out <- file.path(out_dir, "SCTK_DropletQC_figures.pdf", fsep = "/")
 numCores <- snakemake@threads
+export_formats <- snakemake@config$sc_preprocess$sctk_export_formats
+cellQCAlgos <- snakemake@config$sc_preprocess$sctk_qc_algos
 
 # Log all console output
 log <- file(log_file, open = "wt")
 sink(log)
 sink(log, type = "message")
 
+# Load scrna utils
+scrna_utils <- file.path(scripts_dir, "singlecell", "utils.R")
+source(scrna_utils)
+
+
 # Log all variables for debugging purposes
 cat("# variables used for this analysis:\n")
 cat('log_file         <- "', log_file, '"\n', sep = "")
 cat('sample           <- "', sample, '"\n', sep = "")
+cat('scripts_dir      <- "', scripts_dir, '"\n', sep = "")
 cat('replicates       <- "', replicates, '"\n', sep = "")
 cat('isvelo           <- "', isvelo, '"\n', sep = "")
 cat('rds_in           <- "', rds_in, '"\n', sep = "")
 cat('out_dir          <- "', out_dir, '"\n', sep = "")
-cat('rds_out          <- "', out_dir, '"\n', sep = "")
-cat('out_dir           <- "', out_dir, '"\n', sep = "")
-cat('qc_summary       <- "', qc_summary, '"\n', sep = "")
 cat('pdf_out          <- "', pdf_out, '"\n', sep = "")
 cat('data_type        <- "', data_type, '"\n', sep = "")
 cat('detect_mito      <- "', detect_mito, '"\n', sep = "")
@@ -48,6 +52,8 @@ cat('mito_set         <- "', mito_set, '"\n', sep = "")
 cat('detect_cell      <- "', detect_cell, '"\n', sep = "")
 cat('cell_calling     <- "', cell_calling, '"\n', sep = "")
 cat('use_alt_exp      <- "', use_alt_exp, '"\n', sep = "")
+cat('cellQCAlgos      <- "', toString(cellQCAlgos), '"\n', sep = "")
+cat('export_formats   <- "', toString(export_formats), '"\n', sep = "")
 
 # Setup parallel type
 # https://github.com/compbiomed/singleCellTK/blob/master/exec/SCTK_runQC.R
@@ -62,42 +68,14 @@ Params$QCMetrics$BPPARAM <- parallelParam
 Params$emptyDrops$BPPARAM <- parallelParam
 Params$doubletFinder$nCores <- numCores
 
-# Modify sce object
-modifySCE <- function(sce) {
-  newnames <- gsub(x = rownames(sce), pattern = "\\..*$", replacement = "")
-  if (nrow(sce) == length(newnames)) {
-    rownames(sce) <- newnames
-  } else {
-    message(paste0(date(), " .. Unequal gene sets: nrow(sce) != nrow(newnames)"))
-    quit(status = 1, save = 0)
-  }
-  return(sce)
-}
-
-# Create scatter plot from alternative experiments
-plotAltExps <- function(out_dir, sce) {
-  pdf(file.path(out_dir, "SCTK_altexps.pdf", fsep = "/"))
-  for (n in altExpNames(sce)) {
-    x <- paste0("altexps_", n, "_percent")
-    y <- "detected"
-    print(plotColData(sce, x = x, y = y))
-  }
-  dev.off()
-}
-
 # Generate QC stats for alternative experiments (if present)
 if (isTRUE(use_alt_exp)) {
   Params$QCMetrics$use_altexps <- TRUE
 }
 # Read RDATA and modify raw sce object
 sce <- readRDS(rds_in)
-if (isTRUE(isvelo)) {
-  # Perform QC on spliced counts
-  sce <- sce$spliced
-}
-sce <- modifySCE(sce)
+
 # Select QC algorithms
-cellQCAlgos <- c("QCMetrics", "scDblFinder", "decontX")
 collectionName <- NULL
 # Run cell QC algorithms
 if (tolower(data_type) == "cell") {
@@ -160,17 +138,13 @@ if (tolower(data_type) == "cell") {
   mergedFilteredSCE <- cellSCE
   # Generate CellQC report
   message(paste0(date(), " .. Generating CellQC report"))
-  reportCellQC(inSCE = mergedFilteredSCE, output_dir = out_dir, output_file = "SCTK_CellQC.html")
-  # Generate QC summary
-  QCsummary <- sampleSummaryStats(mergedFilteredSCE, simple = FALSE, sample = NULL)
-  write.csv(QCsummary, qc_summary, quote = FALSE)
+  reportCellQC(inSCE = mergedFilteredSCE, subTitle = paste0("Sample: ", sample), output_dir = out_dir, output_file = "SCTK_CellQC.html")
   # Save final rds objects
   if (isTRUE(use_alt_exp)) {
     plotAltExps(out_dir, mergedFilteredSCE)
   }
-  message(paste0(date(), " .. Exporting to RDATA format"))
-  sce.processed <- mergedFilteredSCE
-  saveRDS(sce.processed, file = rds_out)
+  message(paste0(date(), " .. Exporting SCE object!"))
+  exportSCEObjs(mergedFilteredSCE, out_dir = out_dir, prefix = "sctk", formats = export_formats)
 }
 
 # Merge Droplet SingleCellExperiment object
@@ -197,21 +171,18 @@ if (tolower(data_type) == "droplet") {
     ))
     dev.off()
     # Generate HTML report for DropletQC
-    reportDropletQC(inSCE = mergedDropletSCE, output_dir = out_dir, output_file = "SCTK_DropletQC.html")
+    reportDropletQC(inSCE = mergedDropletSCE, subTitle = paste0("Sample: ", sample), output_dir = out_dir, output_file = "SCTK_DropletQC.html")
     # Generate CellQC report
     message(paste0(date(), " .. Generating CellQC report"))
-    reportCellQC(inSCE = mergedFilteredSCE, output_dir = out_dir, output_file = "SCTK_CellQC.html")
-    # Generate QC summary
-    QCsummary <- sampleSummaryStats(mergedFilteredSCE, simple = FALSE, sample = NULL)
-    write.csv(QCsummary, qc_summary, quote = FALSE)
+    reportCellQC(inSCE = mergedFilteredSCE, subTitle = paste0("Sample: ", sample), output_dir = out_dir, output_file = "SCTK_CellQC.html")
     # Generate report for alternative experiments
     if (isTRUE(use_alt_exp)) {
       plotAltExps(out_dir, mergedFilteredSCE)
     }
     # Generate final RDATA object
-    message(paste0(date(), " .. Exporting to RDATA format"))
-    sce.processed <- list(cellsce = mergedFilteredSCE, dropletsce = mergedDropletSCE)
-    saveRDS(sce.processed, file = rds_out)
+    message(paste0(date(), " .. Exporting SCE object!"))
+    # sce.processed <- list(cellsce = mergedFilteredSCE, dropletsce = mergedDropletSCE)
+    exportSCEObjs(mergedFilteredSCE, out_dir = out_dir, prefix = "sctk", formats = export_formats)
   } else {
     mergedDropletSCE <- dropletSCE
     # Generate DropletQC Report
@@ -232,10 +203,10 @@ if (tolower(data_type) == "droplet") {
       legendSize = 14
     ))
     dev.off()
-    reportDropletQC(inSCE = mergedDropletSCE, output_dir = out_dir, output_file = "SCTK_DropletQC.html")
-    # Save final RDATA objects
-    message(paste0(date(), " .. Exporting to RDATA format"))
-    sce.processed <- mergedDropletSCE
-    saveRDS(sce.processed, file = rds_out)
+    # Create DropletQC report
+    reportDropletQC(inSCE = mergedDropletSCE, subTitle = paste0("Sample: ", sample), output_dir = out_dir, output_file = "SCTK_DropletQC.html")
+    # Export SCE objects
+    message(paste0(date(), " .. Exporting SCE object!"))
+    exportSCEObjs(mergedDropletSCE, out_dir = out_dir, prefix = "sctk", formats = export_formats)
   }
 }

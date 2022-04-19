@@ -18,6 +18,8 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
   - doublet identification/filtering with scDblFinder
   - processing of alternative experiments, such as spike-in expression
   - qc report generation for cell/droplet based experiments
+- added Seurat and FlatFile format export to scRNA qc workflow
+- added parameter to select velocity matrix for qc and export
 
 ### Changed
 
