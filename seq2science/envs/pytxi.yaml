@@ -6,5 +6,6 @@ channels:
 dependencies:
   - genomepy=0.11.1
   - pip
+  - conda-forge::conda-ecosystem-user-package-isolation=1.0
   - pip:
     - git+https://github.com/vanheeringen-lab/pytxi.git@v0.1.1

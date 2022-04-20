@@ -5,3 +5,4 @@ channels:
   - defaults
 dependencies:
   - bioconda::multiqc=1.11
+  - conda-forge::conda-ecosystem-user-package-isolation=1.0
