@@ -6,7 +6,7 @@ suppressMessages({
 # Snakemake variables
 scripts_dir <- snakemake@params$scripts_dir
 count_dir <- dirname(snakemake@input$counts)
-rds <- snakemake@output[[1]]
+out_dir <- snakemake@params$outdir
 sample <- snakemake@params$sample
 replicates <- snakemake@params$replicates
 genome <- snakemake@wildcards$assembly
@@ -20,6 +20,8 @@ custom_assembly_suffix <- snakemake@config$custom_assembly_suffix
 use_alt_expr <- snakemake@config$sc_preprocess$use_alt_expr
 alt_exp_name <- snakemake@config$sc_preprocess$alt_exp_name
 alt_exp_reg <- snakemake@config$sc_preprocess$alt_exp_reg
+velo_assay <- snakemake@config$sc_preprocess$velo_assay
+export_formats <- snakemake@config$sc_preprocess$sctk_export_formats
 
 # Log all console output
 log <- file(log_file, open = "wt")
@@ -27,7 +29,10 @@ sink(log)
 sink(log, type = "message")
 
 # Load utils library
-deseq_utils <- file.path(scripts_dir, "utils.R")
+deseq_utils <- file.path(scripts_dir, "deseq2", "utils.R")
+scrna_utils <- file.path(scripts_dir, "singlecell", "utils.R")
+
+source(scrna_utils)
 source(deseq_utils)
 
 # Log all variables for debugging purposes
@@ -36,8 +41,8 @@ cat('quantifier       <- "', quantifier, '"\n', sep = "")
 cat('sample_sheet     <- "', samples_tsv, '"\n', sep = "")
 cat('scripts_dir      <- "', scripts_dir, '"\n', sep = "")
 cat('log_file         <- "', log_file, '"\n', sep = "")
+cat('out_dir          <- "', out_dir, '"\n', sep = "")
 cat('count_dir        <- "', count_dir, '"\n', sep = "")
-cat('rds              <- "', rds, '"\n', sep = "")
 cat('sample           <- "', sample, '"\n', sep = "")
 cat('genome           <- "', genome, '"\n', sep = "")
 cat('custom_assembly_suffix  <- "', custom_assembly_suffix, '"\n', sep = "")
@@ -45,9 +50,11 @@ cat('replicates       <- "', replicates, '"\n', sep = "")
 cat('iscite           <- "', iscite, '"\n', sep = "")
 cat('isvelo           <- "', isvelo, '"\n', sep = "")
 cat('iskite           <- "', iskite, '"\n', sep = "")
+cat('velo_assay       <- "', velo_assay, '"\n', sep = "")
 cat('use_alt_expr     <- "', use_alt_expr, '"\n', sep = "")
 cat('alt_exp_name     <- "', alt_exp_name, '"\n', sep = "")
 cat('alt_exp_reg      <- "', alt_exp_reg, '"\n', sep = "")
+cat('export_formats   <- "', toString(export_formats), '"\n', sep = "")
 
 cat("\n")
 
@@ -117,67 +124,53 @@ if (isTRUE(grepl(pattern, genome))) {
 
 # Parse sample sheet
 sample_sheet <- parse_samples(samples_tsv, genome, replicates)
+
 # Create Seurat objects based on cite input arguments and set assay
 alt_exp <- list()
 assays <- list()
-assays_uns <- list()
+
+# Result matrices
+mat.endo <- NULL
+mat <- NULL
+
 # Create SingleCellExperiment S4 object based on kb workflow parameter
 if (quantifier == "kallistobus") {
   # kb count with '--workflow lamanno' parameter
   if (isvelo) {
-    message(paste0(date(), " .. Preparing cell matrices from kallistobus (velocity) output!"))
+    message(paste0(date(), " .. Preparing cell matrix from kallistobus (velocity) output!"))
     # Unspliced counts
-    mat.sf.endo <- NULL
-    mat.uf.endo <- NULL
-    mat.sf <- read_count_output(count_dir, name = "spliced")
-    mat.uf <- read_count_output(count_dir, name = "unspliced")
-    if (use_alt_expr) {
-      mat.sf.endo <- filter_alt(alt_exp_reg, mat.sf)
-      mat.uf.endo <- filter_alt(alt_exp_reg, mat.uf)
-      # Filter alternative experiment features from endogenous features
-      mat.sf.alt <- filter_alt(alt_exp_reg, mat.sf, alt = TRUE)
-      mat.uf.alt <- filter_alt(alt_exp_reg, mat.uf, alt = TRUE)
-      # Store experiments for spliced/unspliced assays
-      alt_exp[[paste0(alt_exp_name, "_sf")]] <- SummarizedExperiment(assay = list(counts = mat.sf.alt))
-      # alt_exp[[paste0(alt_exp_name, "_uf")]] <- SummarizedExperiment(assay = list(counts = mat.uf.alt))
+    if (velo_assay == "spliced") {
+      message(paste0(date(), " .. Importing spliced count matrix!"))
+      mat <- read_count_output(count_dir, name = "spliced")
+    } else if (velo_assay == "unspliced") {
+      message(paste0(date(), " .. Importing unspliced count matrix!"))
+      mat <- read_count_output(count_dir, name = "unspliced")
     } else {
-      mat.sf.endo <- mat.sf
-      mat.uf.endo <- mat.uf
+      message(paste0(date(), " .. Importing spliced count matrix!"))
+      mat <- read_count_output(count_dir, name = "spliced")
     }
-    # Create count assays
-    assays <- list(counts = mat.sf.endo)
-    assays_uns <- list(counts = mat.uf.endo)
     # Case for quantification/kite workflows
   } else {
     message(paste0(date(), " .. Preparing cell matrices from kallistobus (non-velocity) output!"))
     mat_name <- ifelse(iskite, "cells_x_features", "cells_x_genes")
     mat <- read_count_output(dir = count_dir, name = mat_name)
-    mat.endo <- NULL
-    if (use_alt_expr) {
-      mat.endo <- filter_alt(alt_exp_reg, mat)
-      mat.alt <- filter_alt(alt_exp_reg, mat, alt = TRUE)
-      alt_exp[[alt_exp_name]] <- SummarizedExperiment(assay = list(counts = mat.alt))
-    } else {
-      mat.endo <- mat
-    }
-    assays <- list(counts = mat.endo)
   }
 }
-
 # Citeseq count
 if (quantifier == "citeseqcount") {
   message(paste0(date(), " .. Preparing cell matrices from citeseqcount output!"))
   mat <- read_cite_output(dir = count_dir)
-  mat.endo <- NULL
-  if (use_alt_expr) {
-    mat.endo <- filter_alt(alt_exp_reg, mat)
-    mat.alt <- filter_alt(alt_exp_reg, mat, alt = TRUE)
-    alt_exp[[alt_exp_name]] <- SummarizedExperiment(assay = list(counts = mat.alt))
-  } else {
-    mat.endo <- mat
-  }
-  assays <- list(counts = mat.endo)
 }
+# Check if alt experiments are present
+if (use_alt_expr) {
+  mat.endo <- filter_alt(alt_exp_reg, mat)
+  mat.alt <- filter_alt(alt_exp_reg, mat, alt = TRUE)
+  alt_exp[[alt_exp_name]] <- SummarizedExperiment(assay = list(counts = mat.alt))
+} else {
+  mat.endo <- mat
+}
+# Set assays
+assays <- list(counts = mat.endo)
 
 # Create final SingleCellExperiment S4 object and store assays
 message(paste0(date(), " .. Creating final SingleCellExperiment object!"))
@@ -189,39 +182,8 @@ sce <-
     colData = prep_cell_meta(sample, sample_sheet, colnames(assays$counts)),
     altExps = alt_exp
   )
-
-# Prepare output
-out.sce <- NULL
-if (isTRUE(isvelo)) {
-  message(paste0(date(), " .. Creating SingleCellExperiments objects for spliced/unspliced velocity counts"))
-  # Spliced counts
-  sce.sf <-
-    SingleCellExperiment(
-      assays = assays,
-      mainExpName = sample,
-      colData = prep_cell_meta(sample, sample_sheet, colnames(assays$counts)),
-      altExps = alt_exp
-    )
-  # # Treat unspliced velocity output as a separate experiment
-  sce.us <-
-    SingleCellExperiment(
-      assays = assays_uns,
-      mainExpName = sample,
-      colData = prep_cell_meta(sample, sample_sheet, colnames(assays_uns$counts)),
-    )
-  out.sce <- list(spliced = sce.sf, unspliced = sce.us)
-} else {
-  message(paste0(date(), " .. Creating SingleCellExperiment object!"))
-  # Create sce object
-  sce <-
-    SingleCellExperiment(
-      assays = assays,
-      mainExpName = sample,
-      colData = prep_cell_meta(sample, sample_sheet, colnames(assays$counts)),
-      altExps = alt_exp
-    )
-  out.sce <- sce
-}
-# Save to RDATA format object
-message(paste0(date(), " .. Saving sce objects to RDATA file!"))
-saveRDS(out.sce, file = rds)
+# Remove suffix from rownames
+sce <- modifySCE(sce)
+# Export SCE objects to various file formats
+message(paste0(date(), " .. Exporting SCE object!"))
+exportSCEObjs(sce, out_dir = out_dir, prefix = "raw", formats = export_formats)

@@ -4,5 +4,6 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - bioconda::bioconductor-singlecellexperiment=1.16.0
+  - bioconda::bioconductor-singlecelltk=2.4.0
   - conda-forge::r-matrix=1.4.0 
+  - conda-forge::conda-ecosystem-user-package-isolation=1.0
