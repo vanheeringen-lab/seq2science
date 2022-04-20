@@ -27,6 +27,8 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - moved scRNA post processing to separate module
 - export unspliced velocity counts to separate sce object
 - seq2science should be less susceptible to poor programming environment management by using the conda-ecosystem-user-package-isolation package
+- local fastq files are no longer renamed (and should just work)
+- scRNA-seq trimming code simplified
 
 ### Removed
 
