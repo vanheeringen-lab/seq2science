@@ -9,6 +9,7 @@ from seq2science.util import get_bustools_rid
 
 
 def se_fastq(wildcards):
+    # local file with potentially weird suffix
     local_fastqs = glob.glob(os.path.join(config["fastq_dir"],f'{wildcards.sample}*{config["fqsuffix"]}*.gz'))
     if len(local_fastqs) == 1:
         return local_fastqs[0]
@@ -16,6 +17,7 @@ def se_fastq(wildcards):
 
 
 def pe_fastq(wildcards):
+    # local files with potentially weird suffix
     local_fastqs = glob.glob(os.path.join(config["fastq_dir"],f'{wildcards.sample}*{config["fqsuffix"]}*.gz'))
     if len(local_fastqs) == 2:
         # assumption: incompatible paired-ended samples are lexicographically ordered (R1>R2)
@@ -32,11 +34,31 @@ def pe_fastq(wildcards):
     return local_fastqs
 
 
-if config["trimmer"] == "trimgalore":
-    if "scrna_seq" == get_workflow():
-        ruleorder: trimgalore_SE > trimgalore_PE
+# create lists with all single-ended samples and all paired-ended samples
+# these can be used to make sure no pair-ended samples are trimmed as single-ended sample (and vice-versa)
+all_single_samples = [sample for sample in all_samples if sampledict[sample]["layout"] == "SINGLE"]
+all_paired_samples = [sample for sample in all_samples if sampledict[sample]["layout"] == "PAIRED"]
+if get_workflow() == "scrna_seq":
+    assert len(all_single_samples) == 0, "Seq2science does not support scRNA-seq samples that are single-ended"
+    #Check kallisto bustools read id
+    if config['quantifier'] == 'kallistobus':
+        read_id = get_bustools_rid(config.get("count"))
+        if read_id == 0:
+            all_single_samples = [sample + f"_{config['fqext1']}" for sample in all_samples if sampledict[sample]["layout"] == "PAIRED"]
+        elif read_id == 1:
+            all_single_samples = [sample + f"_{config['fqext2']}" for sample in all_samples if sampledict[sample]["layout"] == "PAIRED"]
+    # cite-seq-count
+    elif config['quantifier'] == 'citeseqcount':
+        all_single_samples = [sample + f"_{config['fqext2']}" for sample in all_samples if sampledict[sample]["layout"] == "PAIRED"]
     else:
-        ruleorder: trimgalore_PE > trimgalore_SE
+        logger.error(f"Seq2science encountered an unexpected error with inferring the read id ({read_id})."
+                      "Please make an issue on github if this is unexpected behaviour!")
+        sys.exit(1)
+    all_paired_samples = []
+
+
+if config["trimmer"] == "trimgalore":
+    ruleorder: trimgalore_PE > trimgalore_SE
 
 
     rule trimgalore_SE:
@@ -60,7 +82,7 @@ if config["trimmer"] == "trimgalore":
             config=config["trimoptions"],
             fqsuffix=config["fqsuffix"],
         wildcard_constraints:
-            sample=any_given("sample"),
+            sample="|".join(all_single_samples) if len(all_single_samples) else "$a"
         shell:
             ("cpulimit --include-children -l {threads}00 --" if config.get("cpulimit", True) else "")+
             """\
@@ -99,7 +121,7 @@ if config["trimmer"] == "trimgalore":
             config=config["trimoptions"],
             fqsuffix=config["fqsuffix"],
         wildcard_constraints:
-            sample=any_given("sample"),
+            sample="|".join(all_paired_samples) if len(all_paired_samples) else "$a"
         shell:
             ("cpulimit --include-children -l {threads}00 --" if config.get("cpulimit", True) else "")+
             """\
@@ -118,32 +140,7 @@ if config["trimmer"] == "trimgalore":
 
 
 elif config["trimmer"] == "fastp":
-    if "scrna_seq" == get_workflow():
-        ruleorder: fastp_SE > fastp_PE
-    else:
-        ruleorder: fastp_PE > fastp_SE
-
-    if get_workflow() == "scrna_seq":
-        all_single_samples = [sample for sample in all_samples if sampledict[sample]["layout"] == "SINGLE"]
-        assert len(all_single_samples) == 0, "Seq2science does not support scRNA-seq samples that are single-ended"
-        #Check kallisto bustools read id
-        if config['quantifier'] == 'kallistobus':
-            read_id = get_bustools_rid(config.get("count"))
-            if read_id == 0:
-                all_single_samples = [sample + f"_{config['fqext1']}" for sample in all_samples if sampledict[sample]["layout"] == "PAIRED"]
-            elif read_id == 1:
-                all_single_samples = [sample + f"_{config['fqext2']}" for sample in all_samples if sampledict[sample]["layout"] == "PAIRED"]
-        # cite-seq-count
-        elif config['quantifier'] == 'citeseqcount':
-            all_single_samples = [sample + f"_{config['fqext2']}" for sample in all_samples if sampledict[sample]["layout"] == "PAIRED"]
-        else:
-            logger.error(f"Seq2science encountered an unexpected error with inferring the read id ({read_id})."
-                          "Please make an issue on github if this is unexpected behaviour!")
-            sys.exit(1)
-        all_paired_samples = []
-    else:
-        all_single_samples = [sample for sample in all_samples if sampledict[sample]["layout"] == "SINGLE"]
-        all_paired_samples = [sample for sample in all_samples if sampledict[sample]["layout"] == "PAIRED"]
+    ruleorder: fastp_PE > fastp_SE
 
 
     rule fastp_SE:

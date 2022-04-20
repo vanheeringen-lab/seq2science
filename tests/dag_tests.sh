@@ -35,11 +35,11 @@ function assert_rulecount {
 mkdir -p tests/local_test_results/fastq
 touch tests/local_test_results/fastq/S1_1_R1.fastq.gz
 touch tests/local_test_results/fastq/S1_1_R2.fastq.gz
-touch tests/local_test_results/fastq/S1_2_R1_100.fastq.gz  # Illumina '_100' suffix -> must be renamed
-touch tests/local_test_results/fastq/S1_2_R2_100.fastq.gz  # Illumina '_100' suffix -> must be renamed
+touch tests/local_test_results/fastq/S1_2_R1_100.fastq.gz  # Illumina '_100' suffix
+touch tests/local_test_results/fastq/S1_2_R2_100.fastq.gz  # Illumina '_100' suffix
 touch tests/local_test_results/fastq/S2_1.fastq.gz
 touch tests/local_test_results/fastq/S2_2.fastq.gz
-touch tests/local_test_results/fastq/S3_1_100.fastq.gz  # Illumina '_100' suffix -> must be renamed
+touch tests/local_test_results/fastq/S3_1_100.fastq.gz  # Illumina '_100' suffix
 touch tests/local_test_results/fastq/S4_1.fastq.gz
 touch tests/local_test_results/fastq/S5_1.fastq.gz
 touch tests/local_test_results/fastq/S6_1.fastq.gz
@@ -81,7 +81,6 @@ if [ $1 = "alignment" ]; then
   seq2science run alignment -nr --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={trimmer:fastp,create_qc_report:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 fastp_PE 1
   seq2science run alignment -nr --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/alignment/replicates.tsv,trimmer:fastp,create_qc_report:True,technical_replicates:merge} | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 rename_sample 2
   assert_rulecount $1 fastp_PE 2
   assert_rulecount $1 fastp_qc_PE 1
 
@@ -292,7 +291,6 @@ if [ $1 = "atac-seq" ]; then
 
   printf "\nmultiple peak callers, assemblies and replicates\n"
   seq2science run atac-seq -nr --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions quiet=True config={samples:tests/atac_seq/complex_samples.tsv} | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 rename_sample 3
   assert_rulecount $1 bwa_mem2 8
   assert_rulecount $1 coverage_table 4
 
@@ -444,7 +442,6 @@ if [ $1 = "rna-seq" ]; then
 
   printf "\nmultiple assemblies - DEA\n"
   seq2science run rna-seq --skip-rerun -nr --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={technical_replicates:keep,samples:tests/rna_seq/complex_samples.tsv,dexseq:True} show_failed_logs=True | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 rename_sample 3
   assert_rulecount $1 star_index 2
   assert_rulecount $1 star_align 10
   assert_rulecount $1 dexseq_count 10
