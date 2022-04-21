@@ -766,7 +766,10 @@ def _get_yaml_versions():
     """
     Return a dict with packages and versions from requirements.yaml.
     """
-    with open("requirements.yaml", "r") as stream:
+    yaml_file = "requirements.yaml"
+    if not os.path.exists(yaml_file):
+        yaml_file = f"{genomepy.__path__}/../../../../requirements.yaml"
+    with open(yaml_file, "r") as stream:
         env = yaml.safe_load(stream)
 
     versions = {}
