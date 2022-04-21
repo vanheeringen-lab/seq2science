@@ -8,4 +8,4 @@ dependencies:
   - bioconda::pyfaidx=0.6.3.1
   - conda-forge::matplotlib=3.4.3
   - bioconda::genomepy=0.10.0
-
+  - conda-forge::conda-ecosystem-user-package-isolation=1.0

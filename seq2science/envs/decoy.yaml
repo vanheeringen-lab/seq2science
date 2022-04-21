@@ -7,3 +7,4 @@ dependencies:
   - bioconda::bedtools=2.29.2
   - bioconda::mashmap=2.0
   - conda-forge::cpulimit=0.2
+  - conda-forge::conda-ecosystem-user-package-isolation=1.0

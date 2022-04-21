@@ -6,3 +6,4 @@ channels:
 dependencies:
   - bioconda::salmon=1.5.2
   - bioconda::gffread=0.12.1
+  - conda-forge::conda-ecosystem-user-package-isolation=1.0
