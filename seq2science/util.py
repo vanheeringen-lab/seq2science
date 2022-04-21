@@ -764,7 +764,7 @@ def is_local(assembly: str, ftype: str, config: dict) -> bool:
 
 def _get_yaml_versions():
     """
-    Return the tool version from requirements.yaml.
+    Return a dict with packages and versions from requirements.yaml.
     """
     with open("requirements.yaml", "r") as stream:
         env = yaml.safe_load(stream)
@@ -781,10 +781,14 @@ def _get_yaml_versions():
 
 
 def _get_current_version(package):
+    """
+    Attempt to return a given package's version
+    """
     # package-isolation is not a package
     # xdg keeps its version in a pyproject.toml (not included)
     # argcomplete keeps its version in a setup.py (not included)
-    if package in ["conda-ecosystem-user-package-isolation", "xdg", "argcomplete"]:
+    # trackhub versioning is weird
+    if package in ["conda-ecosystem-user-package-isolation", "xdg", "argcomplete", "trackhub"]:
         return None
     if package == "python":
         return sys.version.split()[0]
@@ -805,7 +809,7 @@ def _get_current_version(package):
 
 def assert_versions():
     """
-    For each package, check that the installed versions match the required versions
+    For each package, check that the installed version matches the required version
     """
     error = False
     versions = _get_yaml_versions()
@@ -821,4 +825,4 @@ def assert_versions():
             error = True
     if error:
         logger.error("Please create a new conda environment.\n")
-        os._exit(1)
+        os._exit(1)  # noqa
