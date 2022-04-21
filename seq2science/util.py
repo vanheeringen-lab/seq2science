@@ -760,3 +760,65 @@ def is_local(assembly: str, ftype: str, config: dict) -> bool:
     if ftype == "annotation":
         # check genome and annotations, as genome is always needed
         return local_gtf and local_bed and local_fasta
+
+
+def _get_yaml_versions():
+    """
+    Return the tool version from requirements.yaml.
+    """
+    with open("requirements.yaml", "r") as stream:
+        env = yaml.safe_load(stream)
+
+    versions = {}
+    for dependency in env["dependencies"]:
+        # remove channel prefix
+        if "::" in dependency:
+            dependency = dependency.split("::")[1]
+        # split tool and version
+        package, version = dependency.split("=")
+        versions[package] = version
+    return versions
+
+
+def _get_current_version(package):
+    # package-isolation is not a package
+    # xdg keeps its version in a pyproject.toml (not included)
+    # argcomplete keeps its version in a setup.py (not included)
+    if package in ["conda-ecosystem-user-package-isolation", "xdg", "argcomplete"]:
+        return None
+    if package == "python":
+        return sys.version.split()[0]
+
+    # some packages have different names on conda
+    if package == "snakemake-minimal":
+        package = "snakemake"
+    elif package == "pyyaml":
+        package = "yaml"
+    elif package == "biopython":
+        package = "Bio"
+
+    ldict = dict()
+    exec(f"from {package} import __version__", {}, ldict)
+    current_version = ldict["__version__"]
+    return current_version
+
+
+def assert_versions():
+    """
+    For each package, check that the installed versions match the required versions
+    """
+    error = False
+    versions = _get_yaml_versions()
+    for package, required_version in versions.items():
+        current_version = _get_current_version(package)
+        if current_version is None:
+            continue
+        if not current_version.startswith(required_version):
+            logger.error(
+                f"Seq2science requires {package.capitalize()} version {required_version}, "
+                f"found version {current_version}."
+            )
+            error = True
+    if error:
+        logger.error("Please create a new conda environment.\n")
+        os._exit(1)

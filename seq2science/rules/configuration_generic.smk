@@ -20,10 +20,8 @@ from filelock import FileLock
 from pandas_schema import Column, Schema
 from pandas_schema.validation import MatchesPatternValidation, IsDistinctValidation
 
-import snakemake
-from snakemake.exceptions import WorkflowError
 from snakemake.logging import logger
-from snakemake.utils import validate, min_version
+from snakemake.utils import validate
 
 import seq2science
 from seq2science.util import (
@@ -35,8 +33,11 @@ from seq2science.util import (
     PickleDict,
     is_local,
     get_contrasts,
+    assert_versions,
 )
 
+# check that the versions in the requirements.yaml match the installed versions
+assert_versions()
 
 # get the cache and config dirs
 CACHE_DIR = os.path.join(xdg.XDG_CACHE_HOME, "seq2science", seq2science.__version__)
@@ -481,12 +482,6 @@ if "control" in samples:
 wildcard_constraints:
     sample=any_given(*sample_constraints),
 
-
-# make sure the snakemake version corresponds to version in environment
-if snakemake.__version__ != "5.18.1":
-    raise WorkflowError(
-        f"Expecting Snakemake version 5.18.1 (you are currently using {snakemake.__version__}"
-    )
 
 # record which assembly trackhubs are found on UCSC
 if config.get("create_trackhub"):
