@@ -484,9 +484,9 @@ wildcard_constraints:
 
 
 # make sure the snakemake version corresponds to version in environment
-if snakemake.__version__ != "7.3.5":
+if not snakemake.__version__.startswith("7.3"):
     raise WorkflowError(
-        f"Expecting Snakemake version 7.3.5 (you are currently using {snakemake.__version__}"
+        f"Expecting Snakemake version 7.3 (you are currently using {snakemake.__version__})"
     )
 
 # record which assembly trackhubs are found on UCSC
