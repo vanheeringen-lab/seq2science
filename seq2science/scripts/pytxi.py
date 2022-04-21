@@ -76,7 +76,8 @@ with open(logfile, "a") as log:  # appending because we mix streams (tqdm, logge
             if not isinstance(taxonomy, int):
                 raise ValueError(
                     f"No taxonomy ID was found for {g.name}! "
-                    f"To fix this manually, add the line 'tax_id: 1234' to {g.readme_file}"
+                    "To fix this manually, add the line 'tax_id: 1234' "
+                    f"(with the correct ID) to {g.readme_file}"
                 )
 
         txi = pytxi.TxImport()
