@@ -5,3 +5,4 @@ channels:
   - defaults
 dependencies:
   - bioconda::samtools=1.14
+  - conda-forge::perl=5.32.1
