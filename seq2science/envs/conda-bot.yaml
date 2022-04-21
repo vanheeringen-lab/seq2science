@@ -4,3 +4,4 @@ dependencies:
   - conda-forge::pygithub=1.43.6
   - pkgs/main::conda=4.8.0
   - conda-forge::pyyaml=5.2
+  - conda-forge::conda-ecosystem-user-package-isolation=1.0

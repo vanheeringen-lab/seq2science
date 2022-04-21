@@ -2,6 +2,7 @@
 all rules/logic related to quality control and the final multiQC report should be here.
 """
 
+import glob
 import sys
 import re
 
@@ -49,16 +50,19 @@ rule samtools_stats:
         """
 
 
-def get_fastqc_input(wildcards):
-    if "_trimmed" in wildcards.fname:
-        fqc_input = "{trimmed_dir}/{{fname}}.{fqsuffix}.gz"
-    else:
-        fqc_input = "{fastq_dir}/{{fname}}.{fqsuffix}.gz"
-
-    return sorted(expand(fqc_input, **config))
-
-
 if config["trimmer"] == "trimgalore":
+
+    def get_fastqc_input(wildcards):
+        if "_trimmed" in wildcards.fname:
+            fqc_input = "{trimmed_dir}/{{fname}}.{fqsuffix}.gz"
+        else:
+            # local file with potentially weird suffix
+            fqc_input = glob.glob(os.path.join(config["fastq_dir"], f'{wildcards.fname}*{config["fqsuffix"]}*.gz'))
+            if not fqc_input:
+                fqc_input = "{fastq_dir}/{{fname}}.{fqsuffix}.gz"
+
+        return sorted(expand(fqc_input, **config))
+
 
     checkpoint fastqc:
         """

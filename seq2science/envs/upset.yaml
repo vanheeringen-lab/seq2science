@@ -5,3 +5,4 @@ channels:
   - defaults
 dependencies:
   - conda-forge::upsetplot=0.6.0
+  - conda-forge::conda-ecosystem-user-package-isolation=1.0

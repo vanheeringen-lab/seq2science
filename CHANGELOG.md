@@ -23,10 +23,13 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Changed
 
+- updated snakemake
 - raw/processed scRNA count tables are now stored and exported to SingleCellExperiment S4 objects instead of Seurat S4 objects 
 - moved scRNA post processing to separate module
 - export unspliced velocity counts to separate sce object
-- updated snakemake
+- seq2science should be less susceptible to poor programming environment management by using the conda-ecosystem-user-package-isolation package
+- local fastq files are no longer renamed (and should just work)
+- scRNA-seq trimming code simplified
 
 ### Removed
 
@@ -37,6 +40,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 - fixed bug causing incorrect genome string in `read_kb_counts.R`
 - bams generated with(out) filtering on size and tn5 shifting weren't removed when not necessary anymore
+
+### Changed
+
+- rna-seq creates a TPM table for each quantification method 
 
 ## [0.7.2] - 2022-03-04
 

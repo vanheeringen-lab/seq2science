@@ -33,7 +33,7 @@ rule seq2science:
              (["{trackhub_dir}"]                     if config['create_trackhub']  else []) +
              (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []) +
 
-             (["{counts_dir}/{assemblies}-counts.tsv"]) +
+             (["{counts_dir}/{assemblies}-counts.tsv", "{counts_dir}/{assemblies}-TPM.tsv"]) +
              (["{counts_dir}/{assemblies}-DEXSeq_counts.tsv"] if config['dexseq'] else []) +
              (["{genome_dir}/{assemblies}/gene_id2name.tsv"]), assemblies=all_assemblies, **config) +
          DE_contrasts
