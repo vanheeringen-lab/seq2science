@@ -40,7 +40,7 @@ rule run2sra:
         do
             # acquire a lock
             (
-                flock --timeout 30 200 || continue
+                flock -w 30 200 || continue
                 sleep 2
             ) 200>{pysradb_cache_lock}
 
@@ -93,7 +93,7 @@ rule sra2fastq_SE:
 
         # acquire the lock
         (
-            flock --timeout 30 200 || exit 1
+            flock -w 30 200 || exit 1
             sleep 3
         ) 200>{pysradb_cache_lock}
 
@@ -134,7 +134,7 @@ rule sra2fastq_PE:
 
         # acquire the lock
         (
-            flock --timeout 30 200 || exit 1
+            flock -w 30 200 || exit 1
             sleep 3
         ) 200>{pysradb_cache_lock}
 
