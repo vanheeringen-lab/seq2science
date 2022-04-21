@@ -213,7 +213,7 @@ if [ $1 = "rna-seq" ]; then
   seq2science run rna-seq --cores $CORES -r --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions config={counts_dir:salmon_counts,custom_genome_extension:tests/tinydata/tinyERCC92.fa,custom_annotation_extension:tests/tinydata/tinyERCC92.gtf} show_failed_logs=True \
   omit_from=[blind_clustering]  # <- remove when fixed
 
-  printf "\nrna-seq default - quantification deseq2\n"
+#  printf "\nrna-seq default - quantification deseq2\n"
 #  seq2science run rna-seq --cores $CORES -r --configfile tests/rna_seq/deseq2_config.yaml --snakemakeOptions config={counts_dir:salmon_counts} show_failed_logs=True
 
   # fake input data & fix timestamps
@@ -229,7 +229,9 @@ if [ $1 = "rna-seq" ]; then
     done
     touch tests/local_test_results/fastq/replicate_${ext}.fastq.gz
   done
+  touch -m tests/deseq2/rna/counts/GRCh38.p13-gene_lengths.tsv  # update timestamp
   touch -m tests/deseq2/rna/counts/GRCh38.p13-counts.tsv  # update timestamp
+  touch -m tests/deseq2/rna/counts/GRCh38.p13-TPM.tsv  # update timestamp
 
   # run blind clustering
   seq2science run rna-seq --skip-rerun --cores $CORES -r --configfile tests/deseq2/rna/config.yaml --snakemakeOptions config={deseq2_dir:deseq_rna,create_qc_report:true} show_failed_logs=True \
