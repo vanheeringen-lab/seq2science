@@ -1,7 +1,7 @@
 """
 all logic not related to any specific workflows should be here.
 """
-container: "docker://continuumio/miniconda3:4.4.10"
+container: "docker://quay.io/biocontainers/seq2science:0.7.2--pypyhdfd78af_0"
 
 import os.path
 import pickle
