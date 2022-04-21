@@ -13,3 +13,4 @@ dependencies:
   - bioconda::ucsc-hggcpercent=377
   - bioconda::ucsc-ixixx=377
   - bioconda::ucsc-wigtobigwig=377
+  - conda-forge::conda-ecosystem-user-package-isolation=1.0

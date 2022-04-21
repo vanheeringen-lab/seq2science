@@ -5,3 +5,4 @@ channels:
   - defaults
 dependencies:
   - conda-forge::imagemagick>=7.0
+  - conda-forge::conda-ecosystem-user-package-isolation=1.0

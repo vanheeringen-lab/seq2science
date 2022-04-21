@@ -5,3 +5,4 @@ channels:
   - defaults
 dependencies:
   - bioconda::hmmratac=1.2.5
+  - conda-forge::conda-ecosystem-user-package-isolation=1.0

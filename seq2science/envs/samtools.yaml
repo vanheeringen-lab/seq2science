@@ -6,3 +6,4 @@ channels:
 dependencies:
   - bioconda::samtools=1.14
   - conda-forge::perl=5.32.1
+  - conda-forge::conda-ecosystem-user-package-isolation=1.0
