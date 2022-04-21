@@ -4,7 +4,7 @@ convert TPM to gene counts
 import os
 import contextlib
 
-from genomepy import Annotation, Genome
+from genomepy import Annotation, Genome, search
 import pandas as pd
 import pytxi
 
@@ -61,10 +61,23 @@ with open(logfile, "a") as log:  # appending because we mix streams (tqdm, logge
 
         taxonomy = None
         if tx2gene is None:
+            # get the taxonomy from the README.txt
             g = Genome(fa, build_index=False)
             taxonomy = g.tax_id
+
+            # fallback: search the genomepy database for the taxonomy id
             if not isinstance(taxonomy, int):
-                raise ValueError(f"{g.name} README.txt does not contain a valid taxonomy id!")
+                hits = list(search(assembly))
+                for hit in hits:
+                    if assembly == hit[0] and isinstance(hit[3], int):
+                        taxonomy = hit[3]
+                        break
+
+            if not isinstance(taxonomy, int):
+                raise ValueError(
+                    f"No taxonomy ID was found for {g.name}! "
+                    f"To fix this manually, add the line 'tax_id: 1234' to {g.readme_file}"
+                )
 
         txi = pytxi.TxImport()
         txi.import_files(fnames, sample_names, tx2gene, taxonomy)

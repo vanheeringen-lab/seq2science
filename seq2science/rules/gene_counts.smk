@@ -92,8 +92,8 @@ elif config["quantifier"] == "salmon" and config["tpm2counts"] == "pytxi":
         Convert transcript abundance estimations to gene count estimations and merge 
         gene counts per assembly.
 
-        If the GTF is not used, a genomepy assembly with README.txt and valid 
-        taxonomy ID is required. 
+        If the GTF is not used, a taxonomy ID is required for myGene.info.
+        Seq2science will try to read this ID from the genomepy README.txt or assembly database. 
         """
         input:
             cts=get_counts,
