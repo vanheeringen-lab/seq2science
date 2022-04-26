@@ -15,6 +15,5 @@ with open(convert_path('seq2science/__init__.py')) as ver_file:
     project["version"] = match.group(1)
 project["long_description_content_type"] = "text/markdown"
 project["package_data"] = ast.literal_eval(project["package_data"])
-project["data_files"] = ast.literal_eval(project["data_files"])
 
 setup(**project)

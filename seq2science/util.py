@@ -4,6 +4,7 @@ Utility functions for seq2science
 import contextlib
 import re
 import os
+import shutil
 import sys
 import glob
 import time
@@ -762,13 +763,36 @@ def is_local(assembly: str, ftype: str, config: dict) -> bool:
         return local_gtf and local_bed and local_fasta
 
 
-def _get_yaml_versions():
+def _get_yaml_file(rules_dir, version):
+    """
+    Return the path to the requirements.yaml file
+    If s2s is installed in editable mode, the editable yaml file is returned.
+    """
+    # development install
+    bin_file = shutil.which("seq2science")
+    with open(bin_file) as f:
+        for n, line in enumerate(f):
+            # only the editable bin file has this,
+            # and it points to the source directory
+            if line.startswith("__file__"):
+                yaml_file = os.path.abspath(line.split("'")[1] + "/../../requirements.yaml")
+                return yaml_file
+            if n == 4:
+                break
+
+    # conda install
+    envs_dir = f"{rules_dir}/../envs"
+    yaml_file = os.path.abspath(os.path.join(envs_dir, "requirements.yaml"))
+    if not os.path.exists(yaml_file):
+        url = f"https://raw.githubusercontent.com/vanheeringen-lab/seq2science/v{version}/requirements.yaml"
+        urllib.request.urlretrieve(url, yaml_file)
+    return yaml_file
+
+
+def _get_yaml_versions(yaml_file):
     """
     Return a dict with packages and versions from requirements.yaml.
     """
-    yaml_file = "requirements.yaml"
-    if not os.path.exists(yaml_file):
-        yaml_file = f"{genomepy.__path__}/../../../../requirements.yaml"
     with open(yaml_file, "r") as stream:
         env = yaml.safe_load(stream)
 
@@ -810,12 +834,13 @@ def _get_current_version(package):
     return current_version
 
 
-def assert_versions():
+def assert_versions(rules_dir, version):
     """
     For each package, check that the installed version matches the required version
     """
     error = False
-    versions = _get_yaml_versions()
+    yaml_file = _get_yaml_file(rules_dir, version)
+    versions = _get_yaml_versions(yaml_file)
     for package, required_version in versions.items():
         current_version = _get_current_version(package)
         if current_version is None:

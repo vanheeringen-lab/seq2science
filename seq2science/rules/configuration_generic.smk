@@ -36,8 +36,6 @@ from seq2science.util import (
     assert_versions,
 )
 
-# check that the versions in the requirements.yaml match the installed versions
-assert_versions()
 
 # get the cache and config dirs
 CACHE_DIR = os.path.join(xdg.XDG_CACHE_HOME, "seq2science", seq2science.__version__)
@@ -98,6 +96,9 @@ for key, value in config.items():
         else:
             value = os.path.abspath(os.path.join(config["result_dir"], value))
         config[key] = re.split("\/$", value)[0]
+
+# check that the versions in the requirements.yaml match the installed versions
+assert_versions(config["rule_dir"], seq2science.__version__)
 
 
 # samples.tsv
