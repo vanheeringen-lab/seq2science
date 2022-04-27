@@ -39,6 +39,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 - fixed bug causing incorrect genome string in `read_kb_counts.R`
 
+### Changed
+
+- rna-seq creates a TPM table for each quantification method 
+
 ## [0.7.2] - 2022-03-04
 
 ### Added

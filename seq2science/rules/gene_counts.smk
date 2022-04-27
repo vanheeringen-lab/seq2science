@@ -67,6 +67,8 @@ if config["quantifier"] == "salmon" and config["tpm2counts"] == "tximeta":
             cts=get_counts,
         output:
             counts=expand("{counts_dir}/{{assembly}}-counts.tsv", **config),
+            tpms=expand("{counts_dir}/{{assembly}}-TPM.tsv",**config),
+            lengths=expand("{counts_dir}/{{assembly}}-gene_lengths.tsv",**config),
             SCE=expand("{counts_dir}/{{assembly}}-se.rds", **config),
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-txi_counts_matrix.log", **config),
@@ -90,13 +92,17 @@ elif config["quantifier"] == "salmon" and config["tpm2counts"] == "pytxi":
         Convert transcript abundance estimations to gene count estimations and merge 
         gene counts per assembly.
 
-        Only works with genomepy assemblies (requires a README.txt with taxid).
+        If the GTF is not used, a taxonomy ID is required for myGene.info.
+        Seq2science will try to read this ID from the genomepy README.txt or assembly database. 
         """
         input:
             cts=get_counts,
             fa=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+            gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf",**config),
         output:
-            expand("{counts_dir}/{{assembly}}-counts.tsv",**config),
+            counts=expand("{counts_dir}/{{assembly}}-counts.tsv",**config),
+            tpms=expand("{counts_dir}/{{assembly}}-TPM.tsv",**config),
+            lengths=expand("{counts_dir}/{{assembly}}-gene_lengths.tsv",**config),
         conda:
             "../envs/pytxi.yaml"
         params:
@@ -105,6 +111,8 @@ elif config["quantifier"] == "salmon" and config["tpm2counts"] == "pytxi":
             from_gtf=config["tx2gene_from_gtf"],
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-counts_matrix.log",**config),
+        message:
+            explain_rule("count_matrix_pytxi")
         script:
             f"{config['rule_dir']}/../scripts/pytxi.py"
 
@@ -152,6 +160,23 @@ else:
 
                 counts.index.name = "gene"
                 counts.to_csv(output[0], sep="\t")
+
+    rule tpm_matrix:
+        """
+        Create a TPM normalized table from a counts table.
+        """
+        input:
+            cts=rules.count_matrix.output,
+            gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf",**config),
+        output:
+            tpms = expand("{counts_dir}/{{assembly}}-TPM.tsv",**config),
+            lengths = expand("{counts_dir}/{{assembly}}-gene_lengths.tsv",**config),
+        log:
+            expand("{log_dir}/counts_matrix/{{assembly}}-tpm_matrix.log",**config),
+        message:
+            explain_rule("tpm_matrix")
+        script:
+            f"{config['rule_dir']}/../scripts/counts2tpm.py"
 
 
 if config.get("dexseq"):
