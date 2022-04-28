@@ -292,7 +292,7 @@ rule samtools_sort:
         out_dir=f"{config['result_dir']}/{config['aligner']}",
         memory=config['bam_sort_mem'],
     wildcard_constraints:
-         sample=f"""({any_given("sample", "technical_replicates", "control")})""",
+        sample=f"""({any_given("sample", "technical_replicates", "control")})""",
     threads: 2
     resources:
         mem_gb=config["bam_sort_mem"],
