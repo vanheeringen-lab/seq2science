@@ -770,7 +770,7 @@ def _get_yaml_file(rules_dir):
     """
     # development install
     bin_file = shutil.which("seq2science")
-    if os.path.isfile(bin_file):
+    if bin_file is not None and os.path.isfile(bin_file):
         with open(bin_file) as f:
             for n, line in enumerate(f):
                 # only the editable bin file has this,
