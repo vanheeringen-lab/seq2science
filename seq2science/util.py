@@ -768,23 +768,17 @@ def _get_yaml_file(rules_dir):
     Return the path to the requirements.yaml file
     If s2s is installed in editable mode, the editable yaml file is returned.
     """
-    # development install
-    current_path = os.path.dirname(os.path.abspath(__file__))
-    bin_file = os.path.join(current_path, "..", "bin", "seq2science")
-    if os.path.isfile(bin_file):
-        with open(bin_file) as f:
-            for n, line in enumerate(f):
-                # only the editable bin file has this,
-                # and it points to the source directory
-                if line.startswith("__file__"):
-                    yaml_file = os.path.join(line.split("'")[1], "..", "..", "requirements.yaml")
-                    return os.path.abspath(yaml_file)
-                if n == 4:
-                    break
+    # first check if installed "normally"
+    yaml_file = os.path.abspath(os.path.join(rules_dir, "..", "envs", "seq2science_requirements.yaml"))
+    if os.path.isfile(yaml_file):
+        return yaml_file
 
-    # conda install
-    yaml_file = os.path.join(rules_dir, "..", "envs", "seq2science_requirements.yaml")
-    return os.path.abspath(yaml_file)
+    # otherwise check if installed through symlinks
+    yaml_file = os.path.abspath(os.path.join(rules_dir, "..", "..", "requirements.yaml"))
+    if os.path.isfile(yaml_file):
+        return yaml_file
+
+    raise FileNotFoundError("Seq2science couldn't find it's own requirements.. This shouldn't happen!!!! Please make an error report!")
 
 
 def _get_yaml_versions(yaml_file):
