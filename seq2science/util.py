@@ -770,15 +770,16 @@ def _get_yaml_file(rules_dir):
     """
     # development install
     bin_file = shutil.which("seq2science")
-    with open(bin_file) as f:
-        for n, line in enumerate(f):
-            # only the editable bin file has this,
-            # and it points to the source directory
-            if line.startswith("__file__"):
-                yaml_file = os.path.join(line.split("'")[1], "..", "..", "requirements.yaml")
-                return os.path.abspath(yaml_file)
-            if n == 4:
-                break
+    if os.path.isfile(bin_file):
+        with open(bin_file) as f:
+            for n, line in enumerate(f):
+                # only the editable bin file has this,
+                # and it points to the source directory
+                if line.startswith("__file__"):
+                    yaml_file = os.path.join(line.split("'")[1], "..", "..", "requirements.yaml")
+                    return os.path.abspath(yaml_file)
+                if n == 4:
+                    break
 
     # conda install
     yaml_file = os.path.join(rules_dir, "..", "envs", "seq2science_requirements.yaml")
