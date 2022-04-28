@@ -17,7 +17,6 @@ docs/content/CHANGELOG.md
 docs/content/all_rules.md
 docs/content/schemas.md
 seq2science/workflows/scrna_seq/barcodes.txt
-seq2science/envs/seq2science_requirements.yaml
 
 *results/
 *benchmark/
