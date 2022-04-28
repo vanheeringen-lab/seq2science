@@ -7,13 +7,15 @@ from setuptools import setup
 from distutils.util import convert_path
 from setuptools.command.install import install
 
+
 class PostInstallCommand(install):
     """Post-installation for installation mode."""
     def run(self):
         # move the requirements.yaml to the seq2science environments
         env_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "requirements.yaml")
         build_dir = os.path.join(self.build_lib, "seq2science", "envs", "seq2science_requirements.yaml")
-        shutil.move(env_file, build_dir)
+        os.makedirs(os.path.dirname(build_dir), exist_ok=True)
+        shutil.copy(env_file, build_dir)
 
         # install as normally
         install.run(self)

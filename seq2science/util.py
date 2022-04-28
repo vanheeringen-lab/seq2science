@@ -763,7 +763,7 @@ def is_local(assembly: str, ftype: str, config: dict) -> bool:
         return local_gtf and local_bed and local_fasta
 
 
-def _get_yaml_file(rules_dir, version):
+def _get_yaml_file(rules_dir):
     """
     Return the path to the requirements.yaml file
     If s2s is installed in editable mode, the editable yaml file is returned.
@@ -775,18 +775,14 @@ def _get_yaml_file(rules_dir, version):
             # only the editable bin file has this,
             # and it points to the source directory
             if line.startswith("__file__"):
-                yaml_file = os.path.abspath(line.split("'")[1] + "/../../requirements.yaml")
-                return yaml_file
+                yaml_file = os.path.join(line.split("'")[1], "..", "..", "requirements.yaml")
+                return os.path.abspath(yaml_file)
             if n == 4:
                 break
 
     # conda install
-    envs_dir = f"{rules_dir}/../envs"
-    yaml_file = os.path.abspath(os.path.join(envs_dir, "requirements.yaml"))
-    if not os.path.exists(yaml_file):
-        url = f"https://raw.githubusercontent.com/vanheeringen-lab/seq2science/v{version}/requirements.yaml"
-        urllib.request.urlretrieve(url, yaml_file)
-    return yaml_file
+    yaml_file = os.path.join(rules_dir, "..", "envs", "seq2science_requirements.yaml")
+    return os.path.abspath(yaml_file)
 
 
 def _get_yaml_versions(yaml_file):
@@ -834,12 +830,12 @@ def _get_current_version(package):
     return current_version
 
 
-def assert_versions(rules_dir, version):
+def assert_versions(rules_dir):
     """
     For each package, check that the installed version matches the required version
     """
     error = False
-    yaml_file = _get_yaml_file(rules_dir, version)
+    yaml_file = _get_yaml_file(rules_dir)
     versions = _get_yaml_versions(yaml_file)
     for package, required_version in versions.items():
         current_version = _get_current_version(package)

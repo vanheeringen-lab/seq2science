@@ -98,7 +98,7 @@ for key, value in config.items():
         config[key] = re.split("\/$", value)[0]
 
 # check that the versions in the requirements.yaml match the installed versions
-assert_versions(config["rule_dir"], seq2science.__version__)
+assert_versions(config["rule_dir"])
 
 
 # samples.tsv
