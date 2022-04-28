@@ -22,7 +22,7 @@ jobs:
           $CONDA/bin/conda install mamba=0.19.0
           $CONDA/bin/mamba env update --file requirements.yaml --name base
           $CONDA/bin/mamba install m2r2 sphinx sphinx_rtd_theme sphinx-argparse graphviz
-          $CONDA/bin/pip install .
+          $CONDA/bin/pip3 install .
 
       # -W = error on warning
       - name: Build 🔧
