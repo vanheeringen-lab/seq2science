@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #
 # atacshift: Correct for tn5 bias by shifting reads on the positive strand +4 and reads 
 #            on the negative strand -5. The CIGAR string is the same length as the read
