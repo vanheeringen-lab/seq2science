@@ -4,19 +4,13 @@ all rules/logic related to the final UCSC trackhub (or assembly hub) should be h
 
 import glob
 import os.path
-import logging
 
 from Bio import SeqIO
 from multiprocessing import Pool
 from seq2science.util import color_picker, color_gradient, hsv_to_ucsc, unique, shorten
 import trackhub
 
-# remove the logger created by trackhub (in trackhub.upload)
-# (it adds global logging of all stdout messages, duplicating snakemake's logging)
-if len(logging.root.handlers):
-    th_handler = logging.root.handlers[-1]  # assumption: the last logger was added by trackhub
-    logging.root.removeHandler(th_handler)
-    del logging
+trackhub.upload.logger.setLevel("NOTSET")
 
 
 rule twobit:
@@ -673,10 +667,17 @@ def create_trackhub():
     return out
 
 
-# generate the list once
+# generate these once
 trackhub_files = []
+_ori_assembly = {}
+_get_ucsc_name = {}
+_has_annotation = {}
 if config.get("create_trackhub"):
     trackhub_files = create_trackhub()["files"]
+for assembly in all_assemblies:
+    _ori_assembly[assembly] = ori_assembly(assembly)
+    _get_ucsc_name[assembly] = get_ucsc_name(assembly)
+    _has_annotation[assembly] = has_annotation(assembly)
 
 
 rule trackhub:
@@ -698,42 +699,11 @@ rule trackhub:
     benchmark:
         expand("{benchmark_dir}/trackhub/trackhub.benchmark.txt", **config)[0]
     params:
-        samples,  # helps resolve changed params if e.g. descriptive names change
-    run:
-        import sys
-        import trackhub
-
-        with open(log[0], "w") as f:
-            sys.stderr = sys.stdout = f
-
-            # create the hub
-            hub = create_trackhub()["hub"]
-
-            # upload the hub
-            trackhub.upload.upload_hub(hub=hub, host="localhost", remote_dir=output[0])
-
-            # actions not supported by the Trackhub package
-            for assembly in all_assemblies:
-                asmbly = ori_assembly(assembly)  # no custom suffix, if present
-                hub_type = "trackhub" if get_ucsc_name(assembly)[0] else "assembly_hub"
-
-                # copy the trix files
-                if hub_type == "assembly_hub" and has_annotation(asmbly):
-                    for ext in ["ix", "ixx"]:
-                        src = f"{config['genome_dir']}/{assembly}/annotation.{ext}"
-                        dst = f"{output[0]}/{asmbly}/annotation.{ext}"
-                        shell(f"rsync {src} {dst}")
-
-                # add group scaling to the composite tracks
-                trackdb_file = f"{output[0]}/{get_ucsc_name(assembly)[1]}/trackDb.txt"
-                with open(trackdb_file, "r") as tf:
-                    contents = tf.readlines()
-
-                with open(trackdb_file, "w") as tf:
-                    for line in contents:
-                        if line.startswith("compositeTrack"):
-                            line = "autoScale group\n" + line
-                        tf.write(line)
-
-            # make the trackhub readable for everyone (not writable)
-            shell("chmod -R 755 {output[0]}")
+        hub=create_trackhub()["hub"],
+        all_assemblies=all_assemblies,
+        genomes_dir=config['genome_dir'],
+        ori_assembly=_ori_assembly,
+        get_ucsc_name=_get_ucsc_name,
+        has_annotation=_has_annotation,
+    script:
+        f"{config['rule_dir']}/../scripts/trackhub.py"
