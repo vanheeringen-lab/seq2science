@@ -769,8 +769,9 @@ def _get_yaml_file(rules_dir):
     If s2s is installed in editable mode, the editable yaml file is returned.
     """
     # development install
-    bin_file = shutil.which("seq2science")
-    if bin_file is not None and os.path.isfile(bin_file):
+    current_path = os.path.dirname(os.path.abspath(__file__))
+    bin_file = os.path.join(current_path, "..", "bin", "seq2science")
+    if os.path.isfile(bin_file):
         with open(bin_file) as f:
             for n, line in enumerate(f):
                 # only the editable bin file has this,
