@@ -4,7 +4,6 @@ Utility functions for seq2science
 import contextlib
 import re
 import os
-import shutil
 import sys
 import glob
 import time
@@ -768,17 +767,24 @@ def _get_yaml_file(rules_dir):
     Return the path to the requirements.yaml file
     If s2s is installed in editable mode, the editable yaml file is returned.
     """
-    # first check if installed "normally"
-    yaml_file = os.path.abspath(os.path.join(rules_dir, "..", "envs", "seq2science_requirements.yaml"))
+    # first check if installed normally
+    yaml_file = os.path.abspath(os.path.join(
+        rules_dir, "..", "envs", "seq2science_requirements.yaml"
+    ))
     if os.path.isfile(yaml_file):
         return yaml_file
 
-    # otherwise check if installed through symlinks
-    yaml_file = os.path.abspath(os.path.join(rules_dir, "..", "..", "requirements.yaml"))
+    # otherwise check if installed in editable mode
+    yaml_file = os.path.abspath(os.path.join(
+        rules_dir, "..", "..", "requirements.yaml"
+    ))
     if os.path.isfile(yaml_file):
         return yaml_file
 
-    raise FileNotFoundError("Seq2science couldn't find it's own requirements.. This shouldn't happen!!!! Please make an error report!")
+    raise FileNotFoundError(
+        "Seq2science couldn't find it's own requirements file! "
+        "This shouldn't happen, so please raise an issue on github!"
+    )
 
 
 def _get_yaml_versions(yaml_file):
