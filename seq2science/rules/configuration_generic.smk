@@ -1,6 +1,7 @@
 """
 all logic not related to any specific workflows should be here.
 """
+container: "docker://quay.io/biocontainers/seq2science:0.7.2--pypyhdfd78af_0"
 
 import os.path
 import pickle
@@ -22,7 +23,7 @@ from pandas_schema.validation import MatchesPatternValidation, IsDistinctValidat
 
 from snakemake.dag import DAG
 from snakemake.logging import logger
-from snakemake.utils import validate, min_version
+from snakemake.utils import validate
 
 import seq2science
 from seq2science.util import (
@@ -34,6 +35,7 @@ from seq2science.util import (
     PickleDict,
     is_local,
     get_contrasts,
+    assert_versions,
 )
 
 
@@ -100,6 +102,9 @@ for key, value in config.items():
         else:
             value = os.path.abspath(os.path.join(config["result_dir"], value))
         config[key] = re.split("\/$", value)[0]
+
+# check that the versions in the requirements.yaml match the installed versions
+assert_versions(config["rule_dir"])
 
 
 # samples.tsv
@@ -482,12 +487,6 @@ if "control" in samples:
 wildcard_constraints:
     sample=any_given(*sample_constraints),
 
-
-# make sure the snakemake version corresponds to version in environment
-if not snakemake.__version__.startswith("7.3"):
-    raise WorkflowError(
-        f"Expecting Snakemake version 7.3 (you are currently using {snakemake.__version__})"
-    )
 
 # record which assembly trackhubs are found on UCSC
 if config.get("create_trackhub"):
