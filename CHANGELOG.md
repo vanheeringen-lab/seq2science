@@ -40,6 +40,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Fixed
 
 - fixed bug causing incorrect genome string in `read_kb_counts.R`
+- bams generated with(out) filtering on size and tn5 shifting weren't removed when not necessary anymore
 
 ### Changed
 
