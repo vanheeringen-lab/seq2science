@@ -322,9 +322,6 @@ def strandedness_in_assembly(assembly):
 
 
 def is_standed(assembly, trep):
-    if get_workflow() != "rna_seq":
-        return False
-
     report_file = f"{config['qc_dir']}/strandedness/{assembly}-{trep}.strandedness.txt"
     strandedness = get_strandedness(report_file)
     if strandedness == "no":
@@ -588,6 +585,8 @@ def create_trackhub():
                         signal_view.add_tracks(track)
 
         elif get_workflow() in ["alignment", "rna_seq"]:
+            has_strandedness = strandedness_in_assembly(assembly)
+
             # one composite track to rule them all...
             name = f"{sequencing_protocol} samples"
             safename = trackhub.helpers.sanitize(name)
@@ -618,7 +617,7 @@ def create_trackhub():
             composite.add_view(fwd_view)
 
             # ...one view to bring them all...
-            if strandedness_in_assembly(assembly):  # only added if there are reverse strand bams
+            if has_strandedness:  # only added if there are reverse strand bams
                 rev_view_name = "reverse strand reads"
                 rev_view = trackhub.ViewTrack(
                     name=trackhub.helpers.sanitize(rev_view_name),
@@ -661,7 +660,7 @@ def create_trackhub():
                 fwd_view.add_tracks(track)
 
                 # reverse strand
-                if is_standed(assembly, trep):
+                if has_strandedness and is_standed(assembly, trep):
                     file = f"{config['bigwig_dir']}/{assembly}-{trep}.{config['bam_sorter']}-{config['bam_sort_order']}.rev.bw"
                     priority += 1.0
                     track = trackhub.Track(
