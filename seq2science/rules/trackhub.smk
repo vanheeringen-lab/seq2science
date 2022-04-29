@@ -1,8 +1,6 @@
 """
 all rules/logic related to the final UCSC trackhub (or assembly hub) should be here.
 """
-
-import glob
 import os.path
 
 from Bio import SeqIO
@@ -301,19 +299,30 @@ def get_colors(asmbly):
 def strandedness_in_assembly(assembly):
     """
     Check if there are any stranded samples for this assembly.
-
     Returns False if no reports have been generated yet.
     """
     if get_workflow() != "rna_seq":
         return False
 
-    reports = glob.glob(f"{config['qc_dir']}/strandedness/{assembly}-*.strandedness.txt")
-    for rep in reports:
-        strandedness = get_strandedness(rep)
-        if strandedness != "no":
+    asmbly = ori_assembly(assembly)  # no custom suffix, if present
+    for trep in treps[treps["assembly"] == asmbly].index:
+        if is_standed(assembly, trep):
             return True
-    else:
+    return False
+
+
+def is_standed(assembly, trep):
+    """
+    Check if the sample is stranded.
+    Returns False if the report has not been generated yet.
+    """
+    report_file = os.path.join(
+        config['qc_dir'], "strandedness", f"{assembly}-{trep}.strandedness.txt"
+    )
+    strandedness = get_strandedness(report_file)
+    if strandedness in ["no", "placeholder"]:
         return False
+    return True
 
 
 def create_trackhub():
@@ -572,7 +581,7 @@ def create_trackhub():
                         signal_view.add_tracks(track)
 
         elif get_workflow() in ["alignment", "rna_seq"]:
-            has_strandedness =  strandedness_in_assembly(assembly)
+            has_strandedness = strandedness_in_assembly(assembly)
 
             # one composite track to rule them all...
             name = f"{sequencing_protocol} samples"
@@ -647,7 +656,7 @@ def create_trackhub():
                 fwd_view.add_tracks(track)
 
                 # reverse strand
-                if has_strandedness:
+                if has_strandedness and is_standed(assembly, trep):
                     file = f"{config['bigwig_dir']}/{assembly}-{trep}.{config['bam_sorter']}-{config['bam_sort_order']}.rev.bw"
                     priority += 1.0
                     track = trackhub.Track(
