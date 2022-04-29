@@ -9,7 +9,7 @@ if config.get("create_trackhub"):
     from seq2science.util import color_picker, color_gradient, hsv_to_ucsc, unique, shorten
     import trackhub
 
-    trackhub.upload.logger.setLevel("NOTSET")
+    trackhub.upload.logger.setLevel("DEBUG")
 
 
     rule twobit:
