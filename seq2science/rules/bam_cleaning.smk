@@ -119,6 +119,9 @@ else:
     ruleorder: sieve_bam > samtools_sort
 
 
+# the output of sieving depends on different preprocessing steps
+sieve_bam_output = {"final": f"{config['final_bam_dir']}/{{assembly}}-{{sample}}.samtools-coordinate{shiftsieve}.bam"}
+
 # if we filter on size, we make two files. One split on size, and one not.
 if config["filter_on_size"]:
     sieve_bam_output["allsizes"] = temp(
