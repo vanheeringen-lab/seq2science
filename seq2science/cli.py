@@ -505,7 +505,7 @@ def _explain(args, base_dir, workflows_dir, config_path):
 
     if success:
         print(" ".join(rules_used.values()))
-        os._exit(0)  # noqa
+        sys.exit(0)
     else:
         print(
             "Oh no! Something went wrong... "
@@ -647,6 +647,7 @@ def resource_parser(parsed_args):
         # otherwise, assume system memory
         mem = psutil.virtual_memory().total / 1024 ** 3
         parsed_args["resources"]["mem_gb"] = round(mem)
+
 
 
 def setup_seq2science_logger(parsed_args):
