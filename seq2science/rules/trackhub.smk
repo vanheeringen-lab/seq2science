@@ -2,6 +2,7 @@
 all rules/logic related to the final UCSC trackhub (or assembly hub) should be here.
 """
 if config.get("create_trackhub"):
+    import logging
     import os.path
 
     from Bio import SeqIO
@@ -9,7 +10,10 @@ if config.get("create_trackhub"):
     from seq2science.util import color_picker, color_gradient, hsv_to_ucsc, unique, shorten
     import trackhub
 
-    trackhub.upload.logger.setLevel("DEBUG")
+    # remove the logger created by trackhub (in trackhub.upload)
+    # (it adds global logging of all stdout messages, duplicating snakemake's logging)
+    logging.root.removeHandler(trackhub.upload.logger)
+    del logging
 
 
     rule twobit:
@@ -231,13 +235,13 @@ if config.get("create_trackhub"):
         "convention".
         """
         # strip custom prefix, if present
-        assembly = ori_assembly(assembly)
+        assembly = ori_assemblies[assembly]
 
         # patches are not relevant for which assembly it belongs to
         # (at least not human and mouse)
         assembly_np = [split for split in re.split(r"(.+)(?=\.p\d)", assembly) if split != ""][0].lower()
 
-        # check if the assembly matches a ucsc assembly name
+        # check if the assembly matches an ucsc assembly name
         if assembly_np in ucsc_assemblies:
             return True, ucsc_assemblies[assembly_np][0]
 
@@ -250,6 +254,9 @@ if config.get("create_trackhub"):
 
         # if not found, return the original name
         return False, assembly
+
+
+    ucsc_names = {a: get_ucsc_name(a) for a in all_assemblies}
 
 
     def get_defaultpos(sizefile):
@@ -302,7 +309,7 @@ if config.get("create_trackhub"):
         if get_workflow() != "rna_seq":
             return False
 
-        asmbly = ori_assembly(assembly)  # no custom suffix, if present
+        asmbly = ori_assemblies[assembly]  # no custom suffix, if present
         for trep in treps[treps["assembly"] == asmbly].index:
             if is_standed(assembly, trep):
                 return True
@@ -373,15 +380,15 @@ if config.get("create_trackhub"):
         hub.add_genomes_file(genomes_file)
 
         for assembly in all_assemblies:
-            asmbly = ori_assembly(assembly)  # no custom suffix, if present
-            hub_type = "trackhub" if get_ucsc_name(assembly)[0] else "assembly_hub"
+            asmbly = ori_assemblies[assembly]  # no custom suffix, if present
+            hub_type = "trackhub" if ucsc_names[assembly][0] else "assembly_hub"
             trackdb = trackhub.trackdb.TrackDb()
             palletes = get_colors(asmbly)
             priority = 10.0
 
             if hub_type == "trackhub":
                 # link this data to the existing trackhub
-                assembly_uscs = get_ucsc_name(assembly)[1]
+                assembly_uscs = ucsc_names[assembly][1]
                 genome = trackhub.Genome(assembly_uscs)
 
             elif hub_type == "assembly_hub":
@@ -457,7 +464,7 @@ if config.get("create_trackhub"):
                 out["files"].append(file)
 
                 # add gtf-dependent track(s) if possible
-                if has_annotation(asmbly):
+                if has_annotation[assembly]:
                     file = f"{config['genome_dir']}/{assembly}/annotation.bigBed"
                     track = trackhub.Track(
                         name="annotation",
@@ -700,8 +707,8 @@ if config.get("create_trackhub"):
             hub=create_trackhub()["hub"],  # generate when files are complete
             genomes_dir=config['genome_dir'],
             all_assemblies=all_assemblies,
-            ori_assembly={a:ori_assembly(a) for a  in all_assemblies},
-            get_ucsc_name={a:get_ucsc_name(a) for a  in all_assemblies},
-            has_annotation={a:has_annotation(a) for a  in all_assemblies},
+            ori_assemblies=ori_assemblies,
+            ucsc_names=ucsc_names,
+            has_annotation=has_annotation,
         script:
             f"{config['rule_dir']}/../scripts/trackhub.py"

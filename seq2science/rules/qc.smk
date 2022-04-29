@@ -215,7 +215,7 @@ rule mt_nuc_ratio_calculator:
 def fingerprint_multiBamSummary_input(wildcards):
     output = {"bams": set(), "bais": set()}
 
-    for trep in set(treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index):
+    for trep in set(treps[treps["assembly"] == ori_assemblies[wildcards.assembly]].index):
         output["bams"].update(expand(f"{{final_bam_dir}}/{wildcards.assembly}-{trep}.samtools-coordinate.bam", **config))
         output["bais"].update(
             expand(f"{{final_bam_dir}}/{wildcards.assembly}-{trep}.samtools-coordinate.bam.bai", **config)
@@ -300,7 +300,7 @@ def computeMatrix_input(wildcards):
     output = []
 
     treps_seen = set()
-    for trep in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index:
+    for trep in treps[treps["assembly"] == ori_assemblies[wildcards.assembly]].index:
         if trep not in treps_seen:
             output.append(expand(f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{trep}.bw", **config)[0])
         treps_seen.add(trep)
@@ -492,7 +492,7 @@ def get_summits_bed(wildcards):
     return expand(
         [
             f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{replicate}_summits.bed"
-            for replicate in breps[breps["assembly"] == ori_assembly(wildcards.assembly)].index
+            for replicate in breps[breps["assembly"] == ori_assemblies[wildcards.assembly]].index
         ],
         **config,
     )
@@ -585,7 +585,7 @@ def assembly_stats_input(wildcards):
     assembly = wildcards.assembly
     req_input["genome"] = expand(f"{{genome_dir}}/{assembly}/{assembly}.fa", **config)[0]
     req_input["index"] = expand(f"{{genome_dir}}/{assembly}/{assembly}.fa.fai", **config)[0]
-    if has_annotation(assembly):
+    if has_annotation[assembly]:
         req_input["annotation"] = expand(f"{{genome_dir}}/{assembly}/{assembly}.annotation.gtf", **config)[0]
     return req_input
 
@@ -612,7 +612,7 @@ rule multiqc_rename_buttons:
     params:
         samples,  # helps resolve changed params if e.g. descriptive names change
     run:
-        newsamples = samples[samples["assembly"] == ori_assembly(wildcards.assembly)].reset_index(level=0, inplace=False)
+        newsamples = samples[samples["assembly"] == ori_assemblies[wildcards.assembly]].reset_index(level=0, inplace=False)
         newsamples = newsamples.drop(["assembly"], axis=1)
         newsamples.to_csv(output[0], sep="\t", index=False)
 
@@ -721,12 +721,12 @@ def get_qc_files(wildcards):
     if get_trimming_qc in quality_control:
         # scatac seq only on treps, not on single samples
         if get_workflow() != "scatac_seq":
-            for sample in samples[samples["assembly"] == ori_assembly(wildcards.assembly)].index:
+            for sample in samples[samples["assembly"] == ori_assemblies[wildcards.assembly]].index:
                 qc["files"].update(get_trimming_qc(sample))
 
     # qc on merged technical replicates/samples
     if get_alignment_qc in quality_control:
-        for replicate in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index:
+        for replicate in treps[treps["assembly"] == ori_assemblies[wildcards.assembly]].index:
             for function in [
                 func for func in quality_control if func.__name__ not in ["get_peak_calling_qc", "get_trimming_qc"]
             ]:
@@ -740,7 +740,7 @@ def get_qc_files(wildcards):
 
     # qc on combined biological replicates/samples
     if get_peak_calling_qc in quality_control:
-        for trep in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index:
+        for trep in treps[treps["assembly"] == ori_assemblies[wildcards.assembly]].index:
             qc["files"].update(get_peak_calling_qc(trep, wildcards))
 
     if get_rna_qc in quality_control:
@@ -749,7 +749,7 @@ def get_qc_files(wildcards):
             config.get("ignore_strandedness")
             or (config.get("quantifier", "") == "salmon" and config.get("create_trackhub") == False)
         ):
-            for trep in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index:
+            for trep in treps[treps["assembly"] == ori_assemblies[wildcards.assembly]].index:
                 qc["files"].update(get_rna_qc(trep))
 
         # add dupRadar plots if BAMs are made
@@ -786,7 +786,7 @@ def get_qc_files(wildcards):
         qc["files"].update(contrast.replace(".diffexp.tsv", ".pca_plot_mqc.png") for contrast in contrast_files)
 
     if get_scrna_qc in quality_control:
-        for trep in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index:
+        for trep in treps[treps["assembly"] == ori_assemblies[wildcards.assembly]].index:
             qc["files"].update(get_scrna_qc(trep))
 
     return qc
@@ -1027,7 +1027,7 @@ def get_peak_calling_qc(sample, wildcards):
     assembly = treps.loc[sample, "assembly"]
     narrowpeak_used = "narrowPeak" in [get_peak_ftype(pc) for pc in list(config["peak_caller"].keys())]
     # TODO: replace with genomepy checkpoint in the future
-    if has_annotation(assembly):
+    if has_annotation[assembly]:
         output.extend(expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config))  # added to be unzipped
         if config.get("deeptools_qc"):
             output.extend(expand("{qc_dir}/plotProfile_gene/{{assembly}}-{peak_caller}.tsv", **config))
@@ -1042,7 +1042,7 @@ def get_peak_calling_qc(sample, wildcards):
             )
         )
     # upset plot
-    if narrowpeak_used and len(breps[breps["assembly"] == ori_assembly(wildcards.assembly)].index) > 1:
+    if narrowpeak_used and len(breps[breps["assembly"] == ori_assemblies[wildcards.assembly]].index) > 1:
         output.extend(
             expand(
                 "{qc_dir}/upset/{{assembly}}-{peak_caller}_upset_mqc.jpg",

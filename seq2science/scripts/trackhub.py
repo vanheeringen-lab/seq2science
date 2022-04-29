@@ -9,8 +9,8 @@ all_assemblies = snakemake.params.all_assemblies
 hub = snakemake.params.hub
 genomes_dir = snakemake.params.genomes_dir
 out_dir = snakemake.output[0]
-ori_assembly = snakemake.params.ori_assembly
-get_ucsc_name = snakemake.params.get_ucsc_name
+ori_assemblies = snakemake.params.ori_assemblies
+ucsc_names = snakemake.params.ucsc_names
 has_annotation = snakemake.params.has_annotation
 
 
@@ -37,8 +37,8 @@ trackhub.upload.upload_hub(hub=hub, host="localhost", remote_dir=out_dir)
 
 # actions not supported by the Trackhub package
 for assembly in all_assemblies:
-    asmbly = ori_assembly[assembly]  # no custom suffix, if present
-    hub_type = "trackhub" if get_ucsc_name[assembly][0] else "assembly_hub"
+    asmbly = ori_assemblies[assembly]  # no custom suffix, if present
+    hub_type = "trackhub" if ucsc_names[assembly][0] else "assembly_hub"
 
     # copy the trix files
     if hub_type == "assembly_hub" and has_annotation[asmbly]:
@@ -48,7 +48,7 @@ for assembly in all_assemblies:
             shutil.copy(src, dst)
 
     # add group scaling to the composite tracks
-    trackdb_file = os.path.join(out_dir, get_ucsc_name[assembly][1], "trackDb.txt")
+    trackdb_file = os.path.join(out_dir, ucsc_names[assembly][1], "trackDb.txt")
     with open(trackdb_file, "r") as tf:
         contents = tf.readlines()
 
