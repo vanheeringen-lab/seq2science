@@ -322,6 +322,9 @@ def strandedness_in_assembly(assembly):
 
 
 def is_standed(assembly, trep):
+    if get_workflow() != "rna_seq":
+        return False
+
     report_file = f"{config['qc_dir']}/strandedness/{assembly}-{trep}.strandedness.txt"
     strandedness = get_strandedness(report_file)
     if strandedness == "no":
