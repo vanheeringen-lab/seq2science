@@ -19,7 +19,7 @@ rule run2sra:
     benchmark:
         expand("{benchmark_dir}/run2sra/{{run}}.benchmark.txt", **config)[0]
     message:
-        explain_rule("run2sra")
+        EXPLAIN.get("run2sra", "")
     resources:
         parallel_downloads=1,
     params:
@@ -41,7 +41,7 @@ rule run2sra:
             (
                 flock -w 30 200 || continue
                 sleep 2
-            ) 200>{pysradb_cache_lock}
+            ) 200>{PYSRADB_CACHE_LOCK}
 
             # dump
             prefetch --max-size 999999999999 --output-directory ./ --log-level debug --progress {wildcards.run} >> {log} 2>&1 && break
@@ -81,7 +81,7 @@ rule sra2fastq_SE:
     benchmark:
         expand("{benchmark_dir}/sra2fastq_SE/{{run}}.benchmark.txt", **config)[0]
     wildcard_constraints:
-        run="|".join(sra_single_end) if len(sra_single_end) else "$a",  # only try to dump (single-end) SRA samples
+        run="|".join(SRA_SINGLE_END) if len(SRA_SINGLE_END) else "$a",  # only try to dump (single-end) SRA samples
     threads: 8
     conda:
         "../envs/get_fastq.yaml"
@@ -94,7 +94,7 @@ rule sra2fastq_SE:
         (
             flock -w 30 200 || exit 1
             sleep 3
-        ) 200>{pysradb_cache_lock}
+        ) 200>{PYSRADB_CACHE_LOCK}
 
         # dump to tmp dir
         parallel-fastq-dump -s {input} -O {output.tmpdir} \
@@ -123,7 +123,7 @@ rule sra2fastq_PE:
         expand("{benchmark_dir}/sra2fastq_PE/{{run}}.benchmark.txt", **config)[0]
     threads: 8
     wildcard_constraints:
-        run="|".join(sra_paired_end) if len(sra_paired_end) else "$a",  # only try to dump (paired-end) SRA samples
+        run="|".join(SRA_PAIRED_END) if len(SRA_PAIRED_END) else "$a",  # only try to dump (paired-end) SRA samples
     conda:
         "../envs/get_fastq.yaml"
     shell:
@@ -135,7 +135,7 @@ rule sra2fastq_PE:
         (
             flock -w 30 200 || exit 1
             sleep 3
-        ) 200>{pysradb_cache_lock}
+        ) 200>{PYSRADB_CACHE_LOCK}
 
         # dump to tmp dir
         parallel-fastq-dump -s {input} -O {output.tmpdir} \
@@ -162,10 +162,10 @@ rule ena2fastq_SE:
     benchmark:
         expand("{benchmark_dir}/ena2fastq_SE/{{run}}.benchmark.txt", **config)[0]
     wildcard_constraints:
-        run="|".join(ena_single_end) if len(ena_single_end) else "$a",
+        run="|".join(ENA_SINGLE_END) if len(ENA_SINGLE_END) else "$a",
     run:
         shell("mkdir -p {config[fastq_dir]}/tmp/ >> {log} 2>&1")
-        url = run2download[wildcards.run]
+        url = RUN2DOWNLOAD[wildcards.run]
         if config.get("ascp_path") and config.get("ascp_key"):
             shell("{config[ascp_path]} -QT -l 1G -P33001 -i {config[ascp_key]} {url} {output} >> {log} 2>&1")
         else:
@@ -189,10 +189,10 @@ rule ena2fastq_PE:
     benchmark:
         expand("{benchmark_dir}/ena2fastq_PE/{{run}}.benchmark.txt", **config)[0]
     wildcard_constraints:
-        run="|".join(ena_paired_end) if len(ena_paired_end) else "$a",
+        run="|".join(ENA_PAIRED_END) if len(ENA_PAIRED_END) else "$a",
     run:
         shell("mkdir -p {config[fastq_dir]}/tmp >> {log} 2>&1")
-        urls = run2download[wildcards.run]
+        urls = RUN2DOWNLOAD[wildcards.run]
         if config.get("ascp_path") and config.get("ascp_key"):
             shell("{config[ascp_path]} -QT -l 1G -P33001 -i {config[ascp_key]} {urls[0]} {output[0]} >> {log} 2>&1")
             shell("{config[ascp_path]} -QT -l 1G -P33001 -i {config[ascp_key]} {urls[1]} {output[1]} >> {log} 2>&1")
@@ -212,13 +212,13 @@ rule ena2fastq_PE:
 
 def get_runs_from_sample(wildcards):
     run_fastqs = []
-    for run in sampledict[wildcards.sample]["runs"]:
+    for run in SAMPLEDICT[wildcards.sample]["runs"]:
         run_fastqs.append(f"{config['fastq_dir']}/runs/{run}{wildcards.suffix}")
 
     return run_fastqs
 
 
-public_samples = [sample for sample, values in sampledict.items() if "runs" in values]
+public_samples = [sample for sample, values in SAMPLEDICT.items() if "runs" in values]
 
 
 rule runs2sample:

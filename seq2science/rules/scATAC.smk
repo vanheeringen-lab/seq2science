@@ -48,7 +48,7 @@ rule create_bins_SNAP_object:
     conda:
         "../envs/snaptools.yaml"
     message:
-        explain_rule("create_bins_SNAP_object")
+        EXPLAIN.get("create_bins_SNAP_object", "")
     params:
         config["bin_opt"],
     shell:

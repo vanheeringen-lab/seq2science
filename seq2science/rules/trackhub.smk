@@ -4,16 +4,21 @@ all rules/logic related to the final UCSC trackhub (or assembly hub) should be h
 if config.get("create_trackhub"):
     import logging
     import os.path
+    import re
 
     from Bio import SeqIO
     from multiprocessing import Pool
-    from seq2science.util import color_picker, color_gradient, hsv_to_ucsc, unique, shorten
     import trackhub
+
+    from seq2science.util import color_picker, color_gradient, hsv_to_ucsc, shorten
+
 
     # remove the logger created by trackhub (in trackhub.upload)
     # (it adds global logging of all stdout messages, duplicating snakemake's logging)
-    logging.root.removeHandler(trackhub.upload.logger)
-    del logging
+    if len(logging.root.handlers):
+        th_handler = logging.root.handlers[-1]  # assumption: the last logger was added by trackhub
+        logging.root.removeHandler(th_handler)
+        del logging
 
 
     rule twobit:
@@ -100,22 +105,22 @@ if config.get("create_trackhub"):
         masked_regions = ""
 
         masked_seq = str(contig.seq)
-        inMasked = False
+        in_masked = False
 
         length = len(masked_seq) - 1
         for x in range(0, length + 1):
             # mark the starting position of a softmasked region
-            if masked_seq[x].islower() and inMasked == False:
-                mmStart = x + 1
-                inMasked = True
+            if masked_seq[x].islower() and in_masked == False:
+                mm_start = x + 1
+                in_masked = True
 
             # mark end position of softmasked region (can be end of contig)
-            elif (not (masked_seq[x].islower()) or x == length) and inMasked == True:
-                mmEnd = x
-                inMasked = False
+            elif (not (masked_seq[x].islower()) or x == length) and in_masked == True:
+                mm_end = x
+                in_masked = False
 
                 # store softmasked region in a bed3 (chr, start, end) file
-                masked_regions += contig.id + "\t" + str(mmStart) + "\t" + str(mmEnd) + "\n"
+                masked_regions += contig.id + "\t" + str(mm_start) + "\t" + str(mm_end) + "\n"
 
         return masked_regions
 
@@ -198,7 +203,7 @@ if config.get("create_trackhub"):
         benchmark:
             expand("{benchmark_dir}/trackhub/{{assembly}}.index.benchmark.txt", **config)[0]
         message:
-            explain_rule("trackhub")
+            EXPLAIN.get("trackhub", "")
         conda:
             "../envs/ucsc.yaml"
         shell:
@@ -235,18 +240,18 @@ if config.get("create_trackhub"):
         "convention".
         """
         # strip custom prefix, if present
-        assembly = ori_assemblies[assembly]
+        assembly = ORI_ASSEMBLIES[assembly]
 
         # patches are not relevant for which assembly it belongs to
         # (at least not human and mouse)
         assembly_np = [split for split in re.split(r"(.+)(?=\.p\d)", assembly) if split != ""][0].lower()
 
         # check if the assembly matches an ucsc assembly name
-        if assembly_np in ucsc_assemblies:
-            return True, ucsc_assemblies[assembly_np][0]
+        if assembly_np in UCSC_ASSEMBLIES:
+            return True, UCSC_ASSEMBLIES[assembly_np][0]
 
         # else check if it is part of the description
-        for ucsc_assembly, desc in ucsc_assemblies.values():
+        for ucsc_assembly, desc in UCSC_ASSEMBLIES.values():
             assemblies = desc[desc.find("(") + 1 : desc.find(")")].split("/")
             assemblies = [val.lower() for val in assemblies]
             if assembly_np in assemblies:
@@ -256,7 +261,7 @@ if config.get("create_trackhub"):
         return False, assembly
 
 
-    ucsc_names = {a: get_ucsc_name(a) for a in all_assemblies}
+    ucsc_names = {a: get_ucsc_name(a) for a in ALL_ASSEMBLIES}
 
 
     def get_defaultpos(sizefile):
@@ -279,23 +284,16 @@ if config.get("create_trackhub"):
         palletes = {}
 
         # pick colors for each main track
-        main_tracks = unique(breps[breps["assembly"] == asmbly].index)
+        main_tracks = list(set(breps[breps["assembly"] == asmbly].index))
         if "colors" in breps:
-            mc = (
-                breps[breps.index.isin(main_tracks)]
-                .colors.reset_index()
-                .drop_duplicates(breps.index.name)
-                .set_index(cols[0])["colors"]
-                .to_list()
-            )
+            mc = breps[~breps.index.duplicated(keep='first')]["colors"].to_list()
         else:
             mc = color_picker(len(main_tracks))
 
         # create a gradient for each main track color
         for n, rep in enumerate(main_tracks):
-            tracks_per_main_track = 1 + len(
-                treps_from_brep[(rep, asmbly)]
-            )  # ATAC-/ChIP-seq: 1 for breps + 1 per trep. RNA-seq: 1 for forward/reverse strand
+            # ATAC-/ChIP-seq: 1 for breps + 1 per trep. RNA-seq: 1 for forward/reverse strand
+            tracks_per_main_track = 1 + len(TREPS_FROM_BREP[(rep, asmbly)])
             palletes[rep] = color_gradient(mc[n], tracks_per_main_track)
 
         return palletes
@@ -306,10 +304,10 @@ if config.get("create_trackhub"):
         Check if there are any stranded samples for this assembly.
         Returns False if no reports have been generated yet.
         """
-        if get_workflow() != "rna_seq":
+        if WORKFLOW != "rna_seq":
             return False
 
-        asmbly = ori_assemblies[assembly]  # no custom suffix, if present
+        asmbly = ORI_ASSEMBLIES[assembly]  # no custom suffix, if present
         for trep in treps[treps["assembly"] == asmbly].index:
             if is_standed(assembly, trep):
                 return True
@@ -363,13 +361,13 @@ if config.get("create_trackhub"):
 
         # universal hub file
         hub = trackhub.Hub(
-            hub=config.get("hubname", f"{sequencing_protocol}_trackhub"),
+            hub=config.get("hubname", f"{SEQUENCING_PROTOCOL}_trackhub"),
             short_label=config.get(
-                "shortlabel", f"Seq2science {sequencing_protocol} hub"
+                "shortlabel", f"Seq2science {SEQUENCING_PROTOCOL} hub"
             ),  # title of the control box in the genome browser (for trackhubs)
             long_label=config.get(
                 "longlabel",
-                f"Automated {sequencing_protocol} trackhub generated by seq2science: \nhttps://github.com/vanheeringen-lab/seq2scsience",
+                f"Automated {SEQUENCING_PROTOCOL} trackhub generated by seq2science: \nhttps://github.com/vanheeringen-lab/seq2scsience",
             ),
             email=config.get("email", "none@provided.com"),
         )
@@ -379,8 +377,8 @@ if config.get("create_trackhub"):
         genomes_file = trackhub.genomes_file.GenomesFile()
         hub.add_genomes_file(genomes_file)
 
-        for assembly in all_assemblies:
-            asmbly = ori_assemblies[assembly]  # no custom suffix, if present
+        for assembly in ALL_ASSEMBLIES:
+            asmbly = ORI_ASSEMBLIES[assembly]  # no custom suffix, if present
             hub_type = "trackhub" if ucsc_names[assembly][0] else "assembly_hub"
             trackdb = trackhub.trackdb.TrackDb()
             palletes = get_colors(asmbly)
@@ -418,7 +416,7 @@ if config.get("create_trackhub"):
                 )
                 hub_group = trackhub.groups.GroupDefinition(
                     name="trackhub",
-                    label=config.get("shortlabel", f"seq2science {sequencing_protocol} hub"),
+                    label=config.get("shortlabel", f"seq2science {SEQUENCING_PROTOCOL} hub"),
                     priority=2,  # group priority overrules track priority
                     default_is_closed=False,
                 )
@@ -464,7 +462,7 @@ if config.get("create_trackhub"):
                 out["files"].append(file)
 
                 # add gtf-dependent track(s) if possible
-                if has_annotation[assembly]:
+                if HAS_ANNOTATION[assembly]:
                     file = f"{config['genome_dir']}/{assembly}/annotation.bigBed"
                     track = trackhub.Track(
                         name="annotation",
@@ -486,7 +484,7 @@ if config.get("create_trackhub"):
             genome.add_trackdb(trackdb)
 
             # workflow specific data
-            if get_workflow() in ["atac_seq", "chip_seq"]:
+            if WORKFLOW in ["atac_seq", "chip_seq"]:
                 for peak_caller in config["peak_caller"]:
                     ftype = get_peak_ftype(peak_caller)
                     ttype = "bigNarrowPeak" if ftype == "narrowPeak" else "bigBed"
@@ -496,11 +494,11 @@ if config.get("create_trackhub"):
                     pcp = shorten(peak_caller_prefix, 5)
 
                     # one composite track to rule them all...
-                    name = f"{sequencing_protocol}{peak_caller_suffix} samples"
+                    name = f"{SEQUENCING_PROTOCOL}{peak_caller_suffix} samples"
                     safename = trackhub.helpers.sanitize(name)
                     composite = trackhub.CompositeTrack(
                         name=safename,
-                        short_label=f"{sequencing_protocol}{pcs}",
+                        short_label=f"{SEQUENCING_PROTOCOL}{pcs}",
                         long_label=name,
                         dimensions=f"dimX=view dimY=conditions",
                         tracktype="bigWig",
@@ -543,7 +541,7 @@ if config.get("create_trackhub"):
                     composite.add_subgroups([subgroup])
 
                     # add the actual tracks
-                    for brep in unique(breps[breps["assembly"] == asmbly].index):
+                    for brep in list(set(breps[breps["assembly"] == asmbly].index)):
                         descriptive = rep_to_descriptive(brep, brep=True)
                         safedescr = trackhub.helpers.sanitize(descriptive)
                         subgroup.mapping[safedescr] = descriptive
@@ -568,7 +566,7 @@ if config.get("create_trackhub"):
                         peaks_view.add_tracks(track)
 
                         # the technical replicate(s) that comprise this biological replicate
-                        for n, trep in enumerate(treps_from_brep[(brep, asmbly)]):
+                        for n, trep in enumerate(TREPS_FROM_BREP[(brep, asmbly)]):
                             file = f"{config['result_dir']}/{peak_caller}/{assembly}-{trep}.bw"
                             priority += 1.0
                             track = trackhub.Track(
@@ -585,15 +583,15 @@ if config.get("create_trackhub"):
                             out["files"].append(file)
                             signal_view.add_tracks(track)
 
-            elif get_workflow() in ["alignment", "rna_seq"]:
+            elif WORKFLOW in ["alignment", "rna_seq"]:
                 has_strandedness = strandedness_in_assembly(assembly)
 
                 # one composite track to rule them all...
-                name = f"{sequencing_protocol} samples"
+                name = f"{SEQUENCING_PROTOCOL} samples"
                 safename = trackhub.helpers.sanitize(name)
                 composite = trackhub.CompositeTrack(
                     name=safename,
-                    short_label=sequencing_protocol,
+                    short_label=SEQUENCING_PROTOCOL,
                     long_label=name,
                     dimensions=f"dimX=view dimY=samples",
                     tracktype="bigWig",
@@ -698,7 +696,7 @@ if config.get("create_trackhub"):
         output:
             directory(config["trackhub_dir"]),
         message:
-            explain_rule("trackhub")
+            EXPLAIN.get("trackhub", "")
         log:
             expand("{log_dir}/trackhub/trackhub.log", **config),
         benchmark:
@@ -706,9 +704,9 @@ if config.get("create_trackhub"):
         params:
             hub=create_trackhub()["hub"],  # generate when files are complete
             genomes_dir=config['genome_dir'],
-            all_assemblies=all_assemblies,
-            ori_assemblies=ori_assemblies,
+            ALL_ASSEMBLIES=ALL_ASSEMBLIES,
+            ORI_ASSEMBLIES=ORI_ASSEMBLIES,
             ucsc_names=ucsc_names,
-            has_annotation=has_annotation,
+            HAS_ANNOTATION=HAS_ANNOTATION,
         script:
             f"{config['rule_dir']}/../scripts/trackhub.py"

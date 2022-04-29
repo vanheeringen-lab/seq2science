@@ -73,10 +73,10 @@ There are a couple important global variables
 
 * **config**, in config all the configuration stuff is stored. Everything that you fill out in the config.yaml is in here. This is parsed by the relevant schemas in `seq2science/schemas` , and some extra parsing is done in `seq2science/rules/configuration_`. 
 * **samples**, samples is the samples.tsv as a pandas dataframe, after some parsing done in `seq2science/rules/configuration_`. 
-* **sampledict**, sampledict contains some information per sample that is not present in the samples.tsv file. In here is stored whether samples are SINGLE-end or PAIRED-end, and their corresponding SRR numbers.
+* **SAMPLEDICT**, SAMPLEDICT contains some information per sample that is not present in the samples.tsv file. In here is stored whether samples are SINGLE-end or PAIRED-end, and their corresponding SRR numbers.
 * **breps & treps**, breps and treps are variables that represent the technical and biological replicates. If you want to iterate over eiher of the technical replicates or biological replicates, or check what a sample belongs to, it is probably easiest to use these.
 * **global wildcard constraints**, seq2science sets global wildcard constraints in `seq2science/rules/configuration_generic.smk`. Make sure to adhere to the naming convention of samples and assembly. 
-* **sequencing_protocol** contains the current workflow, spelled out properly (e.g. "ChIP-seq").
+* **SEQUENCING_PROTOCOL** contains the current workflow, spelled out properly (e.g. "ChIP-seq").
 
 ### Example PR
 

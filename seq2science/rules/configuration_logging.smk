@@ -125,7 +125,7 @@ if not config.get("no_config_log"):
         if config[key] not in ["", False, 0, "None", "none@provided.com", "yourmail@here.com", "_custom"]:
             logger.info(f"{key: <23}: {config[key]}")
 
-    layouts = {sample: values["layout"] for sample, values in sampledict.items()}
+    layouts = {sample: values["layout"] for sample, values in SAMPLEDICT.items()}
     logger.info(f"layout:                : {layouts}")
 
     logger.info("\n\n")

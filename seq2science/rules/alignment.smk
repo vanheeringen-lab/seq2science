@@ -7,7 +7,7 @@ def get_reads(wildcards):
     """
     Function that returns the reads for any aligner.
     """
-    if sampledict[wildcards.sample]["layout"] == "SINGLE":
+    if SAMPLEDICT[wildcards.sample]["layout"] == "SINGLE":
         return expand("{trimmed_dir}/{{sample}}_trimmed.{fqsuffix}.gz", **config)
     return sorted(expand("{trimmed_dir}/{{sample}}_{fqext}_trimmed.{fqsuffix}.gz", **config))
 
@@ -53,11 +53,11 @@ if config["aligner"] == "bowtie2":
         benchmark:
             expand("{benchmark_dir}/{aligner}_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
         message:
-            explain_rule(f"{config['aligner']}_align")
+            EXPLAIN.get(f"{config['aligner']}_align", "")
         params:
             input=(
                 lambda wildcards, input: ["-U", input.reads]
-                if sampledict[wildcards.sample]["layout"] == "SINGLE"
+                if SAMPLEDICT[wildcards.sample]["layout"] == "SINGLE"
                 else ["-1", input.reads[0], "-2", input.reads[1]]
             ),
             params=config["align"],
@@ -114,7 +114,7 @@ elif config["aligner"] == "bwa-mem":
         benchmark:
             expand("{benchmark_dir}/{aligner}_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
         message:
-            explain_rule(f"{config['aligner']}_align")
+            EXPLAIN.get(f"{config['aligner']}_align", "")
         params:
             index_dir=expand("{genome_dir}/{{assembly}}/index/{aligner}/{{assembly}}", **config),
             params=config["align"],
@@ -172,7 +172,7 @@ elif config["aligner"] == "bwa-mem2":
         benchmark:
             expand("{benchmark_dir}/{aligner}_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
         message:
-            explain_rule(f"{config['aligner']}_align")
+            EXPLAIN.get(f"{config['aligner']}_align", "")
         params:
             index_dir=expand("{genome_dir}/{{assembly}}/index/{aligner}/{{assembly}}", **config),
             params=config["align"],
@@ -205,7 +205,7 @@ elif config["aligner"] == "hisat2":
         benchmark:
             expand("{benchmark_dir}/{aligner}_index/{{assembly}}.benchmark.txt", **config)[0]
         message:
-            explain_rule("hisat_splice_aware")
+            EXPLAIN.get("hisat_splice_aware", "")
         priority: 1
         threads: 8
         resources:
@@ -256,7 +256,7 @@ elif config["aligner"] == "hisat2":
 
     def get_hisat_index(wildcards):
         index = "{genome_dir}/{{assembly}}/index/{aligner}/"
-        if "rna_seq" in get_workflow():
+        if "rna_seq" in WORKFLOW:
             index = index[:-1] + "_splice_aware/"
         return expand(index, **config)
 
@@ -274,11 +274,11 @@ elif config["aligner"] == "hisat2":
         benchmark:
             expand("{benchmark_dir}/{aligner}_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
         message:
-            explain_rule(f"{config['aligner']}_align")
+            EXPLAIN.get(f"{config['aligner']}_align", "")
         params:
             input=(
                 lambda wildcards, input: ["-U", input.reads]
-                if sampledict[wildcards.sample]["layout"] == "SINGLE"
+                if SAMPLEDICT[wildcards.sample]["layout"] == "SINGLE"
                 else ["-1", input.reads[0], "-2", input.reads[1]]
             ),
             params=config["align"],
@@ -335,7 +335,7 @@ elif config["aligner"] == "minimap2":
         benchmark:
             expand("{benchmark_dir}/{aligner}_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
         message:
-            explain_rule(f"{config['aligner']}_align")
+            EXPLAIN.get(f"{config['aligner']}_align", "")
         params:
             # input=lambda wildcards, input: input.reads if config["layout"][wildcards.sample] == "SINGLE" else input.reads[0:2],
             params=config["align"],
@@ -438,10 +438,10 @@ elif config["aligner"] == "star":
         benchmark:
             expand("{benchmark_dir}/{aligner}_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
         message:
-            explain_rule(f"{config['aligner']}_align")
+            EXPLAIN.get(f"{config['aligner']}_align", "")
         params:
             input=lambda wildcards, input: input.reads
-            if sampledict[wildcards.sample]["layout"] == "SINGLE"
+            if SAMPLEDICT[wildcards.sample]["layout"] == "SINGLE"
             else input.reads[0:2],
             params=config["align"],
         priority: 0

@@ -1,7 +1,7 @@
 """
 All rules/logic related to filtering (sieving) after alignment to a genome should be here.
 """
-
+import re
 from seq2science.util import sieve_bam
 
 
@@ -94,7 +94,7 @@ rule mark_duplicates:
     benchmark:
         expand("{benchmark_dir}/mark_duplicates/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
     message:
-        explain_rule("mark_duplicates")
+        EXPLAIN.get("mark_duplicates", "")
     params:
         config["markduplicates"],
     resources:
@@ -179,7 +179,7 @@ rule sieve_bam:
     benchmark:
         expand("{benchmark_dir}/sieve_bam/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
     message:
-        explain_rule("sieve_bam")
+        EXPLAIN.get("sieve_bam", "")
     conda:
         "../envs/samtools.yaml"
     threads: 2
@@ -194,12 +194,12 @@ rule sieve_bam:
         prim_align=f"-F {sieve_flag}" if sieve_flag > 0 else "",
         sizesieve=(
             lambda wildcards, input, output: f""" tee {output.allsizes} | awk 'substr($0,1,1)=="@" || ($9>={config['min_template_length']} && $9<={config['max_template_length']}) || ($9<=-{config['min_template_length']} && $9>=-{config['max_template_length']})' | """
-            if sampledict[wildcards.sample]["layout"] == "PAIRED" and config["filter_on_size"]
+            if SAMPLEDICT[wildcards.sample]["layout"] == "PAIRED" and config["filter_on_size"]
             else ""
         ),
         sizesieve_touch=(
             lambda wildcards, input, output: f"touch {output.allsizes}"
-            if sampledict[wildcards.sample]["layout"] == "SINGLE" and config["filter_on_size"]
+            if SAMPLEDICT[wildcards.sample]["layout"] == "SINGLE" and config["filter_on_size"]
             else ""
         ),
         subsample=(
@@ -255,7 +255,7 @@ rule sambamba_sort:
     log:
         expand("{log_dir}/sambamba_sort/{{assembly}}-{{sample}}-sambamba_{{sorting}}.log", **config),
     message:
-        explain_rule("sambamba_sort")
+        EXPLAIN.get("sambamba_sort", "")
     benchmark:
         expand("{benchmark_dir}/sambamba_sort/{{assembly}}-{{sample}}-{{sorting}}.benchmark.txt", **config)[0]
     params:
@@ -393,7 +393,7 @@ rule bam2cram:
     output:
         expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.cram", **config),
     message:
-        explain_rule("bam2cram")
+        EXPLAIN.get("bam2cram", "")
     log:
         expand("{log_dir}/bam2cram/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config),
     benchmark:

@@ -19,10 +19,10 @@ rule dupRadar:
     benchmark:
         expand("{benchmark_dir}/dupRadar/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
     message:
-        explain_rule("dupradar")
+        EXPLAIN.get("dupradar", "")
     params:
         strandedness=lambda wildcards, input: get_strandedness(input.report[0], fmt="fc"),
-        paired=lambda wildcards: sampledict[wildcards.sample]["layout"] == "PAIRED",
+        paired=lambda wildcards: SAMPLEDICT[wildcards.sample]["layout"] == "PAIRED",
     resources:
         R_scripts=1,  # conda's R can have issues when starting multiple times
         mem_gb=1,
@@ -35,7 +35,7 @@ rule dupRadar:
 
 def get_dupradar_images(wildcards):
     output = []
-    for trep in treps[treps["assembly"] == ori_assemblies[wildcards.assembly]].index:
+    for trep in treps[treps["assembly"] == ORI_ASSEMBLIES[wildcards.assembly]].index:
         output += expand(f"{{qc_dir}}/dupRadar/{{{{assembly}}}}-{trep}.png", **config)
     return output
 

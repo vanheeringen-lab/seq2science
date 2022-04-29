@@ -49,7 +49,7 @@ if config["quantifier"] == "salmon":
             script=f"{config['rule_dir']}/../scripts/generateDecoyTranscriptome.sh",
         log:
             expand("{log_dir}/get_genome/{{assembly}}.decoy_transcripts.log", **config),
-        message: explain_rule("decoy_transcripts")
+        message: EXPLAIN.get("decoy_transcripts", "")
         benchmark:
             expand("{benchmark_dir}/get_genome/{{assembly}}.decoy_transcripts.benchmark.txt", **config)[0]
         threads: 40
@@ -127,13 +127,13 @@ if config["quantifier"] == "salmon":
             dir=directory(expand("{result_dir}/{quantifier}/{{assembly}}-{{sample}}", **config)),
         log:
             expand("{log_dir}/{quantifier}_quant/{{assembly}}-{{sample}}.log", **config),
-        message: explain_rule("salmon_quant")
+        message: EXPLAIN.get("salmon_quant", "")
         benchmark:
             expand("{benchmark_dir}/{quantifier}_quant/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
         params:
             input=(
                 lambda wildcards, input: ["-r", input.reads]
-                if sampledict[wildcards.sample]["layout"] == "SINGLE"
+                if SAMPLEDICT[wildcards.sample]["layout"] == "SINGLE"
                 else ["-1", input.reads[0], "-2", input.reads[1]]
             ),
             params=config["quantifier_flags"],
@@ -150,7 +150,7 @@ if config["quantifier"] == "salmon":
             """
 
 
-elif  "scrna_seq" == get_workflow():
+elif  "scrna_seq" == WORKFLOW:
 
     def get_fastq_pair_reads(wildcards):
         """
@@ -159,7 +159,7 @@ elif  "scrna_seq" == get_workflow():
         """
         reads = dict()
         assert (
-            sampledict[sample]["layout"] == "PAIRED"
+            SAMPLEDICT[wildcards.sample]["layout"] == "PAIRED"
         ), "Seq2science does not support scRNA-seq samples that are single-ended"
 
         if config["quantifier"] == "kallistobus":
@@ -180,7 +180,7 @@ elif  "scrna_seq" == get_workflow():
                 f"Something went wrong parsing the read id for fastq_pair. "
                 "Please make an issue on github if this is unexpected behaviour!"
             )
-            sys.exit(1)
+            os._exit(0)  # noqa
 
         return reads
 
@@ -226,7 +226,7 @@ elif  "scrna_seq" == get_workflow():
 
 
     def get_final_reads(wildcards):
-        if wildcards.sample in merged_treps:
+        if wildcards.sample in MERGED_TREPS:
             return expand(f"{{trimmed_dir}}/{wildcards.sample}_{{fqext}}_trimmed.{{fqsuffix}}.gz", **config)
         return rules.fastq_pair.output.reads
 
@@ -340,7 +340,7 @@ elif  "scrna_seq" == get_workflow():
                 "../envs/kallistobus.yaml"
             threads: 8
             message:
-                explain_rule("kallistobus-count")
+                EXPLAIN.get("kallistobus-count", "")
             resources:
                 mem_gb=66,
             params:
@@ -394,7 +394,7 @@ elif  "scrna_seq" == get_workflow():
                 "../envs/cite-seq-count.yaml"
             threads: 8
             message:
-                explain_rule("citeseqcount")
+                EXPLAIN.get("citeseqcount", "")
             resources:
                 mem_gb=66,
             params:
@@ -427,7 +427,7 @@ elif config["quantifier"] == "htseq":
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-{{sample}}.counts.log",**config),
         message:
-            explain_rule("htseq_count")
+            EXPLAIN.get("htseq_count", "")
         threads: 1
         conda:
             "../envs/gene_counts.yaml"
@@ -451,12 +451,12 @@ elif config["quantifier"] == "featurecounts":
             expand("{counts_dir}/{{assembly}}-{{sample}}.counts.tsv",**config),
         params:
             strandedness=lambda wildcards, input: get_strandedness(input.report[0], fmt="fc"),
-            endedness=lambda wildcards: "" if sampledict[wildcards.sample]["layout"] == "SINGLE" else "-p",
+            endedness=lambda wildcards: "" if SAMPLEDICT[wildcards.sample]["layout"] == "SINGLE" else "-p",
             user_flags=config["featurecounts_flags"],
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-{{sample}}.counts.log",**config),
         message:
-            explain_rule("featurecounts_rna")
+            EXPLAIN.get("featurecounts_rna", "")
         threads: 1
         conda:
             "../envs/gene_counts.yaml"
@@ -500,10 +500,10 @@ if config.get("dexseq"):
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-{{sample}}.DEXseq_counts.log",**config),
         message:
-            explain_rule("dexseq")
+            EXPLAIN.get("dexseq", "")
         params:
             strandedness=lambda wildcards, input: get_strandedness(input.report[0]),
-            endedness=lambda wildcards: "" if sampledict[wildcards.sample]["layout"] == "SINGLE" else "-p yes",
+            endedness=lambda wildcards: "" if SAMPLEDICT[wildcards.sample]["layout"] == "SINGLE" else "-p yes",
         conda:
             "../envs/dexseq.yaml"
         shell:

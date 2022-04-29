@@ -17,7 +17,7 @@ rule infer_strandedness:
     log:
         expand("{log_dir}/counts_matrix/{{assembly}}-{{sample}}.strandedness.log", **config),
     message:
-        explain_rule("infer_strandedness")
+        EXPLAIN.get("infer_strandedness", "")
     params:
         config["min_mapping_quality"],
     conda:

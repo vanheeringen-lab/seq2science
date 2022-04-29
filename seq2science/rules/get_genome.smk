@@ -20,9 +20,9 @@ rule get_genome:
     log:
         expand("{log_dir}/get_genome/{{raw_assembly}}.genome.log", **config),
     message:
-        explain_rule("get_genome")
+        EXPLAIN.get("get_genome", "")
     params:
-        providers=providers,
+        providers=PROVIDERS,
         provider=config.get("provider"),
         genome_dir=config["genome_dir"],
     resources:
@@ -70,7 +70,7 @@ rule get_genome_annotation:
         parallel_downloads=1,
         genomepy_downloads=1,
     params:
-        providers=providers,
+        providers=PROVIDERS,
         provider=config.get("provider"),
         genome_dir=config["genome_dir"],
     priority: 1
@@ -90,7 +90,7 @@ rule extend_genome:
             "{genome_dir}/{{raw_assembly}}{custom_assembly_suffix}/{{raw_assembly}}{custom_assembly_suffix}.fa", **config
         ),
     message:
-        explain_rule("custom_extension")
+        EXPLAIN.get("custom_extension", "")
     shell:
         """
         # extend the genome.fa
@@ -142,7 +142,7 @@ rule extend_genome_annotation:
             )
         ),
     message:
-        explain_rule("custom_extension")
+        EXPLAIN.get("custom_extension", "")
     shell:
         """
         # extend the genome.annotation.gtf

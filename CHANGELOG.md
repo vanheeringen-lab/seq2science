@@ -8,8 +8,17 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Changed
+
+- renamed most globals in uppercase (main exceptions are `config` and `samples`, `treps` and `breps`)
+- moved most configuration steps into functions (reducing the number of stray globals)
+- replaced static functions with dictionaries
+- moved replicate stuff to the configuration
+
 ### Fixed
 
+- get_fastq_pair_reads() was using one sample, not any sample
+- error message not working when trimming in scRNA-seq
 - trackhubs when using a mix of stranded and unstranded datasets
 
 ## [0.8.0] - 2022-04-29
