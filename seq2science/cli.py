@@ -375,7 +375,7 @@ def _run(args, base_dir, workflows_dir, config_path):
     # store how seq2science was called
     parsed_args["config"]["cli_call"] = sys.argv
 
-    # core_parser(parsed_args)  # TODO: do we still need this?
+    core_parser(parsed_args)
     parsed_args["config"].update({"cores": parsed_args["cores"]})
     resource_parser(parsed_args)
 
@@ -631,9 +631,6 @@ def core_parser(parsed_args):
     if "overwrite_threads" in parsed_args:
         for k, v in parsed_args["overwrite_threads"].items():
             overwrite_threads[k] = v
-
-    # convert to snakemake's key=value format
-    overwrite_threads = [f"{k}={v}" for k, v in overwrite_threads.items()]
 
     parsed_args["overwrite_threads"] = overwrite_threads
 
