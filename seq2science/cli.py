@@ -630,7 +630,10 @@ def core_parser(parsed_args):
     # finally use the user-specified threads
     if "overwrite_threads" in parsed_args:
         for k, v in parsed_args["overwrite_threads"].items():
-            overwrite_threads[k] = int(v)
+            overwrite_threads[k] = v
+
+    # convert to snakemake's key=value format
+    overwrite_threads = [f"{k}={v}" for k, v in overwrite_threads.items()]
 
     parsed_args["overwrite_threads"] = overwrite_threads
 
