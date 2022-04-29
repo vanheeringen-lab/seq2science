@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Fixed
+
+- trackhubs when using a mix of stranded and unstranded datasets
+
 ## [0.8.0] - 2022-04-29
 
 ### Added

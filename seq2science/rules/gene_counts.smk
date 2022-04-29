@@ -5,14 +5,14 @@ all rules/logic related to making gene count tables should be here.
 def get_counts(wildcards):
     """return the salmon directories of the samples"""
     quant_dirs = []
-    for sample in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index:
+    for sample in treps[treps["assembly"] == ori_assemblies[wildcards.assembly]].index:
         quant_dirs.append(f"{{result_dir}}/{{quantifier}}/{wildcards.assembly}-{sample}")
     return expand(quant_dirs, **config)
 
 def get_names(wildcards):
     """return the descriptive>technical_replicate>sample names of the samples"""
     names = []
-    for sample in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index:
+    for sample in treps[treps["assembly"] == ori_assemblies[wildcards.assembly]].index:
         names.append(rep_to_descriptive(sample))
     return names
 
@@ -120,7 +120,7 @@ else:
 
     def get_counts(wildcards):
         count_tables = []
-        for sample in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index:
+        for sample in treps[treps["assembly"] == ori_assemblies[wildcards.assembly]].index:
             count_tables.append(f"{{counts_dir}}/{wildcards.assembly}-{sample}.counts.tsv")
         return expand(count_tables, **config)
 
@@ -183,7 +183,7 @@ if config.get("dexseq"):
 
     def get_DEXSeq_counts(wildcards):
         count_tables = []
-        for sample in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index:
+        for sample in treps[treps["assembly"] == ori_assemblies[wildcards.assembly]].index:
             count_tables.append(f"{{counts_dir}}/{wildcards.assembly}-{sample}.DEXSeq_counts.tsv")
         return expand(count_tables, **config)
 
