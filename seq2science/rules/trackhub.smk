@@ -313,13 +313,20 @@ def strandedness_in_assembly(assembly):
     if get_workflow() != "rna_seq":
         return False
 
-    reports = glob.glob(f"{config['qc_dir']}/strandedness/{assembly}-*.strandedness.txt")
-    for rep in reports:
-        strandedness = get_strandedness(rep)
-        if strandedness != "no":
+    asmbly = ori_assembly(assembly)  # no custom suffix, if present
+    for trep in treps[treps["assembly"] == asmbly].index:
+        if is_standed(assembly, trep):
             return True
-    else:
+    return False
+
+
+
+def is_standed(assembly, trep):
+    report_file = f"{config['qc_dir']}/strandedness/{assembly}-{trep}.strandedness.txt"
+    strandedness = get_strandedness(report_file)
+    if strandedness == "no":
         return False
+    return True
 
 
 def create_trackhub():
@@ -578,8 +585,6 @@ def create_trackhub():
                         signal_view.add_tracks(track)
 
         elif get_workflow() in ["alignment", "rna_seq"]:
-            has_strandedness =  strandedness_in_assembly(assembly)
-
             # one composite track to rule them all...
             name = f"{sequencing_protocol} samples"
             safename = trackhub.helpers.sanitize(name)
@@ -610,7 +615,7 @@ def create_trackhub():
             composite.add_view(fwd_view)
 
             # ...one view to bring them all...
-            if has_strandedness:  # only added if there are reverse strand bams
+            if strandedness_in_assembly(assembly):  # only added if there are reverse strand bams
                 rev_view_name = "reverse strand reads"
                 rev_view = trackhub.ViewTrack(
                     name=trackhub.helpers.sanitize(rev_view_name),
@@ -653,7 +658,7 @@ def create_trackhub():
                 fwd_view.add_tracks(track)
 
                 # reverse strand
-                if has_strandedness:
+                if is_standed(assembly, trep):
                     file = f"{config['bigwig_dir']}/{assembly}-{trep}.{config['bam_sorter']}-{config['bam_sort_order']}.rev.bw"
                     priority += 1.0
                     track = trackhub.Track(
