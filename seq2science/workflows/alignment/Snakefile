@@ -34,7 +34,7 @@ def get_bams():
     # get all the bams
     if 'technical_replicates' in samples:
         for assembly in all_assemblies:
-            for replicate in set(samples[samples['assembly'] == ori_assembly(assembly)]['technical_replicates']):
+            for replicate in set(samples[samples['assembly'] == ori_assemblies[assembly]]['technical_replicates']):
                 bamfiles['map'].update([expand(f"{{final_bam_dir}}/{assembly}-{replicate}.{{bam_sorter}}-{{bam_sort_order}}.{map_ext}", **config)[0]])
                 bamfiles['ind'].update([expand(f"{{final_bam_dir}}/{assembly}-{replicate}.{{bam_sorter}}-{{bam_sort_order}}.{map_ext}.{map_idx}", **config)[0]])
                 # always output samtools-coordinate

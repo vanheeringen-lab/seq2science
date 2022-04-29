@@ -268,20 +268,15 @@ if "assembly" in samples:
     # trackhub
 
     # determine which assemblies (will) have an annotation
-    _has_annot = dict()
+    has_annotation = dict()
     for assembly in local_assemblies:
-        _has_annot[assembly] = is_local(assembly, "annotation", config)
-        _has_annot[assembly + config.get("custom_assembly_suffix", "")] = _has_annot[assembly]
+        has_annotation[assembly] = is_local(assembly, "annotation", config)
+        if config.get("custom_assembly_suffix", False):
+            has_annotation[assembly + config["custom_assembly_suffix"]] = has_annotation[assembly]
     for assembly in remote_assemblies:
-        _has_annot[assembly] = bool(providers[assembly]["annotation"])
-        _has_annot[assembly + config.get("custom_assembly_suffix", "")] = _has_annot[assembly]
-
-    @lru_cache(maxsize=None)
-    def has_annotation(assembly):
-        """
-        Returns True/False on whether or not the assembly has an annotation.
-        """
-        return _has_annot[assembly]
+        has_annotation[assembly] = bool(providers[assembly]["annotation"])
+        if config.get("custom_assembly_suffix", False):
+            has_annotation[assembly + config["custom_assembly_suffix"]] = has_annotation[assembly]
 
     # custom assemblies
 
@@ -298,23 +293,21 @@ if "assembly" in samples:
 
     def ori_assembly(assembly):
         """
-        remove the extension suffix from an assembly if is was added.
+        remove the extension suffix from an assembly if it was added.
         """
-        return (
-            assembly[: -len(config["custom_assembly_suffix"])]
-            if assembly.endswith(config["custom_assembly_suffix"]) and modified
-            else assembly
-        )
+        if not modified or not assembly.endswith(config["custom_assembly_suffix"]):
+            return assembly
+        return assembly[: -len(config["custom_assembly_suffix"])]
+
+    ori_assemblies = {a: ori_assembly(a) for a in all_assemblies}
 
     def custom_assembly(assembly):
         """
-        add extension suffix to an assembly if is wasn't yet added.
+        add extension suffix to an assembly if it wasn't yet added.
         """
-        return (
-            assembly
-            if assembly.endswith(config["custom_assembly_suffix"]) or not modified
-            else (assembly + config["custom_assembly_suffix"])
-        )
+        if not modified or assembly.endswith(config["custom_assembly_suffix"]):
+            return assembly
+        return assembly + config["custom_assembly_suffix"]
 
     # list of DESeq2 output files
     DE_contrasts = get_contrasts(samples, config, all_assemblies)

@@ -35,7 +35,7 @@ rule dupRadar:
 
 def get_dupradar_images(wildcards):
     output = []
-    for trep in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index:
+    for trep in treps[treps["assembly"] == ori_assemblies[wildcards.assembly]].index:
         output += expand(f"{{qc_dir}}/dupRadar/{{{{assembly}}}}-{trep}.png", **config)
     return output
 

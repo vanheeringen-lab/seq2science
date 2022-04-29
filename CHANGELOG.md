@@ -8,6 +8,12 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Fixed
+
+- trackhubs when using a mix of stranded and unstranded datasets
+
+## [0.8.0] - 2022-04-29
+
 ### Added
 
 - idr call is configurable (`idr_options`)
@@ -580,7 +586,8 @@ Many minor bug- and quality of life fixes.
 ## [0.0.0] - 2020-06-11
 First release of seq2science!
 
-[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.7.2...develop
+[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.8.0...develop
+[0.8.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.7.2...v0.8.0
 [0.7.2]: https://github.com/vanheeringen-lab/seq2science/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/vanheeringen-lab/seq2science/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.6.1...v0.7.0

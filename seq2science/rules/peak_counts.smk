@@ -71,7 +71,7 @@ def get_summitfiles(wildcards):
     return expand(
         [
             f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{replicate}_summits.bed"
-            for replicate in breps[breps["assembly"] == ori_assembly(wildcards.assembly)].index
+            for replicate in breps[breps["assembly"] == ori_assemblies[wildcards.assembly]].index
         ],
         **config,
     )
@@ -138,7 +138,7 @@ def get_coverage_table_replicates(file_ext):
             return expand(
                 [
                     f"{{final_bam_dir}}/{wildcards.assembly}-{replicate}.samtools-coordinate.{file_ext}"
-                    for replicate in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index
+                    for replicate in treps[treps["assembly"] == ori_assemblies[wildcards.assembly]].index
                 ],
                 **config,
             )
@@ -153,7 +153,7 @@ def get_coverage_table_replicates(file_ext):
 
 def get_names(wildcards):
     names = [""]
-    for rep in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index:
+    for rep in treps[treps["assembly"] == ori_assemblies[wildcards.assembly]].index:
         names.append(rep_to_descriptive(rep, brep=False))
     names = "\t".join(names)
     return names
@@ -316,7 +316,7 @@ rule mean_center:
 def get_all_narrowpeaks(wildcards):
     return [
         f"{config['result_dir']}/{{peak_caller}}/{{assembly}}-{replicate}_peaks.narrowPeak"
-        for replicate in breps[breps["assembly"] == ori_assembly(wildcards.assembly)].index
+        for replicate in breps[breps["assembly"] == ori_assemblies[wildcards.assembly]].index
     ]
 
 
@@ -338,7 +338,7 @@ rule onehot_peaks:
         expand("{benchmark_dir}/onehot_peaks/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     params:
         reps=lambda wildcards, input: input, # help resolve changes in input files
-        names=lambda wildcards: "\t" + "\t".join([rep_to_descriptive(rep, True) for rep in breps[breps["assembly"] == ori_assembly(wildcards.assembly)].index])
+        names=lambda wildcards: "\t" + "\t".join([rep_to_descriptive(rep, True) for rep in breps[breps["assembly"] == ori_assemblies[wildcards.assembly]].index])
     shell:
         """
         awk '{{print $1":"$2"-"$3}}' {input.combinedpeaks} > {output.real} 2> {log}

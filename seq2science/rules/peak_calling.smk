@@ -285,7 +285,7 @@ if "biological_replicates" in samples:
         def get_idr_replicates(wildcards):
             reps = []
             for replicate in treps[
-                (treps["assembly"] == ori_assembly(wildcards.assembly)) & (treps["biological_replicates"] == wildcards.condition)
+                (treps["assembly"] == ori_assemblies[wildcards.assembly]) & (treps["biological_replicates"] == wildcards.condition)
             ].index:
                 reps.append(
                     f"{config['result_dir']}/{wildcards.peak_caller}/{wildcards.assembly}-{replicate}_peaks.{wildcards.ftype}"
@@ -372,7 +372,7 @@ if "biological_replicates" in samples:
                     [
                         f"{{result_dir}}/macs2/{wildcards.assembly}-{replicate}_qvalues.bdg"
                         for replicate in treps[
-                            (treps["assembly"] == ori_assembly(wildcards.assembly))
+                            (treps["assembly"] == ori_assemblies[wildcards.assembly])
                             & (treps["biological_replicates"] == wildcards.condition)
                         ].index
                     ],
@@ -382,7 +382,7 @@ if "biological_replicates" in samples:
             def get_macs_replicate(wildcards):
                 """the original peakfile, to link if there is only 1 sample for a condition"""
                 replicate = treps[
-                    (treps["assembly"] == ori_assembly(wildcards.assembly))
+                    (treps["assembly"] == ori_assemblies[wildcards.assembly])
                     & (treps["biological_replicates"] == wildcards.condition)
                 ].index
                 return expand(
