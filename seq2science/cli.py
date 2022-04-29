@@ -619,8 +619,8 @@ def core_parser(parsed_args):
     # scale if aligners+sorters use more threads than allowed
     if cores < desired_threads:
         # scale the threads accordingly
-        d_sorters_threads = max([1, round(d_sorters_threads / desired_threads * cores)])
-        d_aligner_threads = cores - d_sorters_threads
+        d_sorters_threads = max([1, cores * d_sorters_threads // desired_threads])
+        d_aligner_threads = max([1, cores - d_sorters_threads])
 
         for aligner in aligners:
             overwrite_threads[aligner] = d_aligner_threads
@@ -630,7 +630,7 @@ def core_parser(parsed_args):
     # finally use the user-specified threads
     if "overwrite_threads" in parsed_args:
         for k, v in parsed_args["overwrite_threads"].items():
-            overwrite_threads[k] = v
+            overwrite_threads[k] = int(v)
 
     parsed_args["overwrite_threads"] = overwrite_threads
 
