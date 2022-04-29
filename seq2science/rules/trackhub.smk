@@ -1,16 +1,15 @@
 """
 all rules/logic related to the final UCSC trackhub (or assembly hub) should be here.
 """
-import os.path
-
-from Bio import SeqIO
-from multiprocessing import Pool
-from seq2science.util import color_picker, color_gradient, hsv_to_ucsc, unique, shorten
-import trackhub
-
-
-trackhub.upload.logger.setLevel("NOTSET")
 if config.get("create_trackhub"):
+    import os.path
+
+    from Bio import SeqIO
+    from multiprocessing import Pool
+    from seq2science.util import color_picker, color_gradient, hsv_to_ucsc, unique, shorten
+    import trackhub
+
+    trackhub.upload.logger.setLevel("NOTSET")
 
 
     rule twobit:
@@ -677,13 +676,6 @@ if config.get("create_trackhub"):
 
     # generate this once
     trackhub_files = create_trackhub()["files"]
-    _ori_assembly = {}
-    _get_ucsc_name = {}
-    _has_annotation = {}
-    for assembly in all_assemblies:
-        _ori_assembly[assembly] = ori_assembly(assembly)
-        _get_ucsc_name[assembly] = get_ucsc_name(assembly)
-        _has_annotation[assembly] = has_annotation(assembly)
 
 
     rule trackhub:
@@ -705,11 +697,11 @@ if config.get("create_trackhub"):
         benchmark:
             expand("{benchmark_dir}/trackhub/trackhub.benchmark.txt", **config)[0]
         params:
-            hub=create_trackhub()["hub"],
-            all_assemblies=all_assemblies,
+            hub=create_trackhub()["hub"],  # generate when files are complete
             genomes_dir=config['genome_dir'],
-            ori_assembly=_ori_assembly,
-            get_ucsc_name=_get_ucsc_name,
-            has_annotation=_has_annotation,
+            all_assemblies=all_assemblies,
+            ori_assembly={a:ori_assembly(a) for a  in all_assemblies},
+            get_ucsc_name={a:get_ucsc_name(a) for a  in all_assemblies},
+            has_annotation={a:has_annotation(a) for a  in all_assemblies},
         script:
             f"{config['rule_dir']}/../scripts/trackhub.py"
