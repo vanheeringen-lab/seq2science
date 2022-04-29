@@ -5,3 +5,4 @@ channels:
   - defaults
 dependencies:
   - bioconda::bowtie2=2.4.2
+  - conda-forge::conda-ecosystem-user-package-isolation=1.0

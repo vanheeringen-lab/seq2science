@@ -1,18 +1,20 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Downloading fastqs &mdash; seq2science  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <title>Downloading fastqs &mdash; seq2science  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/language_data.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -95,79 +97,79 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="downloading-fastqs">
-<h1>Downloading fastqs<a class="headerlink" href="#downloading-fastqs" title="Permalink to this headline">¶</a></h1>
+  <section id="downloading-fastqs">
+<h1>Downloading fastqs<a class="headerlink" href="#downloading-fastqs" title="Permalink to this headline"></a></h1>
 <p>Downloading public data in bulk from the NCBI, ENA, and DDBJ databases has never been easier!</p>
-<div class="section" id="pipeline-steps">
-<h2>Pipeline steps<a class="headerlink" href="#pipeline-steps" title="Permalink to this headline">¶</a></h2>
+<section id="pipeline-steps">
+<h2>Pipeline steps<a class="headerlink" href="#pipeline-steps" title="Permalink to this headline"></a></h2>
 <p align="center">
   <img src="../../_static/download_fastq.png">
-</p><div class="section" id="download-sra-file">
-<h3>Download SRA file<a class="headerlink" href="#download-sra-file" title="Permalink to this headline">¶</a></h3>
+</p><section id="download-sra-file">
+<h3>Download SRA file<a class="headerlink" href="#download-sra-file" title="Permalink to this headline"></a></h3>
 <p>The three largest databases that store sequencing data are National Center for Biotechnology Information (NCBI), the European Nucleotide Archive (ENA) and the DNA Data Bank of Japan (DDBJ).
 Only the ENA stores the actual fastq files, but all three of them store the raw data (as a sra file) from which a fastq can be derived.
 For this reason for each sample will first be checked if it can be downloaded from ENA.
-Otherwise we will download the samples in its raw format. To convert this data to a fastq it has to be “<em>dumped</em>”.</p>
-</div>
-</div>
-<div class="section" id="filling-out-the-samples-tsv">
-<h2>Filling out the samples.tsv<a class="headerlink" href="#filling-out-the-samples-tsv" title="Permalink to this headline">¶</a></h2>
+Otherwise we will download the samples in its raw format. To convert this data to a fastq it has to be “<em>dumped</em>“.</p>
+</section>
+</section>
+<section id="filling-out-the-samples-tsv">
+<h2>Filling out the samples.tsv<a class="headerlink" href="#filling-out-the-samples-tsv" title="Permalink to this headline"></a></h2>
 <p>Before running a workflow you will have to specify which samples you want to run the workflow on.
 Each workflow starts with a <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> as an example, and you should adapt it to your specific needs.
 As an example, the <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> could look something like this:</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>sample
-ERX123  &lt;-- EBI ENA experiment
-ERR321  &lt;-- EBI ENA run
-GSMabc  &lt;-- GEO sample
-SRX456  &lt;-- SRA experiment
-SRRxzy  &lt;-- SRA run
-DRX890  &lt;-- DDBJ experiment
-DRR890  &lt;-- DDBJ run
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sample</span>
+<span class="n">ERX123</span>  <span class="o">&lt;--</span> <span class="n">EBI</span> <span class="n">ENA</span> <span class="n">experiment</span>
+<span class="n">ERR321</span>  <span class="o">&lt;--</span> <span class="n">EBI</span> <span class="n">ENA</span> <span class="n">run</span>
+<span class="n">GSMabc</span>  <span class="o">&lt;--</span> <span class="n">GEO</span> <span class="n">sample</span>
+<span class="n">SRX456</span>  <span class="o">&lt;--</span> <span class="n">SRA</span> <span class="n">experiment</span>
+<span class="n">SRRxzy</span>  <span class="o">&lt;--</span> <span class="n">SRA</span> <span class="n">run</span>
+<span class="n">DRX890</span>  <span class="o">&lt;--</span> <span class="n">DDBJ</span> <span class="n">experiment</span>
+<span class="n">DRR890</span>  <span class="o">&lt;--</span> <span class="n">DDBJ</span> <span class="n">run</span>
 </pre></div>
 </div>
-<div class="section" id="sample-column">
-<h3>Sample column<a class="headerlink" href="#sample-column" title="Permalink to this headline">¶</a></h3>
+<section id="sample-column">
+<h3>Sample column<a class="headerlink" href="#sample-column" title="Permalink to this headline"></a></h3>
 <p>If you use the pipeline on public data this should be the name of the accession (e.g. GSM2837484).
 (Accepted formats start with “GSM”, “SRR”, “SRX”, “DRR”, “DRX”, “ERR” or “ERX”)</p>
-</div>
-<div class="section" id="final-notes">
-<h3>Final notes<a class="headerlink" href="#final-notes" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="final-notes">
+<h3>Final notes<a class="headerlink" href="#final-notes" title="Permalink to this headline"></a></h3>
 <ul class="simple">
 <li><p>Make sure that the samples.tsv is a tab separated values file when running the pipeline.</p></li>
 <li><p>Feel free to add columns to your liking (these will be ignored).</p></li>
 </ul>
-</div>
-</div>
-<div class="section" id="filling-out-the-config-yaml">
-<h2>Filling out the config.yaml<a class="headerlink" href="#filling-out-the-config-yaml" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+<section id="filling-out-the-config-yaml">
+<h2>Filling out the config.yaml<a class="headerlink" href="#filling-out-the-config-yaml" title="Permalink to this headline"></a></h2>
 <p>Every workflow has many configurable options, and can be set in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file.
 In each <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> we highlighted a couple options that we think are relevant for that specific workflow, and set (we think) <strong>reasonable default</strong> values.</p>
 <p>When a workflow starts it prints the configuration variables influencing the workflow, and (almost) all these values can be added in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> and changed to your liking.
 You can see the complete set of configurable options in the <a class="reference external" href="../schemas.html">extensive docs</a>.</p>
-</div>
-<div class="section" id="best-practices">
-<h2>Best practices<a class="headerlink" href="#best-practices" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="downloading-with-ascp">
-<h3>Downloading with ascp<a class="headerlink" href="#downloading-with-ascp" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="best-practices">
+<h2>Best practices<a class="headerlink" href="#best-practices" title="Permalink to this headline"></a></h2>
+<section id="downloading-with-ascp">
+<h3>Downloading with ascp<a class="headerlink" href="#downloading-with-ascp" title="Permalink to this headline"></a></h3>
 <p>ascp is a downloading protocol that allows for (sometimes much) faster speeds. If you have ascp installed you can make the workflow download through this protocol. You can specify the path to the binary in the config.yaml by key <code class="docutils literal notranslate"><span class="pre">ascp_path</span></code> and the ascp key in the config by key <code class="docutils literal notranslate"><span class="pre">ascp_key</span></code>:</p>
 <p>See this <a class="reference external" href="https://gist.github.com/mfansler/71f09c8b6c9a95ec4e759a8ffc488be3">gist</a> for an easy installation of ascp.</p>
-</div>
-<div class="section" id="filetype-extensions-and-paired-end-suffix">
-<h3>Filetype extensions and paired-end suffix<a class="headerlink" href="#filetype-extensions-and-paired-end-suffix" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="filetype-extensions-and-paired-end-suffix">
+<h3>Filetype extensions and paired-end suffix<a class="headerlink" href="#filetype-extensions-and-paired-end-suffix" title="Permalink to this headline"></a></h3>
 <p>The pipeline will save fastq files in the <em>fastq_dir</em> directory, which is located in the <em>result_dir</em> directory by default.</p>
 <p>People and tools have different preferences for storing their data. One of these differences is how to name the fastq.gz files. Some people/tools prefer <code class="docutils literal notranslate"><span class="pre">fastq.gz</span></code>, while others prefer <code class="docutils literal notranslate"><span class="pre">fq.gz</span></code>. By default the pipeline names files with the fastq.gz extension. However if you prefer to change this you can set the variable <em>fqsuffix</em> accordingly.
 The same goes for paired-end suffix conventions, most people prefer <code class="docutils literal notranslate"><span class="pre">sample_R1</span></code> which is our default. However you can use your preferred suffix by setting variables <em>fqext1</em> and <em>fqext2</em>.</p>
 <p>In the`config.yaml:</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>fastq_dir: ./my_first_fastq_dir
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fastq_dir</span><span class="p">:</span> <span class="o">./</span><span class="n">my_first_fastq_dir</span>
 
-fqsuffix: fastq
-fqext1: R1
-fqext2: R2
+<span class="n">fqsuffix</span><span class="p">:</span> <span class="n">fastq</span>
+<span class="n">fqext1</span><span class="p">:</span> <span class="n">R1</span>
+<span class="n">fqext2</span><span class="p">:</span> <span class="n">R2</span>
 </pre></div>
 </div>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
            </div>

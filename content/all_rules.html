@@ -1,18 +1,20 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Per rule explanation &mdash; seq2science  documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <title>Per rule explanation &mdash; seq2science  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -77,7 +79,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#edger-normalization">edgeR_normalization</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ena2fastq-pe">ena2fastq_PE</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ena2fastq-se">ena2fastq_SE</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#export-seurat-obj">export_seurat_obj</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#export-sce-obj">export_sce_obj</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#extend-genome">extend_genome</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#extend-genome-annotation">extend_genome_annotation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#extend-genome-blacklist">extend_genome_blacklist</a></li>
@@ -103,13 +105,13 @@
 <li class="toctree-l3"><a class="reference internal" href="#hisat2-splice-aware-index">hisat2_splice_aware_index</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#hmmratac">hmmratac</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#hmmratac-genome-info">hmmratac_genome_info</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#htseq-count">htseq_count</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#idr">idr</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#infer-strandedness">infer_strandedness</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#insert-size-metrics">insert_size_metrics</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#kallistobus-count">kallistobus_count</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#kallistobus-ref">kallistobus_ref</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#kallistobus-ref-kite">kallistobus_ref_kite</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#kb-seurat-pp">kb_seurat_pp</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#keep-mates">keep_mates</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#linked-txome">linked_txome</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#log-normalization">log_normalization</a></li>
@@ -119,7 +121,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#mark-duplicates">mark_duplicates</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#mean-center">mean_center</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#merge-replicates">merge_replicates</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#merge-seurat-obj">merge_seurat_obj</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#merge-volcano-ma">merge_volcano_ma</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#minimap2-align">minimap2_align</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#minimap2-index">minimap2_index</a></li>
@@ -141,7 +142,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#prepare-dexseq-annotation">prepare_DEXseq_annotation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#quantile-normalization">quantile_normalization</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#random-subset-peaks">random_subset_peaks</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#rename-sample">rename_sample</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#run2sra">run2sra</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#runs2sample">runs2sample</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#salmon-decoy-aware-index">salmon_decoy_aware_index</a></li>
@@ -153,7 +153,9 @@
 <li class="toctree-l3"><a class="reference internal" href="#samtools-index-cram">samtools_index_cram</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#samtools-presort">samtools_presort</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#samtools-sort">samtools_sort</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#samtools-sort-allsizes">samtools_sort_allsizes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#samtools-stats">samtools_stats</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sctk-qc">sctk_qc</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#setup-blacklist">setup_blacklist</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#sieve-bam">sieve_bam</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#softmask-track-1">softmask_track_1</a></li>
@@ -162,6 +164,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#sra2fastq-se">sra2fastq_SE</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#star-align">star_align</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#star-index">star_index</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tpm-matrix">tpm_matrix</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#trackhub">trackhub</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#trackhub-index">trackhub_index</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#trimgalore-pe">trimgalore_PE</a></li>
@@ -204,53 +207,53 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="per-rule-explanation">
-<h1>Per rule explanation<a class="headerlink" href="#per-rule-explanation" title="Permalink to this headline">¶</a></h1>
+  <section id="per-rule-explanation">
+<h1>Per rule explanation<a class="headerlink" href="#per-rule-explanation" title="Permalink to this headline"></a></h1>
 <p>This is an automatically generated list of all supported rules, their docstrings, and command. At the start of each workflow run a list is printed of which rules will be run. And while the workflow is running it prints which rules are being started and finished. This page is here to give an explanation to the user about what each rule does, and for developers to find what is, and isn’t yet supported.</p>
-<div class="section" id="bam2cram">
-<h2>bam2cram<a class="headerlink" href="#bam2cram" title="Permalink to this headline">¶</a></h2>
+<section id="bam2cram">
+<h2>bam2cram<a class="headerlink" href="#bam2cram" title="Permalink to this headline"></a></h2>
 <p>Convert a bam file to the more compressed cram format.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>samtools view -T {input.assembly} -C {input.bam} -@ {threads} &gt; {output} 2&gt; {log}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">samtools</span> <span class="n">view</span> <span class="o">-</span><span class="n">T</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">assembly</span><span class="p">}</span> <span class="o">-</span><span class="n">C</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">bam</span><span class="p">}</span> <span class="o">-@</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="bam-bigwig">
-<h2>bam_bigwig<a class="headerlink" href="#bam-bigwig" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="bam-bigwig">
+<h2>bam_bigwig<a class="headerlink" href="#bam-bigwig" title="Permalink to this headline"></a></h2>
 <p>Convert a bam file into a bigwig file (or two).
 Can output strand specific bams. The reverse bam is created “secretly” to avoid checkpoints.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>            if [[ &quot;{params.strandedness}&quot; == &quot;no&quot; ]]; then
-echo &quot;generating unstranded bam&quot; &gt; {log}
-bamCoverage --bam {input.bam} --outFileName {output} --numberOfProcessors {threads} {params.flags} --verbose &gt;&gt; {log} 2&gt;&amp;1
-            else
-echo &quot;generating stranded bams&quot; &gt; {log}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>if [[ &quot;{params.strandedness}&quot; == &quot;no&quot; ]]; then
+  echo &quot;generating unstranded bam&quot; &gt; {log}
+  bamCoverage --bam {input.bam} --outFileName {output} --numberOfProcessors {threads} {params.flags} --verbose &gt;&gt; {log} 2&gt;&amp;1
+else
+  echo &quot;generating stranded bams&quot; &gt; {log}
               out={output}
-rev=$(echo &quot;${{out/{wildcards.sorting}.bw/{wildcards.sorting}.rev.bw}}&quot;)
-rm -f $rev  \# in case of a rerun
-bamCoverage --bam {input.bam} --outFileName $rev     --filterRNAstrand reverse --numberOfProcessors {threads} {params.flags} --verbose &gt;&gt; {log} 2&gt;&amp;1
-bamCoverage --bam {input.bam} --outFileName {output} --filterRNAstrand forward --numberOfProcessors {threads} {params.flags} --verbose &gt;&gt; {log} 2&gt;&amp;1
-            fi
+  rev=$(echo &quot;${{out/{wildcards.sorting}.bw/{wildcards.sorting}.rev.bw}}&quot;)
+  rm -f $rev  # in case of a rerun
+  bamCoverage --bam {input.bam} --outFileName $rev     --filterRNAstrand reverse --numberOfProcessors {threads} {params.flags} --verbose &gt;&gt; {log} 2&gt;&amp;1
+  bamCoverage --bam {input.bam} --outFileName {output} --filterRNAstrand forward --numberOfProcessors {threads} {params.flags} --verbose &gt;&gt; {log} 2&gt;&amp;1
+fi
 </pre></div>
 </div>
-</div>
-<div class="section" id="bedgraph-bigwig">
-<h2>bedgraph_bigwig<a class="headerlink" href="#bedgraph-bigwig" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="bedgraph-bigwig">
+<h2>bedgraph_bigwig<a class="headerlink" href="#bedgraph-bigwig" title="Permalink to this headline"></a></h2>
 <p>Convert a bedgraph file into a bigwig.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>awk -v OFS=&#39;\\t&#39; &#39;{{print $1, $2, $3, $4}}&#39; {input.bedgraph} | sed &#39;/experimental/d&#39; |
-bedSort /dev/stdin {output.tmp} &gt; {log} 2&gt;&amp;1
-bedGraphToBigWig {output.tmp} {input.genome_size} {output.out} &gt;&gt; {log} 2&gt;&amp;1
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">awk</span> <span class="o">-</span><span class="n">v</span> <span class="n">OFS</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">t&#39;</span> <span class="s1">&#39;{{print $1, $2, $3, $4}}&#39;</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">bedgraph</span><span class="p">}</span> <span class="o">|</span> <span class="n">sed</span> <span class="s1">&#39;/experimental/d&#39;</span> <span class="o">|</span>
+<span class="n">bedSort</span> <span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">stdin</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">tmp</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
+<span class="n">bedGraphToBigWig</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">tmp</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">genome_size</span><span class="p">}</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">out</span><span class="p">}</span> <span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="bedgraphish-to-bedgraph">
-<h2>bedgraphish_to_bedgraph<a class="headerlink" href="#bedgraphish-to-bedgraph" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="bedgraphish-to-bedgraph">
+<h2>bedgraphish_to_bedgraph<a class="headerlink" href="#bedgraphish-to-bedgraph" title="Permalink to this headline"></a></h2>
 <p>Convert the bedgraph-ish file generated by genrich into a true bedgraph file.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>splits=$(grep -Pno &quot;([^\/]*)(?=\.bam)&quot; {input})
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>splits=$(grep -Pno &quot;([^\/]*)(?=\.bam)&quot; {input})
 splits=($splits)
 lncnt=$(wc -l {input} | echo &quot;$(grep -Po &quot;.*(?=\ )&quot;)&quot;:)
 splits+=($lncnt)
 
 counter=1
-for split in &quot;${{splits[@]::${{\#splits[@]}}-1}}&quot;;
+for split in &quot;${{splits[@]::${{#splits[@]}}-1}}&quot;;
 do
     filename=$(grep -Po &quot;(?&lt;=:).*&quot; &lt;&lt;&lt; $split);
     if [[ $filename =~ {wildcards.sample} ]]; then
@@ -267,253 +270,252 @@ do
 done
 </pre></div>
 </div>
-</div>
-<div class="section" id="bedtools-slop">
-<h2>bedtools_slop<a class="headerlink" href="#bedtools-slop" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="bedtools-slop">
+<h2>bedtools_slop<a class="headerlink" href="#bedtools-slop" title="Permalink to this headline"></a></h2>
 <p>After combine_peaks we end up with just a bed file of summits. We extend all peaks
 to the same width, for a fair comparison between peaks.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>bedtools slop -i {input.bedfile} -g {input.sizes} -b {params.slop} | uniq &gt; {output} 2&gt; {log}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bedtools</span> <span class="n">slop</span> <span class="o">-</span><span class="n">i</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">bedfile</span><span class="p">}</span> <span class="o">-</span><span class="n">g</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">sizes</span><span class="p">}</span> <span class="o">-</span><span class="n">b</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">slop</span><span class="p">}</span> <span class="o">|</span> <span class="n">uniq</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="blind-clustering">
-<h2>blind_clustering<a class="headerlink" href="#blind-clustering" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="blind-clustering">
+<h2>blind_clustering<a class="headerlink" href="#blind-clustering" title="Permalink to this headline"></a></h2>
 <p>Create a sample distance cluster heatmap,
 and various correlation cluster heatmaps.</p>
 <p>A (blind) variance stabilizing transformation is applied to the counts,
 to reduce the impact of genes with low expression levels.</p>
-</div>
-<div class="section" id="bowtie2-align">
-<h2>bowtie2_align<a class="headerlink" href="#bowtie2-align" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="bowtie2-align">
+<h2>bowtie2_align<a class="headerlink" href="#bowtie2-align" title="Permalink to this headline"></a></h2>
 <p>Align reads against a genome (index) with bowtie2, and pipe the output to the required sorter(s).</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>bowtie2 {params.params} --threads {threads} -x {input.index}/{wildcards.assembly} {params.input} 2&gt; {log} | tee {output} 1&gt; /dev/null 2&gt;&gt; {log}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bowtie2</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">params</span><span class="p">}</span> <span class="o">--</span><span class="n">threads</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">-</span><span class="n">x</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">index</span><span class="p">}</span><span class="o">/</span><span class="p">{</span><span class="n">wildcards</span><span class="o">.</span><span class="n">assembly</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">input</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="o">|</span> <span class="n">tee</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="mi">1</span><span class="o">&gt;</span> <span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">null</span> <span class="mi">2</span><span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="bowtie2-index">
-<h2>bowtie2_index<a class="headerlink" href="#bowtie2-index" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="bowtie2-index">
+<h2>bowtie2_index<a class="headerlink" href="#bowtie2-index" title="Permalink to this headline"></a></h2>
 <p>Make a genome index for bowtie2. This index is required for alignment.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>mkdir -p {output}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span>
 
-bowtie2-build {params} --threads {threads} {input} {output}/{wildcards.assembly} &gt; {log} 2&gt;&amp;1
+<span class="n">bowtie2</span><span class="o">-</span><span class="n">build</span> <span class="p">{</span><span class="n">params</span><span class="p">}</span> <span class="o">--</span><span class="n">threads</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span><span class="o">/</span><span class="p">{</span><span class="n">wildcards</span><span class="o">.</span><span class="n">assembly</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="bwa-index">
-<h2>bwa_index<a class="headerlink" href="#bwa-index" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="bwa-index">
+<h2>bwa_index<a class="headerlink" href="#bwa-index" title="Permalink to this headline"></a></h2>
 <p>Make a genome index for bwa (mem). This index is required for alignment.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>mkdir -p {output}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span>
 
-bwa index -p {params.prefix} {params.params} {input} &gt; {log} 2&gt;&amp;1
+<span class="n">bwa</span> <span class="n">index</span> <span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">prefix</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">params</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="bwa-mem">
-<h2>bwa_mem<a class="headerlink" href="#bwa-mem" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="bwa-mem">
+<h2>bwa_mem<a class="headerlink" href="#bwa-mem" title="Permalink to this headline"></a></h2>
 <p>Align reads against a genome (index) with bwa-mem, and pipe the output to the required sorter(s).</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>bwa mem {params.params} -t {threads} {params.index_dir} {input.reads} 2&gt; {log} | tee {output} 1&gt; /dev/null 2&gt;&gt; {log}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bwa</span> <span class="n">mem</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">params</span><span class="p">}</span> <span class="o">-</span><span class="n">t</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">index_dir</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">reads</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="o">|</span> <span class="n">tee</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="mi">1</span><span class="o">&gt;</span> <span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">null</span> <span class="mi">2</span><span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="bwa-mem2">
-<h2>bwa_mem2<a class="headerlink" href="#bwa-mem2" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="bwa-mem2">
+<h2>bwa_mem2<a class="headerlink" href="#bwa-mem2" title="Permalink to this headline"></a></h2>
 <p>Align reads against a genome (index) with bwa-mem2, and pipe the output to the required sorter(s).</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>bwa-mem2 mem {params.params} -t {threads} {params.index_dir} {input.reads} 2&gt; {log} | tee {output} 1&gt; /dev/null 2&gt;&gt; {log}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bwa</span><span class="o">-</span><span class="n">mem2</span> <span class="n">mem</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">params</span><span class="p">}</span> <span class="o">-</span><span class="n">t</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">index_dir</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">reads</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="o">|</span> <span class="n">tee</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="mi">1</span><span class="o">&gt;</span> <span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">null</span> <span class="mi">2</span><span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="bwa-mem2-index">
-<h2>bwa_mem2_index<a class="headerlink" href="#bwa-mem2-index" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="bwa-mem2-index">
+<h2>bwa_mem2_index<a class="headerlink" href="#bwa-mem2-index" title="Permalink to this headline"></a></h2>
 <p>Make a genome index for bwa-mem2. This index is required for alignment.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>mkdir -p {output}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span>
 
-bwa-mem2 index -p {params.prefix} {input} &gt; {log} 2&gt;&amp;1
+<span class="n">bwa</span><span class="o">-</span><span class="n">mem2</span> <span class="n">index</span> <span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">prefix</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="call-peak-genrich">
-<h2>call_peak_genrich<a class="headerlink" href="#call-peak-genrich" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="call-peak-genrich">
+<h2>call_peak_genrich<a class="headerlink" href="#call-peak-genrich" title="Permalink to this headline"></a></h2>
 <p>Call peaks with genrich based on the pileup.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Genrich -P -f {input.log} -o {output.narrowpeak} {params} -v &gt; {log} 2&gt;&amp;1
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Genrich</span> <span class="o">-</span><span class="n">P</span> <span class="o">-</span><span class="n">f</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">log</span><span class="p">}</span> <span class="o">-</span><span class="n">o</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">narrowpeak</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="p">}</span> <span class="o">-</span><span class="n">v</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="chipseeker">
-<h2>chipseeker<a class="headerlink" href="#chipseeker" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="chipseeker">
+<h2>chipseeker<a class="headerlink" href="#chipseeker" title="Permalink to this headline"></a></h2>
 <p>Make chipseeker plots, with the percentage of peaks in e.g. promoters.</p>
-</div>
-<div class="section" id="citeseqcount">
-<h2>citeseqcount<a class="headerlink" href="#citeseqcount" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="citeseqcount">
+<h2>citeseqcount<a class="headerlink" href="#citeseqcount" title="Permalink to this headline"></a></h2>
 <p>ADT mapping and quantification with cite-seq-count and output a umi/read matrix per sample.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>CITE-seq-Count -R1 {input.reads[0]} -R2 {input.reads[1]} \
--t {input.tags} {params.barcode_arg} -T {threads} \
-{params.options} -o {params.outdir} &gt; {log} 2&gt;&amp;1
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">CITE</span><span class="o">-</span><span class="n">seq</span><span class="o">-</span><span class="n">Count</span> <span class="o">-</span><span class="n">R1</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">reads</span><span class="p">[</span><span class="mi">0</span><span class="p">]}</span> <span class="o">-</span><span class="n">R2</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">reads</span><span class="p">[</span><span class="mi">1</span><span class="p">]}</span> \
+<span class="o">-</span><span class="n">t</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">tags</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">barcode_arg</span><span class="p">}</span> <span class="o">-</span><span class="n">T</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> \
+<span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">options</span><span class="p">}</span> <span class="o">-</span><span class="n">o</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">outdir</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="combine-peaks">
-<h2>combine_peaks<a class="headerlink" href="#combine-peaks" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="combine-peaks">
+<h2>combine_peaks<a class="headerlink" href="#combine-peaks" title="Permalink to this headline"></a></h2>
 <p>Uses gimmemotifs’ combine_peaks to “combine” peaks. This finds all peaks close
 together and takes the most significant one as the true peak.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>combine_peaks -i {input.summitfiles} -g {input.sizes} \
---window {params.windowsize} &gt; {output} 2&gt; {log}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">combine_peaks</span> <span class="o">-</span><span class="n">i</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">summitfiles</span><span class="p">}</span> <span class="o">-</span><span class="n">g</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">sizes</span><span class="p">}</span> \
+<span class="o">--</span><span class="n">window</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">windowsize</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="combine-qc-files">
-<h2>combine_qc_files<a class="headerlink" href="#combine-qc-files" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="combine-qc-files">
+<h2>combine_qc_files<a class="headerlink" href="#combine-qc-files" title="Permalink to this headline"></a></h2>
 <p>Aggregate all the quality control metrics for every sample into a single
 multiqc report.</p>
 <p>The input can get very long (causing problems with the shell), so we have
 to write the input to a file, and then we can use that file as input to
 multiqc.</p>
-</div>
-<div class="section" id="complement-blacklist">
-<h2>complement_blacklist<a class="headerlink" href="#complement-blacklist" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="complement-blacklist">
+<h2>complement_blacklist<a class="headerlink" href="#complement-blacklist" title="Permalink to this headline"></a></h2>
 <p>Take the complement of the blacklist. We need this complement to tell samtools
 to only keep reads that are in the complement of the blacklist.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>sortBed -faidx {input.sizes} -i {input.blacklist} 2&gt;&gt; {log} |
-complementBed -i stdin -g {input.sizes} &gt; {output} 2&gt;&gt; {log}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sortBed</span> <span class="o">-</span><span class="n">faidx</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">sizes</span><span class="p">}</span> <span class="o">-</span><span class="n">i</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">blacklist</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="o">|</span>
+<span class="n">complementBed</span> <span class="o">-</span><span class="n">i</span> <span class="n">stdin</span> <span class="o">-</span><span class="n">g</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">sizes</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="computematrix-gene">
-<h2>computeMatrix_gene<a class="headerlink" href="#computematrix-gene" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="computematrix-gene">
+<h2>computeMatrix_gene<a class="headerlink" href="#computematrix-gene" title="Permalink to this headline"></a></h2>
 <p>Pre-compute correlations between bams using deeptools.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>computeMatrix scale-regions -S {input.bw} {params.labels} -R {params.annotation} \
--p {threads} -b 2000 -a 500 -o {output} &gt; {log} 2&gt;&amp;1
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">computeMatrix</span> <span class="n">scale</span><span class="o">-</span><span class="n">regions</span> <span class="o">-</span><span class="n">S</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">bw</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">labels</span><span class="p">}</span> <span class="o">-</span><span class="n">R</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">annotation</span><span class="p">}</span> \
+<span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">-</span><span class="n">b</span> <span class="mi">2000</span> <span class="o">-</span><span class="n">a</span> <span class="mi">500</span> <span class="o">-</span><span class="n">o</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="computematrix-peak">
-<h2>computeMatrix_peak<a class="headerlink" href="#computematrix-peak" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="computematrix-peak">
+<h2>computeMatrix_peak<a class="headerlink" href="#computematrix-peak" title="Permalink to this headline"></a></h2>
 <p>Pre-compute correlations between bams using deeptools.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>computeMatrix scale-regions -S {input.bw} {params.labels} -R {input.peaks} \
--p {threads} --binSize 5 -o {output} &gt; {log} 2&gt;&amp;1
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">computeMatrix</span> <span class="n">scale</span><span class="o">-</span><span class="n">regions</span> <span class="o">-</span><span class="n">S</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">bw</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">labels</span><span class="p">}</span> <span class="o">-</span><span class="n">R</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">peaks</span><span class="p">}</span> \
+<span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">--</span><span class="n">binSize</span> <span class="mi">5</span> <span class="o">-</span><span class="n">o</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="count-matrix">
-<h2>count_matrix<a class="headerlink" href="#count-matrix" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="count-matrix">
+<h2>count_matrix<a class="headerlink" href="#count-matrix" title="Permalink to this headline"></a></h2>
 <p>Combine count tables into one count matrix per assembly</p>
-</div>
-<div class="section" id="count-matrix-dexseq">
-<h2>count_matrix_DEXseq<a class="headerlink" href="#count-matrix-dexseq" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="count-matrix-dexseq">
+<h2>count_matrix_DEXseq<a class="headerlink" href="#count-matrix-dexseq" title="Permalink to this headline"></a></h2>
 <p>Combine DEXSeq counts into one count matrix per assembly
 for use in function <code class="docutils literal notranslate"><span class="pre">DEXSeqDataSet()</span></code></p>
-</div>
-<div class="section" id="coverage-table">
-<h2>coverage_table<a class="headerlink" href="#coverage-table" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="coverage-table">
+<h2>coverage_table<a class="headerlink" href="#coverage-table" title="Permalink to this headline"></a></h2>
 <p>Use gimmemotif’s coverage_table to generate a count table with the nr of reads
 under each peak per sample.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>echo &quot;\# The number of reads under each peak&quot; &gt; {output}
-coverage_table -p {input.peaks} -d {input.replicates} -w {params.peak_width} --nthreads {threads} \
-2&gt; {log} | grep -vE &quot;^\#&quot; 2&gt;&gt; {log} |
-awk &#39;BEGIN {{ FS = &quot;@&quot; }} NR==1{{gsub(&quot;{wildcards.assembly}-|.samtools-coordinate&quot;,&quot;&quot;,$0)}}; \
-{{print $0}}&#39; &gt;&gt; {output}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">echo</span> <span class="s2">&quot;# The number of reads under each peak&quot;</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span>
+<span class="n">coverage_table</span> <span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">peaks</span><span class="p">}</span> <span class="o">-</span><span class="n">d</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">replicates</span><span class="p">}</span> <span class="o">-</span><span class="n">w</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">peak_width</span><span class="p">}</span> <span class="o">--</span><span class="n">nthreads</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> \
+<span class="mi">2</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="o">|</span> <span class="n">grep</span> <span class="o">-</span><span class="n">vE</span> <span class="s2">&quot;^#&quot;</span> <span class="mi">2</span><span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="o">|</span>
+<span class="n">awk</span> <span class="s1">&#39;BEGIN {{ FS = &quot;@&quot; }} NR==1{{gsub(&quot;</span><span class="si">{wildcards.assembly}</span><span class="s1">-|.samtools-coordinate&quot;,&quot;&quot;,$0)}}; </span><span class="se">\</span>
+<span class="s1">{{print $0}}&#39;</span> <span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span>
 
-\# overwrite sample names with descriptive/replicate names
-sed -i &quot;2s/.*/{params.names}/&quot; {output}
+<span class="c1"># overwrite sample names with descriptive/replicate names</span>
+<span class="n">sed</span> <span class="o">-</span><span class="n">i</span> <span class="s2">&quot;2s/.*/</span><span class="si">{params.names}</span><span class="s2">/&quot;</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="cp-unsieved2sieved">
-<h2>cp_unsieved2sieved<a class="headerlink" href="#cp-unsieved2sieved" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="cp-unsieved2sieved">
+<h2>cp_unsieved2sieved<a class="headerlink" href="#cp-unsieved2sieved" title="Permalink to this headline"></a></h2>
 <p>Copy a bam file if no sieving is necessary.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>cp {input} {output}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cp</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="create-snap-object">
-<h2>create_SNAP_object<a class="headerlink" href="#create-snap-object" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="create-snap-object">
+<h2>create_SNAP_object<a class="headerlink" href="#create-snap-object" title="Permalink to this headline"></a></h2>
 <p>Create a snapobject for each BAM file.</p>
 <p>These snapobjects can be merged later using snaptools in R.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>snaptools snap-pre --input-file={input.bams} --output-snap={output} --genome-name={wildcards.assembly} \
---genome-size={input.genome_size} {params.params} {params.chrm} {params.mapq} &gt; {log} 2&gt;&amp;1
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">snaptools</span> <span class="n">snap</span><span class="o">-</span><span class="n">pre</span> <span class="o">--</span><span class="nb">input</span><span class="o">-</span><span class="n">file</span><span class="o">=</span><span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">bams</span><span class="p">}</span> <span class="o">--</span><span class="n">output</span><span class="o">-</span><span class="n">snap</span><span class="o">=</span><span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="o">--</span><span class="n">genome</span><span class="o">-</span><span class="n">name</span><span class="o">=</span><span class="p">{</span><span class="n">wildcards</span><span class="o">.</span><span class="n">assembly</span><span class="p">}</span> \
+<span class="o">--</span><span class="n">genome</span><span class="o">-</span><span class="n">size</span><span class="o">=</span><span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">genome_size</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">params</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">chrm</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">mapq</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="create-bins-snap-object">
-<h2>create_bins_SNAP_object<a class="headerlink" href="#create-bins-snap-object" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="create-bins-snap-object">
+<h2>create_bins_SNAP_object<a class="headerlink" href="#create-bins-snap-object" title="Permalink to this headline"></a></h2>
 <p>Add a Binned genome matrix to the SNAPobject, after which it is renamed and moved
 to the Snapfiles folder for downstream analysis in R using Snaptools</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>snaptools snap-add-bmat --snap-file={input} {params} &gt; {log} 2&gt;&amp;1
-echo &quot;bmat added, moving file&quot; &gt;&gt; {log} 2&gt;&amp;1
-mv {input} {output}    &gt;&gt; {log} 2&gt;&amp;1
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">snaptools</span> <span class="n">snap</span><span class="o">-</span><span class="n">add</span><span class="o">-</span><span class="n">bmat</span> <span class="o">--</span><span class="n">snap</span><span class="o">-</span><span class="n">file</span><span class="o">=</span><span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
+<span class="n">echo</span> <span class="s2">&quot;bmat added, moving file&quot;</span> <span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
+<span class="n">mv</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span>    <span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="cytoband">
-<h2>cytoband<a class="headerlink" href="#cytoband" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="cytoband">
+<h2>cytoband<a class="headerlink" href="#cytoband" title="Permalink to this headline"></a></h2>
 <p>Generate a cytoband track for each assembly</p>
 <p>source: <a class="reference external" href="http://genomewiki.ucsc.edu/index.php/Assembly_Hubs#Cytoband_Track">http://genomewiki.ucsc.edu/index.php/Assembly_Hubs#Cytoband_Track</a></p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>cat {input.sizes} |
-bedSort /dev/stdin /dev/stdout |
-awk &#39;{{print $1,0,$2,$1,&quot;gneg&quot;}}&#39; &gt; {output.cytoband_bd}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cat</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">sizes</span><span class="p">}</span> <span class="o">|</span>
+<span class="n">bedSort</span> <span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">stdin</span> <span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">stdout</span> <span class="o">|</span>
+<span class="n">awk</span> <span class="s1">&#39;{{print $1,0,$2,$1,&quot;gneg&quot;}}&#39;</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">cytoband_bd</span><span class="p">}</span>
 
-bedToBigBed -type=bed4 {output.cytoband_bd} -as={params.schema} \
-{input.sizes} {output.cytoband_bb} &gt;&gt; {log} 2&gt;&amp;1
+<span class="n">bedToBigBed</span> <span class="o">-</span><span class="nb">type</span><span class="o">=</span><span class="n">bed4</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">cytoband_bd</span><span class="p">}</span> <span class="o">-</span><span class="k">as</span><span class="o">=</span><span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">schema</span><span class="p">}</span> \
+<span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">sizes</span><span class="p">}</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">cytoband_bb</span><span class="p">}</span> <span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="decoy-transcripts">
-<h2>decoy_transcripts<a class="headerlink" href="#decoy-transcripts" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="decoy-transcripts">
+<h2>decoy_transcripts<a class="headerlink" href="#decoy-transcripts" title="Permalink to this headline"></a></h2>
 <p>Generate decoy_transcripts.txt for Salmon indexing</p>
 <p>script source: <a class="reference external" href="https://github.com/COMBINE-lab/SalmonTools">https://github.com/COMBINE-lab/SalmonTools</a></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>sh {params.script} -j {threads} -g {input.genome} -a {input.gtf} -t {input.transcripts} -o $(dirname {output[0]}) &gt; {log} 2&gt;&amp;1
+</pre></div>
 </div>
-<div class="section" id="deseq2">
-<h2>deseq2<a class="headerlink" href="#deseq2" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="deseq2">
+<h2>deseq2<a class="headerlink" href="#deseq2" title="Permalink to this headline"></a></h2>
 <p>Differential gene expression analysis with DESeq2.</p>
-</div>
-<div class="section" id="dexseq-count">
-<h2>dexseq_count<a class="headerlink" href="#dexseq-count" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="dexseq-count">
+<h2>dexseq_count<a class="headerlink" href="#dexseq-count" title="Permalink to this headline"></a></h2>
 <p>count exon usage</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>current_conda_env=$(conda env list | grep \* | cut -d &quot;*&quot; -f2-)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>current_conda_env=$(conda env list | grep \* | cut -d &quot;*&quot; -f2-)
 DEXseq_path=${{current_conda_env}}/lib/R/library/DEXSeq/python_scripts
 
 python ${{DEXseq_path}}/dexseq_count.py -f bam -r pos {params.endedness} -s {params.strandedness} {input.gff} {input.bam} {output} &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
-</div>
-<div class="section" id="dupradar">
-<h2>dupRadar<a class="headerlink" href="#dupradar" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="dupradar">
+<h2>dupRadar<a class="headerlink" href="#dupradar" title="Permalink to this headline"></a></h2>
 <p>visualize fraction of artifactual reads to normal read duplication
 (due to natural over-sequencing of highly expressed genes).</p>
-</div>
-<div class="section" id="dupradar-combine">
-<h2>dupRadar_combine<a class="headerlink" href="#dupradar-combine" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="dupradar-combine">
+<h2>dupRadar_combine<a class="headerlink" href="#dupradar-combine" title="Permalink to this headline"></a></h2>
 <p>Combine the individual images (so we can group them nicely in the MultiQC).</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>convert {params.good_example} {params.bad_example} {input} -append {output} 2&gt; {log}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">convert</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">good_example</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">bad_example</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="o">-</span><span class="n">append</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="edger-normalization">
-<h2>edgeR_normalization<a class="headerlink" href="#edger-normalization" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="edger-normalization">
+<h2>edgeR_normalization<a class="headerlink" href="#edger-normalization" title="Permalink to this headline"></a></h2>
 <p>edgeR supports three different types of normalization: TMM, RLE, and upperquartile.</p>
 <p>TMM: is the weighted trimmed mean of M-values proposed by Robinson and Oshlack (2010).
-RLE: is the scaling factor method proposed by Anders and Huber (2010). DEseq2 normalisation</p>
-<blockquote>
-<div><p>is based on this.</p>
-</div></blockquote>
-<p>upperquartile: is the upper-quartile normalization method of Bullard et al (2010).</p>
-<p>In addition to</p>
-</div>
-<div class="section" id="ena2fastq-pe">
-<h2>ena2fastq_PE<a class="headerlink" href="#ena2fastq-pe" title="Permalink to this headline">¶</a></h2>
+RLE: is the scaling factor method proposed by Anders and Huber (2010). DEseq2 normalisation is based on this.
+upperquartile: is the upper-quartile normalization method of Bullard et al (2010).</p>
+</section>
+<section id="ena2fastq-pe">
+<h2>ena2fastq_PE<a class="headerlink" href="#ena2fastq-pe" title="Permalink to this headline"></a></h2>
 <p>Download paired-end fastq files directly from the ENA.</p>
-</div>
-<div class="section" id="ena2fastq-se">
-<h2>ena2fastq_SE<a class="headerlink" href="#ena2fastq-se" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="ena2fastq-se">
+<h2>ena2fastq_SE<a class="headerlink" href="#ena2fastq-se" title="Permalink to this headline"></a></h2>
 <p>Download single-end fastq files directly from the ENA.</p>
-</div>
-<div class="section" id="export-seurat-obj">
-<h2>export_seurat_obj<a class="headerlink" href="#export-seurat-obj" title="Permalink to this headline">¶</a></h2>
-<p>Read scRNA count output into Seurat object, add meta-data and export to RData format.</p>
-</div>
-<div class="section" id="extend-genome">
-<h2>extend_genome<a class="headerlink" href="#extend-genome" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="export-sce-obj">
+<h2>export_sce_obj<a class="headerlink" href="#export-sce-obj" title="Permalink to this headline"></a></h2>
+<p>Read scRNA UMI counts into a SingleCellExperiment object, add colData and export to RData format.</p>
+</section>
+<section id="extend-genome">
+<h2>extend_genome<a class="headerlink" href="#extend-genome" title="Permalink to this headline"></a></h2>
 <p>Append given file(s) to genome</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>\# extend the genome.fa
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># extend the genome.fa
 cp {input.genome} {output.genome}
 
 for FILE in {input.extension}; do
@@ -521,73 +523,73 @@ for FILE in {input.extension}; do
 done
 </pre></div>
 </div>
-</div>
-<div class="section" id="extend-genome-annotation">
-<h2>extend_genome_annotation<a class="headerlink" href="#extend-genome-annotation" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="extend-genome-annotation">
+<h2>extend_genome_annotation<a class="headerlink" href="#extend-genome-annotation" title="Permalink to this headline"></a></h2>
 <p>Append given file(s) to genome annotation</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>\# extend the genome.annotation.gtf
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># extend the genome.annotation.gtf
 cp {input.gtf} {output.gtf}
 
 for FILE in {input.extension}; do
     cat $FILE &gt;&gt; {output.gtf}
 done
 
-\# generate an extended genome.annotation.bed
+# generate an extended genome.annotation.bed
 gtfToGenePred {output.gtf} {output.gp}
 genePredToBed {output.gp} {output.bed}
 </pre></div>
 </div>
-</div>
-<div class="section" id="extend-genome-blacklist">
-<h2>extend_genome_blacklist<a class="headerlink" href="#extend-genome-blacklist" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="extend-genome-blacklist">
+<h2>extend_genome_blacklist<a class="headerlink" href="#extend-genome-blacklist" title="Permalink to this headline"></a></h2>
 <p>Copy blacklist to the custom genome directory</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>cp {input} {output}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cp</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="fastp-pe">
-<h2>fastp_PE<a class="headerlink" href="#fastp-pe" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="fastp-pe">
+<h2>fastp_PE<a class="headerlink" href="#fastp-pe" title="Permalink to this headline"></a></h2>
 <p>Automated adapter detection, adapter trimming, and quality trimming through fastp (paired-end).</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>threads=$(( {threads} - 2  &gt; 1 ? {threads} - 2 : 1 ))
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>threads=$(( {threads} - 2  &gt; 1 ? {threads} - 2 : 1 ))
 
 fastp -w $threads --in1 {input[0]} --in2 {input[1]} \
 --out1 {output.r1} --out2 {output.r2} -h {output.qc_html} -j {output.qc_json} \
 {params.config} &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
-</div>
-<div class="section" id="fastp-se">
-<h2>fastp_SE<a class="headerlink" href="#fastp-se" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="fastp-se">
+<h2>fastp_SE<a class="headerlink" href="#fastp-se" title="Permalink to this headline"></a></h2>
 <p>Automated adapter detection, adapter trimming, and quality trimming through fastp (single-end).</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>threads=$(( {threads} - 2  &gt; 1 ? {threads} - 2 : 1 ))
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>threads=$(( {threads} - 2  &gt; 1 ? {threads} - 2 : 1 ))
 
 fastp -w $threads --in1 {input} --out1 {output.se} -h {output.qc_html} -j {output.qc_json} \
 {params.config} &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
-</div>
-<div class="section" id="fastp-qc-pe">
-<h2>fastp_qc_PE<a class="headerlink" href="#fastp-qc-pe" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="fastp-qc-pe">
+<h2>fastp_qc_PE<a class="headerlink" href="#fastp-qc-pe" title="Permalink to this headline"></a></h2>
 <p>Get quality scores for (technical) replicates</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>fastp -w {threads} --in1 {input[0]} --in2 {input[1]} \
--h {output.qc_html} -j {output.qc_json} \
-{params.config} &gt; {log} 2&gt;&amp;1
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fastp</span> <span class="o">-</span><span class="n">w</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">--</span><span class="n">in1</span> <span class="p">{</span><span class="nb">input</span><span class="p">[</span><span class="mi">0</span><span class="p">]}</span> <span class="o">--</span><span class="n">in2</span> <span class="p">{</span><span class="nb">input</span><span class="p">[</span><span class="mi">1</span><span class="p">]}</span> \
+<span class="o">-</span><span class="n">h</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">qc_html</span><span class="p">}</span> <span class="o">-</span><span class="n">j</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">qc_json</span><span class="p">}</span> \
+<span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">config</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="fastp-qc-se">
-<h2>fastp_qc_SE<a class="headerlink" href="#fastp-qc-se" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="fastp-qc-se">
+<h2>fastp_qc_SE<a class="headerlink" href="#fastp-qc-se" title="Permalink to this headline"></a></h2>
 <p>Get quality scores for (technical) replicates</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>fastp -w {threads} --in1 {input} -h {output.qc_html} -j {output.qc_json} &gt; {log} 2&gt;&amp;1
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fastp</span> <span class="o">-</span><span class="n">w</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">--</span><span class="n">in1</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="o">-</span><span class="n">h</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">qc_html</span><span class="p">}</span> <span class="o">-</span><span class="n">j</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">qc_json</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="fastq-pair">
-<h2>fastq_pair<a class="headerlink" href="#fastq-pair" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="fastq-pair">
+<h2>fastq_pair<a class="headerlink" href="#fastq-pair" title="Permalink to this headline"></a></h2>
 <p>fastq_pair re-writes paired-end fastq files to ensure that each read has a mate and
 discards singleton reads. This step is required after scRNA trimming since we only trim the fastq
 containing reads and not the barcode fastq.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>gunzip -c {input.r1} &gt; {output.intermediates1[0]} 2&gt; {log}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>gunzip -c {input.r1} &gt; {output.intermediates1[0]} 2&gt; {log}
 gunzip -c {input.r2} &gt; {output.intermediates1[1]} 2&gt;&gt; {log}
 if [ {params.tused} == true ]
 then
@@ -601,121 +603,119 @@ gzip -c {output.intermediates3[0]} &gt; {output.reads[0]} 2&gt; {log}
 gzip -c {output.intermediates3[1]} &gt; {output.reads[1]} 2&gt;&gt; {log}
 </pre></div>
 </div>
-</div>
-<div class="section" id="fastqc">
-<h2>fastqc<a class="headerlink" href="#fastqc" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="fastqc">
+<h2>fastqc<a class="headerlink" href="#fastqc" title="Permalink to this headline"></a></h2>
 <p>Generate quality control report for fastq files.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>fastqc {input} -O {params} &gt; {log} 2&gt;&amp;1
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fastqc</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="o">-</span><span class="n">O</span> <span class="p">{</span><span class="n">params</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="featurecounts">
-<h2>featureCounts<a class="headerlink" href="#featurecounts" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="featurecounts">
+<h2>featureCounts<a class="headerlink" href="#featurecounts" title="Permalink to this headline"></a></h2>
 <p>Use featureCounts to generate the fraction reads in peaks score
 (frips/assigned reads). See: <a class="reference external" href="https://www.biostars.org/p/337872/">https://www.biostars.org/p/337872/</a> and
 <a class="reference external" href="https://www.biostars.org/p/228636/">https://www.biostars.org/p/228636/</a></p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>\# Make a custom &quot;SAF&quot; file which featureCounts needs:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># Make a custom &quot;SAF&quot; file which featureCounts needs:
 awk &#39;BEGIN{{FS=OFS=&quot;\t&quot;; print &quot;GeneID\tChr\tStart\tEnd\tStrand&quot;}}{{print $4, $1, $2+1, $3, &quot;.&quot;}}&#39; \
 {input.peak} 1&gt; {output.tmp_saf} 2&gt; {log}
 
-\# run featureCounts
+# run featureCounts
 featureCounts -T {threads} -p -a {output.tmp_saf} -F SAF -o {output.real_out} {input.bam} &gt; {log} 2&gt;&amp;1
 
-\# move the summary to qc directory
+# move the summary to qc directory
 mv $(dirname {output.real_out})/$(basename {output.summary}) {output.summary}
 </pre></div>
 </div>
-</div>
-<div class="section" id="id1">
-<h2>featurecounts<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id1">
+<h2>featurecounts<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h2>
 <p>summarize reads to gene level. Outputs a counts table per bam file.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>featureCounts -a {input.gtf} {input.bam} {params.endedness} -s {params.strandedness} {params.user_flags} -T {threads} -o {output} &gt; {log} 2&gt;&amp;1
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">featureCounts</span> <span class="o">-</span><span class="n">a</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">gtf</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">bam</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">endedness</span><span class="p">}</span> <span class="o">-</span><span class="n">s</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">strandedness</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">user_flags</span><span class="p">}</span> <span class="o">-</span><span class="n">T</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">-</span><span class="n">o</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="gcpercent">
-<h2>gcPercent<a class="headerlink" href="#gcpercent" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="gcpercent">
+<h2>gcPercent<a class="headerlink" href="#gcpercent" title="Permalink to this headline"></a></h2>
 <p>Generate a gc content track</p>
 <p>source: <a class="reference external" href="http://hgdownload.cse.ucsc.edu/goldenPath/hg19/gc5Base/">http://hgdownload.cse.ucsc.edu/goldenPath/hg19/gc5Base/</a></p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>        hgGcPercent -wigOut -doGaps -file=stdout -win=5 -verbose=0 {wildcards.assembly} {input.twobit} \
-| gzip &gt; {output.gcpcvar}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">hgGcPercent</span> <span class="o">-</span><span class="n">wigOut</span> <span class="o">-</span><span class="n">doGaps</span> <span class="o">-</span><span class="n">file</span><span class="o">=</span><span class="n">stdout</span> <span class="o">-</span><span class="n">win</span><span class="o">=</span><span class="mi">5</span> <span class="o">-</span><span class="n">verbose</span><span class="o">=</span><span class="mi">0</span> <span class="p">{</span><span class="n">wildcards</span><span class="o">.</span><span class="n">assembly</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">twobit</span><span class="p">}</span> \
+    <span class="o">|</span> <span class="n">gzip</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">gcpcvar</span><span class="p">}</span>
 
-        wigToBigWig {output.gcpcvar} {input.sizes} {output.gcpc} &gt;&gt; {log} 2&gt;&amp;1
+<span class="n">wigToBigWig</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">gcpcvar</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">sizes</span><span class="p">}</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">gcpc</span><span class="p">}</span> <span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="gene-id2name">
-<h2>gene_id2name<a class="headerlink" href="#gene-id2name" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="gene-id2name">
+<h2>gene_id2name<a class="headerlink" href="#gene-id2name" title="Permalink to this headline"></a></h2>
 <p>Parse the gtf file to generate a gene_id to gene_name conversion table.</p>
-</div>
-<div class="section" id="genrich-pileup">
-<h2>genrich_pileup<a class="headerlink" href="#genrich-pileup" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="genrich-pileup">
+<h2>genrich_pileup<a class="headerlink" href="#genrich-pileup" title="Permalink to this headline"></a></h2>
 <p>Generate the pileup. We do this separately from peak-calling since these two
 processes have a very different computational footprint.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>input=$(echo {input.reps} | tr &#39; &#39; &#39;,&#39;)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>input=$(echo {input.reps} | tr &#39; &#39; &#39;,&#39;)
 Genrich -X -t $input -f {output.log} {params.control} -k {output.bedgraphish} \
 {params.params} -v &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
-</div>
-<div class="section" id="get-effective-genome-size">
-<h2>get_effective_genome_size<a class="headerlink" href="#get-effective-genome-size" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="get-effective-genome-size">
+<h2>get_effective_genome_size<a class="headerlink" href="#get-effective-genome-size" title="Permalink to this headline"></a></h2>
 <p>Get the effective genome size for a kmer length. Macs2 requires
 an estimation of the effective genome size to better estimate how (un)likely it
 is to have a certain number of reads on a position. The actual genome size is
 not the best indication in these cases, since reads in repetitive regions
 (for a certain kmer length) can not possible align on some locations.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>unique-kmers.py {input.genome} -k $kmer_size --quiet 2&gt;&amp;1 | grep -P -o &#39;(?&lt;=\.fa: ).*&#39; &gt; {output} 2&gt; {log}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>unique-kmers.py {input.genome} -k $kmer_size --quiet 2&gt;&amp;1 | grep -P -o &#39;(?&lt;=\.fa: ).*&#39; &gt; {output} 2&gt; {log}
 </pre></div>
 </div>
-</div>
-<div class="section" id="get-genome">
-<h2>get_genome<a class="headerlink" href="#get-genome" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="get-genome">
+<h2>get_genome<a class="headerlink" href="#get-genome" title="Permalink to this headline"></a></h2>
 <p>Download a genome through genomepy.</p>
-</div>
-<div class="section" id="get-genome-annotation">
-<h2>get_genome_annotation<a class="headerlink" href="#get-genome-annotation" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="get-genome-annotation">
+<h2>get_genome_annotation<a class="headerlink" href="#get-genome-annotation" title="Permalink to this headline"></a></h2>
 <p>Download a gene annotation through genomepy.</p>
-</div>
-<div class="section" id="get-genome-blacklist">
-<h2>get_genome_blacklist<a class="headerlink" href="#get-genome-blacklist" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="get-genome-blacklist">
+<h2>get_genome_blacklist<a class="headerlink" href="#get-genome-blacklist" title="Permalink to this headline"></a></h2>
 <p>Download a genome blacklist for a genome, if it exists, through genomepy.</p>
-</div>
-<div class="section" id="get-genome-support-files">
-<h2>get_genome_support_files<a class="headerlink" href="#get-genome-support-files" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="get-genome-support-files">
+<h2>get_genome_support_files<a class="headerlink" href="#get-genome-support-files" title="Permalink to this headline"></a></h2>
 <p>Generate supporting files for a genome.</p>
-</div>
-<div class="section" id="get-transcripts">
-<h2>get_transcripts<a class="headerlink" href="#get-transcripts" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="get-transcripts">
+<h2>get_transcripts<a class="headerlink" href="#get-transcripts" title="Permalink to this headline"></a></h2>
 <p>Generate transcripts.fasta using gffread.</p>
 <p>Requires genome.fa and annotation.gtf (with matching chromosome/scaffold names)</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>Generate decoy_transcripts.txt for Salmon indexing
-
-script source: https://github.com/COMBINE-lab/SalmonTools
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">gffread</span> <span class="o">-</span><span class="n">w</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="o">-</span><span class="n">g</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">fa</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">gtf</span><span class="p">}</span> <span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="hisat2-align">
-<h2>hisat2_align<a class="headerlink" href="#hisat2-align" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="hisat2-align">
+<h2>hisat2_align<a class="headerlink" href="#hisat2-align" title="Permalink to this headline"></a></h2>
 <p>Align reads against a genome (index) with hisat2, and pipe the output to the required sorter(s).</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>hisat2 {params.params} --threads {threads} -x {input.index}/part {params.input} 2&gt; {log} | tee {output} 1&gt; /dev/null 2&gt;&gt; {log}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">hisat2</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">params</span><span class="p">}</span> <span class="o">--</span><span class="n">threads</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">-</span><span class="n">x</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">index</span><span class="p">}</span><span class="o">/</span><span class="n">part</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">input</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="o">|</span> <span class="n">tee</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="mi">1</span><span class="o">&gt;</span> <span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">null</span> <span class="mi">2</span><span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="hisat2-index">
-<h2>hisat2_index<a class="headerlink" href="#hisat2-index" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="hisat2-index">
+<h2>hisat2_index<a class="headerlink" href="#hisat2-index" title="Permalink to this headline"></a></h2>
 <p>Make a genome index for hisat2. This index is required for alignment.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>mkdir -p {output}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span>
 
-hisat2-build {params} -p {threads} {input} {output}/part &gt; {log} 2&gt;&amp;1
+<span class="n">hisat2</span><span class="o">-</span><span class="n">build</span> <span class="p">{</span><span class="n">params</span><span class="p">}</span> <span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span><span class="o">/</span><span class="n">part</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="hisat2-splice-aware-index">
-<h2>hisat2_splice_aware_index<a class="headerlink" href="#hisat2-splice-aware-index" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="hisat2-splice-aware-index">
+<h2>hisat2_splice_aware_index<a class="headerlink" href="#hisat2-splice-aware-index" title="Permalink to this headline"></a></h2>
 <p>Make an exon-junction and splice aware index for hisat2.
 This index is required for alignment and quantification of RNA-seq data.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>mkdir -p {output}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>mkdir -p {output}
 
 hp=$(which hisat2)
 python3 ${{hp}}_extract_splice_sites.py {input.gtf} &gt; {output}/splice_sites.tsv 2&gt;&gt; {log}
@@ -725,158 +725,161 @@ hisat2-build {params} -p {threads} --ss {output}/splice_sites.tsv --exon {output
 {input.fasta} {output}/part &gt;&gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
-</div>
-<div class="section" id="hmmratac">
-<h2>hmmratac<a class="headerlink" href="#hmmratac" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="hmmratac">
+<h2>hmmratac<a class="headerlink" href="#hmmratac" title="Permalink to this headline"></a></h2>
 <p>Call gappedpeaks with HMMRATAC.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>HMMRATAC --bedgraph true -o {params.basename} {params.hmmratac_params} -Xmx22G -b {input.bam} -i {input.bam_index} -g {input.genome_size} &gt; {log} 2&gt;&amp;1
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">HMMRATAC</span> <span class="o">--</span><span class="n">bedgraph</span> <span class="n">true</span> <span class="o">-</span><span class="n">o</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">basename</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">hmmratac_params</span><span class="p">}</span> <span class="o">-</span><span class="n">Xmx22G</span> <span class="o">-</span><span class="n">b</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">bam</span><span class="p">}</span> <span class="o">-</span><span class="n">i</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">bam_index</span><span class="p">}</span> <span class="o">-</span><span class="n">g</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">genome_size</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="hmmratac-genome-info">
-<h2>hmmratac_genome_info<a class="headerlink" href="#hmmratac-genome-info" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="hmmratac-genome-info">
+<h2>hmmratac_genome_info<a class="headerlink" href="#hmmratac-genome-info" title="Permalink to this headline"></a></h2>
 <p>Generate the ‘genome info’ that hmmratac requires for peak calling.
 <a class="reference external" href="https://github.com/LiuLabUB/HMMRATAC/issues/17">https://github.com/LiuLabUB/HMMRATAC/issues/17</a></p>
 <p>TODO: isnt this just .fa.sizes?</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>samtools view -H {input} 2&gt;  {log} | grep SQ 2&gt;&gt; {log} | cut -f 2-3 2&gt;&gt; {log} | cut -d &#39;:&#39; -f 2   2&gt;&gt; {log} | cut -f 1        &gt; {output.tmp1} 2&gt; {log}
-samtools view -H {input} 2&gt;&gt; {log} | grep SQ 2&gt;&gt; {log} | cut -f 2-3 2&gt;&gt; {log} | cut -d &#39;:&#39; -f 2,3 2&gt;&gt; {log} | cut -d &#39;:&#39; -f 2 &gt; {output.tmp2} 2&gt; {log}
-paste {output.tmp1} {output.tmp2} &gt; {output.out} 2&gt; {log}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">samtools</span> <span class="n">view</span> <span class="o">-</span><span class="n">H</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;</span>  <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="o">|</span> <span class="n">grep</span> <span class="n">SQ</span> <span class="mi">2</span><span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="o">|</span> <span class="n">cut</span> <span class="o">-</span><span class="n">f</span> <span class="mi">2</span><span class="o">-</span><span class="mi">3</span> <span class="mi">2</span><span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="o">|</span> <span class="n">cut</span> <span class="o">-</span><span class="n">d</span> <span class="s1">&#39;:&#39;</span> <span class="o">-</span><span class="n">f</span> <span class="mi">2</span>   <span class="mi">2</span><span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="o">|</span> <span class="n">cut</span> <span class="o">-</span><span class="n">f</span> <span class="mi">1</span>        <span class="o">&gt;</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">tmp1</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span>
+<span class="n">samtools</span> <span class="n">view</span> <span class="o">-</span><span class="n">H</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="o">|</span> <span class="n">grep</span> <span class="n">SQ</span> <span class="mi">2</span><span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="o">|</span> <span class="n">cut</span> <span class="o">-</span><span class="n">f</span> <span class="mi">2</span><span class="o">-</span><span class="mi">3</span> <span class="mi">2</span><span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="o">|</span> <span class="n">cut</span> <span class="o">-</span><span class="n">d</span> <span class="s1">&#39;:&#39;</span> <span class="o">-</span><span class="n">f</span> <span class="mi">2</span><span class="p">,</span><span class="mi">3</span> <span class="mi">2</span><span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="o">|</span> <span class="n">cut</span> <span class="o">-</span><span class="n">d</span> <span class="s1">&#39;:&#39;</span> <span class="o">-</span><span class="n">f</span> <span class="mi">2</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">tmp2</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span>
+<span class="n">paste</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">tmp1</span><span class="p">}</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">tmp2</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">out</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span>
 </pre></div>
 </div>
+</section>
+<section id="htseq-count">
+<h2>htseq_count<a class="headerlink" href="#htseq-count" title="Permalink to this headline"></a></h2>
+<p>summarize reads to gene level. Outputs a counts table per bam file.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">htseq</span><span class="o">-</span><span class="n">count</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">bam</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">gtf</span><span class="p">}</span> <span class="o">-</span><span class="n">r</span> <span class="n">pos</span> <span class="o">-</span><span class="n">s</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">strandedness</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">user_flags</span><span class="p">}</span> <span class="o">-</span><span class="n">n</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">-</span><span class="n">c</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
+</pre></div>
 </div>
-<div class="section" id="idr">
-<h2>idr<a class="headerlink" href="#idr" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="idr">
+<h2>idr<a class="headerlink" href="#idr" title="Permalink to this headline"></a></h2>
 <p>Combine replicates based on the irreproducible discovery rate (IDR). Can only handle two replicates.
 For more than two replicates use fisher’s method.</p>
 <p>When combining narrowpeak files with IDR, the q-score and summit are set to -1 (means not set). However some
 downstream tools require these to be set. So we set the q-score to zero, and place the summit of the peak in
 the middle of the peak.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>                if [ &quot;{params.nr_reps}&quot; == &quot;1&quot; ]; then
-cp {input} {output.true}
-touch {output.temp}
-                else
-idr --samples {input} {params.rank} --output-file {output.temp} &gt; {log} 2&gt;&amp;1
-if [ &quot;{wildcards.ftype}&quot; == &quot;narrowPeak&quot; ]; then
-    awk &#39;IFS=&quot;\t&quot;,OFS=&quot;\t&quot; {{$9=0; $10=int(($3 - $2) / 2); print}}&#39; {output.temp} &gt; {output.true} 2&gt;&gt; {log}
-else
-    cp {output.temp} {output.true}
-fi
-                fi
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="p">[</span> <span class="s2">&quot;</span><span class="si">{params.nr_reps}</span><span class="s2">&quot;</span> <span class="o">==</span> <span class="s2">&quot;1&quot;</span> <span class="p">];</span> <span class="n">then</span>
+    <span class="n">cp</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">true</span><span class="p">}</span>
+    <span class="n">touch</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">temp</span><span class="p">}</span>
+<span class="k">else</span>
+    <span class="n">idr</span> <span class="o">--</span><span class="n">samples</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">rank</span><span class="p">}</span> <span class="o">--</span><span class="n">output</span><span class="o">-</span><span class="n">file</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">temp</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">options</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
+    <span class="k">if</span> <span class="p">[</span> <span class="s2">&quot;</span><span class="si">{wildcards.ftype}</span><span class="s2">&quot;</span> <span class="o">==</span> <span class="s2">&quot;narrowPeak&quot;</span> <span class="p">];</span> <span class="n">then</span>
+        <span class="n">awk</span> <span class="s1">&#39;IFS=&quot;</span><span class="se">\t</span><span class="s1">&quot;,OFS=&quot;</span><span class="se">\t</span><span class="s1">&quot; {{$9=0; $10=int(($3 - $2) / 2); print}}&#39;</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">temp</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">true</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span>
+    <span class="k">else</span>
+        <span class="n">cp</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">temp</span><span class="p">}</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">true</span><span class="p">}</span>
+    <span class="n">fi</span>
+<span class="n">fi</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="infer-strandedness">
-<h2>infer_strandedness<a class="headerlink" href="#infer-strandedness" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="infer-strandedness">
+<h2>infer_strandedness<a class="headerlink" href="#infer-strandedness" title="Permalink to this headline"></a></h2>
 <p>Use RSeqQC’s infer_experiment.py to determine the strandedness of a sample</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>infer_experiment.py -i {input.bam} -r {input.bed} -q {params} 2&gt; {log} | awk NF &gt; {output}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">infer_experiment</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">i</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">bam</span><span class="p">}</span> <span class="o">-</span><span class="n">r</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">bed</span><span class="p">}</span> <span class="o">-</span><span class="n">q</span> <span class="p">{</span><span class="n">params</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="o">|</span> <span class="n">awk</span> <span class="n">NF</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="insert-size-metrics">
-<h2>insert_size_metrics<a class="headerlink" href="#insert-size-metrics" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="insert-size-metrics">
+<h2>insert_size_metrics<a class="headerlink" href="#insert-size-metrics" title="Permalink to this headline"></a></h2>
 <p>Get insert size metrics from a (paired-end) bam. This score is then used by
 MultiQC in the report.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>picard CollectInsertSizeMetrics INPUT={input} \
-OUTPUT={output.tsv} H={output.pdf} &gt; {log} 2&gt;&amp;1
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">picard</span> <span class="n">CollectInsertSizeMetrics</span> <span class="n">INPUT</span><span class="o">=</span><span class="p">{</span><span class="nb">input</span><span class="p">}</span> \
+<span class="n">OUTPUT</span><span class="o">=</span><span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">tsv</span><span class="p">}</span> <span class="n">H</span><span class="o">=</span><span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">pdf</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="kallistobus-count">
-<h2>kallistobus_count<a class="headerlink" href="#kallistobus-count" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="kallistobus-count">
+<h2>kallistobus_count<a class="headerlink" href="#kallistobus-count" title="Permalink to this headline"></a></h2>
 <p>Align reads against a transcriptome (index) with kallistobus and output a quantification file per sample.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>kb count \
--i {params.basename}.idx \
--t {threads} -g {params.basename}_t2g.txt \
--o {params.outdir} {params.c1} {params.c2} \
-{params.barcode_arg} {params.options} {input.reads} &gt; {log} 2&gt;&amp;1
-\# Validate output
-if grep -q &#39;ERROR\|bad_alloc&#39; &quot;{log}&quot;; then
-  exit 1
-fi
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kb</span> <span class="n">count</span> \
+<span class="o">-</span><span class="n">i</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">basename</span><span class="p">}</span><span class="o">.</span><span class="n">idx</span> \
+<span class="o">-</span><span class="n">t</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">-</span><span class="n">g</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">basename</span><span class="p">}</span><span class="n">_t2g</span><span class="o">.</span><span class="n">txt</span> \
+<span class="o">-</span><span class="n">o</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">outdir</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">c1</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">c2</span><span class="p">}</span> \
+<span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">barcode_arg</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">options</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">reads</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
+<span class="c1"># Validate output</span>
+<span class="k">if</span> <span class="n">grep</span> <span class="o">-</span><span class="n">q</span> <span class="s1">&#39;ERROR\|bad_alloc&#39;</span> <span class="s2">&quot;</span><span class="si">{log}</span><span class="s2">&quot;</span><span class="p">;</span> <span class="n">then</span>
+  <span class="n">exit</span> <span class="mi">1</span>
+<span class="n">fi</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="kallistobus-ref">
-<h2>kallistobus_ref<a class="headerlink" href="#kallistobus-ref" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="kallistobus-ref">
+<h2>kallistobus_ref<a class="headerlink" href="#kallistobus-ref" title="Permalink to this headline"></a></h2>
 <p>Make a genome index for kallistobus. This index is required for counting.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>mkdir -p {output}
-kb ref \
-{input.fa} {input.gtf} \
--i {params.basename}.idx -g {params.basename}_t2g.txt -f1 {params.basename}_cdna.fa \
-{params.f2} {params.c1} {params.c2} \
-{params.options} &gt; {log} 2&gt;&amp;1
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span>
+<span class="n">kb</span> <span class="n">ref</span> \
+<span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">fa</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">gtf</span><span class="p">}</span> \
+<span class="o">-</span><span class="n">i</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">basename</span><span class="p">}</span><span class="o">.</span><span class="n">idx</span> <span class="o">-</span><span class="n">g</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">basename</span><span class="p">}</span><span class="n">_t2g</span><span class="o">.</span><span class="n">txt</span> <span class="o">-</span><span class="n">f1</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">basename</span><span class="p">}</span><span class="n">_cdna</span><span class="o">.</span><span class="n">fa</span> \
+<span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">f2</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">c1</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">c2</span><span class="p">}</span> \
+<span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">options</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="kallistobus-ref-kite">
-<h2>kallistobus_ref_kite<a class="headerlink" href="#kallistobus-ref-kite" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="kallistobus-ref-kite">
+<h2>kallistobus_ref_kite<a class="headerlink" href="#kallistobus-ref-kite" title="Permalink to this headline"></a></h2>
 <p>Make a mismatch index for kallistobus. This index is required to count feature barcodes, such as antibody tags.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>mkdir -p {output}
-kb ref  \
-{input.featurebarcodes} \
-{params.options} \
--i {params.basename}.idx -g {params.basename}_t2g.txt -f1 {params.basename}_cdna.fa &gt; {log} 2&gt;&amp;1
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span>
+<span class="n">kb</span> <span class="n">ref</span>  \
+<span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">featurebarcodes</span><span class="p">}</span> \
+<span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">options</span><span class="p">}</span> \
+<span class="o">-</span><span class="n">i</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">basename</span><span class="p">}</span><span class="o">.</span><span class="n">idx</span> <span class="o">-</span><span class="n">g</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">basename</span><span class="p">}</span><span class="n">_t2g</span><span class="o">.</span><span class="n">txt</span> <span class="o">-</span><span class="n">f1</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">basename</span><span class="p">}</span><span class="n">_cdna</span><span class="o">.</span><span class="n">fa</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="kb-seurat-pp">
-<h2>kb_seurat_pp<a class="headerlink" href="#kb-seurat-pp" title="Permalink to this headline">¶</a></h2>
-<p>summarize reads to gene level. Outputs a counts table per bam file.</p>
-</div>
-<div class="section" id="keep-mates">
-<h2>keep_mates<a class="headerlink" href="#keep-mates" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="keep-mates">
+<h2>keep_mates<a class="headerlink" href="#keep-mates" title="Permalink to this headline"></a></h2>
 <p>In-house script that, after alignment, removes the information that reads are paired.
 This can be beneficial when peak calling with macs2 when shifting + extending, since
 macs2 in this case only keeps the first in pair.</p>
-</div>
-<div class="section" id="linked-txome">
-<h2>linked_txome<a class="headerlink" href="#linked-txome" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="linked-txome">
+<h2>linked_txome<a class="headerlink" href="#linked-txome" title="Permalink to this headline"></a></h2>
 <p>Generate a linked transcriptome for tximeta</p>
 <p>Also creates a symlink to the gtf in an Ensembl format (required by tximeta)</p>
 <p>Required to converting salmon output (estimated transcript abundances) to gene counts</p>
-</div>
-<div class="section" id="log-normalization">
-<h2>log_normalization<a class="headerlink" href="#log-normalization" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="log-normalization">
+<h2>log_normalization<a class="headerlink" href="#log-normalization" title="Permalink to this headline"></a></h2>
 <p>Log1p normalization of a count table.</p>
-</div>
-<div class="section" id="macs2-callpeak">
-<h2>macs2_callpeak<a class="headerlink" href="#macs2-callpeak" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="macs2-callpeak">
+<h2>macs2_callpeak<a class="headerlink" href="#macs2-callpeak" title="Permalink to this headline"></a></h2>
 <p>Call peaks using macs2.
 Macs2 requires a genome size, which is estimated from the amount of unique kmers of the average read length.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>GENSIZE=$(cat {input.genome_size})
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>GENSIZE=$(cat {input.genome_size})
 
-\# call peaks
+# call peaks
 macs2 callpeak --bdg -t {input.bam} {params.control} --outdir {config[result_dir]}/macs2/ -n {wildcards.assembly}-{wildcards.sample} \
 {params.macs_params} -g $GENSIZE -f {params.format} &gt;&gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
-</div>
-<div class="section" id="macs-bdgcmp">
-<h2>macs_bdgcmp<a class="headerlink" href="#macs-bdgcmp" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="macs-bdgcmp">
+<h2>macs_bdgcmp<a class="headerlink" href="#macs-bdgcmp" title="Permalink to this headline"></a></h2>
 <p>Prepare p-value files for rule macs_cmbreps</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>macs2 bdgcmp -t {input.treatment} -c {input.control} -m qpois -o {output} &gt; {log} 2&gt;&amp;1
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">macs2</span> <span class="n">bdgcmp</span> <span class="o">-</span><span class="n">t</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">treatment</span><span class="p">}</span> <span class="o">-</span><span class="n">c</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">control</span><span class="p">}</span> <span class="o">-</span><span class="n">m</span> <span class="n">qpois</span> <span class="o">-</span><span class="n">o</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="macs-cmbreps">
-<h2>macs_cmbreps<a class="headerlink" href="#macs-cmbreps" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="macs-cmbreps">
+<h2>macs_cmbreps<a class="headerlink" href="#macs-cmbreps" title="Permalink to this headline"></a></h2>
 <p>Combine biological replicates through Fisher’s method</p>
 <p>(Link original peakfile in replicate_processed if there is only 1 sample for a condition)</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>                    if [ &quot;{params.nr_reps}&quot; == &quot;1&quot; ]; then
-touch {output.tmpbdg} {output.tmppeaks}
-mkdir -p $(dirname {output.peaks}); cp {input.treatment} {output.peaks}
-                    else
-macs2 cmbreps -i {input.bdgcmp} -o {output.tmpbdg} -m fisher &gt; {log} 2&gt;&amp;1
-macs2 {params.function} {params.config} -i {output.tmpbdg} -o {output.tmppeaks} &gt;&gt; {log} 2&gt;&amp;1
-cat {output.tmppeaks} | tail -n +2 &gt; {output.peaks}
-                    fi
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>if [ &quot;{params.nr_reps}&quot; == &quot;1&quot; ]; then
+    touch {output.tmpbdg} {output.tmppeaks}
+    mkdir -p $(dirname {output.peaks}); cp {input.treatment} {output.peaks}
+else
+    macs2 cmbreps -i {input.bdgcmp} -o {output.tmpbdg} -m fisher &gt; {log} 2&gt;&amp;1
+    macs2 {params.function} {params.config} -i {output.tmpbdg} -o {output.tmppeaks} &gt;&gt; {log} 2&gt;&amp;1
+    cat {output.tmppeaks} | tail -n +2 &gt; {output.peaks}
+fi
 </pre></div>
 </div>
-</div>
-<div class="section" id="mark-duplicates">
-<h2>mark_duplicates<a class="headerlink" href="#mark-duplicates" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="mark-duplicates">
+<h2>mark_duplicates<a class="headerlink" href="#mark-duplicates" title="Permalink to this headline"></a></h2>
 <p>Mark all duplicate reads in a bam file with picard MarkDuplicates</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>\# use the TMPDIR if set, and not given in the config
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># use the TMPDIR if set, and not given in the config
 if [[ ${{TMPDIR:=F}} == &quot;F&quot; ]] || [[ &quot;{params}&quot; == *TMP_DIR* ]]
 then
     tmpdir=&quot;&quot;
@@ -887,95 +890,91 @@ picard MarkDuplicates $tmpdir {params} INPUT={input} \
 OUTPUT={output.bam} METRICS_FILE={output.metrics} &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
-</div>
-<div class="section" id="mean-center">
-<h2>mean_center<a class="headerlink" href="#mean-center" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="mean-center">
+<h2>mean_center<a class="headerlink" href="#mean-center" title="Permalink to this headline"></a></h2>
 <p>Mean centering of a count table.</p>
-</div>
-<div class="section" id="merge-replicates">
-<h2>merge_replicates<a class="headerlink" href="#merge-replicates" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="merge-replicates">
+<h2>merge_replicates<a class="headerlink" href="#merge-replicates" title="Permalink to this headline"></a></h2>
 <p>Merge replicates (fastqs) simply by concatenating the files. We also change the name of the read headers to
 contain the name of the original replicate.</p>
 <p>Must happen after trimming due to trim-galore’s automatic adapter trimming method</p>
 <p>If a replicate has only 1 sample in it, simply move the file.</p>
-</div>
-<div class="section" id="merge-seurat-obj">
-<h2>merge_seurat_obj<a class="headerlink" href="#merge-seurat-obj" title="Permalink to this headline">¶</a></h2>
-<p>Gather and merge multiple Seurat objects into a combined object and export to RData format.</p>
-</div>
-<div class="section" id="merge-volcano-ma">
-<h2>merge_volcano_ma<a class="headerlink" href="#merge-volcano-ma" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="merge-volcano-ma">
+<h2>merge_volcano_ma<a class="headerlink" href="#merge-volcano-ma" title="Permalink to this headline"></a></h2>
 <p>Combine the volcano and maplot resulting of the deseq2 rule into a single figure.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>convert {input.maplot} {input.volcanoplot} +append {output} 2&gt; {log}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">convert</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">maplot</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">volcanoplot</span><span class="p">}</span> <span class="o">+</span><span class="n">append</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="minimap2-align">
-<h2>minimap2_align<a class="headerlink" href="#minimap2-align" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="minimap2-align">
+<h2>minimap2_align<a class="headerlink" href="#minimap2-align" title="Permalink to this headline"></a></h2>
 <p>Align reads against a genome (index) with minimap2, and pipe the output to the required sorter(s).</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>minimap2 -t {threads} -a {input.index} {input.reads} {params} &gt; {output} 2&gt; {log}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">minimap2</span> <span class="o">-</span><span class="n">t</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">-</span><span class="n">a</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">index</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">reads</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="minimap2-index">
-<h2>minimap2_index<a class="headerlink" href="#minimap2-index" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="minimap2-index">
+<h2>minimap2_index<a class="headerlink" href="#minimap2-index" title="Permalink to this headline"></a></h2>
 <p>Make a genome index for minimap2. This index is required for alignment.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>mkdir -p $(dirname {output})
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>mkdir -p $(dirname {output})
 
 minimap2 -t {threads} -d {output} {input} {params} &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
-</div>
-<div class="section" id="mt-nuc-ratio-calculator">
-<h2>mt_nuc_ratio_calculator<a class="headerlink" href="#mt-nuc-ratio-calculator" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="mt-nuc-ratio-calculator">
+<h2>mt_nuc_ratio_calculator<a class="headerlink" href="#mt-nuc-ratio-calculator" title="Permalink to this headline"></a></h2>
 <p>Estimate the amount of nuclear and mitochondrial reads in a sample. This metric
 is especially important in ATAC-seq experiments where mitochondrial DNA can
 be overrepresented. Reads are classified as mitochondrial reads if they map
 against either “chrM” or “MT”.</p>
 <p>These values are aggregated and displayed in the MultiQC report.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>mtnucratio {input.bam} {params.mitochondria}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mtnucratio</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">bam</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">mitochondria</span><span class="p">}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="multibamsummary">
-<h2>multiBamSummary<a class="headerlink" href="#multibamsummary" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="multibamsummary">
+<h2>multiBamSummary<a class="headerlink" href="#multibamsummary" title="Permalink to this headline"></a></h2>
 <p>Pre-compute a bam summary with deeptools.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>multiBamSummary bins --bamfiles {input.bams} -out {output} {params.names} \
-{params.params} -p {threads} &gt; {log} 2&gt;&amp;1
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">multiBamSummary</span> <span class="n">bins</span> <span class="o">--</span><span class="n">bamfiles</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">bams</span><span class="p">}</span> <span class="o">-</span><span class="n">out</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">names</span><span class="p">}</span> \
+<span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">params</span><span class="p">}</span> <span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="multiqc-explain">
-<h2>multiqc_explain<a class="headerlink" href="#multiqc-explain" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="multiqc-explain">
+<h2>multiqc_explain<a class="headerlink" href="#multiqc-explain" title="Permalink to this headline"></a></h2>
 <p>Generate rename buttons for the multiqc report.</p>
-</div>
-<div class="section" id="multiqc-filter-buttons">
-<h2>multiqc_filter_buttons<a class="headerlink" href="#multiqc-filter-buttons" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="multiqc-filter-buttons">
+<h2>multiqc_filter_buttons<a class="headerlink" href="#multiqc-filter-buttons" title="Permalink to this headline"></a></h2>
 <p>Generate filter buttons.</p>
-</div>
-<div class="section" id="multiqc-header-info">
-<h2>multiqc_header_info<a class="headerlink" href="#multiqc-header-info" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="multiqc-header-info">
+<h2>multiqc_header_info<a class="headerlink" href="#multiqc-header-info" title="Permalink to this headline"></a></h2>
 <p>Generate a multiqc header file with contact info and date of multiqc generation.</p>
-</div>
-<div class="section" id="multiqc-samplesconfig">
-<h2>multiqc_samplesconfig<a class="headerlink" href="#multiqc-samplesconfig" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="multiqc-samplesconfig">
+<h2>multiqc_samplesconfig<a class="headerlink" href="#multiqc-samplesconfig" title="Permalink to this headline"></a></h2>
 <p>Add a section in the multiqc report that reports the samples.tsv and config.yaml</p>
-</div>
-<div class="section" id="multiqc-schema">
-<h2>multiqc_schema<a class="headerlink" href="#multiqc-schema" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="multiqc-schema">
+<h2>multiqc_schema<a class="headerlink" href="#multiqc-schema" title="Permalink to this headline"></a></h2>
 <p>Generate a multiqc config schema. Used for the ordering of modules.</p>
-</div>
-<div class="section" id="narrowpeak-summit">
-<h2>narrowpeak_summit<a class="headerlink" href="#narrowpeak-summit" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="narrowpeak-summit">
+<h2>narrowpeak_summit<a class="headerlink" href="#narrowpeak-summit" title="Permalink to this headline"></a></h2>
 <p>Convert a narrowpeak file to a “macs2 summits” file.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>awk &#39;BEGIN {{OFS=&quot;\t&quot;}} {{ print $1,$2+$10,$2+$10+1,$4,$9; }}&#39; {input} &gt; {output} 2&gt; {log}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">awk</span> <span class="s1">&#39;BEGIN {{OFS=&quot;</span><span class="se">\t</span><span class="s1">&quot;}} {{ print $1,$2+$10,$2+$10+1,$4,$9; }}&#39;</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="onehot-peaks">
-<h2>onehot_peaks<a class="headerlink" href="#onehot-peaks" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="onehot-peaks">
+<h2>onehot_peaks<a class="headerlink" href="#onehot-peaks" title="Permalink to this headline"></a></h2>
 <p>Get onehot encodings of which peaks are found in which samples</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>awk &#39;{{print $1&quot;:&quot;$2&quot;-&quot;$3}}&#39; {input.combinedpeaks} &gt; {output.real} 2&gt; {log}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>awk &#39;{{print $1&quot;:&quot;$2&quot;-&quot;$3}}&#39; {input.combinedpeaks} &gt; {output.real} 2&gt; {log}
 
 for brep in {input.narrowpeaks}
 do
@@ -986,15 +985,15 @@ do
     mv {output.tmp} {output.real}
 done
 
-echo -e &quot;\# onehot encoding of which condition contains which peaks\\n{params.names}\n$(cat {output.real})&quot; &gt; {output.tmp} &amp;&amp; cp {output.tmp} {output.real}
+echo -e &quot;# onehot encoding of which condition contains which peaks\\n{params.names}\n$(cat {output.real})&quot; &gt; {output.tmp} &amp;&amp; cp {output.tmp} {output.real}
 </pre></div>
 </div>
-</div>
-<div class="section" id="peak-bigpeak">
-<h2>peak_bigpeak<a class="headerlink" href="#peak-bigpeak" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="peak-bigpeak">
+<h2>peak_bigpeak<a class="headerlink" href="#peak-bigpeak" title="Permalink to this headline"></a></h2>
 <p>Convert a narrowpeak file into a bignarrowpeak file.
 <a class="reference external" href="https://genome-source.gi.ucsc.edu/gitlist/kent.git/tree/master/src/hg/lib/">https://genome-source.gi.ucsc.edu/gitlist/kent.git/tree/master/src/hg/lib/</a></p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>\# keep first 10 columns, idr adds extra columns we do not need for our bigpeak
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># keep first 10 columns, idr adds extra columns we do not need for our bigpeak
 cut -d$&#39;\t&#39; -f 1-{params.columns} {input.narrowpeak} |
 awk -v OFS=&quot;\t&quot; &#39;{{$5=$5&gt;1000?1000:$5}} {{print}}&#39; |
 bedSort /dev/stdin {output.tmp} &gt; {log} 2&gt;&amp;1
@@ -1003,55 +1002,55 @@ bedToBigBed -type={params.type} -as={params.schema} {output.tmp} \
 {input.genome_size} {output.out} &gt;&gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
-</div>
-<div class="section" id="plotcorrelation">
-<h2>plotCorrelation<a class="headerlink" href="#plotcorrelation" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="plotcorrelation">
+<h2>plotCorrelation<a class="headerlink" href="#plotcorrelation" title="Permalink to this headline"></a></h2>
 <p>Calculate the correlation between bams with deepTools.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>plotCorrelation --corData {input.cordata} --plotFile {output} -c {wildcards.method} \
--p heatmap --plotTitle {params.title} {params.params} &gt; {log} 2&gt;&amp;1
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plotCorrelation</span> <span class="o">--</span><span class="n">corData</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">cordata</span><span class="p">}</span> <span class="o">--</span><span class="n">plotFile</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="o">-</span><span class="n">c</span> <span class="p">{</span><span class="n">wildcards</span><span class="o">.</span><span class="n">method</span><span class="p">}</span> \
+<span class="o">-</span><span class="n">p</span> <span class="n">heatmap</span> <span class="o">--</span><span class="n">plotTitle</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">title</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">params</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="plotfingerprint">
-<h2>plotFingerprint<a class="headerlink" href="#plotfingerprint" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="plotfingerprint">
+<h2>plotFingerprint<a class="headerlink" href="#plotfingerprint" title="Permalink to this headline"></a></h2>
 <p>Plot the “fingerprint” of your bams, using deeptools.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>plotFingerprint -b {input.bams} {params} --outRawCounts {output} -p {threads} &gt; {log} 2&gt;&amp;1
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plotFingerprint</span> <span class="o">-</span><span class="n">b</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">bams</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="p">}</span> <span class="o">--</span><span class="n">outRawCounts</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="plotheatmap-peak">
-<h2>plotHeatmap_peak<a class="headerlink" href="#plotheatmap-peak" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="plotheatmap-peak">
+<h2>plotHeatmap_peak<a class="headerlink" href="#plotheatmap-peak" title="Permalink to this headline"></a></h2>
 <p>Plot the peak heatmap using deepTools.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>plotHeatmap --matrixFile {input} --outFileName {output.img} {params.params} --startLabel=&quot;-{params.slop}&quot; --endLabel={params.slop} &gt; {log} 2&gt;&amp;1
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plotHeatmap</span> <span class="o">--</span><span class="n">matrixFile</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="o">--</span><span class="n">outFileName</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">img</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">params</span><span class="p">}</span> <span class="o">--</span><span class="n">startLabel</span><span class="o">=</span><span class="s2">&quot;-</span><span class="si">{params.slop}</span><span class="s2">&quot;</span> <span class="o">--</span><span class="n">endLabel</span><span class="o">=</span><span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">slop</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="plotpca">
-<h2>plotPCA<a class="headerlink" href="#plotpca" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="plotpca">
+<h2>plotPCA<a class="headerlink" href="#plotpca" title="Permalink to this headline"></a></h2>
 <p>Plot a PCA between bams using deepTools.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>plotPCA --corData {input} --outFileNameData {output} &gt; {log} 2&gt;&amp;1
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plotPCA</span> <span class="o">--</span><span class="n">corData</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="o">--</span><span class="n">outFileNameData</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="plotprofile-gene">
-<h2>plotProfile_gene<a class="headerlink" href="#plotprofile-gene" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="plotprofile-gene">
+<h2>plotProfile_gene<a class="headerlink" href="#plotprofile-gene" title="Permalink to this headline"></a></h2>
 <p>Plot the gene profile using deeptools.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>plotProfile -m {input} --outFileName {output.img} --outFileNameData {output.file} &gt; {log} 2&gt;&amp;1
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plotProfile</span> <span class="o">-</span><span class="n">m</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="o">--</span><span class="n">outFileName</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">img</span><span class="p">}</span> <span class="o">--</span><span class="n">outFileNameData</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">file</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="prepare-dexseq-annotation">
-<h2>prepare_DEXseq_annotation<a class="headerlink" href="#prepare-dexseq-annotation" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="prepare-dexseq-annotation">
+<h2>prepare_DEXseq_annotation<a class="headerlink" href="#prepare-dexseq-annotation" title="Permalink to this headline"></a></h2>
 <p>generate a DEXseq annotation.gff from the annotation.gtf</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>current_conda_env=$(conda env list | grep \* | cut -d &quot;*&quot; -f2-)
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>current_conda_env=$(conda env list | grep \* | cut -d &quot;*&quot; -f2-)
 DEXseq_path=${{current_conda_env}}/lib/R/library/DEXSeq/python_scripts
 
 python ${{DEXseq_path}}/dexseq_prepare_annotation.py {input} {output} &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
-</div>
-<div class="section" id="quantile-normalization">
-<h2>quantile_normalization<a class="headerlink" href="#quantile-normalization" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="quantile-normalization">
+<h2>quantile_normalization<a class="headerlink" href="#quantile-normalization" title="Permalink to this headline"></a></h2>
 <p>Quantile normalization is a type of normalization that makes the distribution
 between samples identical. This means that the actual count distribution
 within a sample changes. After quantile normalization, samples are CPM
@@ -1059,155 +1058,169 @@ normalized (which has no effect between and within samples), for a fair
 comparison between normalisation techniques.</p>
 <p>See wikipedia:
 <a class="reference external" href="https://en.wikipedia.org/wiki/Quantile_normalization">https://en.wikipedia.org/wiki/Quantile_normalization</a></p>
-</div>
-<div class="section" id="random-subset-peaks">
-<h2>random_subset_peaks<a class="headerlink" href="#random-subset-peaks" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="random-subset-peaks">
+<h2>random_subset_peaks<a class="headerlink" href="#random-subset-peaks" title="Permalink to this headline"></a></h2>
 <p>Take a random subset of all summits, and make them all same width.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>shuf -n {wildcards.nrpeaks} {input.peaks} | bedtools slop -i stdin -g {input.sizes} -b {params.slop} &gt; {output}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">shuf</span> <span class="o">-</span><span class="n">n</span> <span class="p">{</span><span class="n">wildcards</span><span class="o">.</span><span class="n">nrpeaks</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">peaks</span><span class="p">}</span> <span class="o">|</span> <span class="n">bedtools</span> <span class="n">slop</span> <span class="o">-</span><span class="n">i</span> <span class="n">stdin</span> <span class="o">-</span><span class="n">g</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">sizes</span><span class="p">}</span> <span class="o">-</span><span class="n">b</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">slop</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="rename-sample">
-<h2>rename_sample<a class="headerlink" href="#rename-sample" title="Permalink to this headline">¶</a></h2>
-<p>Rename local samples with incompatible naming formats</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>mv {input[0]} {output[0]}
-</pre></div>
-</div>
-</div>
-<div class="section" id="run2sra">
-<h2>run2sra<a class="headerlink" href="#run2sra" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="run2sra">
+<h2>run2sra<a class="headerlink" href="#run2sra" title="Permalink to this headline"></a></h2>
 <p>Download the SRA of a sample by its unique identifier.</p>
 <p>Tries first downloading with the faster ascp protocol, if that fails it
 falls back on the slower http protocol.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>\# move to output dir since somehow prefetch sometimes puts files in the cwd...
-\# and remove the top level folder since prefetch will assume we are done otherwise
-mkdir -p {params.outdir}; cd {params.outdir}; rm -r {wildcards.run}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># move to output dir since somehow prefetch sometimes puts files in the cwd...</span>
+<span class="c1"># and remove the top level folder since prefetch will assume we are done otherwise</span>
+<span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">outdir</span><span class="p">};</span> <span class="n">cd</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">outdir</span><span class="p">};</span> <span class="n">rm</span> <span class="o">-</span><span class="n">r</span> <span class="p">{</span><span class="n">wildcards</span><span class="o">.</span><span class="n">run</span><span class="p">}</span>
 
-\# three attempts
-for i in {{1..3}}
-do
-    \# acquire a lock
-    (
-        flock --timeout 30 200 || continue
-        sleep 2
-    ) 200&gt;{pysradb_cache_lock}
+<span class="c1"># three attempts</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">{{</span><span class="mf">1..3</span><span class="p">}}</span>
+<span class="n">do</span>
+    <span class="c1"># acquire a lock</span>
+    <span class="p">(</span>
+        <span class="n">flock</span> <span class="o">-</span><span class="n">w</span> <span class="mi">30</span> <span class="mi">200</span> <span class="o">||</span> <span class="k">continue</span>
+        <span class="n">sleep</span> <span class="mi">2</span>
+    <span class="p">)</span> <span class="mi">200</span><span class="o">&gt;</span><span class="p">{</span><span class="n">pysradb_cache_lock</span><span class="p">}</span>
 
-    \# dump
-    prefetch --max-size 999999999999 --output-directory ./ --log-level debug --progress {wildcards.run} &gt;&gt; {log} 2&gt;&amp;1 &amp;&amp; break
-    sleep 10
-done
+    <span class="c1"># dump</span>
+    <span class="n">prefetch</span> <span class="o">--</span><span class="nb">max</span><span class="o">-</span><span class="n">size</span> <span class="mi">999999999999</span> <span class="o">--</span><span class="n">output</span><span class="o">-</span><span class="n">directory</span> <span class="o">./</span> <span class="o">--</span><span class="n">log</span><span class="o">-</span><span class="n">level</span> <span class="n">debug</span> <span class="o">--</span><span class="n">progress</span> <span class="p">{</span><span class="n">wildcards</span><span class="o">.</span><span class="n">run</span><span class="p">}</span> <span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="k">break</span>
+    <span class="n">sleep</span> <span class="mi">10</span>
+<span class="n">done</span>
 
-\# TODO: this is the strangest bug, in that on some machines (ocimum) prefetch downloads
-\# to a different location. Not sure what causes this, but this should fix that. Could simply
-\# be a global setting that we haven&#39;t discovered yet...
-\# bug report: https://github.com/ncbi/sra-tools/issues/533
-if [[ -f &quot;{params.outdir}/{wildcards.run}.sra&quot; ]]; then
-    mkdir {params.outdir}/{wildcards.run}
-    mv {params.outdir}/{wildcards.run}.sra {output}
-fi
+<span class="c1"># TODO: this is the strangest bug, in that on some machines (ocimum) prefetch downloads</span>
+<span class="c1"># to a different location. Not sure what causes this, but this should fix that. Could simply</span>
+<span class="c1"># be a global setting that we haven&#39;t discovered yet...</span>
+<span class="c1"># bug report: https://github.com/ncbi/sra-tools/issues/533</span>
+<span class="k">if</span> <span class="p">[[</span> <span class="o">-</span><span class="n">f</span> <span class="s2">&quot;</span><span class="si">{params.outdir}</span><span class="s2">/</span><span class="si">{wildcards.run}</span><span class="s2">.sra&quot;</span> <span class="p">]];</span> <span class="n">then</span>
+    <span class="n">mkdir</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">outdir</span><span class="p">}</span><span class="o">/</span><span class="p">{</span><span class="n">wildcards</span><span class="o">.</span><span class="n">run</span><span class="p">}</span>
+    <span class="n">mv</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">outdir</span><span class="p">}</span><span class="o">/</span><span class="p">{</span><span class="n">wildcards</span><span class="o">.</span><span class="n">run</span><span class="p">}</span><span class="o">.</span><span class="n">sra</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span>
+<span class="n">fi</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="runs2sample">
-<h2>runs2sample<a class="headerlink" href="#runs2sample" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="runs2sample">
+<h2>runs2sample<a class="headerlink" href="#runs2sample" title="Permalink to this headline"></a></h2>
 <p>Concatenate a single run or multiple runs together into a fastq</p>
-</div>
-<div class="section" id="salmon-decoy-aware-index">
-<h2>salmon_decoy_aware_index<a class="headerlink" href="#salmon-decoy-aware-index" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="salmon-decoy-aware-index">
+<h2>salmon_decoy_aware_index<a class="headerlink" href="#salmon-decoy-aware-index" title="Permalink to this headline"></a></h2>
 <p>Generate a decoy aware transcriptome index for Salmon.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>mkdir -p {output}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span>
 
-salmon index -t {input.gentrome} -d {input.decoys} -i {output} {params} \
---threads {threads} &gt; {log} 2&gt;&amp;1
+<span class="n">salmon</span> <span class="n">index</span> <span class="o">-</span><span class="n">t</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">gentrome</span><span class="p">}</span> <span class="o">-</span><span class="n">d</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">decoys</span><span class="p">}</span> <span class="o">-</span><span class="n">i</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="p">}</span> \
+<span class="o">--</span><span class="n">threads</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="salmon-index">
-<h2>salmon_index<a class="headerlink" href="#salmon-index" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="salmon-index">
+<h2>salmon_index<a class="headerlink" href="#salmon-index" title="Permalink to this headline"></a></h2>
 <p>Generate a transcriptome index for Salmon.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>mkdir -p {output}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span>
 
-salmon index -t {input} -i {output} {params} --threads {threads} &gt; {log} 2&gt;&amp;1
+<span class="n">salmon</span> <span class="n">index</span> <span class="o">-</span><span class="n">t</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="o">-</span><span class="n">i</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="p">}</span> <span class="o">--</span><span class="n">threads</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="salmon-quant">
-<h2>salmon_quant<a class="headerlink" href="#salmon-quant" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="salmon-quant">
+<h2>salmon_quant<a class="headerlink" href="#salmon-quant" title="Permalink to this headline"></a></h2>
 <p>Align reads against a transcriptome (index) with Salmon (mapping-based mode) and output a quantification file per sample.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>salmon quant -i {input.index} -l A {params.input} {params.params} -o {output.dir} \
---threads {threads} &gt; {log} 2&gt;&amp;1
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">salmon</span> <span class="n">quant</span> <span class="o">-</span><span class="n">i</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">index</span><span class="p">}</span> <span class="o">-</span><span class="n">l</span> <span class="n">A</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">input</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">params</span><span class="p">}</span> <span class="o">-</span><span class="n">o</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">dir</span><span class="p">}</span> \
+<span class="o">--</span><span class="n">threads</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="sam2bam">
-<h2>sam2bam<a class="headerlink" href="#sam2bam" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="sam2bam">
+<h2>sam2bam<a class="headerlink" href="#sam2bam" title="Permalink to this headline"></a></h2>
 <p>Convert a file in sam format into a bam format (binary)</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>samtools view -b {input} &gt; {output}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">samtools</span> <span class="n">view</span> <span class="o">-</span><span class="n">b</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="sambamba-sort">
-<h2>sambamba_sort<a class="headerlink" href="#sambamba-sort" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="sambamba-sort">
+<h2>sambamba_sort<a class="headerlink" href="#sambamba-sort" title="Permalink to this headline"></a></h2>
 <p>Sort the result of alignment or sieving with the sambamba sorter.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>sambamba view --nthreads {threads} -f bam  {input} -o /dev/stdout  2&gt; {log} |
-sambamba sort --nthreads {threads} {params} /dev/stdin -o {output}  2&gt; {log}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sambamba</span> <span class="n">view</span> <span class="o">--</span><span class="n">nthreads</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">-</span><span class="n">f</span> <span class="n">bam</span>  <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="o">-</span><span class="n">o</span> <span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">stdout</span>  <span class="mi">2</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="o">|</span>
+<span class="n">sambamba</span> <span class="n">sort</span> <span class="o">--</span><span class="n">nthreads</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="p">}</span> <span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">stdin</span> <span class="o">-</span><span class="n">o</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span>  <span class="mi">2</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="samtools-index">
-<h2>samtools_index<a class="headerlink" href="#samtools-index" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="samtools-index">
+<h2>samtools_index<a class="headerlink" href="#samtools-index" title="Permalink to this headline"></a></h2>
 <p>Create an index of a bam file which can be used for e.g. visualization.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>samtools index {params} {input} {output}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">samtools</span> <span class="n">index</span> <span class="p">{</span><span class="n">params</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="samtools-index-cram">
-<h2>samtools_index_cram<a class="headerlink" href="#samtools-index-cram" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="samtools-index-cram">
+<h2>samtools_index_cram<a class="headerlink" href="#samtools-index-cram" title="Permalink to this headline"></a></h2>
 <p>Generate the index for a cram file.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>samtools index {input} {output} &gt; {log} 2&gt;&amp;1
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">samtools</span> <span class="n">index</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="samtools-presort">
-<h2>samtools_presort<a class="headerlink" href="#samtools-presort" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="samtools-presort">
+<h2>samtools_presort<a class="headerlink" href="#samtools-presort" title="Permalink to this headline"></a></h2>
 <p>(Pre)sort the result of alignment with the samtools sorter.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>\# we set this trap to remove temp files when prematurely ending the rule
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># we set this trap to remove temp files when prematurely ending the rule
 trap &quot;rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam&quot; INT;
 rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2&gt; {log}
 
-\# RAM per thread in MB
+# RAM per thread in MB
 memory=$((1000*{params.memory}/{threads}))M
 
 samtools sort -@ {threads} -m $memory {input} -o {output} \
 -T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2&gt; {log}
 </pre></div>
 </div>
-</div>
-<div class="section" id="samtools-sort">
-<h2>samtools_sort<a class="headerlink" href="#samtools-sort" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="samtools-sort">
+<h2>samtools_sort<a class="headerlink" href="#samtools-sort" title="Permalink to this headline"></a></h2>
 <p>Sort the result of shiftsieving with the samtools sorter.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>\# we set this trap to remove temp files when prematurely ending the rule
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># we set this trap to remove temp files when prematurely ending the rule
 trap &quot;rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam&quot; INT;
 rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2&gt; {log}
 
-\# RAM per thread in MB
+# RAM per thread in MB
 memory=$((1000*{params.memory}/{threads}))M
 
 samtools sort {params.sort_order} -@ {threads} -m $memory {input} -o {output} \
 -T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2&gt; {log}
 </pre></div>
 </div>
+</section>
+<section id="samtools-sort-allsizes">
+<h2>samtools_sort_allsizes<a class="headerlink" href="#samtools-sort-allsizes" title="Permalink to this headline"></a></h2>
+<p>Sort the result of shiftsieving with the samtools sorter. This rule is identical to the
+samtools_sort rule except that the output is temporary.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># we set this trap to remove temp files when prematurely ending the rule
+trap &quot;rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam&quot; INT;
+rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2&gt; {log}
+# RAM per thread in MB
+memory=$((1000*{params.memory}/{threads}))M
+samtools sort {params.sort_order} -@ {threads} -m $memory {input} -o {output} \
+-T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2&gt; {log}
+</pre></div>
 </div>
-<div class="section" id="samtools-stats">
-<h2>samtools_stats<a class="headerlink" href="#samtools-stats" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="samtools-stats">
+<h2>samtools_stats<a class="headerlink" href="#samtools-stats" title="Permalink to this headline"></a></h2>
 <p>Get general stats from bam files like percentage mapped.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">samtools</span> <span class="n">stats</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="mi">1</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span>
+</pre></div>
 </div>
-<div class="section" id="setup-blacklist">
-<h2>setup_blacklist<a class="headerlink" href="#setup-blacklist" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="sctk-qc">
+<h2>sctk_qc<a class="headerlink" href="#sctk-qc" title="Permalink to this headline"></a></h2>
+<p>Perform scRNA QC with singleCellTK, store output in SingleCellExperiment object and export to RData format.</p>
+</section>
+<section id="setup-blacklist">
+<h2>setup_blacklist<a class="headerlink" href="#setup-blacklist" title="Permalink to this headline"></a></h2>
 <p>Combine the encode blacklist with mitochrondrial dna depending on config.</p>
-</div>
-<div class="section" id="sieve-bam">
-<h2>sieve_bam<a class="headerlink" href="#sieve-bam" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="sieve-bam">
+<h2>sieve_bam<a class="headerlink" href="#sieve-bam" title="Permalink to this headline"></a></h2>
 <p>“Sieve” a bam.</p>
 <p>This rule does (at least) one of these:</p>
 <ul class="simple">
@@ -1219,82 +1232,82 @@ samtools sort {params.sort_order} -@ {threads} -m $memory {input} -o {output} \
 <li><p>filter paired-end reads on transcript length</p></li>
 <li><p>subsample to have a maximum amount of reads (equal across samples)</p></li>
 </ul>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>samtools view -h {params.prim_align} {params.minqual} {params.blacklist} \
-{input.bam} | {params.atacshift} {params.sizesieve} {params.subsample}
-samtools view -b &gt; {output.final} 2&gt; {log}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">samtools</span> <span class="n">view</span> <span class="o">-</span><span class="n">h</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">prim_align</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">minqual</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">blacklist</span><span class="p">}</span> \
+<span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">bam</span><span class="p">}</span> <span class="o">|</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">atacshift</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">sizesieve</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">subsample</span><span class="p">}</span>
+<span class="n">samtools</span> <span class="n">view</span> <span class="o">-</span><span class="n">b</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">final</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span>
 
-\# single-end reads never output allsizes so just touch the file when filtering on size
-{params.sizesieve_touch}
+<span class="c1"># single-end reads never output allsizes so just touch the file when filtering on size</span>
+<span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">sizesieve_touch</span><span class="p">}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="softmask-track-1">
-<h2>softmask_track_1<a class="headerlink" href="#softmask-track-1" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="softmask-track-1">
+<h2>softmask_track_1<a class="headerlink" href="#softmask-track-1" title="Permalink to this headline"></a></h2>
 <p>Generate a track of all softmasked regions</p>
 <p>source: <a class="reference external" href="https://github.com/Gaius-Augustus/MakeHub/blob/master/make_hub.py">https://github.com/Gaius-Augustus/MakeHub/blob/master/make_hub.py</a></p>
-</div>
-<div class="section" id="softmask-track-2">
-<h2>softmask_track_2<a class="headerlink" href="#softmask-track-2" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="softmask-track-2">
+<h2>softmask_track_2<a class="headerlink" href="#softmask-track-2" title="Permalink to this headline"></a></h2>
 <p>Generate a track of all softmasked regions</p>
 <p>source: <a class="reference external" href="https://github.com/Gaius-Augustus/MakeHub/blob/master/make_hub.py">https://github.com/Gaius-Augustus/MakeHub/blob/master/make_hub.py</a></p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>bedSort {input.mask_unsorted} {output.maskbed} &gt;&gt; {log} 2&gt;&amp;1
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bedSort</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">mask_unsorted</span><span class="p">}</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">maskbed</span><span class="p">}</span> <span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 
-bedToBigBed -type=bed3 {output.maskbed} {input.sizes} {output.mask} &gt;&gt; {log} 2&gt;&amp;1
+<span class="n">bedToBigBed</span> <span class="o">-</span><span class="nb">type</span><span class="o">=</span><span class="n">bed3</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">maskbed</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">sizes</span><span class="p">}</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">mask</span><span class="p">}</span> <span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="sra2fastq-pe">
-<h2>sra2fastq_PE<a class="headerlink" href="#sra2fastq-pe" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="sra2fastq-pe">
+<h2>sra2fastq_PE<a class="headerlink" href="#sra2fastq-pe" title="Permalink to this headline"></a></h2>
 <p>Downloaded (raw) SRAs are converted to paired-end fastq files.
 Forward and reverse samples will be switched if forward/reverse names are not lexicographically ordered.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>\# move to output dir since somehow parallel-fastq-dump sometimes puts files in the cwd...
-mkdir -p {output.tmpdir}; cd {output.tmpdir}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># move to output dir since somehow parallel-fastq-dump sometimes puts files in the cwd...</span>
+<span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">tmpdir</span><span class="p">};</span> <span class="n">cd</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">tmpdir</span><span class="p">}</span>
 
-\# acquire the lock
-(
-    flock --timeout 30 200 || exit 1
-    sleep 3
-) 200&gt;{pysradb_cache_lock}
+<span class="c1"># acquire the lock</span>
+<span class="p">(</span>
+    <span class="n">flock</span> <span class="o">-</span><span class="n">w</span> <span class="mi">30</span> <span class="mi">200</span> <span class="o">||</span> <span class="n">exit</span> <span class="mi">1</span>
+    <span class="n">sleep</span> <span class="mi">3</span>
+<span class="p">)</span> <span class="mi">200</span><span class="o">&gt;</span><span class="p">{</span><span class="n">pysradb_cache_lock</span><span class="p">}</span>
 
-\# dump to tmp dir
-parallel-fastq-dump -s {input} -O {output.tmpdir} \
---threads {threads} --split-e --skip-technical --dumpbase \
---readids --clip --read-filter pass --defline-seq &#39;@$ac.$si.$sg/$ri&#39; \
---defline-qual &#39;+&#39; --gzip &gt;&gt; {log} 2&gt;&amp;1
+<span class="c1"># dump to tmp dir</span>
+<span class="n">parallel</span><span class="o">-</span><span class="n">fastq</span><span class="o">-</span><span class="n">dump</span> <span class="o">-</span><span class="n">s</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="o">-</span><span class="n">O</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">tmpdir</span><span class="p">}</span> \
+<span class="o">--</span><span class="n">threads</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">--</span><span class="n">split</span><span class="o">-</span><span class="n">e</span> <span class="o">--</span><span class="n">skip</span><span class="o">-</span><span class="n">technical</span> <span class="o">--</span><span class="n">dumpbase</span> \
+<span class="o">--</span><span class="n">readids</span> <span class="o">--</span><span class="n">clip</span> <span class="o">--</span><span class="n">read</span><span class="o">-</span><span class="nb">filter</span> <span class="k">pass</span> <span class="o">--</span><span class="n">defline</span><span class="o">-</span><span class="n">seq</span> <span class="s1">&#39;@$ac.$si.$sg/$ri&#39;</span> \
+<span class="o">--</span><span class="n">defline</span><span class="o">-</span><span class="n">qual</span> <span class="s1">&#39;+&#39;</span> <span class="o">--</span><span class="n">gzip</span> <span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 
-\# rename file and move to output dir
-mv {output.tmpdir}/*_1* {output.fastq[0]}
-mv {output.tmpdir}/*_2* {output.fastq[1]}
+<span class="c1"># rename file and move to output dir</span>
+<span class="n">mv</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">tmpdir</span><span class="p">}</span><span class="o">/*</span><span class="n">_1</span><span class="o">*</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">fastq</span><span class="p">[</span><span class="mi">0</span><span class="p">]}</span>
+<span class="n">mv</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">tmpdir</span><span class="p">}</span><span class="o">/*</span><span class="n">_2</span><span class="o">*</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">fastq</span><span class="p">[</span><span class="mi">1</span><span class="p">]}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="sra2fastq-se">
-<h2>sra2fastq_SE<a class="headerlink" href="#sra2fastq-se" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="sra2fastq-se">
+<h2>sra2fastq_SE<a class="headerlink" href="#sra2fastq-se" title="Permalink to this headline"></a></h2>
 <p>Downloaded (raw) SRAs are converted to single-end fastq files.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>\# move to output dir since somehow parallel-fastq-dump sometimes puts files in the cwd...
-mkdir -p {output.tmpdir}; cd {output.tmpdir}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># move to output dir since somehow parallel-fastq-dump sometimes puts files in the cwd...</span>
+<span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">tmpdir</span><span class="p">};</span> <span class="n">cd</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">tmpdir</span><span class="p">}</span>
 
-\# acquire the lock
-(
-    flock --timeout 30 200 || exit 1
-    sleep 3
-) 200&gt;{pysradb_cache_lock}
+<span class="c1"># acquire the lock</span>
+<span class="p">(</span>
+    <span class="n">flock</span> <span class="o">-</span><span class="n">w</span> <span class="mi">30</span> <span class="mi">200</span> <span class="o">||</span> <span class="n">exit</span> <span class="mi">1</span>
+    <span class="n">sleep</span> <span class="mi">3</span>
+<span class="p">)</span> <span class="mi">200</span><span class="o">&gt;</span><span class="p">{</span><span class="n">pysradb_cache_lock</span><span class="p">}</span>
 
-\# dump to tmp dir
-parallel-fastq-dump -s {input} -O {output.tmpdir} \
---threads {threads} --split-spot --skip-technical --dumpbase --readids \
---clip --read-filter pass --defline-seq &#39;@$ac.$si.$sg/$ri&#39; \
---defline-qual &#39;+&#39; --gzip &gt;&gt; {log} 2&gt;&amp;1
+<span class="c1"># dump to tmp dir</span>
+<span class="n">parallel</span><span class="o">-</span><span class="n">fastq</span><span class="o">-</span><span class="n">dump</span> <span class="o">-</span><span class="n">s</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="o">-</span><span class="n">O</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">tmpdir</span><span class="p">}</span> \
+<span class="o">--</span><span class="n">threads</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">--</span><span class="n">split</span><span class="o">-</span><span class="n">spot</span> <span class="o">--</span><span class="n">skip</span><span class="o">-</span><span class="n">technical</span> <span class="o">--</span><span class="n">dumpbase</span> <span class="o">--</span><span class="n">readids</span> \
+<span class="o">--</span><span class="n">clip</span> <span class="o">--</span><span class="n">read</span><span class="o">-</span><span class="nb">filter</span> <span class="k">pass</span> <span class="o">--</span><span class="n">defline</span><span class="o">-</span><span class="n">seq</span> <span class="s1">&#39;@$ac.$si.$sg/$ri&#39;</span> \
+<span class="o">--</span><span class="n">defline</span><span class="o">-</span><span class="n">qual</span> <span class="s1">&#39;+&#39;</span> <span class="o">--</span><span class="n">gzip</span> <span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 
-\# rename file and move to output dir
-mv {output.tmpdir}/*.fastq.gz {output.fastq}
+<span class="c1"># rename file and move to output dir</span>
+<span class="n">mv</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">tmpdir</span><span class="p">}</span><span class="o">/*.</span><span class="n">fastq</span><span class="o">.</span><span class="n">gz</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">fastq</span><span class="p">}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="star-align">
-<h2>star_align<a class="headerlink" href="#star-align" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="star-align">
+<h2>star_align<a class="headerlink" href="#star-align" title="Permalink to this headline"></a></h2>
 <p>Align reads against a genome (index) with STAR, and pipe the output to the required sorter(s).</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>trap &quot;find {log} -type f ! -name Log* -exec rm {{}} \;&quot; EXIT
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>trap &quot;find {log} -type f ! -name Log* -exec rm {{}} \;&quot; EXIT
 mkdir -p {log}
 mkdir -p {output.dir}
 
@@ -1303,13 +1316,13 @@ STAR --genomeDir {input.index} --readFilesIn {params.input} --readFilesCommand g
 --outFileNamePrefix {log}/ --outTmpDir {output.dir}/STARtmp \
 --runThreadN {threads} {params.params} &gt; {output.pipe} 2&gt; {log}/Log.stderr.out
 
-\# move all non-log files to output directory (this way the log files are kept on error)
+# move all non-log files to output directory (this way the log files are kept on error)
 find {log} -type f ! -name Log* -exec mv {{}} {output.dir} \;
 </pre></div>
 </div>
-</div>
-<div class="section" id="star-index">
-<h2>star_index<a class="headerlink" href="#star-index" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="star-index">
+<h2>star_index<a class="headerlink" href="#star-index" title="Permalink to this headline"></a></h2>
 <p>Make a genome index for STAR.</p>
 <p>Troubleshooting:</p>
 <ol class="arabic simple">
@@ -1328,64 +1341,68 @@ find {log} -type f ! -name Log* -exec mv {{}} {output.dir} \;
 </dl>
 </dd>
 </dl>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>            function log2 {{
-local x=0
-for (( y=$1-1 ; $y &gt; 0; y &gt;&gt;= 1 )) ; do
-    let x=$x+1
-done
-echo $x
-            }}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>function log2 {{
+        local x=0
+        for (( y=$1-1 ; $y &gt; 0; y &gt;&gt;= 1 )) ; do
+            let x=$x+1
+        done
+        echo $x
+}}
 
-            \# set genome dependent variables
-            NBits=&quot;&quot;
-            NBases=&quot;&quot;
-            GenomeLength=$(awk -F&quot;\t&quot; &#39;{{x+=$2}}END{{printf &quot;%i&quot;, x}}&#39; {input.sizefile})
-            NumberOfReferences=$(awk &#39;END{{print NR}}&#39; {input.sizefile})
-            if [ $NumberOfReferences -gt 5000 ]; then
-                \# for large genomes, --genomeChrBinNbits should be scaled to min(18,log2[max(GenomeLength/NumberOfReferences,ReadLength)])
-                \# ReadLength is skipped here, as it is unknown
-                LpR=$(log2 $((GenomeLength / NumberOfReferences)))
-                NBits=&quot;--genomeChrBinNbits $(($LpR&lt;18 ? $LpR : 18))&quot;
-                printf &quot;NBits: $NBits\n\n&quot; &gt;&gt; {log} 2&gt;&amp;1
-            fi
+# set genome dependent variables
+NBits=&quot;&quot;
+NBases=&quot;&quot;
+GenomeLength=$(awk -F&quot;\t&quot; &#39;{{x+=$2}}END{{printf &quot;%i&quot;, x}}&#39; {input.sizefile})
+NumberOfReferences=$(awk &#39;END{{print NR}}&#39; {input.sizefile})
+if [ $NumberOfReferences -gt 5000 ]; then
+    # for large genomes, --genomeChrBinNbits should be scaled to min(18,log2[max(GenomeLength/NumberOfReferences,ReadLength)])
+    # ReadLength is skipped here, as it is unknown
+    LpR=$(log2 $((GenomeLength / NumberOfReferences)))
+    NBits=&quot;--genomeChrBinNbits $(($LpR&lt;18 ? $LpR : 18))&quot;
+    printf &quot;NBits: $NBits\n\n&quot; &gt;&gt; {log} 2&gt;&amp;1
+fi
 
-            if [ $GenomeLength -lt 268435456 ]; then
-                \# for small genomes, --genomeSAindexNbases must be scaled down to min(14, log2(GenomeLength)/2-1)
-                logG=$(( $(log2 $GenomeLength) / 2 - 1 ))
-                NBases=&quot;--genomeSAindexNbases $(( $logG&lt;14 ? $logG : 14 ))&quot;
-                printf &quot;NBases: $NBases\n\n&quot; &gt;&gt; {log} 2&gt;&amp;1
-            fi
+if [ $GenomeLength -lt 268435456 ]; then
+    # for small genomes, --genomeSAindexNbases must be scaled down to min(14, log2(GenomeLength)/2-1)
+    logG=$(( $(log2 $GenomeLength) / 2 - 1 ))
+    NBases=&quot;--genomeSAindexNbases $(( $logG&lt;14 ? $logG : 14 ))&quot;
+    printf &quot;NBases: $NBases\n\n&quot; &gt;&gt; {log} 2&gt;&amp;1
+fi
 
-            mkdir -p {output}
+mkdir -p {output}
 
-            STAR --runMode genomeGenerate --genomeFastaFiles {input.genome} --sjdbGTFfile {input.gtf} \
-            --genomeDir {output} --outFileNamePrefix {output}/ \
-            --runThreadN {threads} $NBits $NBases {params} &gt;&gt; {log} 2&gt;&amp;1
+STAR --runMode genomeGenerate --genomeFastaFiles {input.genome} --sjdbGTFfile {input.gtf} \
+--genomeDir {output} --outFileNamePrefix {output}/ \
+--runThreadN {threads} $NBits $NBases {params} &gt;&gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
-</div>
-<div class="section" id="trackhub">
-<h2>trackhub<a class="headerlink" href="#trackhub" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="tpm-matrix">
+<h2>tpm_matrix<a class="headerlink" href="#tpm-matrix" title="Permalink to this headline"></a></h2>
+<p>Create a TPM normalized table from a counts table.</p>
+</section>
+<section id="trackhub">
+<h2>trackhub<a class="headerlink" href="#trackhub" title="Permalink to this headline"></a></h2>
 <p>Generate a UCSC track hub/assembly hub.</p>
 <p>To view the hub, the output directory must be hosted on an web accessible location,
 and the location of the hub.txt file given the UCSC genome browser at
 My Data &gt; Track Hubs &gt; My Hubs</p>
-</div>
-<div class="section" id="trackhub-index">
-<h2>trackhub_index<a class="headerlink" href="#trackhub-index" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="trackhub-index">
+<h2>trackhub_index<a class="headerlink" href="#trackhub-index" title="Permalink to this headline"></a></h2>
 <p>Generate a searchable annotation &amp; index for each assembly</p>
 <p>sources: <a class="reference external" href="https://genome.ucsc.edu/goldenPath/help/hubQuickStartSearch.html">https://genome.ucsc.edu/goldenPath/help/hubQuickStartSearch.html</a>,
 <a class="reference external" href="https://www.biostars.org/p/272649/">https://www.biostars.org/p/272649/</a></p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>\# generate annotation files
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># generate annotation files
 gtfToGenePred -allErrors -ignoreGroupsWithoutExons -geneNameAsName2 -genePredExt {input.gtf} {output.genePred} -infoOut={output.info} &gt;&gt; {log} 2&gt;&amp;1
 
-\# check if gtf has gene_names &gt; if l!=0, use gene_name, else transcript_id
+# check if gtf has gene_names &gt; if l!=0, use gene_name, else transcript_id
 l=$(head -n 100 {input.gtf} | (grep gene_name || true) | wc -l)
 
-\# switch columns 1 (transcript_id) and 12 (gene_name)
+# switch columns 1 (transcript_id) and 12 (gene_name)
 awk -v len=$l &#39;BEGIN {{ FS = &quot;\t&quot; }}; {{ if(len!=&quot;0&quot;) {{ t = $1; $1 = $12; $12 = t; print; }} else {{ print; }} }}&#39; {output.genePred} &gt; {output.genePrednamed}
 
-\# remove lines with missing headers
+# remove lines with missing headers
 grep -v &quot;^ &quot; {output.genePrednamed} &gt; {output.genePred}
 
 genePredToBed {output.genePred} {output.genePredbed} &gt;&gt; {log} 2&gt;&amp;1
@@ -1394,55 +1411,58 @@ bedSort {output.genePredbed} {output.genePredbed} &gt;&gt; {log} 2&gt;&amp;1
 
 bedToBigBed -extraIndex=name {output.genePredbed} {input.sizes} {output.genePredbigbed} &gt;&gt; {log} 2&gt;&amp;1
 
-\# generate searchable indexes (by 1: transcriptID, 2: geneId, 8: proteinID, 9: geneName, 10: transcriptName)
-grep -v &quot;^\#&quot; {output.info} | awk -v len=$l &#39;BEGIN {{ FS = &quot;\t&quot; }} ; {{ if(len!=&quot;0&quot;) {{print $9, $1, $2, $8, $9, $10}} else {{print $1, $1, $2, $8, $9, $10}} }}&#39; &gt; {output.indexinfo}
+# generate searchable indexes (by 1: transcriptID, 2: geneId, 8: proteinID, 9: geneName, 10: transcriptName)
+grep -v &quot;^#&quot; {output.info} | awk -v len=$l &#39;BEGIN {{ FS = &quot;\t&quot; }} ; {{ if(len!=&quot;0&quot;) {{print $9, $1, $2, $8, $9, $10}} else {{print $1, $1, $2, $8, $9, $10}} }}&#39; &gt; {output.indexinfo}
 
 ixIxx {output.indexinfo} {output.ix} {output.ixx} &gt;&gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
-</div>
-<div class="section" id="trimgalore-pe">
-<h2>trimgalore_PE<a class="headerlink" href="#trimgalore-pe" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="trimgalore-pe">
+<h2>trimgalore_PE<a class="headerlink" href="#trimgalore-pe" title="Permalink to this headline"></a></h2>
 <p>Automated adapter detection, adapter trimming, and quality trimming through trim galore (paired-end).</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>trim_galore --paired -j {threads} {params.config} -o $(dirname {output.r1}) {input.r1} {input.r2} &gt; {log} 2&gt;&amp;1
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>trim_galore --paired -j {threads} {params.config} -o $(dirname {output.r1}) {input.r1} {input.r2} &gt; {log} 2&gt;&amp;1
 
-\# now rename to proper output
+# now rename to proper output
 for f in $(find &quot;$(dirname {output.r1})/&quot; -name &quot;{wildcards.sample}_*val_*.fq.gz&quot;); do
     mv &quot;$f&quot; &quot;$(echo &quot;$f&quot; | sed s/.fq/.{params.fqsuffix}/)&quot;; done
 for f in $(find &quot;$(dirname {output.r1})/&quot; -maxdepth 1 -name &quot;{wildcards.sample}_*val_*.{params.fqsuffix}.gz&quot;); do
     mv &quot;$f&quot; &quot;$(echo &quot;$f&quot; | sed s/_val_./_trimmed/)&quot;; done
 
-\# move the trimming reports to qc directory
+# move the trimming reports to qc directory
 for f in $(find &quot;$(dirname {output.r1})/&quot; -name &quot;{wildcards.sample}_*.{params.fqsuffix}.gz_trimming_report.txt&quot;); do
     mv &quot;$f&quot; &quot;$(dirname {output.qc[0]})/$(basename $f)&quot;; done
 </pre></div>
 </div>
-</div>
-<div class="section" id="trimgalore-se">
-<h2>trimgalore_SE<a class="headerlink" href="#trimgalore-se" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="trimgalore-se">
+<h2>trimgalore_SE<a class="headerlink" href="#trimgalore-se" title="Permalink to this headline"></a></h2>
 <p>Automated adapter detection, adapter trimming, and quality trimming through trim galore (single-end).</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>trim_galore -j {threads} {params.config} -o $(dirname {output.se}) {input} &gt; {log} 2&gt;&amp;1
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>trim_galore -j {threads} {params.config} -o $(dirname {output.se}) {input} &gt; {log} 2&gt;&amp;1
 
-\# now rename to proper output
+# now rename to proper output
 if [ &quot;{params.fqsuffix}&quot; != &quot;fq&quot; ]; then
   mv &quot;$(dirname {output.se})/{wildcards.sample}_trimmed.fq.gz&quot; {output.se}
 fi
 
-\# move the trimming report to qc directory
+# move the trimming report to qc directory
 report=$(dirname {output.se})/{wildcards.sample}.{params.fqsuffix}.gz_trimming_report.txt
 mv $report {output.qc}
 </pre></div>
 </div>
-</div>
-<div class="section" id="twobit">
-<h2>twobit<a class="headerlink" href="#twobit" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="twobit">
+<h2>twobit<a class="headerlink" href="#twobit" title="Permalink to this headline"></a></h2>
 <p>Generate a 2bit file for each assembly</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">faToTwoBit</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
+</pre></div>
 </div>
-<div class="section" id="upset-plot-peaks">
-<h2>upset_plot_peaks<a class="headerlink" href="#upset-plot-peaks" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="upset-plot-peaks">
+<h2>upset_plot_peaks<a class="headerlink" href="#upset-plot-peaks" title="Permalink to this headline"></a></h2>
 <p>make an upset plot which shows the distribution of peaks amongst the biological replicates.</p>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>

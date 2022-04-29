@@ -1,6 +1,7 @@
 """
 all logic not related to any specific workflows should be here.
 """
+container: "docker://quay.io/biocontainers/seq2science:0.7.2--pypyhdfd78af_0"
 
 import os.path
 import pickle
@@ -20,10 +21,8 @@ from filelock import FileLock
 from pandas_schema import Column, Schema
 from pandas_schema.validation import MatchesPatternValidation, IsDistinctValidation
 
-import snakemake
-from snakemake.exceptions import WorkflowError
 from snakemake.logging import logger
-from snakemake.utils import validate, min_version
+from snakemake.utils import validate
 
 import seq2science
 from seq2science.util import (
@@ -35,6 +34,7 @@ from seq2science.util import (
     PickleDict,
     is_local,
     get_contrasts,
+    assert_versions,
 )
 
 
@@ -97,6 +97,9 @@ for key, value in config.items():
         else:
             value = os.path.abspath(os.path.join(config["result_dir"], value))
         config[key] = re.split("\/$", value)[0]
+
+# check that the versions in the requirements.yaml match the installed versions
+assert_versions(config["rule_dir"])
 
 
 # samples.tsv
@@ -243,7 +246,13 @@ if "assembly" in samples:
     ):
         remote_assemblies = []
         search_assemblies = []
-
+        
+    # Check scRNA post-processing options
+    if "scrna_seq" in get_workflow() and config.get("sc_preprocess",{}):
+        if config["sc_preprocess"].get('run_sctk_qc',{}) and config["sc_preprocess"].get('export_sce_objects',{}):
+            logger.error("Only one option is valid. Either select run_sctk_qc or export_sce_objects")
+            sys.exit(1)
+        
     # check if genomepy can download the required files
     if len(search_assemblies) > 0:
         providers.search(search_assemblies)
@@ -475,12 +484,6 @@ if "control" in samples:
 wildcard_constraints:
     sample=any_given(*sample_constraints),
 
-
-# make sure the snakemake version corresponds to version in environment
-if snakemake.__version__ != "5.18.1":
-    raise WorkflowError(
-        f"Expecting Snakemake version 5.18.1 (you are currently using {snakemake.__version__}"
-    )
 
 # record which assembly trackhubs are found on UCSC
 if config.get("create_trackhub"):

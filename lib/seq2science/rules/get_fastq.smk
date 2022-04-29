@@ -2,7 +2,6 @@
 all rules/logic related downloading public fastqs should be here.
 """
 
-import glob
 import os
 
 
@@ -40,7 +39,7 @@ rule run2sra:
         do
             # acquire a lock
             (
-                flock --timeout 30 200 || continue
+                flock -w 30 200 || continue
                 sleep 2
             ) 200>{pysradb_cache_lock}
 
@@ -93,7 +92,7 @@ rule sra2fastq_SE:
 
         # acquire the lock
         (
-            flock --timeout 30 200 || exit 1
+            flock -w 30 200 || exit 1
             sleep 3
         ) 200>{pysradb_cache_lock}
 
@@ -134,7 +133,7 @@ rule sra2fastq_PE:
 
         # acquire the lock
         (
-            flock --timeout 30 200 || exit 1
+            flock -w 30 200 || exit 1
             sleep 3
         ) 200>{pysradb_cache_lock}
 
@@ -211,9 +210,6 @@ rule ena2fastq_PE:
             shell("exit 1 >> {log} 2>&1")
 
 
-ruleorder: rename_sample > runs2sample
-
-
 def get_runs_from_sample(wildcards):
     run_fastqs = []
     for run in sampledict[wildcards.sample]["runs"]:
@@ -246,52 +242,3 @@ rule runs2sample:
         for i in range(1, len(input)):
             inputfile = input[i]
             shell("cat {inputfile} >> {output}")
-
-
-def sample_to_rename(wildcards):
-    local_fastqs = glob.glob(os.path.join(config["fastq_dir"], f'{wildcards.sample}*{config["fqsuffix"]}*.gz'))
-
-    if len(local_fastqs) not in [1, 2]:
-        # <1: no local sample fastqs found
-        # >2: too many files match the sample name: can't distinguish
-        return "$a"  # do not use this rule
-
-    # assumption: incompatible paired-ended samples are lexicographically ordered (R1>R2)
-    local_fastqs.sort()
-    local_fastq = local_fastqs[0]
-    if len(local_fastqs) == 2 and config["fqext2"] in wildcards.suffix:
-        local_fastq = local_fastqs[1]
-
-    # only rename incompatible naming formats
-    correctly_named_fastqs = [
-        os.path.join(config["fastq_dir"], f'{wildcards.sample}.{config["fqsuffix"]}.gz'),
-        os.path.join(config["fastq_dir"], f'{wildcards.sample}_{config["fqext1"]}.{config["fqsuffix"]}.gz'),
-        os.path.join(config["fastq_dir"], f'{wildcards.sample}_{config["fqext2"]}.{config["fqsuffix"]}.gz'),
-    ]
-    if local_fastq in correctly_named_fastqs:
-        return "$a"  # do not use this rule
-
-    return local_fastq
-
-
-rule rename_sample:
-    """
-    Rename local samples with incompatible naming formats
-    """
-    input:
-        sample_to_rename,
-    output:
-        expand("{fastq_dir}/{{sample}}{{suffix}}", **config),
-    wildcard_constraints:
-        # only rename to compatible naming formats
-        suffix="|".join(
-            [
-                f'.{config["fqsuffix"]}.gz',
-                f'_{config["fqext1"]}.{config["fqsuffix"]}.gz',
-                f'_{config["fqext2"]}.{config["fqsuffix"]}.gz',
-            ]
-        ),
-    shell:
-        """
-        mv {input[0]} {output[0]}
-        """

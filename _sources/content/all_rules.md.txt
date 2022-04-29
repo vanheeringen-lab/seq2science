@@ -16,18 +16,17 @@ Convert a bam file into a bigwig file (or two).
 Can output strand specific bams. The reverse bam is created "secretly" to avoid checkpoints.
 
 ```
-            if [[ "{params.strandedness}" == "no" ]]; then
-echo "generating unstranded bam" > {log}
-bamCoverage --bam {input.bam} --outFileName {output} --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1
-            else
-echo "generating stranded bams" > {log}
+if [[ "{params.strandedness}" == "no" ]]; then
+  echo "generating unstranded bam" > {log}
+  bamCoverage --bam {input.bam} --outFileName {output} --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1
+else
+  echo "generating stranded bams" > {log}
 			  out={output}
-rev=$(echo "${{out/{wildcards.sorting}.bw/{wildcards.sorting}.rev.bw}}")
-rm -f $rev  \# in case of a rerun
-bamCoverage --bam {input.bam} --outFileName $rev     --filterRNAstrand reverse --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1
-bamCoverage --bam {input.bam} --outFileName {output} --filterRNAstrand forward --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1
-            fi
-            
+  rev=$(echo "${{out/{wildcards.sorting}.bw/{wildcards.sorting}.rev.bw}}")
+  rm -f $rev  # in case of a rerun
+  bamCoverage --bam {input.bam} --outFileName $rev     --filterRNAstrand reverse --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1
+  bamCoverage --bam {input.bam} --outFileName {output} --filterRNAstrand forward --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1
+fi
 ```
 
 #### bedgraph_bigwig
@@ -51,7 +50,7 @@ lncnt=$(wc -l {input} | echo "$(grep -Po ".*(?=\ )")":)
 splits+=($lncnt)
 
 counter=1
-for split in "${{splits[@]::${{\#splits[@]}}-1}}";
+for split in "${{splits[@]::${{#splits[@]}}-1}}";
 do
     filename=$(grep -Po "(?<=:).*" <<< $split);
     if [[ $filename =~ {wildcards.sample} ]]; then
@@ -98,10 +97,9 @@ bowtie2 {params.params} --threads {threads} -x {input.index}/{wildcards.assembly
 Make a genome index for bowtie2. This index is required for alignment.
 
 ```
-            mkdir -p {output}
+mkdir -p {output}
 
-            bowtie2-build {params} --threads {threads} {input} {output}/{wildcards.assembly} > {log} 2>&1
-            
+bowtie2-build {params} --threads {threads} {input} {output}/{wildcards.assembly} > {log} 2>&1
 ```
 
 #### bwa_index
@@ -109,10 +107,9 @@ Make a genome index for bowtie2. This index is required for alignment.
 Make a genome index for bwa (mem). This index is required for alignment.
 
 ```
-            mkdir -p {output}
+mkdir -p {output}
 
-            bwa index -p {params.prefix} {params.params} {input} > {log} 2>&1
-            
+bwa index -p {params.prefix} {params.params} {input} > {log} 2>&1
 ```
 
 #### bwa_mem
@@ -136,10 +133,9 @@ bwa-mem2 mem {params.params} -t {threads} {params.index_dir} {input.reads} 2> {l
 Make a genome index for bwa-mem2. This index is required for alignment.
 
 ```
-            mkdir -p {output}
+mkdir -p {output}
 
-            bwa-mem2 index -p {params.prefix} {input} > {log} 2>&1
-            
+bwa-mem2 index -p {params.prefix} {input} > {log} 2>&1
 ```
 
 #### call_peak_genrich
@@ -226,13 +222,13 @@ Use gimmemotif's coverage_table to generate a count table with the nr of reads
 under each peak per sample.
 
 ```
-echo "\# The number of reads under each peak" > {output} 
+echo "# The number of reads under each peak" > {output} 
 coverage_table -p {input.peaks} -d {input.replicates} -w {params.peak_width} --nthreads {threads} \
-2> {log} | grep -vE "^\#" 2>> {log} |  
+2> {log} | grep -vE "^#" 2>> {log} |  
 awk 'BEGIN {{ FS = "@" }} NR==1{{gsub("{wildcards.assembly}-|.samtools-coordinate","",$0)}}; \
 {{print $0}}' >> {output}
 
-\# overwrite sample names with descriptive/replicate names
+# overwrite sample names with descriptive/replicate names
 sed -i "2s/.*/{params.names}/" {output}
 ```
 
@@ -261,6 +257,7 @@ Add a Binned genome matrix to the SNAPobject, after which it is renamed and move
 to the Snapfiles folder for downstream analysis in R using Snaptools
 
 ```
+ 
 snaptools snap-add-bmat --snap-file={input} {params} > {log} 2>&1
 echo "bmat added, moving file" >> {log} 2>&1
 mv {input} {output}    >> {log} 2>&1
@@ -286,6 +283,10 @@ bedToBigBed -type=bed4 {output.cytoband_bd} -as={params.schema} \
 Generate decoy_transcripts.txt for Salmon indexing
 
 script source: https://github.com/COMBINE-lab/SalmonTools
+
+```
+sh {params.script} -j {threads} -g {input.genome} -a {input.gtf} -t {input.transcripts} -o $(dirname {output[0]}) > {log} 2>&1
+```
 
 #### deseq2
 
@@ -320,11 +321,8 @@ convert {params.good_example} {params.bad_example} {input} -append {output} 2> {
 edgeR supports three different types of normalization: TMM, RLE, and upperquartile.
 
 TMM: is the weighted trimmed mean of M-values proposed by Robinson and Oshlack (2010).
-RLE: is the scaling factor method proposed by Anders and Huber (2010). DEseq2 normalisation
- is based on this.
+RLE: is the scaling factor method proposed by Anders and Huber (2010). DEseq2 normalisation is based on this.
 upperquartile: is the upper-quartile normalization method of Bullard et al (2010).
-
-In addition to 
 
 #### ena2fastq_PE
 
@@ -334,16 +332,16 @@ Download paired-end fastq files directly from the ENA.
 
 Download single-end fastq files directly from the ENA.
 
-#### export_seurat_obj
+#### export_sce_obj
 
-Read scRNA count output into Seurat object, add meta-data and export to RData format.
+Read scRNA UMI counts into a SingleCellExperiment object, add colData and export to RData format.
 
 #### extend_genome
 
 Append given file(s) to genome
 
 ```
-\# extend the genome.fa
+# extend the genome.fa
 cp {input.genome} {output.genome}
 
 for FILE in {input.extension}; do
@@ -356,14 +354,14 @@ done
 Append given file(s) to genome annotation
 
 ```
-\# extend the genome.annotation.gtf
+# extend the genome.annotation.gtf
 cp {input.gtf} {output.gtf}
 
 for FILE in {input.extension}; do
     cat $FILE >> {output.gtf}
 done
 
-\# generate an extended genome.annotation.bed
+# generate an extended genome.annotation.bed
 gtfToGenePred {output.gtf} {output.gp}
 genePredToBed {output.gp} {output.bed}
 ```
@@ -453,14 +451,14 @@ Use featureCounts to generate the fraction reads in peaks score
 https://www.biostars.org/p/228636/
 
 ```
-\# Make a custom "SAF" file which featureCounts needs:
+# Make a custom "SAF" file which featureCounts needs:
 awk 'BEGIN{{FS=OFS="\t"; print "GeneID\tChr\tStart\tEnd\tStrand"}}{{print $4, $1, $2+1, $3, "."}}' \
 {input.peak} 1> {output.tmp_saf} 2> {log}
 
-\# run featureCounts
+# run featureCounts
 featureCounts -T {threads} -p -a {output.tmp_saf} -F SAF -o {output.real_out} {input.bam} > {log} 2>&1
 
-\# move the summary to qc directory
+# move the summary to qc directory
 mv $(dirname {output.real_out})/$(basename {output.summary}) {output.summary}
 ```
 
@@ -479,11 +477,10 @@ Generate a gc content track
 source: http://hgdownload.cse.ucsc.edu/goldenPath/hg19/gc5Base/
 
 ```
-        hgGcPercent -wigOut -doGaps -file=stdout -win=5 -verbose=0 {wildcards.assembly} {input.twobit} \
-| gzip > {output.gcpcvar}
+hgGcPercent -wigOut -doGaps -file=stdout -win=5 -verbose=0 {wildcards.assembly} {input.twobit} \
+    | gzip > {output.gcpcvar}
 
-        wigToBigWig {output.gcpcvar} {input.sizes} {output.gcpc} >> {log} 2>&1
-        
+wigToBigWig {output.gcpcvar} {input.sizes} {output.gcpc} >> {log} 2>&1
 ```
 
 #### gene_id2name
@@ -536,10 +533,7 @@ Generate transcripts.fasta using gffread.
 Requires genome.fa and annotation.gtf (with matching chromosome/scaffold names)
 
 ```
-        Generate decoy_transcripts.txt for Salmon indexing
-
-        script source: https://github.com/COMBINE-lab/SalmonTools
-        
+gffread -w {output} -g {input.fa} {input.gtf} >> {log} 2>&1
 ```
 
 #### hisat2_align
@@ -555,10 +549,9 @@ hisat2 {params.params} --threads {threads} -x {input.index}/part {params.input} 
 Make a genome index for hisat2. This index is required for alignment.
 
 ```
-            mkdir -p {output}
+mkdir -p {output}
 
-            hisat2-build {params} -p {threads} {input} {output}/part > {log} 2>&1
-            
+hisat2-build {params} -p {threads} {input} {output}/part > {log} 2>&1
 ```
 
 #### hisat2_splice_aware_index
@@ -567,15 +560,14 @@ Make an exon-junction and splice aware index for hisat2.
 This index is required for alignment and quantification of RNA-seq data.
 
 ```
-            mkdir -p {output}
+mkdir -p {output}
 
-            hp=$(which hisat2)
-            python3 ${{hp}}_extract_splice_sites.py {input.gtf} > {output}/splice_sites.tsv 2>> {log}
-            python3 ${{hp}}_extract_exons.py {input.gtf} > {output}/exons.tsv 2>> {log}
+hp=$(which hisat2)
+python3 ${{hp}}_extract_splice_sites.py {input.gtf} > {output}/splice_sites.tsv 2>> {log}
+python3 ${{hp}}_extract_exons.py {input.gtf} > {output}/exons.tsv 2>> {log}
 
-            hisat2-build {params} -p {threads} --ss {output}/splice_sites.tsv --exon {output}/exons.tsv \
-            {input.fasta} {output}/part >> {log} 2>&1
-            
+hisat2-build {params} -p {threads} --ss {output}/splice_sites.tsv --exon {output}/exons.tsv \
+{input.fasta} {output}/part >> {log} 2>&1
 ```
 
 #### hmmratac
@@ -599,6 +591,14 @@ samtools view -H {input} 2>> {log} | grep SQ 2>> {log} | cut -f 2-3 2>> {log} | 
 paste {output.tmp1} {output.tmp2} > {output.out} 2> {log}
 ```
 
+#### htseq_count
+
+summarize reads to gene level. Outputs a counts table per bam file.
+
+```
+htseq-count {input.bam} {input.gtf} -r pos -s {params.strandedness} {params.user_flags} -n {threads} -c {output} > {log} 2>&1
+```
+
 #### idr
 
 Combine replicates based on the irreproducible discovery rate (IDR). Can only handle two replicates.
@@ -609,18 +609,17 @@ downstream tools require these to be set. So we set the q-score to zero, and pla
 the middle of the peak.
 
 ```
-                if [ "{params.nr_reps}" == "1" ]; then
-cp {input} {output.true}
-touch {output.temp}
-                else
-idr --samples {input} {params.rank} --output-file {output.temp} > {log} 2>&1
-if [ "{wildcards.ftype}" == "narrowPeak" ]; then
-    awk 'IFS="\t",OFS="\t" {{$9=0; $10=int(($3 - $2) / 2); print}}' {output.temp} > {output.true} 2>> {log}
+if [ "{params.nr_reps}" == "1" ]; then
+    cp {input} {output.true}
+    touch {output.temp}
 else
-    cp {output.temp} {output.true}
+    idr --samples {input} {params.rank} --output-file {output.temp} {params.options} > {log} 2>&1
+    if [ "{wildcards.ftype}" == "narrowPeak" ]; then
+        awk 'IFS="\t",OFS="\t" {{$9=0; $10=int(($3 - $2) / 2); print}}' {output.temp} > {output.true} 2>> {log}
+    else
+        cp {output.temp} {output.true}
+    fi
 fi
-                fi
-                
 ```
 
 #### infer_strandedness
@@ -651,7 +650,7 @@ kb count \
 -t {threads} -g {params.basename}_t2g.txt \
 -o {params.outdir} {params.c1} {params.c2} \
 {params.barcode_arg} {params.options} {input.reads} > {log} 2>&1
-\# Validate output
+# Validate output
 if grep -q 'ERROR\|bad_alloc' "{log}"; then
   exit 1
 fi
@@ -682,10 +681,6 @@ kb ref  \
 -i {params.basename}.idx -g {params.basename}_t2g.txt -f1 {params.basename}_cdna.fa > {log} 2>&1
 ```
 
-#### kb_seurat_pp
-
-summarize reads to gene level. Outputs a counts table per bam file.
-
 #### keep_mates
 
 In-house script that, after alignment, removes the information that reads are paired.
@@ -710,12 +705,11 @@ Call peaks using macs2.
 Macs2 requires a genome size, which is estimated from the amount of unique kmers of the average read length.
 
 ```
-        GENSIZE=$(cat {input.genome_size})
+GENSIZE=$(cat {input.genome_size})
 
-        \# call peaks
-        macs2 callpeak --bdg -t {input.bam} {params.control} --outdir {config[result_dir]}/macs2/ -n {wildcards.assembly}-{wildcards.sample} \
-        {params.macs_params} -g $GENSIZE -f {params.format} >> {log} 2>&1
-        
+# call peaks
+macs2 callpeak --bdg -t {input.bam} {params.control} --outdir {config[result_dir]}/macs2/ -n {wildcards.assembly}-{wildcards.sample} \
+{params.macs_params} -g $GENSIZE -f {params.format} >> {log} 2>&1
 ```
 
 #### macs_bdgcmp
@@ -733,15 +727,14 @@ Combine biological replicates through Fisher's method
 (Link original peakfile in replicate_processed if there is only 1 sample for a condition)
 
 ```
-                    if [ "{params.nr_reps}" == "1" ]; then
-touch {output.tmpbdg} {output.tmppeaks}
-mkdir -p $(dirname {output.peaks}); cp {input.treatment} {output.peaks}
-                    else
-macs2 cmbreps -i {input.bdgcmp} -o {output.tmpbdg} -m fisher > {log} 2>&1
-macs2 {params.function} {params.config} -i {output.tmpbdg} -o {output.tmppeaks} >> {log} 2>&1
-cat {output.tmppeaks} | tail -n +2 > {output.peaks}
-                    fi
-                    
+if [ "{params.nr_reps}" == "1" ]; then
+    touch {output.tmpbdg} {output.tmppeaks}
+    mkdir -p $(dirname {output.peaks}); cp {input.treatment} {output.peaks}
+else
+    macs2 cmbreps -i {input.bdgcmp} -o {output.tmpbdg} -m fisher > {log} 2>&1
+    macs2 {params.function} {params.config} -i {output.tmpbdg} -o {output.tmppeaks} >> {log} 2>&1
+    cat {output.tmppeaks} | tail -n +2 > {output.peaks}
+fi
 ```
 
 #### mark_duplicates
@@ -749,7 +742,7 @@ cat {output.tmppeaks} | tail -n +2 > {output.peaks}
 Mark all duplicate reads in a bam file with picard MarkDuplicates
 
 ```
-\# use the TMPDIR if set, and not given in the config
+# use the TMPDIR if set, and not given in the config
 if [[ ${{TMPDIR:=F}} == "F" ]] || [[ "{params}" == *TMP_DIR* ]]
 then
     tmpdir=""
@@ -773,10 +766,6 @@ Must happen after trimming due to trim-galore's automatic adapter trimming metho
 
 If a replicate has only 1 sample in it, simply move the file.
 
-#### merge_seurat_obj
-
-Gather and merge multiple Seurat objects into a combined object and export to RData format.
-
 #### merge_volcano_ma
 
 Combine the volcano and maplot resulting of the deseq2 rule into a single figure.
@@ -798,10 +787,9 @@ minimap2 -t {threads} -a {input.index} {input.reads} {params} > {output} 2> {log
 Make a genome index for minimap2. This index is required for alignment.
 
 ```
-            mkdir -p $(dirname {output})
+mkdir -p $(dirname {output})
 
-            minimap2 -t {threads} -d {output} {input} {params} > {log} 2>&1
-            
+minimap2 -t {threads} -d {output} {input} {params} > {log} 2>&1
 ```
 
 #### mt_nuc_ratio_calculator
@@ -859,19 +847,18 @@ awk 'BEGIN {{OFS="\t"}} {{ print $1,$2+$10,$2+$10+1,$4,$9; }}' {input} > {output
 Get onehot encodings of which peaks are found in which samples
 
 ```
-        awk '{{print $1":"$2"-"$3}}' {input.combinedpeaks} > {output.real} 2> {log}
+awk '{{print $1":"$2"-"$3}}' {input.combinedpeaks} > {output.real} 2> {log}
 
-        for brep in {input.narrowpeaks}
-        do
-            bedtools sort -i $brep 2> {log} |
-            bedtools intersect -a {input.combinedpeaks} -b stdin -c 2> {log} |
-            awk '{{print $4}}' 2> {log} |
-            paste {output.real} - > {output.tmp}
-            mv {output.tmp} {output.real}
-        done
+for brep in {input.narrowpeaks}
+do
+    bedtools sort -i $brep 2> {log} |
+    bedtools intersect -a {input.combinedpeaks} -b stdin -c 2> {log} |
+    awk '{{print $4}}' 2> {log} |
+    paste {output.real} - > {output.tmp}
+    mv {output.tmp} {output.real}
+done
 
-        echo -e "\# onehot encoding of which condition contains which peaks\\n{params.names}\n$(cat {output.real})" > {output.tmp} && cp {output.tmp} {output.real}
-        
+echo -e "# onehot encoding of which condition contains which peaks\\n{params.names}\n$(cat {output.real})" > {output.tmp} && cp {output.tmp} {output.real}
 ```
 
 #### peak_bigpeak
@@ -880,7 +867,7 @@ Convert a narrowpeak file into a bignarrowpeak file.
 https://genome-source.gi.ucsc.edu/gitlist/kent.git/tree/master/src/hg/lib/
 
 ```
-\# keep first 10 columns, idr adds extra columns we do not need for our bigpeak
+# keep first 10 columns, idr adds extra columns we do not need for our bigpeak
 cut -d$'\t' -f 1-{params.columns} {input.narrowpeak} |
 awk -v OFS="\t" '{{$5=$5>1000?1000:$5}} {{print}}' | 
 bedSort /dev/stdin {output.tmp} > {log} 2>&1
@@ -960,14 +947,6 @@ Take a random subset of all summits, and make them all same width.
 shuf -n {wildcards.nrpeaks} {input.peaks} | bedtools slop -i stdin -g {input.sizes} -b {params.slop} > {output}
 ```
 
-#### rename_sample
-
-Rename local samples with incompatible naming formats
-
-```
-mv {input[0]} {output[0]}
-```
-
 #### run2sra
 
 Download the SRA of a sample by its unique identifier.
@@ -976,28 +955,28 @@ Tries first downloading with the faster ascp protocol, if that fails it
 falls back on the slower http protocol.
 
 ```
-\# move to output dir since somehow prefetch sometimes puts files in the cwd...
-\# and remove the top level folder since prefetch will assume we are done otherwise
+# move to output dir since somehow prefetch sometimes puts files in the cwd...
+# and remove the top level folder since prefetch will assume we are done otherwise
 mkdir -p {params.outdir}; cd {params.outdir}; rm -r {wildcards.run}
 
-\# three attempts
+# three attempts
 for i in {{1..3}}
 do
-    \# acquire a lock
+    # acquire a lock
     (
-        flock --timeout 30 200 || continue
+        flock -w 30 200 || continue
         sleep 2
     ) 200>{pysradb_cache_lock}
 
-    \# dump
+    # dump
     prefetch --max-size 999999999999 --output-directory ./ --log-level debug --progress {wildcards.run} >> {log} 2>&1 && break
     sleep 10
 done
 
-\# TODO: this is the strangest bug, in that on some machines (ocimum) prefetch downloads
-\# to a different location. Not sure what causes this, but this should fix that. Could simply
-\# be a global setting that we haven't discovered yet...
-\# bug report: https://github.com/ncbi/sra-tools/issues/533
+# TODO: this is the strangest bug, in that on some machines (ocimum) prefetch downloads
+# to a different location. Not sure what causes this, but this should fix that. Could simply
+# be a global setting that we haven't discovered yet...
+# bug report: https://github.com/ncbi/sra-tools/issues/533
 if [[ -f "{params.outdir}/{wildcards.run}.sra" ]]; then
     mkdir {params.outdir}/{wildcards.run}
     mv {params.outdir}/{wildcards.run}.sra {output}
@@ -1013,11 +992,10 @@ Concatenate a single run or multiple runs together into a fastq
 Generate a decoy aware transcriptome index for Salmon.
 
 ```
-            mkdir -p {output}
+mkdir -p {output}
 
-            salmon index -t {input.gentrome} -d {input.decoys} -i {output} {params} \
-            --threads {threads} > {log} 2>&1
-            
+salmon index -t {input.gentrome} -d {input.decoys} -i {output} {params} \
+--threads {threads} > {log} 2>&1
 ```
 
 #### salmon_index
@@ -1025,10 +1003,9 @@ Generate a decoy aware transcriptome index for Salmon.
 Generate a transcriptome index for Salmon.
 
 ```
-            mkdir -p {output}
+mkdir -p {output}
 
-            salmon index -t {input} -i {output} {params} --threads {threads} > {log} 2>&1
-            
+salmon index -t {input} -i {output} {params} --threads {threads} > {log} 2>&1
 ```
 
 #### salmon_quant
@@ -1078,11 +1055,11 @@ samtools index {input} {output} > {log} 2>&1
 (Pre)sort the result of alignment with the samtools sorter.
 
 ```
-\# we set this trap to remove temp files when prematurely ending the rule
+# we set this trap to remove temp files when prematurely ending the rule
 trap "rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
 rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2> {log}
 
-\# RAM per thread in MB
+# RAM per thread in MB
 memory=$((1000*{params.memory}/{threads}))M
 
 samtools sort -@ {threads} -m $memory {input} -o {output} \
@@ -1094,13 +1071,28 @@ samtools sort -@ {threads} -m $memory {input} -o {output} \
 Sort the result of shiftsieving with the samtools sorter.
 
 ```
-\# we set this trap to remove temp files when prematurely ending the rule
+# we set this trap to remove temp files when prematurely ending the rule
 trap "rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
 rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2> {log}
 
-\# RAM per thread in MB
+# RAM per thread in MB
 memory=$((1000*{params.memory}/{threads}))M
 
+samtools sort {params.sort_order} -@ {threads} -m $memory {input} -o {output} \
+-T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
+```
+
+#### samtools_sort_allsizes
+
+Sort the result of shiftsieving with the samtools sorter. This rule is identical to the
+samtools_sort rule except that the output is temporary.
+
+```
+# we set this trap to remove temp files when prematurely ending the rule
+trap "rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
+rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2> {log}
+# RAM per thread in MB
+memory=$((1000*{params.memory}/{threads}))M
 samtools sort {params.sort_order} -@ {threads} -m $memory {input} -o {output} \
 -T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
 ```
@@ -1108,6 +1100,14 @@ samtools sort {params.sort_order} -@ {threads} -m $memory {input} -o {output} \
 #### samtools_stats
 
 Get general stats from bam files like percentage mapped.
+
+```
+samtools stats {input} 1> {output} 2> {log}
+```
+
+#### sctk_qc
+
+Perform scRNA QC with singleCellTK, store output in SingleCellExperiment object and export to RData format.
 
 #### setup_blacklist
 
@@ -1131,7 +1131,7 @@ samtools view -h {params.prim_align} {params.minqual} {params.blacklist} \
 {input.bam} | {params.atacshift} {params.sizesieve} {params.subsample}
 samtools view -b > {output.final} 2> {log}
 
-\# single-end reads never output allsizes so just touch the file when filtering on size
+# single-end reads never output allsizes so just touch the file when filtering on size
 {params.sizesieve_touch}
 ```
 
@@ -1148,10 +1148,9 @@ Generate a track of all softmasked regions
 source: https://github.com/Gaius-Augustus/MakeHub/blob/master/make_hub.py
 
 ```
-        bedSort {input.mask_unsorted} {output.maskbed} >> {log} 2>&1
+bedSort {input.mask_unsorted} {output.maskbed} >> {log} 2>&1
 
-        bedToBigBed -type=bed3 {output.maskbed} {input.sizes} {output.mask} >> {log} 2>&1
-        
+bedToBigBed -type=bed3 {output.maskbed} {input.sizes} {output.mask} >> {log} 2>&1
 ```
 
 #### sra2fastq_PE
@@ -1160,22 +1159,22 @@ Downloaded (raw) SRAs are converted to paired-end fastq files.
 Forward and reverse samples will be switched if forward/reverse names are not lexicographically ordered.
 
 ```
-\# move to output dir since somehow parallel-fastq-dump sometimes puts files in the cwd...
+# move to output dir since somehow parallel-fastq-dump sometimes puts files in the cwd...
 mkdir -p {output.tmpdir}; cd {output.tmpdir}
 
-\# acquire the lock
+# acquire the lock
 (
-    flock --timeout 30 200 || exit 1
+    flock -w 30 200 || exit 1
     sleep 3
 ) 200>{pysradb_cache_lock}
 
-\# dump to tmp dir
+# dump to tmp dir
 parallel-fastq-dump -s {input} -O {output.tmpdir} \
 --threads {threads} --split-e --skip-technical --dumpbase \
 --readids --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' \
 --defline-qual '+' --gzip >> {log} 2>&1
 
-\# rename file and move to output dir
+# rename file and move to output dir
 mv {output.tmpdir}/*_1* {output.fastq[0]}
 mv {output.tmpdir}/*_2* {output.fastq[1]}
 ```
@@ -1185,22 +1184,22 @@ mv {output.tmpdir}/*_2* {output.fastq[1]}
 Downloaded (raw) SRAs are converted to single-end fastq files.
 
 ```
-\# move to output dir since somehow parallel-fastq-dump sometimes puts files in the cwd...
+# move to output dir since somehow parallel-fastq-dump sometimes puts files in the cwd...
 mkdir -p {output.tmpdir}; cd {output.tmpdir}
 
-\# acquire the lock
+# acquire the lock
 (
-    flock --timeout 30 200 || exit 1
+    flock -w 30 200 || exit 1
     sleep 3
 ) 200>{pysradb_cache_lock}
 
-\# dump to tmp dir
+# dump to tmp dir
 parallel-fastq-dump -s {input} -O {output.tmpdir} \
 --threads {threads} --split-spot --skip-technical --dumpbase --readids \
 --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' \
 --defline-qual '+' --gzip >> {log} 2>&1
 
-\# rename file and move to output dir
+# rename file and move to output dir
 mv {output.tmpdir}/*.fastq.gz {output.fastq}
 ```
 
@@ -1218,7 +1217,7 @@ STAR --genomeDir {input.index} --readFilesIn {params.input} --readFilesCommand g
 --outFileNamePrefix {log}/ --outTmpDir {output.dir}/STARtmp \
 --runThreadN {threads} {params.params} > {output.pipe} 2> {log}/Log.stderr.out
 
-\# move all non-log files to output directory (this way the log files are kept on error)
+# move all non-log files to output directory (this way the log files are kept on error)
 find {log} -type f ! -name Log* -exec mv {{}} {output.dir} \;
 ```
 
@@ -1238,41 +1237,44 @@ In your config.yaml, add:
    index: --limitGenomeGenerateRAM 60000000000 --genomeSAsparseD 1
 
 ```
-            function log2 {{
-local x=0
-for (( y=$1-1 ; $y > 0; y >>= 1 )) ; do
-    let x=$x+1
-done
-echo $x
-            }}
+function log2 {{
+        local x=0
+        for (( y=$1-1 ; $y > 0; y >>= 1 )) ; do
+            let x=$x+1
+        done
+        echo $x
+}}
 
-            \# set genome dependent variables
-            NBits=""
-            NBases=""
-            GenomeLength=$(awk -F"\t" '{{x+=$2}}END{{printf "%i", x}}' {input.sizefile})
-            NumberOfReferences=$(awk 'END{{print NR}}' {input.sizefile})
-            if [ $NumberOfReferences -gt 5000 ]; then
-                \# for large genomes, --genomeChrBinNbits should be scaled to min(18,log2[max(GenomeLength/NumberOfReferences,ReadLength)])
-                \# ReadLength is skipped here, as it is unknown
-                LpR=$(log2 $((GenomeLength / NumberOfReferences)))
-                NBits="--genomeChrBinNbits $(($LpR<18 ? $LpR : 18))"
-                printf "NBits: $NBits\n\n" >> {log} 2>&1
-            fi
+# set genome dependent variables
+NBits=""
+NBases=""
+GenomeLength=$(awk -F"\t" '{{x+=$2}}END{{printf "%i", x}}' {input.sizefile})
+NumberOfReferences=$(awk 'END{{print NR}}' {input.sizefile})
+if [ $NumberOfReferences -gt 5000 ]; then
+    # for large genomes, --genomeChrBinNbits should be scaled to min(18,log2[max(GenomeLength/NumberOfReferences,ReadLength)])
+    # ReadLength is skipped here, as it is unknown
+    LpR=$(log2 $((GenomeLength / NumberOfReferences)))
+    NBits="--genomeChrBinNbits $(($LpR<18 ? $LpR : 18))"
+    printf "NBits: $NBits\n\n" >> {log} 2>&1
+fi
 
-            if [ $GenomeLength -lt 268435456 ]; then
-                \# for small genomes, --genomeSAindexNbases must be scaled down to min(14, log2(GenomeLength)/2-1)
-                logG=$(( $(log2 $GenomeLength) / 2 - 1 ))
-                NBases="--genomeSAindexNbases $(( $logG<14 ? $logG : 14 ))"
-                printf "NBases: $NBases\n\n" >> {log} 2>&1
-            fi
+if [ $GenomeLength -lt 268435456 ]; then
+    # for small genomes, --genomeSAindexNbases must be scaled down to min(14, log2(GenomeLength)/2-1)
+    logG=$(( $(log2 $GenomeLength) / 2 - 1 ))
+    NBases="--genomeSAindexNbases $(( $logG<14 ? $logG : 14 ))"
+    printf "NBases: $NBases\n\n" >> {log} 2>&1
+fi
 
-            mkdir -p {output}
+mkdir -p {output}
 
-            STAR --runMode genomeGenerate --genomeFastaFiles {input.genome} --sjdbGTFfile {input.gtf} \
-            --genomeDir {output} --outFileNamePrefix {output}/ \
-            --runThreadN {threads} $NBits $NBases {params} >> {log} 2>&1
-            
+STAR --runMode genomeGenerate --genomeFastaFiles {input.genome} --sjdbGTFfile {input.gtf} \
+--genomeDir {output} --outFileNamePrefix {output}/ \
+--runThreadN {threads} $NBits $NBases {params} >> {log} 2>&1
 ```
+
+#### tpm_matrix
+
+Create a TPM normalized table from a counts table.
 
 #### trackhub
 
@@ -1290,16 +1292,16 @@ sources: https://genome.ucsc.edu/goldenPath/help/hubQuickStartSearch.html,
 https://www.biostars.org/p/272649/
 
 ```
-\# generate annotation files
+# generate annotation files
 gtfToGenePred -allErrors -ignoreGroupsWithoutExons -geneNameAsName2 -genePredExt {input.gtf} {output.genePred} -infoOut={output.info} >> {log} 2>&1
 
-\# check if gtf has gene_names > if l!=0, use gene_name, else transcript_id
+# check if gtf has gene_names > if l!=0, use gene_name, else transcript_id
 l=$(head -n 100 {input.gtf} | (grep gene_name || true) | wc -l)
 
-\# switch columns 1 (transcript_id) and 12 (gene_name)
+# switch columns 1 (transcript_id) and 12 (gene_name)
 awk -v len=$l 'BEGIN {{ FS = "\t" }}; {{ if(len!="0") {{ t = $1; $1 = $12; $12 = t; print; }} else {{ print; }} }}' {output.genePred} > {output.genePrednamed}
 
-\# remove lines with missing headers        
+# remove lines with missing headers        
 grep -v "^ " {output.genePrednamed} > {output.genePred}
 
 genePredToBed {output.genePred} {output.genePredbed} >> {log} 2>&1
@@ -1308,8 +1310,8 @@ bedSort {output.genePredbed} {output.genePredbed} >> {log} 2>&1
 
 bedToBigBed -extraIndex=name {output.genePredbed} {input.sizes} {output.genePredbigbed} >> {log} 2>&1
 
-\# generate searchable indexes (by 1: transcriptID, 2: geneId, 8: proteinID, 9: geneName, 10: transcriptName)
-grep -v "^\#" {output.info} | awk -v len=$l 'BEGIN {{ FS = "\t" }} ; {{ if(len!="0") {{print $9, $1, $2, $8, $9, $10}} else {{print $1, $1, $2, $8, $9, $10}} }}' > {output.indexinfo}
+# generate searchable indexes (by 1: transcriptID, 2: geneId, 8: proteinID, 9: geneName, 10: transcriptName)
+grep -v "^#" {output.info} | awk -v len=$l 'BEGIN {{ FS = "\t" }} ; {{ if(len!="0") {{print $9, $1, $2, $8, $9, $10}} else {{print $1, $1, $2, $8, $9, $10}} }}' > {output.indexinfo}
 
 ixIxx {output.indexinfo} {output.ix} {output.ixx} >> {log} 2>&1
 ```
@@ -1321,13 +1323,13 @@ Automated adapter detection, adapter trimming, and quality trimming through trim
 ```
 trim_galore --paired -j {threads} {params.config} -o $(dirname {output.r1}) {input.r1} {input.r2} > {log} 2>&1
     
-\# now rename to proper output
+# now rename to proper output
 for f in $(find "$(dirname {output.r1})/" -name "{wildcards.sample}_*val_*.fq.gz"); do
     mv "$f" "$(echo "$f" | sed s/.fq/.{params.fqsuffix}/)"; done
 for f in $(find "$(dirname {output.r1})/" -maxdepth 1 -name "{wildcards.sample}_*val_*.{params.fqsuffix}.gz"); do
     mv "$f" "$(echo "$f" | sed s/_val_./_trimmed/)"; done
     
-\# move the trimming reports to qc directory
+# move the trimming reports to qc directory
 for f in $(find "$(dirname {output.r1})/" -name "{wildcards.sample}_*.{params.fqsuffix}.gz_trimming_report.txt"); do
     mv "$f" "$(dirname {output.qc[0]})/$(basename $f)"; done
 ```
@@ -1339,12 +1341,12 @@ Automated adapter detection, adapter trimming, and quality trimming through trim
 ```
 trim_galore -j {threads} {params.config} -o $(dirname {output.se}) {input} > {log} 2>&1
     
-\# now rename to proper output
+# now rename to proper output
 if [ "{params.fqsuffix}" != "fq" ]; then
   mv "$(dirname {output.se})/{wildcards.sample}_trimmed.fq.gz" {output.se}
 fi 
     
-\# move the trimming report to qc directory
+# move the trimming report to qc directory
 report=$(dirname {output.se})/{wildcards.sample}.{params.fqsuffix}.gz_trimming_report.txt
 mv $report {output.qc}
 ```
@@ -1352,6 +1354,10 @@ mv $report {output.qc}
 #### twobit
 
 Generate a 2bit file for each assembly
+
+```
+faToTwoBit {input} {output} >> {log} 2>&1
+```
 
 #### upset_plot_peaks
 

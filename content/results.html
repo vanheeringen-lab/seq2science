@@ -1,18 +1,20 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Using the results &mdash; seq2science  documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <title>Using the results &mdash; seq2science  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -85,22 +87,22 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="using-the-results">
-<h1>Using the results<a class="headerlink" href="#using-the-results" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="multiqc-quality-report">
-<h2>MultiQC quality report<a class="headerlink" href="#multiqc-quality-report" title="Permalink to this headline">¶</a></h2>
+  <section id="using-the-results">
+<h1>Using the results<a class="headerlink" href="#using-the-results" title="Permalink to this headline"></a></h1>
+<section id="multiqc-quality-report">
+<h2>MultiQC quality report<a class="headerlink" href="#multiqc-quality-report" title="Permalink to this headline"></a></h2>
 <p>All pipelines (except from the <code class="docutils literal notranslate"><span class="pre">download_fastq</span></code> pipeline) output a <a class="reference external" href="https://multiqc.info/">multiQC</a> report. The report is located under <code class="docutils literal notranslate"><span class="pre">{qc_dir}/multiqc_{assembly}.html</span></code> and we highly recommend always checking out the report after a pipeline run. What is reported inside the report differs per pipeline and input.</p>
-<div class="section" id="rename-hide-buttons">
-<h3>Rename &amp; hide buttons<a class="headerlink" href="#rename-hide-buttons" title="Permalink to this headline">¶</a></h3>
+<section id="rename-hide-buttons">
+<h3>Rename &amp; hide buttons<a class="headerlink" href="#rename-hide-buttons" title="Permalink to this headline"></a></h3>
 <p>Seq2science reports quality control metrics for all your samples. However sample names on the SRA or from your own files aren’t always as easy to read as you’d like. The report automatically allows for renaming of samples by the big blue buttons at the start of the report. We recommend adding a <code class="docutils literal notranslate"><span class="pre">descriptive_name</span></code> column to the samples.tsv file, where you put a human-readable sample name for each sample. This column is then automatically used by other tools as well (e.g. trackhub).</p>
 <p>When dealing with technical replicates and paired-end data you might find that multiqc reports way too many samples and info to properly check the report. The report also automatically generates “hide” buttons, which gives you more control over which samples are shown/hidden.</p>
-</div>
-<div class="section" id="general-statistics">
-<h3>General statistics<a class="headerlink" href="#general-statistics" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="general-statistics">
+<h3>General statistics<a class="headerlink" href="#general-statistics" title="Permalink to this headline"></a></h3>
 <p>The general statistics table shows a quick summary of your data. The table is interactive and you can sort it, add or remove columns (there are many hidden columns!) by clicking on the <code class="docutils literal notranslate"><span class="pre">configure</span> <span class="pre">columns</span></code> button. A very useful function of the general statistics table is that it allows for the plotting of two columns against each other!</p>
-</div>
-<div class="section" id="metrics-tools">
-<h3>Metrics &amp; Tools<a class="headerlink" href="#metrics-tools" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="metrics-tools">
+<h3>Metrics &amp; Tools<a class="headerlink" href="#metrics-tools" title="Permalink to this headline"></a></h3>
 <p>The sections in the QC report follows a chronological order. It starts with e.g. read trimming, then report alignment metrics, and later differential analysis. The sections in detail are:</p>
 <ul class="simple">
 <li><p><strong>Assembly stats</strong></p>
@@ -150,7 +152,7 @@
 </li>
 <li><p><strong>Strandedness</strong>:</p>
 <ul>
-<li><p>RNA-seq sample strandedness is inferred by <a class="reference external" href="http://rseqc.sourceforge.net/">RSeQC</a>’s infer_experiment.py to improve gene counting accuracy. Results can be reviewed in the MultiQC graph (and can be used to update the samples.tsv if you disagree with the inference results).</p></li>
+<li><p>RNA-seq sample strandedness is inferred by <a class="reference external" href="http://rseqc.sourceforge.net/">RSeQC</a>‘s infer_experiment.py to improve gene counting accuracy. Results can be reviewed in the MultiQC graph (and can be used to update the samples.tsv if you disagree with the inference results).</p></li>
 </ul>
 </li>
 <li><p><strong>macs2 / genrich _frips</strong> (<em>only present with peak calling</em>):</p>
@@ -174,55 +176,55 @@
 </ul>
 </li>
 </ul>
-</div>
-</div>
+</section>
+</section>
 <hr class="docutils" />
-<div class="section" id="trackhub">
-<h2>Trackhub<a class="headerlink" href="#trackhub" title="Permalink to this headline">¶</a></h2>
+<section id="trackhub">
+<h2>Trackhub<a class="headerlink" href="#trackhub" title="Permalink to this headline"></a></h2>
 <p>It is often good to ‘eyeball’ the data, and check if e.g. peak calling went alright.
 One of the features of the pipeline is that it can generate a trackhub.
 You can host the trackhub yourself on a web accessible location, and visualize on the <a class="reference external" href="https://genome.ucsc.edu/cgi-bin/hgHubConnect">UCSC genome browser</a>.
 Alternatively, you can visualize the files locally in <a class="reference external" href="https://software.broadinstitute.org/software/igv/">IGV</a>.</p>
 <p>Generation of the trackhub files is optional for all workflows that support it, and is turned off by default.
 Set <code class="docutils literal notranslate"><span class="pre">create_trackhub:</span> <span class="pre">True</span></code> in the config to start generating your hub.</p>
-<div class="section" id="id5">
-<h3>UCSC genome browser<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<section id="id5">
+<h3>UCSC genome browser<a class="headerlink" href="#id5" title="Permalink to this headline"></a></h3>
 <p>If you move the <em>trackhub</em> folder to a web-accessible location, you can upload the URL to the <code class="docutils literal notranslate"><span class="pre">hub.txt</span></code> file <a class="reference external" href="https://genome-euro.ucsc.edu/cgi-bin/hgHubConnect#unlistedHubs">here</a> to gain access to your personalized hub!</p>
 <p>If you don’t have access to a web-accessible location, the bigwig files can be manually uploaded on a UCSC trackhub, as long as the assembly used is recognized by UCSC.</p>
-</div>
-<div class="section" id="integrative-genomics-viewer">
-<h3>Integrative Genomics Viewer<a class="headerlink" href="#integrative-genomics-viewer" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="integrative-genomics-viewer">
+<h3>Integrative Genomics Viewer<a class="headerlink" href="#integrative-genomics-viewer" title="Permalink to this headline"></a></h3>
 <p><a class="reference external" href="https://software.broadinstitute.org/software/igv/">IGV</a> is a locally run genome browser with baseline functionalities for read and sequence inspection.
 It is an excellent alternative for quick jobs or if you do not have access to a (large enough) web-accessible location.</p>
-</div>
-<div class="section" id="bigwigs">
-<h3>BigWigs<a class="headerlink" href="#bigwigs" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="bigwigs">
+<h3>BigWigs<a class="headerlink" href="#bigwigs" title="Permalink to this headline"></a></h3>
 <p>Bigwigs visualize the sequencing depth per base and form the core of the trackhub. Bigwigs are stored in workflow-dependent locations, and linked in the <em>trackhub</em> folder.</p>
 <ul class="simple">
 <li><p>Bigwig files generated by the Alignment- and RNA-seq workflow are collected in the <em>bigwigs</em> folder. Each aligned sample (or merged sample in case of technical replicates) is converted to a bigwig file.</p></li>
 <li><p>Bigwig files generated by the ATAC- and ChIP-seq workflow are collected in the peak-caller directory (<em>macs, genrich, hmmratac</em>). Each biological replicate is converted to a bigwig file.</p></li>
 </ul>
 <p>See the <a class="reference external" href="./workflows/atac_seq.html#technical-replicates">replicate handling page</a> for more information on sample replicates and conditions.</p>
-</div>
-<div class="section" id="genome">
-<h3>Genome<a class="headerlink" href="#genome" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="genome">
+<h3>Genome<a class="headerlink" href="#genome" title="Permalink to this headline"></a></h3>
 <p>If your genome assembly is not recognized on UCSC, a number of files must be generated to map your bigwigs to.
 Seq2science does this for you!
 It creates the required <em>genome.2bit</em>, as well as a <em>cytobands</em> file.
 With just these files you can search your assembly by coordinates.</p>
-</div>
-<div class="section" id="gene-annotations">
-<h3>Gene annotations<a class="headerlink" href="#gene-annotations" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="gene-annotations">
+<h3>Gene annotations<a class="headerlink" href="#gene-annotations" title="Permalink to this headline"></a></h3>
 <p>If gene annotations are available, these are added as <em>annotations.bigBed</em>.
 This a visible as a separate track containing genes.
 Additionally, the <em>genome.2bit</em> is indexed to allow you to search your assembly by gene name (if the annotation file was formatted properly).</p>
-</div>
-<div class="section" id="supporting-tracks">
-<h3>Supporting tracks<a class="headerlink" href="#supporting-tracks" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="supporting-tracks">
+<h3>Supporting tracks<a class="headerlink" href="#supporting-tracks" title="Permalink to this headline"></a></h3>
 <p>Track depicting the GC-percentage and the softmasked regions of the genome are generated, similarly to <a class="reference external" href="https://github.com/Gaius-Augustus/MakeHub">MakeHub</a>.</p>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
            </div>

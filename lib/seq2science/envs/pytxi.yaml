@@ -4,7 +4,7 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - genomepy=0.11.1
-  - pip
+  - bioconda::genomepy=0.12.0
+  - conda-forge::conda-ecosystem-user-package-isolation=1.0
   - pip:
-    - git+https://github.com/vanheeringen-lab/pytxi.git@3522d3f
+    - git+https://github.com/vanheeringen-lab/pytxi.git@v0.1.2

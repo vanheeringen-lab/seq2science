@@ -55,8 +55,8 @@ else:
         "trim-galore": "http://www.bioinformatics.babraham.ac.uk/projects/trim_galore/",
         "tximeta": "https://doi.org/10.1101/777888",
         "ucsc genome browser": "http://www.genome.org/cgi/doi/10.1101/gr.229102",
-        "seurat": "https://doi.org/10.1038/nbt.4096",
-        "kb_seurat_pp": "https://github.com/Rebecza/scRNA-seq",
+        "sce": "https://www.nature.com/articles/s41592-019-0654-x",
+        "sctk": "https://www.biorxiv.org/content/10.1101/329755v1",
         "citeseqcount": "https://zenodo.org/record/2590196",
         "khmer": "https://dx.doi.org/10.12688%2Ff1000research.6924.1",
     }
@@ -171,6 +171,8 @@ else:
             final_sep=" ",
         ),
         "count_matrix_txi": f"Transcript abundance estimations were aggregated and converted to gene counts using {href_v('tximeta')}.",
+        "count_matrix_pytxi": f"Transcript abundance estimations were aggregated using pytxi and converted to gene counts using {'genomepy' if config.get('tx2gene_from_gtf') else 'MyGene.info'}.",
+        "tpm_matrix": f"TPM normalized gene counts were generated using genomepy based on longest transcript lengths.",
         "run2sra": f"Public samples were downloaded from the {hyperref('Sequence Read Archive')} with help of the ncbi e-utilities and {hyperref('pysradb')}.",
         "get_effective_genome_size": f"The effective genome size was estimated per sample by {href_v('khmer')} by calculating the number of unique kmers with k being the average read length per sample.",
         "get_genome": f"Genome assembly {{wildcards.raw_assembly}} was downloaded with {hyperref('genomepy',text=f'genomepy {genomepy.__version__}')}.",
@@ -178,7 +180,7 @@ else:
         "call_peak_genrich": f"Peaks were called with {href_v('genrich')}{options('peak_caller','genrich')}.",
         "macs2_callpeak": f"Peaks were called with {href_v('macs2')}{options('peak_caller','macs2')} in {{params.format}} mode. The effective genome size was estimated by taking the number of unique kmers in the assembly of the same length as the average read length for each sample.",
         "keep_mates": "After alignment paired-end info from reads was removed with seq2science to utilize both mates in the paired-end reads.",
-        "idr": f"Narrowpeak files of biological replicates belonging to the same condition were merged with the {href_v('idr',text='irreproducible discovery rate')}.",
+        "idr": f"Narrowpeak files of biological replicates belonging to the same condition were merged with the {href_v('idr',text='irreproducible discovery rate')}{options('idr_options')}.",
         "macs_cmbreps": "Narrowpeak files of biological replicates belonging to the same condition were merged with fisher's method in macs2.",
         "multiqc": f"Quality control metrics were aggregated by {href_v('MultiQC')}.",
         "samtools_stats": f"General alignment statistics were collected by {href_v('samtools',text='samtools stats')}.",
@@ -203,5 +205,6 @@ else:
         "combine_peaks": f"A consensus set of summits was made with {href_v('gimmemotifs',text='gimmemotifs.combine_peaks',env='gimme')}.",
         "bed_slop": f"All summits were extended with {config.get('slop')} bp to get a consensus peakset.",
         "coverage_table": f"Finally, a count table from the consensus peakset with gimmemotifs.",  # already cited in "combine_peaks"
-        "kb_seurat_pp": f"scRNA count post-processing was performed using the {hyperref('seurat')} based {hyperref('kb_seurat_pp')} markdown.",
+        "sce": f"{hyperref('sce')} S4 class was used to store scRNA-seq count tables and saved to RDATA format",
+        "sctk": f"scRNA count post-processing was performed using the {hyperref('sctk')} toolkit.",
     }

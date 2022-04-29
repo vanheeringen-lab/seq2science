@@ -2,6 +2,7 @@
 all rules/logic related to quality control and the final multiQC report should be here.
 """
 
+import glob
 import sys
 import re
 
@@ -44,19 +45,24 @@ rule samtools_stats:
     conda:
         "../envs/samtools.yaml"
     shell:
-        "samtools stats {input} 1> {output} 2> {log}"
-
-
-def get_fastqc_input(wildcards):
-    if "_trimmed" in wildcards.fname:
-        fqc_input = "{trimmed_dir}/{{fname}}.{fqsuffix}.gz"
-    else:
-        fqc_input = "{fastq_dir}/{{fname}}.{fqsuffix}.gz"
-
-    return sorted(expand(fqc_input, **config))
+        """
+        samtools stats {input} 1> {output} 2> {log}
+        """
 
 
 if config["trimmer"] == "trimgalore":
+
+    def get_fastqc_input(wildcards):
+        if "_trimmed" in wildcards.fname:
+            fqc_input = "{trimmed_dir}/{{fname}}.{fqsuffix}.gz"
+        else:
+            # local file with potentially weird suffix
+            fqc_input = glob.glob(os.path.join(config["fastq_dir"], f'{wildcards.fname}*{config["fqsuffix"]}*.gz'))
+            if not fqc_input:
+                fqc_input = "{fastq_dir}/{{fname}}.{fqsuffix}.gz"
+
+        return sorted(expand(fqc_input, **config))
+
 
     rule fastqc:
         """
@@ -108,7 +114,7 @@ elif config["trimmer"] == "fastp":
         params:
             fqsuffix=config["fqsuffix"],
         shell:
-            """\
+            """
             fastp -w {threads} --in1 {input} -h {output.qc_html} -j {output.qc_json} > {log} 2>&1
             """
 
@@ -135,7 +141,7 @@ elif config["trimmer"] == "fastp":
         params:
             config=config["trimoptions"],
         shell:
-            """\
+            """
             fastp -w {threads} --in1 {input[0]} --in2 {input[1]} \
             -h {output.qc_html} -j {output.qc_json} \
             {params.config} > {log} 2>&1

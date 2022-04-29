@@ -62,7 +62,7 @@ Additionally, it can perform differential expression analysis automatically.
 See the [Differential gene/peak analysis page](../DESeq2.html) for more information!
 
 #### Differential transcript usage
-Quantifying with `Salmon`, the transcript-level summaries in the SingleCellExperiment object *should* be usable for differential transcript analysis with `DEXseq`, as described [here](http://www.bioconductor.org/packages/devel/workflows/vignettes/rnaseqDTU/inst/doc/rnaseqDTU.html#dexseq).
+Quantifying with `Salmon`, the transcript-level summaries in the SingleCellExperiment object *should* be usable for differential transcript analysis with `DEXseq`, as described [in this vignette](http://www.bioconductor.org/packages/devel/workflows/vignettes/rnaseqDTU/inst/doc/rnaseqDTU.html#dexseq).
 
 #### Differential exon usage
 Differential exon analysis by [DEXseq](https://bioconductor.org/packages/release/bioc/html/DEXSeq.html) can be automatically prepared by setting `dexseq: True` in the config.yaml.

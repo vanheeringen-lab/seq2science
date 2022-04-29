@@ -1,18 +1,20 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ChIP-seq &mdash; seq2science  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <title>ChIP-seq &mdash; seq2science  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/language_data.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -111,74 +113,74 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="chip-seq">
-<h1>ChIP-seq<a class="headerlink" href="#chip-seq" title="Permalink to this headline">¶</a></h1>
+  <section id="chip-seq">
+<h1>ChIP-seq<a class="headerlink" href="#chip-seq" title="Permalink to this headline"></a></h1>
 <p>Running a ChIP-seq analysis has never been easier!</p>
-<div class="section" id="pipeline-steps">
-<h2>Pipeline steps<a class="headerlink" href="#pipeline-steps" title="Permalink to this headline">¶</a></h2>
+<section id="pipeline-steps">
+<h2>Pipeline steps<a class="headerlink" href="#pipeline-steps" title="Permalink to this headline"></a></h2>
 <p align="center">
   <img src="../../_static/chip_seq.png">
-</p><div class="section" id="downloading-of-sample-s">
-<h3>Downloading of sample(s)<a class="headerlink" href="#downloading-of-sample-s" title="Permalink to this headline">¶</a></h3>
+</p><section id="downloading-of-sample-s">
+<h3>Downloading of sample(s)<a class="headerlink" href="#downloading-of-sample-s" title="Permalink to this headline"></a></h3>
 <p>Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples.
 You control which samples are used in the <a class="reference external" href="#filling-out-the-samples-tsv">samples.tsv</a>.
 Background on public data can be found <a class="reference external" href="./download_fastq.html#download-sra-file">here</a>.</p>
-</div>
-<div class="section" id="downloading-and-indexing-of-assembly-s">
-<h3>Downloading and indexing of assembly(s)<a class="headerlink" href="#downloading-and-indexing-of-assembly-s" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="downloading-and-indexing-of-assembly-s">
+<h3>Downloading and indexing of assembly(s)<a class="headerlink" href="#downloading-and-indexing-of-assembly-s" title="Permalink to this headline"></a></h3>
 <p>Depending on whether the assembly and its index you align your samples against already exist seq2science will start with downloading of the assembly through <a class="reference external" href="https://github.com/vanheeringen-lab/genomepy">genomepy</a>.</p>
-</div>
-<div class="section" id="read-trimming">
-<h3>Read trimming<a class="headerlink" href="#read-trimming" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="read-trimming">
+<h3>Read trimming<a class="headerlink" href="#read-trimming" title="Permalink to this headline"></a></h3>
 <p>The pipeline starts by trimming the reads with Trim Galore! or Fastp (the default).
 The trimmer will automatically trim the low quality 3’ ends of reads, and removes short reads.
 During the quality trimming it automatically detects which adapter was used, and trims this as well.
 Trimming parameters for the pipeline can be set in the configuration.</p>
-</div>
-<div class="section" id="alignment">
-<h3>Alignment<a class="headerlink" href="#alignment" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="alignment">
+<h3>Alignment<a class="headerlink" href="#alignment" title="Permalink to this headline"></a></h3>
 <p>After trimming the reads are aligned against an assembly. Currently we support <code class="docutils literal notranslate"><span class="pre">bowtie2</span></code>, <code class="docutils literal notranslate"><span class="pre">bwa-mem</span></code>, <code class="docutils literal notranslate"><span class="pre">hisat2</span></code> and <code class="docutils literal notranslate"><span class="pre">star</span></code> as aligners. Choosing which aligner is as easy as setting the <em>aligner</em> variable in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>, for example: <code class="docutils literal notranslate"><span class="pre">aligner:</span> <span class="pre">bwa</span></code>. Sensible defaults have been set for every aligner, but can be overwritten for either (or both) the indexing and alignment by specifying them in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>.</p>
 <p>The pipeline will check if the assembly you specified is present in the <em>genome_dir</em>, and otherwise will download it for you through <a class="reference external" href="https://github.com/vanheeringen-lab/genomepy">genomepy</a>. All these aligners require an index to be formed first for each assembly, but don’t worry, the pipeline does this for you.</p>
-</div>
-<div class="section" id="bam-sieving">
-<h3>Bam sieving<a class="headerlink" href="#bam-sieving" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="bam-sieving">
+<h3>Bam sieving<a class="headerlink" href="#bam-sieving" title="Permalink to this headline"></a></h3>
 <p>After aligning the bam you can choose to remove unmapped reads, low quality mappings, duplicates, and multimappers.</p>
-</div>
-<div class="section" id="peak-calling">
-<h3>Peak calling<a class="headerlink" href="#peak-calling" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="peak-calling">
+<h3>Peak calling<a class="headerlink" href="#peak-calling" title="Permalink to this headline"></a></h3>
 <p>Currently we support two peak callers for the ChIP-seq workflow, MACS2 and genrich.</p>
-<div class="section" id="macs2">
-<h4>MACS2<a class="headerlink" href="#macs2" title="Permalink to this headline">¶</a></h4>
-<p><a class="reference external" href="https://github.com/taoliu/MACS">MACS2</a> is the successor of MACS, created by <a class="reference external" href="https://github.com/taoliu">taoliu</a> (also one of the co-authors of hmmratac). MACS2 generates a ‘<em>pileup</em>’ of all the reads. You can imagine this pileup as laying all reads on top of each other on the genome, and counting how high your pile gets for each basepair. MACS2 then models ‘<em>background</em>’ values, based on the total length of all your reads and the genome length, to a <a class="reference external" href="https://en.wikipedia.org/wiki/Poisson_distribution">Poisson distribution</a> and decides whether your experimental pileup is significant compared to the poisson distribution. MACS2 is one of the, if not the, most used peak caller.</p>
+<section id="macs2">
+<h4>MACS2<a class="headerlink" href="#macs2" title="Permalink to this headline"></a></h4>
+<p><a class="reference external" href="https://github.com/taoliu/MACS">MACS2</a> is the successor of MACS, created by <a class="reference external" href="https://github.com/taoliu">taoliu</a> (also one of the co-authors of hmmratac). MACS2 generates a ‘<em>pileup</em>‘ of all the reads. You can imagine this pileup as laying all reads on top of each other on the genome, and counting how high your pile gets for each basepair. MACS2 then models ‘<em>background</em>‘ values, based on the total length of all your reads and the genome length, to a <a class="reference external" href="https://en.wikipedia.org/wiki/Poisson_distribution">Poisson distribution</a> and decides whether your experimental pileup is significant compared to the poisson distribution. MACS2 is one of the, if not the, most used peak caller.</p>
 <p>For the calculation of peaks MACS2 requires that an “effective” genome size is being passed as one of its arguments. For the more common assemblies (e.g. mm10 and human) these numbers can be found online. However we found googling these numbers quite the hassle, and for lesser studied species these numbers can’t be found online. Therefore the pipeline automatically estimates the effective genome size, we calculate this as <strong>the number of unique kmers of the average read length</strong>.</p>
-<div class="section" id="broad-peaks">
-<h5>Broad peaks<a class="headerlink" href="#broad-peaks" title="Permalink to this headline">¶</a></h5>
+<section id="broad-peaks">
+<h5>Broad peaks<a class="headerlink" href="#broad-peaks" title="Permalink to this headline"></a></h5>
 <p>The MACS2 peak caller also supports broad peak calling, and so does seq2science. To let MACS2 call broad peaks you have to add <code class="docutils literal notranslate"><span class="pre">--broad</span></code> to the macs2 command, e.g.:</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>peak_caller:
-  macs2:
-      --keep-dup 1 --broad
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">peak_caller</span><span class="p">:</span>
+  <span class="n">macs2</span><span class="p">:</span>
+      <span class="o">--</span><span class="n">keep</span><span class="o">-</span><span class="n">dup</span> <span class="mi">1</span> <span class="o">--</span><span class="n">broad</span>
 </pre></div>
 </div>
-</div>
-</div>
-<div class="section" id="genrich">
-<h4>Genrich<a class="headerlink" href="#genrich" title="Permalink to this headline">¶</a></h4>
+</section>
+</section>
+<section id="genrich">
+<h4>Genrich<a class="headerlink" href="#genrich" title="Permalink to this headline"></a></h4>
 <p><a class="reference external" href="https://github.com/jsh58/Genrich">Genrich</a> is a spiritual successor of MACS2, created by <a class="reference external" href="https://github.com/jsh58">John M. Gaspar</a>. Just like MACS2 is generates a ‘<em>pileup’</em>. However the author of genrich realized that the distribution of pileup never follows a poisson distribution. Genrich then uses a <a class="reference external" href="https://en.wikipedia.org/wiki/Log-normal_distribution">log-normal distribution</a> to model the background.</p>
-</div>
-</div>
-<div class="section" id="quality-report">
-<h3>Quality report<a class="headerlink" href="#quality-report" title="Permalink to this headline">¶</a></h3>
+</section>
+</section>
+<section id="quality-report">
+<h3>Quality report<a class="headerlink" href="#quality-report" title="Permalink to this headline"></a></h3>
 <p>It is always a good idea to check the quality of your samples. Along the way different quality control steps are taken, and are outputted in a single <a class="reference external" href="https://multiqc.info/">multiqc report</a> in the <code class="docutils literal notranslate"><span class="pre">qc</span></code> folder. Make sure to always check the report, and take a look at <a class="reference external" href="../results.html#multiqc-quality-report">interpreting the multiqc report</a>!</p>
-</div>
-<div class="section" id="count-table">
-<h3>Count table<a class="headerlink" href="#count-table" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="count-table">
+<h3>Count table<a class="headerlink" href="#count-table" title="Permalink to this headline"></a></h3>
 <p>A useful result the pipeline outputs is the count table, located at {counts_dir}/{peak_caller}/.
 For each narrowpeak (across all samples) its summit is taken, and all other summits within range <code class="docutils literal notranslate"><span class="pre">peak_windowsize</span></code> (default 100) are taken together, and the summit with the highest q-value is taken as the “true” peak.
 The remaining peaks are extended by <code class="docutils literal notranslate"><span class="pre">slop</span></code> on each side and for each sample the number of reads are counted under this peak.
 This file is stored as {assembly}_raw.tsv, and looks something like this:</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>                sample1     sample2
-chr1:5649-5849  75.00000    0.00000
-chr1:7399-7599  47.00000    1.00000
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>                <span class="n">sample1</span>     <span class="n">sample2</span>
+<span class="n">chr1</span><span class="p">:</span><span class="mi">5649</span><span class="o">-</span><span class="mi">5849</span>  <span class="mf">75.00000</span>    <span class="mf">0.00000</span>
+<span class="n">chr1</span><span class="p">:</span><span class="mi">7399</span><span class="o">-</span><span class="mi">7599</span>  <span class="mf">47.00000</span>    <span class="mf">1.00000</span>
 </pre></div>
 </div>
 <p><strong>Note</strong>: since peaks are combined on their summit, NO count table is outputted for broad peaks.</p>
@@ -193,30 +195,30 @@ chr1:7399-7599  47.00000    1.00000
 As a final step the count tables are mean-centered.
 This final count table can be used for tools like <a class="reference external" href="https://gimmemotifs.readthedocs.io/en/master/reference.html#command-gimme-maelstrom">gimme maelstrom</a> to scan for enriched transcription factor motifs.
 Note that this table contains <strong>all</strong> peaks, and no selection on differential peaks has been made.</p>
-</div>
-<div class="section" id="differential-peak-analysis">
-<h3>Differential peak analysis<a class="headerlink" href="#differential-peak-analysis" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="differential-peak-analysis">
+<h3>Differential peak analysis<a class="headerlink" href="#differential-peak-analysis" title="Permalink to this headline"></a></h3>
 <p>Seq2science can optionally use the raw peak counts table to perform differential peak analysis.
 See the <a class="reference external" href="../DESeq2.html">Differential gene/peak analysis page</a> for more information!</p>
-</div>
-<div class="section" id="trackhub">
-<h3>Trackhub<a class="headerlink" href="#trackhub" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="trackhub">
+<h3>Trackhub<a class="headerlink" href="#trackhub" title="Permalink to this headline"></a></h3>
 <p>A UCSC compatible trackhub can be generated for this workflow. See the <a class="reference external" href="../results.html#trackhub">trackhub page</a><span class="raw-html-m2r"><!-- @IGNORE PREVIOUS: link --></span> for more information!</p>
-</div>
-</div>
-<div class="section" id="filling-out-the-samples-tsv">
-<h2>Filling out the samples.tsv<a class="headerlink" href="#filling-out-the-samples-tsv" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+<section id="filling-out-the-samples-tsv">
+<h2>Filling out the samples.tsv<a class="headerlink" href="#filling-out-the-samples-tsv" title="Permalink to this headline"></a></h2>
 <p>Before running a workflow you will have to specify which samples you want to run the workflow on. Each workflow starts with a <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> as an example, and you should adapt it to your specific needs. As an example, the <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> could look something like this:</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>sample    assembly    replicate    descriptive_name    control
-GSM123    GRCh38      heart_1      heart_merged        GSM234
-GSM321    GRCh38      heart_1      heart_merged        GSM234
-GSMabc    GRCh38      heart_2      heart_not_merged    GSM234
-GSMxzy    danRer11    stage_8      stage_8             GSM234
-GSM890    danRer11    stage_9      stage_9             GSM234
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sample</span>    <span class="n">assembly</span>    <span class="n">replicate</span>    <span class="n">descriptive_name</span>    <span class="n">control</span>
+<span class="n">GSM123</span>    <span class="n">GRCh38</span>      <span class="n">heart_1</span>      <span class="n">heart_merged</span>        <span class="n">GSM234</span>
+<span class="n">GSM321</span>    <span class="n">GRCh38</span>      <span class="n">heart_1</span>      <span class="n">heart_merged</span>        <span class="n">GSM234</span>
+<span class="n">GSMabc</span>    <span class="n">GRCh38</span>      <span class="n">heart_2</span>      <span class="n">heart_not_merged</span>    <span class="n">GSM234</span>
+<span class="n">GSMxzy</span>    <span class="n">danRer11</span>    <span class="n">stage_8</span>      <span class="n">stage_8</span>             <span class="n">GSM234</span>
+<span class="n">GSM890</span>    <span class="n">danRer11</span>    <span class="n">stage_9</span>      <span class="n">stage_9</span>             <span class="n">GSM234</span>
 </pre></div>
 </div>
-<div class="section" id="sample-column">
-<h3>Sample column<a class="headerlink" href="#sample-column" title="Permalink to this headline">¶</a></h3>
+<section id="sample-column">
+<h3>Sample column<a class="headerlink" href="#sample-column" title="Permalink to this headline"></a></h3>
 <p>If you use the pipeline on <strong>public data</strong> this should be the name of the accession (e.g. GSM2837484).
 Accepted formats start with “GSM”, “SRR”, “SRX”, “DRR”, “DRX”, “ERR” or “ERX”.</p>
 <p>If you use the pipeline on <strong>local data</strong> this should be the <em>basename</em> of the file without the <em>extension(s)</em>.
@@ -232,112 +234,112 @@ Seq2science will attempt to recognize these files based on the sample name <code
 The directory where seq2science will store (or look for) fastqs is determined by the <code class="docutils literal notranslate"><span class="pre">fastq_dir</span></code> config option.
 In the example above, the <code class="docutils literal notranslate"><span class="pre">fastq_dir</span></code> should be set to <code class="docutils literal notranslate"><span class="pre">/home/user/myfastqs</span></code>.
 These setting can be changed in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>.</p>
-</div>
-<div class="section" id="assembly-column">
-<h3>Assembly column<a class="headerlink" href="#assembly-column" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="assembly-column">
+<h3>Assembly column<a class="headerlink" href="#assembly-column" title="Permalink to this headline"></a></h3>
 <p>Here you simply add the name of the assembly you want your samples aligned against and the workflow will download it for you.</p>
-</div>
-<div class="section" id="control-input-column">
-<h3>Control (input) column<a class="headerlink" href="#control-input-column" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="control-input-column">
+<h3>Control (input) column<a class="headerlink" href="#control-input-column" title="Permalink to this headline"></a></h3>
 <p>In the <code class="docutils literal notranslate"><span class="pre">control</span></code> column you can (optionally) add the “sample name” of the input control.
 It is generally a bad idea to add the input control as a sample in the sample since generally peak callers fail on these samples.
 Doing so looks like this:</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>sample    assembly    control
-GSM123    GRCh38      GSMabc
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sample</span>    <span class="n">assembly</span>    <span class="n">control</span>
+<span class="n">GSM123</span>    <span class="n">GRCh38</span>      <span class="n">GSMabc</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="descriptive-name-column">
-<h3>Descriptive_name column<a class="headerlink" href="#descriptive-name-column" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="descriptive-name-column">
+<h3>Descriptive_name column<a class="headerlink" href="#descriptive-name-column" title="Permalink to this headline"></a></h3>
 <p>The descriptive_name column is used for the trackhub and multiqc report.
 In the trackhub your tracks will be called after the descriptive name, and in the multiqc report there will be a button to rename your samples after this column.
-The descriptive name can not contain ‘-‘ characters, but underscores ‘_’ are allowed.</p>
-</div>
-<div class="section" id="technical-replicates-column">
-<h3>technical_replicates column<a class="headerlink" href="#technical-replicates-column" title="Permalink to this headline">¶</a></h3>
+The descriptive name can not contain ‘-’ characters, but underscores ‘_’ are allowed.</p>
+</section>
+<section id="technical-replicates-column">
+<h3>technical_replicates column<a class="headerlink" href="#technical-replicates-column" title="Permalink to this headline"></a></h3>
 <p>Technical replicates, or any fastq file you may wish to merge, are set using the <code class="docutils literal notranslate"><span class="pre">technical_replicates</span></code> column in the samples.tsv file.
 All samples with the same name in the <code class="docutils literal notranslate"><span class="pre">technical_replicates</span></code> column will be concatenated into one file with the replicate name.</p>
 <p>Example <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> utilizing replicate merging:</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>sample    assembly    technical_replicates
-GSM123    GRCh38      heart
-GSMabc    GRCh38      heart
-GSMxzy    GRCh38      stage8
-GSM890    GRCh38
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sample</span>    <span class="n">assembly</span>    <span class="n">technical_replicates</span>
+<span class="n">GSM123</span>    <span class="n">GRCh38</span>      <span class="n">heart</span>
+<span class="n">GSMabc</span>    <span class="n">GRCh38</span>      <span class="n">heart</span>
+<span class="n">GSMxzy</span>    <span class="n">GRCh38</span>      <span class="n">stage8</span>
+<span class="n">GSM890</span>    <span class="n">GRCh38</span>
 </pre></div>
 </div>
 <p>Using this file in the alignment workflow will output <em>heart.bam</em>, <em>stage8.bam</em> and <em>GSM890.bam</em>.
 The MultiQC will inform you of the trimming steps performed on all samples, and subsequent information of the ‘replicate’ files (of which only <em>heart</em> is merged).</p>
 <p>Note: If you are working with multiple assemblies in one workflow, replicate names have to be unique between assemblies (you will receive a warning if names overlap).</p>
-<div class="section" id="keep">
-<h4>keep<a class="headerlink" href="#keep" title="Permalink to this headline">¶</a></h4>
+<section id="keep">
+<h4>keep<a class="headerlink" href="#keep" title="Permalink to this headline"></a></h4>
 <p>Replicate merging is turned on by default. It can be turned off by setting <code class="docutils literal notranslate"><span class="pre">technical_replicates</span></code> in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> to <code class="docutils literal notranslate"><span class="pre">keep</span></code>.</p>
-</div>
-</div>
-<div class="section" id="biological-replicates">
-<h3>Biological replicates<a class="headerlink" href="#biological-replicates" title="Permalink to this headline">¶</a></h3>
+</section>
+</section>
+<section id="biological-replicates">
+<h3>Biological replicates<a class="headerlink" href="#biological-replicates" title="Permalink to this headline"></a></h3>
 <p>During ATAC-seq workflows, peak calling can be performed per biological condition, depending on your configuration setting. Biological conditions are determined by the <code class="docutils literal notranslate"><span class="pre">biological_replicates</span></code> column in the samples.tsv file. How these samples are handled is specified by configuration variable <code class="docutils literal notranslate"><span class="pre">biological_replicates</span></code>.</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>sample    assembly    biological_replicates
-GSM123    GRCh38      kidney
-GSMabc    GRCh38      liver
-GSMxzy    GRCh38      liver
-GSM890    GRCh38
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sample</span>    <span class="n">assembly</span>    <span class="n">biological_replicates</span>
+<span class="n">GSM123</span>    <span class="n">GRCh38</span>      <span class="n">kidney</span>
+<span class="n">GSMabc</span>    <span class="n">GRCh38</span>      <span class="n">liver</span>
+<span class="n">GSMxzy</span>    <span class="n">GRCh38</span>      <span class="n">liver</span>
+<span class="n">GSM890</span>    <span class="n">GRCh38</span>
 </pre></div>
 </div>
 <p>In this case peaks of the two liver samples (GSMabc and GSMxzy) will be combined by e.g. IDR.</p>
-<div class="section" id="id4">
-<h4>Keep<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h4>
+<section id="id4">
+<h4>Keep<a class="headerlink" href="#id4" title="Permalink to this headline"></a></h4>
 <p>By setting <code class="docutils literal notranslate"><span class="pre">biological_replicates</span></code> to keep, all biological replicates are analyzed individually. The <code class="docutils literal notranslate"><span class="pre">biological_replicates</span></code> column is ignored.</p>
-</div>
-<div class="section" id="irreproducible-discovery-rate-idr">
-<h4>Irreproducible Discovery Rate (IDR)<a class="headerlink" href="#irreproducible-discovery-rate-idr" title="Permalink to this headline">¶</a></h4>
+</section>
+<section id="irreproducible-discovery-rate-idr">
+<h4>Irreproducible Discovery Rate (IDR)<a class="headerlink" href="#irreproducible-discovery-rate-idr" title="Permalink to this headline"></a></h4>
 <p>One of the more common methods to combine biological replicates is by the irreproducible discovery rate (<a class="reference external" href="https://github.com/kundajelab/idr">idr</a>). Shortly; idr sorts all the peaks of two replicates separately on their significance. Since true peaks should be very significant for both replicates these peaks will be one of the highest sorted peaks. As peaks get less and less true (and thus their significance) their ordering also becomes more random between the samples. The idr method then only keeps the peak that overlap <em>nonrandomly</em> between the samples. The idr method only works for two replicates, so can not be used when you have more than 2 (<code class="docutils literal notranslate"><span class="pre">n</span> <span class="pre">==</span> <span class="pre">2</span></code>). IDR can be turned on by setting <code class="docutils literal notranslate"><span class="pre">biological_replicates</span></code> to idr.</p>
-</div>
-<div class="section" id="fisher-s-method">
-<h4>Fisher’s method<a class="headerlink" href="#fisher-s-method" title="Permalink to this headline">¶</a></h4>
+</section>
+<section id="fisher-s-method">
+<h4>Fisher’s method<a class="headerlink" href="#fisher-s-method" title="Permalink to this headline"></a></h4>
 <p><a class="reference external" href="https://en.wikipedia.org/wiki/Fisher%27s_method">Fisher’s method</a> simply is a method to ‘combine’ multiple p-values. This method is built-in for genrich and macs2, and allows any number of replicates (<code class="docutils literal notranslate"><span class="pre">n</span> <span class="pre">&gt;=</span> <span class="pre">2</span></code>). However a ‘disadvantage’ of this method is that it assumes the p-values a method generates are actual p-values (and not a general indication of significance). MACS2 is slightly notorious for that its p-values are not true p-values. Genrich claims by fitting on a log-normal distribution that their p-values are true. Even though fisher’s method might not be ideal, it’s the only option you have (we provide) within this pipeline for more than 2 replicates. Fisher’s method can be turned on by setting <code class="docutils literal notranslate"><span class="pre">biological_replicates</span></code> to fisher.</p>
-</div>
-</div>
-<div class="section" id="a-mix-of-biological-and-technical-replicates">
-<h3>A mix of biological and technical replicates<a class="headerlink" href="#a-mix-of-biological-and-technical-replicates" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>sample    assembly    technical_replicates  biological_replicates
-GSM123    GRCh38      peter_kidney         kidney
-GSMabc    GRCh38      peter_liver          liver
-GSMxzy    GRCh38      lindsey_liver        liver
-GSM890    GRCh38      lindsey_liver        liver
+</section>
+</section>
+<section id="a-mix-of-biological-and-technical-replicates">
+<h3>A mix of biological and technical replicates<a class="headerlink" href="#a-mix-of-biological-and-technical-replicates" title="Permalink to this headline"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sample</span>    <span class="n">assembly</span>    <span class="n">technical_replicates</span>  <span class="n">biological_replicates</span>
+<span class="n">GSM123</span>    <span class="n">GRCh38</span>      <span class="n">peter_kidney</span>         <span class="n">kidney</span>
+<span class="n">GSMabc</span>    <span class="n">GRCh38</span>      <span class="n">peter_liver</span>          <span class="n">liver</span>
+<span class="n">GSMxzy</span>    <span class="n">GRCh38</span>      <span class="n">lindsey_liver</span>        <span class="n">liver</span>
+<span class="n">GSM890</span>    <span class="n">GRCh38</span>      <span class="n">lindsey_liver</span>        <span class="n">liver</span>
 </pre></div>
 </div>
 <p>In this example we have data from Peter and Lindsey. We have one liver sample and one kidney sample from Peter. Of Lindsey we only have a liver sample, which was sequenced across two different lanes. With this sample sheet, the samples of Lindsey get merged after trimming. Then peak calling is done separately on each of the three remaining technical replicates (peter_kidney, peter_liver, lindsey_liver), and afterwards all liver technical replicates belonging to the same biological replicate (in this case peter_liver and lindsey_liver) are combined through e.g. IDR.</p>
-</div>
-<div class="section" id="colors-column">
-<h3>Colors column<a class="headerlink" href="#colors-column" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="colors-column">
+<h3>Colors column<a class="headerlink" href="#colors-column" title="Permalink to this headline"></a></h3>
 <p>If you are visualizing your data on the UCSC trackhub you can optionally specify the colors of each main track. For ATAC- and ChIP-seq, each biological replicate is a main track.
 To do so, you can add the color by name (google “matplotlib colors” for the options), or RGB values, in the “colors” column. Empty fields are considered black.</p>
-</div>
-<div class="section" id="final-notes">
-<h3>Final notes<a class="headerlink" href="#final-notes" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="final-notes">
+<h3>Final notes<a class="headerlink" href="#final-notes" title="Permalink to this headline"></a></h3>
 <ul class="simple">
 <li><p>Make sure that the samples.tsv is a tab separated values file when running the pipeline.</p></li>
 <li><p>Feel free to delete or add columns to your liking.</p></li>
 </ul>
-</div>
-</div>
-<div class="section" id="filling-out-the-config-yaml">
-<h2>Filling out the config.yaml<a class="headerlink" href="#filling-out-the-config-yaml" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+<section id="filling-out-the-config-yaml">
+<h2>Filling out the config.yaml<a class="headerlink" href="#filling-out-the-config-yaml" title="Permalink to this headline"></a></h2>
 <p>Every workflow has many configurable options, and can be set in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file. In each <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> we highlighted a couple options that we think are relevant for that specific workflow, and set (we think) <strong>reasonable default</strong> values.</p>
 <p>When a workflow starts it prints the complete configuration, and (almost) all these values can be added in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> and changed to your liking. You can see the complete set of configurable options in the <a class="reference external" href="../schemas.html">extensive docs</a>.</p>
-</div>
-<div class="section" id="best-practices">
-<h2>Best practices<a class="headerlink" href="#best-practices" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="irreproducible-discovery-rate">
-<h3>Irreproducible Discovery Rate<a class="headerlink" href="#irreproducible-discovery-rate" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="best-practices">
+<h2>Best practices<a class="headerlink" href="#best-practices" title="Permalink to this headline"></a></h2>
+<section id="irreproducible-discovery-rate">
+<h3>Irreproducible Discovery Rate<a class="headerlink" href="#irreproducible-discovery-rate" title="Permalink to this headline"></a></h3>
 <p>For idr to work properly, it needs a large portion of peaks that are actually not true peaks. Therefore we recommend to call peaks ‘loosely’. One way of doing this is setting the <a class="reference external" href="https://github.com/taoliu/MACS#-q--pvalue">peak threshold q-value</a> low for macs2 in the configuration.  The q-value controls the ratio of <code class="docutils literal notranslate"><span class="pre">false</span> <span class="pre">positives</span> <span class="pre">/</span> <span class="pre">(false</span> <span class="pre">positives</span> <span class="pre">+</span> <span class="pre">true</span> <span class="pre">positives)</span></code>. Setting a q-value of 1 guarantees you have plenty of false positives in your dataset for IDR to work properly.</p>
-</div>
-<div class="section" id="subsampling">
-<h3>subsampling<a class="headerlink" href="#subsampling" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="subsampling">
+<h3>subsampling<a class="headerlink" href="#subsampling" title="Permalink to this headline"></a></h3>
 <p>In some cases you might want to have the same number of reads between samples. By adding e.g. <code class="docutils literal notranslate"><span class="pre">subsample:1_000_000</span></code> seq2science will make sure that each sample contains at most a million reads. Seq2science always downsamples, never upsamples.</p>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
            </div>

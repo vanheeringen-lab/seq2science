@@ -34,99 +34,62 @@ properties:
         
   barcodefile:
     type: string
-    
-  run_kb_seurat_pp:
-    default: false
-    type: boolean
-  
-  export_seu_objects:
-    description: "Export scRNA count tables to Seurat objects and save in RDS format"
-    type: boolean   
-    default: false
-    
-  seurat_object:
-    description: "Seurat object settings"
+      
+  sc_preprocess:
+    description: "Pre-processing settings for scRNA data"
     properties:
-      project_name:
-        description: "Project name for merged Seurat object"
+      export_sce_objects:
+        description: "Export scRNA count tables to SingleCellExperiment and save in RDATA format"
+        type: boolean   
+      use_alt_expr:
+        description: "Process alternative experiments"  
+        type: boolean
+      velo_assay:
+        description: "Assay to use for export/qc. This option is only considered when kb is run with --workflow lamanno"
+        enum: ["spliced", "unspliced"]
+      alt_exp_name: 
+        description: "Name of the alternative experiment"
         type: string
-      min_cells:
-        description: "Include features detected in at least this many cells"
-        type: integer
-      min_features:
-        description: "Include cells where at least this many features are detected"
-        type: integer
-      default:
-        project_name: merged
-        min_cells: 0
-        min_features: 0
+      alt_exp_reg:
+        description: "Regular expression to extract alternative features"
+        type: string
+      run_sctk_qc:
+        description: "Generate QC reports with singleCellTK"
+        type: boolean   
+      sctk_data_type: 
+        description: "Type of count matrix, either cell or droplet"
+        type: string
+      sctk_detect_mito:
+        description: "Perform mitochondrial gene detection"
+        type: boolean
+      sctk_mito_set:
+        description: "Mitochondrial gene set for quality control"
+        enum: ["human-ensembl", "mouse-ensembl", "human-entrez", "mouse-entrez", "human-symbol", "mouse-symbol"]
+      sctk_detect_cell:
+        description: "Perform cell calling for droplet based methods"
+        type: boolean
+        default: true
+      sctk_cell_calling:
+        description: "Type of cell calling method"
+        enum: ["EmptyDrops", "Knee"]
+      sctk_export_formats:
+        description: "Additional file formats for SCE export"
+        type: array
+      sctk_qc_algos:
+        description: "QC algorithms for CellQC"
+        type: array
         
-  # Exploratory data analysis for in-house Celseq2
-  seurat:
-    description: Seurat rmd for exploratory data analysis
-    properties:
-      method: 
-        description: experimental method
-        enum:  [384plate,droplet]
-      barcode_file:  
-        description: ".tab delimited file with 2-col layout for plate based methods (with DNA barcode and well-id)"
-        type: string
-      mt_genes_file: 
-        description: ".txt file containing one column with mitchondrial genes"
-        type: string
-      run.sct:
-         description: "perform SCTransform normalization, FALSE runs log1p NormalizeData, HVG selection and ScaleData in Seurat"
-         type: boolean
-      run.jackstraw:
-         description: "perform Jackstraw analysis (does not work with SCTransform)"
-         type: boolean    
-      add.spikes.ercc: 
-        label: "use ERCC RNA spike-ins (if present)"
-        type: boolean
-      ercc_pct_max: 
-        description: "max percentage ERCC spike-ins counts"
-        type: integer
-      add.spikes.mt: 
-        description: "use mitochondrial gene-list for qc"
-        type: boolean
-      mt_pct_max: 
-        description: "max percentage mitochondrial genes counts"
-        type: integer
-      gene_tresh: 
-        description: "gene filter threshold for genes considered expressed"
-        type: integer
-      amount_cells_expr: 
-        description: "gene filter threshold for minimal amount of cells a gene should be expressed in"
-        type: integer
-      total_counts_tresh: 
-        description: "cell filter threshold for minimal amount of UMI counts detected in a cell"
-        type: integer
-      total_feat_tresh: 
-        description: "cell filter threshold for minimal amount of features (genes) detected in a cell"
-        type: integer
-      nhvg: 
-        description: "number of Highly Variable Genes, used in Seurat's FindVariableFeatures"
-        type: integer
-      pcs_for_overview:
-        description: "perform UMAP on the defined list of pc's (seperated by comma) and generate combined UMAP plot"
-        type: string
-      pcs_max_hvg: 
-        description: "max number of principal components to visualize"
-        type: integer  
-      default:
-        method: 384plate
-        barcode_file: ""
-        mt_genes_file: ""
-        run.sct: true
-        run.jackstraw: false
-        add.spikes.ercc : true
-        add.spikes.mt: true
-        ercc_pct_max: 20
-        mt_pct_max: 50
-        gene_tresh: 0
-        amount_cells_expr: 0  
-        total_counts_tresh: 1000
-        total_feat_tresh: 500
-        nhvg: 2000
-        pcs_max_hvg: 70
-        pcs_for_overview: 10,20,30,40,50
+    default:
+      export_sce_objects: False
+      run_sctk_qc: False
+      velo_assay: spliced
+      sctk_data_type: cell
+      sctk_detect_cell: True
+      sctk_cell_calling: Knee
+      sctk_detect_mito: True
+      sctk_mito_set: human-ensembl
+      sctk_export_formats: ["Seurat"]
+      sctk_qc_algos: ["QCMetrics", "scDblFinder", "decontX"]
+      use_alt_expr: False
+      alt_exp_name: "ALT"
+      alt_exp_reg: ""
