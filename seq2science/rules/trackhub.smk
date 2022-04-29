@@ -682,11 +682,12 @@ _ori_assembly = {}
 _get_ucsc_name = {}
 _has_annotation = {}
 if config.get("create_trackhub"):
+    # generate these once
     trackhub_files = create_trackhub()["files"]
-for assembly in all_assemblies:
-    _ori_assembly[assembly] = ori_assembly(assembly)
-    _get_ucsc_name[assembly] = get_ucsc_name(assembly)
-    _has_annotation[assembly] = has_annotation(assembly)
+    for assembly in all_assemblies:
+        _ori_assembly[assembly] = ori_assembly(assembly)
+        _get_ucsc_name[assembly] = get_ucsc_name(assembly)
+        _has_annotation[assembly] = has_annotation(assembly)
 
 
 rule trackhub:
