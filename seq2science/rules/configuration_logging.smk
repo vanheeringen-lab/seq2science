@@ -95,6 +95,9 @@ if not config.get("no_config_log"):
         "genomepy_temp",
         "bam_sort_mem",
         "benchmark_dir",
+        "sra_dir",
+        "trimmed_dir",
+        "results_dir",
         "rule_dir",
         "cli_call",
         ("biological_replicates", "condition" not in samples),
@@ -112,16 +115,18 @@ if not config.get("no_config_log"):
         ("min_mapping_quality", no_aligners),
         ("only_primary_align", no_aligners),
         ("remove_blacklist", no_aligners),
+        ("tx2gene_from_gtf", config.get("tx2gene_from_gtf")),
         ("tximeta", config.get("quantifier") != "salmon"),
         ("deseq2", not config.get("contrasts")),
         ("deseq2_dir", not config.get("contrasts")),
         ("bigwig_dir", not config.get("create_trackhub")),
+        ("trackhub_dir", not config.get("create_trackhub")),
         ("qc_dir", not config.get("create_qc_report")),
     ]
     keys = rmkeys(["samples"] + keys_to_remove, keys)
     keys = ["samples"] + keys
 
-    ignore_values = ["", False, 0, "None", "none@provided.com", "yourmail@here.com", "_custom"]
+    ignore_values = ["", False, -1, 0, 999, "None", "none@provided.com", "yourmail@here.com", "_custom"]
     table = [(key, config[key]) for key in keys if config[key] not in ignore_values]
     table.append(("layout", {sample: values["layout"] for sample, values in sampledict.items()}))
     table = [["\n".join(textwrap.wrap(str(cell), 112)) for cell in row] for row in table]
