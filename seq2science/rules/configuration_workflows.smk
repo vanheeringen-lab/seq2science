@@ -165,10 +165,10 @@ def get_read_length(sample):
 
     # trimgalore
     if config["trimmer"] == "trimgalore":
-        if sampledict[sample]["layout"] == "SINGLE":
+        if SAMPLEDICT[sample]["layout"] == "SINGLE":
             qc_file = checkpoints.fastqc.get(fname=f"{sample}_R1_trimmed").output.zip
             zip_name = f"{sample}_trimmed_fastqc/fastqc_data.txt"
-        if sampledict[sample]["layout"] == "PAIRED":
+        if SAMPLEDICT[sample]["layout"] == "PAIRED":
             qc_file = checkpoints.fastqc.get(fname=f"{sample}_R1_trimmed").output.zip
             zip_name = f"{sample}_{config['fqext1']}_trimmed_fastqc/fastqc_data.txt"
 
@@ -181,9 +181,9 @@ def get_read_length(sample):
 
     # fastp
     if config["trimmer"] == "fastp":
-        if sampledict[sample]["layout"] == "SINGLE":
+        if SAMPLEDICT[sample]["layout"] == "SINGLE":
             qc_file = checkpoints.fastp_SE.get(sample=sample).output.qc_json[0]
-        if sampledict[sample]["layout"] == "PAIRED":
+        if SAMPLEDICT[sample]["layout"] == "PAIRED":
             qc_file = checkpoints.fastp_PE.get(sample=sample).output.qc_json[0]
 
         import json
