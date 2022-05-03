@@ -128,7 +128,7 @@ if not config.get("no_config_log"):
 
     ignore_values = ["", False, -1, 0, 999, "None", "none@provided.com", "yourmail@here.com", "_custom"]
     table = [(key, config[key]) for key in keys if config[key] not in ignore_values]
-    table.append(("layout", {sample: values["layout"] for sample, values in sampledict.items()}))
+    table.append(("layout", {sample: values["layout"] for sample, values in SAMPLEDICT.items()}))
     table = [["\n".join(textwrap.wrap(str(cell), 112)) for cell in row] for row in table]
 
     logger.info(tabulate(table, headers=["config variable", "value"], tablefmt="pipe"))

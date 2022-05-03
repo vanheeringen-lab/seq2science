@@ -39,7 +39,7 @@ class UniqueKeyLoader(yaml.SafeLoader):
             key = self.construct_object(key_node, deep=deep).lower()
             if key in mapping:
                 logger.error(f"Duplicate key found in the config.yaml: {key}\n")
-                sys.exit(1)
+                os._exit(1)  # noqa
             mapping.append(key)
         return super().construct_mapping(node, deep)
 
@@ -61,7 +61,7 @@ def _sample_to_idxs(df: pd.DataFrame, sample: str) -> List[int]:
     return idxs
 
 
-def parse_samples(samples: pd.DataFrame, config: dict) -> pd.DataFrame:
+def dense_samples(samples: pd.DataFrame, config: dict) -> pd.DataFrame:
     """
     for each functional column, if found in samples.tsv:
     1) if it is incomplete, fill the blanks with replicate/sample names
@@ -107,19 +107,19 @@ def samples2metadata_local(samples: List[str], config: dict, logger) -> dict:
     """
     (try to) get the metadata of local samples
     """
-    sampledict = dict()
+    SAMPLEDICT = dict()
     for sample in samples:
         local_fastqs = glob.glob(os.path.join(config["fastq_dir"], f'{sample}*{config["fqsuffix"]}*.gz'))
         if len(local_fastqs) == 1:
-            sampledict[sample] = dict()
-            sampledict[sample]["layout"] = "SINGLE"
+            SAMPLEDICT[sample] = dict()
+            SAMPLEDICT[sample]["layout"] = "SINGLE"
         elif (
             len(local_fastqs) == 2
             and any([config["fqext1"] in os.path.basename(f) for f in local_fastqs])
             and any([config["fqext2"] in os.path.basename(f) for f in local_fastqs])
         ):
-            sampledict[sample] = dict()
-            sampledict[sample]["layout"] = "PAIRED"
+            SAMPLEDICT[sample] = dict()
+            SAMPLEDICT[sample]["layout"] = "PAIRED"
         elif sample.startswith(("GSM", "DRX", "ERX", "SRX", "DRR", "ERR", "SRR")):
             continue
         else:
@@ -138,9 +138,9 @@ def samples2metadata_local(samples: List[str], config: dict, logger) -> dict:
                 + f"Since the sample did not start with either GSM, SRX, SRR, ERR, and DRR we "
                 f"couldn't find it online..\n"
             )
-            sys.exit(1)
+            os._exit(1)  # noqa
 
-    return sampledict
+    return SAMPLEDICT
 
 
 def samples2metadata_sra(samples: List[str], logger) -> dict:
@@ -166,7 +166,7 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
         )
     """
     # start with empty dictionary which we fill out later
-    sampledict = {sample: dict() for sample in samples}
+    SAMPLEDICT = {sample: dict() for sample in samples}
 
     # only continue with public samples
     db_sra = pysradb.SRAweb()
@@ -185,7 +185,7 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
                 "Another possible option is that you try to access samples that do not exist or are protected, and "
                 "seq2science does not support downloading those..\n\n"
             )
-            sys.exit(1)
+            os._exit(1)  # noqa
 
         sample2clean = dict(zip(df_geo.experiment_alias, df_geo.experiment_accession))
     else:
@@ -204,7 +204,7 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
             "Another possible option is that you try to access samples that do not exist or are protected, and "
             "seq2science does not support downloading those..\n\n"
         )
-        sys.exit(1)
+        os._exit(1)  # noqa
 
     # keep track of not-supported samples
     not_supported_formats = ["ABI_SOLID"]
@@ -217,7 +217,7 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
         # get all runs that belong to the sample
         runs = df_sra.loc[idxs].run_accession.tolist()
         assert len(runs) >= 1
-        sampledict[sample]["runs"] = runs
+        SAMPLEDICT[sample]["runs"] = runs
 
         # check if sample is from a supported format
         for bad_format in not_supported_formats:
@@ -229,22 +229,22 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
         layout = df_sra.loc[idxs].library_layout.tolist()
         assert len(set(layout)) == 1, f"sample {sample} consists of mixed layouts, bad!"
         assert layout[0] in ["PAIRED", "SINGLE"], f"sample {sample} is an unclear layout, bad!"
-        sampledict[sample]["layout"] = layout[0]
+        SAMPLEDICT[sample]["layout"] = layout[0]
 
         # get the ena url
-        sampledict[sample]["ena_fastq_ftp"] = dict()
+        SAMPLEDICT[sample]["ena_fastq_ftp"] = dict()
         for run in runs:
             if layout[0] == "SINGLE":
-                sampledict[sample]["ena_fastq_ftp"][run] = df_sra[df_sra.run_accession == run].ena_fastq_ftp.tolist()
+                SAMPLEDICT[sample]["ena_fastq_ftp"][run] = df_sra[df_sra.run_accession == run].ena_fastq_ftp.tolist()
             elif layout[0] == "PAIRED":
-                sampledict[sample]["ena_fastq_ftp"][run] = (
+                SAMPLEDICT[sample]["ena_fastq_ftp"][run] = (
                     df_sra[df_sra.run_accession == run].ena_fastq_ftp_1.tolist()
                     + df_sra[df_sra.run_accession == run].ena_fastq_ftp_2.tolist()
                 )
 
         # if any run from a sample is not found on ENA, better be safe, and assume that sample as a whole is not on ENA
-        if any([any(pd.isna(urls)) for urls in sampledict[sample]["ena_fastq_ftp"].values()]):
-            sampledict[sample]["ena_fastq_ftp"] = None
+        if any([any(pd.isna(urls)) for urls in SAMPLEDICT[sample]["ena_fastq_ftp"].values()]):
+            SAMPLEDICT[sample]["ena_fastq_ftp"] = None
 
     # now report single message for all sample(s) that are from a sequencing platform that is not supported
     assert len(not_supported_samples) == 0, (
@@ -252,7 +252,7 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
         f'these formats; [{", ".join(not_supported_formats)}] are not supported.'
     )
 
-    return sampledict
+    return SAMPLEDICT
 
 
 def samples2metadata(samples: List[str], config: dict, logger) -> dict:
@@ -382,7 +382,7 @@ def expand_contrasts(samples: pd.DataFrame, contrasts: list or str) -> list:
     return new_contrasts
 
 
-def get_contrasts(samples: pd.DataFrame, config: dict, all_assemblies: list) -> list:
+def get_contrasts(samples: pd.DataFrame, config: dict, ALL_ASSEMBLIES: list) -> list:
     """
     list all diffexp.tsv files we expect
     """
@@ -405,7 +405,7 @@ def get_contrasts(samples: pd.DataFrame, config: dict, all_assemblies: list) -> 
             }
             column = backup_columns[column]
 
-        for assembly in all_assemblies:
+        for assembly in ALL_ASSEMBLIES:
             groups = set(samples[samples.assembly == assembly][column].to_list())
             if target in groups and reference in groups:
                 all_contrasts.append(f"{config['deseq2_dir']}/{assembly}-{de_contrast}.diffexp.tsv")
@@ -459,7 +459,7 @@ def get_bustools_rid(params):
         read_id = kb_tech_dict[tech.lower()]
     else:
         logger.error("Not a valid BUS(barcode:umi:set) string. Please check -x argument")
-        sys.exit(1)
+        os._exit(1)  # noqa
     return read_id
 
 
@@ -517,7 +517,7 @@ def color_parser(color: str, color_dicts: list = None) -> tuple:
             return rgb_to_hsv(value)
 
     logger.error(f"Color not recognized: {color}")
-    sys.exit(1)
+    os._exit(1)  # noqa
 
 
 def color_picker(n, min_h=0, max_h=0.85, s=1.00, v=0.75, alternate=True):
@@ -555,11 +555,6 @@ def color_gradient(hsv: tuple, n: int) -> List[tuple]:
 
     hsv_gradient_list = [(h, s[i], v[i]) for i in range(n)]
     return hsv_gradient_list
-
-
-def unique(sequence):
-    seen = set()
-    return [x for x in sequence if not (x in seen or seen.add(x))]
 
 
 def shorten(string, max_length, methods="right"):
@@ -662,7 +657,7 @@ def retry_pickling(func):
                 time.sleep(1)
         else:
             logger.error("There were some problems with locking the seq2science cache. Please try again in a bit.")
-            sys.exit(1)
+            os._exit(1)  # noqa
 
     return wrap
 
@@ -736,7 +731,7 @@ class PickleDict(dict):
                     f"Could not download assembly {assembly}.\n"
                     f"Find alternative assemblies with `genomepy search {assembly}`"
                 )
-                exit(1)
+                os._exit(1)  # noqa
 
             if self[assembly]["annotation"] is None:
                 if verbose:
@@ -746,7 +741,7 @@ class PickleDict(dict):
                         f"Find alternative assemblies with `genomepy search {assembly}`\n"
                     )
                 if annotation_required:
-                    exit(1)
+                    os._exit(1)  # noqa
 
 
 def is_local(assembly: str, ftype: str, config: dict) -> bool:

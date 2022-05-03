@@ -1,5 +1,10 @@
 set -euxo pipefail
 
+# set CONDA for local execution
+if [ -z ${CONDA+x} ]; then
+    CONDA=$CONDA_PREFIX
+fi
+
 dir=$(pwd)
 
 for f in seq2science/workflows/*; do

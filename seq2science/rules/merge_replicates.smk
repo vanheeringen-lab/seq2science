@@ -1,83 +1,14 @@
 """
 all rules/logic related to the merging of technical replicates (and a bit for biological replicates) should be here.
 """
-
-# dataframe with all technical replicates collapsed
-cols = ["sample", "assembly"]
-subset = ["sample", "assembly"]
 if "technical_replicates" in samples:
-    cols = ["technical_replicates", "assembly"]
-    subset = ["technical_replicates", "assembly"]
-if "biological_replicates" in samples:
-    cols.append("biological_replicates")
-    subset.append("biological_replicates")
-if "control" in samples:
-    cols.append("control")
-if "colors" in samples:
-    cols.append("colors")
+    import re
 
-treps = samples.reset_index()[cols].drop_duplicates(subset=subset).set_index(cols[0])
-assert treps.index.is_unique, "duplicate value found in treps"
-
-# treps that came from a merge
-merged_treps = [trep for trep in treps.index if trep not in samples.index]
-merged_treps_single = [trep for trep in merged_treps if sampledict[trep]["layout"] == "SINGLE"]
-merged_treps_paired = [trep for trep in merged_treps if sampledict[trep]["layout"] == "PAIRED"]
-
-# all samples (including controls)
-all_samples = [sample for sample in samples.index]
-if "control" in samples.columns:
-    all_samples.extend(samples["control"].dropna().tolist())
-
-# dataframe with all replicates collapsed
-breps = treps
-if "biological_replicates" in treps:
-    breps = treps.reset_index(drop=True).drop_duplicates(subset=subset[1:]).set_index("biological_replicates")
-
-
-# make a dict that returns the treps that belong to a brep
-treps_from_brep = dict()
-if "biological_replicates" in treps:
-    for brep, row in breps.iterrows():
-        assembly = row["assembly"]
-        treps_from_brep[(brep, assembly)] = list(
-            treps[(treps["assembly"] == assembly) & (treps["biological_replicates"] == brep)].index
-        )
-        treps_from_brep[(brep, assembly + config.get("custom_assembly_suffix", ""))] = list(
-            treps[(treps["assembly"] == assembly) & (treps["biological_replicates"] == brep)].index
-        )
-else:
-    for brep, row in breps.iterrows():
-        assembly = row["assembly"]
-        treps_from_brep[(brep, assembly)] = [brep]
-        treps_from_brep[(brep, assembly + config.get("custom_assembly_suffix", ""))] = [brep]
-
-# and vice versa
-brep_from_trep = dict()
-for (brep, _assembly), _treps in treps_from_brep.items():
-    brep_from_trep.update({trep: brep for trep in _treps})
-
-
-def rep_to_descriptive(rep, brep=False):
-    """
-    Return the descriptive name for a replicate.
-    """
-    if brep and "biological_replicates" in samples:
-        rep = samples[samples.biological_replicates == rep].biological_replicates[0]
-    elif "descriptive_name" in samples:
-        col = samples.index
-        if "technical_replicates" in samples:
-            col = samples.technical_replicates 
-        rep = samples[col == rep].descriptive_name[0]
-    return rep
-
-
-if "technical_replicates" in samples:
 
     def get_merge_replicates(wildcards):
         input_files = list()
         for sample in samples[samples["technical_replicates"] == wildcards.replicate].index:
-            if get_workflow() == "scrna_seq":
+            if WORKFLOW == "scrna_seq":
                 input_files.append(f"{{fastq_clean_dir}}/{sample}_clean{wildcards.fqext}.{{fqsuffix}}.paired.fq.gz")
             else:
                 input_files.append(f"{{trimmed_dir}}/{sample}{wildcards.fqext}_trimmed.{{fqsuffix}}.gz")
@@ -125,7 +56,7 @@ if "technical_replicates" in samples:
             expand("{benchmark_dir}/merge_replicates/{{replicate}}{{fqext}}.benchmark.txt", **config)[0]
         run:
             for rep in input:
-                rep_name = re.findall("\/([^\/_]+)_", rep)[-1]
+                rep_name = re.findall("/([^/_]+)_", rep)[-1]
 
                 shell(
                     """zcat {rep} | awk '{{if (NR%4==1) {{gsub(/^@/, "@{rep_name}:"); print}} else {{print}}}}' | gzip >> {output}"""
