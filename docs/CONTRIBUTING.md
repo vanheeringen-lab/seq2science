@@ -11,7 +11,7 @@ Questions can be asked on the [github issues page](https://github.com/vanheering
 Make sure to check if the question has been asked before in old issues and check the [Frequently Asked Section (FAQ)](content/faq.html) in the docs if it's there.
 
 
-## Reporting bugs
+### Reporting bugs
 Bug reports can be made by making an issue on the [github issues page](https://github.com/vanheeringen-lab/seq2science/issues).
 
 
@@ -122,7 +122,7 @@ We often use this to apply workflow-specific logic.
 
 #### Global wildcard constraints
 
-seq2science sets global wildcard constraints in `seq2science/rules/configuration_generic.smk`.
+Seq2science sets global wildcard constraints in `seq2science/rules/configuration_generic.smk`.
 As wildcards are essentially greedy regex (`.*`), these constraints make sure we adhere to the naming convention of samples and assembly. 
 
 For example, one default wildcard constraint in seq2science is that the wildcard `{replicate}` can only match with 
