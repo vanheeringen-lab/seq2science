@@ -1,6 +1,8 @@
 """
 all rules/logic related to the genomic peak calling should be here.
 """
+import math
+import pandas as pd
 
 
 def get_peak_ftype(peak_caller):
@@ -21,7 +23,7 @@ def get_peak_ftype(peak_caller):
             f"The peak caller used for this workflow is not supported ({peak_caller}). "
             "Please make an issue on github if this is unexpected behaviour!"
         )
-        sys.exit(1)
+        os._exit(1)  # noqa
     return ftype
 
 
@@ -57,7 +59,7 @@ def get_genrich_replicates(wildcards):
             "reps": expand(
                 [
                     f"{{final_bam_dir}}/{assembly}-{replicate}.sambamba-queryname.bam"
-                    for replicate in treps_from_brep[(sample_condition, assembly)]
+                    for replicate in TREPS_FROM_BREP[(sample_condition, assembly)]
                 ],
                 **config,
             ),
@@ -106,8 +108,7 @@ rule call_peak_genrich:
         expand("{log_dir}/call_peak_genrich/{{fname}}_peak.log", **config),
     benchmark:
         expand("{benchmark_dir}/call_peak_genrich/{{fname}}.benchmark.txt", **config)[0]
-    message:
-        explain_rule("call_peak_genrich")
+    message: EXPLAIN["call_peak_genrich"]
     conda:
         "../envs/genrich.yaml"
     params:
@@ -121,8 +122,8 @@ rule call_peak_genrich:
 def get_fastq_qc_file(wildcards):
     if config["trimmer"] == "trimgalore":
         if (
-            sampledict.get(wildcards.sample, {}).get("layout") == "SINGLE"
-            or sampledict.get(wildcards.assembly, {}).get("layout") == "SINGLE"
+            SAMPLEDICT.get(wildcards.sample, {}).get("layout") == "SINGLE"
+            or SAMPLEDICT.get(wildcards.assembly, {}).get("layout") == "SINGLE"
         ):
             return expand("{qc_dir}/fastqc/{{sample}}_trimmed_fastqc.zip", **config)
         return sorted(expand("{qc_dir}/fastqc/{{sample}}_{fqext1}_trimmed_fastqc.zip", **config))
@@ -131,7 +132,7 @@ def get_fastq_qc_file(wildcards):
 
 
 def get_macs2_bam(wildcards):
-    if not config["macs2_keep_mates"] or sampledict[wildcards.sample].get("layout") == "SINGLE":
+    if not config["macs2_keep_mates"] or SAMPLEDICT[wildcards.sample].get("layout") == "SINGLE":
         return expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config)
     return rules.keep_mates.output
 
@@ -144,7 +145,7 @@ def get_control_macs(wildcards):
     if not isinstance(control, str) and math.isnan(control):
         return dict()
 
-    if not config["macs2_keep_mates"] is True or sampledict[wildcards.sample].get("layout") == "SINGLE":
+    if not config["macs2_keep_mates"] is True or SAMPLEDICT[wildcards.sample].get("layout") == "SINGLE":
         return {"control": expand(f"{{final_bam_dir}}/{{{{assembly}}}}-{control}.samtools-coordinate.bam", **config)}
     return {"control": expand(f"{{final_bam_dir}}/{control}-mates-{{{{assembly}}}}.samtools-coordinate.bam", **config)}
 
@@ -169,8 +170,7 @@ rule macs2_callpeak:
         expand("{log_dir}/macs2_callpeak/{{assembly}}-{{sample}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/macs2_callpeak/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
-    message:
-        explain_rule("macs2_callpeak")
+    message: EXPLAIN["macs2_callpeak"]
     wildcard_constraints:
         sample=any_given("sample", "technical_replicates"),
     params:
@@ -178,7 +178,7 @@ rule macs2_callpeak:
         format=(
             lambda wildcards: "BAMPE"
             if (
-                sampledict[wildcards.sample]["layout"] == "PAIRED"
+                SAMPLEDICT[wildcards.sample]["layout"] == "PAIRED"
                 and "--shift" not in config["peak_caller"].get("macs2", "")
             )
             else "BAM"
@@ -209,8 +209,7 @@ rule keep_mates:
         expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config),
     output:
         expand("{final_bam_dir}/{{assembly}}-{{sample}}-mates.samtools-coordinate.bam", **config),
-    message:
-        explain_rule("keep_mates")
+    message: EXPLAIN["keep_mates"]
     log:
         expand("{log_dir}/keep_mates/{{assembly}}-{{sample}}.log", **config),
     benchmark:
@@ -285,7 +284,7 @@ if "biological_replicates" in samples:
         def get_idr_replicates(wildcards):
             reps = []
             for replicate in treps[
-                (treps["assembly"] == ori_assemblies[wildcards.assembly]) & (treps["biological_replicates"] == wildcards.condition)
+                (treps["assembly"] == ORI_ASSEMBLIES[wildcards.assembly]) & (treps["biological_replicates"] == wildcards.condition)
             ].index:
                 reps.append(
                     f"{config['result_dir']}/{wildcards.peak_caller}/{wildcards.assembly}-{replicate}_peaks.{wildcards.ftype}"
@@ -306,8 +305,7 @@ if "biological_replicates" in samples:
             output:
                 true=expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{condition}}_peaks.{{ftype}}", **config),
                 temp=temp(expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{condition}}_peaks.tmp.{{ftype}}", **config)),
-            message:
-                explain_rule("idr")
+            message: EXPLAIN["idr"]
             log:
                 expand("{log_dir}/idr/{{assembly}}-{{condition}}-{{peak_caller}}-{{ftype}}.log", **config),
             benchmark:
@@ -372,7 +370,7 @@ if "biological_replicates" in samples:
                     [
                         f"{{result_dir}}/macs2/{wildcards.assembly}-{replicate}_qvalues.bdg"
                         for replicate in treps[
-                            (treps["assembly"] == ori_assemblies[wildcards.assembly])
+                            (treps["assembly"] == ORI_ASSEMBLIES[wildcards.assembly])
                             & (treps["biological_replicates"] == wildcards.condition)
                         ].index
                     ],
@@ -382,7 +380,7 @@ if "biological_replicates" in samples:
             def get_macs_replicate(wildcards):
                 """the original peakfile, to link if there is only 1 sample for a condition"""
                 replicate = treps[
-                    (treps["assembly"] == ori_assemblies[wildcards.assembly])
+                    (treps["assembly"] == ORI_ASSEMBLIES[wildcards.assembly])
                     & (treps["biological_replicates"] == wildcards.condition)
                 ].index
                 return expand(
@@ -405,8 +403,7 @@ if "biological_replicates" in samples:
                     ),
                     tmppeaks=temp(expand("{result_dir}/macs2/{{assembly}}-{{condition}}_peaks.temp.{{ftype}}", **config)),
                     peaks=expand("{result_dir}/macs2/{{assembly}}-{{condition}}_peaks.{{ftype}}", **config),
-                message:
-                    explain_rule("macs_cmbreps")
+                message: EXPLAIN["macs_cmbreps"]
                 log:
                     expand("{log_dir}/macs_cmbreps/{{assembly}}-{{condition}}-{{ftype}}.log", **config),
                 benchmark:

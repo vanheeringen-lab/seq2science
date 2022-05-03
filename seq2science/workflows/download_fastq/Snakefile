@@ -1,6 +1,6 @@
 # do onstart/onexit things
-sample_schemas = ['sample']
-config_schemas = ['general', 'download']
+SAMPLE_SCHEMAS = ['sample']
+CONFIG_SCHEMAS = ['general', 'download']
 include: "../../rules/configuration.smk"
 
 
@@ -13,5 +13,5 @@ rule seq2science:
     download all samples
     """
     input:
-        [expand(f"{{fastq_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz", **config) if sampledict[sample]['layout'] == "PAIRED" else
+        [expand(f"{{fastq_dir}}/{sample}_{{fqext}}.{{fqsuffix}}.gz", **config) if SAMPLEDICT[sample]['layout'] == "PAIRED" else
          expand(f"{{fastq_dir}}/{sample}.{{fqsuffix}}.gz", **config) for sample in samples.index]

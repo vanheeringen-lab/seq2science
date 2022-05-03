@@ -1,3 +1,6 @@
+import os
+
+
 def can_convert():
     """check if we can make a conversion table at all"""
     with open(snakemake.input[0]) as gtf:
@@ -12,7 +15,7 @@ def can_convert():
 if not can_convert():
     with open(snakemake.output[0], "w") as out:
         out.write("The gene annotation does not contain the required attribute fields 'gene_id' and 'gene_name'.\n")
-    exit(0)
+    os._exit(0)  # noqa
 
 # loop over the gtf and store the conversion in the table
 table = dict()

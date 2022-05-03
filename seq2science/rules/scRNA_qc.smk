@@ -1,6 +1,7 @@
 """
 all rules/logic specific to scRNA qc and post-processing should be specified here.
 """
+import os
 
 
 def get_count_dir(wildcards):
@@ -35,8 +36,7 @@ rule export_sce_obj:
         replicates=True if "technical_replicates" in samples else False,
         scripts_dir=f"{config['rule_dir']}/../scripts",
         outdir=lambda wildcards, input, output: os.path.dirname(output[1]),
-    message:
-        explain_rule("sce")
+    message: EXPLAIN["sce"]
     resources:
         R_scripts=1,  # conda's R can have issues when starting multiple times
     script:
@@ -66,8 +66,7 @@ rule sctk_qc:
         isvelo=lambda wildcards, input: True if "--workflow lamanno" in config.get("count", "") else False,
         scripts_dir=f"{config['rule_dir']}/../scripts",
         replicates=True if "technical_replicates" in samples else False,
-    message:
-        explain_rule("sctk")
+    message: EXPLAIN["sctk"]
     resources:
         R_scripts=1,
         mem_gb=50,# conda's R can have issues when starting multiple times

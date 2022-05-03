@@ -1,6 +1,6 @@
 # do onstart/onexit things
-sample_schemas = ['sample', 'assembly', 'technical_replicates', 'strandedness']
-config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific', 'gene_expression', 'deseq2', 'trackhub']
+SAMPLE_SCHEMAS = ['sample', 'assembly', 'technical_replicates', 'strandedness']
+CONFIG_SCHEMAS = ['general', 'download', 'alignment_general', 'alignment_specific', 'gene_expression', 'deseq2', 'trackhub']
 include: "../../rules/configuration.smk"
 
 
@@ -22,7 +22,7 @@ include: f"{config['rule_dir']}/qc_rna.smk"
 
 
 # load the quality control files
-quality_control = [get_trimming_qc, get_rna_qc] if config['quantifier'] == 'salmon' and config['create_trackhub'] == False else [get_trimming_qc, get_alignment_qc, get_rna_qc]
+QUALITY_CONTROL = [get_trimming_qc, get_rna_qc] if config['quantifier'] == 'salmon' and config['create_trackhub'] == False else [get_trimming_qc, get_alignment_qc, get_rna_qc]
 
 rule seq2science:
     """
@@ -35,5 +35,5 @@ rule seq2science:
 
              (["{counts_dir}/{assemblies}-counts.tsv", "{counts_dir}/{assemblies}-TPM.tsv"]) +
              (["{counts_dir}/{assemblies}-DEXSeq_counts.tsv"] if config['dexseq'] else []) +
-             (["{genome_dir}/{assemblies}/gene_id2name.tsv"]), assemblies=all_assemblies, **config) +
-         DE_contrasts
+             (["{genome_dir}/{assemblies}/gene_id2name.tsv"]), assemblies=ALL_ASSEMBLIES, **config) +
+         DE_CONTRASTS

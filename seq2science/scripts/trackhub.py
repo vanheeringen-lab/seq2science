@@ -5,13 +5,13 @@ import trackhub
 
 
 logfile = snakemake.log[0]
-all_assemblies = snakemake.params.all_assemblies
+ALL_ASSEMBLIES = snakemake.params.ALL_ASSEMBLIES
 hub = snakemake.params.hub
 genomes_dir = snakemake.params.genomes_dir
 out_dir = snakemake.output[0]
-ori_assemblies = snakemake.params.ori_assemblies
+ORI_ASSEMBLIES = snakemake.params.ORI_ASSEMBLIES
 ucsc_names = snakemake.params.ucsc_names
-has_annotation = snakemake.params.has_annotation
+HAS_ANNOTATION = snakemake.params.HAS_ANNOTATION
 
 
 def chmod_r(target_dir, permissions, file_permissions=None):
@@ -36,12 +36,12 @@ sys.stderr = sys.stdout
 trackhub.upload.upload_hub(hub=hub, host="localhost", remote_dir=out_dir)
 
 # actions not supported by the Trackhub package
-for assembly in all_assemblies:
-    asmbly = ori_assemblies[assembly]  # no custom suffix, if present
+for assembly in ALL_ASSEMBLIES:
+    asmbly = ORI_ASSEMBLIES[assembly]  # no custom suffix, if present
     hub_type = "trackhub" if ucsc_names[assembly][0] else "assembly_hub"
 
     # copy the trix files
-    if hub_type == "assembly_hub" and has_annotation[asmbly]:
+    if hub_type == "assembly_hub" and HAS_ANNOTATION[asmbly]:
         for ext in ["ix", "ixx"]:
             src = os.path.join(genomes_dir, assembly, f"annotation.{ext}")
             dst = os.path.join(out_dir, asmbly, f"annotation.{ext}")

@@ -3,10 +3,6 @@ all rules/logic related to differential gene expression with deseq2 should be he
 """
 
 import math
-import os
-import hashlib
-
-import pandas as pd
 
 from seq2science.util import parse_contrast
 
@@ -25,7 +21,7 @@ if config.get("peak_caller", False):
     # if hmmratac peak caller, check if all samples are paired-end
     if "hmmratac" in config["peak_caller"]:
         assert all(
-            [sampledict[sample]["layout"] == "PAIRED" for sample in samples.index]
+            [SAMPLEDICT[sample]["layout"] == "PAIRED" for sample in samples.index]
         ), "HMMRATAC requires all samples to be paired end"
 
     config["macs2_types"] = ["control_lambda.bdg", "peaks.xls", "treat_pileup.bdg"]
@@ -89,7 +85,7 @@ for conf_dict in ["aligner", "quantifier", "tpm2counts", "trimmer"]:
 
 
 # ...for rna-seq
-if get_workflow() == "rna_seq":
+if WORKFLOW == "rna_seq":
     assert config["aligner"] in [
         "star",
         "hisat2",
@@ -106,12 +102,12 @@ if config.get("bam_sorter", False):
 
 
 # ...for scrna quantification
-if get_workflow() == "scrna_seq":
+if WORKFLOW == "scrna_seq":
     if config["quantifier"] not in ["kallistobus", "citeseqcount"]:
         logger.error(
             f"Invalid quantifier selected" "Please select a supported scrna quantifier (kallistobus or citeseqcount)!"
         )
-        sys.exit(1)
+        os._exit(1)  # noqa
 
 
 # make sure that our samples.tsv and configuration work together...

@@ -287,7 +287,7 @@ def subjectively_prettier_error(arg, message):
         raise argparse.ArgumentError(arg, message)
     except argparse.ArgumentError as err:
         print(f"\n{err}")
-        sys.exit(1)
+        os._exit(1)  # noqa
 
 
 def add_profile_args(profile_file, parsed_args):
@@ -319,7 +319,7 @@ def _run(args, base_dir, workflows_dir, config_path):
             f"--config or if you do not have a config file run:\n"
             f"seq2science init {args.workflow}\n"
         )
-        sys.exit(1)
+        os._exit(1)  # noqa
 
     # parse the args
     parsed_args = {
@@ -415,7 +415,7 @@ def _run(args, base_dir, workflows_dir, config_path):
             logger.info(f"""Targets:\n{nl.join(sorted(targets))}\n\n""")
             logger.info(f"""Errors:\n{nl.join(sorted(errors))}\n\n""")
         if not exit_code:
-            sys.exit(1)
+            os._exit(1)  # noqa
 
         #   3. check which files would need a rerun, and exclude files we do
         #      not want to consider:
@@ -443,7 +443,7 @@ def _run(args, base_dir, workflows_dir, config_path):
     exit_code = snakemake.snakemake(**parsed_args)
 
     #   6. output exit code 0 for success and 1 for failure
-    sys.exit(0) if exit_code else sys.exit(1)
+    os._exit(0) if exit_code else os._exit(1)  # noqa
 
 
 def _explain(args, base_dir, workflows_dir, config_path):
@@ -456,7 +456,7 @@ def _explain(args, base_dir, workflows_dir, config_path):
             f"--config or if you do not have a config file run:\n"
             f"seq2science init {args.workflow}\n"
         )
-        sys.exit(1)
+        os._exit(1)  # noqa
 
     # parse the args
     parsed_args = {
@@ -525,7 +525,7 @@ def _explain(args, base_dir, workflows_dir, config_path):
             "Oh no! Something went wrong... "
             "Please let us know: https://github.com/vanheeringen-lab/seq2science/issues "
         )
-        sys.exit(1)
+        os._exit(1)  # noqa
 
 
 def _clean(base_dir):
@@ -659,7 +659,7 @@ def resource_parser(parsed_args):
         # if running on a cluster assume no limit on memory (unless specified)
         parsed_args["resources"]["mem_gb"] = 999999
     else:
-        # otherwise assume system memory
+        # otherwise, assume system memory
         mem = psutil.virtual_memory().total / 1024 ** 3
         parsed_args["resources"]["mem_gb"] = round(mem)
 

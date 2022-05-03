@@ -22,7 +22,7 @@ def count_table_output():
         **{
             **config,
             **{
-                "assemblies": all_assemblies,
+                "assemblies": ALL_ASSEMBLIES,
                 "peak_caller": config["peak_caller"].keys(),
                 "normalization": [
                     "raw",
@@ -45,7 +45,7 @@ def get_peakfile_for_summit(wildcards):
             "This means that we do not support peak counts for broadpeaks & gappedpeak format. This should not "
             "happen and please file a bug report!"
         )
-        sys.exit(1)
+        os._exit(1)  # noqa
     return expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}_peaks.narrowPeak", **config)
 
 
@@ -71,7 +71,7 @@ def get_summitfiles(wildcards):
     return expand(
         [
             f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{replicate}_summits.bed"
-            for replicate in breps[breps["assembly"] == ori_assemblies[wildcards.assembly]].index
+            for replicate in breps[breps["assembly"] == ORI_ASSEMBLIES[wildcards.assembly]].index
         ],
         **config,
     )
@@ -96,8 +96,7 @@ rule combine_peaks:
     params:
         windowsize=2 * config["peak_windowsize"],
         reps=lambda wildcards, input: input,  # help resolve changes in input files
-    message:
-        explain_rule("combine_peaks")
+    message: EXPLAIN["combine_peaks"]
     shell:
         """
         combine_peaks -i {input.summitfiles} -g {input.sizes} \
@@ -124,8 +123,7 @@ rule bedtools_slop:
     params:
         slop=config["slop"],
         reps=lambda wildcards, input: input,  # help resolve changes in input files
-    message:
-        explain_rule("bed_slop")
+    message: EXPLAIN["bed_slop"]
     shell:
         """
         bedtools slop -i {input.bedfile} -g {input.sizes} -b {params.slop} | uniq > {output} 2> {log}
@@ -138,7 +136,7 @@ def get_coverage_table_replicates(file_ext):
             return expand(
                 [
                     f"{{final_bam_dir}}/{wildcards.assembly}-{replicate}.samtools-coordinate.{file_ext}"
-                    for replicate in treps[treps["assembly"] == ori_assemblies[wildcards.assembly]].index
+                    for replicate in treps[treps["assembly"] == ORI_ASSEMBLIES[wildcards.assembly]].index
                 ],
                 **config,
             )
@@ -147,13 +145,13 @@ def get_coverage_table_replicates(file_ext):
                 f"Seq2science is not supporting your peak caller ({wildcards.peak_caller}) for the coverage table. "
                 "Please make an issue on github if this is unexpected behaviour!"
             )
-            sys.exit(1)
+            os._exit(1)  # noqa
 
     return wrapped
 
 def get_names(wildcards):
     names = [""]
-    for rep in treps[treps["assembly"] == ori_assemblies[wildcards.assembly]].index:
+    for rep in treps[treps["assembly"] == ORI_ASSEMBLIES[wildcards.assembly]].index:
         names.append(rep_to_descriptive(rep, brep=False))
     names = "\t".join(names)
     return names
@@ -183,7 +181,7 @@ rule coverage_table:
     resources:
         mem_gb=3,
     threads: 12  # default of the function
-    message: explain_rule("coverage_table")
+    message: EXPLAIN["coverage_table"]
     shell:
         """
         echo "# The number of reads under each peak" > {output} 
@@ -316,7 +314,7 @@ rule mean_center:
 def get_all_narrowpeaks(wildcards):
     return [
         f"{config['result_dir']}/{{peak_caller}}/{{assembly}}-{replicate}_peaks.narrowPeak"
-        for replicate in breps[breps["assembly"] == ori_assemblies[wildcards.assembly]].index
+        for replicate in breps[breps["assembly"] == ORI_ASSEMBLIES[wildcards.assembly]].index
     ]
 
 
@@ -338,7 +336,7 @@ rule onehot_peaks:
         expand("{benchmark_dir}/onehot_peaks/{{assembly}}-{{peak_caller}}.benchmark.txt", **config)[0]
     params:
         reps=lambda wildcards, input: input, # help resolve changes in input files
-        names=lambda wildcards: "\t" + "\t".join([rep_to_descriptive(rep, True) for rep in breps[breps["assembly"] == ori_assemblies[wildcards.assembly]].index])
+        names=lambda wildcards: "\t" + "\t".join([rep_to_descriptive(rep, True) for rep in breps[breps["assembly"] == ORI_ASSEMBLIES[wildcards.assembly]].index])
     shell:
         """
         awk '{{print $1":"$2"-"$3}}' {input.combinedpeaks} > {output.real} 2> {log}
