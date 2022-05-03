@@ -13,3 +13,4 @@
    content/extensive_docs
    content/extracontent
    content/faq
+   CONTRIBUTING.md
