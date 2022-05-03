@@ -4,6 +4,7 @@ all logic related to logging to stdout/file should be here.
 
 import os
 import shutil
+from tabulate import tabulate
 
 from snakemake.logging import logger
 
@@ -69,9 +70,6 @@ def rmkeys(del_list, target_list):
 
 
 if not config.get("no_config_log"):
-    # after all is done, log (print) the configuration
-    logger.info("CONFIGURATION VARIABLES:")
-
     # sort config: samples.tsv & directories first, alphabetized second
     keys = sorted(config.keys())
     dir_keys = []
@@ -121,11 +119,9 @@ if not config.get("no_config_log"):
     keys = rmkeys(["samples"] + keys_to_remove, keys)
     keys = ["samples"] + keys
 
-    for key in keys:
-        if config[key] not in ["", False, 0, "None", "none@provided.com", "yourmail@here.com", "_custom"]:
-            logger.info(f"{key: <23}: {config[key]}")
+    ignore_values = ["", False, 0, "None", "none@provided.com", "yourmail@here.com", "_custom"]
+    table = [(key, config[key]) for key in keys if config[key] not in ignore_values]
+    table.append(("layout", {sample: values["layout"] for sample, values in sampledict.items()}))
 
-    layouts = {sample: values["layout"] for sample, values in sampledict.items()}
-    logger.info(f"layout:                : {layouts}")
-
+    logger.info(tabulate(table, headers=["config variable", "value"], tablefmt="pipe"))
     logger.info("\n\n")
