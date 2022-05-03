@@ -97,7 +97,7 @@ if not config.get("no_config_log"):
         "benchmark_dir",
         "sra_dir",
         "trimmed_dir",
-        "results_dir",
+        "result_dir",
         "rule_dir",
         "cli_call",
         ("biological_replicates", "condition" not in samples),
