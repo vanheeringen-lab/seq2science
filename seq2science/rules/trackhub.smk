@@ -202,8 +202,7 @@ if config.get("create_trackhub"):
             expand("{log_dir}/trackhub/{{assembly}}.index.log", **config),
         benchmark:
             expand("{benchmark_dir}/trackhub/{{assembly}}.index.benchmark.txt", **config)[0]
-        message:
-            EXPLAIN.get("trackhub", "")
+        message: EXPLAIN["trackhub"]
         conda:
             "../envs/ucsc.yaml"
         shell:
@@ -695,8 +694,7 @@ if config.get("create_trackhub"):
             trackhub_files,
         output:
             directory(config["trackhub_dir"]),
-        message:
-            EXPLAIN.get("trackhub", "")
+        message: EXPLAIN["trackhub"]
         log:
             expand("{log_dir}/trackhub/trackhub.log", **config),
         benchmark:

@@ -108,8 +108,7 @@ rule call_peak_genrich:
         expand("{log_dir}/call_peak_genrich/{{fname}}_peak.log", **config),
     benchmark:
         expand("{benchmark_dir}/call_peak_genrich/{{fname}}.benchmark.txt", **config)[0]
-    message:
-        EXPLAIN.get("call_peak_genrich", "")
+    message: EXPLAIN["call_peak_genrich"]
     conda:
         "../envs/genrich.yaml"
     params:
@@ -170,8 +169,7 @@ rule get_effective_genome_size:
         fastq_qc=get_fastq_qc_file,
     output:
         expand("{result_dir}/macs2/{{assembly}}-{{sample}}.genome_size", **config),
-    message:
-        EXPLAIN.get("get_effective_genome_size", "")
+    message: EXPLAIN["get_effective_genome_size"]
     conda:
         "../envs/khmer.yaml"
     params:
@@ -207,8 +205,7 @@ rule macs2_callpeak:
         expand("{log_dir}/macs2_callpeak/{{assembly}}-{{sample}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/macs2_callpeak/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
-    message:
-        EXPLAIN.get("macs2_callpeak", "")
+    message: EXPLAIN["macs2_callpeak"]
     wildcard_constraints:
         sample=any_given("sample", "technical_replicates"),
     params:
@@ -253,8 +250,7 @@ rule keep_mates:
         expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config),
     output:
         expand("{final_bam_dir}/{{assembly}}-{{sample}}-mates.samtools-coordinate.bam", **config),
-    message:
-        EXPLAIN.get("keep_mates", "")
+    message: EXPLAIN["keep_mates"]
     log:
         expand("{log_dir}/keep_mates/{{assembly}}-{{sample}}.log", **config),
     benchmark:
@@ -350,8 +346,7 @@ if "biological_replicates" in samples:
             output:
                 true=expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{condition}}_peaks.{{ftype}}", **config),
                 temp=temp(expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{condition}}_peaks.tmp.{{ftype}}", **config)),
-            message:
-                EXPLAIN.get("idr", "")
+            message: EXPLAIN["idr"]
             log:
                 expand("{log_dir}/idr/{{assembly}}-{{condition}}-{{peak_caller}}-{{ftype}}.log", **config),
             benchmark:
@@ -449,8 +444,7 @@ if "biological_replicates" in samples:
                     ),
                     tmppeaks=temp(expand("{result_dir}/macs2/{{assembly}}-{{condition}}_peaks.temp.{{ftype}}", **config)),
                     peaks=expand("{result_dir}/macs2/{{assembly}}-{{condition}}_peaks.{{ftype}}", **config),
-                message:
-                    EXPLAIN.get("macs_cmbreps", "")
+                message: EXPLAIN["macs_cmbreps"]
                 log:
                     expand("{log_dir}/macs_cmbreps/{{assembly}}-{{condition}}-{{ftype}}.log", **config),
                 benchmark:

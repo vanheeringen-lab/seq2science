@@ -72,7 +72,7 @@ if config["trimmer"] == "trimgalore":
         conda:
             "../envs/trimgalore.yaml"
         threads: 6
-        message: EXPLAIN.get("trimgalore_SE", "")
+        message: EXPLAIN["trimgalore_SE"]
         log:
             expand("{log_dir}/trimgalore_SE/{{sample}}.log", **config),
         benchmark:
@@ -111,7 +111,7 @@ if config["trimmer"] == "trimgalore":
         conda:
             "../envs/trimgalore.yaml"
         threads: 6
-        message: EXPLAIN.get("trimgalore_PE", "")
+        message: EXPLAIN["trimgalore_PE"]
         log:
             expand("{log_dir}/trimgalorePE/{{sample}}.log", **config),
         benchmark:
@@ -155,7 +155,7 @@ elif config["trimmer"] == "fastp":
         conda:
             "../envs/fastp.yaml"
         threads: 4
-        message: EXPLAIN.get("fastp_SE", "")
+        message: EXPLAIN["fastp_SE"]
         wildcard_constraints:
             sample="|".join(all_single_samples) if len(all_single_samples) else "$a"
         log:
@@ -189,7 +189,7 @@ elif config["trimmer"] == "fastp":
         threads: 4
         wildcard_constraints:
             sample="|".join(all_paired_samples) if len(all_paired_samples) else "$a"
-        message: EXPLAIN.get("fastp_PE", "")
+        message: EXPLAIN["fastp_PE"]
         log:
             expand("{log_dir}/fastp_PE/{{sample}}.log", **config),
         benchmark:

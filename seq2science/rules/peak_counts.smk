@@ -96,8 +96,7 @@ rule combine_peaks:
     params:
         windowsize=2 * config["peak_windowsize"],
         reps=lambda wildcards, input: input,  # help resolve changes in input files
-    message:
-        EXPLAIN.get("combine_peaks", "")
+    message: EXPLAIN["combine_peaks"]
     shell:
         """
         combine_peaks -i {input.summitfiles} -g {input.sizes} \
@@ -124,8 +123,7 @@ rule bedtools_slop:
     params:
         slop=config["slop"],
         reps=lambda wildcards, input: input,  # help resolve changes in input files
-    message:
-        EXPLAIN.get("bed_slop", "")
+    message: EXPLAIN["bed_slop"]
     shell:
         """
         bedtools slop -i {input.bedfile} -g {input.sizes} -b {params.slop} | uniq > {output} 2> {log}
@@ -183,7 +181,7 @@ rule coverage_table:
     resources:
         mem_gb=3,
     threads: 12  # default of the function
-    message: EXPLAIN.get("coverage_table", "")
+    message: EXPLAIN["coverage_table"]
     shell:
         """
         echo "# The number of reads under each peak" > {output} 

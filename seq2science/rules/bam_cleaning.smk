@@ -93,8 +93,7 @@ rule mark_duplicates:
         expand("{log_dir}/mark_duplicates/{{assembly}}-{{sample}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/mark_duplicates/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
-    message:
-        EXPLAIN.get("mark_duplicates", "")
+    message: EXPLAIN["mark_duplicates"]
     params:
         config["markduplicates"],
     resources:
@@ -178,8 +177,7 @@ rule sieve_bam:
         expand("{log_dir}/sieve_bam/{{assembly}}-{{sample}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/sieve_bam/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
-    message:
-        EXPLAIN.get("sieve_bam", "")
+    message: EXPLAIN["sieve_bam"]
     conda:
         "../envs/samtools.yaml"
     threads: 2
@@ -254,8 +252,7 @@ rule sambamba_sort:
         sieve="|-sievsort",
     log:
         expand("{log_dir}/sambamba_sort/{{assembly}}-{{sample}}-sambamba_{{sorting}}.log", **config),
-    message:
-        EXPLAIN.get("sambamba_sort", "")
+    message: EXPLAIN["sambamba_sort"]
     benchmark:
         expand("{benchmark_dir}/sambamba_sort/{{assembly}}-{{sample}}-{{sorting}}.benchmark.txt", **config)[0]
     params:
@@ -392,8 +389,7 @@ rule bam2cram:
         assembly=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
     output:
         expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.cram", **config),
-    message:
-        EXPLAIN.get("bam2cram", "")
+    message: EXPLAIN["bam2cram"]
     log:
         expand("{log_dir}/bam2cram/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config),
     benchmark:

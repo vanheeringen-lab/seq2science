@@ -3,9 +3,10 @@ all logic necessary to make an explanation of what has/will be done should be he
 """
 
 if not config.get("explain_rule"):
+    import collections
 
-    EXPLAIN = dict()
 
+    EXPLAIN = collections.defaultdict(str)
 
 else:
     import os.path

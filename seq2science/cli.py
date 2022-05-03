@@ -649,7 +649,6 @@ def resource_parser(parsed_args):
         parsed_args["resources"]["mem_gb"] = round(mem)
 
 
-
 def setup_seq2science_logger(parsed_args):
     setup_logger()
     if not parsed_args["dryrun"]:

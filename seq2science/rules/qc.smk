@@ -36,8 +36,7 @@ rule samtools_stats:
         ),
     log:
         expand("{log_dir}/samtools_stats/{{directory}}/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config),
-    message:
-        EXPLAIN.get("samtools_stats", "")
+    message: EXPLAIN["samtools_stats"]
     resources:
         time="0-06:00:00",
     conda:
@@ -71,8 +70,7 @@ if config["trimmer"] == "trimgalore":
         output:
             html=f"{config['qc_dir']}/fastqc/{{fname}}_fastqc.html",
             zip=f"{config['qc_dir']}/fastqc/{{fname}}_fastqc.zip",
-        message:
-            EXPLAIN.get("fastqc", "")
+        message: EXPLAIN["fastqc"]
         log:
             f"{config['log_dir']}/fastqc/{{fname}}.log",
         params:
@@ -410,8 +408,7 @@ rule multiBamSummary:
         if get_descriptive_names(wildcards, input.bams) != ""
         else "",
         params=config["deeptools_multibamsummary"],
-    message:
-        EXPLAIN.get("computeMatrix", "")
+    message: EXPLAIN["computeMatrix"]
     conda:
         "../envs/deeptools.yaml"
     resources:
@@ -821,8 +818,7 @@ rule multiqc:
     output:
         expand("{qc_dir}/multiqc_{{assembly}}.html", **config),
         directory(expand("{qc_dir}/multiqc_{{assembly}}_data", **config)),
-    message:
-        EXPLAIN.get("multiqc", "")
+    message: EXPLAIN["multiqc"]
     params:
         dir="{qc_dir}/".format(**config),
         fqext1="_" + config["fqext1"],

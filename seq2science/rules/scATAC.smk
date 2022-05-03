@@ -47,8 +47,7 @@ rule create_bins_SNAP_object:
         expand("{benchmark_dir}/create_SNAP_object/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
     conda:
         "../envs/snaptools.yaml"
-    message:
-        EXPLAIN.get("create_bins_SNAP_object", "")
+    message: EXPLAIN["create_bins_SNAP_object"]
     params:
         config["bin_opt"],
     shell:

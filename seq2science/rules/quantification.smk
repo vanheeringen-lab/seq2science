@@ -49,7 +49,7 @@ if config["quantifier"] == "salmon":
             script=f"{config['rule_dir']}/../scripts/generateDecoyTranscriptome.sh",
         log:
             expand("{log_dir}/get_genome/{{assembly}}.decoy_transcripts.log", **config),
-        message: EXPLAIN.get("decoy_transcripts", "")
+        message: EXPLAIN["decoy_transcripts"]
         benchmark:
             expand("{benchmark_dir}/get_genome/{{assembly}}.decoy_transcripts.benchmark.txt", **config)[0]
         threads: 40
@@ -127,7 +127,7 @@ if config["quantifier"] == "salmon":
             dir=directory(expand("{result_dir}/{quantifier}/{{assembly}}-{{sample}}", **config)),
         log:
             expand("{log_dir}/{quantifier}_quant/{{assembly}}-{{sample}}.log", **config),
-        message: EXPLAIN.get("salmon_quant", "")
+        message: EXPLAIN["salmon_quant"]
         benchmark:
             expand("{benchmark_dir}/{quantifier}_quant/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
         params:
@@ -339,8 +339,7 @@ elif  "scrna_seq" == WORKFLOW:
             conda:
                 "../envs/kallistobus.yaml"
             threads: 8
-            message:
-                EXPLAIN.get("kallistobus-count", "")
+            message: EXPLAIN["kallistobus-count"]
             resources:
                 mem_gb=66,
             params:
@@ -393,8 +392,7 @@ elif  "scrna_seq" == WORKFLOW:
             conda:
                 "../envs/cite-seq-count.yaml"
             threads: 8
-            message:
-                EXPLAIN.get("citeseqcount", "")
+            message: EXPLAIN["citeseqcount"]
             resources:
                 mem_gb=66,
             params:
@@ -426,8 +424,7 @@ elif config["quantifier"] == "htseq":
             user_flags=config["htseq_flags"],
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-{{sample}}.counts.log",**config),
-        message:
-            EXPLAIN.get("htseq_count", "")
+        message: EXPLAIN["htseq_count"]
         threads: 1
         conda:
             "../envs/gene_counts.yaml"
@@ -455,8 +452,7 @@ elif config["quantifier"] == "featurecounts":
             user_flags=config["featurecounts_flags"],
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-{{sample}}.counts.log",**config),
-        message:
-            EXPLAIN.get("featurecounts_rna", "")
+        message: EXPLAIN["featurecounts_rna"]
         threads: 1
         conda:
             "../envs/gene_counts.yaml"
@@ -499,8 +495,7 @@ if config.get("dexseq"):
             expand("{counts_dir}/{{assembly}}-{{sample}}.DEXSeq_counts.tsv",**config),
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-{{sample}}.DEXseq_counts.log",**config),
-        message:
-            EXPLAIN.get("dexseq", "")
+        message: EXPLAIN["dexseq"]
         params:
             strandedness=lambda wildcards, input: get_strandedness(input.report[0]),
             endedness=lambda wildcards: "" if SAMPLEDICT[wildcards.sample]["layout"] == "SINGLE" else "-p yes",

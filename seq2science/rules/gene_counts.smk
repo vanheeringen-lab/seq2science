@@ -72,8 +72,7 @@ if config["quantifier"] == "salmon" and config["tpm2counts"] == "tximeta":
             SCE=expand("{counts_dir}/{{assembly}}-se.rds", **config),
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-txi_counts_matrix.log", **config),
-        message:
-            EXPLAIN.get("count_matrix_txi", "")
+        message: EXPLAIN["count_matrix_txi"]
         conda:
             "../envs/tximeta.yaml"
         params:
@@ -111,8 +110,7 @@ elif config["quantifier"] == "salmon" and config["tpm2counts"] == "pytxi":
             from_gtf=config["tx2gene_from_gtf"],
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-counts_matrix.log",**config),
-        message:
-            EXPLAIN.get("count_matrix_pytxi", "")
+        message: EXPLAIN["count_matrix_pytxi"]
         script:
             f"{config['rule_dir']}/../scripts/pytxi.py"
 
@@ -173,8 +171,7 @@ else:
             lengths = expand("{counts_dir}/{{assembly}}-gene_lengths.tsv",**config),
         log:
             expand("{log_dir}/counts_matrix/{{assembly}}-tpm_matrix.log",**config),
-        message:
-            EXPLAIN.get("tpm_matrix", "")
+        message: EXPLAIN["tpm_matrix"]
         script:
             f"{config['rule_dir']}/../scripts/counts2tpm.py"
 

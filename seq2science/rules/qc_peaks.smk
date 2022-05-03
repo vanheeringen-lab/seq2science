@@ -32,8 +32,7 @@ rule featureCounts:
         tmp_saf=temp(expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}.saf", **config)),
         real_out=expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}_featureCounts.txt", **config),
         summary=expand("{qc_dir}/{{peak_caller}}/{{assembly}}-{{sample}}_featureCounts.txt.summary", **config),
-    message:
-        EXPLAIN.get("featureCounts_qc", "")
+    message: EXPLAIN["featureCounts_qc"]
     log:
         expand("{log_dir}/featureCounts/{{assembly}}-{{sample}}-{{peak_caller}}.log", **config),
     threads: 4
@@ -106,8 +105,7 @@ rule chipseeker:
         expand("{log_dir}/chipseeker/{{assembly}}-{{peak_caller}}.log", **config),
     conda:
         "../envs/chipseeker.yaml"
-    message:
-        EXPLAIN.get("chipseeker", "")
+    message: EXPLAIN["chipseeker"]
     resources:
         R_scripts=1,  # conda's R can have issues when starting multiple times
     script:

@@ -18,8 +18,7 @@ rule dupRadar:
         expand("{log_dir}/dupRadar/{{assembly}}-{{sample}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/dupRadar/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
-    message:
-        EXPLAIN.get("dupradar", "")
+    message: EXPLAIN["dupradar"]
     params:
         strandedness=lambda wildcards, input: get_strandedness(input.report[0], fmt="fc"),
         paired=lambda wildcards: SAMPLEDICT[wildcards.sample]["layout"] == "PAIRED",

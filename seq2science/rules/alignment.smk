@@ -52,8 +52,7 @@ if config["aligner"] == "bowtie2":
             expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}.log", **config),
         benchmark:
             expand("{benchmark_dir}/{aligner}_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
-        message:
-            EXPLAIN.get(f"{config['aligner']}_align", "")
+        message: EXPLAIN[f"{config['aligner']}_align"]
         params:
             input=(
                 lambda wildcards, input: ["-U", input.reads]
@@ -113,8 +112,7 @@ elif config["aligner"] == "bwa-mem":
             expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}.log", **config),
         benchmark:
             expand("{benchmark_dir}/{aligner}_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
-        message:
-            EXPLAIN.get(f"{config['aligner']}_align", "")
+        message: EXPLAIN[f"{config['aligner']}_align"]
         params:
             index_dir=expand("{genome_dir}/{{assembly}}/index/{aligner}/{{assembly}}", **config),
             params=config["align"],
@@ -171,8 +169,7 @@ elif config["aligner"] == "bwa-mem2":
             expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}.log", **config),
         benchmark:
             expand("{benchmark_dir}/{aligner}_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
-        message:
-            EXPLAIN.get(f"{config['aligner']}_align", "")
+        message: EXPLAIN[f"{config['aligner']}_align"]
         params:
             index_dir=expand("{genome_dir}/{{assembly}}/index/{aligner}/{{assembly}}", **config),
             params=config["align"],
@@ -204,8 +201,7 @@ elif config["aligner"] == "hisat2":
             expand("{log_dir}/{aligner}_index/{{assembly}}.log", **config),
         benchmark:
             expand("{benchmark_dir}/{aligner}_index/{{assembly}}.benchmark.txt", **config)[0]
-        message:
-            EXPLAIN.get("hisat_splice_aware", "")
+        message: EXPLAIN["hisat_splice_aware"]
         priority: 1
         threads: 8
         resources:
@@ -273,8 +269,7 @@ elif config["aligner"] == "hisat2":
             expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}.log", **config),
         benchmark:
             expand("{benchmark_dir}/{aligner}_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
-        message:
-            EXPLAIN.get(f"{config['aligner']}_align", "")
+        message: EXPLAIN[f"{config['aligner']}_align"]
         params:
             input=(
                 lambda wildcards, input: ["-U", input.reads]
@@ -334,8 +329,7 @@ elif config["aligner"] == "minimap2":
             expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}.log", **config),
         benchmark:
             expand("{benchmark_dir}/{aligner}_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
-        message:
-            EXPLAIN.get(f"{config['aligner']}_align", "")
+        message: EXPLAIN[f"{config['aligner']}_align"]
         params:
             # input=lambda wildcards, input: input.reads if config["layout"][wildcards.sample] == "SINGLE" else input.reads[0:2],
             params=config["align"],
@@ -437,8 +431,7 @@ elif config["aligner"] == "star":
             directory(expand("{log_dir}/{aligner}_align/{{assembly}}-{{sample}}", **config)),
         benchmark:
             expand("{benchmark_dir}/{aligner}_align/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
-        message:
-            EXPLAIN.get(f"{config['aligner']}_align", "")
+        message: EXPLAIN[f"{config['aligner']}_align"]
         params:
             input=lambda wildcards, input: input.reads
             if SAMPLEDICT[wildcards.sample]["layout"] == "SINGLE"

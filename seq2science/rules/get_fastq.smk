@@ -18,8 +18,7 @@ rule run2sra:
         expand("{log_dir}/run2sra/{{run}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/run2sra/{{run}}.benchmark.txt", **config)[0]
-    message:
-        EXPLAIN.get("run2sra", "")
+    message: EXPLAIN["run2sra"]
     resources:
         parallel_downloads=1,
     params:

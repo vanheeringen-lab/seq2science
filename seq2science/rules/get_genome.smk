@@ -19,8 +19,7 @@ rule get_genome:
         expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa", **config),
     log:
         expand("{log_dir}/get_genome/{{raw_assembly}}.genome.log", **config),
-    message:
-        EXPLAIN.get("get_genome", "")
+    message: EXPLAIN["get_genome"]
     params:
         providers=PROVIDERS,
         provider=config.get("provider"),
@@ -89,8 +88,7 @@ rule extend_genome:
         genome=expand(
             "{genome_dir}/{{raw_assembly}}{custom_assembly_suffix}/{{raw_assembly}}{custom_assembly_suffix}.fa", **config
         ),
-    message:
-        EXPLAIN.get("custom_extension", "")
+    message: EXPLAIN["custom_extension"]
     shell:
         """
         # extend the genome.fa
@@ -141,8 +139,7 @@ rule extend_genome_annotation:
                 **config
             )
         ),
-    message:
-        EXPLAIN.get("custom_extension", "")
+    message: EXPLAIN["custom_extension"]
     shell:
         """
         # extend the genome.annotation.gtf
