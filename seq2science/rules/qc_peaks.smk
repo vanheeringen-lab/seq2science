@@ -14,7 +14,7 @@ def get_featureCounts_bam(wildcards):
 # TODO: featurecounts was not set up to accept hmmratac's gappedPeaks,
 #  I added this as it was sufficient for rule idr
 def get_featureCounts_peak(wildcards):
-    peak_sample = brep_from_trep[wildcards.sample]
+    peak_sample = BREP_FROM_TREPS[wildcards.sample]
     ftype = get_peak_ftype(wildcards.peak_caller)
     return expand(f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{peak_sample}_peaks.{ftype}", **config)
 
@@ -32,8 +32,7 @@ rule featureCounts:
         tmp_saf=temp(expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}.saf", **config)),
         real_out=expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}_featureCounts.txt", **config),
         summary=expand("{qc_dir}/{{peak_caller}}/{{assembly}}-{{sample}}_featureCounts.txt.summary", **config),
-    message:
-        explain_rule("featureCounts_qc")
+    message: EXPLAIN["featureCounts_qc"]
     log:
         expand("{log_dir}/featureCounts/{{assembly}}-{{sample}}-{{peak_caller}}.log", **config),
     threads: 4
@@ -80,6 +79,16 @@ rule plotHeatmap_peak:
         """
 
 
+def get_summits_bed(wildcards):
+    return expand(
+        [
+            f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{replicate}_summits.bed"
+            for replicate in breps[breps["assembly"] == ORI_ASSEMBLIES[wildcards.assembly]].index
+        ],
+        **config,
+    )
+
+
 rule chipseeker:
     """
     Make chipseeker plots, with the percentage of peaks in e.g. promoters.
@@ -96,8 +105,7 @@ rule chipseeker:
         expand("{log_dir}/chipseeker/{{assembly}}-{{peak_caller}}.log", **config),
     conda:
         "../envs/chipseeker.yaml"
-    message:
-        explain_rule("chipseeker")
+    message: EXPLAIN["chipseeker"]
     resources:
         R_scripts=1,  # conda's R can have issues when starting multiple times
     script:

@@ -3,13 +3,10 @@ all logic necessary to make an explanation of what has/will be done should be he
 """
 
 if not config.get("explain_rule"):
+    import collections
 
-    def explain_rule(name):
-        """
-        Does not return a string explaining the workflow by parsing all messages
-        """
-        return None
 
+    EXPLAIN = collections.defaultdict(str)
 
 else:
     import os.path
@@ -60,12 +57,6 @@ else:
         "citeseqcount": "https://zenodo.org/record/2590196",
         "khmer": "https://dx.doi.org/10.12688%2Ff1000research.6924.1",
     }
-
-    def explain_rule(name):
-        """
-        Return a string explaining the workflow by parsing all messages
-        """
-        return MESSAGES[name]
 
     ENV_DIR = os.path.normpath(os.path.join(config["rule_dir"], "..", "envs"))
 
@@ -120,9 +111,9 @@ else:
         "rna_seq": "gene expression",
         "chip_seq": "peak",
         "atac_seq": "accessibility",
-    }.get(get_workflow(), "")
+    }.get(WORKFLOW, "")
 
-    MESSAGES = {
+    EXPLAIN = {
         "bowtie2_align": f"Reads were aligned with {href_v('bowtie2')}{options('align')}.",
         "bwa-mem_align": f"Reads were aligned with {href_v('bwa',text='bwa-mem')}{options('align')}.",
         "bwa-mem2_align": f"Reads were aligned with {href_v('bwa-mem2',env='bwamem2')}{options('align')}.",

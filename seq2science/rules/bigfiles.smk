@@ -3,8 +3,6 @@ All rules/logic related to converting filetypes from uncompressed to compressed
 (big as UCSC calls it). E.g. a from .peak -> .bigpeak
 """
 
-import sys
-
 
 rule bedgraphish_to_bedgraph:
     """
@@ -83,21 +81,21 @@ def get_bigpeak_columns(wildcards):
     if get_peak_ftype(wildcards.peak_caller) == "narrowPeak":
         return 10
     if get_peak_ftype(wildcards.peak_caller) == "broadPeak":
-        if len(treps_from_brep[(wildcards.sample, wildcards.assembly)]) == 1:
+        if len(TREPS_FROM_BREP[(wildcards.sample, wildcards.assembly)]) == 1:
             return 9
         return 12
     logger.error(
         f"Something went wrong inferring the correct column for bigpeak for peak type {get_peak_ftype(wildcards.peak_caller)}. "
         "Please make an issue on github if this is unexpected behaviour!"
     )
-    sys.exit(1)
+    os._exit(1)  # noqa
 
 
 def get_bigpeak_type(wildcards):
     if get_peak_ftype(wildcards.peak_caller) == "narrowPeak":
         return "bed6+4"
     if get_peak_ftype(wildcards.peak_caller) == "broadPeak":
-        if len(treps_from_brep[(wildcards.sample, wildcards.assembly)]) == 1:
+        if len(TREPS_FROM_BREP[(wildcards.sample, wildcards.assembly)]) == 1:
             return "bed6+3"
         return "bed12"
     logger.error(
@@ -110,7 +108,7 @@ def get_bigpeak_schema(wildcards):
     if get_peak_ftype(wildcards.peak_caller) == "narrowPeak":
         return f"{config['rule_dir']}/../schemas/bignarrowPeak.as"
     if get_peak_ftype(wildcards.peak_caller) == "broadPeak":
-        if len(treps_from_brep[(wildcards.sample, wildcards.assembly)]) == 1:
+        if len(TREPS_FROM_BREP[(wildcards.sample, wildcards.assembly)]) == 1:
             return f"{config['rule_dir']}/../schemas/bigbroadPeak.as"
         return f"{config['rule_dir']}/../schemas/bigBed.as"
     logger.error(
@@ -154,7 +152,7 @@ rule peak_bigpeak:
         """
 
 
-if get_workflow() != "rna_seq":
+if WORKFLOW != "rna_seq":
     rule bam_bigwig:
         """
         Convert a bam file into a bigwig file.

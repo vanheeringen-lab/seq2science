@@ -1,12 +1,12 @@
 """
-This script auto-generates the
+This script auto-generates docs/content/all_rules.md
 """
-import yaml
 import os
 import re
 
-final_md = (
-"""\
+
+final_md = (  # noqa
+"""
 # Per rule explanation
 
 This is an automatically generated list of all supported rules, their docstrings, and command. At the start of each \

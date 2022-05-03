@@ -1,6 +1,6 @@
 # do onstart/onexit things
-sample_schemas = ['sample', 'assembly', 'technical_replicates', 'biological_replicates', 'strandedness']
-config_schemas = ['general', 'download', 'alignment_general', 'peakcalling', 'deseq2', 'trackhub']
+SAMPLE_SCHEMAS = ['sample', 'assembly', 'technical_replicates', 'biological_replicates', 'strandedness']
+CONFIG_SCHEMAS = ['general', 'download', 'alignment_general', 'peakcalling', 'deseq2', 'trackhub']
 include: "../../rules/configuration.smk"
 
 
@@ -21,7 +21,7 @@ include: f"{config['rule_dir']}/trimming.smk"
 
 
 # set the quality_control functions
-quality_control = [get_trimming_qc, get_alignment_qc, get_peak_calling_qc]
+QUALITY_CONTROL = [get_trimming_qc, get_alignment_qc, get_peak_calling_qc]
 
 
 rule seq2science:
@@ -32,6 +32,6 @@ rule seq2science:
         expand(
             (["{trackhub_dir}"]                     if config['create_trackhub'] else []) +
             (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []),
-            assemblies=all_assemblies, **config) +
-         count_table_output() + DE_contrasts
+            assemblies=ALL_ASSEMBLIES, **config) +
+         count_table_output() + DE_CONTRASTS
 

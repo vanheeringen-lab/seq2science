@@ -1,8 +1,7 @@
 """
 all rules/logic
 """
-
-import sys
+import os
 
 
 """
@@ -16,18 +15,18 @@ active PR: https://github.com/conda/conda/pull/8776
 
 
 def deseq_input(wildcards):
-    if "rna" in get_workflow():
+    if "rna" in WORKFLOW:
         return expand("{counts_dir}/{{assembly}}-counts.tsv", **config)
-    elif "atac" in get_workflow() or "chip" in get_workflow():
+    elif "atac" in WORKFLOW or "chip" in WORKFLOW:
         # only uses a single peak caller ------------------------------------------v
         # TODO different peak callers can probably be supported with wildcard_constraint peak_caller (.*) <-- empty allowed
         return (expand("{counts_dir}/{peak_caller}/{{assembly}}_raw.tsv", **config)[0],)
     else:
         logger.error(
-            f"The workflow you are running ({get_workflow()}) does not support deseq2. "
+            f"The workflow you are running ({WORKFLOW}) does not support deseq2. "
             "Please make an issue on github if this is unexpected behaviour!"
         )
-        sys.exit(1)
+        os._exit(1)  # noqa
 
 
 # TODO once fixed the resource R_scripts can be removed
@@ -46,8 +45,7 @@ rule deseq2:
         "../envs/deseq2.yaml"
     log:
         expand("{log_dir}/deseq2/{{assembly}}-{{contrast}}.diffexp.log", **config),
-    message:
-        explain_rule("deseq2")
+    message: EXPLAIN["deseq2"]
     benchmark:
         expand("{benchmark_dir}/deseq2/{{assembly}}-{{contrast}}.diffexp.benchmark.txt", **config)[0]
     threads: 4
