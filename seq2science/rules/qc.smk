@@ -61,7 +61,7 @@ if config["trimmer"] == "trimgalore":
         return sorted(expand(fqc_input, **config))
 
 
-    checkpoint fastqc:
+    rule fastqc:
         """
         Generate quality control report for fastq files.
         """
@@ -82,6 +82,55 @@ if config["trimmer"] == "trimgalore":
             """
             fastqc {input} -O {params} > {log} 2>&1
             """
+
+    if "macs2" in config.get("peak_caller",{}):
+        # convert the rule into checkpoints
+        checkpoints.register(rules.fastqc.rule)  # noqa
+
+    # if "macs2" not in config.get("peak_caller",{}):
+    #     rule fastqc:
+    #         """
+    #         Generate quality control report for fastq files.
+    #         """
+    #         input:
+    #             get_fastqc_input,
+    #         output:
+    #             html=f"{config['qc_dir']}/fastqc/{{fname}}_fastqc.html",
+    #             zip=f"{config['qc_dir']}/fastqc/{{fname}}_fastqc.zip",
+    #         message: EXPLAIN["fastqc"]
+    #         log:
+    #             f"{config['log_dir']}/fastqc/{{fname}}.log",
+    #         params:
+    #             f"{config['qc_dir']}/fastqc/",
+    #         conda:
+    #             "../envs/fastqc.yaml"
+    #         priority: -10
+    #         shell:
+    #             """
+    #             fastqc {input} -O {params} > {log} 2>&1
+    #             """
+    # else:
+    #     checkpoint fastqc:
+    #         """
+    #         Generate quality control report for fastq files.
+    #         """
+    #         input:
+    #             get_fastqc_input,
+    #         output:
+    #             html=f"{config['qc_dir']}/fastqc/{{fname}}_fastqc.html",
+    #             zip=f"{config['qc_dir']}/fastqc/{{fname}}_fastqc.zip",
+    #         message: EXPLAIN["fastqc"]
+    #         log:
+    #             f"{config['log_dir']}/fastqc/{{fname}}.log",
+    #         params:
+    #             f"{config['qc_dir']}/fastqc/",
+    #         conda:
+    #             "../envs/fastqc.yaml"
+    #         priority: -10
+    #         shell:
+    #             """
+    #             fastqc {input} -O {params} > {log} 2>&1
+    #             """
 
 
 elif config["trimmer"] == "fastp":
