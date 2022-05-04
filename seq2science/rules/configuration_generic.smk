@@ -131,10 +131,9 @@ def parse_samples():
                         logger.error(f"  line {digits[1]} columns: {line}")
                         break
             logger.info("\n(if this was intentional, you can give this column an arbitrary name such as 'notes')")
-            os._exit(1)  # noqa
         else:
             logger.error("")
-            os._exit(1)  # noqa
+        os._exit(1)  # noqa
     samples_df.columns = samples_df.columns.str.strip()
     
     assert all([col[0:7] not in ["Unnamed", ""] for col in samples_df]), (
@@ -142,7 +141,7 @@ def parse_samples():
     )
     
     # use pandasschema for checking if samples file is filed out correctly
-    allowed_pattern = r"[A-Za-z0-9_.\-%]+"
+    allowed_pattern = r"^[A-Za-z0-9_.\-%]+$"
     distinct_columns = ["sample"]
     if "descriptive_name" in samples_df.columns:
         distinct_columns.append("descriptive_name")
@@ -163,8 +162,12 @@ def parse_samples():
     errors = distinct_schema.validate(samples_df)
     
     if len(errors):
-        logger.error("\nThere are some issues with parsing the samples file:")
+        logger.error("\nThere are some issues with the samples file:")
         for error in errors:
+            error = str(error).replace(
+                f'does not match the pattern "{allowed_pattern}"',
+                'can only contain letters, number and symbols _.-%'
+            )
             logger.error(error)
         logger.error("")  # empty line
         os._exit(1)  # noqa
