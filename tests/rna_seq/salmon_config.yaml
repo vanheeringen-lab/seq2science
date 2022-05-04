@@ -14,8 +14,6 @@ create_qc_report: False
 
 aligner: star
 
-quantifier:
-  salmon:
-    decoy_aware_index: True
+quantifier: salmon
 
 tpm2counts: tximeta
