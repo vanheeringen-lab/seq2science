@@ -14,12 +14,14 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - moved most configuration steps into functions (reducing the number of stray globals)
 - replaced static functions with dictionaries
 - moved replicate stuff to the configuration
+- improved parsing of the samples.tsv. More errors early on, to prevent headache later!
 
 ### Fixed
 
 - get_fastq_pair_reads() was using one sample, not any sample
 - error message not working when trimming in scRNA-seq
 - trackhubs when using a mix of stranded and unstranded datasets
+- fix samples.tsv checks for forbidden symbols
 
 ## [0.8.0] - 2022-04-29
 

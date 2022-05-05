@@ -109,38 +109,54 @@ config = parse_config(config)  # overwrite the existing global
 
 def parse_samples():
     # read the samples.tsv file as all text, drop comment lines
-    try:
-        samples_df = pd.read_csv(config["samples"], sep="\t", dtype="str", comment="#")
-    except Exception as e:
-        logger.error("An error occurred while reading the samples.tsv:")
-        column_error = re.search("Expected \d+ fields in line \d+, saw \d+", str(e.args))
-        if column_error:
-            digits = re.findall("\d+", column_error.group(0))
-            logger.error(f"We found {digits[2]} columns on line {digits[1]}, but your header has only {digits[0]} columns...")
-            show_header = True
-            with open(config["samples"]) as s:
-                for n, line in enumerate(s):
-                    if line.startswith("#"):
-                        continue
-                    line = line.strip("\n").split("\t")
-                    if show_header:
-                        logger.error(f"  header columns: {line}")
-                        show_header = False
-                        continue
-                    if n == int(digits[1]) - 1:
-                        logger.error(f"  line {digits[1]} columns: {line}")
-                        break
-            logger.info("\n(if this was intentional, you can give this column an arbitrary name such as 'notes')")
-        else:
-            logger.error("")
+    samples_df = pd.read_csv(
+        config["samples"], sep="\t", dtype="str",
+        comment="#", index_col=False, header=0,
+    )
+
+    def parsing_error(messages: str or list):
+        if isinstance(messages, str):
+            messages = [messages]
+        logger.error("\nThere are some issues with the samples file:")
+        for message in messages:
+            logger.error(message)
+        logger.error("")  # empty line
         os._exit(1)  # noqa
 
-    # check columns for names
+    # check column names
     samples_df.columns = samples_df.columns.str.strip()
-    assert all([col[0:7] not in ["Unnamed", ""] for col in samples_df]), (
-        f"\nEncountered unnamed column in {config['samples']}.\n" + f"Column names: {str(', '.join(samples_df.columns))}.\n"
-    )
-    
+    errors = []
+    for col in samples_df.columns:
+        violations = re.findall(r"[^A-Za-z0-9_.\-%]", col)
+        if len(violations):
+            n = len(violations)
+            violations = '", "'.join(violations)
+            errors.append(
+                f'The column "{col}" contains {n} forbidden symbol{"" if n == 1 else "s"}: "{violations}"'
+            )
+    if len(errors):
+        parsing_error(errors)
+    if any([col[0:7] in ["Unnamed", ""] for col in samples_df]):
+        columns = '", "'.join(samples_df.columns)
+        parsing_error(f'Encountered unnamed column(s): "{columns}"')
+
+    # check dataframe shape
+    # (rows longer than the number of columns are truncated by pandas)
+    with open(config["samples"]) as s:
+        for n, line in enumerate(s):
+            if line.startswith("#"):
+                continue
+            line = line.split("\t")
+            if len(line) > len(samples_df.columns):
+                errors.append(
+                    f"Line {n} contains {len(line)} fields, but there are only {len(samples_df.columns)} column names!"
+                )
+    if len(errors):
+        cols = '", "'.join(samples_df.columns)
+        errors.append(f'Columns names: "{cols}"')
+        errors.append('(if this was intentional, you can give columns arbitrary names such as "notes")')
+        parsing_error(errors)
+
     # use pandasschema for checking if samples file is filed out correctly
     allowed_pattern = r"^[A-Za-z0-9_.\-%]+$"
     spellcheck_columns = ["sample"]
