@@ -134,47 +134,54 @@ def parse_samples():
         else:
             logger.error("")
         os._exit(1)  # noqa
+
+    # check columns for names
     samples_df.columns = samples_df.columns.str.strip()
-    
     assert all([col[0:7] not in ["Unnamed", ""] for col in samples_df]), (
         f"\nEncountered unnamed column in {config['samples']}.\n" + f"Column names: {str(', '.join(samples_df.columns))}.\n"
     )
     
     # use pandasschema for checking if samples file is filed out correctly
     allowed_pattern = r"^[A-Za-z0-9_.\-%]+$"
+    spellcheck_columns = ["sample"]
+    for col in ["assembly", "technical_replicates", "descriptive_name", "biological_replicates", "control"]:
+        if col in samples_df.columns:
+            spellcheck_columns.append(col)
+    schema = Schema(
+        [Column(col, [MatchesPatternValidation(allowed_pattern)], allow_empty=True) for col in spellcheck_columns]
+    )
+    errors = schema.validate(samples_df, spellcheck_columns)
+
     distinct_columns = ["sample"]
     if "descriptive_name" in samples_df.columns:
         distinct_columns.append("descriptive_name")
-    
-    distinct_schema = Schema(
-        [
-            Column(
-                col,
-                [MatchesPatternValidation(allowed_pattern), IsDistinctValidation()]
-                if col in distinct_columns
-                else [MatchesPatternValidation(allowed_pattern)],
-                allow_empty=True,
-            )
-            for col in samples_df.columns
-        ]
+    schema = Schema(
+        [Column(col, [IsDistinctValidation()], allow_empty=True) for col in distinct_columns]
     )
-    
-    errors = distinct_schema.validate(samples_df)
+    errors += schema.validate(samples_df, distinct_columns)
     
     if len(errors):
         logger.error("\nThere are some issues with the samples file:")
+        spellcheck_error = f'does not match the pattern "{allowed_pattern}"'
         for error in errors:
-            error = str(error).replace(
-                f'does not match the pattern "{allowed_pattern}"',
-                'can only contain letters, number and symbols _.-%'
-            )
+            error = str(error)
+            if error.endswith(spellcheck_error):
+                violations = re.findall(r"[^A-Za-z0-9_.\-%]", error.split('"')[3])
+                n = len(violations)
+                violations = '", "'.join(violations)
+                error = error.replace(
+                    spellcheck_error,
+                    f'contain {n} forbidden symbol{"" if n==1 else "s"}: "{violations}"'
+                )
             logger.error(error)
         logger.error("")  # empty line
         os._exit(1)  # noqa
-    
+
+    # remove unused columns, and populate empty cells in used columns
     samples_df = dense_samples(samples_df, config)
+
+    # check if replicate names are unique between assemblies
     if "technical_replicates" in samples_df:
-        # check if replicate names are unique between assemblies
         r = samples_df[["assembly", "technical_replicates"]].drop_duplicates().set_index("technical_replicates")
         for replicate in r.index:
             assert len(r[r.index == replicate]) == 1, (
