@@ -114,69 +114,95 @@ config = parse_config(config)  # overwrite the existing global
 
 def parse_samples():
     # read the samples.tsv file as all text, drop comment lines
-    try:
-        samples_df = pd.read_csv(config["samples"], sep="\t", dtype="str", comment="#")
-    except Exception as e:
-        logger.error("An error occurred while reading the samples.tsv:")
-        column_error = re.search("Expected \d+ fields in line \d+, saw \d+", str(e.args))
-        if column_error:
-            digits = re.findall("\d+", column_error.group(0))
-            logger.error(f"We found {digits[2]} columns on line {digits[1]}, but your header has only {digits[0]} columns...")
-            show_header = True
-            with open(config["samples"]) as s:
-                for n, line in enumerate(s):
-                    if line.startswith("#"):
-                        continue
-                    line = line.strip("\n").split("\t")
-                    if show_header:
-                        logger.error(f"  header columns: {line}")
-                        show_header = False
-                        continue
-                    if n == int(digits[1]) - 1:
-                        logger.error(f"  line {digits[1]} columns: {line}")
-                        break
-            logger.info("\n(if this was intentional, you can give this column an arbitrary name such as 'notes')")
-            os._exit(1)  # noqa
-        else:
-            logger.error("")
-            os._exit(1)  # noqa
-    samples_df.columns = samples_df.columns.str.strip()
-    
-    assert all([col[0:7] not in ["Unnamed", ""] for col in samples_df]), (
-        f"\nEncountered unnamed column in {config['samples']}.\n" + f"Column names: {str(', '.join(samples_df.columns))}.\n"
+    samples_df = pd.read_csv(
+        config["samples"], sep="\t", dtype="str",
+        comment="#", index_col=False, header=0,
     )
-    
+
+    def parsing_error(messages: str or list):
+        if isinstance(messages, str):
+            messages = [messages]
+        logger.error("\nThere are some issues with the samples file:")
+        for message in messages:
+            logger.error(message)
+        logger.error("")  # empty line
+        os._exit(1)  # noqa
+
+    # check column names
+    samples_df.columns = samples_df.columns.str.strip()
+    errors = []
+    for col in samples_df.columns:
+        violations = re.findall(r"[^A-Za-z0-9_.\-%]", col)
+        if len(violations):
+            n = len(violations)
+            violations = '", "'.join(violations)
+            errors.append(
+                f'The column "{col}" contains {n} forbidden symbol{"" if n == 1 else "s"}: "{violations}"'
+            )
+    if len(errors):
+        parsing_error(errors)
+    if any([col[0:7] in ["Unnamed", ""] for col in samples_df]):
+        columns = '", "'.join(samples_df.columns)
+        parsing_error(f'Encountered unnamed column(s): "{columns}"')
+
+    # check dataframe shape
+    # (rows longer than the number of columns are truncated by pandas)
+    with open(config["samples"]) as s:
+        for n, line in enumerate(s):
+            if line.startswith("#"):
+                continue
+            line = line.split("\t")
+            if len(line) > len(samples_df.columns):
+                errors.append(
+                    f"Line {n} contains {len(line)} fields, but there are only {len(samples_df.columns)} column names!"
+                )
+    if len(errors):
+        cols = '", "'.join(samples_df.columns)
+        errors.append(f'Columns names: "{cols}"')
+        errors.append('(if this was intentional, you can give columns arbitrary names such as "notes")')
+        parsing_error(errors)
+
     # use pandasschema for checking if samples file is filed out correctly
-    allowed_pattern = r"[A-Za-z0-9_.\-%]+"
+    allowed_pattern = r"^[A-Za-z0-9_.\-%]+$"
+    spellcheck_columns = ["sample"]
+    for col in ["assembly", "technical_replicates", "descriptive_name", "biological_replicates", "control"]:
+        if col in samples_df.columns:
+            spellcheck_columns.append(col)
+    schema = Schema(
+        [Column(col, [MatchesPatternValidation(allowed_pattern)], allow_empty=True) for col in spellcheck_columns]
+    )
+    errors = schema.validate(samples_df, spellcheck_columns)
+
     distinct_columns = ["sample"]
     if "descriptive_name" in samples_df.columns:
         distinct_columns.append("descriptive_name")
-    
-    distinct_schema = Schema(
-        [
-            Column(
-                col,
-                [MatchesPatternValidation(allowed_pattern), IsDistinctValidation()]
-                if col in distinct_columns
-                else [MatchesPatternValidation(allowed_pattern)],
-                allow_empty=True,
-            )
-            for col in samples_df.columns
-        ]
+    schema = Schema(
+        [Column(col, [IsDistinctValidation()], allow_empty=True) for col in distinct_columns]
     )
-    
-    errors = distinct_schema.validate(samples_df)
+    errors += schema.validate(samples_df, distinct_columns)
     
     if len(errors):
-        logger.error("\nThere are some issues with parsing the samples file:")
+        logger.error("\nThere are some issues with the samples file:")
+        spellcheck_error = f'does not match the pattern "{allowed_pattern}"'
         for error in errors:
+            error = str(error)
+            if error.endswith(spellcheck_error):
+                violations = re.findall(r"[^A-Za-z0-9_.\-%]", error.split('"')[3])
+                n = len(violations)
+                violations = '", "'.join(violations)
+                error = error.replace(
+                    spellcheck_error,
+                    f'contain {n} forbidden symbol{"" if n==1 else "s"}: "{violations}"'
+                )
             logger.error(error)
         logger.error("")  # empty line
         os._exit(1)  # noqa
-    
+
+    # remove unused columns, and populate empty cells in used columns
     samples_df = dense_samples(samples_df, config)
+
+    # check if replicate names are unique between assemblies
     if "technical_replicates" in samples_df:
-        # check if replicate names are unique between assemblies
         r = samples_df[["assembly", "technical_replicates"]].drop_duplicates().set_index("technical_replicates")
         for replicate in r.index:
             assert len(r[r.index == replicate]) == 1, (
