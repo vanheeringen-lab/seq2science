@@ -115,7 +115,7 @@ if not config.get("no_config_log"):
         ("min_mapping_quality", no_aligners),
         ("only_primary_align", no_aligners),
         ("remove_blacklist", no_aligners),
-        ("tx2gene_from_gtf", config.get("quantifier") != "salmon")),
+        ("tx2gene_from_gtf", config.get("quantifier") != "salmon"),
         ("tximeta", config.get("quantifier") != "salmon"),
         ("deseq2", not config.get("contrasts")),
         ("deseq2_dir", not config.get("contrasts")),
