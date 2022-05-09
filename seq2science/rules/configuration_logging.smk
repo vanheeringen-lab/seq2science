@@ -100,9 +100,9 @@ if not config.get("no_config_log"):
         "result_dir",
         "rule_dir",
         "cli_call",
-        ("biological_replicates", "condition" not in samples),
+        ("biological_replicates", "biological_replicates" not in samples),
+        ("technical_replicates", "technical_replicates" not in samples),
         ("filter_bam_by_strand", "strandedness" not in samples),
-        ("technical_replicates", "replicates" not in samples),
         ("final_bam_dir", no_aligners),
         ("aligner", no_aligners),
         ("bam_sort_order", no_aligners),
@@ -115,7 +115,7 @@ if not config.get("no_config_log"):
         ("min_mapping_quality", no_aligners),
         ("only_primary_align", no_aligners),
         ("remove_blacklist", no_aligners),
-        ("tx2gene_from_gtf", config.get("tx2gene_from_gtf")),
+        ("tx2gene_from_gtf", config.get("quantifier") != "salmon")),
         ("tximeta", config.get("quantifier") != "salmon"),
         ("deseq2", not config.get("contrasts")),
         ("deseq2_dir", not config.get("contrasts")),
@@ -129,7 +129,7 @@ if not config.get("no_config_log"):
     ignore_values = ["", False, -1, 0, 999, "None", "none@provided.com", "yourmail@here.com", "_custom"]
     table = [(key, config[key]) for key in keys if config[key] not in ignore_values]
     table = [["\n".join(textwrap.wrap(str(cell), 112)) for cell in row] for row in table]
-    table.append(("layout", tabulate([(sample, values["layout"]) for sample, values in SAMPLEDICT.items()], headers=["sample", "layout"])))
+    table.append(("layout", tabulate([(sample, values["layout"]) for sample, values in sampledict.items()], headers=["sample", "layout"])))
 
     logger.info(tabulate(table, headers=["config variable", "value"], tablefmt="pipe"))
     logger.info("\n\n")
