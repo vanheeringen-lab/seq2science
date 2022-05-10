@@ -438,7 +438,7 @@ elif config["aligner"] == "star":
             else input.reads[0:2],
             params=config["align"],
         priority: 0
-        threads: 8
+        threads: 10
         resources:
             mem_gb=30,
         conda:
@@ -471,9 +471,6 @@ rule samtools_presort:
         expand("{log_dir}/samtools_presort/{{assembly}}-{{sample}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/samtools_presort/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
-    params:
-        out_dir=f"{config['result_dir']}/{config['aligner']}",
-        memory=config['bam_sort_mem'],
     priority: 0
     threads: 2
     resources:
@@ -483,12 +480,12 @@ rule samtools_presort:
     shell:
         """
         # we set this trap to remove temp files when prematurely ending the rule
-        trap "rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
-        rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2> {log}
+        trap "rm -f {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
+        rm -f {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2> {log}
 
         # RAM per thread in MB
-        memory=$((1000*{params.memory}/{threads}))M
+        memory=$((1024*{resources.mem_gb}/{threads}))M
 
         samtools sort -@ {threads} -m $memory {input} -o {output} \
-        -T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
+        -T {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
         """

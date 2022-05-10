@@ -83,6 +83,11 @@ if config["trimmer"] == "trimgalore":
             fastqc {input} -O {params} > {log} 2>&1
             """
 
+    if "macs2" in config.get("peak_caller",{}):
+        # convert the rule into a checkpoint
+        checkpoints.register(rules.fastqc.rule)  # noqa
+        rules.fastqc.rule.is_checkpoint = True  # noqa
+
 
 elif config["trimmer"] == "fastp":
 

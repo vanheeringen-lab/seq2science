@@ -8,6 +8,11 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Changed
+
+- updated snakemake
+  - effective genome size is now estimated per kmer length instead of per sample since checkpoints should work again.
+
 ## [0.9.0] - 2022-05-10
 
 ### Changed

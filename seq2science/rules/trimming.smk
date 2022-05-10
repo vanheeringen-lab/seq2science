@@ -204,3 +204,11 @@ elif config["trimmer"] == "fastp":
             --out1 {output.r1} --out2 {output.r2} -h {output.qc_html} -j {output.qc_json} \
             {params.config} > {log} 2>&1
             """
+
+    if "macs2" in config.get("peak_caller",{}):
+        # convert the rules into checkpoints
+        checkpoints.register(rules.fastp_SE.rule)  # noqa
+        rules.fastp_SE.rule.is_checkpoint = True  # noqa
+
+        checkpoints.register(rules.fastp_PE.rule)  # noqa
+        rules.fastp_PE.rule.is_checkpoint = True  # noqa

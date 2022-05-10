@@ -19,6 +19,7 @@ from filelock import FileLock
 from pandas_schema import Column, Schema
 from pandas_schema.validation import MatchesPatternValidation, IsDistinctValidation
 
+from snakemake.dag import DAG
 from snakemake.logging import logger
 from snakemake.utils import validate
 
@@ -35,6 +36,10 @@ from seq2science.util import (
     assert_versions,
 )
 
+
+# monkeypatch snakemake to not see which files are changed
+# since we fix that ourselves
+DAG.warn_about_changes = lambda *args: None
 
 # get the cache and config dirs
 CACHE_DIR = os.path.join(xdg.XDG_CACHE_HOME, "seq2science", seq2science.__version__)
@@ -314,9 +319,7 @@ def rep_to_descriptive(rep, brep=False):
 
 # check availability of assembly genomes and annotations
 
-# snakemake 6+ uses main_snakefile
-# workflow.main_snakefile.split("/")[-2]
-WORKFLOW = workflow.snakefile.split("/")[-2]
+WORKFLOW = workflow.main_snakefile.split("/")[-2]
 
 SEQUENCING_PROTOCOL = (
     WORKFLOW
