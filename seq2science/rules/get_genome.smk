@@ -160,11 +160,11 @@ rule get_genome_support_files:
     Generate supporting files for a genome.
     """
     input:
-        expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+        genome=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
     output:
-        expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.fai", **config),
-        expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
-        expand("{genome_dir}/{{assembly}}/{{assembly}}.gaps.bed", **config),
+        index=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.fai", **config),
+        sizes=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
+        gaps=expand("{genome_dir}/{{assembly}}/{{assembly}}.gaps.bed", **config),
     params:
         genome_dir=config["genome_dir"],
     script:

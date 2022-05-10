@@ -237,7 +237,7 @@ if [ $1 = "rna-seq" ]; then
   seq2science run rna-seq --skip-rerun --cores $CORES -r --configfile tests/deseq2/rna/config.yaml --snakemakeOptions config={deseq2_dir:deseq_rna,create_qc_report:true} show_failed_logs=True \
   targets=[$(pwd)/tests/local_test_results/qc/plotCorrelation/GRCh38.p13-DESeq2_sample_distance_clustering_mqc.png]
 
-  # run DESeq2
+  printf "\nrna-seq default - quantification deseq2\n"
   seq2science run rna-seq --skip-rerun --cores $CORES -r --configfile tests/deseq2/rna/config.yaml --snakemakeOptions config={deseq2_dir:deseq_rna} show_failed_logs=True
 
   printf "\nrna-seq default - counting\n"
