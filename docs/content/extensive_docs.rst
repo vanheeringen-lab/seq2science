@@ -12,4 +12,3 @@ The extensive docs serve to have all steps and configurable options documented.
    all_rules.md
    schemas.md
    CHANGELOG.md
-   ../CONTRIBUTING.md

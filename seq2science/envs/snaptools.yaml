@@ -5,3 +5,4 @@ channels:
   - defaults
 dependencies:
   - bioconda::snaptools=1.4.8
+  - conda-forge::conda-ecosystem-user-package-isolation=1.0

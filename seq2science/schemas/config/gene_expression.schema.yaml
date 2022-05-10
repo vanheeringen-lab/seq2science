@@ -9,15 +9,18 @@ properties:
       salmon:
         properties:
           quantifier_index:
-            default: '-k 31' # minimmum length. Reduce if mapping rate is too low.
+            default: '-k 31' # minimmum kmer length. Reduce if mapping rate is too low.
           quantifier_flags:
-            default: '--seqBias --gcBias --validateMappings --recoverOrphans' # --posBias experimental flag
-          decoy_aware_index:
-            default: False
+            default: '--seqBias --gcBias --posBias --validateMappings --recoverOrphans'
+          quantifier_decoys:
+            description: improve quantification accuracy at the cost of increased memory usage.
+            enum: ['none', 'partial', 'full']
+            type: string
+            default: 'full'
         default:
           quantifier_index: '-k 31'
-          quantifier_flags: '--seqBias --gcBias --validateMappings --recoverOrphans'
-          decoy_aware_index: False
+          quantifier_flags: '--seqBias --gcBias --posBias --validateMappings --recoverOrphans'
+          quantifier_decoys: 'full'
       htseq:
         properties:
           htseq_flags:
@@ -34,23 +37,38 @@ properties:
       htseq:
         htseq_flags: ''
 
-  tximeta:
-    description: tximeta is used to convert salmon output to gene counts. If you are using an assembly from Ensembl or GENCODE, you can refine the output by specifying these fields.
+  tpm2counts:
+    description: how do you wish to convert TPMs to gene counts?
     properties:
-      source:
-        description: the source of transcriptome
-        enum: [Ensembl, GENCODE, de-novo]
-        default: de-novo
-      organism:
-        description: organism (e.g. "Homo sapiens")
-        default: tximeta_file
-      release:
-        description: release number of the source database (e.g. "101")
-        default: 42
+      tximeta:
+        description: Tximeta uses Ensembl/GENCODE assemblies to convert TPMs to gene counts, and produces an additional R object with the various contents.
+        properties:
+          txi_source:
+            description: the source of transcriptome
+            enum: [ Ensembl, GENCODE, de-novo ]
+            default: de-novo
+          txi_organism:
+            description: organism (e.g. "Homo sapiens")
+            default: tximeta_file
+          txi_release:
+            description: release number of the source database (e.g. "101")
+            default: 42
+        default:
+          txi_source: de-novo
+          txi_organism: tximeta_file
+          txi_release: 42
+      pytxi:
+        description: Pytxi uses genomepy assemblies to convert TPMs to gene counts (using either the GTF file or MyGene.info).
+        properties:
+          tx2gene_from_gtf:
+            description: try to convert to gene names (symbols) using the GTF file. If false (or the GTF cannot help), pytxi uses MyGene.info.
+            type: boolean
+            default: true
+        default:
+          tx2gene_from_gtf: true
     default:
-      source: de-novo
-      organism: tximeta_file
-      release: 42
+      pytxi:
+        tx2gene_from_gtf: true
 
   ignore_strandedness:
     description: ignore/dont infer strand-specificity?

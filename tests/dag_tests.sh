@@ -18,7 +18,7 @@ fi
 
 function assert_rulecount {
   # check if the DAG (stored with  | tee tests/local_test_results/${1}_dag  ) ran rule $2 exactly $3 times
-  val=$(cat tests/local_test_results/${1}_dag | grep -wE $2$ | cut -f2);
+  val=$(grep -wE $2 tests/local_test_results/${1}_dag | grep -Poi '(?<= )\d+' | head -n 1);
   # check if the rule was found in the DAG at all
   if [ -z "$val" ]; then
     # if specified count is zero, that's OK
@@ -33,11 +33,11 @@ function assert_rulecount {
 mkdir -p tests/local_test_results/fastq
 touch tests/local_test_results/fastq/S1_1_R1.fastq.gz
 touch tests/local_test_results/fastq/S1_1_R2.fastq.gz
-touch tests/local_test_results/fastq/S1_2_R1_100.fastq.gz  # Illumina '_100' suffix -> must be renamed
-touch tests/local_test_results/fastq/S1_2_R2_100.fastq.gz  # Illumina '_100' suffix -> must be renamed
+touch tests/local_test_results/fastq/S1_2_R1_100.fastq.gz  # Illumina '_100' suffix
+touch tests/local_test_results/fastq/S1_2_R2_100.fastq.gz  # Illumina '_100' suffix
 touch tests/local_test_results/fastq/S2_1.fastq.gz
 touch tests/local_test_results/fastq/S2_2.fastq.gz
-touch tests/local_test_results/fastq/S3_1_100.fastq.gz  # Illumina '_100' suffix -> must be renamed
+touch tests/local_test_results/fastq/S3_1_100.fastq.gz  # Illumina '_100' suffix
 touch tests/local_test_results/fastq/S4_1.fastq.gz
 touch tests/local_test_results/fastq/S5_1.fastq.gz
 touch tests/local_test_results/fastq/S6_1.fastq.gz
@@ -79,7 +79,6 @@ if [ $1 = "alignment" ]; then
   seq2science run alignment -nr --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={trimmer:fastp,create_qc_report:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 fastp_PE 1
   seq2science run alignment -nr --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/alignment/replicates.tsv,trimmer:fastp,create_qc_report:True,technical_replicates:merge} | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 rename_sample 2
   assert_rulecount $1 fastp_PE 2
   assert_rulecount $1 fastp_qc_PE 1
 
@@ -106,11 +105,13 @@ if [ $1 = "alignment" ]; then
   assert_rulecount $1 star_index 1
 
   printf "\nalignmentsieve\n"
-  seq2science run alignment -nr --configfile tests/$WF/alignmentsieve.yaml --snakemakeOptions quiet=True| tee tests/local_test_results/${1}_dag
+  seq2science run alignment -nr --configfile tests/$WF/alignmentsieve.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 sieve_bam 1
-  seq2science run alignment -nr --configfile tests/$WF/alignmentsieve_off.yaml --snakemakeOptions quiet=True| tee tests/local_test_results/${1}_dag
+  seq2science run alignment -nr --configfile tests/$WF/alignmentsieve_off.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 sieve_bam 0
   assert_rulecount $1 cp_unsieved2sieved 1
+  seq2science run alignment -nr --configfile tests/$WF/alignmentsieve_off.yaml --snakemakeOptions quiet=True config={subsample:10000} | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 sieve_bam 0 1
 
   printf "\nsorting\n"
   seq2science run alignment -nr --configfile tests/$WF/samtools_coordinate.yaml --snakemakeOptions quiet=True| tee tests/local_test_results/${1}_dag
@@ -198,6 +199,7 @@ if [ $1 = "atac-seq" ]; then
   printf "\natac-seq default\n"
   seq2science run atac-seq -nr --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 macs2_callpeak 1
+  assert_rulecount $1 get_effective_genome_size 1
 
   printf "\npeak callers\n"
   # seq2science run atac-seq -nr --configfile tests/$WF/macs2.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag  # default
@@ -239,6 +241,10 @@ if [ $1 = "atac-seq" ]; then
   printf "\nbroad peaks\n"
   seq2science run atac-seq -n --configfile tests/$WF/macs2_broad.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 macs2_callpeak 1
+
+  printf "\nmultiqc report and broad peaks\n"
+  seq2science run atac-seq -nr --configfile tests/$WF/macs2_broad.yaml --snakemakeOptions quiet=True config={create_qc_report:True} | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 multiqc 1   
 
   printf "\nmultiple peak callers\n"
   seq2science run atac-seq -nr --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
@@ -284,7 +290,6 @@ if [ $1 = "atac-seq" ]; then
 
   printf "\nmultiple peak callers, assemblies and replicates\n"
   seq2science run atac-seq -nr --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions quiet=True config={samples:tests/atac_seq/complex_samples.tsv} | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 rename_sample 3
   assert_rulecount $1 bwa_mem2 8
   assert_rulecount $1 coverage_table 4
 
@@ -394,7 +399,11 @@ if [ $1 = "rna-seq" ]; then
 
   printf "\ndecoy aware salmon index\n"
   seq2science run rna-seq --skip-rerun -nr --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions quiet=True config={samples:tests/alignment/dag_sample.tsv,fastq_dir:tests/local_test_results/fastq} | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 decoy_transcripts 1
+  assert_rulecount $1 full_decoy_transcripts 1
+
+  printf "\ndecoy tximeta\n"
+  seq2science run rna-seq --skip-rerun -nr --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=False config={aligner:star,quantifier:salmon,tpm2counts:tximeta} | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 linked_txome 1
 
   printf "\ntrackhub\n"
   seq2science run rna-seq --skip-rerun -nr --configfile tests/alignment/default_config.yaml --snakemakeOptions quiet=True config={aligner:star,create_trackhub:True} | tee tests/local_test_results/${1}_dag
@@ -432,7 +441,6 @@ if [ $1 = "rna-seq" ]; then
 
   printf "\nmultiple assemblies - DEA\n"
   seq2science run rna-seq --skip-rerun -nr --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={technical_replicates:keep,samples:tests/rna_seq/complex_samples.tsv,dexseq:True} show_failed_logs=True | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 rename_sample 3
   assert_rulecount $1 star_index 2
   assert_rulecount $1 star_align 10
   assert_rulecount $1 dexseq_count 10
@@ -474,11 +482,10 @@ if [ $1 = "rna-seq" ]; then
   seq2science run rna-seq --skip-rerun -nr --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={technical_replicates:merge,samples:tests/rna_seq/complex_samples.tsv,dexseq:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 htseq_count 8
   assert_rulecount $1 dexseq_count 8
-  assert_rulecount $1 count_matrix_DEXseq 2
+  assert_rulecount $1 dexseq_count_matrix 2
   assert_rulecount $1 deseq2 1
   seq2science run rna-seq --skip-rerun -nr --configfile tests/$WF/rna_seq_config.yaml --snakemakeOptions quiet=True config={quantifier:salmon,technical_replicates:merge,samples:tests/rna_seq/complex_samples.tsv} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 salmon_quant 8
-  assert_rulecount $1 linked_txome 2
   assert_rulecount $1 deseq2 1
 
   printf "\nmultiple assemblies and replicates - trackhub\n"
@@ -500,7 +507,7 @@ if [ $1 = "scrna-seq" ]; then
   WF=scrna_seq
 
   printf "\nscrna-seq default\n"
-  seq2science run scrna-seq -nr --configfile tests/scrna_seq/config.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
+  seq2science run scrna-seq -nr --configfile tests/scrna_seq/kallistobus/config.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 fastp_SE 2
   assert_rulecount $1 fastq_pair 2
   assert_rulecount $1 kallistobus_ref 1
@@ -508,14 +515,31 @@ if [ $1 = "scrna-seq" ]; then
   assert_rulecount $1 multiqc 1
   
   printf "\nscrna-seq replicates\n"
-  seq2science run scrna-seq -nr --configfile tests/scrna_seq/config_treps.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
+  seq2science run scrna-seq -nr --configfile tests/scrna_seq/kallistobus/config_treps.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 fastp_SE 2
   assert_rulecount $1 fastq_pair 2
   assert_rulecount $1 merge_replicates 2
   assert_rulecount $1 kallistobus_ref 1
   assert_rulecount $1 kallistobus_count 1
   assert_rulecount $1 multiqc 1
-
+  
+  printf "\ncite-seq-count default\n"
+  seq2science run scrna-seq -nr --configfile tests/scrna_seq/cite-seq-count/config.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 fastp_SE 2
+  assert_rulecount $1 fastq_pair 2
+  assert_rulecount $1 citeseqcount 2
+  assert_rulecount $1 multiqc 1
+  
+  printf "\nscrna-seq-pp default\n"
+  seq2science run scrna-seq -nr --configfile tests/scrna_seq/kallistobus/config_pp.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 fastp_SE 2
+  assert_rulecount $1 fastq_pair 2
+  assert_rulecount $1 kallistobus_ref 1
+  assert_rulecount $1 kallistobus_count 2
+  assert_rulecount $1 export_sce_obj 2
+  assert_rulecount $1 sctk_qc 2
+  assert_rulecount $1 multiqc 1
+  
   test_ran=1
 fi
 

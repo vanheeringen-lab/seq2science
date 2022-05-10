@@ -39,10 +39,11 @@ peak_caller:
 #  genrich:
 #      -j -y -D -d 200 -q 0.05
 
-# how much should the peaks be extended around the summit for the count table
+# how much peak summits will be extended by (on each side) for the final count table
 # (e.g. 100 means a 200 bp wide peak)
 slop: 100
 
-## differential accessibility analysis
+# differential accessibility analysis
+# for explanation, see: https://vanheeringen-lab.github.io/seq2science/content/DESeq2.html
 #contrasts:
 #  - 'biological_replicates_adult_embryo'

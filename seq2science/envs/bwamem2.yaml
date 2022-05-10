@@ -5,3 +5,4 @@ channels:
   - defaults
 dependencies:
   - bioconda::bwa-mem2=2.2.1
+  - conda-forge::conda-ecosystem-user-package-isolation=1.0

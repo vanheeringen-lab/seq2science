@@ -1,6 +1,6 @@
 # do onstart/onexit things
-sample_schemas = ['sample', 'assembly', 'technical_replicates', 'strandedness']
-config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific', 'trackhub']
+SAMPLE_SCHEMAS = ['sample', 'assembly', 'technical_replicates', 'strandedness']
+CONFIG_SCHEMAS = ['general', 'download', 'alignment_general', 'alignment_specific', 'trackhub']
 include: "../../rules/configuration.smk"
 
 
@@ -17,7 +17,7 @@ include: f"{config['rule_dir']}/trimming.smk"
 
 
 # load the quality control files
-quality_control = [get_trimming_qc, get_alignment_qc]
+QUALITY_CONTROL = [get_trimming_qc, get_alignment_qc]
 
 def get_bams():
     bamfiles = {}
@@ -33,20 +33,20 @@ def get_bams():
 
     # get all the bams
     if 'technical_replicates' in samples:
-        for assembly in all_assemblies:
-            for replicate in set(samples[samples['assembly'] == ori_assembly(assembly)]['technical_replicates']):
+        for assembly in ALL_ASSEMBLIES:
+            for replicate in set(samples[samples['assembly'] == ORI_ASSEMBLIES[assembly]]['technical_replicates']):
                 bamfiles['map'].update([expand(f"{{final_bam_dir}}/{assembly}-{replicate}.{{bam_sorter}}-{{bam_sort_order}}.{map_ext}", **config)[0]])
                 bamfiles['ind'].update([expand(f"{{final_bam_dir}}/{assembly}-{replicate}.{{bam_sorter}}-{{bam_sort_order}}.{map_ext}.{map_idx}", **config)[0]])
                 # always output samtools-coordinate
                 bamfiles['map'].update([expand(f"{{final_bam_dir}}/{assembly}-{replicate}.samtools-coordinate.{map_ext}", **config)[0]])
                 bamfiles['ind'].update([expand(f"{{final_bam_dir}}/{assembly}-{replicate}.samtools-coordinate.{map_ext}.{map_idx}", **config)[0]])
     else:
-        # suffix is defined in configuration_generic (noting or _custom)
-        bamfiles['map'].update([expand(f"{{final_bam_dir}}/{samples.loc[sample]['assembly']}{suffix}-{sample}.{{bam_sorter}}-{{bam_sort_order}}.{map_ext}", **config)[0] for sample in samples.index])
-        bamfiles['ind'].update([expand(f"{{final_bam_dir}}/{samples.loc[sample]['assembly']}{suffix}-{sample}.{{bam_sorter}}-{{bam_sort_order}}.{map_ext}.{map_idx}", **config)[0] for sample in samples.index if config['bam_sort_order'] == 'coordinate'])
+        # SUFFIX is defined in configuration_generic
+        bamfiles['map'].update([expand(f"{{final_bam_dir}}/{samples.loc[sample]['assembly']}{SUFFIX}-{sample}.{{bam_sorter}}-{{bam_sort_order}}.{map_ext}", **config)[0] for sample in samples.index])
+        bamfiles['ind'].update([expand(f"{{final_bam_dir}}/{samples.loc[sample]['assembly']}{SUFFIX}-{sample}.{{bam_sorter}}-{{bam_sort_order}}.{map_ext}.{map_idx}", **config)[0] for sample in samples.index if config['bam_sort_order'] == 'coordinate'])
         # always output samtools-coordinate
-        bamfiles['map'].update([expand(f"{{final_bam_dir}}/{samples.loc[sample]['assembly']}{suffix}-{sample}.samtools-coordinate.{map_ext}", **config)[0] for sample in samples.index])
-        bamfiles['ind'].update([expand(f"{{final_bam_dir}}/{samples.loc[sample]['assembly']}{suffix}-{sample}.samtools-coordinate.{map_ext}.{map_idx}", **config)[0] for sample in samples.index if config['bam_sort_order'] == 'coordinate'])
+        bamfiles['map'].update([expand(f"{{final_bam_dir}}/{samples.loc[sample]['assembly']}{SUFFIX}-{sample}.samtools-coordinate.{map_ext}", **config)[0] for sample in samples.index])
+        bamfiles['ind'].update([expand(f"{{final_bam_dir}}/{samples.loc[sample]['assembly']}{SUFFIX}-{sample}.samtools-coordinate.{map_ext}.{map_idx}", **config)[0] for sample in samples.index if config['bam_sort_order'] == 'coordinate'])
 
     return bamfiles
 
@@ -60,4 +60,4 @@ rule seq2science:
          expand(
              (["{trackhub_dir}"]                     if config['create_trackhub'] else []) +
              (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []),
-             **{**config, **{'assemblies': all_assemblies}})
+             **{**config, **{'assemblies': ALL_ASSEMBLIES}})

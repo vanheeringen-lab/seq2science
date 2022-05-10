@@ -4,17 +4,19 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - pkgs/main::python=3.8
-  - bioconda::snakemake-minimal=5.18.1
-  - pkgs/main::conda=4.9.2
-  - conda-forge::mamba=0.7.14
-  - bioconda::genomepy=0.10.0
-  - conda-forge::biopython=1.74
-  - pkgs/main::filelock=3.0.12
-  - pkgs/main::pyyaml=5.3.1
+  - conda-forge::python=3.8
+  - bioconda::snakemake-minimal=7.6
+  - conda-forge::conda=4.11.0
+  - conda-forge::mamba=0.19.0
+  - bioconda::genomepy=0.12.0
+  - conda-forge::biopython=1.79
+  - conda-forge::filelock=3.4.0
+  - conda-forge::pyyaml=6.0
   - conda-forge::pandas_schema=0.3.5
   - bioconda::trackhub=0.1.2019.12.24
   - bioconda::pysradb=1.0.1
-  - conda-forge::matplotlib=3.3.2
-  - conda-forge::xdg=5.0.1
-  - conda-forge::argcomplete=1.12.2
+  - conda-forge::matplotlib=3.5.0
+  - conda-forge::xdg=5.1.1
+  - conda-forge::argcomplete=1.12.3
+  - conda-forge::tabulate=0.8.9
+  - conda-forge::conda-ecosystem-user-package-isolation=1.0

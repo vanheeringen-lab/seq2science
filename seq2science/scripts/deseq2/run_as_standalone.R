@@ -17,14 +17,15 @@ for (pkg in required_packages){
 }
 
 # parse arguments
-if (!length(args)==4) {
-  cat("4 arguments expected: contrast, samples_file, counts_file and outdir.")
+if (!length(args) %in% c(4,5)) {
+  cat("Four arguments expected: contrast, samples_file, counts_file and outdir. Optional: single_cell.")
   quit(save = "no" , status = 0)
 }
 contrast     <- args[1]
 samples_file <- args[2]
 counts_file  <- args[3]
 out_dir      <- args[4]
+single_cell  <- ifelse(length(args)==5, as.logical(args[5]), FALSE)
 
 if (!length(strsplit(contrast, '_')[[1]]) >= 3){
   cat("Contrast must contain a column name and two fields separated with an underscore (_).  \n\n")
@@ -46,19 +47,20 @@ if (!dir.exists(out_dir)){
 }
 
 # variables required in the core script
-samples     <- read.delim(samples_file, sep = "\t", na.strings = "", comment.char = "#", stringsAsFactors = F, row.names = "sample")
-replicates  <- "technical_replicates" %in% colnames(samples)  # always merge replicates if "technical_replicates" exists
-assembly    <- samples$assembly[1]                           # always use the first assembly
-mtp         <- "BH"                                          # \
-fdr         <- 0.1                                           #  |-default options only
-se          <- "apeglm"                                      # /
-salmon      <- FALSE                                         # only work with counts data
-threads     <- 1
-output      <- file.path(out_dir, paste0(assembly, "-", contrast, ".diffexp.tsv"))
+samples            <- read.delim(samples_file, sep = "\t", na.strings = "", comment.char = "#", stringsAsFactors = F, row.names = "sample", check.names = F)
+replicates         <- "technical_replicates" %in% colnames(samples)  # always merge replicates if "technical_replicates" exists
+assembly           <- samples$assembly[1]                            # always use the first assembly
+mtp                <- "BH"                                           # \
+fdr                <- 0.1                                            #  |-default options only
+se                 <- "apeglm"                                       # /
+salmon             <- FALSE                                          # only work with counts data
+threads            <- 1
+output             <- file.path(out_dir, paste0(assembly, "-", contrast, ".diffexp.tsv"))
+output_ma_plot     <- sub(".diffexp.tsv", ".ma_plot.png", output)
+output_vol_plot    <- sub(".diffexp.tsv", ".volcano_plot.png", output)
+output_pca_plot    <- sub(".diffexp.tsv", ".pca_plot.png", output)
 
 # load libraries
 suppressMessages({
-  library(DESeq2)
-  library(IHW)
-  library(ggplot2)
+  library(ggalt)  # for the volcano plots
 })

@@ -1,9 +1,9 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #
 # atacshift: Correct for tn5 bias by shifting reads on the positive strand +4 and reads 
 #            on the negative strand -5. The CIGAR string is the same length as the read
-#            but all nucleotides now map (M). Reads that fall (partly) outside of the 
-#            genome after shifting are removed.
+#            but all nucleotides now map (M). Nucleotides that fall (partly) outside of
+#            the genome after shifting are removed.
 #  
 # author: Maarten van der Sande
 
@@ -52,9 +52,10 @@ while (my $line = <$in_sam>) {
   
   if (not ($read[1] & 0x04)) {  # read must be mapped to shift
 
-    # cut of unmapped reads & deletions
+    # cut of unmapped nucleotides & deletions
+    # https://en.wikipedia.org/wiki/Sequence_alignment#Representations
     @cigar = split /(?<=[A-Z])/, $read[5];
-    @cigar = grep {!/\d(S|D)/}  @cigar; 
+    @cigar = grep {!/\d(D|N|S|H|P)/}  @cigar; 
     $rlen = sum(split /[A-Z]/, join '', @cigar);
 
     if ($read[1] & 0x10) {  # reverse strand
@@ -89,7 +90,6 @@ while (my $line = <$in_sam>) {
     $read[5] = "${rlen}M";
 
     # empty QUAL and SEQ
-    # $read[9] = "*";
     $read[10] = "*";
   }
   print join "\t", @read, "\n";

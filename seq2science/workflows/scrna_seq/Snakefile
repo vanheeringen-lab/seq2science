@@ -1,6 +1,6 @@
 # do onstart/onexit things
-sample_schemas = ['sample', 'assembly']
-config_schemas = ['general', 'download', 'alignment_general', 'alignment_specific', 'scrna', 'trackhub']
+SAMPLE_SCHEMAS = ['sample', 'assembly']
+CONFIG_SCHEMAS = ['general', 'download', 'alignment_general', 'alignment_specific', 'scrna', 'trackhub']
 include: "../../rules/configuration.smk"
 
 
@@ -12,20 +12,22 @@ include: f"{config['rule_dir']}/merge_replicates.smk"
 include: f"{config['rule_dir']}/qc.smk"
 include: f"{config['rule_dir']}/trimming.smk"
 include: f"{config['rule_dir']}/quantification.smk"
+include: f"{config['rule_dir']}/scRNA_qc.smk"
 
 
 # set the quality_control functions
-quality_control = [get_trimming_qc, get_scrna_qc]
+QUALITY_CONTROL = [get_trimming_qc, get_scrna_qc]
 
 rule seq2science:
     """
     Make a QC report and map
     """
     input:
-        expand([f"{{result_dir}}/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}/run_info.json" for trep in treps.index] +
-               ([f"{{result_dir}}/seurat/{{quantifier}}/{custom_assembly(treps.loc[trep, 'assembly'])}-{trep}_seu_obj.RData" for trep in treps.index] + 
-               ["{result_dir}/seurat/kallistobus/{assemblies}_seu_merged.RData"] if config["export_seu_objects"] else []) + 
-               (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []) + 
-               (["{result_dir}/kb_seurat_pp/kallistobus/{assemblies}/kb_seurat_pp.html", "{result_dir}/kb_seurat_pp/kallistobus/{assemblies}/qc"] if config['run_kb_seurat_pp'] else []),
+        expand(([f"{{result_dir}}/{{quantifier}}/{CUSTOM_ASSEMBLIES[treps.loc[trep, 'assembly']]}-{trep}/run_info.json" for trep in treps.index] if config["quantifier"] == "kallistobus" else [] +
+                [f"{{result_dir}}/{{quantifier}}/{CUSTOM_ASSEMBLIES[treps.loc[trep, 'assembly']]}-{trep}/_tag_counts/run_report.yaml" for trep in treps.index] if config["quantifier"] == "citeseqcount" else []) +
+               ([f"{{result_dir}}/scrna-preprocess/{{quantifier}}/raw/{CUSTOM_ASSEMBLIES[treps.loc[trep, 'assembly']]}-{trep}/export/R/raw_SCE.RDS" for trep in treps.index]  if config["sc_preprocess"].get("export_sce_objects",{}) else []) +
+               ([f"{{result_dir}}/scrna-preprocess/{{quantifier}}/raw/{CUSTOM_ASSEMBLIES[treps.loc[trep, 'assembly']]}-{trep}/export/R/raw_SCE.RDS" for trep in treps.index] +
+                [f"{{result_dir}}/scrna-preprocess/{{quantifier}}/sctk/{CUSTOM_ASSEMBLIES[treps.loc[trep, 'assembly']]}-{trep}/export/R/sctk_SCE.RDS" for trep in treps.index] if config["sc_preprocess"].get("run_sctk_qc",{}) else []) +
+               (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []),
                **{**config,
-                  **{'assemblies': all_assemblies}})
+                  **{'assemblies': ALL_ASSEMBLIES}})

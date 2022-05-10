@@ -1,15 +1,11 @@
-# source: https://github.com/csoneson/ARMOR/blob/master/scripts/run_tximeta.R
-
-suppressMessages({
-  library(tidyverse)
-  library(SingleCellExperiment)
-})
-
 # snakemake variables
 linked_txome <- snakemake@input$linked_txome
 samples      <- snakemake@input$cts
+sample_names <- snakemake@params$names
 assembly     <- snakemake@wildcards$assembly
-out_matrix   <- snakemake@output$counts
+out_counts   <- snakemake@output$counts
+out_tpms     <- snakemake@output$tpms
+out_lengths  <- snakemake@output$lengths
 out_SCE      <- snakemake@output$SCE
 log_file     <- snakemake@log[[1]]
 
@@ -22,8 +18,11 @@ sink(log, type="message")
 cat('# variables used for this analysis:\n')
 cat('linked_txome <- "', linked_txome, '"\n', sep = "")
 cat('samples      <- "', samples,      '"\n', sep = "")
+cat('sample_names <- "', sample_names, '"\n', sep = "")
 cat('assembly     <- "', assembly,     '"\n', sep = "")
-cat('out_matrix   <- "', out_matrix,   '"\n', sep = "")
+cat('out_counts   <- "', out_counts,   '"\n', sep = "")
+cat('out_tpms     <- "', out_tpms,     '"\n', sep = "")
+cat('out_lengths  <- "', out_lengths,  '"\n', sep = "")
 cat('out_SCE      <- "', out_SCE,      '"\n', sep = "")
 cat('log_file     <- "', log_file,     '"\n', sep = "")
 cat('\n')
@@ -32,12 +31,16 @@ cat('Sessioninfo:\n')
 sessionInfo()
 cat('\n')
 
+suppressMessages({
+  library(tidyverse)
+  library(SingleCellExperiment)
+})
+
 
 ## Load linked_txome.json
 tximeta::loadLinkedTxome(linked_txome)
 
-samplenames <- gsub(paste0(assembly, '-'), '', basename(samples))
-coldata <- data.frame(files = file.path(samples, 'quant.sf'), names = samplenames, stringsAsFactors = F, check.names = F)
+coldata <- data.frame(files = samples, names = sample_names, stringsAsFactors = F, check.names = F)
 
 ## import annotated abundances in transcript level
 st <- tximeta::tximeta(
@@ -53,28 +56,23 @@ st <- tximeta::tximeta(
 ## Summarize to gene level
 sg <- tximeta::summarizeToGene(st)
 
-
-## This section deviates from the source script
-## It outputs non-normalized matrixes
-
 ## Save TPM matrix
 TPM <- data.frame(assay(sg, "abundance"), stringsAsFactors = F, check.names = F) %>% rownames_to_column("gene")
-out_TPM_matrix <- sub("-counts.tsv", "-TPM.tsv", out_matrix)
-write.table(TPM, file=out_TPM_matrix, quote = F, sep = '\t', row.names = F)
+write.table(TPM, file=out_tpms, quote = F, sep = '\t', row.names = F)
 
 ## Save gene counts matrix
 counts <- assay(sg, "counts")
 mode(counts) <- "integer"
 counts <- data.frame(counts, stringsAsFactors = F, check.names = F) %>% rownames_to_column("gene")
-write.table(counts, file=out_matrix, quote = F, sep = '\t', row.names = F)
+write.table(counts, file=out_counts, quote = F, sep = '\t', row.names = F)
 
 ## Save gene length matrix
 lengths <- data.frame(assay(sg, "length"), stringsAsFactors = F, check.names = F) %>% rownames_to_column("gene")
-out_lengths_matrix <- sub("-counts.tsv", "-gene_lengths.tsv", out_matrix)
-write.table(lengths, file=out_lengths_matrix, quote = F, sep = '\t', row.names = F)
+write.table(lengths, file=out_lengths, quote = F, sep = '\t', row.names = F)
 
-## Returning to source script
 
+# Generate a single cell experiment object
+## source: https://github.com/csoneson/ARMOR/blob/master/scripts/run_tximeta.R
 
 ## If rowData(st)$gene_id is a CharacterList, convert it to character to allow
 ## the joining below

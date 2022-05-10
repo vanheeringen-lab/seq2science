@@ -5,6 +5,4 @@ channels:
   - defaults
 dependencies:
   - bioconda::macs2=2.2.7
-  - bioconda::khmer=2.0
-  - conda-forge::jq=1.6
-  - anaconda::setuptools=50.3.0
+  - conda-forge::conda-ecosystem-user-package-isolation=1.0

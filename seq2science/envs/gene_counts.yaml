@@ -7,3 +7,5 @@ dependencies:
   - bioconda::htseq=0.12.4
   - bioconda::subread=2.0.1
   - bioconda::rseqc=4.0.0
+  - conda-forge::openssl=1.0.2p=h14c3975_1002 # infer_strandedness missing libcrypto
+  - conda-forge::conda-ecosystem-user-package-isolation=1.0

@@ -1,0 +1,10 @@
+name: khmer
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - bioconda::khmer=2.0
+  - conda-forge::jq=1.6
+  - bioconda::grep=3.4
+  - conda-forge::conda-ecosystem-user-package-isolation=1.0

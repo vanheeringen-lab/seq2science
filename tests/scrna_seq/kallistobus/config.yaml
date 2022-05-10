@@ -1,0 +1,39 @@
+# tab-separated file of the samples
+samples: tests/scrna_seq/kallistobus/samples.tsv
+barcodefile: tests/scrna_seq/kallistobus/barcodes.txt
+
+# pipeline file locations
+result_dir: ./results  # where to store results
+genome_dir: ./genomes  # where to look for or download the genomes
+# fastq_dir: (default is inside result_dir) # where to look for fastqs
+
+# contact info for multiqc report and trackhub
+email: yourmail@here.com
+
+# how to handle replicates
+technical_replicates: merge
+
+# scRNA options
+# seq2science does currently not support scrna-seq platforms that generate more than two fastq files, such as 10xv1.
+quantifier:
+  kallistobus:
+    ## Quantification example ##
+    #count: '-x 0,8,16:0,0,8:1,0,0 --h5ad --verbose'
+    #count: '-x 10XV3 --h5ad --verbose'
+
+    ## Velocity example ##
+    #ref: '--workflow lamanno'
+    #count: '-x 0,8,16:0,0,8:1,0,0 --h5ad --verbose --workflow lamanno'
+    count: '-x 10XV3 --verbose --h5ad --workflow lamanno'
+
+sc_preprocess:
+   export_sce_objects: False
+   run_sctk_qc: False
+   use_alt_expr: True
+   alt_exp_name: ERCC92
+   alt_exp_reg: ERCC-
+   sctk_data_type: cell
+   sctk_mito_set: human-ensembl
+   sctk_detect_mito: True
+   sctk_detect_cell: True
+   sctk_cell_calling: Knee

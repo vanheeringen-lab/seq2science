@@ -8,21 +8,160 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Changed
+
+- updated snakemake
+  - effective genome size is now estimated per kmer length instead of per sample since checkpoints should work again.
+
+## [0.9.0] - 2022-05-10
+
+### Changed
+
+- renamed most globals in uppercase (main exceptions are `config` and `samples`, `treps` and `breps`)
+- moved most configuration steps into functions (reducing the number of stray globals)
+- replaced static functions with dictionaries
+- moved replicate stuff to the configuration
+- Updated Salmon
+- Added the option for Salmon to use the full genome as decoy sequence
+- Salmon now uses the full genome as decoy sequence by default.
+  - Config option `quantifier_decoys` controls which level of decoy aware quantification you want (options are 'none', 'partial' and 'full')
+  - Option 'partial' is insanely memory intensive, and the Salmon docs suggest no benefit... 
+- improved parsing of the samples.tsv. More errors early on, to prevent headache later!
+
+### Fixed
+
+- get_fastq_pair_reads() was using one sample, not any sample
+- error message not working when trimming in scRNA-seq
+- trackhubs when using a mix of stranded and unstranded datasets
+- fix samples.tsv checks for forbidden symbols
+
+## [0.8.0] - 2022-04-29
+
+### Added
+
+- idr call is configurable (`idr_options`)
+- single-cell DESeq2 (currently only via `deseq2science` with user-specified groups per cell)
+- scRNA quality control workflow with singleCellTK
+  - cell calling/filtering with DropletUtils
+  - mitochondrial gene set detection/filtering
+  - doublet identification/filtering with scDblFinder
+  - processing of alternative experiments, such as spike-in expression
+  - qc report generation for cell/droplet based experiments
+- added Seurat and FlatFile format export to scRNA qc workflow
+- added parameter to select velocity matrix for qc and export
+
+### Changed
+
+- rna-seq creates a TPM table for each quantification method 
+- raw/processed scRNA count tables are now stored and exported to SingleCellExperiment S4 objects instead of Seurat S4 objects 
+- moved scRNA post processing to separate module
+- export unspliced velocity counts to separate sce object
+- seq2science should be less susceptible to poor programming environment management by using the conda-ecosystem-user-package-isolation package
+- seq2science will now demand all requirements exactly the way it likes it
+    - this will make the workflows more stable.
+- local fastq files are no longer renamed (and should just work)
+- scRNA-seq trimming code simplified
+
+### Removed
+
+- removed scRNA merging rule due to memory issues with large and sparse samples 
+- removed deprecated scRNA post-processing workflow (superseded by singleCellTK qc workflow)
+
+### Fixed
+
+- fixed bug causing incorrect genome string in `read_kb_counts.R`
+- bams generated with(out) filtering on size and tn5 shifting weren't removed when not necessary anymore
+
+## [0.7.2] - 2022-03-04
+
+### Added
+
+- TPM to gene counts conversion with pytxi
+  - by default attempts to use the GTF file to convert transcript_ids to gene_names
+  - otherwise will use MyGene.info
+- config option `tpm2counts` to chose which TPM to counts converter to use
+
+### Changed
+
+- pytxi is now the default TPM to gene counts converter (over tximeta)
+- peak/gene counts tables now use descriptive names (if given)
+- MultiQC DESeq2 correlation plots now display correlation metrics in the figure
+- using awful practices to eliminate checkpoint strandedness
+- deeptools_flags renamed to deeptools_bamcoverage
+- rna-seq trackhub per base tracks by default instead of bins per 50
+
+### Fixed
+
+- edge-cases where seq2science was too strict with rerunning
+- assembly stats log scale on the y-axis
+- s2s explain wont tell you about subsampling to -1 (all) reads
+- tn5 shift cigar string parsing edge-case (reference deletions/insertions)
+
+## [0.7.1] - 2022-02-10
+
+### Fixed
+
+- issue with broad peaks and upsetplots
+
+## [0.7.0] - 2022-02-02
+
+Biggest change is that we revert back to snakemake 5.18 since higher versioned snakemake's cause instability.
+
+### Added
+
+- upset plot as QC for peak calling. Should give a first feeling about the distribution of peaks between samples/conditions.
+
+### Changed
+
+- downgraded the snakemake backend as snakemake 6+ is unstable for us.
+
+### Fixed
+
+- corrupt environment creation with libreadline for edgeR normalization.
+- subsampling causing a crash caused by bad syntax.
+
+## [0.6.1] - 2021-12-17
+
+### Fixed
+
+- corrupt environment creation with libcrypto in combination with strandedness rule
+
+## [0.6.0] - 2021-12-12
+
+Release 0.6.0 is a mix of bug fixes, small changes, and bigger stuff. Most importantly:
+
+* added a deseq2science command to do differential expression analysis on user-supplied tables with seq2science settings
+* for single-cell RNA-seq ADT-quantification is possible
+* snakemake library updated, giving seq2science a new-ish look :) 
+
+The full changes are listed below:
+
 ### Added
 
 - added generic stats to the MultiQC report about the assembly, which might help pin point problems with the assembly used.
 - added the slop parameter to the config.yaml of atac-seq and chip-seq workflows, just so they are more visible.
 - added support for seurat object export and merging for kb workflow.
+- added support for CITE-seq-count for ADT quantification
+- added the option to downsample to a specific number of reads.
+- new deseq2science command
 
 ### Changed
 
 - Seq2science now makes a separate blacklist file per blacklist option (encode & mitochondria), so that e.g. RNA-seq and ATAC-seq workflows can be run in parallel and don't conflict on the blacklist.  
 - error messages don't show the full traceback anymore, making it (hopefully) more clear what is going wrong.
+- The effective genome size is now not calculated per sample, but per read length. When dealing with multiple samples (of similar) length this improves computational burden quite some. 
+- samtools environment updated to version 1.14
 
 ### Fixed
 
+- config option `slop` is now passed along to each rule using it
 - edge-case where local samples are in the cache, but not present in the fastq_dir
 - bug with differential peak/gene expression across multiple assemblies
+- bug with kb ref not creating index for non-velocity analysis
+- bug with count import in read_kb_counts.R for technical replicates and meta-data handling
+- deseq2 ordering in multiqc report
+- issue with slop not being used for the final count table
+- bug with onehot peaks not reporting the sample names as columns
 
 ## [0.5.6] - 2021-10-19
 
@@ -87,7 +226,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Changed
 
-- "biological_replicate" and "technical_replicate" renamed to *"_replicates" (matches between samples.tsv & config.yaml)
+- "biological_replicate" and "technical_replicate" renamed to "..._replicates" (matches between samples.tsv & config.yaml)
 - fixed bug with seq2science making a {output.allsizes} file
 - Changed explain to use 'passive style'
 - Genrich peak calling defaults
@@ -466,7 +605,13 @@ Many minor bug- and quality of life fixes.
 ## [0.0.0] - 2020-06-11
 First release of seq2science!
 
-[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.6...develop
+[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.8.0...develop
+[0.8.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.7.2...v0.8.0
+[0.7.2]: https://github.com/vanheeringen-lab/seq2science/compare/v0.7.1...v0.7.2
+[0.7.1]: https://github.com/vanheeringen-lab/seq2science/compare/v0.7.0...v0.7.1
+[0.7.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.6.1...v0.7.0
+[0.6.1]: https://github.com/vanheeringen-lab/seq2science/compare/v0.6.0...v0.6.1
+[0.6.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.6...v0.6.0
 [0.5.6]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.5...v0.5.6
 [0.5.5]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.4...v0.5.5
 [0.5.4]: https://github.com/vanheeringen-lab/seq2science/compare/v0.5.3...v0.5.4

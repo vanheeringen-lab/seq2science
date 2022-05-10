@@ -213,7 +213,7 @@ if [ $1 = "rna-seq" ]; then
   seq2science run rna-seq --cores $CORES -r --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions config={counts_dir:salmon_counts,custom_genome_extension:tests/tinydata/tinyERCC92.fa,custom_annotation_extension:tests/tinydata/tinyERCC92.gtf} show_failed_logs=True \
   omit_from=[blind_clustering]  # <- remove when fixed
 
-  printf "\nrna-seq default - quantification deseq2\n"
+#  printf "\nrna-seq default - quantification deseq2\n"
 #  seq2science run rna-seq --cores $CORES -r --configfile tests/rna_seq/deseq2_config.yaml --snakemakeOptions config={counts_dir:salmon_counts} show_failed_logs=True
 
   # fake input data & fix timestamps
@@ -229,13 +229,15 @@ if [ $1 = "rna-seq" ]; then
     done
     touch tests/local_test_results/fastq/replicate_${ext}.fastq.gz
   done
+  touch -m tests/deseq2/rna/counts/GRCh38.p13-gene_lengths.tsv  # update timestamp
   touch -m tests/deseq2/rna/counts/GRCh38.p13-counts.tsv  # update timestamp
+  touch -m tests/deseq2/rna/counts/GRCh38.p13-TPM.tsv  # update timestamp
 
   # run blind clustering
   seq2science run rna-seq --skip-rerun --cores $CORES -r --configfile tests/deseq2/rna/config.yaml --snakemakeOptions config={deseq2_dir:deseq_rna,create_qc_report:true} show_failed_logs=True \
   targets=[$(pwd)/tests/local_test_results/qc/plotCorrelation/GRCh38.p13-DESeq2_sample_distance_clustering_mqc.png]
 
-  # run DESeq2
+  printf "\nrna-seq default - quantification deseq2\n"
   seq2science run rna-seq --skip-rerun --cores $CORES -r --configfile tests/deseq2/rna/config.yaml --snakemakeOptions config={deseq2_dir:deseq_rna} show_failed_logs=True
 
   printf "\nrna-seq default - counting\n"
@@ -252,10 +254,31 @@ if [ $1 = "rna-seq" ]; then
 
   printf "\nrna-seq default - trackhub\n"
   # deeptools: removed normalization due to test samples being too small
-  seq2science run rna-seq --cores $CORES -r --configfile tests/alignment/default_config.yaml --snakemakeOptions config={samples:tests/alignment/stranded_sample.tsv,genome_dir:tests,fastq_dir:../tinyfastq,aligner:star,create_trackhub:True,custom_genome_extension:tests/tinydata/tinyERCC92.fa,custom_annotation_extension:tests/tinydata/tinyERCC92.gtf,deeptools_flags:-v} show_failed_logs=True
+  seq2science run rna-seq --cores $CORES -r --configfile tests/alignment/default_config.yaml --snakemakeOptions config={samples:tests/alignment/stranded_sample.tsv,genome_dir:tests,fastq_dir:../tinyfastq,tpm2counts:tximeta,aligner:star,create_trackhub:True,custom_genome_extension:tests/tinydata/tinyERCC92.fa,custom_annotation_extension:tests/tinydata/tinyERCC92.gtf,deeptools_bamcoverage:-v} show_failed_logs=True
 
   printf "\nrna-seq default - multiqc report\n"
-  seq2science run rna-seq --cores $CORES -r --configfile tests/alignment/default_config.yaml --snakemakeOptions config={samples:tests/alignment/local_sample.tsv,genome_dir:tests,fastq_dir:../tinyfastq,aligner:star,create_qc_report:True,custom_genome_extension:tests/tinydata/tinyERCC92.fa,custom_annotation_extension:tests/tinydata/tinyERCC92.gtf} show_failed_logs=True
+  seq2science run rna-seq --cores $CORES -r --configfile tests/alignment/default_config.yaml --snakemakeOptions config={samples:tests/alignment/local_sample.tsv,genome_dir:tests,fastq_dir:../tinyfastq,tpm2counts:tximeta,aligner:star,create_qc_report:True,custom_genome_extension:tests/tinydata/tinyERCC92.fa,custom_annotation_extension:tests/tinydata/tinyERCC92.gtf} show_failed_logs=True
+
+  test_ran=1
+fi
+
+if [ $1 = "deseq2science" ]; then
+  outdir=tests/local_test_results/deseq2science
+
+  rm -rf $outdir
+
+  deseq2science \
+  -d batch+condition_day2_day0 \
+  -s tests/deseq2/rna/samples.tsv \
+  -c tests/deseq2/rna/counts/GRCh38.p13-counts.tsv \
+  -o $outdir
+
+  # very basic test: check if all output files are generated
+  fcount=$(ls -1q $outdir | wc -l)
+  if [[ ${fcount} -ne  "6" ]]; then
+    printf "\nmissing deseq2science output (6 files expected, found ${fcount})\n";
+    exit 1
+  fi
 
   test_ran=1
 fi

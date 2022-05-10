@@ -1,4 +1,7 @@
-import sys
+"""
+All rules/logic related to converting filetypes from uncompressed to compressed
+(big as UCSC calls it). E.g. a from .peak -> .bigpeak
+"""
 
 
 rule bedgraphish_to_bedgraph:
@@ -78,34 +81,40 @@ def get_bigpeak_columns(wildcards):
     if get_peak_ftype(wildcards.peak_caller) == "narrowPeak":
         return 10
     if get_peak_ftype(wildcards.peak_caller) == "broadPeak":
-        if len(treps_from_brep[(wildcards.sample, wildcards.assembly)]) == 1:
+        if len(TREPS_FROM_BREP[(wildcards.sample, wildcards.assembly)]) == 1:
             return 9
         return 12
-    logger.error(f"Something went wrong inferring the correct column for bigpeak for peak type {get_peak_ftype(wildcards.peak_caller)}. "
-                  "Please make an issue on github if this is unexpected behaviour!")
-    sys.exit(1)
+    logger.error(
+        f"Something went wrong inferring the correct column for bigpeak for peak type {get_peak_ftype(wildcards.peak_caller)}. "
+        "Please make an issue on github if this is unexpected behaviour!"
+    )
+    os._exit(1)  # noqa
 
 
 def get_bigpeak_type(wildcards):
     if get_peak_ftype(wildcards.peak_caller) == "narrowPeak":
         return "bed6+4"
     if get_peak_ftype(wildcards.peak_caller) == "broadPeak":
-        if len(treps_from_brep[(wildcards.sample, wildcards.assembly)]) == 1:
+        if len(TREPS_FROM_BREP[(wildcards.sample, wildcards.assembly)]) == 1:
             return "bed6+3"
         return "bed12"
-    logger.error(f"Something went wrong inferring the correct bed format for bigpeaks for peak type {get_peak_ftype(wildcards.peak_caller)}. "
-                  "Please make an issue on github if this is unexpected behaviour!")
+    logger.error(
+        f"Something went wrong inferring the correct bed format for bigpeaks for peak type {get_peak_ftype(wildcards.peak_caller)}. "
+        "Please make an issue on github if this is unexpected behaviour!"
+    )
 
 
 def get_bigpeak_schema(wildcards):
     if get_peak_ftype(wildcards.peak_caller) == "narrowPeak":
         return f"{config['rule_dir']}/../schemas/bignarrowPeak.as"
     if get_peak_ftype(wildcards.peak_caller) == "broadPeak":
-        if len(treps_from_brep[(wildcards.sample, wildcards.assembly)]) == 1:
+        if len(TREPS_FROM_BREP[(wildcards.sample, wildcards.assembly)]) == 1:
             return f"{config['rule_dir']}/../schemas/bigbroadPeak.as"
         return f"{config['rule_dir']}/../schemas/bigBed.as"
-    logger.error(f"Something went wrong inferring the correct schema for bigpeaks for peak type {get_peak_ftype(wildcards.peak_caller)}. "
-                  "Please make an issue on github if this is unexpected behaviour!")
+    logger.error(
+        f"Something went wrong inferring the correct schema for bigpeaks for peak type {get_peak_ftype(wildcards.peak_caller)}. "
+        "Please make an issue on github if this is unexpected behaviour!"
+    )
 
 
 rule peak_bigpeak:
@@ -122,7 +131,9 @@ rule peak_bigpeak:
     log:
         expand("{log_dir}/narrowpeak_bignarrowpeak/{{peak_caller}}/{{assembly}}-{{sample}}-{{peak}}.log", **config),
     benchmark:
-        expand("{benchmark_dir}/bedgraphish_to_bedgraph/{{assembly}}-{{sample}}-{{peak_caller}}-{{peak}}.log", **config)[0]
+        expand("{benchmark_dir}/bedgraphish_to_bedgraph/{{assembly}}-{{sample}}-{{peak_caller}}-{{peak}}.log", **config)[
+            0
+        ]
     conda:
         "../envs/ucsc.yaml"
     params:
@@ -141,40 +152,73 @@ rule peak_bigpeak:
         """
 
 
-def set_strand(wildcards):
-    if wildcards.strand == ".fwd":
-        return "--filterRNAstrand forward"
-    elif wildcards.strand == ".rev":
-        return "--filterRNAstrand reverse"
-    return ""
-
-
-rule bam_bigwig:
-    """
-    Convert a bam file into a bigwig file.
-    Can output strand specific bam
-    """
-    input:
-        bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config),
-        bai=expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam.bai", **config),
-    output:
-        expand("{bigwig_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}{{strand}}.bw", **config),
-    params:
-        flags=config["deeptools_flags"],
-        strand_filter=set_strand,
-    wildcard_constraints:
-        sorting=config["bam_sort_order"] if config.get("bam_sort_order") else "",
-        strand='|.fwd|.rev',
-    log:
-        expand("{log_dir}/bam_bigwig/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}{{strand}}.log", **config),
-    benchmark:
-        expand("{benchmark_dir}/bam_bigwig/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}{{strand}}.benchmark.txt", **config)[0]
-    conda:
-        "../envs/deeptools.yaml"
-    threads: 16
-    resources:
-        deeptools_limit=lambda wildcards, threads: threads,
-    shell:
+if WORKFLOW != "rna_seq":
+    rule bam_bigwig:
         """
-        bamCoverage --bam {input.bam} --outFileName {output} {params.strand_filter} --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1
+        Convert a bam file into a bigwig file.
         """
+        input:
+            bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config),
+            bai=expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam.bai", **config),
+        output:
+            expand("{bigwig_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bw", **config),
+        params:
+            flags=config["deeptools_bamcoverage"],
+        wildcard_constraints:
+            sorting=config["bam_sort_order"] if config.get("bam_sort_order") else "",
+        log:
+            expand("{log_dir}/bam_bigwig/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.log", **config),
+        benchmark:
+            expand(
+                "{benchmark_dir}/bam_bigwig/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.benchmark.txt", **config
+            )[0]
+        conda:
+            "../envs/deeptools.yaml"
+        threads: 16
+        resources:
+            deeptools_limit=lambda wildcards, threads: threads,
+        shell:
+            """
+            bamCoverage --bam {input.bam} --outFileName {output} --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1
+            """
+
+else:
+    rule bam_bigwig:
+        """
+        Convert a bam file into a bigwig file (or two).
+        Can output strand specific bams. The reverse bam is created "secretly" to avoid checkpoints.
+        """
+        input:
+            bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam",**config),
+            bai=expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam.bai",**config),
+            report=rules.infer_strandedness.output,
+        output:
+            expand("{bigwig_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bw",**config),
+        params:
+            strandedness=lambda wildcards, input: get_strandedness(input.report[0]),
+            flags=config["deeptools_bamcoverage"],
+        wildcard_constraints:
+            sorting=config["bam_sort_order"] if config.get("bam_sort_order") else "",
+        log:
+            expand("{log_dir}/bam_bigwig/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.log",**config),
+        benchmark:
+            expand("{benchmark_dir}/bam_bigwig/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.benchmark.txt",**config)[0]
+        conda:
+            "../envs/deeptools.yaml"
+        threads: 16
+        resources:
+            deeptools_limit=lambda wildcards, threads: threads,
+        shell:
+            """
+            if [[ "{params.strandedness}" == "no" ]]; then
+              echo "generating unstranded bam" > {log}
+              bamCoverage --bam {input.bam} --outFileName {output} --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1
+            else
+              echo "generating stranded bams" > {log}
+			  out={output}
+              rev=$(echo "${{out/{wildcards.sorting}.bw/{wildcards.sorting}.rev.bw}}")
+              rm -f $rev  # in case of a rerun
+              bamCoverage --bam {input.bam} --outFileName $rev     --filterRNAstrand reverse --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1
+              bamCoverage --bam {input.bam} --outFileName {output} --filterRNAstrand forward --numberOfProcessors {threads} {params.flags} --verbose >> {log} 2>&1
+            fi
+            """
