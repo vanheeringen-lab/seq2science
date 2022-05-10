@@ -500,14 +500,14 @@ Genrich -X -t $input -f {output.log} {params.control} -k {output.bedgraphish} \
 
 #### get_effective_genome_size
 
-Get the effective genome size for a kmer length. Macs2 requires
+Get the effective genome size for a kmer length. Some tools (e.g. macs2) require
 an estimation of the effective genome size to better estimate how (un)likely it
 is to have a certain number of reads on a position. The actual genome size is
 not the best indication in these cases, since reads in repetitive regions
 (for a certain kmer length) can not possible align on some locations.
 
 ```
-unique-kmers.py {input.genome} -k $kmer_size --quiet 2>&1 | grep -P -o '(?<=\.fa: ).*' > {output} 2> {log}
+unique-kmers.py {input} -k {wildcards.kmer_size} --quiet 2>&1 | grep -P -o '(?<=\.fa: ).*' > {output} 2> {log}
 ```
 
 #### get_genome
@@ -742,14 +742,7 @@ fi
 Mark all duplicate reads in a bam file with picard MarkDuplicates
 
 ```
-# use the TMPDIR if set, and not given in the config
-if [[ ${{TMPDIR:=F}} == "F" ]] || [[ "{params}" == *TMP_DIR* ]]
-then
-    tmpdir=""
-else
-    tmpdir=TMP_DIR=$TMPDIR
-fi
-picard MarkDuplicates $tmpdir {params} INPUT={input} \
+picard MarkDuplicates TMP_DIR={resources.tmpdir} {params} INPUT={input} \
 OUTPUT={output.bam} METRICS_FILE={output.metrics} > {log} 2>&1
 ```
 
@@ -1063,14 +1056,14 @@ samtools index {input} {output} > {log} 2>&1
 
 ```
 # we set this trap to remove temp files when prematurely ending the rule
-trap "rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
-rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2> {log}
+trap "rm -f {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
+rm -f {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2> {log}
 
 # RAM per thread in MB
-memory=$((1000*{params.memory}/{threads}))M
+memory=$((1024*{resources.mem_gb}/{threads}))M
 
 samtools sort -@ {threads} -m $memory {input} -o {output} \
--T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
+-T {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
 ```
 
 #### samtools_sort
@@ -1079,14 +1072,14 @@ Sort the result of shiftsieving with the samtools sorter.
 
 ```
 # we set this trap to remove temp files when prematurely ending the rule
-trap "rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
-rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2> {log}
+trap "rm -f {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
+rm -f {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2> {log}
 
 # RAM per thread in MB
-memory=$((1000*{params.memory}/{threads}))M
+memory=$((1024*{resources.mem_gb}/{threads}))M
 
 samtools sort {params.sort_order} -@ {threads} -m $memory {input} -o {output} \
--T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
+-T {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
 ```
 
 #### samtools_sort_allsizes

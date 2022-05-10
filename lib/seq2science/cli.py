@@ -338,6 +338,14 @@ def _run(args, base_dir, workflows_dir, config_path):
     snakemake_options = args.snakemakeOptions if args.snakemakeOptions is not None else dict()
     snakemake_options.setdefault("config", {}).update({"rule_dir": os.path.join(base_dir, "rules")})
     snakemake_options["configfiles"] = [config_path]
+    for key, value in snakemake_options.items():
+        if not isinstance(value, str):
+           continue
+        if value.lower() == "true":
+           snakemake_options[key] = True
+        if value.lower() == "false":
+           snakemake_options[key] = False
+
     parsed_args.update(snakemake_options)
 
     # parse the profile
@@ -375,6 +383,12 @@ def _run(args, base_dir, workflows_dir, config_path):
     #   1. pretty welcome message
     setup_seq2science_logger(parsed_args)
     log_welcome(logger, args.workflow)
+
+    if args.debug:
+        # dump the parsed args as readable json
+        import json
+        logger.info(json.dumps(parsed_args, sort_keys=True, indent=2))
+
     if not args.skip_rerun or args.unlock:
         #   2. start a dryrun checking which files need to be created, and check if
         #      any params changed, which means we have to remove those files and
@@ -601,23 +615,24 @@ def core_parser(parsed_args):
     d_sorters_threads = 2
     d_aligner_threads = 10
     desired_threads = d_sorters_threads + d_aligner_threads
+    overwrite_threads = dict()
+    # scale if aligners+sorters use more threads than allowed
     if cores < desired_threads:
         # scale the threads accordingly
-        d_sorters_threads = max([1, round(d_sorters_threads / desired_threads * cores)])
-        d_aligner_threads = cores - d_sorters_threads
+        d_sorters_threads = max([1, cores * d_sorters_threads // desired_threads])
+        d_aligner_threads = max([1, cores - d_sorters_threads])
 
-        overwrite_threads = dict()
         for aligner in aligners:
             overwrite_threads[aligner] = d_aligner_threads
         for sorter in sorters:
             overwrite_threads[sorter] = d_sorters_threads
 
-        if "overwrite_threads" not in parsed_args:
-            parsed_args["overwrite_threads"] = overwrite_threads
-        else:
-            for k, v in overwrite_threads.items():
-                if k not in parsed_args["overwrite_threads"]:
-                    parsed_args["overwrite_threads"][k] = v
+    # finally use the user-specified threads
+    if "overwrite_threads" in parsed_args:
+        for k, v in parsed_args["overwrite_threads"].items():
+            overwrite_threads[k] = v
+
+    parsed_args["overwrite_threads"] = overwrite_threads
 
 
 def resource_parser(parsed_args):

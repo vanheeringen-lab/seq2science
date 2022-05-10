@@ -664,12 +664,12 @@ Genrich -X -t $input -f {output.log} {params.control} -k {output.bedgraphish} \
 </section>
 <section id="get-effective-genome-size">
 <h2>get_effective_genome_size<a class="headerlink" href="#get-effective-genome-size" title="Permalink to this headline"></a></h2>
-<p>Get the effective genome size for a kmer length. Macs2 requires
+<p>Get the effective genome size for a kmer length. Some tools (e.g. macs2) require
 an estimation of the effective genome size to better estimate how (un)likely it
 is to have a certain number of reads on a position. The actual genome size is
 not the best indication in these cases, since reads in repetitive regions
 (for a certain kmer length) can not possible align on some locations.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>unique-kmers.py {input.genome} -k $kmer_size --quiet 2&gt;&amp;1 | grep -P -o &#39;(?&lt;=\.fa: ).*&#39; &gt; {output} 2&gt; {log}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">unique</span><span class="o">-</span><span class="n">kmers</span><span class="o">.</span><span class="n">py</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="o">-</span><span class="n">k</span> <span class="p">{</span><span class="n">wildcards</span><span class="o">.</span><span class="n">kmer_size</span><span class="p">}</span> <span class="o">--</span><span class="n">quiet</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span> <span class="o">|</span> <span class="n">grep</span> <span class="o">-</span><span class="n">P</span> <span class="o">-</span><span class="n">o</span> <span class="s1">&#39;(?&lt;=\.fa: ).*&#39;</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span>
 </pre></div>
 </div>
 </section>
@@ -881,15 +881,8 @@ fi
 <section id="mark-duplicates">
 <h2>mark_duplicates<a class="headerlink" href="#mark-duplicates" title="Permalink to this headline"></a></h2>
 <p>Mark all duplicate reads in a bam file with picard MarkDuplicates</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># use the TMPDIR if set, and not given in the config
-if [[ ${{TMPDIR:=F}} == &quot;F&quot; ]] || [[ &quot;{params}&quot; == *TMP_DIR* ]]
-then
-    tmpdir=&quot;&quot;
-else
-    tmpdir=TMP_DIR=$TMPDIR
-fi
-picard MarkDuplicates $tmpdir {params} INPUT={input} \
-OUTPUT={output.bam} METRICS_FILE={output.metrics} &gt; {log} 2&gt;&amp;1
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">picard</span> <span class="n">MarkDuplicates</span> <span class="n">TMP_DIR</span><span class="o">=</span><span class="p">{</span><span class="n">resources</span><span class="o">.</span><span class="n">tmpdir</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="p">}</span> <span class="n">INPUT</span><span class="o">=</span><span class="p">{</span><span class="nb">input</span><span class="p">}</span> \
+<span class="n">OUTPUT</span><span class="o">=</span><span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">bam</span><span class="p">}</span> <span class="n">METRICS_FILE</span><span class="o">=</span><span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">metrics</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
 </section>
@@ -1172,14 +1165,14 @@ falls back on the slower http protocol.</p>
 <h2>samtools_presort<a class="headerlink" href="#samtools-presort" title="Permalink to this headline"></a></h2>
 <p>(Pre)sort the result of alignment with the samtools sorter.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span># we set this trap to remove temp files when prematurely ending the rule
-trap &quot;rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam&quot; INT;
-rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2&gt; {log}
+trap &quot;rm -f {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam&quot; INT;
+rm -f {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2&gt; {log}
 
 # RAM per thread in MB
-memory=$((1000*{params.memory}/{threads}))M
+memory=$((1024*{resources.mem_gb}/{threads}))M
 
 samtools sort -@ {threads} -m $memory {input} -o {output} \
--T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2&gt; {log}
+-T {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp 2&gt; {log}
 </pre></div>
 </div>
 </section>
@@ -1187,14 +1180,14 @@ samtools sort -@ {threads} -m $memory {input} -o {output} \
 <h2>samtools_sort<a class="headerlink" href="#samtools-sort" title="Permalink to this headline"></a></h2>
 <p>Sort the result of shiftsieving with the samtools sorter.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span># we set this trap to remove temp files when prematurely ending the rule
-trap &quot;rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam&quot; INT;
-rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2&gt; {log}
+trap &quot;rm -f {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam&quot; INT;
+rm -f {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2&gt; {log}
 
 # RAM per thread in MB
-memory=$((1000*{params.memory}/{threads}))M
+memory=$((1024*{resources.mem_gb}/{threads}))M
 
 samtools sort {params.sort_order} -@ {threads} -m $memory {input} -o {output} \
--T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2&gt; {log}
+-T {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp 2&gt; {log}
 </pre></div>
 </div>
 </section>
