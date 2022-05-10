@@ -65,15 +65,14 @@
 <li class="toctree-l3"><a class="reference internal" href="#computematrix-gene">computeMatrix_gene</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#computematrix-peak">computeMatrix_peak</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#count-matrix">count_matrix</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#count-matrix-dexseq">count_matrix_DEXseq</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#coverage-table">coverage_table</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#cp-unsieved2sieved">cp_unsieved2sieved</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#create-snap-object">create_SNAP_object</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#create-bins-snap-object">create_bins_SNAP_object</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#cytoband">cytoband</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#decoy-transcripts">decoy_transcripts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#deseq2">deseq2</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dexseq-count">dexseq_count</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dexseq-count-matrix">dexseq_count_matrix</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dupradar">dupRadar</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#dupradar-combine">dupRadar_combine</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#edger-normalization">edgeR_normalization</a></li>
@@ -91,6 +90,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#fastqc">fastqc</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#featurecounts">featureCounts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id1">featurecounts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#full-decoy-transcripts">full_decoy_transcripts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#gcpercent">gcPercent</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#gene-id2name">gene_id2name</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#genrich-pileup">genrich_pileup</a></li>
@@ -133,6 +133,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#multiqc-schema">multiqc_schema</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#narrowpeak-summit">narrowpeak_summit</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#onehot-peaks">onehot_peaks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#partial-decoy-transcripts">partial_decoy_transcripts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#peak-bigpeak">peak_bigpeak</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#plotcorrelation">plotCorrelation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#plotfingerprint">plotFingerprint</a></li>
@@ -140,11 +141,11 @@
 <li class="toctree-l3"><a class="reference internal" href="#plotpca">plotPCA</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#plotprofile-gene">plotProfile_gene</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#prepare-dexseq-annotation">prepare_DEXseq_annotation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pytxi-count-matrix">pytxi_count_matrix</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#quantile-normalization">quantile_normalization</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#random-subset-peaks">random_subset_peaks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#run2sra">run2sra</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#runs2sample">runs2sample</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#salmon-decoy-aware-index">salmon_decoy_aware_index</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#salmon-index">salmon_index</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#salmon-quant">salmon_quant</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#sam2bam">sam2bam</a></li>
@@ -170,16 +171,17 @@
 <li class="toctree-l3"><a class="reference internal" href="#trimgalore-pe">trimgalore_PE</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#trimgalore-se">trimgalore_SE</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#twobit">twobit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#txi-count-matrix">txi_count_matrix</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#upset-plot-peaks">upset_plot_peaks</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="schemas.html">All configurable options</a></li>
 <li class="toctree-l2"><a class="reference internal" href="CHANGELOG.html">Changelog</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../CONTRIBUTING.html">Contributing to seq2science</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="extracontent.html">Extra resources</a></li>
 <li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions (FAQ)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../CONTRIBUTING.html">Contributing to seq2science</a></li>
 </ul>
 
         </div>
@@ -400,11 +402,6 @@ to only keep reads that are in the complement of the blacklist.</p>
 <h2>count_matrix<a class="headerlink" href="#count-matrix" title="Permalink to this headline"></a></h2>
 <p>Combine count tables into one count matrix per assembly</p>
 </section>
-<section id="count-matrix-dexseq">
-<h2>count_matrix_DEXseq<a class="headerlink" href="#count-matrix-dexseq" title="Permalink to this headline"></a></h2>
-<p>Combine DEXSeq counts into one count matrix per assembly
-for use in function <code class="docutils literal notranslate"><span class="pre">DEXSeqDataSet()</span></code></p>
-</section>
 <section id="coverage-table">
 <h2>coverage_table<a class="headerlink" href="#coverage-table" title="Permalink to this headline"></a></h2>
 <p>Use gimmemotif’s coverage_table to generate a count table with the nr of reads
@@ -459,14 +456,6 @@ to the Snapfiles folder for downstream analysis in R using Snaptools</p>
 </pre></div>
 </div>
 </section>
-<section id="decoy-transcripts">
-<h2>decoy_transcripts<a class="headerlink" href="#decoy-transcripts" title="Permalink to this headline"></a></h2>
-<p>Generate decoy_transcripts.txt for Salmon indexing</p>
-<p>script source: <a class="reference external" href="https://github.com/COMBINE-lab/SalmonTools">https://github.com/COMBINE-lab/SalmonTools</a></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>sh {params.script} -j {threads} -g {input.genome} -a {input.gtf} -t {input.transcripts} -o $(dirname {output[0]}) &gt; {log} 2&gt;&amp;1
-</pre></div>
-</div>
-</section>
 <section id="deseq2">
 <h2>deseq2<a class="headerlink" href="#deseq2" title="Permalink to this headline"></a></h2>
 <p>Differential gene expression analysis with DESeq2.</p>
@@ -480,6 +469,11 @@ DEXseq_path=${{current_conda_env}}/lib/R/library/DEXSeq/python_scripts
 python ${{DEXseq_path}}/dexseq_count.py -f bam -r pos {params.endedness} -s {params.strandedness} {input.gff} {input.bam} {output} &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
+</section>
+<section id="dexseq-count-matrix">
+<h2>dexseq_count_matrix<a class="headerlink" href="#dexseq-count-matrix" title="Permalink to this headline"></a></h2>
+<p>Combine DEXSeq counts into one count matrix per assembly
+for use in function <code class="docutils literal notranslate"><span class="pre">DEXSeqDataSet()</span></code></p>
 </section>
 <section id="dupradar">
 <h2>dupRadar<a class="headerlink" href="#dupradar" title="Permalink to this headline"></a></h2>
@@ -635,6 +629,14 @@ mv $(dirname {output.real_out})/$(basename {output.summary}) {output.summary}
 </pre></div>
 </div>
 </section>
+<section id="full-decoy-transcripts">
+<h2>full_decoy_transcripts<a class="headerlink" href="#full-decoy-transcripts" title="Permalink to this headline"></a></h2>
+<p>Use the entire genome as decoy sequence.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cut</span> <span class="o">-</span><span class="n">f</span> <span class="mi">1</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">sizes</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">decoys</span><span class="p">}</span>
+<span class="n">cat</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">transcripts</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">genome</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">gentrome</span><span class="p">}</span>
+</pre></div>
+</div>
+</section>
 <section id="gcpercent">
 <h2>gcPercent<a class="headerlink" href="#gcpercent" title="Permalink to this headline"></a></h2>
 <p>Generate a gc content track</p>
@@ -691,7 +693,7 @@ not the best indication in these cases, since reads in repetitive regions
 <h2>get_transcripts<a class="headerlink" href="#get-transcripts" title="Permalink to this headline"></a></h2>
 <p>Generate transcripts.fasta using gffread.</p>
 <p>Requires genome.fa and annotation.gtf (with matching chromosome/scaffold names)</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">gffread</span> <span class="o">-</span><span class="n">w</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="o">-</span><span class="n">g</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">fa</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">gtf</span><span class="p">}</span> <span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">gffread</span> <span class="o">-</span><span class="n">w</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="o">-</span><span class="n">g</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">fa</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">gtf</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
 </section>
@@ -989,6 +991,14 @@ echo -e &quot;# onehot encoding of which condition contains which peaks\\n{param
 </pre></div>
 </div>
 </section>
+<section id="partial-decoy-transcripts">
+<h2>partial_decoy_transcripts<a class="headerlink" href="#partial-decoy-transcripts" title="Permalink to this headline"></a></h2>
+<p>Compute a set of decoy sequences by mapping the annotated transcripts against
+a hard-masked version of the organism’s genome.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>sh {params.script} -j {threads} -g {input.genome} -a {input.gtf} -t {input.transcripts} -o $(dirname {output[0]}) &gt; {log} 2&gt;&amp;1
+</pre></div>
+</div>
+</section>
 <section id="peak-bigpeak">
 <h2>peak_bigpeak<a class="headerlink" href="#peak-bigpeak" title="Permalink to this headline"></a></h2>
 <p>Convert a narrowpeak file into a bignarrowpeak file.
@@ -1049,6 +1059,13 @@ python ${{DEXseq_path}}/dexseq_prepare_annotation.py {input} {output} &gt; {log}
 </pre></div>
 </div>
 </section>
+<section id="pytxi-count-matrix">
+<h2>pytxi_count_matrix<a class="headerlink" href="#pytxi-count-matrix" title="Permalink to this headline"></a></h2>
+<p>Convert transcript abundance estimations to gene count estimations and merge
+gene counts per assembly.</p>
+<p>If the GTF is not used, a taxonomy ID is required for myGene.info.
+Seq2science will try to read this ID from the genomepy README.txt or assembly database.</p>
+</section>
 <section id="quantile-normalization">
 <h2>quantile_normalization<a class="headerlink" href="#quantile-normalization" title="Permalink to this headline"></a></h2>
 <p>Quantile normalization is a type of normalization that makes the distribution
@@ -1082,7 +1099,7 @@ falls back on the slower http protocol.</p>
     <span class="p">(</span>
         <span class="n">flock</span> <span class="o">-</span><span class="n">w</span> <span class="mi">30</span> <span class="mi">200</span> <span class="o">||</span> <span class="k">continue</span>
         <span class="n">sleep</span> <span class="mi">2</span>
-    <span class="p">)</span> <span class="mi">200</span><span class="o">&gt;</span><span class="p">{</span><span class="n">pysradb_cache_lock</span><span class="p">}</span>
+    <span class="p">)</span> <span class="mi">200</span><span class="o">&gt;</span><span class="p">{</span><span class="n">PYSRADB_CACHE_LOCK</span><span class="p">}</span>
 
     <span class="c1"># dump</span>
     <span class="n">prefetch</span> <span class="o">--</span><span class="nb">max</span><span class="o">-</span><span class="n">size</span> <span class="mi">999999999999</span> <span class="o">--</span><span class="n">output</span><span class="o">-</span><span class="n">directory</span> <span class="o">./</span> <span class="o">--</span><span class="n">log</span><span class="o">-</span><span class="n">level</span> <span class="n">debug</span> <span class="o">--</span><span class="n">progress</span> <span class="p">{</span><span class="n">wildcards</span><span class="o">.</span><span class="n">run</span><span class="p">}</span> <span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="k">break</span>
@@ -1104,30 +1121,21 @@ falls back on the slower http protocol.</p>
 <h2>runs2sample<a class="headerlink" href="#runs2sample" title="Permalink to this headline"></a></h2>
 <p>Concatenate a single run or multiple runs together into a fastq</p>
 </section>
-<section id="salmon-decoy-aware-index">
-<h2>salmon_decoy_aware_index<a class="headerlink" href="#salmon-decoy-aware-index" title="Permalink to this headline"></a></h2>
-<p>Generate a decoy aware transcriptome index for Salmon.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span>
-
-<span class="n">salmon</span> <span class="n">index</span> <span class="o">-</span><span class="n">t</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">gentrome</span><span class="p">}</span> <span class="o">-</span><span class="n">d</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">decoys</span><span class="p">}</span> <span class="o">-</span><span class="n">i</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="p">}</span> \
-<span class="o">--</span><span class="n">threads</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
-</pre></div>
-</div>
-</section>
 <section id="salmon-index">
 <h2>salmon_index<a class="headerlink" href="#salmon-index" title="Permalink to this headline"></a></h2>
 <p>Generate a transcriptome index for Salmon.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span>
 
-<span class="n">salmon</span> <span class="n">index</span> <span class="o">-</span><span class="n">t</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="o">-</span><span class="n">i</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="p">}</span> <span class="o">--</span><span class="n">threads</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
+<span class="n">salmon</span> <span class="n">index</span> <span class="o">-</span><span class="n">t</span> <span class="p">{</span><span class="nb">input</span><span class="p">[</span><span class="mi">0</span><span class="p">]}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">decoys</span><span class="p">}</span> <span class="o">-</span><span class="n">i</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">params</span><span class="p">}</span> \
+<span class="o">--</span><span class="n">threads</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
 </section>
 <section id="salmon-quant">
 <h2>salmon_quant<a class="headerlink" href="#salmon-quant" title="Permalink to this headline"></a></h2>
 <p>Align reads against a transcriptome (index) with Salmon (mapping-based mode) and output a quantification file per sample.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">salmon</span> <span class="n">quant</span> <span class="o">-</span><span class="n">i</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">index</span><span class="p">}</span> <span class="o">-</span><span class="n">l</span> <span class="n">A</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">input</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">params</span><span class="p">}</span> <span class="o">-</span><span class="n">o</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">dir</span><span class="p">}</span> \
-<span class="o">--</span><span class="n">threads</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>salmon quant -i {input.index} -l A {params.input} {params.params} -o $(dirname {output}) \
+--threads {threads} &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
 </section>
@@ -1267,7 +1275,7 @@ Forward and reverse samples will be switched if forward/reverse names are not le
 <span class="p">(</span>
     <span class="n">flock</span> <span class="o">-</span><span class="n">w</span> <span class="mi">30</span> <span class="mi">200</span> <span class="o">||</span> <span class="n">exit</span> <span class="mi">1</span>
     <span class="n">sleep</span> <span class="mi">3</span>
-<span class="p">)</span> <span class="mi">200</span><span class="o">&gt;</span><span class="p">{</span><span class="n">pysradb_cache_lock</span><span class="p">}</span>
+<span class="p">)</span> <span class="mi">200</span><span class="o">&gt;</span><span class="p">{</span><span class="n">PYSRADB_CACHE_LOCK</span><span class="p">}</span>
 
 <span class="c1"># dump to tmp dir</span>
 <span class="n">parallel</span><span class="o">-</span><span class="n">fastq</span><span class="o">-</span><span class="n">dump</span> <span class="o">-</span><span class="n">s</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="o">-</span><span class="n">O</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">tmpdir</span><span class="p">}</span> \
@@ -1291,7 +1299,7 @@ Forward and reverse samples will be switched if forward/reverse names are not le
 <span class="p">(</span>
     <span class="n">flock</span> <span class="o">-</span><span class="n">w</span> <span class="mi">30</span> <span class="mi">200</span> <span class="o">||</span> <span class="n">exit</span> <span class="mi">1</span>
     <span class="n">sleep</span> <span class="mi">3</span>
-<span class="p">)</span> <span class="mi">200</span><span class="o">&gt;</span><span class="p">{</span><span class="n">pysradb_cache_lock</span><span class="p">}</span>
+<span class="p">)</span> <span class="mi">200</span><span class="o">&gt;</span><span class="p">{</span><span class="n">PYSRADB_CACHE_LOCK</span><span class="p">}</span>
 
 <span class="c1"># dump to tmp dir</span>
 <span class="n">parallel</span><span class="o">-</span><span class="n">fastq</span><span class="o">-</span><span class="n">dump</span> <span class="o">-</span><span class="n">s</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="o">-</span><span class="n">O</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">tmpdir</span><span class="p">}</span> \
@@ -1457,6 +1465,14 @@ mv $report {output.qc}
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">faToTwoBit</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
+</section>
+<section id="txi-count-matrix">
+<h2>txi_count_matrix<a class="headerlink" href="#txi-count-matrix" title="Permalink to this headline"></a></h2>
+<p>Convert transcript abundance estimations to gene count estimations and merge
+gene counts per assembly.</p>
+<p>Also outputs a single cell experiment object similar to ARMOR
+(<a class="reference external" href="https://github.com/csoneson/ARMOR">https://github.com/csoneson/ARMOR</a>).</p>
+<p>Only works with Ensembl assemblies.</p>
 </section>
 <section id="upset-plot-peaks">
 <h2>upset_plot_peaks<a class="headerlink" href="#upset-plot-peaks" title="Permalink to this headline"></a></h2>

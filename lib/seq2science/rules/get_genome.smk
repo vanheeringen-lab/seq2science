@@ -19,10 +19,9 @@ rule get_genome:
         expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa", **config),
     log:
         expand("{log_dir}/get_genome/{{raw_assembly}}.genome.log", **config),
-    message:
-        explain_rule("get_genome")
+    message: EXPLAIN["get_genome"]
     params:
-        providers=providers,
+        providers=PROVIDERS,
         provider=config.get("provider"),
         genome_dir=config["genome_dir"],
     resources:
@@ -70,7 +69,7 @@ rule get_genome_annotation:
         parallel_downloads=1,
         genomepy_downloads=1,
     params:
-        providers=providers,
+        providers=PROVIDERS,
         provider=config.get("provider"),
         genome_dir=config["genome_dir"],
     priority: 1
@@ -89,8 +88,7 @@ rule extend_genome:
         genome=expand(
             "{genome_dir}/{{raw_assembly}}{custom_assembly_suffix}/{{raw_assembly}}{custom_assembly_suffix}.fa", **config
         ),
-    message:
-        explain_rule("custom_extension")
+    message: EXPLAIN["custom_extension"]
     shell:
         """
         # extend the genome.fa
@@ -141,8 +139,7 @@ rule extend_genome_annotation:
                 **config
             )
         ),
-    message:
-        explain_rule("custom_extension")
+    message: EXPLAIN["custom_extension"]
     shell:
         """
         # extend the genome.annotation.gtf
@@ -163,11 +160,11 @@ rule get_genome_support_files:
     Generate supporting files for a genome.
     """
     input:
-        expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+        genome=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
     output:
-        expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.fai", **config),
-        expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
-        expand("{genome_dir}/{{assembly}}/{{assembly}}.gaps.bed", **config),
+        index=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.fai", **config),
+        sizes=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
+        gaps=expand("{genome_dir}/{{assembly}}/{{assembly}}.gaps.bed", **config),
     params:
         genome_dir=config["genome_dir"],
     script:

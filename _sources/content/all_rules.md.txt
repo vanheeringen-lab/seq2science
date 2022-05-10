@@ -1,3 +1,4 @@
+
 # Per rule explanation
 
 This is an automatically generated list of all supported rules, their docstrings, and command. At the start of each workflow run a list is printed of which rules will be run. And while the workflow is running it prints which rules are being started and finished. This page is here to give an explanation to the user about what each rule does, and for developers to find what is, and isn't yet supported.
@@ -211,11 +212,6 @@ computeMatrix scale-regions -S {input.bw} {params.labels} -R {input.peaks} \
 
 Combine count tables into one count matrix per assembly
 
-#### count_matrix_DEXseq
-
-Combine DEXSeq counts into one count matrix per assembly
-for use in function `DEXSeqDataSet()`
-
 #### coverage_table
 
 Use gimmemotif's coverage_table to generate a count table with the nr of reads
@@ -273,19 +269,9 @@ source: http://genomewiki.ucsc.edu/index.php/Assembly_Hubs#Cytoband_Track
 cat {input.sizes} | 
 bedSort /dev/stdin /dev/stdout | 
 awk '{{print $1,0,$2,$1,"gneg"}}' > {output.cytoband_bd}
-
+    
 bedToBigBed -type=bed4 {output.cytoband_bd} -as={params.schema} \
 {input.sizes} {output.cytoband_bb} >> {log} 2>&1
-```
-
-#### decoy_transcripts
-
-Generate decoy_transcripts.txt for Salmon indexing
-
-script source: https://github.com/COMBINE-lab/SalmonTools
-
-```
-sh {params.script} -j {threads} -g {input.genome} -a {input.gtf} -t {input.transcripts} -o $(dirname {output[0]}) > {log} 2>&1
 ```
 
 #### deseq2
@@ -302,6 +288,11 @@ DEXseq_path=${{current_conda_env}}/lib/R/library/DEXSeq/python_scripts
 
 python ${{DEXseq_path}}/dexseq_count.py -f bam -r pos {params.endedness} -s {params.strandedness} {input.gff} {input.bam} {output} > {log} 2>&1
 ```
+
+#### dexseq_count_matrix
+
+Combine DEXSeq counts into one count matrix per assembly
+for use in function `DEXSeqDataSet()`
 
 #### dupRadar
 
@@ -470,6 +461,15 @@ summarize reads to gene level. Outputs a counts table per bam file.
 featureCounts -a {input.gtf} {input.bam} {params.endedness} -s {params.strandedness} {params.user_flags} -T {threads} -o {output} > {log} 2>&1
 ```
 
+#### full_decoy_transcripts
+
+Use the entire genome as decoy sequence.
+
+```
+cut -f 1 {input.sizes} > {output.decoys}
+cat {input.transcripts} {input.genome} > {output.gentrome}
+```
+
 #### gcPercent
 
 Generate a gc content track
@@ -479,7 +479,7 @@ source: http://hgdownload.cse.ucsc.edu/goldenPath/hg19/gc5Base/
 ```
 hgGcPercent -wigOut -doGaps -file=stdout -win=5 -verbose=0 {wildcards.assembly} {input.twobit} \
     | gzip > {output.gcpcvar}
-
+    
 wigToBigWig {output.gcpcvar} {input.sizes} {output.gcpc} >> {log} 2>&1
 ```
 
@@ -533,7 +533,7 @@ Generate transcripts.fasta using gffread.
 Requires genome.fa and annotation.gtf (with matching chromosome/scaffold names)
 
 ```
-gffread -w {output} -g {input.fa} {input.gtf} >> {log} 2>&1
+gffread -w {output} -g {input.fa} {input.gtf} > {log} 2>&1
 ```
 
 #### hisat2_align
@@ -861,6 +861,15 @@ done
 echo -e "# onehot encoding of which condition contains which peaks\\n{params.names}\n$(cat {output.real})" > {output.tmp} && cp {output.tmp} {output.real}
 ```
 
+#### partial_decoy_transcripts
+
+Compute a set of decoy sequences by mapping the annotated transcripts against 
+a hard-masked version of the organism’s genome.
+
+```
+sh {params.script} -j {threads} -g {input.genome} -a {input.gtf} -t {input.transcripts} -o $(dirname {output[0]}) > {log} 2>&1
+```
+
 #### peak_bigpeak
 
 Convert a narrowpeak file into a bignarrowpeak file.
@@ -928,6 +937,14 @@ DEXseq_path=${{current_conda_env}}/lib/R/library/DEXSeq/python_scripts
 python ${{DEXseq_path}}/dexseq_prepare_annotation.py {input} {output} > {log} 2>&1
 ```
 
+#### pytxi_count_matrix
+
+Convert transcript abundance estimations to gene count estimations and merge 
+gene counts per assembly.
+
+If the GTF is not used, a taxonomy ID is required for myGene.info.
+Seq2science will try to read this ID from the genomepy README.txt or assembly database. 
+
 #### quantile_normalization
 
 Quantile normalization is a type of normalization that makes the distribution 
@@ -966,7 +983,7 @@ do
     (
         flock -w 30 200 || continue
         sleep 2
-    ) 200>{pysradb_cache_lock}
+    ) 200>{PYSRADB_CACHE_LOCK}
 
     # dump
     prefetch --max-size 999999999999 --output-directory ./ --log-level debug --progress {wildcards.run} >> {log} 2>&1 && break
@@ -987,17 +1004,6 @@ fi
 
 Concatenate a single run or multiple runs together into a fastq
 
-#### salmon_decoy_aware_index
-
-Generate a decoy aware transcriptome index for Salmon.
-
-```
-mkdir -p {output}
-
-salmon index -t {input.gentrome} -d {input.decoys} -i {output} {params} \
---threads {threads} > {log} 2>&1
-```
-
 #### salmon_index
 
 Generate a transcriptome index for Salmon.
@@ -1005,7 +1011,8 @@ Generate a transcriptome index for Salmon.
 ```
 mkdir -p {output}
 
-salmon index -t {input} -i {output} {params} --threads {threads} > {log} 2>&1
+salmon index -t {input[0]} {params.decoys} -i {output} {params.params} \
+--threads {threads} > {log} 2>&1
 ```
 
 #### salmon_quant
@@ -1013,7 +1020,7 @@ salmon index -t {input} -i {output} {params} --threads {threads} > {log} 2>&1
 Align reads against a transcriptome (index) with Salmon (mapping-based mode) and output a quantification file per sample.
 
 ```
-salmon quant -i {input.index} -l A {params.input} {params.params} -o {output.dir} \
+salmon quant -i {input.index} -l A {params.input} {params.params} -o $(dirname {output}) \
 --threads {threads} > {log} 2>&1
 ```
 
@@ -1149,7 +1156,7 @@ source: https://github.com/Gaius-Augustus/MakeHub/blob/master/make_hub.py
 
 ```
 bedSort {input.mask_unsorted} {output.maskbed} >> {log} 2>&1
-
+    
 bedToBigBed -type=bed3 {output.maskbed} {input.sizes} {output.mask} >> {log} 2>&1
 ```
 
@@ -1166,7 +1173,7 @@ mkdir -p {output.tmpdir}; cd {output.tmpdir}
 (
     flock -w 30 200 || exit 1
     sleep 3
-) 200>{pysradb_cache_lock}
+) 200>{PYSRADB_CACHE_LOCK}
 
 # dump to tmp dir
 parallel-fastq-dump -s {input} -O {output.tmpdir} \
@@ -1191,7 +1198,7 @@ mkdir -p {output.tmpdir}; cd {output.tmpdir}
 (
     flock -w 30 200 || exit 1
     sleep 3
-) 200>{pysradb_cache_lock}
+) 200>{PYSRADB_CACHE_LOCK}
 
 # dump to tmp dir
 parallel-fastq-dump -s {input} -O {output.tmpdir} \
@@ -1294,25 +1301,25 @@ https://www.biostars.org/p/272649/
 ```
 # generate annotation files
 gtfToGenePred -allErrors -ignoreGroupsWithoutExons -geneNameAsName2 -genePredExt {input.gtf} {output.genePred} -infoOut={output.info} >> {log} 2>&1
-
+    
 # check if gtf has gene_names > if l!=0, use gene_name, else transcript_id
 l=$(head -n 100 {input.gtf} | (grep gene_name || true) | wc -l)
-
+    
 # switch columns 1 (transcript_id) and 12 (gene_name)
 awk -v len=$l 'BEGIN {{ FS = "\t" }}; {{ if(len!="0") {{ t = $1; $1 = $12; $12 = t; print; }} else {{ print; }} }}' {output.genePred} > {output.genePrednamed}
-
+    
 # remove lines with missing headers        
 grep -v "^ " {output.genePrednamed} > {output.genePred}
-
+    
 genePredToBed {output.genePred} {output.genePredbed} >> {log} 2>&1
-
+    
 bedSort {output.genePredbed} {output.genePredbed} >> {log} 2>&1
-
+    
 bedToBigBed -extraIndex=name {output.genePredbed} {input.sizes} {output.genePredbigbed} >> {log} 2>&1
-
+    
 # generate searchable indexes (by 1: transcriptID, 2: geneId, 8: proteinID, 9: geneName, 10: transcriptName)
 grep -v "^#" {output.info} | awk -v len=$l 'BEGIN {{ FS = "\t" }} ; {{ if(len!="0") {{print $9, $1, $2, $8, $9, $10}} else {{print $1, $1, $2, $8, $9, $10}} }}' > {output.indexinfo}
-
+    
 ixIxx {output.indexinfo} {output.ix} {output.ixx} >> {log} 2>&1
 ```
 
@@ -1358,6 +1365,16 @@ Generate a 2bit file for each assembly
 ```
 faToTwoBit {input} {output} >> {log} 2>&1
 ```
+
+#### txi_count_matrix
+
+Convert transcript abundance estimations to gene count estimations and merge
+gene counts per assembly.
+
+Also outputs a single cell experiment object similar to ARMOR
+(https://github.com/csoneson/ARMOR).
+
+Only works with Ensembl assemblies.
 
 #### upset_plot_peaks
 

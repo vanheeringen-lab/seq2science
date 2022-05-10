@@ -152,11 +152,11 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="CHANGELOG.html">Changelog</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../CONTRIBUTING.html">Contributing to seq2science</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="extracontent.html">Extra resources</a></li>
 <li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions (FAQ)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../CONTRIBUTING.html">Contributing to seq2science</a></li>
 </ul>
 
         </div>
@@ -789,13 +789,16 @@
                 <span class="n">quantifier_index</span><span class="p">:</span>
                     <span class="n">default</span><span class="p">:</span> <span class="o">-</span><span class="n">k</span> <span class="mi">31</span>
                 <span class="n">quantifier_flags</span><span class="p">:</span>
-                    <span class="n">default</span><span class="p">:</span> <span class="o">--</span><span class="n">seqBias</span> <span class="o">--</span><span class="n">gcBias</span> <span class="o">--</span><span class="n">validateMappings</span> <span class="o">--</span><span class="n">recoverOrphans</span>
-                <span class="n">decoy_aware_index</span><span class="p">:</span>
-                    <span class="n">default</span><span class="p">:</span> <span class="kc">False</span>
+                    <span class="n">default</span><span class="p">:</span> <span class="o">--</span><span class="n">seqBias</span> <span class="o">--</span><span class="n">gcBias</span> <span class="o">--</span><span class="n">posBias</span> <span class="o">--</span><span class="n">validateMappings</span> <span class="o">--</span><span class="n">recoverOrphans</span>
+                <span class="n">quantifier_decoys</span><span class="p">:</span>
+                    <span class="n">description</span><span class="p">:</span> <span class="n">improve</span> <span class="n">quantification</span> <span class="n">accuracy</span> <span class="n">at</span> <span class="n">the</span> <span class="n">cost</span> <span class="n">of</span> <span class="n">increased</span> <span class="n">memory</span> <span class="n">usage</span><span class="o">.</span>
+                    <span class="n">enum</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="s1">&#39;partial&#39;</span><span class="p">,</span> <span class="s1">&#39;full&#39;</span><span class="p">]</span>
+                    <span class="nb">type</span><span class="p">:</span> <span class="n">string</span>
+                    <span class="n">default</span><span class="p">:</span> <span class="n">full</span>
             <span class="n">default</span><span class="p">:</span>
                 <span class="n">quantifier_index</span><span class="p">:</span> <span class="o">-</span><span class="n">k</span> <span class="mi">31</span>
-                <span class="n">quantifier_flags</span><span class="p">:</span> <span class="o">--</span><span class="n">seqBias</span> <span class="o">--</span><span class="n">gcBias</span> <span class="o">--</span><span class="n">validateMappings</span> <span class="o">--</span><span class="n">recoverOrphans</span>
-                <span class="n">decoy_aware_index</span><span class="p">:</span> <span class="kc">False</span>
+                <span class="n">quantifier_flags</span><span class="p">:</span> <span class="o">--</span><span class="n">seqBias</span> <span class="o">--</span><span class="n">gcBias</span> <span class="o">--</span><span class="n">posBias</span> <span class="o">--</span><span class="n">validateMappings</span> <span class="o">--</span><span class="n">recoverOrphans</span>
+                <span class="n">quantifier_decoys</span><span class="p">:</span> <span class="n">full</span>
         <span class="n">htseq</span><span class="p">:</span>
             <span class="n">properties</span><span class="p">:</span>
                 <span class="n">htseq_flags</span><span class="p">:</span>

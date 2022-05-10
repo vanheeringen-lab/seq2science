@@ -3,10 +3,8 @@ all rules/logic related to quality control and the final multiQC report should b
 """
 
 import glob
-import sys
 import re
 
-import seq2science
 from seq2science.util import sieve_bam, get_bustools_rid
 
 
@@ -38,8 +36,7 @@ rule samtools_stats:
         ),
     log:
         expand("{log_dir}/samtools_stats/{{directory}}/{{assembly}}-{{sample}}-{{sorter}}-{{sorting}}.log", **config),
-    message:
-        explain_rule("samtools_stats")
+    message: EXPLAIN["samtools_stats"]
     resources:
         time="0-06:00:00",
     conda:
@@ -73,8 +70,7 @@ if config["trimmer"] == "trimgalore":
         output:
             html=f"{config['qc_dir']}/fastqc/{{fname}}_fastqc.html",
             zip=f"{config['qc_dir']}/fastqc/{{fname}}_fastqc.zip",
-        message:
-            explain_rule("fastqc")
+        message: EXPLAIN["fastqc"]
         log:
             f"{config['log_dir']}/fastqc/{{fname}}.log",
         params:
@@ -91,6 +87,9 @@ if config["trimmer"] == "trimgalore":
 elif config["trimmer"] == "fastp":
 
     ruleorder: fastp_qc_PE > fastp_qc_SE > fastp_PE > fastp_SE
+
+    merged_treps_single = [trep for trep in MERGED_TREPS if SAMPLEDICT[trep]["layout"] == "SINGLE"]
+    merged_treps_paired = [trep for trep in MERGED_TREPS if SAMPLEDICT[trep]["layout"] == "PAIRED"]
 
     rule fastp_qc_SE:
         """
@@ -215,7 +214,7 @@ rule mt_nuc_ratio_calculator:
 def fingerprint_multiBamSummary_input(wildcards):
     output = {"bams": set(), "bais": set()}
 
-    for trep in set(treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index):
+    for trep in set(treps[treps["assembly"] == ORI_ASSEMBLIES[wildcards.assembly]].index):
         output["bams"].update(expand(f"{{final_bam_dir}}/{wildcards.assembly}-{trep}.samtools-coordinate.bam", **config))
         output["bais"].update(
             expand(f"{{final_bam_dir}}/{wildcards.assembly}-{trep}.samtools-coordinate.bam.bai", **config)
@@ -252,10 +251,10 @@ def get_descriptive_names(wildcards, input):
             trep = trep[: trep.find("_summits.bed")]
         else:
             logger.error(f"Something unexpected happened inferring descriptive names! " "Please make an issue on github.")
-            sys.exit(1)
+            os._exit(1)  # noqa
 
         if trep in breps.index:
-            if len(treps_from_brep[(trep, wildcards.assembly)]) == 1 and trep in samples.index:
+            if len(TREPS_FROM_BREP[(trep, wildcards.assembly)]) == 1 and trep in samples.index:
                 labels += samples.loc[trep, "descriptive_name"] + " "
             else:
                 labels += trep + " "
@@ -300,7 +299,7 @@ def computeMatrix_input(wildcards):
     output = []
 
     treps_seen = set()
-    for trep in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index:
+    for trep in treps[treps["assembly"] == ORI_ASSEMBLIES[wildcards.assembly]].index:
         if trep not in treps_seen:
             output.append(expand(f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{trep}.bw", **config)[0])
         treps_seen.add(trep)
@@ -409,8 +408,7 @@ rule multiBamSummary:
         if get_descriptive_names(wildcards, input.bams) != ""
         else "",
         params=config["deeptools_multibamsummary"],
-    message:
-        explain_rule("computeMatrix")
+    message: EXPLAIN["computeMatrix"]
     conda:
         "../envs/deeptools.yaml"
     resources:
@@ -488,16 +486,6 @@ rule plotPCA:
         """
 
 
-def get_summits_bed(wildcards):
-    return expand(
-        [
-            f"{{result_dir}}/{wildcards.peak_caller}/{wildcards.assembly}-{replicate}_summits.bed"
-            for replicate in breps[breps["assembly"] == ori_assembly(wildcards.assembly)].index
-        ],
-        **config,
-    )
-
-
 rule multiqc_header_info:
     """
     Generate a multiqc header file with contact info and date of multiqc generation.
@@ -510,7 +498,7 @@ rule multiqc_header_info:
         import os
         from datetime import date
 
-        workflow = get_workflow().replace("_", "-")
+        workflow = WORKFLOW.replace("_", "-")
         date = date.today().strftime("%B %d, %Y")
         project = os.getcwd().split("/")[-1]
         mail = config.get("email", "none@provided.com")
@@ -585,7 +573,7 @@ def assembly_stats_input(wildcards):
     assembly = wildcards.assembly
     req_input["genome"] = expand(f"{{genome_dir}}/{assembly}/{assembly}.fa", **config)[0]
     req_input["index"] = expand(f"{{genome_dir}}/{assembly}/{assembly}.fa.fai", **config)[0]
-    if has_annotation(assembly):
+    if HAS_ANNOTATION[assembly]:
         req_input["annotation"] = expand(f"{{genome_dir}}/{assembly}/{assembly}.annotation.gtf", **config)[0]
     return req_input
 
@@ -612,7 +600,7 @@ rule multiqc_rename_buttons:
     params:
         samples,  # helps resolve changed params if e.g. descriptive names change
     run:
-        newsamples = samples[samples["assembly"] == ori_assembly(wildcards.assembly)].reset_index(level=0, inplace=False)
+        newsamples = samples[samples["assembly"] == ORI_ASSEMBLIES[wildcards.assembly]].reset_index(level=0, inplace=False)
         newsamples = newsamples.drop(["assembly"], axis=1)
         newsamples.to_csv(output[0], sep="\t", index=False)
 
@@ -632,12 +620,12 @@ rule multiqc_filter_buttons:
                     f"Read Group 1 & Alignment\thide\t_{config.get('fqext2')}\n"
                     f"Read Group 2\tshow\t_{config.get('fqext2')}\n"
                 )
-            if len([x for x in merged_treps if treps.loc[x, "assembly"] == wildcards.assembly]):
+            if len([x for x in MERGED_TREPS if treps.loc[x, "assembly"] == wildcards.assembly]):
                 _merged_treps = [x for x in treps[treps["assembly"] == wildcards.assembly].index]
                 _real_treps = [
                     rep
                     for rep in samples.index
-                    if rep not in merged_treps and samples.loc[rep, "assembly"] == wildcards.assembly
+                    if rep not in MERGED_TREPS and samples.loc[rep, "assembly"] == wildcards.assembly
                 ]
                 f.write(f"Pre-merge technical replicates\tshow\t" + "\t".join(_real_treps) + "\n")
                 f.write(f"Merged technical replicates\tshow\t" + "\t".join(_merged_treps) + "\n")
@@ -707,9 +695,9 @@ rule multiqc_schema:
 
 def get_qc_files(wildcards):
     qc = dict()
-    assert "quality_control" in globals(), (
+    assert "QUALITY_CONTROL" in globals(), (
         "When trying to generate multiqc output, make sure that the "
-        "variable 'quality_control' exists and contains all the "
+        "variable 'QUALITY_CONTROL' exists and contains all the "
         "relevant quality control functions."
     )
     qc["files"] = set(expand(["{qc_dir}/samplesconfig_mqc.html", "{log_dir}/workflow_explanation_mqc.html"], **config))
@@ -718,38 +706,38 @@ def get_qc_files(wildcards):
     if ("kite" not in config.get("ref", "")) and config.get("quantifier") != "citeseqcount":
         qc["files"].update(expand(f"{{qc_dir}}/assembly_{wildcards.assembly}_stats_mqc.html", **config))
     # trimming qc on individual samples
-    if get_trimming_qc in quality_control:
+    if get_trimming_qc in QUALITY_CONTROL:
         # scatac seq only on treps, not on single samples
-        if get_workflow() != "scatac_seq":
-            for sample in samples[samples["assembly"] == ori_assembly(wildcards.assembly)].index:
+        if WORKFLOW != "scatac_seq":
+            for sample in samples[samples["assembly"] == ORI_ASSEMBLIES[wildcards.assembly]].index:
                 qc["files"].update(get_trimming_qc(sample))
 
     # qc on merged technical replicates/samples
-    if get_alignment_qc in quality_control:
-        for replicate in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index:
+    if get_alignment_qc in QUALITY_CONTROL:
+        for replicate in treps[treps["assembly"] == ORI_ASSEMBLIES[wildcards.assembly]].index:
             for function in [
-                func for func in quality_control if func.__name__ not in ["get_peak_calling_qc", "get_trimming_qc"]
+                func for func in QUALITY_CONTROL if func.__name__ not in ["get_peak_calling_qc", "get_trimming_qc"]
             ]:
                 qc["files"].update(function(replicate))
             # scatac seq only on treps, not on single samples
             # and fastp also on treps
             if config.get("trimmer") == "fastp" or (
-                get_workflow() == "scatac_seq" and get_trimming_qc in quality_control
+                WORKFLOW == "scatac_seq" and get_trimming_qc in QUALITY_CONTROL
             ):
                 qc["files"].update(get_trimming_qc(replicate))
 
     # qc on combined biological replicates/samples
-    if get_peak_calling_qc in quality_control:
-        for trep in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index:
+    if get_peak_calling_qc in QUALITY_CONTROL:
+        for trep in treps[treps["assembly"] == ORI_ASSEMBLIES[wildcards.assembly]].index:
             qc["files"].update(get_peak_calling_qc(trep, wildcards))
 
-    if get_rna_qc in quality_control:
+    if get_rna_qc in QUALITY_CONTROL:
         # Skip if desired, or if no BAMs are made (no trackhub + Salmon)
         if not (
             config.get("ignore_strandedness")
             or (config.get("quantifier", "") == "salmon" and config.get("create_trackhub") == False)
         ):
-            for trep in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index:
+            for trep in treps[treps["assembly"] == ORI_ASSEMBLIES[wildcards.assembly]].index:
                 qc["files"].update(get_rna_qc(trep))
 
         # add dupRadar plots if BAMs are made
@@ -761,10 +749,10 @@ def get_qc_files(wildcards):
     # DESeq2 sample distance/correlation cluster heatmaps
     if (
         (
-            get_peak_calling_qc in quality_control
+            get_peak_calling_qc in QUALITY_CONTROL
             and "narrowPeak" in [get_peak_ftype(pc) for pc in list(config["peak_caller"].keys())]
         )
-        or get_rna_qc in quality_control
+        or get_rna_qc in QUALITY_CONTROL
     ) and len(treps.index) > 2:
         plots = ["sample_distance_clustering", "pearson_correlation_clustering", "spearman_correlation_clustering"]
         files = expand("{qc_dir}/plotCorrelation/{{assembly}}-DESeq2_{plots}_mqc.png", plots=plots, **config)
@@ -775,18 +763,18 @@ def get_qc_files(wildcards):
         qc["files"].update(files)
 
     # DESeq2 all contrast plots
-    if "DE_contrasts" in globals():
+    if "DE_CONTRASTS" in globals():
         contrast_files = [
             contrast.replace(config.get("deseq2_dir", ""), config.get("qc_dir", "") + "/deseq2")
-            for contrast in DE_contrasts
+            for contrast in DE_CONTRASTS
         ]
         qc["files"].update(
             contrast.replace(".diffexp.tsv", ".combined_ma_volcano_mqc.png") for contrast in contrast_files
         )
         qc["files"].update(contrast.replace(".diffexp.tsv", ".pca_plot_mqc.png") for contrast in contrast_files)
 
-    if get_scrna_qc in quality_control:
-        for trep in treps[treps["assembly"] == ori_assembly(wildcards.assembly)].index:
+    if get_scrna_qc in QUALITY_CONTROL:
+        for trep in treps[treps["assembly"] == ORI_ASSEMBLIES[wildcards.assembly]].index:
             qc["files"].update(get_scrna_qc(trep))
 
     return qc
@@ -808,7 +796,7 @@ def get_qc_schemas(wildcards):
     qc["sample_names"] = expand("{qc_dir}/sample_names_{{assembly}}.tsv", **config)[0]
     qc["schema"] = expand("{qc_dir}/schema.yaml", **config)[0]
     if config["trimmer"] == "trimgalore" or len(
-        [x for x in merged_treps if treps.loc[x, "assembly"] == wildcards.assembly]
+        [x for x in MERGED_TREPS if treps.loc[x, "assembly"] == wildcards.assembly]
     ):
         qc["filter_buttons"] = expand("{qc_dir}/sample_filters_{{assembly}}.tsv", **config)[0]
     return qc
@@ -830,8 +818,7 @@ rule multiqc:
     output:
         expand("{qc_dir}/multiqc_{{assembly}}.html", **config),
         directory(expand("{qc_dir}/multiqc_{{assembly}}_data", **config)),
-    message:
-        explain_rule("multiqc")
+    message: EXPLAIN["multiqc"]
     params:
         dir="{qc_dir}/".format(**config),
         fqext1="_" + config["fqext1"],
@@ -859,14 +846,14 @@ rule multiqc:
 
 def get_trimming_qc(sample):
     if config["trimmer"] == "trimgalore":
-        if get_workflow() == "scatac_seq":
+        if WORKFLOW == "scatac_seq":
             # we (at least for now) do not want fastqc for each single cell before and after trimming (too much for MultiQC).
             # still something to think about to add later, since that might be a good quality check though.
-            if sampledict[sample]["layout"] == "SINGLE":
+            if SAMPLEDICT[sample]["layout"] == "SINGLE":
                 return expand(f"{{qc_dir}}/fastqc/{sample}_trimmed_fastqc.zip", **config)
             else:
                 return expand(f"{{qc_dir}}/fastqc/{sample}_{{fqext}}_trimmed_fastqc.zip", **config)
-        elif get_workflow() == "scrna_seq":
+        elif WORKFLOW == "scrna_seq":
             # single-cell RNA seq does weird things with barcodes in the fastq file
             # therefore we can not just always start trimming paired-end even though
             # the samples are paired-end (ish)
@@ -895,7 +882,7 @@ def get_trimming_qc(sample):
                         f"Something went wrong parsing the read id. "
                         "Please make an issue on github if this is unexpected behaviour!"
                     )
-                    sys.exit(1)
+                    os._exit(1)  # noqa
             # Check if quantifier
             if config["quantifier"] == "citeseqcount":
                 return expand(
@@ -908,7 +895,7 @@ def get_trimming_qc(sample):
                 )
 
         else:
-            if sampledict[sample]["layout"] == "SINGLE":
+            if SAMPLEDICT[sample]["layout"] == "SINGLE":
                 return expand(
                     [
                         f"{{qc_dir}}/fastqc/{sample}_fastqc.zip",
@@ -928,7 +915,7 @@ def get_trimming_qc(sample):
                 )
 
     elif config["trimmer"] == "fastp":
-        if get_workflow() == "scrna_seq":
+        if WORKFLOW == "scrna_seq":
             # Check if quantifier is set to kallistobus
             if config["quantifier"] == "kallistobus":
                 read_id = get_bustools_rid(config.get("count"))
@@ -941,7 +928,7 @@ def get_trimming_qc(sample):
                         f"Something went wrong parsing the read id. "
                         "Please make an issue on github if this is unexpected behaviour!"
                     )
-                    sys.exit(1)
+                    os._exit(1)  # noqa
             # Check if quantifier is set to citeseqcount
             if config["quantifier"] == "citeseqcount":
                 return expand(f"{{qc_dir}}/trimming/{sample}_{{fqext2}}.fastp.json", **config)
@@ -960,13 +947,13 @@ def get_alignment_qc(sample):
     )
 
     # if Salmon is used, the sieving does not effect the expression values, so adding it to the MultiQC is confusing
-    if sieve_bam(config) and not (get_workflow() == "rna_seq" and config.get("quantifier") == "salmon"):
+    if sieve_bam(config) and not (WORKFLOW == "rna_seq" and config.get("quantifier") == "salmon"):
         output.append(
             f"{{qc_dir}}/samtools_stats/{os.path.basename(config['final_bam_dir'])}/{{{{assembly}}}}-{sample}.samtools-coordinate.samtools_stats.txt"
         )
 
     # add insert size metrics
-    if sampledict[sample]["layout"] == "PAIRED":
+    if SAMPLEDICT[sample]["layout"] == "PAIRED":
         # if we do any sieving, we use the
         if config.get("filter_on_size"):
             output.append(f"{{qc_dir}}/InsertSizeMetrics/{{{{assembly}}}}-{sample}_allsizes.tsv")
@@ -979,8 +966,8 @@ def get_alignment_qc(sample):
     )
 
     if (
-        get_workflow() in ["alignment", "chip_seq", "atac_seq", "scatac_seq"]
-        or get_workflow() == "rna_seq"
+        WORKFLOW in ["alignment", "chip_seq", "atac_seq", "scatac_seq"]
+        or WORKFLOW == "rna_seq"
         and (config.get("create_trackhub") or config.get("quantifier") != "salmon")
     ):
         output.append("{qc_dir}/plotFingerprint/{{assembly}}.tsv")
@@ -1027,7 +1014,7 @@ def get_peak_calling_qc(sample, wildcards):
     assembly = treps.loc[sample, "assembly"]
     narrowpeak_used = "narrowPeak" in [get_peak_ftype(pc) for pc in list(config["peak_caller"].keys())]
     # TODO: replace with genomepy checkpoint in the future
-    if has_annotation(assembly):
+    if HAS_ANNOTATION[assembly]:
         output.extend(expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config))  # added to be unzipped
         if config.get("deeptools_qc"):
             output.extend(expand("{qc_dir}/plotProfile_gene/{{assembly}}-{peak_caller}.tsv", **config))
@@ -1042,7 +1029,7 @@ def get_peak_calling_qc(sample, wildcards):
             )
         )
     # upset plot
-    if narrowpeak_used and len(breps[breps["assembly"] == ori_assembly(wildcards.assembly)].index) > 1:
+    if narrowpeak_used and len(breps[breps["assembly"] == ORI_ASSEMBLIES[wildcards.assembly]].index) > 1:
         output.extend(
             expand(
                 "{qc_dir}/upset/{{assembly}}-{peak_caller}_upset_mqc.jpg",

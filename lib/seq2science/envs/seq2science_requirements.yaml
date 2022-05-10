@@ -18,4 +18,5 @@ dependencies:
   - conda-forge::matplotlib=3.5.0
   - conda-forge::xdg=5.1.1
   - conda-forge::argcomplete=1.12.3
+  - conda-forge::tabulate=0.8.9
   - conda-forge::conda-ecosystem-user-package-isolation=1.0

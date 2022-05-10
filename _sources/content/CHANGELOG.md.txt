@@ -8,6 +8,28 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+## [0.9.0] - 2022-05-10
+
+### Changed
+
+- renamed most globals in uppercase (main exceptions are `config` and `samples`, `treps` and `breps`)
+- moved most configuration steps into functions (reducing the number of stray globals)
+- replaced static functions with dictionaries
+- moved replicate stuff to the configuration
+- Updated Salmon
+- Added the option for Salmon to use the full genome as decoy sequence
+- Salmon now uses the full genome as decoy sequence by default.
+  - Config option `quantifier_decoys` controls which level of decoy aware quantification you want (options are 'none', 'partial' and 'full')
+  - Option 'partial' is insanely memory intensive, and the Salmon docs suggest no benefit... 
+- improved parsing of the samples.tsv. More errors early on, to prevent headache later!
+
+### Fixed
+
+- get_fastq_pair_reads() was using one sample, not any sample
+- error message not working when trimming in scRNA-seq
+- trackhubs when using a mix of stranded and unstranded datasets
+- fix samples.tsv checks for forbidden symbols
+
 ## [0.8.0] - 2022-04-29
 
 ### Added

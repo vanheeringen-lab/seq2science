@@ -4,7 +4,9 @@ all logic related to logging to stdout/file should be here.
 
 import os
 import shutil
+import textwrap
 
+from tabulate import tabulate
 from snakemake.logging import logger
 
 
@@ -69,9 +71,6 @@ def rmkeys(del_list, target_list):
 
 
 if not config.get("no_config_log"):
-    # after all is done, log (print) the configuration
-    logger.info("CONFIGURATION VARIABLES:")
-
     # sort config: samples.tsv & directories first, alphabetized second
     keys = sorted(config.keys())
     dir_keys = []
@@ -96,10 +95,14 @@ if not config.get("no_config_log"):
         "genomepy_temp",
         "bam_sort_mem",
         "benchmark_dir",
+        "sra_dir",
+        "trimmed_dir",
+        "result_dir",
         "rule_dir",
-        ("biological_replicates", "condition" not in samples),
+        "cli_call",
+        ("biological_replicates", "biological_replicates" not in samples),
+        ("technical_replicates", "technical_replicates" not in samples),
         ("filter_bam_by_strand", "strandedness" not in samples),
-        ("technical_replicates", "replicates" not in samples),
         ("final_bam_dir", no_aligners),
         ("aligner", no_aligners),
         ("bam_sort_order", no_aligners),
@@ -112,20 +115,21 @@ if not config.get("no_config_log"):
         ("min_mapping_quality", no_aligners),
         ("only_primary_align", no_aligners),
         ("remove_blacklist", no_aligners),
+        ("tx2gene_from_gtf", config.get("quantifier") != "salmon"),
         ("tximeta", config.get("quantifier") != "salmon"),
         ("deseq2", not config.get("contrasts")),
         ("deseq2_dir", not config.get("contrasts")),
         ("bigwig_dir", not config.get("create_trackhub")),
+        ("trackhub_dir", not config.get("create_trackhub")),
         ("qc_dir", not config.get("create_qc_report")),
     ]
     keys = rmkeys(["samples"] + keys_to_remove, keys)
     keys = ["samples"] + keys
 
-    for key in keys:
-        if config[key] not in ["", False, 0, "None", "none@provided.com", "yourmail@here.com", "_custom"]:
-            logger.info(f"{key: <23}: {config[key]}")
+    ignore_values = ["", False, -1, 0, 999, "None", "none@provided.com", "yourmail@here.com", "_custom"]
+    table = [(key, config[key]) for key in keys if config[key] not in ignore_values]
+    table = [["\n".join(textwrap.wrap(str(cell), 112)) for cell in row] for row in table]
+    table.append(("layout", tabulate([(sample, values["layout"]) for sample, values in SAMPLEDICT.items()], headers=["sample", "layout"])))
 
-    layouts = {sample: values["layout"] for sample, values in sampledict.items()}
-    logger.info(f"layout:                : {layouts}")
-
+    logger.info(tabulate(table, headers=["config variable", "value"], tablefmt="pipe"))
     logger.info("\n\n")

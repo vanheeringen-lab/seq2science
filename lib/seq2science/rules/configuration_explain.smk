@@ -3,13 +3,10 @@ all logic necessary to make an explanation of what has/will be done should be he
 """
 
 if not config.get("explain_rule"):
+    import collections
 
-    def explain_rule(name):
-        """
-        Does not return a string explaining the workflow by parsing all messages
-        """
-        return None
 
+    EXPLAIN = collections.defaultdict(str)
 
 else:
     import os.path
@@ -60,12 +57,6 @@ else:
         "citeseqcount": "https://zenodo.org/record/2590196",
         "khmer": "https://dx.doi.org/10.12688%2Ff1000research.6924.1",
     }
-
-    def explain_rule(name):
-        """
-        Return a string explaining the workflow by parsing all messages
-        """
-        return MESSAGES[name]
 
     ENV_DIR = os.path.normpath(os.path.join(config["rule_dir"], "..", "envs"))
 
@@ -120,9 +111,9 @@ else:
         "rna_seq": "gene expression",
         "chip_seq": "peak",
         "atac_seq": "accessibility",
-    }.get(get_workflow(), "")
+    }.get(WORKFLOW, "")
 
-    MESSAGES = {
+    EXPLAIN = {
         "bowtie2_align": f"Reads were aligned with {href_v('bowtie2')}{options('align')}.",
         "bwa-mem_align": f"Reads were aligned with {href_v('bwa',text='bwa-mem')}{options('align')}.",
         "bwa-mem2_align": f"Reads were aligned with {href_v('bwa-mem2',env='bwamem2')}{options('align')}.",
@@ -188,7 +179,8 @@ else:
         "fastqc": f"Fastq quality was measured by {href_v('FastQC')}.",
         "computeMatrix": f"{href_v('Deeptools')} was used for the fingerprint, profile, correlation and dendrogram/heatmap plots{', where the heatmap was made' + dt_opts if (dt_opts := options('deeptools_multibamsummary')) else ''}.",
         "dupradar": f"RNA-seq read duplication types were analyzed using {href_v('dupRadar')}.",
-        "decoy_transcripts": "Decoy transcript were generated in order improve improve Salmon indexing accuracy using the scripts provided in the Salmon manual",
+        "partially_decoy_aware": "Decoy transcripts were generated in order to improve Salmon mapping accuracy using the scripts provided in the Salmon manual.",
+        "fully_decoy_aware": "Decoy sequences were generated in order to improve Salmon mapping accuracy.",
         "salmon_quant": f"Transcript abundances were quantified with {href_v('Salmon')}{options('quantifier_flags')}.",
         "htseq_count": f"Read counting and summarizing to gene-level was performed on filtered bam using {href_v('htseq',text='HTSeq-count',env='gene_counts')}.",
         "kallistobus-count": f"Reads were aligned and transformed to bus format with kb-python{version('kb-python','kallistobus')}, a python wrapper for {hyperref('kallisto')} and {hyperref('bustools')}.",

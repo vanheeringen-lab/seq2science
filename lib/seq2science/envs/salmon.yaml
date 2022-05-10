@@ -4,6 +4,6 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - bioconda::salmon=1.5.2
-  - bioconda::gffread=0.12.1
+  - bioconda::salmon=1.8.0
+  - bioconda::gffread=0.12.7
   - conda-forge::conda-ecosystem-user-package-isolation=1.0

@@ -489,13 +489,16 @@ quantifier:
                 quantifier_index:
                     default: -k 31
                 quantifier_flags:
-                    default: --seqBias --gcBias --validateMappings --recoverOrphans
-                decoy_aware_index:
-                    default: False
+                    default: --seqBias --gcBias --posBias --validateMappings --recoverOrphans
+                quantifier_decoys:
+                    description: improve quantification accuracy at the cost of increased memory usage.
+                    enum: ['none', 'partial', 'full']
+                    type: string
+                    default: full
             default:
                 quantifier_index: -k 31
-                quantifier_flags: --seqBias --gcBias --validateMappings --recoverOrphans
-                decoy_aware_index: False
+                quantifier_flags: --seqBias --gcBias --posBias --validateMappings --recoverOrphans
+                quantifier_decoys: full
         htseq:
             properties:
                 htseq_flags:
