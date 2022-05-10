@@ -677,7 +677,7 @@ def setup_seq2science_logger(parsed_args):
         logger.logger.addHandler(logger.logfile_handler)
 
 
-def run_snakemake(workflow, config):
+def run_snakemake(config):
     try:
         exit_code = snakemake.snakemake(**config)
     except snakemake.exceptions.IncompleteFilesException as e:
