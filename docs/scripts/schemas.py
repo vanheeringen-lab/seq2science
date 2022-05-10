@@ -1,10 +1,10 @@
 """
-This script auto-generates the
+This script auto-generates docs/content/schemas.md
 """
 import yaml
-import os
 
-final_md = (
+
+final_md = (  # noqa
 """
 # All configurable options
 
@@ -35,6 +35,7 @@ order = {
 # we add 4 indentation as a start
 indentation = 0
 
+
 def unpack_config(markdown, key, val, indentation):
     indentation += 4
     spaces = ' ' * indentation
@@ -45,6 +46,7 @@ def unpack_config(markdown, key, val, indentation):
     else:
         markdown += f"{spaces}{key}: {val}\n"
     return markdown
+
 
 for name, file in order.items():
     with open(path + file + ".schema.yaml", 'r') as stream:

@@ -27,7 +27,6 @@ with open(logfile, "a") as log:  # appending because we mix streams (tqdm, logge
         pytxi.logger.remove()
         pytxi.logger.add(logfile)
 
-        fnames = [f"{d}/quant.sf" for d in fnames]
         outdir = os.path.dirname(out_counts)
         os.makedirs(outdir, exist_ok=True)
 

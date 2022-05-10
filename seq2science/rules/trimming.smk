@@ -3,7 +3,6 @@ all rules/logic related to read trimming should be here.
 """
 import glob
 import os
-import sys
 
 from seq2science.util import get_bustools_rid
 
@@ -36,24 +35,24 @@ def pe_fastq(wildcards):
 
 # create lists with all single-ended samples and all paired-ended samples
 # these can be used to make sure no pair-ended samples are trimmed as single-ended sample (and vice-versa)
-all_single_samples = [sample for sample in all_samples if sampledict[sample]["layout"] == "SINGLE"]
-all_paired_samples = [sample for sample in all_samples if sampledict[sample]["layout"] == "PAIRED"]
-if get_workflow() == "scrna_seq":
+all_single_samples = [sample for sample in ALL_SAMPLES if SAMPLEDICT[sample]["layout"] == "SINGLE"]
+all_paired_samples = [sample for sample in ALL_SAMPLES if SAMPLEDICT[sample]["layout"] == "PAIRED"]
+if WORKFLOW == "scrna_seq":
     assert len(all_single_samples) == 0, "Seq2science does not support scRNA-seq samples that are single-ended"
     #Check kallisto bustools read id
     if config['quantifier'] == 'kallistobus':
         read_id = get_bustools_rid(config.get("count"))
         if read_id == 0:
-            all_single_samples = [sample + f"_{config['fqext1']}" for sample in all_samples if sampledict[sample]["layout"] == "PAIRED"]
+            all_single_samples = [sample + f"_{config['fqext1']}" for sample in ALL_SAMPLES if SAMPLEDICT[sample]["layout"] == "PAIRED"]
         elif read_id == 1:
-            all_single_samples = [sample + f"_{config['fqext2']}" for sample in all_samples if sampledict[sample]["layout"] == "PAIRED"]
+            all_single_samples = [sample + f"_{config['fqext2']}" for sample in ALL_SAMPLES if SAMPLEDICT[sample]["layout"] == "PAIRED"]
+        else:
+            logger.error(f"Seq2science encountered an unexpected error with inferring the read id ({read_id})."
+                         "Please make an issue on github if this is unexpected behaviour!")
+            os._exit(1)  # noqa
     # cite-seq-count
     elif config['quantifier'] == 'citeseqcount':
-        all_single_samples = [sample + f"_{config['fqext2']}" for sample in all_samples if sampledict[sample]["layout"] == "PAIRED"]
-    else:
-        logger.error(f"Seq2science encountered an unexpected error with inferring the read id ({read_id})."
-                      "Please make an issue on github if this is unexpected behaviour!")
-        sys.exit(1)
+        all_single_samples = [sample + f"_{config['fqext2']}" for sample in ALL_SAMPLES if SAMPLEDICT[sample]["layout"] == "PAIRED"]
     all_paired_samples = []
 
 
@@ -73,7 +72,7 @@ if config["trimmer"] == "trimgalore":
         conda:
             "../envs/trimgalore.yaml"
         threads: 6
-        message: explain_rule("trimgalore_SE")
+        message: EXPLAIN["trimgalore_SE"]
         log:
             expand("{log_dir}/trimgalore_SE/{{sample}}.log", **config),
         benchmark:
@@ -112,7 +111,7 @@ if config["trimmer"] == "trimgalore":
         conda:
             "../envs/trimgalore.yaml"
         threads: 6
-        message: explain_rule("trimgalore_PE")
+        message: EXPLAIN["trimgalore_PE"]
         log:
             expand("{log_dir}/trimgalorePE/{{sample}}.log", **config),
         benchmark:
@@ -156,7 +155,7 @@ elif config["trimmer"] == "fastp":
         conda:
             "../envs/fastp.yaml"
         threads: 4
-        message: explain_rule("fastp_SE")
+        message: EXPLAIN["fastp_SE"]
         wildcard_constraints:
             sample="|".join(all_single_samples) if len(all_single_samples) else "$a"
         log:
@@ -190,7 +189,7 @@ elif config["trimmer"] == "fastp":
         threads: 4
         wildcard_constraints:
             sample="|".join(all_paired_samples) if len(all_paired_samples) else "$a"
-        message: explain_rule("fastp_PE")
+        message: EXPLAIN["fastp_PE"]
         log:
             expand("{log_dir}/fastp_PE/{{sample}}.log", **config),
         benchmark:
