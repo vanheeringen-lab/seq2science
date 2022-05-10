@@ -164,6 +164,7 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         "--rerun-incomplete", help="Re-run all jobs the output of which is recognized as incomplete.", action="store_true"
     )
     run.add_argument("--unlock", help="Remove a lock on the working directory.", action="store_true")
+    run.add_argument("--cleanup-metadata", help="Just cleanup metadata of given list of output files (default None).", default=None)
     explain.add_argument("--hyperref", help="Print urls as html hyperref", action="store_true")
     # run/explain arguments
     for subparser in [run, explain]:
