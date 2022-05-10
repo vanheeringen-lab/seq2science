@@ -164,7 +164,7 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         "--rerun-incomplete", help="Re-run all jobs the output of which is recognized as incomplete.", action="store_true"
     )
     run.add_argument("--unlock", help="Remove a lock on the working directory.", action="store_true")
-    run.add_argument("--cleanup-metadata", help="Just cleanup metadata of given list of output files (default None).", default=None)
+    run.add_argument("--cleanup-metadata", help="Just cleanup metadata of given list of output files (default None).", default=None, nargs="+")
     explain.add_argument("--hyperref", help="Print urls as html hyperref", action="store_true")
     # run/explain arguments
     for subparser in [run, explain]:
@@ -332,6 +332,7 @@ def _run(args, base_dir, workflows_dir, config_path):
         "printreason": args.reason,
         "keepgoing": args.keep_going,
         "unlock": args.unlock,
+        "cleanup_metadata": args.cleanup_metadata,
         "force_incomplete": args.rerun_incomplete,
     }
 
@@ -366,7 +367,7 @@ def _run(args, base_dir, workflows_dir, config_path):
     else:
         parsed_args["cores"] = 0
 
-    if parsed_args["cores"] < 2:
+    if parsed_args["cores"] < 2 and not (args.unlock or args.cleanup_metadata is not None):
         subjectively_prettier_error(core_arg, "specify at least two cores.")
 
     # when running on a cluster assume cores == nodes (just like snakemake does)
@@ -390,7 +391,7 @@ def _run(args, base_dir, workflows_dir, config_path):
         import json
         logger.info(json.dumps(parsed_args, sort_keys=True, indent=2))
 
-    if not args.skip_rerun or args.unlock:
+    if not args.skip_rerun or args.unlock or args.cleanup_metadata is not None:
         #   2. start a dryrun checking which files need to be created, and check if
         #      any params changed, which means we have to remove those files and
         #      continue from there
@@ -678,7 +679,7 @@ def setup_seq2science_logger(parsed_args):
         logger.logger.addHandler(logger.logfile_handler)
 
 
-def run_snakemake(config):
+def run_snakemake(**config):
     try:
         exit_code = snakemake.snakemake(**config)
     except snakemake.exceptions.IncompleteFilesException as e:
