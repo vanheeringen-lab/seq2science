@@ -402,6 +402,7 @@ def _run(args, base_dir, workflows_dir, config_path):
 
         with seq2science.util.CaptureStdout() as targets, seq2science.util.CaptureStderr() as errors:
             exit_code = run_snakemake(
+                args.workflow.replace("-", "_"),
                 **{
                     **parsed_args,
                     **{
@@ -443,7 +444,7 @@ def _run(args, base_dir, workflows_dir, config_path):
     parsed_args["config"]["no_config_log"] = True
 
     #   5. start the "real" run where jobs actually get started
-    exit_code = run_snakemake(**parsed_args)
+    exit_code = run_snakemake(args.workflow.replace("-", "_"), **parsed_args)
 
     #   6. output exit code 0 for success and 1 for failure
     os._exit(0) if exit_code else os._exit(1)  # noqa
@@ -515,7 +516,7 @@ def _explain(args, base_dir, workflows_dir, config_path):
     # run snakemake (silently)
     with open(os.devnull, "w") as null:
         with contextlib.redirect_stdout(null), contextlib.redirect_stderr(null):
-            success = run_snakemake(**parsed_args)
+            success = run_snakemake(args.workflow.replace("-", "_"), **parsed_args)
 
     if args.debug:
         print(f"Explain output:\n{rules_used}\n\n")
@@ -679,7 +680,7 @@ def setup_seq2science_logger(parsed_args):
         logger.logger.addHandler(logger.logfile_handler)
 
 
-def run_snakemake(**config):
+def run_snakemake(workflow, **config):
     try:
         exit_code = snakemake.snakemake(**config)
     except snakemake.exceptions.IncompleteFilesException as e:
@@ -701,8 +702,7 @@ def run_snakemake(**config):
         sys.exit(1)
     except Exception as e:
         raise e
-    finally:
-        return exit_code
+    return exit_code
 
 
 def _deseq(args, base_dir):
