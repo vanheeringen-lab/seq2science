@@ -14,6 +14,11 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - moved most configuration steps into functions (reducing the number of stray globals)
 - replaced static functions with dictionaries
 - moved replicate stuff to the configuration
+- Updated Salmon
+- Added the option for Salmon to use the full genome as decoy sequence
+- Salmon now uses the full genome as decoy sequence by default.
+  - Config option `quantifier_decoys` controls which level of decoy aware quantification you want (options are 'none', 'partial' and 'full')
+  - Option 'partial' is insanely memory intensive, and the Salmon docs suggest no benefit... 
 - improved parsing of the samples.tsv. More errors early on, to prevent headache later!
 
 ### Fixed

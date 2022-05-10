@@ -16,7 +16,7 @@ aligner: star
 
 quantifier:
   salmon:
-    decoy_aware_index: True
+    quantifier_decoys: none
 tpm2counts: tximeta
 
 # differential expression analysis
