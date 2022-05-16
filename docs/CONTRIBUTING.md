@@ -112,6 +112,7 @@ There are several accompanying globals:
   * **PROVIDERS** is a dictionary to keep track which assembly can be downloaded where.
   * **HAS_ANNOTATION** is a dictionary to keep track if an assembly has a gene annotation (or has one available for download)
   * **SUFFIX** is a string suffix for each custom assembly, if you use custom assemblies.
+  * **CUSTOM_ASSEMBLIES** is a dictionary with all custom assembly names, if you use custom assemblies.
   * **ORI_ASSEMBLIES** is a dictionary to get the original assembly name, if you use custom assemblies.
   * **UCSC_ASSEMBLIES** is a dictionary that denotes whether an assembly is already available on the UCSC trackhubs.
 * **WORKFLOW** is a string with the current workflow, as spelled in `seq2science/workflows` (e.g. "chip_seq").
