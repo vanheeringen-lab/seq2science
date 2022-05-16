@@ -167,6 +167,8 @@ rule get_genome_support_files:
         gaps=expand("{genome_dir}/{{assembly}}/{{assembly}}.gaps.bed", **config),
     params:
         genome_dir=config["genome_dir"],
+    wildcard_constraints:
+        assembly=f'{any_given("assembly", suffix=config["custom_assembly_suffix"])}|{any_given("assembly")}'
     script:
         f"{config['rule_dir']}/../scripts/genomepy/get_genome_support.py"
 
