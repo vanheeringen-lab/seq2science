@@ -402,18 +402,9 @@ if "assembly" in samples:
             if not modified or not assembly.endswith(config["custom_assembly_suffix"]):
                 return assembly
             return assembly[: -len(config["custom_assembly_suffix"])]
-    
-        ori_assemblies = {a: ori_assembly(a) for a in all_assemblies}
 
-        def custom_assembly(assembly):
-            """
-            add extension suffix to an assembly if it wasn't yet added.
-            """
-            if not modified or assembly.endswith(config["custom_assembly_suffix"]):
-                return assembly
-            return assembly + config["custom_assembly_suffix"]
-        
-        custom_assemblies = {a: custom_assembly(a) for a in all_assemblies}
+        ori_assemblies    = {a: ori_assembly(a) for a in all_assemblies}
+        custom_assemblies = {ori_assembly(a): a for a in all_assemblies}
     
         # list of DESeq2 output files
         de_contrasts = get_contrasts(samples, config, all_assemblies)
