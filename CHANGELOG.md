@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- seq2science specific lockexception and cleanup metadata errors
+
 ## [0.9.1] - 2022-05-10
 
 ### Changed
