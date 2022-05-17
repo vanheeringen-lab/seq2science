@@ -27,6 +27,7 @@ rule run2sra:
         "../envs/get_fastq.yaml"
     wildcard_constraints:
         run="[DES]RR\d+",
+    retries: 2
     shell:
         """
         # move to output dir since somehow prefetch sometimes puts files in the cwd...
@@ -84,6 +85,7 @@ rule sra2fastq_SE:
     threads: 8
     conda:
         "../envs/get_fastq.yaml"
+    retries: 2
     shell:
         """
         # move to output dir since somehow parallel-fastq-dump sometimes puts files in the cwd...
@@ -125,6 +127,7 @@ rule sra2fastq_PE:
         run="|".join(SRA_PAIRED_END) if len(SRA_PAIRED_END) else "$a",  # only try to dump (paired-end) SRA samples
     conda:
         "../envs/get_fastq.yaml"
+    retries: 2
     shell:
         """
         # move to output dir since somehow parallel-fastq-dump sometimes puts files in the cwd...
@@ -162,6 +165,7 @@ rule ena2fastq_SE:
         expand("{benchmark_dir}/ena2fastq_SE/{{run}}.benchmark.txt", **config)[0]
     wildcard_constraints:
         run="|".join(ENA_SINGLE_END) if len(ENA_SINGLE_END) else "$a",
+    retries: 2
     run:
         shell("mkdir -p {config[fastq_dir]}/tmp/ >> {log} 2>&1")
         url = RUN2DOWNLOAD[wildcards.run]
@@ -189,6 +193,7 @@ rule ena2fastq_PE:
         expand("{benchmark_dir}/ena2fastq_PE/{{run}}.benchmark.txt", **config)[0]
     wildcard_constraints:
         run="|".join(ENA_PAIRED_END) if len(ENA_PAIRED_END) else "$a",
+    retries: 2
     run:
         shell("mkdir -p {config[fastq_dir]}/tmp >> {log} 2>&1")
         urls = RUN2DOWNLOAD[wildcards.run]
