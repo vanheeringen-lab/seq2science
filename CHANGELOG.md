@@ -12,6 +12,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 - seq2science specific lockexception and cleanup metadata errors
 
+### Changed
+
+- rules that download something get re-tried once, in case internet is unstable
+
 ### Fixed
 
 - fixed custom assembly extentions (e.g. ERCC spike-ins) for scATAC-seq and scRNA-seq
