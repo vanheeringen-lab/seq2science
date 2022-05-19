@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- seq2science specific lockexception and cleanup metadata errors
+
 ### Fixed
 
 - fixed custom assembly extentions (e.g. ERCC spike-ins) for scATAC-seq and scRNA-seq
