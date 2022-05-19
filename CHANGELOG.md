@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- seq2science specific lockexception and cleanup metadata errors
+
 ### Changed
 
 - rules that download something get re-tried once, in case internet is unstable
