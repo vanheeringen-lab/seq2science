@@ -10,8 +10,7 @@ import genomepy
 
 
 logfile = snakemake.log[0]
-assembly = snakemake.wildcards.assembly
-genome_dir = snakemake.wildcards.genome_dir
+fasta = snakemake.input[0]
 output = snakemake.output[0]
 
 # redirect all messages to a logfile
@@ -24,7 +23,7 @@ with open(logfile, "w") as log:
             level="INFO",
         )
 
-        genome = genomepy.Genome(assembly, genome_dir)
+        genome = genomepy.Genome(fasta)
         plugins = genomepy.plugins.init_plugins()
         plugins["blacklist"].after_genome_download(genome)
 

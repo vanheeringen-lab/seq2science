@@ -158,12 +158,12 @@ rule insert_size_metrics:
     MultiQC in the report.
     """
     input:
-        expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config),
+        FINAL_BAM,
     output:
         tsv=expand("{qc_dir}/InsertSizeMetrics/{{assembly}}-{{sample}}.tsv", **config),
         pdf=expand("{qc_dir}/InsertSizeMetrics/{{assembly}}-{{sample}}.pdf", **config),
     log:
-        f"{config['log_dir']}/InsertSizeMetrics/{{assembly}}-{{sample}}.log",
+        expand("{log_dir}/InsertSizeMetrics/{{assembly}}-{{sample}}.log", **config),
     conda:
         "../envs/picard.yaml"
     wildcard_constraints:
@@ -195,15 +195,10 @@ rule mt_nuc_ratio_calculator:
     These values are aggregated and displayed in the MultiQC report.
     """
     input:
-        bam=expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-unsieved.bam", **config),
-        chr_names=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
+        bam=rules.samtools_presort.output,
+        chr_names=rules.get_genome_support_files.output.sizes,
     output:
-        expand(
-            "{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-unsieved.bam.mtnucratiomtnuc.json",
-            **config
-        ),
-    log:
-        f"{config['log_dir']}/MTNucRatioCalculator/{{assembly}}-{{sample}}.log",
+        expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-unsieved.bam.mtnucratiomtnuc.json", **config),
     conda:
         "../envs/mtnucratio.yaml"
     params:
@@ -334,7 +329,7 @@ rule computeMatrix_gene:
         labels=lambda wildcards, input: "--samplesLabel " + get_descriptive_names(wildcards, input.bw)
         if get_descriptive_names(wildcards, input.bw) != ""
         else "",
-        annotation=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),  # TODO: move genomepy to checkpoint and this as input
+        annotation=rules.get_genome_annotation.output.gtf,  # TODO: move genomepy to checkpoint and this as input
     shell:
         """
         computeMatrix scale-regions -S {input.bw} {params.labels} -R {params.annotation} \
@@ -1020,7 +1015,7 @@ def get_peak_calling_qc(sample, wildcards):
     narrowpeak_used = "narrowPeak" in [get_peak_ftype(pc) for pc in list(config["peak_caller"].keys())]
     # TODO: replace with genomepy checkpoint in the future
     if HAS_ANNOTATION[assembly]:
-        output.extend(expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config))  # added to be unzipped
+        output.extend(rules.get_genome_annotation.output.gtf)  # added to be unzipped
         if config.get("deeptools_qc"):
             output.extend(expand("{qc_dir}/plotProfile_gene/{{assembly}}-{peak_caller}.tsv", **config))
         if narrowpeak_used:

@@ -11,13 +11,13 @@ rule create_SNAP_object:
     """
     input:
         bams=expand("{final_bam_dir}/{{assembly}}-{{sample}}.sambamba-queryname.bam", **config),
-        genome_size=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
+        genome_size=rules.get_genome_support_files.output.sizes,
     output:
-        expand("{result_dir}/snap/{{sample}}-{{assembly}}.snap", **config),
+        expand("{result_dir}/snap/{{assembly}}-{{sample}}.snap", **config),
     log:
-        expand("{log_dir}/create_SNAP_object/{{sample}}-{{assembly}}.log", **config),
+        expand("{log_dir}/create_SNAP_object/{{assembly}}-{{sample}}.log", **config),
     benchmark:
-        expand("{benchmark_dir}/create_SNAP_object/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/create_SNAP_object/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
     threads: 4
     conda:
         "../envs/snaptools.yaml"
@@ -38,13 +38,13 @@ rule create_bins_SNAP_object:
     to the Snapfiles folder for downstream analysis in R using Snaptools
     """
     input:
-        expand("{result_dir}/snap/{{sample}}-{{assembly}}.snap", **config),
+        rules.create_SNAP_object.output,
     output:
-        expand("{result_dir}/snap/{{sample}}-{{assembly}}.binned.snap", **config),
+        expand("{result_dir}/snap/{{assembly}}-{{sample}}.binned.snap", **config),
     log:
-        expand("{log_dir}/create_bins_SNAP_object/{{sample}}-{{assembly}}.log", **config),
+        expand("{log_dir}/create_bins_SNAP_object/{{assembly}}-{{sample}}.log", **config),
     benchmark:
-        expand("{benchmark_dir}/create_SNAP_object/{{sample}}-{{assembly}}.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/create_SNAP_object/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
     conda:
         "../envs/snaptools.yaml"
     message: EXPLAIN["create_bins_SNAP_object"]
@@ -53,6 +53,6 @@ rule create_bins_SNAP_object:
     shell:
         """ 
         snaptools snap-add-bmat --snap-file={input} {params} > {log} 2>&1
-        echo "bmat added, moving file" >> {log} 2>&1
-        mv {input} {output}    >> {log} 2>&1
+        echo "bmat added, moving file" >> {log}
+        mv {input} {output} >> {log} 2>&1
         """

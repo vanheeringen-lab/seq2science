@@ -20,6 +20,7 @@ rule get_genome:
     params:
         providers=PROVIDERS,
         provider=config.get("provider"),
+        genomes_dir=config["genome_dir"],
     wildcard_constraints:
         assembly=any_given("assembly")
     resources:
@@ -42,7 +43,7 @@ rule get_genome_support_files:
         sizes=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
         gaps=expand("{genome_dir}/{{assembly}}/{{assembly}}.gaps.bed", **config),
     wildcard_constraints:
-        assembly=None,
+        assembly=".+",
     script:
         f"{config['rule_dir']}/../scripts/genomepy/get_genome_support.py"
 
@@ -84,6 +85,7 @@ rule get_genome_annotation:
     params:
         providers=PROVIDERS,
         provider=config.get("provider"),
+        genomes_dir=config["genome_dir"],
     wildcard_constraints:
         assembly=any_given("assembly")
     resources:

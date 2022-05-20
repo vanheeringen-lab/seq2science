@@ -10,9 +10,10 @@ include: f"{config['rule_dir']}/trimming.smk"
 include: f"{config['rule_dir']}/merge_replicates.smk"
 include: f"{config['rule_dir']}/get_genome.smk"
 include: f"{config['rule_dir']}/alignment.smk"
+include: f"{config['rule_dir']}/bam_cleaning.smk"
 include: f"{config['rule_dir']}/quantification.smk"
 include: f"{config['rule_dir']}/qc.smk"
-include: f"{config['rule_dir']}/scRNA_qc.smk"
+include: f"{config['rule_dir']}/qc_scRNA.smk"
 
 
 # set the quality_control functions

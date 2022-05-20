@@ -2,9 +2,10 @@
 *.Rhistory
 slurm*.out
 report.html
-samples.tsv
-config.yaml
+*samples*tsv*
+*config*yaml*
 seq2science.*.log
+*test*
 build/
 *.egg*
 .idea/
@@ -18,6 +19,7 @@ docs/content/all_rules.md
 docs/content/schemas.md
 seq2science/workflows/scrna_seq/barcodes.txt
 
+*genomes/
 *results/
 *benchmark/
 *dedup/

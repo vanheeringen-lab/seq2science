@@ -10,7 +10,7 @@ logfile = snakemake.log[0]
 assembly = snakemake.wildcards.assembly
 providers = snakemake.params.providers
 provider = snakemake.params.provider
-genome_dir = snakemake.wildcards.genome_dir
+genomes_dir = snakemake.params.genomes_dir
 output = snakemake.output[0]
 
 # redirect all messages to a logfile
@@ -40,7 +40,7 @@ with open(logfile, "w") as log:
             genomepy.install_genome(
                 name=assembly,
                 provider=provider,
-                genomes_dir=genome_dir,
+                genomes_dir=genomes_dir,
                 force=True,
             )
 

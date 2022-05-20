@@ -59,7 +59,7 @@ rule bedgraph_bigwig:
     """
     input:
         bedgraph=find_bedgraph,
-        genome_size=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
+        genome_size=rules.get_genome_support_files.output.sizes,
     output:
         out=expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}.bw", **config),
         tmp=temp(expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}.bedgraphtmp", **config)),
@@ -124,7 +124,7 @@ rule peak_bigpeak:
     """
     input:
         narrowpeak=expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}_peaks.{{peak}}", **config),
-        genome_size=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
+        genome_size=rules.get_genome_support_files.output.sizes,
     output:
         out=expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}.big{{peak}}", **config),
         tmp=temp(expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}.tmp.{{peak}}", **config)),

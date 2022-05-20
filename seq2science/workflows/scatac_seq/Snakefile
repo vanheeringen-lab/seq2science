@@ -9,6 +9,7 @@ include: f"{config['rule_dir']}/get_fastq.smk"
 include: f"{config['rule_dir']}/trimming.smk"
 include: f"{config['rule_dir']}/merge_replicates.smk"
 include: f"{config['rule_dir']}/get_genome.smk"
+include: f"{config['rule_dir']}/blacklist.smk"
 include: f"{config['rule_dir']}/alignment.smk"
 include: f"{config['rule_dir']}/bam_cleaning.smk"
 include: f"{config['rule_dir']}/qc.smk"
@@ -25,5 +26,5 @@ rule seq2science:
     input:
         expand(
             (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []) +
-            ([f"{{result_dir}}/snap/{trep}-{CUSTOM_ASSEMBLIES[treps.loc[trep, 'assembly']]}.binned.snap" for trep in treps.index]),
+            ([f"{{result_dir}}/snap/{CUSTOM_ASSEMBLIES[treps.loc[trep, 'assembly']]}-{trep}.binned.snap" for trep in treps.index]),
             assemblies=ALL_ASSEMBLIES, **config)

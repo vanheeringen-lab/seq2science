@@ -1,7 +1,15 @@
 """
-All rules/logic related to filtering (sieving) after alignment to a genome should be here.
+All rules/logic related to filtering (sieving) reads after alignment to a genome.
 """
 from seq2science.util import sieve_bam
+
+
+# if bams are not filtered (sieved), mark_duplicates outputs the final bam
+# else it outputs an intermediate bam
+filename = "{assembly}-{sample}.samtools-coordinate"
+FINAL_BAM = f"{config['final_bam_dir']}/{filename}.bam"
+FINAL_BAI = f"{FINAL_BAM}.bai"
+mark_duplicates_bam = temp(f"{config['result_dir']}/{config['aligner']}/{filename}-dupmarked.bam") if sieve_bam(config) else FINAL_BAM
 
 
 rule mark_duplicates:
@@ -11,7 +19,7 @@ rule mark_duplicates:
     input:
         rules.samtools_presort.output,
     output:
-        bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config) if not sieve_bam(config) else temp(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-dupmarked.bam", **config)),
+        bam=mark_duplicates_bam,
         metrics=expand("{qc_dir}/markdup/{{assembly}}-{{sample}}.samtools-coordinate.metrics.txt", **config),
     log:
         expand("{log_dir}/mark_duplicates/{{assembly}}-{{sample}}.log", **config),
@@ -44,7 +52,7 @@ if sieve_bam(config):
         ruleorder: sieve_bam > samtools_sort
 
     # the output of sieving depends on different preprocessing steps
-    sieve_bam_output = {"final": f"{config['final_bam_dir']}/{{assembly}}-{{sample}}.samtools-coordinate{shiftsieve}.bam"}
+    sieve_bam_output = {"final": f"{config['final_bam_dir']}/{filename}{shiftsieve}.bam"}
 
     # if we filter on size, we make two files. One split on size, and one not.
     if config["filter_on_size"]:
@@ -136,11 +144,11 @@ if sieve_bam(config):
 
     rule samtools_sort_allsizes:
         """
-        Sort the result of shiftsieving with the samtools sorter. This rule is identical to the
+        Sort the allsizes output of sieve_bam. This rule is identical to the
         samtools_sort rule except that the input must contain _allsizes, and the output is temporary.
         """
         input:
-            rules.sieve_bam.output.final,
+            rules.sieve_bam.output.final,  # noqa
         output:
             temp(expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-{{sorting}}.bam",**config))
         log:
@@ -276,8 +284,8 @@ rule bam2cram:
     Convert a bam file to the more compressed cram format.
     """
     input:
-        bam=rules.mark_duplicates.output.bam,
-        assembly=rules.get_genome.output,
+        bam=FINAL_BAM,
+        genome=rules.get_genome.output,
     output:
         expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.cram", **config),
     message: EXPLAIN["bam2cram"]
@@ -290,5 +298,5 @@ rule bam2cram:
         "../envs/samtools.yaml"
     shell:
         """
-        samtools view -T {input.assembly} -C {input.bam} -@ {threads} > {output} 2> {log}
+        samtools view -T {input.genome} -C {input.bam} -@ {threads} > {output} 2> {log}
         """

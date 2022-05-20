@@ -9,9 +9,9 @@ rule infer_strandedness:
     Use RSeqQC's infer_experiment.py to determine the strandedness of a sample
     """
     input:
-        bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config),
-        bai=expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam.bai", **config),
-        bed=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.bed", **config),
+        bam=FINAL_BAM,
+        bai=FINAL_BAI,
+        bed=rules.get_genome_annotation.output.bed,
     output:
         expand("{qc_dir}/strandedness/{{assembly}}-{{sample}}.strandedness.txt", **config),
     log:
