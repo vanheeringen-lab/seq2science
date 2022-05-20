@@ -5,8 +5,8 @@ from seq2science.util import sieve_bam
 
 
 # if bams are not filtered (sieved), mark_duplicates outputs the final bam else it outputs an intermediate bam
-filename = "{assembly}-{sample}.samtools-coordinate"
-mark_duplicates_bam = temp(f"{config['result_dir']}/{config['aligner']}/{filename}-dupmarked.bam") if sieve_bam(config) else FINAL_BAM
+mark_duplicates_bam = FINAL_BAM if not sieve_bam(config) else \
+    temp(f"{config['result_dir']}/{config['aligner']}/{{assembly}}-{{sample}}.samtools-coordinate-dupmarked.bam")
 
 
 rule mark_duplicates:
@@ -42,11 +42,11 @@ if sieve_bam(config):
     ruleorder: sieve_bam > samtools_sort
 
     # if bams are sieved but not tn5 shifted, sieve_bam outputs the final bam else it outputs an intermediate bam
-    sieve_bam_output = {"final": FINAL_BAM}
+    sieve_bam_output = {"bam": FINAL_BAM}
     shiftsieve = ""
     if config.get("tn5_shift"):
         shiftsieve = "-shifted"
-        sieve_bam_output["final"] = temp(f"{config['final_bam_dir']}/{filename}{shiftsieve}.bam")
+        sieve_bam_output["bam"] = temp(f"{config['final_bam_dir']}/{{assembly}}-{{sample}}.samtools-coordinate{shiftsieve}.bam")
 
     # if we filter on size, we make two files. One split on size, and one not.
     if config["filter_on_size"]:
@@ -98,14 +98,18 @@ if sieve_bam(config):
             "../envs/samtools.yaml"
         threads: 2
         params:
+            prim_align = f"-F {sieve_flag}" if sieve_flag > 0 else "",
             minqual=f"-q {config['min_mapping_quality']}",
+            subsample=(
+                lambda wildcards, input, output: f""" cat > {output.subsample}; nreads=$(samtools view -c {output.subsample}); if [ $nreads -gt {config['subsample']} ]; then samtools view -h -s $(echo $nreads | awk '{{print {config['subsample']}/$1}}') {output.subsample}; else samtools view -h {output.subsample}; fi | """
+                if config["subsample"] > -1
+                else ""
+            ),
             atacshift=(
                 lambda wildcards, input: f" {config['rule_dir']}/../scripts/atacshift.pl /dev/stdin {input.sizes} | "
                 if config["tn5_shift"]
                 else ""
             ),
-            blacklist=lambda wildcards, input: f"-L {input.blacklist}",
-            prim_align=f"-F {sieve_flag}" if sieve_flag > 0 else "",
             sizesieve=(
                 lambda wildcards, input, output: f""" tee {output.allsizes} | awk 'substr($0,1,1)=="@" || ($9>={config['min_template_length']} && $9<={config['max_template_length']}) || ($9<=-{config['min_template_length']} && $9>=-{config['max_template_length']})' | """
                 if SAMPLEDICT[wildcards.sample]["layout"] == "PAIRED" and config["filter_on_size"]
@@ -116,16 +120,11 @@ if sieve_bam(config):
                 if SAMPLEDICT[wildcards.sample]["layout"] == "SINGLE" and config["filter_on_size"]
                 else ""
             ),
-            subsample=(
-                lambda wildcards, input, output: f""" cat > {output.subsample}; nreads=$(samtools view -c {output.subsample}); if [ $nreads -gt {config['subsample']} ]; then samtools view -h -s $(echo $nreads | awk '{{print {config['subsample']}/$1}}') {output.subsample}; else samtools view -h {output.subsample}; fi | """
-                if config["subsample"] > -1
-                else ""
-            ),
         shell:
             """
-            samtools view -h {params.prim_align} {params.minqual} {params.blacklist} \
-            {input.bam} | {params.atacshift} {params.sizesieve} {params.subsample}
-            samtools view -b > {output.final} 2> {log}
+            samtools view -h {params.prim_align} {params.minqual} -L {input.blacklist} \
+            {input.bam} | {params.subsample} {params.atacshift} {params.sizesieve}
+            samtools view -b > {output.bam} 2> {log}
     
             # single-end reads never output allsizes so just touch the file when filtering on size
             {params.sizesieve_touch}
@@ -138,7 +137,7 @@ if sieve_bam(config):
         samtools_sort rule except that the input must contain _allsizes, and the output is temporary.
         """
         input:
-            rules.sieve_bam.output.final,  # noqa
+            rules.sieve_bam.output.bam,  # noqa
         output:
             temp(expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-{{sorting}}.bam",**config))
         log:
@@ -209,7 +208,7 @@ rule samtools_sort:
     Sort the result of alignment or sieving with the samtools sorter.
     """
     input:
-        rules.sieve_bam.output if sieve_bam(config) else rules.mark_duplicates.output.bam,
+        rules.sieve_bam.output.bam if sieve_bam(config) else rules.mark_duplicates.output.bam,  # noqa
     output:
         expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-{{sorting}}.bam",**config),
     log:
@@ -244,7 +243,7 @@ rule sambamba_sort:
     Sort the result of alignment or sieving with the sambamba sorter.
     """
     input:
-        rules.sieve_bam.output if sieve_bam(config) else rules.mark_duplicates.output.bam,
+        rules.sieve_bam.output.bam if sieve_bam(config) else rules.mark_duplicates.output.bam,  # noqa
     output:
         temp(expand("{final_bam_dir}/{{assembly}}-{{sample}}.sambamba-{{sorting}}.bam", **config)),
     wildcard_constraints:

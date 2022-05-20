@@ -20,6 +20,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - rule inputs now use `rules.rulename.output` where possible
 - renamed `.smk` files to match the naming schemes of the other `.smk`s.
 - added additional comments to clarify what happens to bam files
+- `sieve_bam` subsamples reads before sieving/shifting
 
 ### Fixed
 
