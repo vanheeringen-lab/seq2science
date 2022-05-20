@@ -59,7 +59,7 @@ rule bedgraph_bigwig:
     """
     input:
         bedgraph=find_bedgraph,
-        genome_size=rules.get_genome_support_files.output.sizes,
+        sizes=rules.get_genome_support_files.output.sizes,
     output:
         out=expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}.bw", **config),
         tmp=temp(expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}.bedgraphtmp", **config)),
@@ -73,7 +73,7 @@ rule bedgraph_bigwig:
         """
         awk -v OFS='\\t' '{{print $1, $2, $3, $4}}' {input.bedgraph} | sed '/experimental/d' |
         bedSort /dev/stdin {output.tmp} > {log} 2>&1
-        bedGraphToBigWig {output.tmp} {input.genome_size} {output.out} >> {log} 2>&1
+        bedGraphToBigWig {output.tmp} {input.sizes} {output.out} >> {log} 2>&1
         """
 
 
@@ -124,7 +124,7 @@ rule peak_bigpeak:
     """
     input:
         narrowpeak=expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}_peaks.{{peak}}", **config),
-        genome_size=rules.get_genome_support_files.output.sizes,
+        sizes=rules.get_genome_support_files.output.sizes,
     output:
         out=expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}.big{{peak}}", **config),
         tmp=temp(expand("{result_dir}/{{peak_caller}}/{{assembly}}-{{sample}}.tmp.{{peak}}", **config)),
@@ -148,7 +148,7 @@ rule peak_bigpeak:
         bedSort /dev/stdin {output.tmp} > {log} 2>&1
 
         bedToBigBed -type={params.type} -as={params.schema} {output.tmp} \
-        {input.genome_size} {output.out} >> {log} 2>&1
+        {input.sizes} {output.out} >> {log} 2>&1
         """
 
 

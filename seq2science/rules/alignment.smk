@@ -364,7 +364,7 @@ elif config["aligner"] == "star":
         """
         input:
             genome=rules.get_genome.output,
-            sizefile=rules.get_genome_support_files.output.sizes,
+            sizes=rules.get_genome_support_files.output.sizes,
             gtf=rules.get_genome_annotation.output.gtf,
         output:
             directory(expand("{genome_dir}/{{assembly}}/index/{aligner}/", **config)),
@@ -393,8 +393,8 @@ elif config["aligner"] == "star":
             # set genome dependent variables
             NBits=""
             NBases=""
-            GenomeLength=$(awk -F"\t" '{{x+=$2}}END{{printf "%i", x}}' {input.sizefile})
-            NumberOfReferences=$(awk 'END{{print NR}}' {input.sizefile})
+            GenomeLength=$(awk -F"\t" '{{x+=$2}}END{{printf "%i", x}}' {input.sizes})
+            NumberOfReferences=$(awk 'END{{print NR}}' {input.sizes})
             if [ $NumberOfReferences -gt 5000 ]; then
                 # for large genomes, --genomeChrBinNbits should be scaled to min(18,log2[max(GenomeLength/NumberOfReferences,ReadLength)])
                 # ReadLength is skipped here, as it is unknown

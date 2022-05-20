@@ -115,6 +115,8 @@ There are several accompanying globals:
   * **ORI_ASSEMBLIES** is a dictionary to convert custom assembly names to assembly names, if you use custom assemblies.
   * **UCSC_ASSEMBLIES** is a dictionary that denotes whether an assembly is already available on the UCSC trackhubs.
 * **WORKFLOW** is a string with the current workflow, as spelled in `seq2science/workflows` (e.g. "chip_seq").
+* **FINAL_BAM** is a variable path to the (filtered and) coordinate sorted bam files with wildcards `{assembly}` and `{sample}`.
+  * **FINAL_BAI** is the variable path to the matching bam index.
 We often use this to apply workflow-specific logic.
 * **SEQUENCING_PROTOCOL** contains the current workflow, spelled out properly (e.g. "ChIP-seq").
 

@@ -177,9 +177,9 @@ rule insert_size_metrics:
         """
 
 
-def get_chrM_name(wildcards, input):
-    if os.path.exists(str(input.chr_names)):
-        name = [chrm for chrm in ["chrM", "MT"] if chrm in open(str(input.chr_names), "r").read()]
+def get_chrm_name(sizes):
+    if os.path.exists(str(sizes)):
+        name = [chrm for chrm in ["chrM", "MT"] if chrm in open(str(sizes), "r").read()]
         if len(name) > 0:
             return name[0]
     return "no_chrm_found"
@@ -196,13 +196,13 @@ rule mt_nuc_ratio_calculator:
     """
     input:
         bam=rules.samtools_presort.output,
-        chr_names=rules.get_genome_support_files.output.sizes,
+        sizes=rules.get_genome_support_files.output.sizes,
     output:
         expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate-unsieved.bam.mtnucratiomtnuc.json", **config),
     conda:
         "../envs/mtnucratio.yaml"
     params:
-        mitochondria=lambda wildcards, input: get_chrM_name(wildcards, input),
+        mitochondria=lambda wildcards, input: get_chrm_name(input.sizes),
     resources:
         time="0-06:00:00",
     shell:
@@ -329,10 +329,10 @@ rule computeMatrix_gene:
         labels=lambda wildcards, input: "--samplesLabel " + get_descriptive_names(wildcards, input.bw)
         if get_descriptive_names(wildcards, input.bw) != ""
         else "",
-        annotation=rules.get_genome_annotation.output.gtf,  # TODO: move genomepy to checkpoint and this as input
+        gtf=rules.get_genome_annotation.output.gtf,  # TODO: move genomepy to checkpoint and this as input
     shell:
         """
-        computeMatrix scale-regions -S {input.bw} {params.labels} -R {params.annotation} \
+        computeMatrix scale-regions -S {input.bw} {params.labels} -R {params.gtf} \
         -p {threads} -b 2000 -a 500 -o {output} > {log} 2>&1
         """
 
@@ -1015,7 +1015,6 @@ def get_peak_calling_qc(sample, wildcards):
     narrowpeak_used = "narrowPeak" in [get_peak_ftype(pc) for pc in list(config["peak_caller"].keys())]
     # TODO: replace with genomepy checkpoint in the future
     if HAS_ANNOTATION[assembly]:
-        output.extend(rules.get_genome_annotation.output.gtf)  # added to be unzipped
         if config.get("deeptools_qc"):
             output.extend(expand("{qc_dir}/plotProfile_gene/{{assembly}}-{peak_caller}.tsv", **config))
         if narrowpeak_used:

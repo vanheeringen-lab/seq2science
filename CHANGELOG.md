@@ -15,10 +15,15 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Changed
 
 - rules that download something get re-tried once, in case internet is unstable
+- bam files are no longer copies when sieving is not required
+- moved blacklist rules to blacklist.smk
+- rule inputs now use `rules.rulename.output` where possible
+- renamed `.smk` files to match the naming schemes of the other `.smk`s.
+- added additional comments to clarify what happens to bam files
 
 ### Fixed
 
-- fixed custom assembly extentions (e.g. ERCC spike-ins) for scATAC-seq and scRNA-seq
+- fixed custom assembly extensions (e.g. ERCC spike-ins) for scATAC-seq and scRNA-seq
 
 ## [0.9.1] - 2022-05-10
 

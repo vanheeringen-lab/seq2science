@@ -631,3 +631,10 @@ def config_rerun_parser(configdict):
     configdict.pop("cores", None)
 
     return configdict
+
+
+if 'alignment_general' in CONFIG_SCHEMAS:
+    # Depending on the config settings, one of three rules in bam_cleaning.smk
+    # will output the final bams: mark_duplicates, sieve_bam or samtools_sort
+    FINAL_BAM = f"{config['final_bam_dir']}/{{assembly}}-{{sample}}.samtools-coordinate.bam"
+    FINAL_BAI = f"{FINAL_BAM}.bai"

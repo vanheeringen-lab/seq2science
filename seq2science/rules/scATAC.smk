@@ -10,8 +10,8 @@ rule create_SNAP_object:
     These snapobjects can be merged later using snaptools in R.
     """
     input:
-        bams=expand("{final_bam_dir}/{{assembly}}-{{sample}}.sambamba-queryname.bam", **config),
-        genome_size=rules.get_genome_support_files.output.sizes,
+        bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.sambamba-queryname.bam", **config),
+        sizes=rules.get_genome_support_files.output.sizes,
     output:
         expand("{result_dir}/snap/{{assembly}}-{{sample}}.snap", **config),
     log:
@@ -27,8 +27,8 @@ rule create_SNAP_object:
         mapq=f"--min-mapq={config['min_mapping_quality']}",
     shell:
         """
-        snaptools snap-pre --input-file={input.bams} --output-snap={output} --genome-name={wildcards.assembly} \
-        --genome-size={input.genome_size} {params.params} {params.chrm} {params.mapq} > {log} 2>&1
+        snaptools snap-pre --input-file={input.bam} --output-snap={output} --genome-name={wildcards.assembly} \
+        --genome-size={input.sizes} {params.params} {params.chrm} {params.mapq} > {log} 2>&1
         """
 
 

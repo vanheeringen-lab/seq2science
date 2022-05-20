@@ -4,11 +4,8 @@ All rules/logic related to filtering (sieving) reads after alignment to a genome
 from seq2science.util import sieve_bam
 
 
-# if bams are not filtered (sieved), mark_duplicates outputs the final bam
-# else it outputs an intermediate bam
+# if bams are not filtered (sieved), mark_duplicates outputs the final bam else it outputs an intermediate bam
 filename = "{assembly}-{sample}.samtools-coordinate"
-FINAL_BAM = f"{config['final_bam_dir']}/{filename}.bam"
-FINAL_BAI = f"{FINAL_BAM}.bai"
 mark_duplicates_bam = temp(f"{config['result_dir']}/{config['aligner']}/{filename}-dupmarked.bam") if sieve_bam(config) else FINAL_BAM
 
 
@@ -42,17 +39,14 @@ rule mark_duplicates:
 
 
 if sieve_bam(config):
+    ruleorder: sieve_bam > samtools_sort
 
-    # if doing tn5 shift, we need to re-sort afterwards!
+    # if bams are sieved but not tn5 shifted, sieve_bam outputs the final bam else it outputs an intermediate bam
+    sieve_bam_output = {"final": FINAL_BAM}
+    shiftsieve = ""
     if config.get("tn5_shift"):
         shiftsieve = "-shifted"
-    else:
-        shiftsieve = ""
-
-        ruleorder: sieve_bam > samtools_sort
-
-    # the output of sieving depends on different preprocessing steps
-    sieve_bam_output = {"final": f"{config['final_bam_dir']}/{filename}{shiftsieve}.bam"}
+        sieve_bam_output["final"] = temp(f"{config['final_bam_dir']}/{filename}{shiftsieve}.bam")
 
     # if we filter on size, we make two files. One split on size, and one not.
     if config["filter_on_size"]:
@@ -65,10 +59,6 @@ if sieve_bam(config):
         sieve_bam_output["subsample"] = temp(
             f"{config['final_bam_dir']}/{{assembly}}-{{sample}}_presubsample.samtools-coordinate{shiftsieve}.sam"
         )
-
-    # now that we know the output sieve bam, we can mark as temp based on whether we do tn5 shift
-    if config.get("tn5_shift"):
-        sieve_bam_output["final"] = temp(sieve_bam_output["final"])
 
     # the flag to sieve on (bitwise flags)
     # https://en.wikipedia.org/wiki/SAM_(file_format)#Bitwise_flags
