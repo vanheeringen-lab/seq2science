@@ -662,10 +662,10 @@ def resource_parser(parsed_args):
     if "cluster" in parsed_args:
         # if running on a cluster assume no limit on memory (unless specified)
         parsed_args["resources"]["mem_gb"] = 999999
-    # else:
-    #     # otherwise, assume system memory
-    #     mem = psutil.virtual_memory().total / 1024 ** 3
-    #     parsed_args["resources"]["mem_gb"] = round(mem)
+    else:
+        # otherwise, assume system memory
+        mem = psutil.virtual_memory().total / 1024 ** 3
+        parsed_args["resources"]["mem_gb"] = round(mem)
 
 
 def setup_seq2science_logger(parsed_args):
