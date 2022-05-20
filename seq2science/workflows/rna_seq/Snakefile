@@ -9,6 +9,7 @@ include: f"{config['rule_dir']}/get_fastq.smk"
 include: f"{config['rule_dir']}/trimming.smk"
 include: f"{config['rule_dir']}/merge_replicates.smk"
 include: f"{config['rule_dir']}/get_genome.smk"
+include: f"{config['rule_dir']}/blacklist.smk"
 include: f"{config['rule_dir']}/alignment.smk"
 include: f"{config['rule_dir']}/bam_cleaning.smk"
 include: f"{config['rule_dir']}/strandedness.smk"
@@ -23,6 +24,7 @@ include: f"{config['rule_dir']}/qc_rna.smk"
 
 # load the quality control files
 QUALITY_CONTROL = [get_trimming_qc, get_rna_qc] if config['quantifier'] == 'salmon' and config['create_trackhub'] == False else [get_trimming_qc, get_alignment_qc, get_rna_qc]
+
 
 rule seq2science:
     """

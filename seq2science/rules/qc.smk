@@ -18,7 +18,7 @@ localrules:
 
 
 def samtools_stats_input(wildcards):
-    if wildcards.directory == config["aligner"]:
+    if sieve_bam(config) and wildcards.directory == config["aligner"]:
         return expand("{result_dir}/{{directory}}/{{assembly}}-{{sample}}.samtools-coordinate-dupmarked.bam", **config)
     return expand("{final_bam_dir}/{{assembly}}-{{sample}}.{{sorter}}-{{sorting}}.bam", **config)
 

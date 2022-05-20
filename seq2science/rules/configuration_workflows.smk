@@ -72,7 +72,7 @@ if config.get("min_template_length") and not config.get("max_template_length"):
 if config.get("max_template_length") and not config.get("min_template_length"):
     config["min_template_length"] = 0
 
-config["filter_on_size"] = filter_size = bool(config.get("min_template_length") or config.get("max_template_length"))
+config["filter_on_size"] = bool(config.get("min_template_length") or config.get("max_template_length"))
 
 
 # ...for alignment and rna-seq
@@ -99,6 +99,10 @@ if WORKFLOW == "rna_seq":
 if config.get("bam_sorter", False):
     config["bam_sort_order"] = list(config["bam_sorter"].values())[0]
     config["bam_sorter"] = list(config["bam_sorter"].keys())[0]
+
+if config.get('cram_no_bam'):
+    assert config['bam_sorter'] == 'samtools', "CRAM files require samtools"
+    assert config['bam_sort_order'] == 'coordinate', "CRAM files require coordinate sorted bams"
 
 
 # ...for scrna quantification

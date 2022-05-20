@@ -7,10 +7,10 @@ import genomepy
 
 
 logfile = snakemake.log[0]
-assembly = snakemake.wildcards.raw_assembly
+assembly = snakemake.wildcards.assembly
 providers = snakemake.params.providers
 provider = snakemake.params.provider
-genome_dir = snakemake.params.genome_dir
+genome_dir = snakemake.wildcards.genome_dir
 output = snakemake.output[0]
 
 # redirect all messages to a logfile
