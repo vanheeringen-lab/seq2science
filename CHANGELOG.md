@@ -8,6 +8,20 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- seq2science specific lockexception and cleanup metadata errors
+
+### Changed
+
+- rules that download something get re-tried once, in case internet is unstable
+
+### Fixed
+
+- fixed custom assembly extentions (e.g. ERCC spike-ins) for scATAC-seq and scRNA-seq
+
+## [0.9.1] - 2022-05-10
+
 ### Changed
 
 - updated snakemake
@@ -605,7 +619,9 @@ Many minor bug- and quality of life fixes.
 ## [0.0.0] - 2020-06-11
 First release of seq2science!
 
-[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.8.0...develop
+[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.1...develop
+[0.9.1]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.0...v0.9.1
+[0.9.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.7.2...v0.8.0
 [0.7.2]: https://github.com/vanheeringen-lab/seq2science/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/vanheeringen-lab/seq2science/compare/v0.7.0...v0.7.1

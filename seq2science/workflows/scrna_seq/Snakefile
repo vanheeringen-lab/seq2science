@@ -24,11 +24,9 @@ rule seq2science:
     Make a QC report and map
     """
     input:
-        expand(([f"{{result_dir}}/{{quantifier}}/{CUSTOM_ASSEMBLIES[treps.loc[trep, 'assembly']]}-{trep}/run_info.json" for trep in treps.index] if config["quantifier"] == "kallistobus" else [] +
-                [f"{{result_dir}}/{{quantifier}}/{CUSTOM_ASSEMBLIES[treps.loc[trep, 'assembly']]}-{trep}/_tag_counts/run_report.yaml" for trep in treps.index] if config["quantifier"] == "citeseqcount" else []) +
-               ([f"{{result_dir}}/scrna-preprocess/{{quantifier}}/raw/{CUSTOM_ASSEMBLIES[treps.loc[trep, 'assembly']]}-{trep}/export/R/raw_SCE.RDS" for trep in treps.index]  if config["sc_preprocess"].get("export_sce_objects",{}) else []) +
-               ([f"{{result_dir}}/scrna-preprocess/{{quantifier}}/raw/{CUSTOM_ASSEMBLIES[treps.loc[trep, 'assembly']]}-{trep}/export/R/raw_SCE.RDS" for trep in treps.index] +
-                [f"{{result_dir}}/scrna-preprocess/{{quantifier}}/sctk/{CUSTOM_ASSEMBLIES[treps.loc[trep, 'assembly']]}-{trep}/export/R/sctk_SCE.RDS" for trep in treps.index] if config["sc_preprocess"].get("run_sctk_qc",{}) else []) +
+        expand(([f"{{result_dir}}/{{quantifier}}/{CUSTOM_ASSEMBLIES[treps.loc[trep, 'assembly']]}-{trep}/run_info.json" for trep in treps.index] if config["quantifier"] == "kallistobus" else []) +
+               ([f"{{result_dir}}/{{quantifier}}/{CUSTOM_ASSEMBLIES[treps.loc[trep, 'assembly']]}-{trep}/_tag_counts/run_report.yaml" for trep in treps.index] if config["quantifier"] == "citeseqcount" else []) +
+               ([f"{{result_dir}}/scrna-preprocess/{{quantifier}}/raw/{CUSTOM_ASSEMBLIES[treps.loc[trep, 'assembly']]}-{trep}/export/R/raw_SCE.RDS" for trep in treps.index] if config["sc_preprocess"].get("export_sce_objects",{}) else []) +
+               ([f"{{result_dir}}/scrna-preprocess/{{quantifier}}/sctk/{CUSTOM_ASSEMBLIES[treps.loc[trep, 'assembly']]}-{trep}/export/R/sctk_SCE.RDS" for trep in treps.index] if config["sc_preprocess"].get("run_sctk_qc",{}) else []) +
                (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []),
-               **{**config,
-                  **{'assemblies': ALL_ASSEMBLIES}})
+               assemblies=ALL_ASSEMBLIES, **config)

@@ -25,5 +25,5 @@ rule seq2science:
     input:
         expand(
             (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []) +
-            ([f"{{result_dir}}/snap/{trep}-{treps.loc[trep, 'assembly']}.binned.snap" for trep in treps.index]),
-            **{**config, **{'assemblies': ALL_ASSEMBLIES}})
+            ([f"{{result_dir}}/snap/{trep}-{CUSTOM_ASSEMBLIES[treps.loc[trep, 'assembly']]}.binned.snap" for trep in treps.index]),
+            assemblies=ALL_ASSEMBLIES, **config)
