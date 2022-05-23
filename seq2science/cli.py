@@ -242,10 +242,19 @@ def deseq2science_parser():
         action='store_true',
         help="use if the counts are Single Cell data",
     )
+
     # go to the docs!
+    class DocAction(argparse._StoreTrueAction):  # noqa
+        def __call__(self, parser, namespace, values, option_string=None):  # noqa
+            import webbrowser
+            url = "https://vanheeringen-lab.github.io/seq2science/content/DESeq2.html"
+            if not webbrowser.open(url):
+                print(url)
+            os._exit(0)  # noqa
+
     parser.add_argument(
         "--docs",
-        action='store_true',
+        action=DocAction,
         help="open de DESeq2 wrapper documentation (with examples!)",
     )
     argcomplete.autocomplete(parser)
@@ -701,13 +710,6 @@ def run_snakemake(workflow, **config):
 
 
 def _deseq(args, base_dir):
-    # docs
-    if args.docs is True:
-        url = "https://vanheeringen-lab.github.io/seq2science/content/DESeq2.html"
-        if not webbrowser.open(url):
-            print(url)
-        return
-
     import hashlib
     import subprocess as sp
 
