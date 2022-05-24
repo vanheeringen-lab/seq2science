@@ -22,6 +22,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Fixed
 
 - fixed custom assembly extentions (e.g. ERCC spike-ins) for scATAC-seq and scRNA-seq
+- profiles work again
 
 ## [0.9.1] - 2022-05-10
 
