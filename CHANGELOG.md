@@ -17,12 +17,11 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Changed
 
 - rules that download something get re-tried once, in case internet is unstable
-- bam files are no longer copies when sieving is not required
+- bam files are no longer copied when sieving is not required
 - moved blacklist rules to blacklist.smk
 - rule inputs now use `rules.rulename.output` where possible
 - renamed `.smk` files to match the naming schemes of the other `.smk`s.
 - added additional comments to clarify what happens to bam files
-- `sieve_bam` subsamples reads before sieving/shifting
 
 ### Fixed
 

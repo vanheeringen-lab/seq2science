@@ -100,11 +100,6 @@ if sieve_bam(config):
         params:
             prim_align = f"-F {sieve_flag}" if sieve_flag > 0 else "",
             minqual=f"-q {config['min_mapping_quality']}",
-            subsample=(
-                lambda wildcards, input, output: f""" cat > {output.subsample}; nreads=$(samtools view -c {output.subsample}); if [ $nreads -gt {config['subsample']} ]; then samtools view -h -s $(echo $nreads | awk '{{print {config['subsample']}/$1}}') {output.subsample}; else samtools view -h {output.subsample}; fi | """
-                if config["subsample"] > -1
-                else ""
-            ),
             atacshift=(
                 lambda wildcards, input: f" {config['rule_dir']}/../scripts/atacshift.pl /dev/stdin {input.sizes} | "
                 if config["tn5_shift"]
@@ -115,6 +110,11 @@ if sieve_bam(config):
                 if SAMPLEDICT[wildcards.sample]["layout"] == "PAIRED" and config["filter_on_size"]
                 else ""
             ),
+            subsample=(
+                lambda wildcards,input,output: f""" cat > {output.subsample}; nreads=$(samtools view -c {output.subsample}); if [ $nreads -gt {config['subsample']} ]; then samtools view -h -s $(echo $nreads | awk '{{print {config['subsample']}/$1}}') {output.subsample}; else samtools view -h {output.subsample}; fi | """
+                if config["subsample"] > -1
+                else ""
+            ),
             sizesieve_touch=(
                 lambda wildcards, input, output: f"touch {output.allsizes}"
                 if SAMPLEDICT[wildcards.sample]["layout"] == "SINGLE" and config["filter_on_size"]
@@ -123,7 +123,7 @@ if sieve_bam(config):
         shell:
             """
             samtools view -h {params.prim_align} {params.minqual} -L {input.blacklist} \
-            {input.bam} | {params.subsample} {params.atacshift} {params.sizesieve}
+            {input.bam} | {params.atacshift} {params.sizesieve} {params.subsample}
             samtools view -b > {output.bam} 2> {log}
     
             # single-end reads never output allsizes so just touch the file when filtering on size
