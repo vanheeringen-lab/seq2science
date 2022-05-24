@@ -657,6 +657,7 @@ def resource_parser(parsed_args):
 
     # no need to get system limit when specified
     if "mem_gb" in parsed_args["resources"]:
+        parsed_args["resources"]["mem_gb"] = int(parsed_args["resources"]["mem_gb"])
         return
 
     if "cluster" in parsed_args:
