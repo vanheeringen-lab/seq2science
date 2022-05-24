@@ -216,44 +216,48 @@ def deseq2science_parser():
     )
     # DESeq2 wrapper arguments
     parser.add_argument(
-        "-d",
-        "--design",
-        default="",  # must be an empty string for R's arg checking + docs CLI argument
+        "design",
         help="design contrast (e.g. column_knockouts_controls)",
     )
     parser.add_argument(
-        "-s",
-        "--samples",
-        default="",  # must be an empty string for R's arg checking + docs CLI argument
+        "samples",
         help="samples.tsv with a column containing the contrast arguments "
              "(sample order consistent with the counts.tsv)",
     )
     parser.add_argument(
-        "-c",
-        "--counts",
-        default="",  # must be an empty string for R's arg checking + docs CLI argument
+        "counts",
         help="counts.tsv(.gz) (sample order consistent with the samples.tsv)",
     )
     parser.add_argument(
-        "-o",
-        "--outdir",
-        default="",  # must be an empty string for R's arg checking + docs CLI argument
+        "outdir",
         help="output directory",
     )
     parser.add_argument(
-        "-sc",
-        "--single-cell",
-        action='store_true',
-        default=False,
-        help="use if the counts are Single Cell data",
+        "--assembly",
+        metavar="NAME",
+        help="specify the assembly (if the samples.tsv contains >1)",
     )
     parser.add_argument(
-        "--docs",
+        "--single-cell",
         action='store_true',
+        help="use if the counts are Single Cell data",
+    )
+
+    # go to the docs!
+    class DocAction(argparse._StoreTrueAction):  # noqa
+        def __call__(self, parser, namespace, values, option_string=None):  # noqa
+            import webbrowser
+            url = "https://vanheeringen-lab.github.io/seq2science/content/DESeq2.html"
+            if not webbrowser.open(url):
+                print(url)
+            os._exit(0)  # noqa
+
+    parser.add_argument(
+        "--docs",
+        action=DocAction,
         help="open de DESeq2 wrapper documentation (with examples!)",
     )
     argcomplete.autocomplete(parser)
-
     return parser
 
 
@@ -706,18 +710,6 @@ def run_snakemake(workflow, **config):
 
 
 def _deseq(args, base_dir):
-    # docs
-    if args.docs is True:
-        url = "https://vanheeringen-lab.github.io/seq2science/content/DESeq2.html"
-        if not webbrowser.open(url):
-            print(url)
-        return
-
-    # insufficient args
-    if not all(len(a) > 0 for a in [args.counts, args.design, args.outdir, args.samples]):
-        logger.info("4 arguments expected: contrast, samples_file, counts_file and outdir.")
-        return
-
     import hashlib
     import subprocess as sp
 
@@ -756,7 +748,8 @@ def _deseq(args, base_dir):
     # we don't even need to activate the env
     rscript = os.path.join(env_prefix, "bin", "Rscript")
     script = os.path.join(base_dir, "scripts", "deseq2", "deseq2.R")
-    cmd = f"{rscript} {script} {args.design} {args.samples} {args.counts} {args.outdir} {args.single_cell}"
+    cmd = f"{rscript} {script} {args.design} {args.samples} {args.counts} {args.outdir} " \
+          f"{args.assembly} {args.single_cell}"
     subprocess_run(cmd)
 
     # example command:
