@@ -11,10 +11,13 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Added
 
 - seq2science specific lockexception and cleanup metadata errors
+- `deseq2science` now accepts the optional argument `--assembly`, which can be used if the samples.tsv contains >1 assembly to specify which one is used.
+  - By default, the first assembly is used (same as before)
 
 ### Changed
 
 - rules that download something get re-tried once, in case internet is unstable
+- `deseq2science` now has a clear separation between positional and optional arguments
 
 ### Fixed
 
