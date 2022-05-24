@@ -268,10 +268,10 @@ if [ $1 = "deseq2science" ]; then
   rm -rf $outdir
 
   deseq2science \
-  -d batch+condition_day2_day0 \
-  -s tests/deseq2/rna/samples.tsv \
-  -c tests/deseq2/rna/counts/GRCh38.p13-counts.tsv \
-  -o $outdir
+  batch+condition_day2_day0 \
+  tests/deseq2/rna/samples.tsv \
+  tests/deseq2/rna/counts/GRCh38.p13-counts.tsv \
+  $outdir
 
   # very basic test: check if all output files are generated
   fcount=$(ls -1q $outdir | wc -l)

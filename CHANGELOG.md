@@ -11,6 +11,8 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Added
 
 - seq2science specific lockexception and cleanup metadata errors
+- `deseq2science` now accepts the optional argument `--assembly`, which can be used if the samples.tsv contains >1 assembly to specify which one is used.
+  - By default, the first assembly is used (same as before)
 
 ### Changed
 
@@ -25,6 +27,12 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Fixed
 
 - fixed custom assembly extensions (e.g. ERCC spike-ins) for scATAC-seq and scRNA-seq
+- profiles work again
+- `deseq2science` now has a clear separation between positional and optional arguments
+
+### Fixed
+
+- fixed custom assembly extentions (e.g. ERCC spike-ins) for scATAC-seq and scRNA-seq
 
 ## [0.9.1] - 2022-05-10
 
