@@ -58,7 +58,7 @@ properties:
 
   run_gimme_maelstrom:
     description: whether or not to run gimme maelstrom on the peakset
-    default: true
+    default: false
     type: boolean
 
   gimme_maelstrom_database:

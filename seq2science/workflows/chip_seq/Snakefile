@@ -11,6 +11,7 @@ include: f"{config['rule_dir']}/merge_replicates.smk"
 include: f"{config['rule_dir']}/get_genome.smk"
 include: f"{config['rule_dir']}/blacklist.smk"
 include: f"{config['rule_dir']}/alignment.smk"
+include: f"{config['rule_dir']}/motif_scan.smk"
 include: f"{config['rule_dir']}/bam_cleaning.smk"
 include: f"{config['rule_dir']}/peak_calling.smk"
 include: f"{config['rule_dir']}/peak_counts.smk"
@@ -31,7 +32,8 @@ rule seq2science:
     """
     input:
         expand(
-            (["{trackhub_dir}"]                     if config['create_trackhub'] else []) +
-            (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []),
+            (["{trackhub_dir}"]                                                                     if config['create_trackhub'] else []) +
+            (["{qc_dir}/multiqc_{assemblies}.html"]                                                 if config["create_qc_report"] else []),
+            (["{result_dir}/gimme/maelstrom/{assemblies}-{gimme_maelstrom_database}-{peak_caller}"] if config["run_gimme_maelstrom"] else []),
             assemblies=ALL_ASSEMBLIES, **config) +
          count_table_output() + DE_CONTRASTS
