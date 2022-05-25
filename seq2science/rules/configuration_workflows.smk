@@ -62,6 +62,7 @@ if config.get("peak_caller", False):
 
         if "--broad" in config["peak_caller"]["macs2"]:
             config["macs2_types"].extend(["peaks.broadPeak", "peaks.gappedPeak"])
+            config["run_gimme_maelstrom"] = False
         else:
             config["macs2_types"].extend(["summits.bed", "peaks.narrowPeak"])
 
