@@ -531,6 +531,8 @@ def any_given(*args, prefix="", suffix=""):
         if column_name == "sample":
             elements.extend(samples.index)
         elif column_name in samples:
+            if (column_name == "assembly") and ("motif2factors_reference" in config):
+                elements.extend(config["motif2factors_reference"])
             elements.extend(samples[column_name])
 
     elements = [prefix + element + suffix for element in elements if isinstance(element, str)]

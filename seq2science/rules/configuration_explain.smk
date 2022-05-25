@@ -195,6 +195,7 @@ else:
         "fastp_PE": f"Paired-end reads were trimmed with {href_v('fastp')}{options('trimoptions')}.",
         "chipseeker": f"A peak feature distribution plot and peak localization plot relative to TSS were made with {hyperref('chipseeker')}.",  # TODO: replace with href_v
         "combine_peaks": f"A consensus set of summits was made with {href_v('gimmemotifs',text='gimmemotifs.combine_peaks',env='gimme')}.",
+        "gimme_maelstrom": f"Differential peaks something something with {href_v('gimmemotifs',text='gimme maelstrom',env='gimme')}.",
         "bed_slop": f"All summits were extended with {config.get('slop')} bp to get a consensus peakset.",
         "coverage_table": f"Finally, a count table from the consensus peakset with gimmemotifs.",  # already cited in "combine_peaks"
         "sce": f"{hyperref('sce')} S4 class was used to store scRNA-seq count tables and saved to RDATA format",
