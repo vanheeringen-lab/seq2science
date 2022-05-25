@@ -29,7 +29,7 @@ if config["quantifier"] == "salmon" and config["tpm2counts"] == "tximeta":
         """
         input:
             fasta=rules.get_transcripts.output,
-            gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
+            gtf=rules.get_genome_annotation.output.gtf,
             index_dir=rules.salmon_index.output,
         output:
             index=expand(f"{{genome_dir}}/{{{{assembly}}}}/index/tximeta/{salmon_index_output}_txome.json", **config),
@@ -86,8 +86,8 @@ elif config["quantifier"] == "salmon" and config["tpm2counts"] == "pytxi":
         """
         input:
             cts=get_counts,
-            fa=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
-            gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf",**config),
+            fa=rules.get_genome.output,
+            gtf=rules.get_genome_annotation.output.gtf,
         output:
             counts=expand("{counts_dir}/{{assembly}}-counts.tsv",**config),
             tpms=expand("{counts_dir}/{{assembly}}-TPM.tsv",**config),
@@ -154,7 +154,7 @@ else:
         """
         input:
             cts=rules.count_matrix.output,
-            gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf",**config),
+            gtf=rules.get_genome_annotation.output.gtf,
         output:
             tpms = expand("{counts_dir}/{{assembly}}-TPM.tsv",**config),
             lengths = expand("{counts_dir}/{{assembly}}-gene_lengths.tsv",**config),

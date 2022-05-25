@@ -109,9 +109,8 @@ if [ $1 = "alignment" ]; then
   assert_rulecount $1 sieve_bam 1
   seq2science run alignment -nr --configfile tests/$WF/alignmentsieve_off.yaml --snakemakeOptions quiet=True | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 sieve_bam 0
-  assert_rulecount $1 cp_unsieved2sieved 1
   seq2science run alignment -nr --configfile tests/$WF/alignmentsieve_off.yaml --snakemakeOptions quiet=True config={subsample:10000} | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 sieve_bam 0 1
+  assert_rulecount $1 sieve_bam 0
 
   printf "\nsorting\n"
   seq2science run alignment -nr --configfile tests/$WF/samtools_coordinate.yaml --snakemakeOptions quiet=True| tee tests/local_test_results/${1}_dag
@@ -301,7 +300,7 @@ if [ $1 = "atac-seq" ]; then
   seq2science run atac-seq -nr --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions quiet=True config={samples:tests/atac_seq/complex_samples.tsv,create_qc_report:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 featureCounts 16
 
-  printf "\ncontrol and merging of tecnical replicates\n"
+  printf "\ncontrol and merging of technical replicates\n"
   seq2science run atac-seq -nr --configfile tests/$WF/genrich_macs2.yaml --snakemakeOptions quiet=True config={samples:tests/atac_seq/control.tsv,create_qc_report:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bwa_mem2 7
 

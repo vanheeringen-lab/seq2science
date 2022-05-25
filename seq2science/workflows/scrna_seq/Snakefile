@@ -5,18 +5,19 @@ include: "../../rules/configuration.smk"
 
 
 # load all the relevant rules
-include: f"{config['rule_dir']}/alignment.smk"
 include: f"{config['rule_dir']}/get_fastq.smk"
-include: f"{config['rule_dir']}/get_genome.smk"
-include: f"{config['rule_dir']}/merge_replicates.smk"
-include: f"{config['rule_dir']}/qc.smk"
 include: f"{config['rule_dir']}/trimming.smk"
-include: f"{config['rule_dir']}/quantification.smk"
-include: f"{config['rule_dir']}/scRNA_qc.smk"
+include: f"{config['rule_dir']}/merge_replicates.smk"
+include: f"{config['rule_dir']}/get_genome.smk"
+include: f"{config['rule_dir']}/alignment.smk"
+include: f"{config['rule_dir']}/gene_quantification.smk"
+include: f"{config['rule_dir']}/qc.smk"
+include: f"{config['rule_dir']}/qc_scRNA.smk"
 
 
 # set the quality_control functions
 QUALITY_CONTROL = [get_trimming_qc, get_scrna_qc]
+
 
 rule seq2science:
     """

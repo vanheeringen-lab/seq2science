@@ -95,7 +95,7 @@ rule chipseeker:
     """
     input:
         narrowpeaks=get_summits_bed,
-        gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
+        gtf=rules.get_genome_annotation.output.gtf,
     output:
         img1=expand("{qc_dir}/chipseeker/{{assembly}}-{{peak_caller}}_img1_mqc.png", **config),
         img2=expand("{qc_dir}/chipseeker/{{assembly}}-{{peak_caller}}_img2_mqc.png", **config),

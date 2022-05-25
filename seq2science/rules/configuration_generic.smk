@@ -409,9 +409,9 @@ if "assembly" in samples:
         # list of DESeq2 output files
         de_contrasts = get_contrasts(samples, config, all_assemblies)
         
-        return providers, has_annotation, all_assemblies, modified, suffix, ori_assemblies, custom_assemblies, de_contrasts
+        return providers, has_annotation, all_assemblies, modified, ori_assemblies, custom_assemblies, de_contrasts
 
-    PROVIDERS, HAS_ANNOTATION, ALL_ASSEMBLIES, modified, SUFFIX, ORI_ASSEMBLIES, CUSTOM_ASSEMBLIES, DE_CONTRASTS = parse_assemblies()
+    PROVIDERS, HAS_ANNOTATION, ALL_ASSEMBLIES, modified, ORI_ASSEMBLIES, CUSTOM_ASSEMBLIES, DE_CONTRASTS = parse_assemblies()
 
 
 # sample layouts
@@ -549,7 +549,6 @@ wildcard_constraints:
 if "assembly" in samples:
 
     wildcard_constraints:
-        raw_assembly=any_given("assembly"),
         assembly=any_given("assembly", suffix=config["custom_assembly_suffix"] if modified else ""),
 
 
@@ -632,3 +631,10 @@ def config_rerun_parser(configdict):
     configdict.pop("cores", None)
 
     return configdict
+
+
+if 'alignment_general' in CONFIG_SCHEMAS:
+    # Depending on the config settings, one of three rules in bam_cleaning.smk
+    # will output the final bams: mark_duplicates, sieve_bam or samtools_sort
+    FINAL_BAM = f"{config['final_bam_dir']}/{{assembly}}-{{sample}}.samtools-coordinate.bam"
+    FINAL_BAI = f"{FINAL_BAM}.bai"

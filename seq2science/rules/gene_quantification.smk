@@ -16,8 +16,8 @@ if config["quantifier"] == "salmon":
         Requires genome.fa and annotation.gtf (with matching chromosome/scaffold names)
         """
         input:
-            fa=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
-            gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
+            fa=rules.get_genome.output,
+            gtf=rules.get_genome_annotation.output.gtf,
         output:
             expand("{genome_dir}/{{assembly}}/{{assembly}}.transcripts.fa", **config),
         log:
@@ -35,8 +35,8 @@ if config["quantifier"] == "salmon":
         a hard-masked version of the organism’s genome.
         """
         input:
-            genome=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
-            gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
+            genome=rules.get_genome.output,
+            gtf=rules.get_genome_annotation.output.gtf,
             transcripts=rules.get_transcripts.output,
         output:
             gentrome=temp(expand("{genome_dir}/{{assembly}}/gentrome.fa", **config)),
@@ -61,7 +61,7 @@ if config["quantifier"] == "salmon":
         Use the entire genome as decoy sequence.
         """
         input:
-            genome=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa",**config),
+            genome=rules.get_genome.output,
             sizes=rules.get_genome_support_files.output.sizes,
             transcripts=rules.get_transcripts.output,
         output:
@@ -246,8 +246,8 @@ elif  "scrna_seq" == WORKFLOW:
             Make a genome index for kallistobus. This index is required for counting.
             """
             input:
-                fa=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
-                gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
+                fa=rules.get_genome.output,
+                gtf=rules.get_genome_annotation.output.gtf,
             output:
                 directory(expand("{genome_dir}/{{assembly}}/index/kallistobus", **config)),
             log:
@@ -280,8 +280,8 @@ elif  "scrna_seq" == WORKFLOW:
                 {params.f2} {params.c1} {params.c2} \
                 {params.options} > {log} 2>&1
                 """
-                    
-                    
+
+
         rule kallistobus_ref_kite:
             """
             Make a mismatch index for kallistobus. This index is required to count feature barcodes, such as antibody tags.
@@ -412,8 +412,8 @@ elif config["quantifier"] == "htseq":
         summarize reads to gene level. Outputs a counts table per bam file.
         """
         input:
-            bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam",**config),
-            gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf",**config),
+            bam=FINAL_BAM,
+            gtf=rules.get_genome_annotation.output.gtf,
             report=rules.infer_strandedness.output,
         output:
             expand("{counts_dir}/{{assembly}}-{{sample}}.counts.tsv",**config),
@@ -437,8 +437,8 @@ elif config["quantifier"] == "featurecounts":
         summarize reads to gene level. Outputs a counts table per bam file.
         """
         input:
-            bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam",**config),
-            gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf",**config),
+            bam=FINAL_BAM,
+            gtf=rules.get_genome_annotation.output.gtf,
             report=rules.infer_strandedness.output,
         output:
             expand("{counts_dir}/{{assembly}}-{{sample}}.counts.tsv",**config),
@@ -463,7 +463,7 @@ if config.get("dexseq"):
         generate a DEXseq annotation.gff from the annotation.gtf
         """
         input:
-            expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf",**config),
+            rules.get_genome_annotation.output.gtf,
         output:
             expand("{genome_dir}/{{assembly}}/{{assembly}}.DEXseq_annotation.gff",**config),
         log:
@@ -482,9 +482,9 @@ if config.get("dexseq"):
         count exon usage
         """
         input:
-            bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam",**config),
-            bai=expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam.bai",**config),
-            gff=expand("{genome_dir}/{{assembly}}/{{assembly}}.DEXseq_annotation.gff",**config),
+            bam=FINAL_BAM,
+            bai=FINAL_BAI,
+            gff=rules.prepare_DEXseq_annotation.output,
             report=rules.infer_strandedness.output,
         output:
             expand("{counts_dir}/{{assembly}}-{{sample}}.DEXSeq_counts.tsv",**config),
