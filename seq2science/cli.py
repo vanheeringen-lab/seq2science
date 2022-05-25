@@ -330,6 +330,7 @@ def _run(args, base_dir, workflows_dir, config_path):
     parsed_args = {
         "snakefile": os.path.join(workflows_dir, args.workflow.replace("-", "_"), "Snakefile"),
         "use_conda": True,
+        "conda_cleanup_pkgs": "cache",
         "conda_frontend": "mamba",
         "conda_prefix": os.path.join(base_dir, ".snakemake"),
         "dryrun": args.dryrun,
