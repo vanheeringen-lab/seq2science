@@ -335,7 +335,7 @@ if "assembly" in samples:
     def parse_assemblies():
         # list assemblies that are used in this workflow
         used_assemblies = list(set(samples["assembly"]))
-        if "motif2factors_reference" in config:
+        if config.get("run_gimme_maelstrom", False) and "motif2factors_reference" in config:
             used_assemblies.extend(config["motif2factors_reference"])
     
         # dictionary with which providers to use per genome
