@@ -335,6 +335,8 @@ if "assembly" in samples:
     def parse_assemblies():
         # list assemblies that are used in this workflow
         used_assemblies = list(set(samples["assembly"]))
+        if "motif2factors_reference" in config:
+            used_assemblies.extend(config["motif2factors_reference"])
     
         # dictionary with which providers to use per genome
         providers = PickleDict(os.path.join(CACHE_DIR, "providers.p"))
