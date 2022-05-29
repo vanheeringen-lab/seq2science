@@ -6,4 +6,6 @@ channels:
 dependencies:
   - bioconda::gimmemotifs=0.17.0
   - bioconda::biofluff=3.0.4
+  - bioconda::gffread=0.12.7
+  - bioconda::orthofinder=2.5.4
   - conda-forge::conda-ecosystem-user-package-isolation=1.0
