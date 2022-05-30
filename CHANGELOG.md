@@ -8,6 +8,8 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+## [0.9.2] 2022-05-30
+
 ### Added
 
 - seq2science specific lockexception and cleanup metadata errors
@@ -630,7 +632,8 @@ Many minor bug- and quality of life fixes.
 ## [0.0.0] - 2020-06-11
 First release of seq2science!
 
-[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.1...develop
+[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.2...develop
+[0.9.2]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.1...v0.9.2
 [0.9.1]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.7.2...v0.8.0
