@@ -28,6 +28,15 @@ with open(logfile, "w") as log:
         plugins["blacklist"].after_genome_download(genome)
 
         # touch the file if no blacklist was available
-        if not os.path.exists(output):
+        if os.path.exists(output):
+            with open(output, "r") as f:
+                lines = f.readlines()
+
+            # only keep first three columns
+            lines = ["\t".join(line.split("\t")[:3]) for line in lines]
+
+            with open(output, "w") as f:
+                f.write("\n".join(lines) + "\n")
+        else:
             with open(output, 'w'):
                 os.utime(output, None)
