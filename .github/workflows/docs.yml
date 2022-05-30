@@ -20,11 +20,16 @@ jobs:
           $CONDA/bin/conda config --add channels conda-forge
           $CONDA/bin/conda config --add channels bioconda
           VERSION=$(cat requirements.yaml | grep mamba | cut -d '=' -f2)
+          
           # try to install mamba, on error delete the cache and try again
           # see https://github.com/mamba-org/mamba/issues/488
-          $CONDA/bin/conda install conda-forge::mamba=$VERSION || \
-          rm /usr/share/miniconda/pkgs/cache/*.json && \
-          $CONDA/bin/conda install conda-forge::mamba=$VERSION
+          {
+              $CONDA/bin/conda install conda-forge::mamba=$VERSION 
+          } || {
+              rm /usr/share/miniconda/pkgs/cache/*.json
+              $CONDA/bin/conda install conda-forge::mamba=$VERSION
+          }
+          
           $CONDA/bin/mamba env update --file requirements.yaml --name base
           $CONDA/bin/mamba install m2r2 sphinx sphinx_rtd_theme sphinx-argparse graphviz
           $CONDA/bin/pip3 install .
