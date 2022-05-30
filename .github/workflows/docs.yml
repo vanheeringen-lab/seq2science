@@ -19,6 +19,7 @@ jobs:
         run: |
           $CONDA/bin/conda config --add channels conda-forge
           $CONDA/bin/conda config --add channels bioconda
+          rm /usr/share/miniconda/pkgs/cache/*.json  # see mamba/issues/488
           VERSION=$(cat requirements.yaml | grep mamba | cut -d '=' -f2)
           $CONDA/bin/conda install conda-forge::mamba=$VERSION
           $CONDA/bin/mamba env update --file requirements.yaml --name base
