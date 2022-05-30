@@ -29,10 +29,8 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - fixed custom assembly extensions (e.g. ERCC spike-ins) for scATAC-seq and scRNA-seq
 - profiles work again
 - `deseq2science` now has a clear separation between positional and optional arguments
-
-### Fixed
-
 - fixed custom assembly extentions (e.g. ERCC spike-ins) for scATAC-seq and scRNA-seq
+- issue with blacklist bed containing more than 3 columns
 
 ## [0.9.1] - 2022-05-10
 
