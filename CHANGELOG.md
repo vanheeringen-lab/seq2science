@@ -30,10 +30,6 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - profiles work again
 - `deseq2science` now has a clear separation between positional and optional arguments
 
-### Fixed
-
-- fixed custom assembly extentions (e.g. ERCC spike-ins) for scATAC-seq and scRNA-seq
-
 ## [0.9.1] - 2022-05-10
 
 ### Changed
