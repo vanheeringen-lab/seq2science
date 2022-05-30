@@ -13,14 +13,14 @@ jobs:
 
       - uses: actions/setup-python@v3
         with:
-          python-version: 3.8
+          python-version: 3.9
 
       - name: Install dependencies 🔨
         run: |
           $CONDA/bin/conda config --add channels conda-forge
           $CONDA/bin/conda config --add channels bioconda
           VERSION=$(cat requirements.yaml | grep mamba | cut -d '=' -f2)
-          $CONDA/bin/conda install conda-forge::mamba=$VERSION conda-forge::python_abi=3.8
+          $CONDA/bin/conda install conda-forge::mamba=$VERSION
           $CONDA/bin/mamba env update --file requirements.yaml --name base
           $CONDA/bin/mamba install m2r2 sphinx sphinx_rtd_theme sphinx-argparse graphviz
           $CONDA/bin/pip3 install .
