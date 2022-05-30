@@ -8,6 +8,31 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+## [0.9.2] 2022-05-30
+
+### Added
+
+- seq2science specific lockexception and cleanup metadata errors
+- `deseq2science` now accepts the optional argument `--assembly`, which can be used if the samples.tsv contains >1 assembly to specify which one is used.
+  - By default, the first assembly is used (same as before)
+
+### Changed
+
+- rules that download something get re-tried once, in case internet is unstable
+- bam files are no longer copied when sieving is not required
+- moved blacklist rules to blacklist.smk
+- rule inputs now use `rules.rulename.output` where possible
+- renamed `.smk` files to match the naming schemes of the other `.smk`s.
+- added additional comments to clarify what happens to bam files
+- cleanup cache+tarballs of conda environments, saving lots of precious disk space
+
+### Fixed
+
+- fixed custom assembly extensions (e.g. ERCC spike-ins) for scATAC-seq and scRNA-seq
+- profiles work again
+- `deseq2science` now has a clear separation between positional and optional arguments
+- issue with blacklist bed containing more than 3 columns
+
 ## [0.9.1] - 2022-05-10
 
 ### Changed
@@ -607,7 +632,8 @@ Many minor bug- and quality of life fixes.
 ## [0.0.0] - 2020-06-11
 First release of seq2science!
 
-[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.1...develop
+[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.2...develop
+[0.9.2]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.1...v0.9.2
 [0.9.1]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.7.2...v0.8.0

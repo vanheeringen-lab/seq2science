@@ -164,6 +164,7 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         "--rerun-incomplete", help="Re-run all jobs the output of which is recognized as incomplete.", action="store_true"
     )
     run.add_argument("--unlock", help="Remove a lock on the working directory.", action="store_true")
+    run.add_argument("--cleanup-metadata", help="Just cleanup metadata of given list of output files (default None).", default=None, nargs="+")
     explain.add_argument("--hyperref", help="Print urls as html hyperref", action="store_true")
     # run/explain arguments
     for subparser in [run, explain]:
@@ -215,44 +216,48 @@ def deseq2science_parser():
     )
     # DESeq2 wrapper arguments
     parser.add_argument(
-        "-d",
-        "--design",
-        default="",  # must be an empty string for R's arg checking + docs CLI argument
+        "design",
         help="design contrast (e.g. column_knockouts_controls)",
     )
     parser.add_argument(
-        "-s",
-        "--samples",
-        default="",  # must be an empty string for R's arg checking + docs CLI argument
+        "samples",
         help="samples.tsv with a column containing the contrast arguments "
              "(sample order consistent with the counts.tsv)",
     )
     parser.add_argument(
-        "-c",
-        "--counts",
-        default="",  # must be an empty string for R's arg checking + docs CLI argument
+        "counts",
         help="counts.tsv(.gz) (sample order consistent with the samples.tsv)",
     )
     parser.add_argument(
-        "-o",
-        "--outdir",
-        default="",  # must be an empty string for R's arg checking + docs CLI argument
+        "outdir",
         help="output directory",
     )
     parser.add_argument(
-        "-sc",
-        "--single-cell",
-        action='store_true',
-        default=False,
-        help="use if the counts are Single Cell data",
+        "--assembly",
+        metavar="NAME",
+        help="specify the assembly (if the samples.tsv contains >1)",
     )
     parser.add_argument(
-        "--docs",
+        "--single-cell",
         action='store_true',
+        help="use if the counts are Single Cell data",
+    )
+
+    # go to the docs!
+    class DocAction(argparse._StoreTrueAction):  # noqa
+        def __call__(self, parser, namespace, values, option_string=None):  # noqa
+            import webbrowser
+            url = "https://vanheeringen-lab.github.io/seq2science/content/DESeq2.html"
+            if not webbrowser.open(url):
+                print(url)
+            os._exit(0)  # noqa
+
+    parser.add_argument(
+        "--docs",
+        action=DocAction,
         help="open de DESeq2 wrapper documentation (with examples!)",
     )
     argcomplete.autocomplete(parser)
-
     return parser
 
 
@@ -325,12 +330,14 @@ def _run(args, base_dir, workflows_dir, config_path):
     parsed_args = {
         "snakefile": os.path.join(workflows_dir, args.workflow.replace("-", "_"), "Snakefile"),
         "use_conda": True,
+        "conda_cleanup_pkgs": "cache",
         "conda_frontend": "mamba",
         "conda_prefix": os.path.join(base_dir, ".snakemake"),
         "dryrun": args.dryrun,
         "printreason": args.reason,
         "keepgoing": args.keep_going,
         "unlock": args.unlock,
+        "cleanup_metadata": args.cleanup_metadata,
         "force_incomplete": args.rerun_incomplete,
     }
 
@@ -365,7 +372,7 @@ def _run(args, base_dir, workflows_dir, config_path):
     else:
         parsed_args["cores"] = 0
 
-    if parsed_args["cores"] < 2:
+    if parsed_args["cores"] < 2 and not (args.unlock or args.cleanup_metadata is not None):
         subjectively_prettier_error(core_arg, "specify at least two cores.")
 
     # when running on a cluster assume cores == nodes (just like snakemake does)
@@ -389,7 +396,7 @@ def _run(args, base_dir, workflows_dir, config_path):
         import json
         logger.info(json.dumps(parsed_args, sort_keys=True, indent=2))
 
-    if not args.skip_rerun or args.unlock:
+    if not args.skip_rerun or args.unlock or args.cleanup_metadata is not None:
         #   2. start a dryrun checking which files need to be created, and check if
         #      any params changed, which means we have to remove those files and
         #      continue from there
@@ -399,7 +406,8 @@ def _run(args, base_dir, workflows_dir, config_path):
         )
 
         with seq2science.util.CaptureStdout() as targets, seq2science.util.CaptureStderr() as errors:
-            exit_code = snakemake.snakemake(
+            exit_code = run_snakemake(
+                args.workflow.replace("-", "_"),
                 **{
                     **parsed_args,
                     **{
@@ -414,6 +422,7 @@ def _run(args, base_dir, workflows_dir, config_path):
             nl = "\n"
             logger.info(f"""Targets:\n{nl.join(sorted(targets))}\n\n""")
             logger.info(f"""Errors:\n{nl.join(sorted(errors))}\n\n""")
+
         if not exit_code:
             os._exit(1)  # noqa
 
@@ -440,7 +449,7 @@ def _run(args, base_dir, workflows_dir, config_path):
     parsed_args["config"]["no_config_log"] = True
 
     #   5. start the "real" run where jobs actually get started
-    exit_code = snakemake.snakemake(**parsed_args)
+    exit_code = run_snakemake(args.workflow.replace("-", "_"), **parsed_args)
 
     #   6. output exit code 0 for success and 1 for failure
     os._exit(0) if exit_code else os._exit(1)  # noqa
@@ -512,7 +521,7 @@ def _explain(args, base_dir, workflows_dir, config_path):
     # run snakemake (silently)
     with open(os.devnull, "w") as null:
         with contextlib.redirect_stdout(null), contextlib.redirect_stderr(null):
-            success = snakemake.snakemake(**parsed_args)
+            success = run_snakemake(args.workflow.replace("-", "_"), **parsed_args)
 
     if args.debug:
         print(f"Explain output:\n{rules_used}\n\n")
@@ -653,6 +662,7 @@ def resource_parser(parsed_args):
 
     # no need to get system limit when specified
     if "mem_gb" in parsed_args["resources"]:
+        parsed_args["resources"]["mem_gb"] = int(parsed_args["resources"]["mem_gb"])
         return
 
     if "cluster" in parsed_args:
@@ -676,19 +686,32 @@ def setup_seq2science_logger(parsed_args):
         logger.logger.addHandler(logger.logfile_handler)
 
 
+def run_snakemake(workflow, **config):
+    try:
+        exit_code = snakemake.snakemake(**config)
+    except snakemake.exceptions.IncompleteFilesException as e:
+        exception = str(e)
+        exception = re.sub("snakemake --cleanup-metadata <filenames>",
+                           f"seq2science run {workflow} --cleanup-metadata <filenames>",
+                           exception)
+        logger.error(exception)
+        sys.exit(1)
+    except snakemake.exceptions.LockException as e:
+        exception = str(e)
+        exception = re.sub("no other Snakemake process",
+                           "no other seq2science process",
+                           exception)
+        exception = re.sub("no other instances of snakemake are",
+                           "no other instances of seq2science are",
+                           exception)
+        logger.error(exception)
+        sys.exit(1)
+    except Exception as e:
+        raise e
+    return exit_code
+
+
 def _deseq(args, base_dir):
-    # docs
-    if args.docs is True:
-        url = "https://vanheeringen-lab.github.io/seq2science/content/DESeq2.html"
-        if not webbrowser.open(url):
-            print(url)
-        return
-
-    # insufficient args
-    if not all(len(a) > 0 for a in [args.counts, args.design, args.outdir, args.samples]):
-        logger.info("4 arguments expected: contrast, samples_file, counts_file and outdir.")
-        return
-
     import hashlib
     import subprocess as sp
 
@@ -727,7 +750,8 @@ def _deseq(args, base_dir):
     # we don't even need to activate the env
     rscript = os.path.join(env_prefix, "bin", "Rscript")
     script = os.path.join(base_dir, "scripts", "deseq2", "deseq2.R")
-    cmd = f"{rscript} {script} {args.design} {args.samples} {args.counts} {args.outdir} {args.single_cell}"
+    cmd = f"{rscript} {script} {args.design} {args.samples} {args.counts} {args.outdir} " \
+          f"{args.assembly} {args.single_cell}"
     subprocess_run(cmd)
 
     # example command:

@@ -14,6 +14,7 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -185,13 +186,13 @@
            <div itemprop="articleBody">
              
   <section id="all-configurable-options">
-<h1>All configurable options<a class="headerlink" href="#all-configurable-options" title="Permalink to this headline"></a></h1>
+<h1>All configurable options<a class="headerlink" href="#all-configurable-options" title="Permalink to this heading"></a></h1>
 <p>This is an automatically generated summary of all configurable options for seq2science. These options are loosely grouped around workflows/topics, however they are generally also shared across workflows. So it is possible that  tunable configuration settings are not mentioned in their topic. At the start of each seq2science run the complete configuration is printed to stdout. You can use that printed configuration as the complete list of tunable configuration settings.</p>
 <p>We believe that all our default settings are reasonable, and manual finetuning is generally not required.</p>
 <section id="general">
-<h2>General<a class="headerlink" href="#general" title="Permalink to this headline"></a></h2>
+<h2>General<a class="headerlink" href="#general" title="Permalink to this heading"></a></h2>
 <section id="samples">
-<h3>samples<a class="headerlink" href="#samples" title="Permalink to this headline"></a></h3>
+<h3>samples<a class="headerlink" href="#samples" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">samples</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">tab</span><span class="o">-</span><span class="n">separated</span> <span class="n">file</span> <span class="n">specifying</span> <span class="n">the</span> <span class="n">samples</span> <span class="n">to</span> <span class="n">run</span> <span class="n">through</span> <span class="n">the</span> <span class="n">workflow</span>
     <span class="n">default</span><span class="p">:</span> <span class="n">samples</span><span class="o">.</span><span class="n">tsv</span>
@@ -200,7 +201,7 @@
 </div>
 </section>
 <section id="rule-dir">
-<h3>rule_dir<a class="headerlink" href="#rule-dir" title="Permalink to this headline"></a></h3>
+<h3>rule_dir<a class="headerlink" href="#rule-dir" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rule_dir</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">directory</span> <span class="n">where</span> <span class="n">to</span> <span class="n">find</span> <span class="n">the</span> <span class="n">workflow</span> <span class="n">rules</span>
     <span class="n">default</span><span class="p">:</span> <span class="o">../../</span><span class="n">rules</span>
@@ -209,7 +210,7 @@
 </div>
 </section>
 <section id="result-dir">
-<h3>result_dir<a class="headerlink" href="#result-dir" title="Permalink to this headline"></a></h3>
+<h3>result_dir<a class="headerlink" href="#result-dir" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">result_dir</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">where</span> <span class="n">to</span> <span class="n">store</span> <span class="n">the</span> <span class="n">pipeline</span><span class="s1">&#39;s results (by default)</span>
     <span class="n">default</span><span class="p">:</span> <span class="o">./</span><span class="n">results</span>
@@ -218,7 +219,7 @@
 </div>
 </section>
 <section id="genome-dir">
-<h3>genome_dir<a class="headerlink" href="#genome-dir" title="Permalink to this headline"></a></h3>
+<h3>genome_dir<a class="headerlink" href="#genome-dir" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">genome_dir</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">where</span> <span class="n">to</span> <span class="n">store</span> <span class="n">the</span> <span class="n">pipeline</span><span class="s1">&#39;s genome assemblies</span>
     <span class="n">default</span><span class="p">:</span> <span class="o">./</span><span class="n">genomes</span>
@@ -227,7 +228,7 @@
 </div>
 </section>
 <section id="log-dir">
-<h3>log_dir<a class="headerlink" href="#log-dir" title="Permalink to this headline"></a></h3>
+<h3>log_dir<a class="headerlink" href="#log-dir" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">log_dir</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">directory</span> <span class="n">where</span> <span class="n">to</span> <span class="n">store</span> <span class="n">the</span> <span class="n">logs</span> <span class="p">(</span><span class="n">defaults</span> <span class="n">inside</span> <span class="n">the</span> <span class="n">result</span> <span class="nb">dir</span><span class="p">)</span>
     <span class="n">default</span><span class="p">:</span> <span class="n">log</span>
@@ -236,7 +237,7 @@
 </div>
 </section>
 <section id="benchmark-dir">
-<h3>benchmark_dir<a class="headerlink" href="#benchmark-dir" title="Permalink to this headline"></a></h3>
+<h3>benchmark_dir<a class="headerlink" href="#benchmark-dir" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">benchmark_dir</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">directory</span> <span class="n">where</span> <span class="n">to</span> <span class="n">store</span> <span class="n">the</span> <span class="n">logs</span> <span class="p">(</span><span class="n">defaults</span> <span class="n">inside</span> <span class="n">the</span> <span class="n">result</span> <span class="nb">dir</span><span class="p">)</span>
     <span class="n">default</span><span class="p">:</span> <span class="n">benchmark</span>
@@ -245,7 +246,7 @@
 </div>
 </section>
 <section id="fqext1">
-<h3>fqext1<a class="headerlink" href="#fqext1" title="Permalink to this headline"></a></h3>
+<h3>fqext1<a class="headerlink" href="#fqext1" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fqext1</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">filename</span> <span class="n">suffix</span> <span class="n">when</span> <span class="n">handling</span> <span class="n">paired</span><span class="o">-</span><span class="n">end</span> <span class="n">data</span><span class="p">,</span> <span class="n">describing</span> <span class="n">the</span> <span class="n">forward</span> <span class="n">read</span>
     <span class="n">default</span><span class="p">:</span> <span class="n">R1</span>
@@ -254,7 +255,7 @@
 </div>
 </section>
 <section id="fqext2">
-<h3>fqext2<a class="headerlink" href="#fqext2" title="Permalink to this headline"></a></h3>
+<h3>fqext2<a class="headerlink" href="#fqext2" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fqext2</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">filename</span> <span class="n">suffix</span> <span class="n">when</span> <span class="n">handling</span> <span class="n">paired</span><span class="o">-</span><span class="n">end</span> <span class="n">data</span><span class="p">,</span> <span class="n">describing</span> <span class="n">the</span> <span class="n">reverse</span> <span class="n">read</span>
     <span class="n">default</span><span class="p">:</span> <span class="n">R2</span>
@@ -263,7 +264,7 @@
 </div>
 </section>
 <section id="fqsuffix">
-<h3>fqsuffix<a class="headerlink" href="#fqsuffix" title="Permalink to this headline"></a></h3>
+<h3>fqsuffix<a class="headerlink" href="#fqsuffix" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fqsuffix</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">file</span> <span class="n">descriptor</span> <span class="k">for</span> <span class="n">fastq</span> <span class="n">files</span> <span class="p">(</span><span class="n">often</span> <span class="n">fastq</span> <span class="ow">or</span> <span class="n">fq</span><span class="p">)</span>
     <span class="n">default</span><span class="p">:</span> <span class="n">fastq</span>
@@ -272,7 +273,7 @@
 </div>
 </section>
 <section id="cpulimit">
-<h3>cpulimit<a class="headerlink" href="#cpulimit" title="Permalink to this headline"></a></h3>
+<h3>cpulimit<a class="headerlink" href="#cpulimit" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cpulimit</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">whether</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">to</span> <span class="n">make</span> <span class="n">use</span> <span class="n">of</span> <span class="n">cpulimit</span> <span class="n">to</span> <span class="n">enfoce</span> <span class="nb">max</span> <span class="n">thread</span> <span class="n">usage</span> <span class="k">for</span> <span class="n">some</span> <span class="n">rules</span>
     <span class="n">default</span><span class="p">:</span> <span class="kc">True</span>
@@ -281,7 +282,7 @@
 </div>
 </section>
 <section id="email">
-<h3>email<a class="headerlink" href="#email" title="Permalink to this headline"></a></h3>
+<h3>email<a class="headerlink" href="#email" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">email</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">email</span> <span class="n">to</span> <span class="n">reach</span> <span class="n">you</span> <span class="n">after</span> <span class="n">pipeline</span> <span class="n">finished</span><span class="p">,</span> <span class="n">required</span> <span class="k">for</span> <span class="n">trackhub</span> <span class="ow">and</span> <span class="n">multiqc</span> <span class="n">report</span>
     <span class="nb">type</span><span class="p">:</span> <span class="n">string</span>
@@ -290,9 +291,9 @@
 </section>
 </section>
 <section id="download">
-<h2>Download<a class="headerlink" href="#download" title="Permalink to this headline"></a></h2>
+<h2>Download<a class="headerlink" href="#download" title="Permalink to this heading"></a></h2>
 <section id="sra-dir">
-<h3>sra_dir<a class="headerlink" href="#sra-dir" title="Permalink to this headline"></a></h3>
+<h3>sra_dir<a class="headerlink" href="#sra-dir" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sra_dir</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">directory</span> <span class="n">where</span> <span class="n">to</span> <span class="n">store</span> <span class="n">the</span> <span class="n">workflow</span> <span class="n">sras</span> <span class="p">(</span><span class="n">defaults</span> <span class="n">inside</span> <span class="n">the</span> <span class="n">result</span> <span class="nb">dir</span><span class="p">)</span>
     <span class="n">default</span><span class="p">:</span> <span class="n">sra</span>
@@ -301,7 +302,7 @@
 </div>
 </section>
 <section id="fastq-dir">
-<h3>fastq_dir<a class="headerlink" href="#fastq-dir" title="Permalink to this headline"></a></h3>
+<h3>fastq_dir<a class="headerlink" href="#fastq-dir" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fastq_dir</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">directory</span> <span class="n">where</span> <span class="n">to</span> <span class="n">store</span> <span class="n">the</span> <span class="n">workflow</span> <span class="n">fastqs</span> <span class="p">(</span><span class="n">defaults</span> <span class="n">inside</span> <span class="n">the</span> <span class="n">result</span> <span class="nb">dir</span><span class="p">)</span>
     <span class="n">default</span><span class="p">:</span> <span class="n">fastq</span>
@@ -310,7 +311,7 @@
 </div>
 </section>
 <section id="ncbi-key">
-<h3>ncbi_key<a class="headerlink" href="#ncbi-key" title="Permalink to this headline"></a></h3>
+<h3>ncbi_key<a class="headerlink" href="#ncbi-key" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ncbi_key</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">e</span><span class="o">-</span><span class="n">utilities</span> <span class="n">key</span> <span class="k">for</span> <span class="n">faster</span> <span class="n">lookup</span> <span class="n">interval</span>
     <span class="nb">type</span><span class="p">:</span> <span class="n">string</span>
@@ -318,7 +319,7 @@
 </div>
 </section>
 <section id="ncbi-requests">
-<h3>ncbi_requests<a class="headerlink" href="#ncbi-requests" title="Permalink to this headline"></a></h3>
+<h3>ncbi_requests<a class="headerlink" href="#ncbi-requests" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ncbi_requests</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">the</span> <span class="n">number</span> <span class="n">of</span> <span class="n">lookups</span> <span class="n">per</span> <span class="n">second</span> <span class="n">the</span> <span class="n">key</span> <span class="n">permits</span>
     <span class="nb">type</span><span class="p">:</span> <span class="n">integer</span>
@@ -326,7 +327,7 @@
 </div>
 </section>
 <section id="ascp-path">
-<h3>ascp_path<a class="headerlink" href="#ascp-path" title="Permalink to this headline"></a></h3>
+<h3>ascp_path<a class="headerlink" href="#ascp-path" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ascp_path</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">the</span> <span class="n">pipeline</span> <span class="n">supports</span> <span class="n">downloading</span> <span class="n">through</span> <span class="n">ascp</span> <span class="k">if</span> <span class="n">this</span> <span class="n">variable</span> <span class="ow">is</span> <span class="nb">set</span><span class="o">.</span>
     <span class="nb">type</span><span class="p">:</span> <span class="n">string</span>
@@ -334,7 +335,7 @@
 </div>
 </section>
 <section id="ascp-key">
-<h3>ascp_key<a class="headerlink" href="#ascp-key" title="Permalink to this headline"></a></h3>
+<h3>ascp_key<a class="headerlink" href="#ascp-key" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ascp_key</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">the</span> <span class="n">public</span> <span class="n">key</span> <span class="n">of</span> <span class="n">ascp</span>
     <span class="nb">type</span><span class="p">:</span> <span class="n">string</span>
@@ -343,9 +344,9 @@
 </section>
 </section>
 <section id="alignment-general">
-<h2>Alignment general<a class="headerlink" href="#alignment-general" title="Permalink to this headline"></a></h2>
+<h2>Alignment general<a class="headerlink" href="#alignment-general" title="Permalink to this heading"></a></h2>
 <section id="trimmed-dir">
-<h3>trimmed_dir<a class="headerlink" href="#trimmed-dir" title="Permalink to this headline"></a></h3>
+<h3>trimmed_dir<a class="headerlink" href="#trimmed-dir" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">trimmed_dir</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">directory</span> <span class="n">where</span> <span class="n">to</span> <span class="n">store</span> <span class="n">the</span> <span class="n">workflow</span> <span class="n">trimmed</span> <span class="n">fastqs</span> <span class="p">(</span><span class="n">defaults</span> <span class="n">inside</span> <span class="n">the</span> <span class="n">result</span> <span class="nb">dir</span><span class="p">)</span>
     <span class="n">default</span><span class="p">:</span> <span class="n">fastq_trimmed</span>
@@ -354,7 +355,7 @@
 </div>
 </section>
 <section id="qc-dir">
-<h3>qc_dir<a class="headerlink" href="#qc-dir" title="Permalink to this headline"></a></h3>
+<h3>qc_dir<a class="headerlink" href="#qc-dir" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">qc_dir</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">directory</span> <span class="n">where</span> <span class="n">to</span> <span class="n">store</span> <span class="n">the</span> <span class="n">workflow</span> <span class="n">quality</span> <span class="n">controls</span> <span class="p">(</span><span class="n">defaults</span> <span class="n">inside</span> <span class="n">the</span> <span class="n">result</span> <span class="nb">dir</span><span class="p">)</span>
     <span class="n">default</span><span class="p">:</span> <span class="n">qc</span>
@@ -363,7 +364,7 @@
 </div>
 </section>
 <section id="final-bam-dir">
-<h3>final_bam_dir<a class="headerlink" href="#final-bam-dir" title="Permalink to this headline"></a></h3>
+<h3>final_bam_dir<a class="headerlink" href="#final-bam-dir" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">final_bam_dir</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">directory</span> <span class="n">where</span> <span class="n">to</span> <span class="n">store</span> <span class="n">the</span> <span class="n">workflow</span><span class="s1">&#39;s final deduplicated &amp; sieved bams (defaults inside the result dir)</span>
     <span class="n">default</span><span class="p">:</span> <span class="n">final_bam</span>
@@ -372,7 +373,7 @@
 </div>
 </section>
 <section id="trimmer">
-<h3>trimmer<a class="headerlink" href="#trimmer" title="Permalink to this headline"></a></h3>
+<h3>trimmer<a class="headerlink" href="#trimmer" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>trimmer:
     description: which adapter trimmer to use
     properties:
@@ -398,7 +399,7 @@
 </div>
 </section>
 <section id="technical-replicates">
-<h3>technical_replicates<a class="headerlink" href="#technical-replicates" title="Permalink to this headline"></a></h3>
+<h3>technical_replicates<a class="headerlink" href="#technical-replicates" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">technical_replicates</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">concatenates</span> <span class="n">samples</span> <span class="n">depending</span> <span class="n">on</span> <span class="n">the</span> <span class="n">names</span> <span class="n">given</span> <span class="ow">in</span> <span class="n">the</span> <span class="s1">&#39;replicates&#39;</span> <span class="n">column</span> <span class="n">of</span> <span class="n">samples</span><span class="o">.</span><span class="n">tsv</span>
     <span class="n">default</span><span class="p">:</span> <span class="n">merge</span>
@@ -407,7 +408,7 @@
 </div>
 </section>
 <section id="biological-replicates">
-<h3>biological_replicates<a class="headerlink" href="#biological-replicates" title="Permalink to this headline"></a></h3>
+<h3>biological_replicates<a class="headerlink" href="#biological-replicates" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">biological_replicates</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">which</span> <span class="n">method</span> <span class="n">to</span> <span class="n">use</span> <span class="n">to</span> <span class="n">combine</span> <span class="n">replicates</span> <span class="p">(</span><span class="n">fisher</span> <span class="p">(</span><span class="n">n</span> <span class="o">&gt;=</span><span class="mi">2</span><span class="p">),</span> <span class="n">idr</span> <span class="p">(</span><span class="n">n</span><span class="o">==</span><span class="mi">2</span><span class="p">),</span> <span class="ow">or</span> <span class="n">keep</span><span class="p">)</span>
     <span class="n">default</span><span class="p">:</span> <span class="n">keep</span>
@@ -417,7 +418,7 @@
 </div>
 </section>
 <section id="provider">
-<h3>provider<a class="headerlink" href="#provider" title="Permalink to this headline"></a></h3>
+<h3>provider<a class="headerlink" href="#provider" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">provider</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">Specify</span> <span class="n">provider</span> <span class="n">to</span> <span class="n">download</span> <span class="n">new</span> <span class="n">genomes</span> <span class="n">from</span><span class="o">.</span> <span class="n">Will</span> <span class="k">try</span> <span class="n">GENCODE</span> <span class="o">&gt;</span> <span class="n">Ensembl</span> <span class="o">&gt;</span> <span class="n">UCSC</span> <span class="o">&gt;</span> <span class="n">NCBI</span> <span class="k">if</span> <span class="n">left</span> <span class="n">blank</span><span class="o">.</span>
     <span class="n">enum</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;GENCODE&#39;</span><span class="p">,</span> <span class="s1">&#39;Ensembl&#39;</span><span class="p">,</span> <span class="s1">&#39;UCSC&#39;</span><span class="p">,</span> <span class="s1">&#39;NCBI&#39;</span><span class="p">]</span>
@@ -426,7 +427,7 @@
 </div>
 </section>
 <section id="aligner">
-<h3>aligner<a class="headerlink" href="#aligner" title="Permalink to this headline"></a></h3>
+<h3>aligner<a class="headerlink" href="#aligner" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">aligner</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">which</span> <span class="n">aligner</span> <span class="n">to</span> <span class="n">use</span>
     <span class="n">properties</span><span class="p">:</span>
@@ -492,7 +493,7 @@
 </div>
 </section>
 <section id="samtools-index">
-<h3>samtools_index<a class="headerlink" href="#samtools-index" title="Permalink to this headline"></a></h3>
+<h3>samtools_index<a class="headerlink" href="#samtools-index" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">samtools_index</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">samtools</span> <span class="n">index</span> <span class="n">settings</span>
     <span class="n">default</span><span class="p">:</span>
@@ -501,7 +502,7 @@
 </div>
 </section>
 <section id="markduplicates">
-<h3>markduplicates<a class="headerlink" href="#markduplicates" title="Permalink to this headline"></a></h3>
+<h3>markduplicates<a class="headerlink" href="#markduplicates" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">markduplicates</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">the</span> <span class="n">parameters</span> <span class="n">of</span> <span class="n">picard</span> <span class="n">markduplicates</span>
     <span class="n">default</span><span class="p">:</span> <span class="o">-</span><span class="n">Xms4G</span> <span class="o">-</span><span class="n">Xmx6G</span> <span class="n">MAX_FILE_HANDLES_FOR_READ_ENDS_MAP</span><span class="o">=</span><span class="mi">999</span>
@@ -510,7 +511,7 @@
 </div>
 </section>
 <section id="min-mapping-quality">
-<h3>min_mapping_quality<a class="headerlink" href="#min-mapping-quality" title="Permalink to this headline"></a></h3>
+<h3>min_mapping_quality<a class="headerlink" href="#min-mapping-quality" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">min_mapping_quality</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">minimum</span> <span class="n">mapq</span> <span class="n">to</span> <span class="n">keep</span> <span class="n">aligned</span> <span class="n">reads</span>
     <span class="n">default</span><span class="p">:</span> <span class="mi">0</span>
@@ -519,7 +520,7 @@
 </div>
 </section>
 <section id="tn5-shift">
-<h3>tn5_shift<a class="headerlink" href="#tn5-shift" title="Permalink to this headline"></a></h3>
+<h3>tn5_shift<a class="headerlink" href="#tn5-shift" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tn5_shift</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">whether</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">to</span> <span class="n">shift</span> <span class="n">reads</span> <span class="n">to</span> <span class="n">adjust</span> <span class="k">for</span> <span class="n">the</span> <span class="n">tn5</span> <span class="n">bias</span>
     <span class="n">default</span><span class="p">:</span> <span class="kc">False</span>
@@ -528,7 +529,7 @@
 </div>
 </section>
 <section id="remove-blacklist">
-<h3>remove_blacklist<a class="headerlink" href="#remove-blacklist" title="Permalink to this headline"></a></h3>
+<h3>remove_blacklist<a class="headerlink" href="#remove-blacklist" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">remove_blacklist</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">whether</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">to</span> <span class="n">remove</span> <span class="n">reads</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">encode</span> <span class="n">blacklisted</span> <span class="n">regions</span>
     <span class="n">default</span><span class="p">:</span> <span class="kc">False</span>
@@ -537,7 +538,7 @@
 </div>
 </section>
 <section id="remove-mito">
-<h3>remove_mito<a class="headerlink" href="#remove-mito" title="Permalink to this headline"></a></h3>
+<h3>remove_mito<a class="headerlink" href="#remove-mito" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">remove_mito</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">whether</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">to</span> <span class="n">remove</span> <span class="n">reads</span> <span class="n">aligned</span> <span class="n">to</span> <span class="n">the</span> <span class="n">mitochondria</span>
     <span class="n">default</span><span class="p">:</span> <span class="kc">False</span>
@@ -546,7 +547,7 @@
 </div>
 </section>
 <section id="only-primary-align">
-<h3>only_primary_align<a class="headerlink" href="#only-primary-align" title="Permalink to this headline"></a></h3>
+<h3>only_primary_align<a class="headerlink" href="#only-primary-align" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">only_primary_align</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">whether</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">to</span> <span class="n">only</span> <span class="n">keep</span> <span class="n">primary</span> <span class="n">aligned</span> <span class="n">reads</span> <span class="p">(</span><span class="n">no</span> <span class="n">multimappers</span><span class="p">)</span>
     <span class="n">default</span><span class="p">:</span> <span class="kc">False</span>
@@ -555,7 +556,7 @@
 </div>
 </section>
 <section id="remove-dups">
-<h3>remove_dups<a class="headerlink" href="#remove-dups" title="Permalink to this headline"></a></h3>
+<h3>remove_dups<a class="headerlink" href="#remove-dups" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">remove_dups</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">whether</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">to</span> <span class="n">remove</span> <span class="n">duplicate</span> <span class="n">reads</span> <span class="p">(</span><span class="n">either</span> <span class="n">optical</span> <span class="ow">or</span> <span class="n">PCR</span><span class="p">)</span>
     <span class="n">default</span><span class="p">:</span> <span class="kc">False</span>
@@ -564,7 +565,7 @@
 </div>
 </section>
 <section id="create-qc-report">
-<h3>create_qc_report<a class="headerlink" href="#create-qc-report" title="Permalink to this headline"></a></h3>
+<h3>create_qc_report<a class="headerlink" href="#create-qc-report" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">create_qc_report</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">whether</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">to</span> <span class="n">generate</span> <span class="n">a</span> <span class="n">multiqc</span> <span class="n">report</span>
     <span class="n">default</span><span class="p">:</span> <span class="kc">True</span>
@@ -573,7 +574,7 @@
 </div>
 </section>
 <section id="bam-sort-mem">
-<h3>bam_sort_mem<a class="headerlink" href="#bam-sort-mem" title="Permalink to this headline"></a></h3>
+<h3>bam_sort_mem<a class="headerlink" href="#bam-sort-mem" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bam_sort_mem</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">The</span> <span class="nb">max</span> <span class="n">memory</span> <span class="n">used</span> <span class="ow">in</span> <span class="n">gigabytes</span> <span class="n">by</span> <span class="n">samtools</span><span class="o">/</span><span class="n">sambamba</span> <span class="n">when</span> <span class="n">sorting</span> <span class="n">bams</span>
     <span class="n">default</span><span class="p">:</span> <span class="mi">2</span>
@@ -582,21 +583,21 @@
 </div>
 </section>
 <section id="custom-genome-extension">
-<h3>custom_genome_extension<a class="headerlink" href="#custom-genome-extension" title="Permalink to this headline"></a></h3>
+<h3>custom_genome_extension<a class="headerlink" href="#custom-genome-extension" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">custom_genome_extension</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">File</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="n">to</span> <span class="n">append</span> <span class="n">to</span> <span class="n">the</span> <span class="n">genome</span> <span class="p">(</span><span class="n">must</span> <span class="n">be</span> <span class="ow">in</span> <span class="n">fasta</span> <span class="nb">format</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
 <section id="custom-annotation-extension">
-<h3>custom_annotation_extension<a class="headerlink" href="#custom-annotation-extension" title="Permalink to this headline"></a></h3>
+<h3>custom_annotation_extension<a class="headerlink" href="#custom-annotation-extension" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">custom_annotation_extension</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">File</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="n">to</span> <span class="n">append</span> <span class="n">to</span> <span class="n">the</span> <span class="n">gene</span> <span class="n">annotations</span> <span class="p">(</span><span class="n">must</span> <span class="n">be</span> <span class="ow">in</span> <span class="n">GTF</span> <span class="nb">format</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
 <section id="custom-assembly-suffix">
-<h3>custom_assembly_suffix<a class="headerlink" href="#custom-assembly-suffix" title="Permalink to this headline"></a></h3>
+<h3>custom_assembly_suffix<a class="headerlink" href="#custom-assembly-suffix" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">custom_assembly_suffix</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">What</span> <span class="n">to</span> <span class="n">append</span> <span class="n">to</span> <span class="n">the</span> <span class="n">assembly</span> <span class="n">name</span> <span class="n">to</span> <span class="n">indicate</span> <span class="n">that</span> <span class="n">custom</span> <span class="n">data</span> <span class="n">has</span> <span class="n">been</span> <span class="n">added</span> <span class="n">to</span> <span class="n">either</span> <span class="n">genome</span> <span class="ow">or</span> <span class="n">assembly</span><span class="o">.</span>
     <span class="n">default</span><span class="p">:</span> <span class="n">_custom</span>
@@ -605,7 +606,7 @@
 </div>
 </section>
 <section id="deeptools-qc">
-<h3>deeptools_qc<a class="headerlink" href="#deeptools-qc" title="Permalink to this headline"></a></h3>
+<h3>deeptools_qc<a class="headerlink" href="#deeptools-qc" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">deeptools_qc</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">Whether</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">to</span> <span class="n">perform</span> <span class="n">deeptools</span> <span class="n">QC</span><span class="o">.</span> <span class="n">With</span> <span class="n">many</span> <span class="n">samples</span> <span class="n">this</span> <span class="n">can</span> <span class="n">take</span> <span class="n">a</span> <span class="n">long</span> <span class="n">time</span> <span class="ow">and</span> <span class="n">might</span> <span class="n">be</span> <span class="n">undesirable</span>
     <span class="n">default</span><span class="p">:</span> <span class="kc">True</span>
@@ -614,7 +615,7 @@
 </div>
 </section>
 <section id="deeptools-plotcorrelation">
-<h3>deeptools_plotcorrelation<a class="headerlink" href="#deeptools-plotcorrelation" title="Permalink to this headline"></a></h3>
+<h3>deeptools_plotcorrelation<a class="headerlink" href="#deeptools-plotcorrelation" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">deeptools_plotcorrelation</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">Deeptools</span> <span class="n">plotCorrelation</span> <span class="n">params</span>
     <span class="n">default</span><span class="p">:</span> <span class="o">--</span><span class="n">colorMap</span> <span class="n">RdYlBu_r</span> <span class="o">--</span><span class="n">plotNumbers</span>
@@ -623,7 +624,7 @@
 </div>
 </section>
 <section id="deeptools-multibamsummary">
-<h3>deeptools_multibamsummary<a class="headerlink" href="#deeptools-multibamsummary" title="Permalink to this headline"></a></h3>
+<h3>deeptools_multibamsummary<a class="headerlink" href="#deeptools-multibamsummary" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">deeptools_multibamsummary</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">Deeptools</span> <span class="n">multiBamSummary</span> <span class="n">params</span>
     <span class="n">default</span><span class="p">:</span> <span class="o">--</span><span class="n">distanceBetweenBins</span> <span class="mi">9000</span> <span class="o">--</span><span class="n">binSize</span> <span class="mi">1000</span>
@@ -632,7 +633,7 @@
 </div>
 </section>
 <section id="min-template-length">
-<h3>min_template_length<a class="headerlink" href="#min-template-length" title="Permalink to this headline"></a></h3>
+<h3>min_template_length<a class="headerlink" href="#min-template-length" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">min_template_length</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">the</span> <span class="n">minimum</span> <span class="n">template</span> <span class="n">length</span> <span class="k">for</span> <span class="n">paired</span><span class="o">-</span><span class="n">end</span> <span class="n">reads</span>
     <span class="nb">type</span><span class="p">:</span> <span class="n">integer</span>
@@ -640,7 +641,7 @@
 </div>
 </section>
 <section id="max-template-length">
-<h3>max_template_length<a class="headerlink" href="#max-template-length" title="Permalink to this headline"></a></h3>
+<h3>max_template_length<a class="headerlink" href="#max-template-length" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">max_template_length</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">the</span> <span class="n">maximum</span> <span class="n">template</span> <span class="n">length</span> <span class="k">for</span> <span class="n">paired</span><span class="o">-</span><span class="n">end</span> <span class="n">reads</span>
     <span class="nb">type</span><span class="p">:</span> <span class="n">integer</span>
@@ -648,7 +649,7 @@
 </div>
 </section>
 <section id="subsample">
-<h3>subsample<a class="headerlink" href="#subsample" title="Permalink to this headline"></a></h3>
+<h3>subsample<a class="headerlink" href="#subsample" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">subsample</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">the</span> <span class="n">maximum</span> <span class="n">amount</span> <span class="n">of</span> <span class="n">reads</span> <span class="n">allowed</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">final</span> <span class="n">bam</span> <span class="n">file</span><span class="o">.</span> <span class="n">When</span> <span class="n">setting</span> <span class="n">a</span> <span class="n">value</span> <span class="n">lower</span> <span class="n">than</span> <span class="n">zero</span><span class="p">,</span> <span class="n">no</span> <span class="n">subsampling</span> <span class="n">happens</span> <span class="p">(</span><span class="n">default</span><span class="p">)</span><span class="o">.</span>
     <span class="nb">type</span><span class="p">:</span> <span class="n">integer</span>
@@ -658,9 +659,9 @@
 </section>
 </section>
 <section id="workflow-alignment">
-<h2>Workflow: Alignment<a class="headerlink" href="#workflow-alignment" title="Permalink to this headline"></a></h2>
+<h2>Workflow: Alignment<a class="headerlink" href="#workflow-alignment" title="Permalink to this heading"></a></h2>
 <section id="bam-sorter">
-<h3>bam_sorter<a class="headerlink" href="#bam-sorter" title="Permalink to this headline"></a></h3>
+<h3>bam_sorter<a class="headerlink" href="#bam-sorter" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bam_sorter</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">which</span> <span class="n">sorting</span> <span class="n">software</span> <span class="n">to</span> <span class="n">use</span>
     <span class="nb">type</span><span class="p">:</span> <span class="nb">object</span>
@@ -675,7 +676,7 @@
 </div>
 </section>
 <section id="cram-no-bam">
-<h3>cram_no_bam<a class="headerlink" href="#cram-no-bam" title="Permalink to this headline"></a></h3>
+<h3>cram_no_bam<a class="headerlink" href="#cram-no-bam" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cram_no_bam</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">whether</span> <span class="n">to</span> <span class="n">store</span> <span class="n">cram</span> <span class="n">instead</span> <span class="n">of</span> <span class="n">bam</span>
     <span class="nb">type</span><span class="p">:</span> <span class="n">boolean</span>
@@ -685,9 +686,9 @@
 </section>
 </section>
 <section id="workflow-chip-atac-seq">
-<h2>Workflow: ChIP &amp; ATAC-seq<a class="headerlink" href="#workflow-chip-atac-seq" title="Permalink to this headline"></a></h2>
+<h2>Workflow: ChIP &amp; ATAC-seq<a class="headerlink" href="#workflow-chip-atac-seq" title="Permalink to this heading"></a></h2>
 <section id="peak-caller">
-<h3>peak_caller<a class="headerlink" href="#peak-caller" title="Permalink to this headline"></a></h3>
+<h3>peak_caller<a class="headerlink" href="#peak-caller" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">peak_caller</span><span class="p">:</span>
     <span class="nb">type</span><span class="p">:</span> <span class="nb">object</span>
     <span class="n">properties</span><span class="p">:</span>
@@ -705,7 +706,7 @@
 </div>
 </section>
 <section id="macs2-keep-mates">
-<h3>macs2_keep_mates<a class="headerlink" href="#macs2-keep-mates" title="Permalink to this headline"></a></h3>
+<h3>macs2_keep_mates<a class="headerlink" href="#macs2-keep-mates" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">macs2_keep_mates</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">macs2</span> <span class="n">normally</span> <span class="n">removes</span> <span class="n">paired</span><span class="o">-</span><span class="n">end</span> <span class="n">mates</span> <span class="n">when</span> <span class="n">doing</span> <span class="o">--</span><span class="n">nomodel</span> <span class="n">shift</span> <span class="n">peak</span> <span class="n">calling</span><span class="o">.</span> <span class="n">When</span> <span class="n">this</span> <span class="n">flag</span> <span class="ow">is</span> <span class="n">on</span><span class="p">,</span> <span class="n">the</span> <span class="n">paired</span><span class="o">-</span><span class="n">end</span> <span class="n">bam</span> <span class="ow">is</span> <span class="n">converted</span> <span class="n">to</span> <span class="n">sngle</span><span class="o">-</span><span class="n">end</span> <span class="n">bam</span><span class="p">,</span> <span class="n">so</span> <span class="nb">all</span> <span class="n">reads</span> <span class="n">are</span> <span class="n">counted</span><span class="o">.</span> <span class="n">This</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">conventional</span> <span class="n">to</span> <span class="n">do</span><span class="p">,</span> <span class="n">but</span> <span class="n">might</span> <span class="n">help</span> <span class="k">with</span> <span class="n">low</span> <span class="n">sequencing</span> <span class="n">depth</span><span class="o">.</span>
     <span class="n">default</span><span class="p">:</span> <span class="kc">False</span>
@@ -714,7 +715,7 @@
 </div>
 </section>
 <section id="peak-windowsize">
-<h3>peak_windowsize<a class="headerlink" href="#peak-windowsize" title="Permalink to this headline"></a></h3>
+<h3>peak_windowsize<a class="headerlink" href="#peak-windowsize" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">peak_windowsize</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">when</span> <span class="n">merging</span> <span class="n">narrowpeaks</span><span class="p">,</span> <span class="n">how</span> <span class="n">much</span> <span class="n">each</span> <span class="n">summit</span> <span class="n">should</span> <span class="n">be</span> <span class="n">extended</span> <span class="n">by</span> <span class="p">(</span><span class="n">on</span> <span class="n">each</span> <span class="n">side</span><span class="p">)</span> <span class="n">when</span> <span class="n">considering</span> <span class="n">overlapping</span> <span class="n">peaks</span><span class="o">.</span> <span class="n">If</span> <span class="k">for</span> <span class="n">instance</span> <span class="n">a</span> <span class="n">peak_windowsize</span> <span class="n">of</span> <span class="mi">100</span> <span class="ow">is</span> <span class="n">chosen</span><span class="p">,</span> <span class="nb">all</span> <span class="n">peaks</span> <span class="n">within</span> <span class="mi">100</span> <span class="n">bps</span> <span class="n">of</span> <span class="n">each</span> <span class="n">other</span> <span class="n">will</span> <span class="n">be</span> <span class="n">merged</span><span class="o">.</span>
     <span class="n">default</span><span class="p">:</span> <span class="mi">100</span>
@@ -723,7 +724,7 @@
 </div>
 </section>
 <section id="slop">
-<h3>slop<a class="headerlink" href="#slop" title="Permalink to this headline"></a></h3>
+<h3>slop<a class="headerlink" href="#slop" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">slop</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">how</span> <span class="n">much</span> <span class="n">each</span> <span class="n">summit</span> <span class="ow">is</span> <span class="n">extended</span> <span class="n">by</span> <span class="p">(</span><span class="n">on</span> <span class="n">both</span> <span class="n">sides</span><span class="p">)</span> <span class="n">when</span> <span class="n">making</span> <span class="n">the</span> <span class="n">final</span> <span class="n">peak</span><span class="o">.</span> <span class="n">For</span> <span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="n">count</span> <span class="n">tables</span> <span class="n">it</span> <span class="ow">is</span> <span class="n">important</span> <span class="n">that</span> <span class="nb">all</span> <span class="n">peaks</span> <span class="n">are</span> <span class="n">of</span> <span class="n">the</span> <span class="n">same</span> <span class="n">size</span><span class="o">.</span> <span class="n">If</span> <span class="k">for</span> <span class="n">instance</span> <span class="n">a</span> <span class="n">slop</span> <span class="n">of</span> <span class="mi">100</span> <span class="ow">is</span> <span class="n">chosen</span><span class="p">,</span> <span class="n">the</span> <span class="n">final</span> <span class="n">peak</span> <span class="n">width</span> <span class="p">(</span><span class="k">for</span> <span class="nb">all</span> <span class="n">peaks</span><span class="p">)</span> <span class="ow">is</span> <span class="mf">200.</span>
     <span class="nb">type</span><span class="p">:</span> <span class="n">integer</span>
@@ -732,7 +733,7 @@
 </div>
 </section>
 <section id="logbase">
-<h3>logbase<a class="headerlink" href="#logbase" title="Permalink to this headline"></a></h3>
+<h3>logbase<a class="headerlink" href="#logbase" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">logbase</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">The</span> <span class="n">log</span> <span class="n">base</span> <span class="n">of</span> <span class="n">the</span> <span class="n">number</span> <span class="n">of</span> <span class="n">reads</span> <span class="n">under</span> <span class="n">peak</span> <span class="n">count</span> <span class="n">tables</span>
     <span class="n">default</span><span class="p">:</span> <span class="mi">2</span>
@@ -741,7 +742,7 @@
 </div>
 </section>
 <section id="heatmap-slop">
-<h3>heatmap_slop<a class="headerlink" href="#heatmap-slop" title="Permalink to this headline"></a></h3>
+<h3>heatmap_slop<a class="headerlink" href="#heatmap-slop" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">heatmap_slop</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">how</span> <span class="n">much</span> <span class="n">the</span> <span class="n">summits</span> <span class="n">should</span> <span class="n">be</span> <span class="n">extended</span> <span class="n">by</span> <span class="p">(</span><span class="n">on</span> <span class="n">each</span> <span class="n">side</span><span class="p">)</span> <span class="k">for</span> <span class="n">making</span> <span class="n">a</span> <span class="n">heatmap</span> <span class="n">of</span> <span class="n">peaks</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">multiQC</span> <span class="n">report</span><span class="o">.</span> <span class="n">If</span> <span class="k">for</span> <span class="n">instance</span> <span class="n">a</span> <span class="n">slop</span> <span class="n">of</span> <span class="mi">1000</span> <span class="ow">is</span> <span class="n">chosen</span><span class="p">,</span> <span class="n">the</span> <span class="n">final</span> <span class="n">peak</span><span class="s1">&#39;s width is 2000.</span>
     <span class="n">default</span><span class="p">:</span> <span class="mi">1000</span>
@@ -750,7 +751,7 @@
 </div>
 </section>
 <section id="heatmap-npeaks">
-<h3>heatmap_npeaks<a class="headerlink" href="#heatmap-npeaks" title="Permalink to this headline"></a></h3>
+<h3>heatmap_npeaks<a class="headerlink" href="#heatmap-npeaks" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">heatmap_npeaks</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">The</span> <span class="n">number</span> <span class="n">of</span> <span class="n">random</span> <span class="n">peaks</span> <span class="n">used</span> <span class="k">for</span> <span class="n">the</span> <span class="n">heatmap</span><span class="o">.</span> <span class="n">This</span> <span class="n">at</span> <span class="n">most</span> <span class="n">visualizes</span> <span class="nb">all</span> <span class="n">peaks</span> <span class="n">found</span><span class="p">,</span> <span class="n">so</span> <span class="n">picking</span> <span class="n">a</span> <span class="n">number</span> <span class="n">higher</span> <span class="n">than</span> <span class="n">the</span> <span class="n">number</span> <span class="n">of</span> <span class="n">peaks</span> <span class="n">has</span> <span class="n">no</span> <span class="n">effect</span><span class="o">.</span> <span class="n">The</span> <span class="n">reason</span> <span class="n">to</span> <span class="n">pick</span> <span class="n">a</span> <span class="n">smaller</span> <span class="n">number</span> <span class="ow">is</span> <span class="n">to</span> <span class="n">limit</span> <span class="n">computational</span> <span class="n">resources</span><span class="o">.</span>
     <span class="n">default</span><span class="p">:</span> <span class="mi">20000</span>
@@ -759,7 +760,7 @@
 </div>
 </section>
 <section id="deeptools-heatmap-options">
-<h3>deeptools_heatmap_options<a class="headerlink" href="#deeptools-heatmap-options" title="Permalink to this headline"></a></h3>
+<h3>deeptools_heatmap_options<a class="headerlink" href="#deeptools-heatmap-options" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">deeptools_heatmap_options</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">the</span> <span class="n">options</span> <span class="n">passed</span> <span class="n">to</span> <span class="n">deeptools</span> <span class="n">when</span> <span class="n">visualizing</span> <span class="n">the</span> <span class="n">heatmap</span>
     <span class="n">default</span><span class="p">:</span> <span class="o">--</span><span class="n">kmeans</span> <span class="mi">6</span> <span class="o">--</span><span class="n">xAxisLabel</span> <span class="s2">&quot;Summit distance (bp)&quot;</span>
@@ -768,7 +769,7 @@
 </div>
 </section>
 <section id="idr-options">
-<h3>idr_options<a class="headerlink" href="#idr-options" title="Permalink to this headline"></a></h3>
+<h3>idr_options<a class="headerlink" href="#idr-options" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">idr_options</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">the</span> <span class="n">options</span> <span class="n">passed</span> <span class="n">to</span> <span class="n">idr</span> <span class="n">when</span> <span class="n">combining</span> <span class="n">peaks</span>
     <span class="n">default</span><span class="p">:</span>
@@ -778,9 +779,9 @@
 </section>
 </section>
 <section id="workflow-rna-seq">
-<h2>Workflow: RNA-seq<a class="headerlink" href="#workflow-rna-seq" title="Permalink to this headline"></a></h2>
+<h2>Workflow: RNA-seq<a class="headerlink" href="#workflow-rna-seq" title="Permalink to this heading"></a></h2>
 <section id="quantifier">
-<h3>quantifier<a class="headerlink" href="#quantifier" title="Permalink to this headline"></a></h3>
+<h3>quantifier<a class="headerlink" href="#quantifier" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">quantifier</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">which</span> <span class="n">quantifier</span> <span class="n">to</span> <span class="n">use</span>
     <span class="n">properties</span><span class="p">:</span>
@@ -818,7 +819,7 @@
 </div>
 </section>
 <section id="tpm2counts">
-<h3>tpm2counts<a class="headerlink" href="#tpm2counts" title="Permalink to this headline"></a></h3>
+<h3>tpm2counts<a class="headerlink" href="#tpm2counts" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>tpm2counts:
     description: how do you wish to convert TPMs to gene counts?
     properties:
@@ -855,7 +856,7 @@
 </div>
 </section>
 <section id="ignore-strandedness">
-<h3>ignore_strandedness<a class="headerlink" href="#ignore-strandedness" title="Permalink to this headline"></a></h3>
+<h3>ignore_strandedness<a class="headerlink" href="#ignore-strandedness" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>ignore_strandedness:
     description: ignore/dont infer strand-specificity?
     default: False
@@ -864,7 +865,7 @@
 </div>
 </section>
 <section id="dexseq">
-<h3>dexseq<a class="headerlink" href="#dexseq" title="Permalink to this headline"></a></h3>
+<h3>dexseq<a class="headerlink" href="#dexseq" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dexseq</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">output</span> <span class="n">an</span> <span class="n">exon</span> <span class="n">counts</span> <span class="n">matrix</span> <span class="k">for</span> <span class="n">use</span> <span class="ow">in</span> <span class="n">DEXSeq</span><span class="o">.</span>
     <span class="n">default</span><span class="p">:</span> <span class="kc">False</span>
@@ -874,9 +875,9 @@
 </section>
 </section>
 <section id="workflow-single-cell-atac-seq">
-<h2>Workflow: Single-cell ATAC-seq<a class="headerlink" href="#workflow-single-cell-atac-seq" title="Permalink to this headline"></a></h2>
+<h2>Workflow: Single-cell ATAC-seq<a class="headerlink" href="#workflow-single-cell-atac-seq" title="Permalink to this heading"></a></h2>
 <section id="snaptools-opt">
-<h3>snaptools_opt<a class="headerlink" href="#snaptools-opt" title="Permalink to this headline"></a></h3>
+<h3>snaptools_opt<a class="headerlink" href="#snaptools-opt" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">snaptools_opt</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">snaptools</span> <span class="n">optional</span> <span class="n">arguments</span> <span class="k">for</span> <span class="n">snaptools</span> <span class="n">snap</span><span class="o">-</span><span class="n">pre</span><span class="p">,</span> <span class="kn">from</span> <span class="nn">snaptools</span> <span class="p">(</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">r3fang</span><span class="o">/</span><span class="n">SnapTools</span><span class="p">)</span><span class="o">.</span> <span class="n">For</span> <span class="n">more</span> <span class="n">info</span> <span class="n">run</span> <span class="n">snaptools</span> <span class="n">snap</span><span class="o">-</span><span class="n">pre</span> <span class="o">-</span><span class="n">h</span>
     <span class="n">default</span><span class="p">:</span> <span class="o">--</span><span class="nb">min</span><span class="o">-</span><span class="n">flen</span><span class="o">=</span><span class="mi">0</span> <span class="o">--</span><span class="nb">max</span><span class="o">-</span><span class="n">flen</span><span class="o">=</span><span class="mi">1000</span> <span class="o">--</span><span class="n">keep</span><span class="o">-</span><span class="n">single</span><span class="o">=</span><span class="n">FALSE</span> <span class="o">--</span><span class="n">keep</span><span class="o">-</span><span class="n">secondary</span><span class="o">=</span><span class="n">FALSE</span> <span class="o">--</span><span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span> <span class="o">--</span><span class="nb">min</span><span class="o">-</span><span class="n">cov</span><span class="o">=</span><span class="mi">100</span> <span class="o">--</span><span class="n">verbose</span><span class="o">=</span><span class="kc">True</span>
@@ -884,7 +885,7 @@
 </div>
 </section>
 <section id="bin-opt">
-<h3>bin_opt<a class="headerlink" href="#bin-opt" title="Permalink to this headline"></a></h3>
+<h3>bin_opt<a class="headerlink" href="#bin-opt" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bin_opt</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">snaptools</span> <span class="n">optional</span> <span class="n">arguments</span> <span class="k">for</span> <span class="n">snaptools</span> <span class="n">snap</span><span class="o">-</span><span class="n">add</span><span class="o">-</span><span class="n">bmat</span><span class="p">,</span> <span class="kn">from</span> <span class="nn">snaptools</span> <span class="p">(</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">r3fang</span><span class="o">/</span><span class="n">SnapTools</span><span class="p">)</span><span class="o">.</span> <span class="n">The</span> <span class="n">genome</span> <span class="n">will</span> <span class="n">be</span> <span class="n">divided</span> <span class="n">into</span> <span class="n">bins</span> <span class="n">of</span> <span class="n">the</span> <span class="n">equal</span> <span class="n">size</span> <span class="n">of</span> <span class="o">--</span><span class="nb">bin</span><span class="o">-</span><span class="n">size</span><span class="o">-</span><span class="nb">list</span> <span class="n">to</span> <span class="n">create</span> <span class="n">the</span> <span class="n">cell</span> <span class="n">x</span> <span class="nb">bin</span> <span class="n">count</span> <span class="n">matrix</span><span class="o">.</span> <span class="n">For</span> <span class="n">more</span> <span class="n">info</span> <span class="n">run</span> <span class="n">snaptools</span> <span class="n">snap</span><span class="o">-</span><span class="n">add</span><span class="o">-</span><span class="n">bmat</span> <span class="o">-</span><span class="n">h</span>
     <span class="n">default</span><span class="p">:</span> <span class="o">--</span><span class="nb">bin</span><span class="o">-</span><span class="n">size</span><span class="o">-</span><span class="nb">list</span> <span class="mi">5000</span> <span class="o">--</span><span class="n">verbose</span><span class="o">=</span><span class="kc">True</span>
@@ -893,9 +894,9 @@
 </section>
 </section>
 <section id="workflow-single-cell-rna-seq">
-<h2>Workflow: Single-cell RNA-seq<a class="headerlink" href="#workflow-single-cell-rna-seq" title="Permalink to this headline"></a></h2>
+<h2>Workflow: Single-cell RNA-seq<a class="headerlink" href="#workflow-single-cell-rna-seq" title="Permalink to this heading"></a></h2>
 <section id="fastq-clean-dir">
-<h3>fastq_clean_dir<a class="headerlink" href="#fastq-clean-dir" title="Permalink to this headline"></a></h3>
+<h3>fastq_clean_dir<a class="headerlink" href="#fastq-clean-dir" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fastq_clean_dir</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">directory</span> <span class="n">where</span> <span class="n">to</span> <span class="n">find</span> <span class="n">the</span> <span class="n">workflow</span> <span class="n">rules</span>
     <span class="n">default</span><span class="p">:</span> <span class="n">fastq_cleaned</span>
@@ -904,7 +905,7 @@
 </div>
 </section>
 <section id="fastq-pair">
-<h3>fastq-pair<a class="headerlink" href="#fastq-pair" title="Permalink to this headline"></a></h3>
+<h3>fastq-pair<a class="headerlink" href="#fastq-pair" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fastq</span><span class="o">-</span><span class="n">pair</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">fastq</span> <span class="n">synchronization</span>
     <span class="n">default</span><span class="p">:</span>
@@ -912,7 +913,7 @@
 </div>
 </section>
 <section id="id1">
-<h3>quantifier<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h3>
+<h3>quantifier<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">quantifier</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">which</span> <span class="n">quantifier</span> <span class="n">to</span> <span class="n">use</span>
     <span class="n">properties</span><span class="p">:</span>
@@ -934,14 +935,14 @@
 </div>
 </section>
 <section id="barcodefile">
-<h3>barcodefile<a class="headerlink" href="#barcodefile" title="Permalink to this headline"></a></h3>
+<h3>barcodefile<a class="headerlink" href="#barcodefile" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">barcodefile</span><span class="p">:</span>
     <span class="nb">type</span><span class="p">:</span> <span class="n">string</span>
 </pre></div>
 </div>
 </section>
 <section id="sc-preprocess">
-<h3>sc_preprocess<a class="headerlink" href="#sc-preprocess" title="Permalink to this headline"></a></h3>
+<h3>sc_preprocess<a class="headerlink" href="#sc-preprocess" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sc_preprocess</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">Pre</span><span class="o">-</span><span class="n">processing</span> <span class="n">settings</span> <span class="k">for</span> <span class="n">scRNA</span> <span class="n">data</span>
     <span class="n">properties</span><span class="p">:</span>
@@ -1004,9 +1005,9 @@
 </section>
 </section>
 <section id="differential-gene-peak-analysis">
-<h2>Differential gene/peak analysis<a class="headerlink" href="#differential-gene-peak-analysis" title="Permalink to this headline"></a></h2>
+<h2>Differential gene/peak analysis<a class="headerlink" href="#differential-gene-peak-analysis" title="Permalink to this heading"></a></h2>
 <section id="counts-dir">
-<h3>counts_dir<a class="headerlink" href="#counts-dir" title="Permalink to this headline"></a></h3>
+<h3>counts_dir<a class="headerlink" href="#counts-dir" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">counts_dir</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">directory</span> <span class="n">where</span> <span class="n">to</span> <span class="n">store</span> <span class="n">the</span> <span class="n">counts</span> <span class="k">for</span> <span class="n">DESeq2</span> <span class="n">analysis</span> <span class="p">(</span><span class="n">defaults</span> <span class="n">inside</span> <span class="n">the</span> <span class="n">result</span> <span class="nb">dir</span><span class="p">)</span>
     <span class="n">default</span><span class="p">:</span> <span class="n">counts</span>
@@ -1015,7 +1016,7 @@
 </div>
 </section>
 <section id="deseq2-dir">
-<h3>deseq2_dir<a class="headerlink" href="#deseq2-dir" title="Permalink to this headline"></a></h3>
+<h3>deseq2_dir<a class="headerlink" href="#deseq2-dir" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">deseq2_dir</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">directory</span> <span class="n">where</span> <span class="n">to</span> <span class="n">store</span> <span class="n">the</span> <span class="n">DESeq2</span> <span class="n">output</span> <span class="p">(</span><span class="n">defaults</span> <span class="n">inside</span> <span class="n">the</span> <span class="n">result</span> <span class="nb">dir</span><span class="p">)</span>
     <span class="n">default</span><span class="p">:</span> <span class="n">deseq2</span>
@@ -1024,7 +1025,7 @@
 </div>
 </section>
 <section id="deseq2">
-<h3>deseq2<a class="headerlink" href="#deseq2" title="Permalink to this headline"></a></h3>
+<h3>deseq2<a class="headerlink" href="#deseq2" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">deseq2</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">DESeq2</span> <span class="n">settings</span><span class="o">.</span> <span class="n">See</span> <span class="n">the</span> <span class="n">DESeq2</span> <span class="n">vignette</span> <span class="k">for</span> <span class="n">details</span>
     <span class="n">properties</span><span class="p">:</span>
@@ -1051,7 +1052,7 @@
 </div>
 </section>
 <section id="contrasts">
-<h3>contrasts<a class="headerlink" href="#contrasts" title="Permalink to this headline"></a></h3>
+<h3>contrasts<a class="headerlink" href="#contrasts" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">contrasts</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">deseq2</span> <span class="n">design</span> <span class="n">contrast</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
 </pre></div>
@@ -1059,9 +1060,9 @@
 </section>
 </section>
 <section id="trackhub">
-<h2>Trackhub<a class="headerlink" href="#trackhub" title="Permalink to this headline"></a></h2>
+<h2>Trackhub<a class="headerlink" href="#trackhub" title="Permalink to this heading"></a></h2>
 <section id="create-trackhub">
-<h3>create_trackhub<a class="headerlink" href="#create-trackhub" title="Permalink to this headline"></a></h3>
+<h3>create_trackhub<a class="headerlink" href="#create-trackhub" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>create_trackhub:
     description: generate a trackhub (and required files)?
     default: True
@@ -1070,7 +1071,7 @@
 </div>
 </section>
 <section id="trackhub-dir">
-<h3>trackhub_dir<a class="headerlink" href="#trackhub-dir" title="Permalink to this headline"></a></h3>
+<h3>trackhub_dir<a class="headerlink" href="#trackhub-dir" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">trackhub_dir</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">directory</span> <span class="n">where</span> <span class="n">to</span> <span class="n">store</span> <span class="n">the</span> <span class="n">trackhub</span> <span class="p">(</span><span class="n">defaults</span> <span class="n">inside</span> <span class="n">the</span> <span class="n">result</span> <span class="nb">dir</span><span class="p">)</span>
     <span class="n">default</span><span class="p">:</span> <span class="n">trackhub</span>
@@ -1079,7 +1080,7 @@
 </div>
 </section>
 <section id="bigwig-dir">
-<h3>bigwig_dir<a class="headerlink" href="#bigwig-dir" title="Permalink to this headline"></a></h3>
+<h3>bigwig_dir<a class="headerlink" href="#bigwig-dir" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bigwig_dir</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">directory</span> <span class="n">where</span> <span class="n">to</span> <span class="n">store</span> <span class="n">the</span> <span class="n">bigwigs</span> <span class="n">used</span> <span class="n">by</span> <span class="n">the</span> <span class="n">trackhub</span> <span class="p">(</span><span class="n">defaults</span> <span class="n">inside</span> <span class="n">the</span> <span class="n">result</span> <span class="nb">dir</span><span class="p">)</span>
     <span class="n">default</span><span class="p">:</span> <span class="n">bigwigs</span>
@@ -1088,7 +1089,7 @@
 </div>
 </section>
 <section id="deeptools-bamcoverage">
-<h3>deeptools_bamcoverage<a class="headerlink" href="#deeptools-bamcoverage" title="Permalink to this headline"></a></h3>
+<h3>deeptools_bamcoverage<a class="headerlink" href="#deeptools-bamcoverage" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">deeptools_bamcoverage</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">flags</span> <span class="k">for</span> <span class="n">bam</span> <span class="n">to</span> <span class="n">bigwig</span> <span class="n">conversions</span> <span class="k">with</span> <span class="n">deeptools</span> <span class="n">bamCoverage</span>
     <span class="n">default</span><span class="p">:</span> <span class="o">--</span><span class="n">normalizeUsing</span> <span class="n">BPM</span> <span class="o">--</span><span class="n">binSize</span> <span class="mi">1</span>

@@ -8,7 +8,7 @@ This is an automatically generated list of all supported rules, their docstrings
 Convert a bam file to the more compressed cram format.
 
 ```
-samtools view -T {input.assembly} -C {input.bam} -@ {threads} > {output} 2> {log}
+samtools view -T {input.genome} -C {input.bam} -@ {threads} > {output} 2> {log}
 ```
 
 #### bam_bigwig
@@ -37,7 +37,7 @@ Convert a bedgraph file into a bigwig.
 ```
 awk -v OFS='\\t' '{{print $1, $2, $3, $4}}' {input.bedgraph} | sed '/experimental/d' |
 bedSort /dev/stdin {output.tmp} > {log} 2>&1
-bedGraphToBigWig {output.tmp} {input.genome_size} {output.out} >> {log} 2>&1
+bedGraphToBigWig {output.tmp} {input.sizes} {output.out} >> {log} 2>&1
 ```
 
 #### bedgraphish_to_bedgraph
@@ -195,7 +195,7 @@ complementBed -i stdin -g {input.sizes} > {output} 2>> {log}
 Pre-compute correlations between bams using deeptools.
 
 ```
-computeMatrix scale-regions -S {input.bw} {params.labels} -R {params.annotation} \
+computeMatrix scale-regions -S {input.bw} {params.labels} -R {params.gtf} \
 -p {threads} -b 2000 -a 500 -o {output} > {log} 2>&1
 ```
 
@@ -228,14 +228,6 @@ awk 'BEGIN {{ FS = "@" }} NR==1{{gsub("{wildcards.assembly}-|.samtools-coordinat
 sed -i "2s/.*/{params.names}/" {output}
 ```
 
-#### cp_unsieved2sieved
-
-Copy a bam file if no sieving is necessary. 
-
-```
-cp {input} {output}
-```
-
 #### create_SNAP_object
 
 Create a snapobject for each BAM file. 
@@ -243,8 +235,8 @@ Create a snapobject for each BAM file.
 These snapobjects can be merged later using snaptools in R.
 
 ```
-snaptools snap-pre --input-file={input.bams} --output-snap={output} --genome-name={wildcards.assembly} \
---genome-size={input.genome_size} {params.params} {params.chrm} {params.mapq} > {log} 2>&1
+snaptools snap-pre --input-file={input.bam} --output-snap={output} --genome-name={wildcards.assembly} \
+--genome-size={input.sizes} {params.params} {params.chrm} {params.mapq} > {log} 2>&1
 ```
 
 #### create_bins_SNAP_object
@@ -255,8 +247,8 @@ to the Snapfiles folder for downstream analysis in R using Snaptools
 ```
  
 snaptools snap-add-bmat --snap-file={input} {params} > {log} 2>&1
-echo "bmat added, moving file" >> {log} 2>&1
-mv {input} {output}    >> {log} 2>&1
+echo "bmat added, moving file" >> {log}
+mv {input} {output} >> {log} 2>&1
 ```
 
 #### cytoband
@@ -875,7 +867,7 @@ awk -v OFS="\t" '{{$5=$5>1000?1000:$5}} {{print}}' |
 bedSort /dev/stdin {output.tmp} > {log} 2>&1
 
 bedToBigBed -type={params.type} -as={params.schema} {output.tmp} \
-{input.genome_size} {output.out} >> {log} 2>&1
+{input.sizes} {output.out} >> {log} 2>&1
 ```
 
 #### plotCorrelation
@@ -1036,18 +1028,10 @@ sambamba sort --nthreads {threads} {params} /dev/stdin -o {output}  2> {log}
 
 #### samtools_index
 
-Create an index of a bam file which can be used for e.g. visualization.
+Create an index of a bam/cram file which can be used for e.g. visualization.
 
 ```
 samtools index {params} {input} {output}
-```
-
-#### samtools_index_cram
-
-Generate the index for a cram file.
-
-```
-samtools index {input} {output} > {log} 2>&1
 ```
 
 #### samtools_presort
@@ -1068,7 +1052,7 @@ samtools sort -@ {threads} -m $memory {input} -o {output} \
 
 #### samtools_sort
 
-Sort the result of shiftsieving with the samtools sorter.
+Sort the result of alignment or sieving with the samtools sorter.
 
 ```
 # we set this trap to remove temp files when prematurely ending the rule
@@ -1084,17 +1068,19 @@ samtools sort {params.sort_order} -@ {threads} -m $memory {input} -o {output} \
 
 #### samtools_sort_allsizes
 
-Sort the result of shiftsieving with the samtools sorter. This rule is identical to the
-samtools_sort rule except that the output is temporary.
+Sort the allsizes output of sieve_bam. This rule is identical to the
+samtools_sort rule except that the input must contain _allsizes, and the output is temporary.
 
 ```
 # we set this trap to remove temp files when prematurely ending the rule
-trap "rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
-rm -f {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2> {log}
+trap "rm -f {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam" INT;
+rm -f {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam 2> {log}
+
 # RAM per thread in MB
-memory=$((1000*{params.memory}/{threads}))M
+memory=$((1024*{resources.mem_gb}/{threads}))M
+
 samtools sort {params.sort_order} -@ {threads} -m $memory {input} -o {output} \
--T {params.out_dir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
+-T {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
 ```
 
 #### samtools_stats
@@ -1111,7 +1097,7 @@ Perform scRNA QC with singleCellTK, store output in SingleCellExperiment object 
 
 #### setup_blacklist
 
-Combine the encode blacklist with mitochrondrial dna depending on config.
+Combine the encode blacklist with mitochondrial DNA depending on config.
 
 #### sieve_bam
 
@@ -1127,10 +1113,10 @@ This rule does (at least) one of these:
 * subsample to have a maximum amount of reads (equal across samples)
 
 ```
-samtools view -h {params.prim_align} {params.minqual} {params.blacklist} \
+samtools view -h {params.prim_align} {params.minqual} -L {input.blacklist} \
 {input.bam} | {params.atacshift} {params.sizesieve} {params.subsample}
-samtools view -b > {output.final} 2> {log}
-
+samtools view -b > {output.bam} 2> {log}
+    
 # single-end reads never output allsizes so just touch the file when filtering on size
 {params.sizesieve_touch}
 ```
@@ -1248,8 +1234,8 @@ function log2 {{
 # set genome dependent variables
 NBits=""
 NBases=""
-GenomeLength=$(awk -F"\t" '{{x+=$2}}END{{printf "%i", x}}' {input.sizefile})
-NumberOfReferences=$(awk 'END{{print NR}}' {input.sizefile})
+GenomeLength=$(awk -F"\t" '{{x+=$2}}END{{printf "%i", x}}' {input.sizes})
+NumberOfReferences=$(awk 'END{{print NR}}' {input.sizes})
 if [ $NumberOfReferences -gt 5000 ]; then
     # for large genomes, --genomeChrBinNbits should be scaled to min(18,log2[max(GenomeLength/NumberOfReferences,ReadLength)])
     # ReadLength is skipped here, as it is unknown

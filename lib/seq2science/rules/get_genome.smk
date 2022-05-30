@@ -8,28 +8,44 @@ localrules:
     get_genome_support_files,
 
 
-support_exts = [".fa.fai", ".fa.sizes", ".gaps.bed"]
-
-
 rule get_genome:
     """
     Download a genome through genomepy.
     """
     output:
-        expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa", **config),
+        expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
     log:
-        expand("{log_dir}/get_genome/{{raw_assembly}}.genome.log", **config),
+        expand("{log_dir}/get_genome/{{assembly}}.genome.log", **config),
     message: EXPLAIN["get_genome"]
     params:
         providers=PROVIDERS,
         provider=config.get("provider"),
-        genome_dir=config["genome_dir"],
+        genomes_dir=config["genome_dir"],
+    wildcard_constraints:
+        assembly=any_given("assembly")
     resources:
         parallel_downloads=1,
         genomepy_downloads=1,
     priority: 1
+    retries: 2
     script:
         f"{config['rule_dir']}/../scripts/genomepy/get_genome.py"
+
+
+rule get_genome_support_files:
+    """
+    Generate supporting files for a genome.
+    """
+    input:
+        rules.get_genome.output,
+    output:
+        index=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.fai", **config),
+        sizes=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
+        gaps=expand("{genome_dir}/{{assembly}}/{{assembly}}.gaps.bed", **config),
+    wildcard_constraints:
+        assembly=".+",
+    script:
+        f"{config['rule_dir']}/../scripts/genomepy/get_genome_support.py"
 
 
 rule get_genome_blacklist:
@@ -37,18 +53,19 @@ rule get_genome_blacklist:
     Download a genome blacklist for a genome, if it exists, through genomepy.
     """
     input:
-        expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa", **config),
-        ancient(expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}{exts}", exts=support_exts, **config)),
+        rules.get_genome.output,
+        ancient(rules.get_genome_support_files.output)
     output:
-        expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.blacklist.bed", **config),
+        expand("{genome_dir}/{{assembly}}/{{assembly}}.blacklist.bed", **config),
     log:
-        expand("{log_dir}/get_genome/{{raw_assembly}}.blacklist.log", **config),
-    params:
-        genome_dir=config["genome_dir"],
+        expand("{log_dir}/get_genome/{{assembly}}.blacklist.log", **config),
+    wildcard_constraints:
+        assembly=any_given("assembly")
     resources:
         parallel_downloads=1,
         genomepy_downloads=1,
     priority: 1
+    retries: 2
     script:
         f"{config['rule_dir']}/../scripts/genomepy/get_genome_blacklist.py"
 
@@ -58,21 +75,24 @@ rule get_genome_annotation:
     Download a gene annotation through genomepy.
     """
     input:
-        expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa", **config),
-        ancient(expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}{exts}", exts=support_exts, **config)),
+        rules.get_genome.output,
+        ancient(rules.get_genome_support_files.output)
     output:
-        gtf=expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.annotation.gtf", **config),
-        bed=expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.annotation.bed", **config),
+        gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
+        bed=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.bed", **config),
     log:
-        expand("{log_dir}/get_genome/{{raw_assembly}}.annotation.log", **config),
-    resources:
-        parallel_downloads=1,
-        genomepy_downloads=1,
+        expand("{log_dir}/get_genome/{{assembly}}.annotation.log", **config),
     params:
         providers=PROVIDERS,
         provider=config.get("provider"),
-        genome_dir=config["genome_dir"],
+        genomes_dir=config["genome_dir"],
+    wildcard_constraints:
+        assembly=any_given("assembly")
+    resources:
+        parallel_downloads=1,
+        genomepy_downloads=1,
     priority: 1
+    retries: 2
     script:
         f"{config['rule_dir']}/../scripts/genomepy/get_genome_annotation.py"
 
@@ -82,12 +102,14 @@ rule extend_genome:
     Append given file(s) to genome
     """
     input:
-        genome=expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.fa", **config),
+        genome=rules.get_genome.output,
         extension=config.get("custom_genome_extension", []),
     output:
         genome=expand(
-            "{genome_dir}/{{raw_assembly}}{custom_assembly_suffix}/{{raw_assembly}}{custom_assembly_suffix}.fa", **config
+            "{genome_dir}/{{assembly}}{custom_assembly_suffix}/{{assembly}}{custom_assembly_suffix}.fa", **config
         ),
+    wildcard_constraints:
+        assembly=any_given("assembly")
     message: EXPLAIN["custom_extension"]
     shell:
         """
@@ -105,12 +127,11 @@ rule extend_genome_blacklist:
     Copy blacklist to the custom genome directory
     """
     input:
-        expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.blacklist.bed", **config),
+        rules.get_genome_blacklist.output,
     output:
-        expand(
-            "{genome_dir}/{{raw_assembly}}{custom_assembly_suffix}/{{raw_assembly}}{custom_assembly_suffix}.blacklist.bed",
-            **config
-        ),
+        expand("{genome_dir}/{{assembly}}{custom_assembly_suffix}/{{assembly}}{custom_assembly_suffix}.blacklist.bed", **config),
+    wildcard_constraints:
+        assembly=any_given("assembly")
     shell:
         """
         cp {input} {output}
@@ -122,23 +143,16 @@ rule extend_genome_annotation:
     Append given file(s) to genome annotation
     """
     input:
-        gtf=expand("{genome_dir}/{{raw_assembly}}/{{raw_assembly}}.annotation.gtf", **config),
+        gtf=rules.get_genome_annotation.output.gtf,
         extension=config.get("custom_annotation_extension", []),
     output:
-        gtf=expand(
-            "{genome_dir}/{{raw_assembly}}{custom_assembly_suffix}/{{raw_assembly}}{custom_assembly_suffix}.annotation.gtf",
-            **config
-        ),
-        bed=expand(
-            "{genome_dir}/{{raw_assembly}}{custom_assembly_suffix}/{{raw_assembly}}{custom_assembly_suffix}.annotation.bed",
-            **config
-        ),
+        gtf=expand("{genome_dir}/{{assembly}}{custom_assembly_suffix}/{{assembly}}{custom_assembly_suffix}.annotation.gtf", **config),
+        bed=expand("{genome_dir}/{{assembly}}{custom_assembly_suffix}/{{assembly}}{custom_assembly_suffix}.annotation.bed", **config),
         gp=temp(
-            expand(
-                "{genome_dir}/{{raw_assembly}}{custom_assembly_suffix}/{{raw_assembly}}{custom_assembly_suffix}.annotation.gp",
-                **config
-            )
+            expand("{genome_dir}/{{assembly}}{custom_assembly_suffix}/{{assembly}}{custom_assembly_suffix}.annotation.gp", **config)
         ),
+    wildcard_constraints:
+        assembly=any_given("assembly")
     message: EXPLAIN["custom_extension"]
     shell:
         """
@@ -155,28 +169,12 @@ rule extend_genome_annotation:
         """
 
 
-rule get_genome_support_files:
-    """
-    Generate supporting files for a genome.
-    """
-    input:
-        genome=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
-    output:
-        index=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.fai", **config),
-        sizes=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
-        gaps=expand("{genome_dir}/{{assembly}}/{{assembly}}.gaps.bed", **config),
-    params:
-        genome_dir=config["genome_dir"],
-    script:
-        f"{config['rule_dir']}/../scripts/genomepy/get_genome_support.py"
-
-
 rule gene_id2name:
     """
     Parse the gtf file to generate a gene_id to gene_name conversion table.
     """
     input:
-        expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
+        rules.get_genome_annotation.output.gtf,
     output:
         expand("{genome_dir}/{{assembly}}/gene_id2name.tsv", **config),
     script:
@@ -192,7 +190,7 @@ rule get_effective_genome_size:
     (for a certain kmer length) can not possible align on some locations.
     """
     input:
-        expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+        rules.get_genome.output,
     output:
         expand("{genome_dir}/{{assembly}}/genome_sizes/kmer_{{kmer_size}}.genome_size", **config),
     message: EXPLAIN["get_effective_genome_size"]

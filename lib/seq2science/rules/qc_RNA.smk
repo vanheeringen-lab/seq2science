@@ -9,8 +9,8 @@ rule dupRadar:
     (due to natural over-sequencing of highly expressed genes).
     """
     input:
-        bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config),
-        gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
+        bam=FINAL_BAM,
+        gtf=rules.get_genome_annotation.output.gtf,
         report=rules.infer_strandedness.output,
     output:
         expand("{qc_dir}/dupRadar/{{assembly}}-{{sample}}.png", **config),

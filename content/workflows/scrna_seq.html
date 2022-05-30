@@ -14,6 +14,7 @@
         <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../_static/doctools.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -106,24 +107,24 @@
            <div itemprop="articleBody">
              
   <section id="scrna-seq">
-<h1>scRNA-seq<a class="headerlink" href="#scrna-seq" title="Permalink to this headline"></a></h1>
+<h1>scRNA-seq<a class="headerlink" href="#scrna-seq" title="Permalink to this heading"></a></h1>
 <p>Running a scRNA-seq pipeline has never been easier!</p>
 <section id="pipeline-steps">
-<h2>Pipeline steps<a class="headerlink" href="#pipeline-steps" title="Permalink to this headline"></a></h2>
+<h2>Pipeline steps<a class="headerlink" href="#pipeline-steps" title="Permalink to this heading"></a></h2>
 <p align="center">
   <img src="../../_static/scrna_seq.png">
 </p><section id="downloading-of-sample-s">
-<h3>Downloading of sample(s)<a class="headerlink" href="#downloading-of-sample-s" title="Permalink to this headline"></a></h3>
+<h3>Downloading of sample(s)<a class="headerlink" href="#downloading-of-sample-s" title="Permalink to this heading"></a></h3>
 <p>Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples.
 You control which samples are used in the <a class="reference external" href="#filling-out-the-samples-tsv">samples.tsv</a>.
 Background on public data can be found <a class="reference external" href="./download_fastq.html#download-sra-file">here</a>.</p>
 </section>
 <section id="downloading-and-indexing-of-assembly-s">
-<h3>Downloading and indexing of assembly(s)<a class="headerlink" href="#downloading-and-indexing-of-assembly-s" title="Permalink to this headline"></a></h3>
+<h3>Downloading and indexing of assembly(s)<a class="headerlink" href="#downloading-and-indexing-of-assembly-s" title="Permalink to this heading"></a></h3>
 <p>Depending on whether the assembly and its index you align your samples against already exist seq2science will start with downloading of the assembly through <a class="reference external" href="https://github.com/vanheeringen-lab/genomepy">genomepy</a>.</p>
 </section>
 <section id="read-trimming">
-<h3>Read trimming<a class="headerlink" href="#read-trimming" title="Permalink to this headline"></a></h3>
+<h3>Read trimming<a class="headerlink" href="#read-trimming" title="Permalink to this heading"></a></h3>
 <p>The pipeline starts by trimming the reads with fastp.
 Fastp automatically detects sequencing adapters, removes short reads and performs quality filtering.
 The parameters of fastp for the pipeline can be set in the configuration by the variable fastp.</p>
@@ -133,14 +134,14 @@ After trimming, the fastq containing the reads, usually R2, may contains less re
 Therefore, we perform an intermediate step by running <code class="docutils literal notranslate"><span class="pre">fastq-pair</span></code> to remove singleton reads before proceeding any further.</p>
 </section>
 <section id="quantification">
-<h3>Quantification<a class="headerlink" href="#quantification" title="Permalink to this headline"></a></h3>
+<h3>Quantification<a class="headerlink" href="#quantification" title="Permalink to this heading"></a></h3>
 <p>Quantification is performed by running either the kb-python wrapper for Kallisto bustools or CITE-seq-Count for ADT tags.
 Kallisto bustools relies on pseudo-alignment of scRNA reads against a reference transcriptome index.
 The resulting count matrices can be further processed with scRNA toolkits, such as Seurat or Scanpy.</p>
 </section>
 </section>
 <section id="filling-out-the-samples-tsv">
-<h2>Filling out the samples.tsv<a class="headerlink" href="#filling-out-the-samples-tsv" title="Permalink to this headline"></a></h2>
+<h2>Filling out the samples.tsv<a class="headerlink" href="#filling-out-the-samples-tsv" title="Permalink to this heading"></a></h2>
 <p>Before running a workflow you will have to specify which samples you want to run the workflow on.
 Each workflow starts with a <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> as an example, and you should adapt it to your specific needs.
 As an example, the <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> could look something like this:</p>
@@ -149,7 +150,7 @@ As an example, the <code class="docutils literal notranslate"><span class="pre">
 </pre></div>
 </div>
 <section id="sample-column">
-<h3>Sample column<a class="headerlink" href="#sample-column" title="Permalink to this headline"></a></h3>
+<h3>Sample column<a class="headerlink" href="#sample-column" title="Permalink to this heading"></a></h3>
 <p>If you use the pipeline on <strong>public data</strong> this should be the name of the accession (e.g. GSM2837484).
 Accepted formats start with “GSM”, “SRR”, “SRX”, “DRR”, “DRX”, “ERR” or “ERX”.</p>
 <p>If you use the pipeline on <strong>local data</strong> this should be the <em>basename</em> of the file without the <em>extension(s)</em>.
@@ -167,28 +168,28 @@ In the example above, the <code class="docutils literal notranslate"><span class
 These setting can be changed in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>.</p>
 </section>
 <section id="assembly-column">
-<h3>Assembly column<a class="headerlink" href="#assembly-column" title="Permalink to this headline"></a></h3>
+<h3>Assembly column<a class="headerlink" href="#assembly-column" title="Permalink to this heading"></a></h3>
 <p>Here you simply add the name of the assembly you want your samples aligned against and the workflow will download it for you. In case your intend to run kb-python’s kite workflow, the assembly name becomes the basename of the tab delimited feature barcode file.</p>
 </section>
 <section id="descriptive-name-column">
-<h3>Descriptive_name column<a class="headerlink" href="#descriptive-name-column" title="Permalink to this headline"></a></h3>
+<h3>Descriptive_name column<a class="headerlink" href="#descriptive-name-column" title="Permalink to this heading"></a></h3>
 <p>The descriptive_name column is used for the multiqc report.
 In the multiqc report there will be a button to rename your samples after this column.</p>
 </section>
 </section>
 <section id="filling-out-the-config-yaml">
-<h2>Filling out the config.yaml<a class="headerlink" href="#filling-out-the-config-yaml" title="Permalink to this headline"></a></h2>
+<h2>Filling out the config.yaml<a class="headerlink" href="#filling-out-the-config-yaml" title="Permalink to this heading"></a></h2>
 <p>Every workflow has many configurable options, and can be set in the config.yaml file.
 In each config.yaml we highlighted a couple options that we think are relevant for that specific workflow, and set (we think) reasonable default values.</p>
 <section id="custom-assembly-extensions">
-<h3>Custom assembly extensions<a class="headerlink" href="#custom-assembly-extensions" title="Permalink to this headline"></a></h3>
+<h3>Custom assembly extensions<a class="headerlink" href="#custom-assembly-extensions" title="Permalink to this heading"></a></h3>
 <p>The genome and/or gene annotation can be extended with custom files, such as ERCC spike-ins for scRNA-seq.
 To do so, add <code class="docutils literal notranslate"><span class="pre">custom_genome_extension:</span> <span class="pre">path/to/spike_in.fa</span></code> and <code class="docutils literal notranslate"><span class="pre">custom_annotation_extension:</span> <span class="pre">path/to/spike_in.gtf</span></code> to the config.
 Seq2science will place the customized assembly in a separate folder in the <code class="docutils literal notranslate"><span class="pre">genome_dir</span></code>.
 You can control the name of the customized assembly by setting <code class="docutils literal notranslate"><span class="pre">custom_assembly_suffix</span></code> in the config.</p>
 </section>
 <section id="quantification-with-kallistobus">
-<h3>Quantification with kallistobus<a class="headerlink" href="#quantification-with-kallistobus" title="Permalink to this headline"></a></h3>
+<h3>Quantification with kallistobus<a class="headerlink" href="#quantification-with-kallistobus" title="Permalink to this heading"></a></h3>
 <p>After initializing your working directory and editing the <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> file, specify the desired arguments for kb-pyhon via the ref (kb ref) and count (kb count) properties except for the barcode whilteist (<code class="docutils literal notranslate"><span class="pre">-w</span></code>). The path to the barcode whiltelist can be supplied via the <code class="docutils literal notranslate"><span class="pre">barcodefile</span></code> property. This step is optional since kb python python provides several pre-installed whitelists for the following technologies.</p>
 <ul class="simple">
 <li><p>10XV1</p></li>
@@ -198,7 +199,7 @@ You can control the name of the customized assembly by setting <code class="docu
 </ul>
 <p>The white-list will be installed automatically if the appropiate technology argument is provided via the <code class="docutils literal notranslate"><span class="pre">-x</span></code> parameter in short-hand syntax.</p>
 <section id="bus-barcode-umi-set-format">
-<h4>BUS (Barcode/UMI/Set) format<a class="headerlink" href="#bus-barcode-umi-set-format" title="Permalink to this headline"></a></h4>
+<h4>BUS (Barcode/UMI/Set) format<a class="headerlink" href="#bus-barcode-umi-set-format" title="Permalink to this heading"></a></h4>
 <p>The <code class="docutils literal notranslate"><span class="pre">-x</span></code> argument indicates the read and file positions of the UMI and barcode. Kallisto bustools should auto-detect the correct settings barcode/umi layout for the following technologies if the name is supplied:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>name         whitelist    barcode                  umi        cDNA
 ---------    ---------    ---------------------    -------    -----------------------
@@ -220,7 +221,7 @@ SMARTSEQ                                                      0,None,None 1,None
 <p>Alternatively, the layout can be specified as a <code class="docutils literal notranslate"><span class="pre">bc:umi:set</span></code> triplet. The first position indicates the read, the second position the start of the feature and the third position the end of the feature. For more information and examples on the BUS format, consider the <strong>Bus</strong> section in the <a class="reference external" href="https://pachterlab.github.io/kallisto/manual">Kallisto</a> manual.</p>
 </section>
 <section id="input-preparations-for-kite-workflow">
-<h4>Input preparations for KITE workflow<a class="headerlink" href="#input-preparations-for-kite-workflow" title="Permalink to this headline"></a></h4>
+<h4>Input preparations for KITE workflow<a class="headerlink" href="#input-preparations-for-kite-workflow" title="Permalink to this heading"></a></h4>
 <p>The steps to prepare a scRNA analysis for Feature Barcoding experiments deviates slighlty from the standard seq2science workflow. In essence, we quantify the abundance of sequence features, such as antibody barcodes, rather than a set of transcripts for a certain species. Therefore, our index does not rely on a particular assembly but is build from these sequence features. Please consider the offical <a class="reference external" href="https://github.com/pachterlab/kite">kite</a> documentation for more details.</p>
 <p><strong>1</strong>. Prepare a two-column, tab-delimited file with your feature barcode in the first column and feature names in the second.</p>
 <p><strong>Example</strong></p>
@@ -252,7 +253,7 @@ SMARTSEQ                                                      0,None,None 1,None
 </div>
 <p>An example of configuring kb-python for feature barcode analysis is shown below. Add the appropiate settings to your config.</p>
 <section id="examples">
-<h5>Examples<a class="headerlink" href="#examples" title="Permalink to this headline"></a></h5>
+<h5>Examples<a class="headerlink" href="#examples" title="Permalink to this heading"></a></h5>
 <p><strong>RNA Quantification (10XV3)</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">quantifier</span><span class="p">:</span>
   <span class="n">kallistobus</span><span class="p">:</span>
@@ -280,7 +281,7 @@ SMARTSEQ                                                      0,None,None 1,None
 </div>
 </section>
 <section id="quantification-with-cite-seq-count">
-<h5>Quantification with CITE-seq-Count<a class="headerlink" href="#quantification-with-cite-seq-count" title="Permalink to this headline"></a></h5>
+<h5>Quantification with CITE-seq-Count<a class="headerlink" href="#quantification-with-cite-seq-count" title="Permalink to this heading"></a></h5>
 <p><a class="reference external" href="https://hoohm.github.io/CITE-seq-Count/">CITE-seq-Count</a> count can be used as an alternative quantifier to pre-process ADT/Cell-hashing experiments and generate read/umi count matrices. This option cannot be used in conjunction with kallistobus.</p>
 <p>To enable quantification with CITE-Seq-count, add the following section to your config file</p>
 <p>Example</p>
@@ -295,7 +296,7 @@ SMARTSEQ                                                      0,None,None 1,None
 </section>
 </section>
 <section id="scrna-seq-pre-processing-and-quality-control">
-<h3>scRNA-seq pre-processing and quality control<a class="headerlink" href="#scrna-seq-pre-processing-and-quality-control" title="Permalink to this headline"></a></h3>
+<h3>scRNA-seq pre-processing and quality control<a class="headerlink" href="#scrna-seq-pre-processing-and-quality-control" title="Permalink to this heading"></a></h3>
 <p>The seq2science scRNA workflow provides the option to perform automated pre-processing of raw scRNA-seq UMI count matrices. This is achieved by incorporating several quality control steps from the <a class="reference external" href="https://camplab.net/sctk/v2.4.1/index.html">singleCellTK</a> Bioconductor package, such as cell-calling, doublet detection and assessment of cell-wise mitochondrial RNA content.</p>
 <p>The QC results are reported in comprehensive R Markdown reports and processed UMI count matrices are stored as <a class="reference external" href="https://bioconductor.org/packages/release/bioc/html/SingleCellExperiment.html">SingleCellExperiment</a> S4 objects. Any sample level metadata that has been added to the <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> file will be transferred to the <code class="docutils literal notranslate"><span class="pre">colData</span></code> slot of the corresponding object and assigned to each cell identifier.</p>
 <p>After running seq2science, these objects can be directly imported into R with the <code class="docutils literal notranslate"><span class="pre">readRDS</span></code> function for further down-stream analysis with your favorite R packages.</p>
@@ -324,7 +325,7 @@ The UMI count matrix does not contain empty droplets but has not been processed 
 <p>We do not perform any gene/cell level filtering, except for empty droplets that are considered ambient RNA.</p>
 </section>
 <section id="advanced-settings">
-<h3>Advanced settings<a class="headerlink" href="#advanced-settings" title="Permalink to this headline"></a></h3>
+<h3>Advanced settings<a class="headerlink" href="#advanced-settings" title="Permalink to this heading"></a></h3>
 <p>To perform additional (optional) QC steps, consider the following parameters:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">sctk_detect_mito</span></code> (<em>default</em>: <code class="docutils literal notranslate"><span class="pre">True</span></code>)<span class="raw-html-m2r"><br/></span>
@@ -344,7 +345,7 @@ The assay to use for exporting and QC when kb is run in velocity mode with <code
 </ul>
 </section>
 <section id="alternative-experiments">
-<h3>Alternative experiments<a class="headerlink" href="#alternative-experiments" title="Permalink to this headline"></a></h3>
+<h3>Alternative experiments<a class="headerlink" href="#alternative-experiments" title="Permalink to this heading"></a></h3>
 <p>Information about alternative sequencing features, such as ERCC spike-ins, can be provided as an alternative experiment. An alternative experiment will be stored within the same SingleCellExperiment object as the main experiment but processed separately. To process alternative experiments, set the following options:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">use_alt_expr</span></code> (<em>default</em>: <code class="docutils literal notranslate"><span class="pre">False</span></code>)<span class="raw-html-m2r"><br/></span>
@@ -357,7 +358,7 @@ Regular expression to filter alternative features from main experiment (.i.e,; <
 <p>A previous addition of alternative features to the genome assembly (see section on custom assembly extensions) is a prerequisite.</p>
 </section>
 <section id="output-files">
-<h3>Output files<a class="headerlink" href="#output-files" title="Permalink to this headline"></a></h3>
+<h3>Output files<a class="headerlink" href="#output-files" title="Permalink to this heading"></a></h3>
 <p>After running the scRNA QC workflow, the output can be found in the following locations:<span class="raw-html-m2r"><br/></span></p>
 <p><code class="docutils literal notranslate"><span class="pre">path/to/results/scrna-preprocess/{quantifier}/export</span></code>:<span class="raw-html-m2r"><br/></span>
 This folder contains the exported raw SingleCellExperiment object, without any QC applied.</p>

@@ -26,7 +26,7 @@ if config.get("create_trackhub"):
         Generate a 2bit file for each assembly
         """
         input:
-            expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+            rules.get_genome.output,
         output:
             expand("{genome_dir}/{{assembly}}/{{assembly}}.2bit", **config),
         log:
@@ -48,8 +48,8 @@ if config.get("create_trackhub"):
         source: http://hgdownload.cse.ucsc.edu/goldenPath/hg19/gc5Base/
         """
         input:
-            twobit=expand("{genome_dir}/{{assembly}}/{{assembly}}.2bit", **config),
-            sizes=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
+            twobit=rules.twobit.output,
+            sizes=rules.get_genome_support_files.output.sizes,
         output:
             gcpcvar=temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.gc5Base.wigVarStep.txt.gz", **config)),
             gcpc=expand("{genome_dir}/{{assembly}}/{{assembly}}.gc5Base.bw", **config),
@@ -77,8 +77,8 @@ if config.get("create_trackhub"):
         source: http://genomewiki.ucsc.edu/index.php/Assembly_Hubs#Cytoband_Track
         """
         input:
-            genome=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
-            sizes=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
+            genome=rules.get_genome.output,
+            sizes=rules.get_genome_support_files.output.sizes,
         output:
             cytoband_bb=expand("{genome_dir}/{{assembly}}/cytoBandIdeo.bb", **config),
             cytoband_bd=temp(expand("{genome_dir}/{{assembly}}/cytoBandIdeo.bed", **config)),
@@ -132,7 +132,7 @@ if config.get("create_trackhub"):
         source: https://github.com/Gaius-Augustus/MakeHub/blob/master/make_hub.py
         """
         input:
-            genome=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+            genome=rules.get_genome.output,
         output:
             mask_unsorted=temp(expand("{genome_dir}/{{assembly}}/{{assembly}}_softmasking_unsorted.bed", **config)),
         benchmark:
@@ -160,8 +160,8 @@ if config.get("create_trackhub"):
         source: https://github.com/Gaius-Augustus/MakeHub/blob/master/make_hub.py
         """
         input:
-            mask_unsorted=expand("{genome_dir}/{{assembly}}/{{assembly}}_softmasking_unsorted.bed", **config),
-            sizes=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
+            mask_unsorted=rules.softmask_track_1.output.mask_unsorted,
+            sizes=rules.get_genome_support_files.output.sizes,
         output:
             maskbed=temp(expand("{genome_dir}/{{assembly}}/{{assembly}}_softmasking.bed", **config)),
             mask=expand("{genome_dir}/{{assembly}}/{{assembly}}_softmasking.bb", **config),
@@ -187,8 +187,8 @@ if config.get("create_trackhub"):
         https://www.biostars.org/p/272649/
         """
         input:
-            sizes=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
-            gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
+            sizes=rules.get_genome_support_files.output.sizes,
+            gtf=rules.get_genome_annotation.output.gtf,
         output:
             genePred=temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.gp", **config)),
             genePrednamed=temp(expand("{genome_dir}/{{assembly}}/{{assembly}}named.gp", **config)),

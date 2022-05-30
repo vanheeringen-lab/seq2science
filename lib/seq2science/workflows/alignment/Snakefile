@@ -5,59 +5,29 @@ include: "../../rules/configuration.smk"
 
 
 # load the remaining relevant rules
+include: f"{config['rule_dir']}/get_fastq.smk"
+include: f"{config['rule_dir']}/trimming.smk"
+include: f"{config['rule_dir']}/merge_replicates.smk"
+include: f"{config['rule_dir']}/get_genome.smk"
+include: f"{config['rule_dir']}/blacklist.smk"
 include: f"{config['rule_dir']}/alignment.smk"
 include: f"{config['rule_dir']}/bam_cleaning.smk"
 include: f"{config['rule_dir']}/bigfiles.smk"
-include: f"{config['rule_dir']}/get_genome.smk"
-include: f"{config['rule_dir']}/get_fastq.smk"
-include: f"{config['rule_dir']}/merge_replicates.smk"
 include: f"{config['rule_dir']}/trackhub.smk"
 include: f"{config['rule_dir']}/qc.smk"
-include: f"{config['rule_dir']}/trimming.smk"
 
 
 # load the quality control files
 QUALITY_CONTROL = [get_trimming_qc, get_alignment_qc]
 
-def get_bams():
-    bamfiles = {}
-    if config.get('cram_no_bam'):
-        assert config['bam_sorter'] == 'samtools'
-        assert config['bam_sort_order'] == 'coordinate'
-        map_ext = 'cram'
-        map_idx = 'crai'
-    else:
-        map_ext = 'bam'
-        map_idx = 'bai'
-    bamfiles['map'] = set(); bamfiles['ind'] = set()
-
-    # get all the bams
-    if 'technical_replicates' in samples:
-        for assembly in ALL_ASSEMBLIES:
-            for replicate in set(samples[samples['assembly'] == ORI_ASSEMBLIES[assembly]]['technical_replicates']):
-                bamfiles['map'].update([expand(f"{{final_bam_dir}}/{assembly}-{replicate}.{{bam_sorter}}-{{bam_sort_order}}.{map_ext}", **config)[0]])
-                bamfiles['ind'].update([expand(f"{{final_bam_dir}}/{assembly}-{replicate}.{{bam_sorter}}-{{bam_sort_order}}.{map_ext}.{map_idx}", **config)[0]])
-                # always output samtools-coordinate
-                bamfiles['map'].update([expand(f"{{final_bam_dir}}/{assembly}-{replicate}.samtools-coordinate.{map_ext}", **config)[0]])
-                bamfiles['ind'].update([expand(f"{{final_bam_dir}}/{assembly}-{replicate}.samtools-coordinate.{map_ext}.{map_idx}", **config)[0]])
-    else:
-        # SUFFIX is defined in configuration_generic
-        bamfiles['map'].update([expand(f"{{final_bam_dir}}/{samples.loc[sample]['assembly']}{SUFFIX}-{sample}.{{bam_sorter}}-{{bam_sort_order}}.{map_ext}", **config)[0] for sample in samples.index])
-        bamfiles['ind'].update([expand(f"{{final_bam_dir}}/{samples.loc[sample]['assembly']}{SUFFIX}-{sample}.{{bam_sorter}}-{{bam_sort_order}}.{map_ext}.{map_idx}", **config)[0] for sample in samples.index if config['bam_sort_order'] == 'coordinate'])
-        # always output samtools-coordinate
-        bamfiles['map'].update([expand(f"{{final_bam_dir}}/{samples.loc[sample]['assembly']}{SUFFIX}-{sample}.samtools-coordinate.{map_ext}", **config)[0] for sample in samples.index])
-        bamfiles['ind'].update([expand(f"{{final_bam_dir}}/{samples.loc[sample]['assembly']}{SUFFIX}-{sample}.samtools-coordinate.{map_ext}.{map_idx}", **config)[0] for sample in samples.index if config['bam_sort_order'] == 'coordinate'])
-
-    return bamfiles
 
 rule seq2science:
     """
     align each sample against its assembly
     """
     input:
-         get_bams()['map'] if not config['create_trackhub'] else [],
-         get_bams()['ind'] if not config['create_trackhub'] else [],
          expand(
+             ([f"{{final_bam_dir}}/{CUSTOM_ASSEMBLIES[treps.loc[trep, 'assembly']]}-{trep}.{{bam_sorter}}-{{bam_sort_order}}.{{b}}am" for trep in treps.index]) +
              (["{trackhub_dir}"]                     if config['create_trackhub'] else []) +
              (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []),
-             **{**config, **{'assemblies': ALL_ASSEMBLIES}})
+             assemblies=ALL_ASSEMBLIES, b="cr" if config.get('cram_no_bam') else "b", **config)

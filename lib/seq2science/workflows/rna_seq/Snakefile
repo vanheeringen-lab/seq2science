@@ -9,20 +9,24 @@ include: f"{config['rule_dir']}/get_fastq.smk"
 include: f"{config['rule_dir']}/trimming.smk"
 include: f"{config['rule_dir']}/merge_replicates.smk"
 include: f"{config['rule_dir']}/get_genome.smk"
+include: f"{config['rule_dir']}/blacklist.smk"
 include: f"{config['rule_dir']}/alignment.smk"
 include: f"{config['rule_dir']}/bam_cleaning.smk"
 include: f"{config['rule_dir']}/strandedness.smk"
-include: f"{config['rule_dir']}/quantification.smk"
+include: f"{config['rule_dir']}/gene_quantification.smk"
 include: f"{config['rule_dir']}/gene_counts.smk"
 include: f"{config['rule_dir']}/bigfiles.smk"
 include: f"{config['rule_dir']}/trackhub.smk"
 include: f"{config['rule_dir']}/deseq2.smk"
 include: f"{config['rule_dir']}/qc.smk"
-include: f"{config['rule_dir']}/qc_rna.smk"
+include: f"{config['rule_dir']}/qc_RNA.smk"
 
 
 # load the quality control files
-QUALITY_CONTROL = [get_trimming_qc, get_rna_qc] if config['quantifier'] == 'salmon' and config['create_trackhub'] == False else [get_trimming_qc, get_alignment_qc, get_rna_qc]
+QUALITY_CONTROL = [get_trimming_qc, get_rna_qc]
+if config['quantifier'] != 'salmon' or config['create_trackhub'] is True:
+    QUALITY_CONTROL.append(get_alignment_qc)
+
 
 rule seq2science:
     """
@@ -32,7 +36,6 @@ rule seq2science:
          expand(
              (["{trackhub_dir}"]                     if config['create_trackhub']  else []) +
              (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []) +
-
              (["{counts_dir}/{assemblies}-counts.tsv", "{counts_dir}/{assemblies}-TPM.tsv"]) +
              (["{counts_dir}/{assemblies}-DEXSeq_counts.tsv"] if config['dexseq'] else []) +
              (["{genome_dir}/{assemblies}/gene_id2name.tsv"]), assemblies=ALL_ASSEMBLIES, **config) +

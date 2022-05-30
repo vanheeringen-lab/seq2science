@@ -5,19 +5,20 @@ include: "../../rules/configuration.smk"
 
 
 # load all the relevant rules
+include: f"{config['rule_dir']}/get_fastq.smk"
+include: f"{config['rule_dir']}/trimming.smk"
+include: f"{config['rule_dir']}/merge_replicates.smk"
+include: f"{config['rule_dir']}/get_genome.smk"
+include: f"{config['rule_dir']}/blacklist.smk"
 include: f"{config['rule_dir']}/alignment.smk"
 include: f"{config['rule_dir']}/bam_cleaning.smk"
-include: f"{config['rule_dir']}/bigfiles.smk"
-include: f"{config['rule_dir']}/deseq2.smk"
-include: f"{config['rule_dir']}/get_genome.smk"
-include: f"{config['rule_dir']}/get_fastq.smk"
-include: f"{config['rule_dir']}/merge_replicates.smk"
-include: f"{config['rule_dir']}/peak_counts.smk"
 include: f"{config['rule_dir']}/peak_calling.smk"
+include: f"{config['rule_dir']}/peak_counts.smk"
+include: f"{config['rule_dir']}/bigfiles.smk"
+include: f"{config['rule_dir']}/trackhub.smk"
+include: f"{config['rule_dir']}/deseq2.smk"
 include: f"{config['rule_dir']}/qc.smk"
 include: f"{config['rule_dir']}/qc_peaks.smk"
-include: f"{config['rule_dir']}/trackhub.smk"
-include: f"{config['rule_dir']}/trimming.smk"
 
 
 # set the quality_control functions

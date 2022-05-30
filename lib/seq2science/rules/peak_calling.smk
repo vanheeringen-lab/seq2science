@@ -206,7 +206,7 @@ rule keep_mates:
     macs2 in this case only keeps the first in pair.
     """
     input:
-        expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config),
+        FINAL_BAM,
     output:
         expand("{final_bam_dir}/{{assembly}}-{{sample}}-mates.samtools-coordinate.bam", **config),
     message: EXPLAIN["keep_mates"]
@@ -228,7 +228,7 @@ rule hmmratac_genome_info:
     TODO: isnt this just .fa.sizes?
     """
     input:
-        bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config),
+        bam=FINAL_BAM,
     output:
         out=expand("{result_dir}/hmmratac/{{assembly}}-{{sample}}.genomesizes", **config),
         tmp1=temp(expand("{result_dir}/hmmratac/{{assembly}}-{{sample}}.tmp1", **config)),
@@ -255,9 +255,9 @@ rule hmmratac:
     Call gappedpeaks with HMMRATAC.
     """
     input:
-        genome_size=expand("{result_dir}/hmmratac/{{assembly}}-{{sample}}.genomesizes", **config),
-        bam=expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam", **config),
-        bam_index=expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-coordinate.bam.bai", **config),
+        genome_size=rules.hmmratac_genome_info.output.out,
+        bam=FINAL_BAM,
+        bam_index=FINAL_BAI,
     output:
         expand("{result_dir}/hmmratac/{{assembly}}-{{sample}}{hmmratac_types}", **config),
     log:

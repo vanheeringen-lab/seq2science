@@ -277,7 +277,7 @@ def samples2metadata(samples: List[str], config: dict, logger) -> dict:
 
 def sieve_bam(configdict):
     """
-    helper function to check whether or not we use rule sieve_bam
+    helper function to check whether to use rule sieve_bam
     """
     return (
         configdict.get("min_mapping_quality", 0) > 0

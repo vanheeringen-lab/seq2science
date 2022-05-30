@@ -14,6 +14,7 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -91,7 +92,7 @@
            <div itemprop="articleBody">
              
   <section id="differential-gene-peak-analysis">
-<h1>Differential gene/peak analysis<a class="headerlink" href="#differential-gene-peak-analysis" title="Permalink to this headline"></a></h1>
+<h1>Differential gene/peak analysis<a class="headerlink" href="#differential-gene-peak-analysis" title="Permalink to this heading"></a></h1>
 <p>Seq2science outputs counts matrices for each assembly in any bulk-sequencing workflow, which can optionally can be used for differential gene/peak analysis with <a class="reference external" href="https://genomebiology.biomedcentral.com/articles/10.1186/s13059-014-0550-8">DESeq2</a>.
 To do so, add one or more contrast design(s) in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file, with matching identifiers in the <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> file.</p>
 <p>After completing the workflow, rerunning Seq2science with new contrasts will only perform the new analyses.
@@ -100,13 +101,13 @@ To get started with the command line script, try out <code class="docutils liter
 <p>This section details how the contrast designs are created.
 Examples are given <a class="reference external" href="./DESeq2.html#contrast-designs">below</a>, and each <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> contains a commented-out example contrast design at the bottom.</p>
 <section id="single-cell-deseq2">
-<h2>single-cell DESeq2<a class="headerlink" href="#single-cell-deseq2" title="Permalink to this headline"></a></h2>
+<h2>single-cell DESeq2<a class="headerlink" href="#single-cell-deseq2" title="Permalink to this heading"></a></h2>
 <p>If your counts table contains all cells, and your samples.tsv contains a group identifier for each cell, you can perform DESeq2 on this data using <code class="docutils literal notranslate"><span class="pre">deseq2science</span></code> by passing the <code class="docutils literal notranslate"><span class="pre">--single-cell</span></code> flag.
 Please note that <code class="docutils literal notranslate"><span class="pre">deseq2science</span></code> can accept a gzipped tsv file as well.</p>
 <p>Also note that the <code class="docutils literal notranslate"><span class="pre">--single-cell</span></code> flag should <em>not</em> be used with pseudo-bulk.</p>
 </section>
 <section id="overview-of-the-deseq2-method">
-<h2>Overview of the DESeq2 method<a class="headerlink" href="#overview-of-the-deseq2-method" title="Permalink to this headline"></a></h2>
+<h2>Overview of the DESeq2 method<a class="headerlink" href="#overview-of-the-deseq2-method" title="Permalink to this heading"></a></h2>
 <p>DESeq2 automatically performs library bias correction when loading your data, and batch correction is performed if it is included in the contrast design.
 After calculating differentially expressed genes/peaks, a multiple testing procedure is applied, which is either the Benjamini-Hochberg procedure (the default) or Independent Hypothesis Weighing.
 The False Discovery Rate cutoff is set by alpha, which is 0.1 by default.
@@ -115,7 +116,7 @@ These defaults can be changed in the <a class="reference external" href="./schem
 <p>For more information, check out the steps in this <a class="reference external" href="https://www.bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html">vignette</a>, which Seq2science follows.</p>
 </section>
 <section id="contrast-designs">
-<h2>Contrast designs<a class="headerlink" href="#contrast-designs" title="Permalink to this headline"></a></h2>
+<h2>Contrast designs<a class="headerlink" href="#contrast-designs" title="Permalink to this heading"></a></h2>
 <p>The following section will guide you through the process of creating a DESeq2 contrast using only the samples.tsv and the config.yaml.</p>
 <p>Here are some definitions: a <strong>contrast</strong> design tells us which samples to compare. It contains three or four parts: a <strong>condition</strong> (a column name in the samples.tsv), and two <strong>groups</strong> (labels in this column).
 The first group will be the <strong>target</strong>, and the second group will be the <strong>reference</strong>.
@@ -123,7 +124,7 @@ Additionally, a contrast can optionally contain a <strong>batch</strong> effect,
 <p>To determine differentially expressed genes/accessible peaks, DESeq2 requires at least two samples per group.
 A design contrast therefore requires at least 2x2 samples.</p>
 <section id="contrast-in-the-samples-tsv">
-<h3>Contrast in the samples.tsv<a class="headerlink" href="#contrast-in-the-samples-tsv" title="Permalink to this headline"></a></h3>
+<h3>Contrast in the samples.tsv<a class="headerlink" href="#contrast-in-the-samples-tsv" title="Permalink to this heading"></a></h3>
 <p>In the <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code>, add a column for every property you wish to test in your samples.
 Next, add labels to the samples involved in the test. You can leave labels empty, or add labels and not use them.
 For example:</p>
@@ -189,7 +190,7 @@ For example:</p>
 </table>
 </section>
 <section id="contrast-in-the-config-yaml">
-<h3>Contrast in the config.yaml<a class="headerlink" href="#contrast-in-the-config-yaml" title="Permalink to this headline"></a></h3>
+<h3>Contrast in the config.yaml<a class="headerlink" href="#contrast-in-the-config-yaml" title="Permalink to this heading"></a></h3>
 <p>Next, in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> add one or more contrasts:</p>
 <p>In order to compare two groups, the contrast condition is the column name, followed by the target group and finally the reference group.
 For example, to compare stage 1 to stage 3 from the examples above, the contrast would be <code class="docutils literal notranslate"><span class="pre">stages_3_1</span></code>.</p>
@@ -205,7 +206,7 @@ For example, to compare all treatments to the control from the examples above, t
 </div>
 </section>
 <section id="group-order">
-<h3>Group order<a class="headerlink" href="#group-order" title="Permalink to this headline"></a></h3>
+<h3>Group order<a class="headerlink" href="#group-order" title="Permalink to this heading"></a></h3>
 <p>As a rule of thumb: the reference group should be specified <strong>last</strong>.</p>
 <p>The order of the groups in a design contrast determines the direction of the expression log fold change.
 In the example <code class="docutils literal notranslate"><span class="pre">stages_3_1</span></code>, a gene upregulated at stage 3 has a <em>positive</em> expression fold change.
@@ -213,7 +214,7 @@ In contrast <code class="docutils literal notranslate"><span class="pre">stages_
 Other values are unaffected.</p>
 </section>
 <section id="batches">
-<h3>Batches<a class="headerlink" href="#batches" title="Permalink to this headline"></a></h3>
+<h3>Batches<a class="headerlink" href="#batches" title="Permalink to this heading"></a></h3>
 <p>If your data has batch effects, DESeq2 can try to account for these.
 Note that this can only be done if the batch effects are spread over different conditions.</p>
 <p>Similar to conditions, add a column to samples.tsv and note the batch of each sample:</p>
@@ -259,7 +260,7 @@ To correct for a batch, add the column and a plus sign in from of the regular co
 </section>
 </section>
 <section id="output">
-<h2>Output<a class="headerlink" href="#output" title="Permalink to this headline"></a></h2>
+<h2>Output<a class="headerlink" href="#output" title="Permalink to this heading"></a></h2>
 <p>For each contrast design, the list of <em>all</em> genes/peaks is saved to file, with analysis results for expressed genes. Briefly, these include:</p>
 <ul class="simple">
 <li><p>The column <code class="docutils literal notranslate"><span class="pre">padj</span></code> contains the adjusted p-values after multiple testing. <strong>(These should be used to identify DE genes/peaks)</strong>.</p></li>

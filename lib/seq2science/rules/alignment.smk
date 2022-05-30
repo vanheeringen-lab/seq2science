@@ -19,7 +19,7 @@ if config["aligner"] == "bowtie2":
         Make a genome index for bowtie2. This index is required for alignment.
         """
         input:
-            expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+            rules.get_genome.output,
         output:
             directory(expand("{genome_dir}/{{assembly}}/index/{aligner}/", **config)),
         log:
@@ -45,7 +45,7 @@ if config["aligner"] == "bowtie2":
         """
         input:
             reads=get_reads,
-            index=expand("{genome_dir}/{{assembly}}/index/{aligner}/", **config),
+            index=rules.bowtie2_index.output,
         output:
             pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0]),
         log:
@@ -77,7 +77,7 @@ elif config["aligner"] == "bwa-mem":
         Make a genome index for bwa (mem). This index is required for alignment.
         """
         input:
-            expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+            rules.get_genome.output,
         output:
             directory(expand("{genome_dir}/{{assembly}}/index/{aligner}/", **config)),
         log:
@@ -105,7 +105,7 @@ elif config["aligner"] == "bwa-mem":
         """
         input:
             reads=get_reads,
-            index=expand("{genome_dir}/{{assembly}}/index/{aligner}/", **config),
+            index=rules.bwa_index.output,
         output:
             pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0]),
         log:
@@ -135,7 +135,7 @@ elif config["aligner"] == "bwa-mem2":
         Make a genome index for bwa-mem2. This index is required for alignment.
         """
         input:
-            expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+            rules.get_genome.output,
         output:
             directory(expand("{genome_dir}/{{assembly}}/index/{aligner}/", **config)),
         log:
@@ -162,7 +162,7 @@ elif config["aligner"] == "bwa-mem2":
         """
         input:
             reads=get_reads,
-            index=expand("{genome_dir}/{{assembly}}/index/{aligner}/", **config),
+            index=rules.bwa_mem2_index.output,
         output:
             pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0]),
         log:
@@ -193,8 +193,8 @@ elif config["aligner"] == "hisat2":
         This index is required for alignment and quantification of RNA-seq data.
         """
         input:
-            fasta=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
-            gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
+            fasta=rules.get_genome.output,
+            gtf=rules.get_genome_annotation.output.gtf,
         output:
             directory(expand("{genome_dir}/{{assembly}}/index/{aligner}_splice_aware/", **config)),
         log:
@@ -227,7 +227,7 @@ elif config["aligner"] == "hisat2":
         Make a genome index for hisat2. This index is required for alignment.
         """
         input:
-            expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+            rules.get_genome.output,
         output:
             directory(expand("{genome_dir}/{{assembly}}/index/{aligner}/", **config)),
         log:
@@ -294,7 +294,7 @@ elif config["aligner"] == "minimap2":
         Make a genome index for minimap2. This index is required for alignment.
         """
         input:
-            genome=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
+            genome=rules.get_genome.output,
         output:
             expand("{genome_dir}/{{assembly}}/index/{aligner}/ref.mmi", **config),
         log:
@@ -363,9 +363,9 @@ elif config["aligner"] == "star":
            index: --limitGenomeGenerateRAM 60000000000 --genomeSAsparseD 1
         """
         input:
-            genome=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa", **config),
-            sizefile=expand("{genome_dir}/{{assembly}}/{{assembly}}.fa.sizes", **config),
-            gtf=expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation.gtf", **config),
+            genome=rules.get_genome.output,
+            sizes=rules.get_genome_support_files.output.sizes,
+            gtf=rules.get_genome_annotation.output.gtf,
         output:
             directory(expand("{genome_dir}/{{assembly}}/index/{aligner}/", **config)),
         log:
@@ -393,8 +393,8 @@ elif config["aligner"] == "star":
             # set genome dependent variables
             NBits=""
             NBases=""
-            GenomeLength=$(awk -F"\t" '{{x+=$2}}END{{printf "%i", x}}' {input.sizefile})
-            NumberOfReferences=$(awk 'END{{print NR}}' {input.sizefile})
+            GenomeLength=$(awk -F"\t" '{{x+=$2}}END{{printf "%i", x}}' {input.sizes})
+            NumberOfReferences=$(awk 'END{{print NR}}' {input.sizes})
             if [ $NumberOfReferences -gt 5000 ]; then
                 # for large genomes, --genomeChrBinNbits should be scaled to min(18,log2[max(GenomeLength/NumberOfReferences,ReadLength)])
                 # ReadLength is skipped here, as it is unknown
@@ -423,7 +423,7 @@ elif config["aligner"] == "star":
         """
         input:
             reads=get_reads,
-            index=expand("{genome_dir}/{{assembly}}/index/{aligner}/", **config),
+            index=rules.star_index.output,
         output:
             pipe=pipe(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}.samtools-coordinate.pipe", **config)[0]),
             dir=directory(expand("{result_dir}/{aligner}/{{assembly}}-{{sample}}", **config)),

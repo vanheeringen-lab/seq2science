@@ -10,8 +10,7 @@ import genomepy
 
 
 logfile = snakemake.log[0]
-assembly = snakemake.wildcards.raw_assembly
-genome_dir = snakemake.params.genome_dir
+fasta = snakemake.input[0]
 output = snakemake.output[0]
 
 # redirect all messages to a logfile
@@ -24,11 +23,20 @@ with open(logfile, "w") as log:
             level="INFO",
         )
 
-        genome = genomepy.Genome(assembly, genome_dir)
+        genome = genomepy.Genome(fasta)
         plugins = genomepy.plugins.init_plugins()
         plugins["blacklist"].after_genome_download(genome)
 
         # touch the file if no blacklist was available
-        if not os.path.exists(output):
+        if os.path.exists(output):
+            with open(output, "r") as f:
+                lines = f.readlines()
+
+            # only keep first three columns
+            lines = ["\t".join(line.split("\t")[:3]) for line in lines]
+
+            with open(output, "w") as f:
+                f.write("\n".join(lines) + "\n")
+        else:
             with open(output, 'w'):
                 os.utime(output, None)
