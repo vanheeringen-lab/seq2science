@@ -66,11 +66,18 @@ Seq2science currently supports four different normalisation methods: quantile no
 
 After these normalisations the counts are log normalised, and the base can be set with `logbase` and defaults to 2.
 As a final step the count tables are mean-centered.
-This final count table can be used for tools like [gimme maelstrom](https://gimmemotifs.readthedocs.io/en/master/reference.html#command-gimme-maelstrom) to scan for enriched transcription factor motifs.
 Note that this table contains **all** peaks, and no selection on differential peaks has been made.
 
+#### Differential motif analysis
+
+Seq2science supports differential motif analysis!
+This analysis is based on the tool [gimme maelstrom](https://gimmemotifs.readthedocs.io/en/master/reference.html#command-gimme-maelstrom).
+As input to gimme maelstrom is the count table of all the peaks in the consensus peakset.
+It then tries to solve a system of linear equations, where the output is the read counts in a peak, and the input is the motif score in the peak times the "motif activity".
+This motif activity can then be compared across biological replicates for differential motifs.
+
 #### Differential peak analysis
-Seq2science can optionally use the raw peak counts table to perform differential peak analysis.
+On top of that, Seq2science can also use the raw peak counts table to perform differential peak analysis.
 See the [Differential gene/peak analysis page](../DESeq2.html) for more information!
 
 #### Trackhub

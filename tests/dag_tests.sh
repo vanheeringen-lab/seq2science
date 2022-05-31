@@ -311,8 +311,9 @@ if [ $1 = "atac-seq" ]; then
 
   printf "\ngimme maelstrom\n"
   seq2science run atac-seq -nr --configfile tests/$WF/macs2.yaml --snakemakeOptions quiet=True config={samples:tests/atac_seq/complex_samples2.tsv,create_qc_report:True,run_gimme_maelstrom:True} | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 gimme_maelstrom 2
   assert_rulecount $1 motif2factors 2
+  assert_rulecount $1 combine_biological_reps 2
+  assert_rulecount $1 gimme_maelstrom 2
   test_ran=1
 fi
 
