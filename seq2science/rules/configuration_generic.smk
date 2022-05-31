@@ -335,7 +335,8 @@ if "assembly" in samples:
     def parse_assemblies():
         # list assemblies that are used in this workflow
         used_assemblies = list(set(samples["assembly"]))
-        # we make a temporary _used assemblies as
+        # we make a temporary _used assemblies as gimme maelstrom might need more assemblies downloaded
+        # and those assemblies need to be saved in the local/remote assemblies variable
         if "motif2factors_reference" in config and config["run_gimme_maelstrom"]:
             _used_assemblies = used_assemblies + config["motif2factors_reference"] + config["motif2factors_database_references"]
         else:
@@ -417,6 +418,7 @@ if "assembly" in samples:
         return providers, has_annotation, all_assemblies, modified, ori_assemblies, custom_assemblies, de_contrasts
 
     PROVIDERS, HAS_ANNOTATION, ALL_ASSEMBLIES, modified, ORI_ASSEMBLIES, CUSTOM_ASSEMBLIES, DE_CONTRASTS = parse_assemblies()
+
 
 # sample layouts
 
@@ -536,6 +538,7 @@ def any_given(*args, prefix="", suffix=""):
             elements.extend(samples.index)
         elif column_name in samples:
             if (column_name == "assembly") and ("motif2factors_reference" in config):
+                elements.extend(config["motif2factors_database_references"])
                 elements.extend(config["motif2factors_reference"])
             elements.extend(samples[column_name])
 
