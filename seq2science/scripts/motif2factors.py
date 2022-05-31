@@ -9,7 +9,9 @@ supported_genome_prefixes = ["GRCh", "GRCm", "hg19", "hg38", "mm10", "mm39"]
 with open(str(snakemake.log), "w") as f:
     with redirect_stdout(f), redirect_stderr(f):
 
-        if snakemake.input.genome[:4] in supported_genome_prefixes:
+        # cut off path and .fa
+        genome = str(snakemake.wildcards.assembly)
+        if any(genome.startswith(sup_genome) for sup_genome in supported_genome_prefixes):
             # copy the default m2f
             from gimmemotifs.motif import pfmfile_location
 
@@ -28,8 +30,8 @@ with open(str(snakemake.log), "w") as f:
 
             motif2factor_from_orthologs(
                 database=snakemake.params.database,
-                new_reference=[snakemake.input.genome],
-                extra_orthologs_references=[snakemake.params.motif2factors_reference],
+                new_reference=[genome],
+                extra_orthologs_references=snakemake.params.motif2factors_reference,
                 genomes_dir=snakemake.params.genomes_dir,
                 outdir=dirname(snakemake.output[0]),
                 threads=snakemake.threads,

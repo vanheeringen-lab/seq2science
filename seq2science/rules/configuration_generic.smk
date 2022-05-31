@@ -335,17 +335,19 @@ if "assembly" in samples:
     def parse_assemblies():
         # list assemblies that are used in this workflow
         used_assemblies = list(set(samples["assembly"]))
-        if config.get("run_gimme_maelstrom", False) and "motif2factors_reference" in config:
-            used_assemblies.extend(config["motif2factors_reference"])
-    
+        if "motif2factors_reference" in config and config["run_gimme_maelstrom"]:
+            _used_assemblies = used_assemblies + config["motif2factors_reference"]
+        else:
+            _used_assemblies = used_assemblies
+
         # dictionary with which providers to use per genome
         providers = PickleDict(os.path.join(CACHE_DIR, "providers.p"))
     
         # split into local and remote assemblies, depending on if all required files can be found
         annotation_required = "rna_seq" in WORKFLOW or config["aligner"] == "star"
         ftype = "annotation" if annotation_required else "genome"
-        local_assemblies = [a for a in used_assemblies if is_local(a, ftype, config)]
-        remote_assemblies = [a for a in used_assemblies if a not in local_assemblies]
+        local_assemblies = [a for a in _used_assemblies if is_local(a, ftype, config)]
+        remote_assemblies = [a for a in _used_assemblies if a not in local_assemblies]
         search_assemblies = [assembly for assembly in remote_assemblies if providers.get(assembly, {}).get(ftype) is None]
     
         # custom assemblies without provider (for local/remote annotations)
@@ -414,7 +416,6 @@ if "assembly" in samples:
         return providers, has_annotation, all_assemblies, modified, ori_assemblies, custom_assemblies, de_contrasts
 
     PROVIDERS, HAS_ANNOTATION, ALL_ASSEMBLIES, modified, ORI_ASSEMBLIES, CUSTOM_ASSEMBLIES, DE_CONTRASTS = parse_assemblies()
-
 
 # sample layouts
 

@@ -3,6 +3,10 @@ all rules/logic related to motif scanning of peaks is found here.
 """
 def get_motif2factors_input_genomes(wildcards):
     all_out = []
+    if any(str(wildcards.assembly).startswith(assembly) for assembly in ["GRCh", "GRCm", "hg19", "hg38", "mm10", "mm39"]):
+        return all_out
+
+    all_out.append(wildcards.assembly)
     for assembly in config.get("motif2factors_reference"):
         all_out.append(expand(f"{{genome_dir}}/{assembly}/{assembly}.annotation.gtf", **config)[0])
         all_out.append(expand(f"{{genome_dir}}/{assembly}/{assembly}.fa", **config)[0])
@@ -25,7 +29,7 @@ rule motif2factors:
     benchmark:
         expand("{benchmark_dir}/motif2factors/{{assembly}}-{{gimme_database}}.log", **config)[0],
     params:
-        genomes_dir=config.get("genomes_dir"),
+        genomes_dir=config.get("genome_dir"),
         database=config.get("gimme_maelstrom_database"),
         motif2factors_reference=config.get("motif2factors_reference")
     threads: 24
@@ -41,7 +45,7 @@ rule gimme_maelstrom:
     """
     input:
         genome=rules.get_genome.output,
-        count_table=expand("{counts_dir}/{{peak_caller}}/{{assembly}}_meancenter_log2_quantilenorm.tsv", **config),
+        count_table=expand("{counts_dir}/{{peak_caller}}/{{assembly}}_log2_quantilenorm_biological_reps.tsv", **config),
         pfm=rules.motif2factors.output
     output:
         directory(expand("{result_dir}/gimme/maelstrom/{{assembly}}-{{gimme_database}}-{{peak_caller}}", **config)),
@@ -57,5 +61,5 @@ rule gimme_maelstrom:
     threads: 24
     shell:
         """
-        gimme maelstrom {input.count_table} {input.genome} {output} --pfmfile {input.pfm} --nthreads {threads}
+        gimme maelstrom {input.count_table} {input.genome} {output} --pfmfile {input.pfm} --nthreads {threads} > {log} 2>&1
         """

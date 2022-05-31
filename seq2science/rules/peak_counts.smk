@@ -14,28 +14,41 @@ def count_table_output():
     if ftype != "narrowPeak":
         return []
 
-    return expand(
+    expanddict = {
+        "assemblies": ALL_ASSEMBLIES,
+            "peak_caller": config["peak_caller"].keys(),
+            "normalization": [
+                "raw",
+                f"meancenter_log{config['logbase']}_quantilenorm",
+                f"meancenter_log{config['logbase']}_TMM",
+                f"meancenter_log{config['logbase']}_RLE",
+                f"meancenter_log{config['logbase']}_upperquartile",
+            ],
+            "mc": ["", "meancenter_"],
+        }
+
+    count_tables = expand(
         [
-            "{counts_dir}/{peak_caller}/{assemblies}_{normalization}.tsv",
+            "{counts_dir}/{peak_caller}/{assemblies}_{normalization}_technical_reps.tsv",
             "{counts_dir}/{peak_caller}/{assemblies}_onehotpeaks.tsv",
         ],
-        **{
-            **config,
-            **{
-                "assemblies": ALL_ASSEMBLIES,
-                "peak_caller": config["peak_caller"].keys(),
-                "normalization": [
-                    "raw",
-                    f"meancenter_log{config['logbase']}_quantilenorm",
-                    f"meancenter_log{config['logbase']}_TMM",
-                    f"meancenter_log{config['logbase']}_RLE",
-                    f"meancenter_log{config['logbase']}_upperquartile",
-                ],
-                "mc": ["", "meancenter_"],
-            },
-        },
+        **{**config, **expanddict}
     )
+    if breps is not treps:
+        expanddict["normalization"] = [
+                f"log{config['logbase']}_quantilenorm",
+                f"log{config['logbase']}_TMM",
+                f"log{config['logbase']}_RLE",
+                f"log{config['logbase']}_upperquartile",
+        ]
+        count_tables.extend(
+            expand(
+                "{counts_dir}/{peak_caller}/{assemblies}_{normalization}_biological_reps.tsv",
+                **{**config, **expanddict}
+            )
+        )
 
+    return count_tables
 
 def get_peakfile_for_summit(wildcards):
     ftype = get_peak_ftype(wildcards.peak_caller)
@@ -167,7 +180,7 @@ rule coverage_table:
         replicates=get_coverage_table_replicates("bam"),
         replicate_bai=get_coverage_table_replicates("bam.bai"),
     output:
-        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_raw.tsv", **config),
+        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_raw_technical_reps.tsv", **config),
     log:
         expand("{log_dir}/coverage_table/{{assembly}}-{{peak_caller}}.log", **config),
     benchmark:
@@ -209,7 +222,7 @@ rule quantile_normalization:
     input:
         rules.coverage_table.output,
     output:
-        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_quantilenorm.tsv", **config),
+        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_quantilenorm_technical_reps.tsv", **config),
     log:
         expand("{log_dir}/quantile_normalization/{{assembly}}-{{peak_caller}}-quantilenorm.log", **config),
     benchmark:
@@ -234,7 +247,7 @@ rule edgeR_normalization:
     input:
         rules.coverage_table.output,
     output:
-        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_{{normalisation,(TMM|RLE|upperquartile)}}.tsv", **config),
+        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_{{normalisation,(TMM|RLE|upperquartile)}}_technical_reps.tsv", **config),
     log:
         expand("{log_dir}/edgeR_normalization/{{assembly}}-{{peak_caller}}-{{normalisation}}.log", **config),
     benchmark:
@@ -254,9 +267,9 @@ rule log_normalization:
     Log1p normalization of a count table.
     """
     input:
-        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_{{normalisation}}.tsv", **config),
+        rules.edgeR_normalization.output
     output:
-        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_log{{base}}_{{normalisation}}.tsv", **config),
+        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_log{{base}}_{{normalisation}}_technical_reps.tsv", **config),
     run:
         import pandas as pd
         import numpy as np
@@ -287,9 +300,9 @@ rule mean_center:
     Mean centering of a count table.
     """
     input:
-        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_log{{base}}_{{normalisation}}.tsv", **config),
+        rules.log_normalization.output
     output:
-        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_meancenter_log{{base}}_{{normalisation}}.tsv", **config),
+        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_meancenter_log{{base}}_{{normalisation}}_technical_reps.tsv", **config),
     run:
         import pandas as pd
 
@@ -309,6 +322,20 @@ rule mean_center:
             f"# The number of reads under each peak, mean centered after log1p {wildcards.base} and {wildcards.normalisation} normalization\n"
             + cov_mc.to_csv(index=True, header=True, sep="\t")
         )
+
+
+rule combine_biological_reps:
+    """
+    """
+    input:
+        rules.log_normalization.output
+    output:
+        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_log{{base}}_{{normalisation}}_biological_reps.tsv", **config),
+    params:
+        samples=samples,
+        breps=breps
+    script:
+        f"{config['rule_dir']}/../scripts/combine_biological_reps.py"
 
 
 def get_all_narrowpeaks(wildcards):

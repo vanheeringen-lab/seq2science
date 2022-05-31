@@ -82,6 +82,8 @@ properties:
       - ARS-UCD1.2
       - phaCin_unsw_v4.1
       - rCheMyd1.pri
+      - GRCh38.p13
+      - GRCm38.p6
     type: array
     items:
       type: string
