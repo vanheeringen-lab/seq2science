@@ -14,34 +14,41 @@ def count_table_output():
     if ftype != "narrowPeak":
         return []
 
-    if breps == treps:
-        replicates = ["technical_reps"]
-    else:
-        replicates = ["technical_reps", "biological_reps"]
+    expanddict = {
+        "assemblies": ALL_ASSEMBLIES,
+            "peak_caller": config["peak_caller"].keys(),
+            "normalization": [
+                "raw",
+                f"meancenter_log{config['logbase']}_quantilenorm",
+                f"meancenter_log{config['logbase']}_TMM",
+                f"meancenter_log{config['logbase']}_RLE",
+                f"meancenter_log{config['logbase']}_upperquartile",
+            ],
+            "mc": ["", "meancenter_"],
+        }
 
-    return expand(
+    count_tables = expand(
         [
-            "{counts_dir}/{peak_caller}/{assemblies}_{normalization}_{replicates}.tsv",
+            "{counts_dir}/{peak_caller}/{assemblies}_{normalization}_technical_reps.tsv",
             "{counts_dir}/{peak_caller}/{assemblies}_onehotpeaks.tsv",
         ],
-        **{
-            **config,
-            **{
-                "assemblies": ALL_ASSEMBLIES,
-                "peak_caller": config["peak_caller"].keys(),
-                "normalization": [
-                    "raw",
-                    f"meancenter_log{config['logbase']}_quantilenorm",
-                    f"meancenter_log{config['logbase']}_TMM",
-                    f"meancenter_log{config['logbase']}_RLE",
-                    f"meancenter_log{config['logbase']}_upperquartile",
-                ],
-                "mc": ["", "meancenter_"],
-                "replicates": replicates,
-            },
-        },
+        **{**config, **expanddict}
     )
+    if breps is treps:
+        expanddict["normalization"] = [
+                f"log{config['logbase']}_quantilenorm",
+                f"log{config['logbase']}_TMM",
+                f"log{config['logbase']}_RLE",
+                f"log{config['logbase']}_upperquartile",
+        ]
+        count_tables.extend(
+            expand(
+                "{counts_dir}/{peak_caller}/{assemblies}_{normalization}_biological_reps.tsv",
+                **{**config, **expanddict}
+            )
+        )
 
+    return count_tables
 
 def get_peakfile_for_summit(wildcards):
     ftype = get_peak_ftype(wildcards.peak_caller)
