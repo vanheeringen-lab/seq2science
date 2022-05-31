@@ -337,6 +337,8 @@ if "assembly" in samples:
         used_assemblies = list(set(samples["assembly"]))
         if "motif2factors_reference" in config and config["run_gimme_maelstrom"]:
             _used_assemblies = used_assemblies + config["motif2factors_reference"]
+        else:
+            _used_assemblies = used_assemblies
     
         # dictionary with which providers to use per genome
         providers = PickleDict(os.path.join(CACHE_DIR, "providers.p"))
