@@ -34,7 +34,7 @@ def count_table_output():
         ],
         **{**config, **expanddict}
     )
-    if breps is treps:
+    if breps is not treps:
         expanddict["normalization"] = [
                 f"log{config['logbase']}_quantilenorm",
                 f"log{config['logbase']}_TMM",
@@ -332,7 +332,8 @@ rule combine_biological_reps:
     output:
         expand("{counts_dir}/{{peak_caller}}/{{assembly}}_log{{base}}_{{normalisation}}_biological_reps.tsv", **config),
     params:
-        samples
+        samples=samples,
+        breps=breps
     script:
         f"{config['rule_dir']}/../scripts/combine_biological_reps.py"
 

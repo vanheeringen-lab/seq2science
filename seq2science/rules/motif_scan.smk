@@ -58,7 +58,7 @@ rule gimme_maelstrom:
     message: EXPLAIN["gimme_maelstrom"]
     conda:
         "../envs/gimme.yaml"
-    threads: 48
+    threads: 24
     shell:
         """
         gimme maelstrom {input.count_table} {input.genome} {output} --pfmfile {input.pfm} --nthreads {threads} > {log} 2>&1
