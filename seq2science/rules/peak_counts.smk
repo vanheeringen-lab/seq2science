@@ -331,6 +331,8 @@ rule combine_biological_reps:
         rules.log_normalization.output
     output:
         expand("{counts_dir}/{{peak_caller}}/{{assembly}}_log{{base}}_{{normalisation}}_biological_reps.tsv", **config),
+    params:
+        samples
     script:
         f"{config['rule_dir']}/../scripts/combine_biological_reps.py"
 

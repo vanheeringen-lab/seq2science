@@ -2,7 +2,7 @@ import pandas as pd
 
 counts = pd.read_table(snakemake.input[0], comment="#", index_col=0)
 print(counts)
-local_samples = samples[samples["assembly"] == wildcards.assembly]
+local_samples = params.samples[params.samples["assembly"] == wildcards.assembly]
 print(local_samples)
 
 if descriptive_name in local_samples.columns:
