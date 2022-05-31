@@ -46,7 +46,6 @@ pipeline {
 
                 printf "\nconfigure miniconda\n"
                 conda config --set always_yes yes --set changeps1 false
-                conda update -n base -c defaults conda -q > /dev/null
 
                 # speed up installation
                 VERSION=$(cat requirements.yaml | grep mamba | cut -d '=' -f2)
