@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Changed
+
+- b/cr-am indexes switched to non-temp
+
 ## [0.9.2] 2022-05-30
 
 ### Added
