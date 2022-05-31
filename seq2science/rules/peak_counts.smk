@@ -14,9 +14,14 @@ def count_table_output():
     if ftype != "narrowPeak":
         return []
 
+    if breps == treps:
+        replicates = ["technical_reps"]
+    else:
+        replicates = ["technical_reps", "biological_reps"]
+
     return expand(
         [
-            "{counts_dir}/{peak_caller}/{assemblies}_{normalization}.tsv",
+            "{counts_dir}/{peak_caller}/{assemblies}_{normalization}_{replicates}.tsv",
             "{counts_dir}/{peak_caller}/{assemblies}_onehotpeaks.tsv",
         ],
         **{
@@ -32,6 +37,7 @@ def count_table_output():
                     f"meancenter_log{config['logbase']}_upperquartile",
                 ],
                 "mc": ["", "meancenter_"],
+                "replicates": replicates,
             },
         },
     )
@@ -167,7 +173,7 @@ rule coverage_table:
         replicates=get_coverage_table_replicates("bam"),
         replicate_bai=get_coverage_table_replicates("bam.bai"),
     output:
-        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_raw.tsv", **config),
+        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_raw_technical_reps.tsv", **config),
     log:
         expand("{log_dir}/coverage_table/{{assembly}}-{{peak_caller}}.log", **config),
     benchmark:
@@ -195,6 +201,33 @@ rule coverage_table:
         """
 
 
+localrule combine_biological_reps:
+    """
+    """
+    input:
+        rules.log_normalization.output
+    output:
+        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_log{{base}}_{{normalisation}}_biological_reps.tsv", **config),
+#    log:
+#    benchmark:
+    run:
+        import pandas as pd
+
+        counts = pd.read_table(snakemake.input[0], comment="#", index_col=0)
+        local_samples = samples[samples["assembly"] == wildcards.assembly]
+
+        if descriptive_name in local_samples.columns:
+            groups = [breps.index(local_samples[local_samples["descriptive_name"] == trep]["biological_replicates"].values[0]) for trep in counts.columns]
+        else:
+            groups = [breps.index(local_samples[local_samples.index == trep]["biological_replicates"].values[0]) for trep in counts.columns]
+
+        newcounts = counts.groupby(groups, axis=1).mean()
+        newcounts.columns = breps
+
+        with open(snakemake.output[0]) as f:
+            f.write(newcounts.to_csv(header=True, sep="\t"))
+
+
 rule quantile_normalization:
     """
     Quantile normalization is a type of normalization that makes the distribution 
@@ -209,7 +242,7 @@ rule quantile_normalization:
     input:
         rules.coverage_table.output,
     output:
-        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_quantilenorm.tsv", **config),
+        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_quantilenorm_technical_reps.tsv", **config),
     log:
         expand("{log_dir}/quantile_normalization/{{assembly}}-{{peak_caller}}-quantilenorm.log", **config),
     benchmark:
@@ -234,7 +267,7 @@ rule edgeR_normalization:
     input:
         rules.coverage_table.output,
     output:
-        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_{{normalisation,(TMM|RLE|upperquartile)}}.tsv", **config),
+        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_{{normalisation,(TMM|RLE|upperquartile)}}_technical_reps.tsv", **config),
     log:
         expand("{log_dir}/edgeR_normalization/{{assembly}}-{{peak_caller}}-{{normalisation}}.log", **config),
     benchmark:
@@ -254,9 +287,9 @@ rule log_normalization:
     Log1p normalization of a count table.
     """
     input:
-        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_{{normalisation}}.tsv", **config),
+        rules.edgeR_normalization.output
     output:
-        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_log{{base}}_{{normalisation}}.tsv", **config),
+        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_log{{base}}_{{normalisation}}_technical_reps.tsv", **config),
     run:
         import pandas as pd
         import numpy as np
@@ -287,9 +320,9 @@ rule mean_center:
     Mean centering of a count table.
     """
     input:
-        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_log{{base}}_{{normalisation}}.tsv", **config),
+        rules.log_normalization.output
     output:
-        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_meancenter_log{{base}}_{{normalisation}}.tsv", **config),
+        expand("{counts_dir}/{{peak_caller}}/{{assembly}}_meancenter_log{{base}}_{{normalisation}}_technical_reps.tsv", **config),
     run:
         import pandas as pd
 

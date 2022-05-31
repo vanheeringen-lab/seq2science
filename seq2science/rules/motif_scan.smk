@@ -61,5 +61,5 @@ rule gimme_maelstrom:
     threads: 48
     shell:
         """
-        gimme maelstrom {input.count_table} {input.genome} {output} --pfmfile {input.pfm} --nthreads {threads}
+        gimme maelstrom {input.count_table} {input.genome} {output} --pfmfile {input.pfm} --nthreads {threads} > {log} 2>&1
         """
