@@ -846,4 +846,4 @@ def assert_versions(rules_dir):
             error = True
     if error:
         logger.error("Please create a new conda environment.\n")
-#        os._exit(1)  # noqa
+        os._exit(1)  # noqa

@@ -8,6 +8,11 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- Seq2science makes a biological replicates count table, which is the mean of the biological replicates.
+- Seq2science now supports differential motif analysis by gimme maelstrom!!!
+
 ## [0.9.2] 2022-05-30
 
 ### Added

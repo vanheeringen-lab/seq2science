@@ -25,9 +25,9 @@ rule motif2factors:
     output:
         expand("{result_dir}/gimme/{{assembly}}.{{gimme_database}}.pfm", **config),
     log:
-        expand("{log_dir}/motif2factors/{{assembly}}-{{gimme_database}}.log", **config),
+        expand("{log_dir}/gimme/motif2factors/{{assembly}}-{{gimme_database}}.log", **config),
     benchmark:
-        expand("{benchmark_dir}/motif2factors/{{assembly}}-{{gimme_database}}.log", **config)[0],
+        expand("{benchmark_dir}/gimme/motif2factors/{{assembly}}-{{gimme_database}}.log", **config)[0],
     params:
         genomes_dir=config.get("genome_dir"),
         database=config.get("gimme_maelstrom_database"),

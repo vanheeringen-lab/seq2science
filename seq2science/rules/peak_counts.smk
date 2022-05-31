@@ -326,11 +326,16 @@ rule mean_center:
 
 rule combine_biological_reps:
     """
+    Combine biological replicates by taking their mean!
     """
     input:
         rules.log_normalization.output
     output:
         expand("{counts_dir}/{{peak_caller}}/{{assembly}}_log{{base}}_{{normalisation}}_biological_reps.tsv", **config),
+    log:
+        expand("{log_dir}/combine_biological_reps/{{peak_caller}}/{{assembly}}_log{{base}}_{{normalisation}}_biological_reps.log", **config),
+    benchmark:
+        expand("{benchmark_dir}/combine_biological_reps/{{peak_caller}}/{{assembly}}_log{{base}}_{{normalisation}}_biological_reps.benchmark.txt", **config)[0]
     params:
         samples=samples,
         breps=breps
