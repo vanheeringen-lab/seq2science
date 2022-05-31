@@ -7,7 +7,7 @@ def get_motif2factors_input_genomes(wildcards):
         return all_out
 
     all_out.append(wildcards.assembly)
-    for assembly in config.get("motif2factors_reference"):
+    for assembly in config.get("motif2factors_database_references") + config.get("motif2factors_reference"):
         all_out.append(expand(f"{{genome_dir}}/{assembly}/{assembly}.annotation.gtf", **config)[0])
         all_out.append(expand(f"{{genome_dir}}/{assembly}/{assembly}.fa", **config)[0])
     return all_out
@@ -41,20 +41,21 @@ rule motif2factors:
 
 rule gimme_maelstrom:
     """
-    Gimme maelstrom
+    Gimme maelstrom is a method to infer differential motifs between two or more biological replicates.
     """
     input:
         genome=rules.get_genome.output,
-        count_table=expand("{counts_dir}/{{peak_caller}}/{{assembly}}_log2_quantilenorm_biological_reps.tsv", **config),
+        count_table=rules.combine_biological_reps.output,
         pfm=rules.motif2factors.output
     output:
         directory(expand("{result_dir}/gimme/maelstrom/{{assembly}}-{{gimme_database}}-{{peak_caller}}", **config)),
     params: config.get("gimme_maelstrom_params")
     log:
-        expand("{log_dir}/gimme_scan/{{assembly}}-{{gimme_database}}-{{peak_caller}}.log", **config),
+        expand("{log_dir}/gimme_maelstrom/{{assembly}}-{{gimme_database}}-{{peak_caller}}.log", **config),
     benchmark:
-        expand("{benchmark_dir}/gimme_scan/{{assembly}}-{{gimme_database}}-{{peak_caller}}.log", **config)[0],
-#    resources: ""
+        expand("{benchmark_dir}/gimme_maelstrom/{{assembly}}-{{gimme_database}}-{{peak_caller}}.log", **config)[0],
+    resources:
+        mem_gb=40,
     message: EXPLAIN["gimme_maelstrom"]
     conda:
         "../envs/gimme.yaml"

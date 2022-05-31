@@ -335,8 +335,9 @@ if "assembly" in samples:
     def parse_assemblies():
         # list assemblies that are used in this workflow
         used_assemblies = list(set(samples["assembly"]))
+        # we make a temporary _used assemblies as
         if "motif2factors_reference" in config and config["run_gimme_maelstrom"]:
-            _used_assemblies = used_assemblies + config["motif2factors_reference"]
+            _used_assemblies = used_assemblies + config["motif2factors_reference"] + config["motif2factors_database_references"]
         else:
             _used_assemblies = used_assemblies
 
