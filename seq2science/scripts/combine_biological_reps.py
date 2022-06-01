@@ -1,3 +1,4 @@
+from io import StringIO
 from contextlib import redirect_stdout, redirect_stderr
 
 import pandas as pd
@@ -5,8 +6,7 @@ import pandas as pd
 with open(str(snakemake.log), "w") as f:
    with redirect_stdout(f), redirect_stderr(f):
       counts = pd.read_table(snakemake.input[0], comment="#", index_col=0)
-      local_samples = snakemake.params.samples[snakemake.params.samples["assembly"] == snakemake.wildcards.assembly]
-
+      local_samples = pd.read_table(StringIO(snakemake.params.samples), sep="\s+")
       breps = snakemake.params.breps
       if "descriptive_name" in local_samples.columns:
          groups = [breps.index(local_samples[local_samples["descriptive_name"] == trep]["biological_replicates"].values[0]) for trep in counts.columns]

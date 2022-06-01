@@ -337,7 +337,7 @@ rule combine_biological_reps:
     benchmark:
         expand("{benchmark_dir}/combine_biological_reps/{{peak_caller}}/{{assembly}}_log{{base}}_{{normalisation}}_biological_reps.benchmark.txt", **config)[0]
     params:
-        samples=samples,
+        samples=lambda wildcards: samples[samples["assembly"] == wildcards.assembly].to_string(index_names=False),
         breps=breps.index.to_list()
     script:
         f"{config['rule_dir']}/../scripts/combine_biological_reps.py"
