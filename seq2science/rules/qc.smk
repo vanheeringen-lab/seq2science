@@ -1036,4 +1036,12 @@ def get_peak_calling_qc(sample, wildcards):
             )
         )
 
+    if config["run_gimme_maelstrom"]:
+        output.extend(
+            expand(
+                "{qc_dir}/gimme/{{assembly}}-{gimme_database}-{peak_caller}_mqc.jpg",
+                **config
+            )
+        )
+
     return output

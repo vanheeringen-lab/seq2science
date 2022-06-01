@@ -80,6 +80,8 @@ report_section_order:
   DESeq2_pearson_correlation_clustering:
     order: -953
 {{deseq2_order}}
+  gimme_maelstrom:
+    order: -990
   samplesconfig:
     order: -1000
 
