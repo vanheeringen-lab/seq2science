@@ -31,5 +31,5 @@ with open(str(snakemake.log), "w") as f:
                       html)
 
 
-        with open(snakemake.output, "w") as f:
+        with open(snakemake.output[0], "w") as f:
             f.write(html)

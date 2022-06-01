@@ -133,7 +133,7 @@ rule maelstrom_report_preparation:
     input:
         rules.gimme_maelstrom.output
     output:
-        temp(expand("{qc_dir}/gimme/{{assembly}}-{{gimme_database}}-{{peak_caller}}_mqc.jpg", **config))
+        expand("{qc_dir}/gimme/{{assembly}}-{{gimme_database}}-{{peak_caller}}_mqc.html", **config)
     log:
         expand("{log_dir}/maelstrom_report_preparation/{{assembly}}-{{gimme_database}}-{{peak_caller}}.log", **config),
     script:
