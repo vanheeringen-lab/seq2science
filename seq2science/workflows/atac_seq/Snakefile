@@ -33,8 +33,7 @@ rule seq2science:
     input:
         expand(
             (["{trackhub_dir}"]                                                                     if config['create_trackhub'] else []) +
-            (["{qc_dir}/multiqc_{assemblies}.html"]                                                 if config["create_qc_report"] else []) +
-            (["{result_dir}/gimme/maelstrom/{assemblies}-{gimme_maelstrom_database}-{peak_caller}"] if config["run_gimme_maelstrom"] else []),
+            (["{qc_dir}/multiqc_{assemblies}.html"]                                                 if config["create_qc_report"] else []),
             assemblies=ALL_ASSEMBLIES, **config) +
          count_table_output() + DE_CONTRASTS
 
