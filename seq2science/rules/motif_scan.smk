@@ -45,7 +45,7 @@ rule gimme_maelstrom:
     """
     input:
         genome=rules.get_genome.output,
-        count_table=rules.combine_biological_reps.output,
+        count_table=expand("{counts_dir}/{{peak_caller}}/{{assembly}}_meancenter_log2_quantilenorm.tsv", **config),
         pfm=rules.motif2factors.output
     output:
         directory(expand("{result_dir}/gimme/maelstrom/{{assembly}}-{{gimme_database}}-{{peak_caller}}", **config)),

@@ -67,7 +67,7 @@ if config.get("peak_caller", False):
             config["macs2_types"].extend(["summits.bed", "peaks.narrowPeak"])
 
     if "run_gimme_maelstrom" in config and config["run_gimme_maelstrom"]:
-        assert len(breps).index > 1, (
+        assert len(breps.index) > 1, (
             "To run gimme maelstrom you need more than one biological replicate!"
         )
 
