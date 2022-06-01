@@ -39,7 +39,6 @@ def count_table_output():
                 f"log{config['logbase']}_quantilenorm",
                 f"log{config['logbase']}_TMM",
                 f"log{config['logbase']}_RLE",
-                f"log{config['logbase']}_upperquartile",
         ]
         count_tables.extend(
             expand(
