@@ -13,7 +13,7 @@ dependencies:
   - conda-forge::filelock=3.4.0
   - conda-forge::pyyaml=6.0
   - conda-forge::pandas_schema=0.3.5
-  - conda-forge::pandas=1.2.5
+  - conda-forge::pandas=1.4.2
   - bioconda::trackhub=0.1.2019.12.24
   - bioconda::pysradb=1.0.1
   - conda-forge::matplotlib=3.5.0
