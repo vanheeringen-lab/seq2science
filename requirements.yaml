@@ -17,6 +17,7 @@ dependencies:
   - bioconda::trackhub=0.1.2019.12.24
   - bioconda::pysradb=1.0.1
   - conda-forge::matplotlib=3.5.0
+  - conda-forge::yaml=0.2.5
   - conda-forge::xdg=5.1.1
   - conda-forge::argcomplete=1.12.3
   - conda-forge::tabulate=0.8.9
