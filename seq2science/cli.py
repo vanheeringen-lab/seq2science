@@ -382,7 +382,7 @@ def _run(args, base_dir, workflows_dir, config_path):
     # store how seq2science was called
     parsed_args["config"]["cli_call"] = sys.argv
 
-    core_parser(parsed_args)
+    # core_parser(parsed_args)
     parsed_args["config"].update({"cores": parsed_args["cores"]})
     resource_parser(parsed_args)
 
