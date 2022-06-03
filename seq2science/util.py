@@ -8,6 +8,7 @@ import sys
 import glob
 import time
 import colorsys
+import tempfile
 import pickle
 import urllib.request
 import yaml
@@ -694,6 +695,11 @@ class PickleDict(dict):
             if assembly not in self:
                 self[assembly] = {"genome": None, "annotation": None}
 
+        # if no logfile exists we run from slurm and the logile doesnt exist
+        if logger.logfile is None:
+            templog = tempfile.NamedTemporaryFile()
+            logger.logile = templog.name
+
         with open(logger.logfile, "w") as log:
             with contextlib.redirect_stdout(log), contextlib.redirect_stderr(log):
                 genomepy.logger.remove()
@@ -846,4 +852,4 @@ def assert_versions(rules_dir):
             error = True
     if error:
         logger.error("Please create a new conda environment.\n")
-        os._exit(1)  # noqa
+#        os._exit(1)  # noqa

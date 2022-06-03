@@ -382,7 +382,6 @@ def _run(args, base_dir, workflows_dir, config_path):
     # store how seq2science was called
     parsed_args["config"]["cli_call"] = sys.argv
 
-    # core_parser(parsed_args)
     parsed_args["config"].update({"cores": parsed_args["cores"]})
     resource_parser(parsed_args)
 
@@ -610,38 +609,6 @@ class _StoreDictKeyPair(argparse.Action):
                 my_dict[k] = int(v) if isinstance(v, str) and v.isdigit() else v
 
         setattr(namespace, self.dest, my_dict)
-
-
-def core_parser(parsed_args):
-    """
-    Alignment uses a pipe, and snakemake does not handle scaling that, so
-    we do it for snakemake.
-    """
-    cores = parsed_args["cores"]
-    sorters = ["samtools_presort"]
-    aligners = ["bowtie2_align", "bwa_mem", "bwa_mem2", "hisat2_align", "minimap2_align", "star_align"]
-
-    d_sorters_threads = 2
-    d_aligner_threads = 10
-    desired_threads = d_sorters_threads + d_aligner_threads
-    overwrite_threads = dict()
-    # scale if aligners+sorters use more threads than allowed
-    if cores < desired_threads:
-        # scale the threads accordingly
-        d_sorters_threads = max([1, cores * d_sorters_threads // desired_threads])
-        d_aligner_threads = max([1, cores - d_sorters_threads])
-
-        for aligner in aligners:
-            overwrite_threads[aligner] = d_aligner_threads
-        for sorter in sorters:
-            overwrite_threads[sorter] = d_sorters_threads
-
-    # finally use the user-specified threads
-    if "overwrite_threads" in parsed_args:
-        for k, v in parsed_args["overwrite_threads"].items():
-            overwrite_threads[k] = v
-
-    parsed_args["overwrite_threads"] = overwrite_threads
 
 
 def resource_parser(parsed_args):
