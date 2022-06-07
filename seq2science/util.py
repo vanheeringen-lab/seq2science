@@ -698,7 +698,7 @@ class PickleDict(dict):
         # if no logfile exists we run from slurm and the logile doesnt exist
         if logger.logfile is None:
             templog = tempfile.NamedTemporaryFile()
-            logger.logile = templog.name
+            logger.logfile = templog.name
 
         with open(logger.logfile, "w") as log:
             with contextlib.redirect_stdout(log), contextlib.redirect_stderr(log):
