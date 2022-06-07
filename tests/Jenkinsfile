@@ -45,7 +45,9 @@ pipeline {
                 bash miniconda.sh -b -p $WORKSPACE/miniconda > /dev/null
 
                 printf "\nconfigure miniconda\n"
-                conda config --set always_yes yes --set changeps1 false
+                conda config --set always_yes yes 
+                conda config --set changeps1 false
+                conda config --set channel_priority strict
 
                 # speed up installation
                 VERSION=$(cat requirements.yaml | grep mamba | cut -d '=' -f2)
