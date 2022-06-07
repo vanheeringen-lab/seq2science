@@ -15,6 +15,8 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Fixed
 
+- issue with thread parsing when threads < 12
+- seq2science should fully work with slurm
 - samples moved to the cloud on SRA can be downloaded again with newest pysradb.
 
 ## [0.9.2] 2022-05-30
