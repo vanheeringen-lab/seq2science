@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Fixed
+
+- samples moved to the cloud on SRA can be downloaded again with newest pysradb.
+
 ## [0.9.2] 2022-05-30
 
 ### Added
