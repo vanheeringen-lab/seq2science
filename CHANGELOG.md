@@ -8,6 +8,11 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Fixed
+
+- issue with thread parsing when threads < 12
+- seq2science should fully work with slurm
+
 ## [0.9.2] 2022-05-30
 
 ### Added
