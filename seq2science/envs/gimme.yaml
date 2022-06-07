@@ -4,7 +4,7 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - bioconda::gimmemotifs=0.17.0
+  - bioconda::gimmemotifs=0.17.1
   - bioconda::biofluff=3.0.4
   - bioconda::gffread=0.12.7
   - bioconda::orthofinder=2.5.4
