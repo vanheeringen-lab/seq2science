@@ -51,8 +51,8 @@ pipeline {
                 conda config --set changeps1 false
 
                 conda list
-                
                 conda install libmamba
+                conda config --set channel_priority flexible  # this is bad
                 
                 printf "\ninstall mamba\n"
                 VERSION=$(cat requirements.yaml | grep mamba | cut -d '=' -f2)
