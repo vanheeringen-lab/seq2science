@@ -6,8 +6,8 @@ channels:
 dependencies:
   - conda-forge::python=3.8
   - bioconda::snakemake-minimal=7.8.2
-  - conda-forge::conda=4.12.0
-  - conda-forge::mamba=0.24.0
+  - conda-forge::conda=4.11.0
+  - conda-forge::mamba=0.20.0
   - bioconda::genomepy=0.13.0
   - conda-forge::biopython=1.79
   - conda-forge::filelock=3.7.1
