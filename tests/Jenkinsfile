@@ -56,7 +56,7 @@ pipeline {
                 
                 printf "\ninstall mamba\n"
                 VERSION=$(cat requirements.yaml | grep mamba | cut -d '=' -f2)
-                conda install conda-forge::mamba=$VERSION --experimental-solver=libmamba
+                conda install -c conda-forge conda=$CO mamba=$VERSION
 
                 printf "\ninstalling seq2science environment\n"
                 mamba env create -f requirements.yaml
