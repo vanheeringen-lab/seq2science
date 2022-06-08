@@ -52,7 +52,7 @@ pipeline {
 
                 conda list
                 
-                conda install conda-libmamba-solver
+                conda install libmamba
                 
                 printf "\ninstall mamba\n"
                 VERSION=$(cat requirements.yaml | grep mamba | cut -d '=' -f2)
