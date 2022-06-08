@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- configurable setting `niceness` which sets a niceness prefix to all shell commands.
+
 ### Fixed
 
 - samples moved to the cloud on SRA can be downloaded again with newest pysradb.
