@@ -47,12 +47,10 @@ pipeline {
                 bash miniconda.sh -b -p $WORKSPACE/miniconda > /dev/null 2>&1
 
                 printf "\nconfigure miniconda\n"
-                conda config --add channels conda-forge
-                conda config --add channels bioconda
                 conda config --set always_yes yes 
                 conda config --set changeps1 false
                 conda config --set channel_priority strict
-                rm -rf $WORKSPACE/miniconda/pkgs/cache/*.json  # see mamba/issues/488
+                conda clean --all -q -y
 
                 printf "\ninstall mamba\n"
                 VERSION=$(cat requirements.yaml | grep mamba | cut -d '=' -f2)
