@@ -49,8 +49,6 @@ pipeline {
                 printf "\nconfigure miniconda\n"
                 conda config --set always_yes yes 
                 conda config --set changeps1 false
-                conda config --set channel_priority strict
-                conda clean --all -q -y
 
                 printf "\ninstall mamba\n"
                 VERSION=$(cat requirements.yaml | grep mamba | cut -d '=' -f2)
