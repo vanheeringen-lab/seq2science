@@ -638,4 +638,9 @@ if 'alignment_general' in CONFIG_SCHEMAS:
     FINAL_BAM = f"{config['final_bam_dir']}/{{assembly}}-{{sample}}.samtools-coordinate.bam"
     FINAL_BAI = f"{FINAL_BAM}.bai"
 
-shell.prefix(f"set -euo pipefail; renice -n {config.get('niceness', 0} $$")
+
+# set the shell prefix
+shell_prefix = "set -euo pipefail; "
+if "niceness" in config:
+    shell_prefix += f"renice -n {config['niceness']} $$; "
+shell.prefix(shell_prefix)
