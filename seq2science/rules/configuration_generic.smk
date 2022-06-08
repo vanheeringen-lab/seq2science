@@ -108,7 +108,6 @@ def parse_config(cfg):
 
 config = parse_config(config)  # overwrite the existing global
 
-
 # samples.tsv
 
 
@@ -638,3 +637,5 @@ if 'alignment_general' in CONFIG_SCHEMAS:
     # will output the final bams: mark_duplicates, sieve_bam or samtools_sort
     FINAL_BAM = f"{config['final_bam_dir']}/{{assembly}}-{{sample}}.samtools-coordinate.bam"
     FINAL_BAI = f"{FINAL_BAM}.bai"
+
+shell.prefix(f"set -euo pipefail; renice -n {config.get('niceness', 0} $$")
