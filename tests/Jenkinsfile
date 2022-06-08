@@ -42,7 +42,7 @@ pipeline {
                 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -nv -O miniconda.sh
 
                 printf "\ninstall miniconda\n"
-                bash miniconda.sh -b -p $WORKSPACE/miniconda > /dev/null
+                bash miniconda.sh -b -p $WORKSPACE/miniconda > /dev/null 2>&1
 
                 printf "\nconfigure miniconda\n"
                 conda config --set always_yes yes 
@@ -51,7 +51,7 @@ pipeline {
 
                 # speed up installation
                 VERSION=$(cat requirements.yaml | grep mamba | cut -d '=' -f2)
-                conda install conda-forge::mamba=$VERSION
+                conda install conda-forge::mamba #=$VERSION
 
                 # create main env
                 printf "\ninstalling seq2science environment\n"
