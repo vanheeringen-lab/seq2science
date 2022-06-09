@@ -800,8 +800,8 @@ def _get_yaml_versions(yaml_file):
         # remove channel prefix
         if "::" in dependency:
             dependency = dependency.split("::")[1]
-        # split tool and version
-        package, version = dependency.split("=")
+        # split tool and version (ignore build if present)
+        package, version = dependency.split("=")[0:2]
         versions[package] = version
     return versions
 
