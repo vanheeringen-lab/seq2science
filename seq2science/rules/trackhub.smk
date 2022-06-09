@@ -1,10 +1,6 @@
 """
 all rules/logic related to the final UCSC trackhub (or assembly hub) should be here.
 """
-localrules:
-    softmask_track_1,
-    trackhub,
-
 if config.get("create_trackhub"):
     import logging
     import os.path
@@ -712,3 +708,8 @@ if config.get("create_trackhub"):
             HAS_ANNOTATION=HAS_ANNOTATION,
         script:
             f"{config['rule_dir']}/../scripts/trackhub.py"
+
+
+localrules:
+    softmask_track_1,
+    trackhub,
