@@ -210,7 +210,7 @@ if config.get("create_trackhub"):
             """
             # filter out tiny tiny transcripts that make gtftogenepred fail
             min_transcript_length=15
-            (awk -v minlen=$min_transcript_length 'BEGIN {{ FS = "\\t"; OFS="\\t" }}; {{ if(($3=="transcript") && ($5 - $4 <= minlen)) {{ print $9}} }}' {input.gtf} | grep . || echo "transcript_id \\"DONTMATCHANYTHING\\"") | grep -oP '(?<=transcript_id ").+?(?=")' | grep -v -f - {input.gtf} > {output.gtf_min_size} 2>> {log}
+            (awk -v minlen=$min_transcript_length 'BEGIN {{ FS = "\\t"; OFS="\\t" }}; {{ if(($3=="transcript") && ($5 - $4 <= minlen)) {{ print $9}} }}' {input.gtf} | grep . || echo "transcript_id \\\"DONTMATCHANYTHING\\\"") | grep -oP '(?<=transcript_id ").+?(?=")' | grep -v -f - {input.gtf} > {output.gtf_min_size} 2>> {log}
 
             # generate annotation files
             gtfToGenePred -allErrors -ignoreGroupsWithoutExons -geneNameAsName2 -genePredExt {output.gtf_min_size} {output.genePred} -infoOut={output.info} >> {log} 2>&1
