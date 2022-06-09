@@ -190,6 +190,7 @@ if config.get("create_trackhub"):
             sizes=rules.get_genome_support_files.output.sizes,
             gtf=rules.get_genome_annotation.output.gtf,
         output:
+            gtf_min_size=temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.annotation_minsize.gtf", **config)),
             genePred=temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.gp", **config)),
             genePrednamed=temp(expand("{genome_dir}/{{assembly}}/{{assembly}}named.gp", **config)),
             genePredbed=temp(expand("{genome_dir}/{{assembly}}/{{assembly}}.gp.bed", **config)),
@@ -207,11 +208,15 @@ if config.get("create_trackhub"):
             "../envs/ucsc.yaml"
         shell:
             """
+            # filter out tiny tiny transcripts that make gtftogenepred fail
+            min_transcript_length=15
+            awk -v minlen=$min_transcript_length 'BEGIN {{ FS = "\\t"; OFS="\\t" }}; {{ if(($3=="transcript") && ($5 - $4 <= minlen)) {{ print $9}} }}' {input.gtf} | grep -oP '(?<=transcript_id ").+?(?=")' | grep -v -f - {input.gtf} > {output.gtf_min_size} 2>> {log}
+
             # generate annotation files
-            gtfToGenePred -allErrors -ignoreGroupsWithoutExons -geneNameAsName2 -genePredExt {input.gtf} {output.genePred} -infoOut={output.info} >> {log} 2>&1
+            gtfToGenePred -allErrors -ignoreGroupsWithoutExons -geneNameAsName2 -genePredExt {output.gtf_min_size} {output.genePred} -infoOut={output.info} >> {log} 2>&1
     
             # check if gtf has gene_names > if l!=0, use gene_name, else transcript_id
-            l=$(head -n 100 {input.gtf} | (grep gene_name || true) | wc -l)
+            l=$(head -n 100 {output.gtf_min_size} | (grep gene_name || true) | wc -l)
     
             # switch columns 1 (transcript_id) and 12 (gene_name)
             awk -v len=$l 'BEGIN {{ FS = "\t" }}; {{ if(len!="0") {{ t = $1; $1 = $12; $12 = t; print; }} else {{ print; }} }}' {output.genePred} > {output.genePrednamed}
