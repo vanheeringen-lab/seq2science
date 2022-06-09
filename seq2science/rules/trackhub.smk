@@ -210,7 +210,7 @@ if config.get("create_trackhub"):
             """
             # filter out tiny tiny transcripts that make gtftogenepred fail
             min_transcript_length=15
-            (awk -v minlen=$min_transcript_length 'BEGIN {{ FS = "\\t"; OFS="\\t" }}; {{ if(($3=="transcript") && ($5 - $4 <= minlen)) {{ print $9}} }}' {input.gtf} | grep . || echo "transcript_id \"DONTMATCHANYTHING\"") | grep -oP '(?<=transcript_id ").+?(?=")' | grep -v -f - {input.gtf} > {output.gtf_min_size} 2>> {log}
+            (awk -v minlen=$min_transcript_length 'BEGIN {{ FS = "\\t"; OFS="\\t" }}; {{ if(($3=="transcript") && ($5 - $4 <= minlen)) {{ print $9}} }}' {input.gtf} | grep . || echo "transcript_id \\"DONTMATCHANYTHING\\"") | grep -oP '(?<=transcript_id ").+?(?=")' | grep -v -f - {input.gtf} > {output.gtf_min_size} 2>> {log}
 
             # generate annotation files
             gtfToGenePred -allErrors -ignoreGroupsWithoutExons -geneNameAsName2 -genePredExt {output.gtf_min_size} {output.genePred} -infoOut={output.info} >> {log} 2>&1
@@ -219,7 +219,7 @@ if config.get("create_trackhub"):
             l=$(head -n 100 {output.gtf_min_size} | (grep gene_name || true) | wc -l)
     
             # switch columns 1 (transcript_id) and 12 (gene_name)
-            awk -v len=$l 'BEGIN {{ FS = "\t" }}; {{ if(len!="0") {{ t = $1; $1 = $12; $12 = t; print; }} else {{ print; }} }}' {output.genePred} > {output.genePrednamed}
+            awk -v len=$l 'BEGIN {{ FS = "\\t" }}; {{ if(len!="0") {{ t = $1; $1 = $12; $12 = t; print; }} else {{ print; }} }}' {output.genePred} > {output.genePrednamed}
     
             # remove lines with missing headers        
             grep -v "^ " {output.genePrednamed} > {output.genePred}
