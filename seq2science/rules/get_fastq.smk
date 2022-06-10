@@ -53,8 +53,14 @@ rule run2sra:
         # be a global setting that we haven't discovered yet...
         # bug report: https://github.com/ncbi/sra-tools/issues/533
         if [[ -f "{params.outdir}/{wildcards.run}.sra" ]]; then
-            mkdir {params.outdir}/{wildcards.run}
+            mkdir -p {params.outdir}/{wildcards.run}
             mv {params.outdir}/{wildcards.run}.sra {output}
+        fi
+
+        # If an sralite file was downloaded instead of a sra file, just rename it
+        if [[ -f "{params.outdir}/{wildcards.run}.sralite" ]]; then
+            mkdir -p {params.outdir}/{wildcards.run}
+            mv {params.outdir}/{wildcards.run}.sralite {output}
         fi
         """
 
