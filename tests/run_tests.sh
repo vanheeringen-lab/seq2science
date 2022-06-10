@@ -180,13 +180,16 @@ if [ $1 = "atac-seq" ]; then
     done
     touch tests/local_test_results/fastq/replicate_${ext}.fastq.gz
   done
-  touch -m tests/deseq2/atac/macs2/GRCh38.p13_raw.tsv  # update timestamps
-  touch -m tests/deseq2/atac/macs2/GRCh38.p13_onehotpeaks.tsv
-  touch -m tests/deseq2/atac/macs2/GRCh38.p13_meancenter_log2_quantilenorm.tsv
-  touch -m tests/deseq2/atac/macs2/GRCh38.p13_meancenter_log2_TMM.tsv
-  touch -m tests/deseq2/atac/macs2/GRCh38.p13_meancenter_log2_RLE.tsv
-  touch -m tests/deseq2/atac/macs2/GRCh38.p13_meancenter_log2_upperquartile.tsv
-
+  
+  for rep in technical_reps biological_reps; do
+      touch -m tests/deseq2/atac/macs2/GRCh38.p13_raw_${ext}.tsv  # update timestamps
+      touch -m tests/deseq2/atac/macs2/GRCh38.p13_onehotpeaks_${ext}.tsv
+      touch -m tests/deseq2/atac/macs2/GRCh38.p13_meancenter_log2_quantilenorm_${ext}.tsv
+      touch -m tests/deseq2/atac/macs2/GRCh38.p13_meancenter_log2_TMM_${ext}.tsv
+      touch -m tests/deseq2/atac/macs2/GRCh38.p13_meancenter_log2_RLE_${ext}.tsv
+      touch -m tests/deseq2/atac/macs2/GRCh38.p13_meancenter_log2_upperquartile_${ext}.tsv
+  done
+  
   # run DESeq2
   seq2science run atac-seq --skip-rerun --cores $CORES -r --configfile tests/deseq2/atac/config.yaml --snakemakeOptions config={deseq2_dir:deseq_atac} show_failed_logs=True until=[deseq2]
 
