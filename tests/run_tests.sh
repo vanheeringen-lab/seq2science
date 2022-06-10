@@ -182,12 +182,12 @@ if [ $1 = "atac-seq" ]; then
   done
   
   for rep in technical_reps biological_reps; do
-      touch -m tests/deseq2/atac/macs2/GRCh38.p13_raw_${ext}.tsv  # update timestamps
-      touch -m tests/deseq2/atac/macs2/GRCh38.p13_onehotpeaks_${ext}.tsv
-      touch -m tests/deseq2/atac/macs2/GRCh38.p13_meancenter_log2_quantilenorm_${ext}.tsv
-      touch -m tests/deseq2/atac/macs2/GRCh38.p13_meancenter_log2_TMM_${ext}.tsv
-      touch -m tests/deseq2/atac/macs2/GRCh38.p13_meancenter_log2_RLE_${ext}.tsv
-      touch -m tests/deseq2/atac/macs2/GRCh38.p13_meancenter_log2_upperquartile_${ext}.tsv
+      touch -m tests/deseq2/atac/macs2/GRCh38.p13_raw_${rep}.tsv  # update timestamps
+      touch -m tests/deseq2/atac/macs2/GRCh38.p13_onehotpeaks_${rep}.tsv
+      touch -m tests/deseq2/atac/macs2/GRCh38.p13_meancenter_log2_quantilenorm_${rep}.tsv
+      touch -m tests/deseq2/atac/macs2/GRCh38.p13_meancenter_log2_TMM_${rep}.tsv
+      touch -m tests/deseq2/atac/macs2/GRCh38.p13_meancenter_log2_RLE_${rep}.tsv
+      touch -m tests/deseq2/atac/macs2/GRCh38.p13_meancenter_log2_upperquartile_${rep}.tsv
   done
   
   # run DESeq2
