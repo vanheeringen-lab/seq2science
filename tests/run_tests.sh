@@ -181,9 +181,9 @@ if [ $1 = "atac-seq" ]; then
     touch tests/local_test_results/fastq/replicate_${ext}.fastq.gz
   done
   
+  touch -m tests/deseq2/atac/macs2/GRCh38.p13_onehotpeaks.tsv
   for rep in technical_reps biological_reps; do
       touch -m tests/deseq2/atac/macs2/GRCh38.p13_raw_${rep}.tsv  # update timestamps
-      touch -m tests/deseq2/atac/macs2/GRCh38.p13_onehotpeaks_${rep}.tsv
       touch -m tests/deseq2/atac/macs2/GRCh38.p13_meancenter_log2_quantilenorm_${rep}.tsv
       touch -m tests/deseq2/atac/macs2/GRCh38.p13_meancenter_log2_TMM_${rep}.tsv
       touch -m tests/deseq2/atac/macs2/GRCh38.p13_meancenter_log2_RLE_${rep}.tsv
