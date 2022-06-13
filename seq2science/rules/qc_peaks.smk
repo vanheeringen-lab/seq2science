@@ -128,7 +128,7 @@ rule upset_plot_peaks:
 
 rule maelstrom_report_preparation:
     """
-
+    This rule injects the symlinked motif logos into the html so they get rendered in the multiqc report.
     """
     input:
         rules.gimme_maelstrom.output
