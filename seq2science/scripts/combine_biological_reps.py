@@ -9,12 +9,6 @@ with open(str(snakemake.log), "w") as f:
       samples = pd.read_table(StringIO(snakemake.params.samples), sep="\s+")
       breps = snakemake.params.breps
 
-      print(breps)
-      print(samples)
-      print(counts.head())
-      print(samples.columns)
-      for trep in counts.columns:
-          print(trep, samples[samples["descriptive_name"] == trep]["biological_replicates"].values)
       if "descriptive_name" in samples.columns:
          groups = [breps.index(samples[samples["descriptive_name"] == trep]["biological_replicates"].values) for trep in counts.columns]
       else:
