@@ -15,6 +15,8 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Fixed
 
 - samples moved to the cloud on SRA can be downloaded again with newest pysradb.
+- issue with generating a trackhub index with tiny transcripts (we just remove them :) )
+- bug with sralite files having the wrong file extension so they're not recognized as downloaded
 
 ## [0.9.2] 2022-05-30
 
