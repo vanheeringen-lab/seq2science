@@ -54,3 +54,7 @@ properties:
   email:
     description: email to reach you after pipeline finished, required for trackhub and multiqc report
     type: string
+
+  niceness:
+    description: with which niceness to run the shell commands. Ranges between 0-19, with 19 being the nicest you can set
+    type: integer

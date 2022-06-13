@@ -647,3 +647,9 @@ if 'alignment_general' in CONFIG_SCHEMAS:
     # will output the final bams: mark_duplicates, sieve_bam or samtools_sort
     FINAL_BAM = f"{config['final_bam_dir']}/{{assembly}}-{{sample}}.samtools-coordinate.bam"
     FINAL_BAI = f"{FINAL_BAM}.bai"
+
+# set the shell prefix
+shell_prefix = "set -euo pipefail; "
+if "niceness" in config:
+    shell_prefix += f"renice -n {config['niceness']} $$ > /dev/null; "
+shell.prefix(shell_prefix)
