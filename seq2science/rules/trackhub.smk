@@ -713,3 +713,8 @@ if config.get("create_trackhub"):
             HAS_ANNOTATION=HAS_ANNOTATION,
         script:
             f"{config['rule_dir']}/../scripts/trackhub.py"
+
+
+localrules:
+    softmask_track_1,
+    trackhub,
