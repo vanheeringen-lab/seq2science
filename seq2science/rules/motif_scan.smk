@@ -48,7 +48,7 @@ rule gimme_maelstrom:
         pfm=rules.motif2factors.output
     output:
         directory(expand("{result_dir}/gimme/maelstrom/{{assembly}}-{{gimme_database}}-{{peak_caller}}", **config)),
-    params: config.get("gimme_maelstrom_params")
+    params: config.get("gimme_maelstrom_params", "")
     log:
         expand("{log_dir}/gimme_maelstrom/{{assembly}}-{{gimme_database}}-{{peak_caller}}.log", **config),
     benchmark:
@@ -61,5 +61,5 @@ rule gimme_maelstrom:
     threads: 24
     shell:
         """
-        gimme maelstrom {input.count_table} {input.genome} {output} --pfmfile {input.pfm} --nthreads {threads} > {log} 2>&1
+        gimme maelstrom {input.count_table} {input.genome} {output} --pfmfile {input.pfm} --nthreads {threads} {params} > {log} 2>&1
         """
