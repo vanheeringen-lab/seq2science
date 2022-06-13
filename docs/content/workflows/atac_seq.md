@@ -72,7 +72,7 @@ Note that this table contains **all** peaks, and no selection on differential pe
 
 Seq2science supports differential motif analysis!
 This analysis is based on the tool [gimme maelstrom](https://gimmemotifs.readthedocs.io/en/master/reference.html#command-gimme-maelstrom).
-As input to gimme maelstrom is the count table of all the peaks in the consensus peakset.
+As input to gimme maelstrom is the count table of the biological reps (average between reps) in the consensus peakset.
 It then tries to solve a system of linear equations, where the output is the read counts in a peak, and the input is the motif score in the peak times the "motif activity".
 This motif activity can then be compared across biological replicates for differential motifs.
 
