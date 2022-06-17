@@ -67,7 +67,9 @@ rule gimme_maelstrom:
         if [ -z $XDG_CACHE_HOME ]; then
             XDG_CACHE_HOME=$HOME/.cache
         fi
-        cp -r $XDG_CACHE_HOME/gimmemotifs $NEW_CACHE/
+        if [ -d $XDG_CACHE_HOME/gimmemotifs ]; then 
+            cp -r $XDG_CACHE_HOME/gimmemotifs $NEW_CACHE/
+        fi
         export XDG_CACHE_HOME=$NEW_CACHE
         """ +
         ("cpulimit --include-children -l {threads}00 --\\" if config.get("cpulimit", True) else "") +
