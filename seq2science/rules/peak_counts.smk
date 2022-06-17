@@ -337,7 +337,9 @@ rule combine_biological_reps:
         expand("{benchmark_dir}/combine_biological_reps/{{peak_caller}}/{{assembly}}_log{{base}}_{{normalisation}}_biological_reps.benchmark.txt", **config)[0]
     params:
         samples=lambda wildcards: samples[samples["assembly"] == wildcards.assembly].replace(' ', '_', regex=True).to_string(index_names=False),
-        breps=lambda wildcards: breps[breps["assembly"] == wildcards.assembly].index.to_list()
+        breps=lambda wildcards: breps[breps["assembly"] == wildcards.assembly].index.to_list(),
+        technical_replicates=config.get("technical_replicates") == "keep",
+        biological_replicates=config.get("biological_replicates") == "keep",
     script:
         f"{config['rule_dir']}/../scripts/combine_biological_reps.py"
 

@@ -60,7 +60,7 @@ rule gimme_maelstrom:
         "../envs/gimme.yaml"
     threads: 24
     shell:
-        ("cpulimit --include-children -l {threads}00 --" if config.get("cpulimit", True) else "") +
+        ("cpulimit --include-children -l {threads}00 --\\" if config.get("cpulimit", True) else "") +
         """
         gimme maelstrom {input.count_table} {input.genome} {output} --pfmfile {input.pfm} --nthreads {threads} {params} > {log} 2>&1
         """
