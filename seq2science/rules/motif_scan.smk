@@ -3,10 +3,10 @@ all rules/logic related to motif scanning of peaks is found here.
 """
 def get_motif2factors_input_genomes(wildcards):
     all_out = []
-    if any(str(wildcards.assembly).startswith(assembly) for assembly in ["GRCh", "GRCm", "hg19", "hg38", "mm10", "mm39"]):
+    if str(wildcards.assembly)[0:4] in ["GRCh", "GRCm", "hg19", "hg38", "mm10", "mm39"]):
         return all_out
 
-    for assembly in config.get("motif2factors_database_references") + config.get("motif2factors_reference") + [wildcards.assembly]:
+    for assembly in config.get("motif2factors_database_references", []) + config.get("motif2factors_reference", []) + [wildcards.assembly]:
         all_out.append(expand(f"{{genome_dir}}/{assembly}/{assembly}.annotation.gtf", **config)[0])
         all_out.append(expand(f"{{genome_dir}}/{assembly}/{assembly}.fa", **config)[0])
     return all_out
