@@ -62,7 +62,7 @@ def _sample_to_idxs(df: pd.DataFrame, sample: str) -> List[int]:
     return idxs
 
 
-def dense_samples(samples: pd.DataFrame, keep_technical_reps, keep_biological_reps, ignore_strandedness, create_trackhub) -> pd.DataFrame:
+def dense_samples(samples: pd.DataFrame, keep_technical_reps: bool, keep_biological_reps: bool, ignore_strandedness: bool, create_trackhub: bool) -> pd.DataFrame:
     """
     for each functional column, if found in samples.tsv:
     1) if it is incomplete, fill the blanks with replicate/sample names
@@ -74,7 +74,7 @@ def dense_samples(samples: pd.DataFrame, keep_technical_reps, keep_biological_re
         samples["technical_replicates"] = samples["technical_replicates"].mask(pd.isnull, samples["sample"])
         if (
                 len(samples["technical_replicates"].unique()) == len(samples["sample"].unique())
-                or keep_technical_replicates
+                or keep_technical_reps
         ):
             samples.rename(columns={"technical_replicates": "_trep"}, inplace=True)
     col = "technical_replicates" if "technical_replicates" in samples else "sample"
