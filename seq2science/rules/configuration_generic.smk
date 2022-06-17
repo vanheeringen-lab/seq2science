@@ -199,7 +199,11 @@ def parse_samples():
         os._exit(1)  # noqa
 
     # remove unused columns, and populate empty cells in used columns
-    samples_df = dense_samples(samples_df, config)
+    samples_df = dense_samples(samples_df, 
+                               config.get("technical_replicates") == "keep", 
+                               config.get("biological_replicates") == "keep", 
+                               config.get("ignore_strandedness", True),
+                               config.get("create_trackhub", False))
 
     # check if replicate names are unique between assemblies
     if "technical_replicates" in samples_df:

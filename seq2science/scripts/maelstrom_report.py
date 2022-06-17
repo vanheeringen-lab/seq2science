@@ -16,7 +16,7 @@ with open(str(snakemake.log), "w") as f:
             png_as_base64 = png2base(png_loc)
             inject_png = f"data:image/png;base64,{png_as_base64}\""
 
-            start, stop = match.span()
+            start, _ = match.span()
             start += len("<img src =")
             stop = start + len(match.group(1))
 
