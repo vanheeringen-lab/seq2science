@@ -8,6 +8,8 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### [0.9.3] - 2022-06-17
+
 ### Added
 
 - Seq2science makes a biological replicates count table, which is the mean of the biological replicates.
@@ -646,7 +648,8 @@ Many minor bug- and quality of life fixes.
 ## [0.0.0] - 2020-06-11
 First release of seq2science!
 
-[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.2...develop
+[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.3...develop
+[0.9.3]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.2...v0.9.3
 [0.9.2]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.1...v0.9.2
 [0.9.1]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.8.0...v0.9.0
