@@ -10,6 +10,8 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Added
 
+- Seq2science makes a biological replicates count table, which is the mean of the biological replicates.
+- Seq2science now supports differential motif analysis by gimme maelstrom!!!
 - configurable setting `niceness` which sets a niceness prefix to all shell commands.
 
 ### Fixed

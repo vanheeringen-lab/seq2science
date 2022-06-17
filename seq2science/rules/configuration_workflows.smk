@@ -62,8 +62,14 @@ if config.get("peak_caller", False):
 
         if "--broad" in config["peak_caller"]["macs2"]:
             config["macs2_types"].extend(["peaks.broadPeak", "peaks.gappedPeak"])
+            config["run_gimme_maelstrom"] = False
         else:
             config["macs2_types"].extend(["summits.bed", "peaks.narrowPeak"])
+
+    if "run_gimme_maelstrom" in config and config["run_gimme_maelstrom"]:
+        assert len(breps.index) > 1, (
+            "To run gimme maelstrom you need more than one biological replicate!"
+        )
 
 # make sure that both maximum and minimum insert sizes are existing when one of them is used
 if config.get("min_template_length") and not config.get("max_template_length"):

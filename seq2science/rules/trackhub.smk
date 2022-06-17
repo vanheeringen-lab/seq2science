@@ -715,6 +715,6 @@ if config.get("create_trackhub"):
             f"{config['rule_dir']}/../scripts/trackhub.py"
 
 
-localrules:
-    softmask_track_1,
-    trackhub,
+    localrules:
+        softmask_track_1,
+        trackhub,
