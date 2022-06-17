@@ -3,7 +3,7 @@ from contextlib import redirect_stdout, redirect_stderr
 
 import pandas as pd
 
-from seq2science.utils import dense_samples
+from seq2science.util import dense_samples
 
 
 with open(str(snakemake.log), "w") as f:
