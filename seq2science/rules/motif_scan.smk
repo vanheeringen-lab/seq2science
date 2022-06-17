@@ -47,7 +47,8 @@ rule gimme_maelstrom:
         count_table=expand("{counts_dir}/{{peak_caller}}/{{assembly}}_log2_quantilenorm_biological_reps.tsv", **config),
         pfm=rules.motif2factors.output
     output:
-        directory(expand("{result_dir}/gimme/maelstrom/{{assembly}}-{{gimme_database}}-{{peak_caller}}", **config)),
+        output=directory(expand("{result_dir}/gimme/maelstrom/{{assembly}}-{{gimme_database}}-{{peak_caller}}", **config)),
+        cache=temp(directory(expand("{result_dir}/gimme/maelstrom/cache/{{assembly}}-{{gimme_database}}-{{peak_caller}}", **config))),
     params: config.get("gimme_maelstrom_params", "")
     log:
         expand("{log_dir}/gimme_maelstrom/{{assembly}}-{{gimme_database}}-{{peak_caller}}.log", **config),
@@ -60,7 +61,16 @@ rule gimme_maelstrom:
         "../envs/gimme.yaml"
     threads: 24
     shell:
+        """
+        NEW_CACHE={output.cache}
+        mkdir -p $NEW_CACHE
+        if [ -z $XDG_CACHE_HOME ]; then
+            XDG_CACHE_HOME=$HOME/.cache
+        fi
+        cp -r $XDG_CACHE_HOME/gimmemotifs $NEW_CACHE/
+        export XDG_CACHE_HOME=$NEW_CACHE
+        """ +
         ("cpulimit --include-children -l {threads}00 --\\" if config.get("cpulimit", True) else "") +
         """
-        gimme maelstrom {input.count_table} {input.genome} {output} --pfmfile {input.pfm} --nthreads {threads} {params} > {log} 2>&1
+        gimme maelstrom {input.count_table} {input.genome} {output.output} --pfmfile {input.pfm} --nthreads {threads} {params} > {log} 2>&1
         """
