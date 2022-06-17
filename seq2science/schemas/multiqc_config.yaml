@@ -82,7 +82,7 @@ report_section_order:
 {{deseq2_order}}
   {{config.get("gimme_maelstrom_database", "").replace(".", "_")}}-macs2:
     order: -990
-  {{config.get("gimme_maelstrom_database", "").replace(".", "_")]}}-genrich:
+  {{config.get("gimme_maelstrom_database", "").replace(".", "_")}}-genrich:
     order: -991
   samplesconfig:
     order: -1000

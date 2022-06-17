@@ -8,13 +8,13 @@ import re
 from seq2science.util import sieve_bam, get_bustools_rid
 
 
-#localrules:
-#    multiqc_header_info,
-#    multiqc_rename_buttons,
-#    multiqc_filter_buttons,
-#    multiqc_samplesconfig,
-#    multiqc_schema,
-#    combine_qc_files,
+localrules:
+    multiqc_header_info,
+    multiqc_rename_buttons,
+    multiqc_filter_buttons,
+    multiqc_samplesconfig,
+    multiqc_schema,
+    combine_qc_files,
 
 
 def samtools_stats_input(wildcards):
