@@ -4,7 +4,9 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - bioconda::gimmemotifs=0.15.1
-  - bioconda::biofluff=3.0.3
-  - conda-forge::pandas=1.1.5  # won't be necessary after https://github.com/vanheeringen-lab/gimmemotifs/issues/168 is fixed
+  - bioconda::gimmemotifs=0.17.1
+  - bioconda::biofluff=3.0.4
+  - bioconda::gffread=0.12.7
+  - bioconda::orthofinder=2.5.4
+  - conda-forge::cpulimit=0.2
   - conda-forge::conda-ecosystem-user-package-isolation=1.0

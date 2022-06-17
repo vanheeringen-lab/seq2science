@@ -80,6 +80,10 @@ report_section_order:
   DESeq2_pearson_correlation_clustering:
     order: -953
 {{deseq2_order}}
+  {{config.get("gimme_maelstrom_database", "").replace(".", "_")}}-macs2:
+    order: -990
+  {{config.get("gimme_maelstrom_database", "").replace(".", "_")}}-genrich:
+    order: -991
   samplesconfig:
     order: -1000
 
@@ -191,3 +195,9 @@ custom_data:
         section_name: 'DESeq2 - Pearson correlation cluster heatmap of counts'
         description: 'Correlation cluster heatmap based on variance stabilizing transformed counts. Pearson correlation is a parametric (lots of assumptions, e.g. normality and homoscedasticity) method, and assesses the linearity of the relationship.'
 {{deseq2_imgs}}
+    {{config.get("gimme_maelstrom_database", "")}}-macs2:
+        section_name: 'gimme maelstrom macs2 results'
+        description: 'Gimme maelstrom is a method to infer differential motifs between samples. It solves a system of linear equations, Ax=b. Where we solve for x, A the motif scores and b the count table. It combines the results of different methods that solve this problem, and its result is the table below. It can be used to find **differential** motifs between samples.'
+    {{config.get("gimme_maelstrom_database", "")}}-genrich:
+        section_name: 'DESeq2 - Pearson correlation cluster heatmap of counts'
+        description: 'Gimme maelstrom is a method to infer differential motifs between samples. It solves a system of linear equations, Ax=b. Where we solve for x, A the motif scores and b the count table. It combines the results of different methods that solve this problem, and its result is the table below. It can be used to find **differential** motifs between samples.'

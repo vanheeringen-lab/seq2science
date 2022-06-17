@@ -55,3 +55,42 @@ properties:
     description: the options passed to idr when combining peaks
     default: ''
     type: string
+
+  run_gimme_maelstrom:
+    description: whether or not to run gimme maelstrom on the consensus peakset.
+    default: false
+    type: boolean
+
+  gimme_maelstrom_database:
+    description: which motif database to run gimme maelstrom with.
+    default: 'gimme.vertebrate.v5.0'
+    type: string
+
+  gimme_maelstrom_params:
+    description: the settings with which gimme maelstrom is run.
+    default: ''
+    type: string
+
+  motif2factors_database_references:
+    description: On which assembly(s) the original gimme motif2factors is based. Defaults to human and mouse.
+    default:
+      - GRCh38.p13
+      - GRCm38.p6
+    type: array
+    items:
+      type: string
+
+  motif2factors_reference:
+    description: Which assemblies should be taken along for the orthology inference.
+    default:
+      - danRer11
+      - UCB_Xtro_10.0
+      - GRCg6a
+      - BraLan2
+      - oryLat2
+      - ARS-UCD1.2
+      - phaCin_unsw_v4.1
+      - rCheMyd1.pri
+    type: array
+    items:
+      type: string

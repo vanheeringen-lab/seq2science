@@ -1,6 +1,20 @@
 """
 All rules/logic related to aligning to a genome should be here.
 """
+def get_sorter_threads():
+    needed_threads = 12
+    if workflow.cores >= needed_threads:
+        return 2
+    else:
+        return 1
+
+def get_aligner_threads():
+    needed_threads = 12
+    if workflow.cores >= needed_threads:
+        return 10
+    else:
+        return workflow.cores - get_sorter_threads()
+
 
 
 def get_reads(wildcards):
@@ -61,7 +75,7 @@ if config["aligner"] == "bowtie2":
             ),
             params=config["align"],
         priority: 0
-        threads: 9
+        threads: get_aligner_threads()
         conda:
             "../envs/bowtie2.yaml"
         shell:
@@ -119,7 +133,7 @@ elif config["aligner"] == "bwa-mem":
         resources:
             mem_gb=13,
         priority: 0
-        threads: 10
+        threads: get_aligner_threads()
         conda:
             "../envs/bwa.yaml"
         shell:
@@ -176,7 +190,7 @@ elif config["aligner"] == "bwa-mem2":
         resources:
             mem_gb=40,
         priority: 0
-        threads: 10
+        threads: get_aligner_threads()
         conda:
             "../envs/bwamem2.yaml"
         shell:
@@ -278,7 +292,7 @@ elif config["aligner"] == "hisat2":
             ),
             params=config["align"],
         priority: 0
-        threads: 9
+        threads: get_aligner_threads()
         conda:
             "../envs/hisat2.yaml"
         shell:
@@ -334,7 +348,7 @@ elif config["aligner"] == "minimap2":
             # input=lambda wildcards, input: input.reads if config["layout"][wildcards.sample] == "SINGLE" else input.reads[0:2],
             params=config["align"],
         priority: 0
-        threads: 10
+        threads: get_aligner_threads()
         resources:
             mem_gb=20,
         conda:
@@ -438,7 +452,7 @@ elif config["aligner"] == "star":
             else input.reads[0:2],
             params=config["align"],
         priority: 0
-        threads: 10
+        threads: get_aligner_threads()
         resources:
             mem_gb=30,
         conda:
@@ -472,7 +486,7 @@ rule samtools_presort:
     benchmark:
         expand("{benchmark_dir}/samtools_presort/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
     priority: 0
-    threads: 2
+    threads: get_sorter_threads()
     resources:
         mem_gb=config["bam_sort_mem"],
     conda:

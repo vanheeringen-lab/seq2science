@@ -58,6 +58,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#fqsuffix">fqsuffix</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#cpulimit">cpulimit</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#email">email</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#niceness">niceness</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#download">Download</a><ul>
@@ -114,6 +115,11 @@
 <li class="toctree-l4"><a class="reference internal" href="#heatmap-npeaks">heatmap_npeaks</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#deeptools-heatmap-options">deeptools_heatmap_options</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#idr-options">idr_options</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run-gimme-maelstrom">run_gimme_maelstrom</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gimme-maelstrom-database">gimme_maelstrom_database</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gimme-maelstrom-params">gimme_maelstrom_params</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#motif2factors-database-references">motif2factors_database_references</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#motif2factors-reference">motif2factors_reference</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#workflow-rna-seq">Workflow: RNA-seq</a><ul>
@@ -286,6 +292,14 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">email</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">email</span> <span class="n">to</span> <span class="n">reach</span> <span class="n">you</span> <span class="n">after</span> <span class="n">pipeline</span> <span class="n">finished</span><span class="p">,</span> <span class="n">required</span> <span class="k">for</span> <span class="n">trackhub</span> <span class="ow">and</span> <span class="n">multiqc</span> <span class="n">report</span>
     <span class="nb">type</span><span class="p">:</span> <span class="n">string</span>
+</pre></div>
+</div>
+</section>
+<section id="niceness">
+<h3>niceness<a class="headerlink" href="#niceness" title="Permalink to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">niceness</span><span class="p">:</span>
+    <span class="n">description</span><span class="p">:</span> <span class="k">with</span> <span class="n">which</span> <span class="n">niceness</span> <span class="n">to</span> <span class="n">run</span> <span class="n">the</span> <span class="n">shell</span> <span class="n">commands</span><span class="o">.</span> <span class="n">Ranges</span> <span class="n">between</span> <span class="mi">0</span><span class="o">-</span><span class="mi">19</span><span class="p">,</span> <span class="k">with</span> <span class="mi">19</span> <span class="n">being</span> <span class="n">the</span> <span class="n">nicest</span> <span class="n">you</span> <span class="n">can</span> <span class="nb">set</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="n">integer</span>
 </pre></div>
 </div>
 </section>
@@ -774,6 +788,55 @@
     <span class="n">description</span><span class="p">:</span> <span class="n">the</span> <span class="n">options</span> <span class="n">passed</span> <span class="n">to</span> <span class="n">idr</span> <span class="n">when</span> <span class="n">combining</span> <span class="n">peaks</span>
     <span class="n">default</span><span class="p">:</span>
     <span class="nb">type</span><span class="p">:</span> <span class="n">string</span>
+</pre></div>
+</div>
+</section>
+<section id="run-gimme-maelstrom">
+<h3>run_gimme_maelstrom<a class="headerlink" href="#run-gimme-maelstrom" title="Permalink to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">run_gimme_maelstrom</span><span class="p">:</span>
+    <span class="n">description</span><span class="p">:</span> <span class="n">whether</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">to</span> <span class="n">run</span> <span class="n">gimme</span> <span class="n">maelstrom</span> <span class="n">on</span> <span class="n">the</span> <span class="n">consensus</span> <span class="n">peakset</span><span class="o">.</span>
+    <span class="n">default</span><span class="p">:</span> <span class="kc">False</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="n">boolean</span>
+</pre></div>
+</div>
+</section>
+<section id="gimme-maelstrom-database">
+<h3>gimme_maelstrom_database<a class="headerlink" href="#gimme-maelstrom-database" title="Permalink to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">gimme_maelstrom_database</span><span class="p">:</span>
+    <span class="n">description</span><span class="p">:</span> <span class="n">which</span> <span class="n">motif</span> <span class="n">database</span> <span class="n">to</span> <span class="n">run</span> <span class="n">gimme</span> <span class="n">maelstrom</span> <span class="k">with</span><span class="o">.</span>
+    <span class="n">default</span><span class="p">:</span> <span class="n">gimme</span><span class="o">.</span><span class="n">vertebrate</span><span class="o">.</span><span class="n">v5</span><span class="mf">.0</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="n">string</span>
+</pre></div>
+</div>
+</section>
+<section id="gimme-maelstrom-params">
+<h3>gimme_maelstrom_params<a class="headerlink" href="#gimme-maelstrom-params" title="Permalink to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">gimme_maelstrom_params</span><span class="p">:</span>
+    <span class="n">description</span><span class="p">:</span> <span class="n">the</span> <span class="n">settings</span> <span class="k">with</span> <span class="n">which</span> <span class="n">gimme</span> <span class="n">maelstrom</span> <span class="ow">is</span> <span class="n">run</span><span class="o">.</span>
+    <span class="n">default</span><span class="p">:</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="n">string</span>
+</pre></div>
+</div>
+</section>
+<section id="motif2factors-database-references">
+<h3>motif2factors_database_references<a class="headerlink" href="#motif2factors-database-references" title="Permalink to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">motif2factors_database_references</span><span class="p">:</span>
+    <span class="n">description</span><span class="p">:</span> <span class="n">On</span> <span class="n">which</span> <span class="n">assembly</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="n">the</span> <span class="n">original</span> <span class="n">gimme</span> <span class="n">motif2factors</span> <span class="ow">is</span> <span class="n">based</span><span class="o">.</span> <span class="n">Defaults</span> <span class="n">to</span> <span class="n">human</span> <span class="ow">and</span> <span class="n">mouse</span><span class="o">.</span>
+    <span class="n">default</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;GRCh38.p13&#39;</span><span class="p">,</span> <span class="s1">&#39;GRCm38.p6&#39;</span><span class="p">]</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="n">array</span>
+    <span class="n">items</span><span class="p">:</span>
+        <span class="nb">type</span><span class="p">:</span> <span class="n">string</span>
+</pre></div>
+</div>
+</section>
+<section id="motif2factors-reference">
+<h3>motif2factors_reference<a class="headerlink" href="#motif2factors-reference" title="Permalink to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">motif2factors_reference</span><span class="p">:</span>
+    <span class="n">description</span><span class="p">:</span> <span class="n">Which</span> <span class="n">assemblies</span> <span class="n">should</span> <span class="n">be</span> <span class="n">taken</span> <span class="n">along</span> <span class="k">for</span> <span class="n">the</span> <span class="n">orthology</span> <span class="n">inference</span><span class="o">.</span>
+    <span class="n">default</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;danRer11&#39;</span><span class="p">,</span> <span class="s1">&#39;UCB_Xtro_10.0&#39;</span><span class="p">,</span> <span class="s1">&#39;GRCg6a&#39;</span><span class="p">,</span> <span class="s1">&#39;BraLan2&#39;</span><span class="p">,</span> <span class="s1">&#39;oryLat2&#39;</span><span class="p">,</span> <span class="s1">&#39;ARS-UCD1.2&#39;</span><span class="p">,</span> <span class="s1">&#39;phaCin_unsw_v4.1&#39;</span><span class="p">,</span> <span class="s1">&#39;rCheMyd1.pri&#39;</span><span class="p">]</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="n">array</span>
+    <span class="n">items</span><span class="p">:</span>
+        <span class="nb">type</span><span class="p">:</span> <span class="n">string</span>
 </pre></div>
 </div>
 </section>

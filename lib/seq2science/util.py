@@ -8,6 +8,7 @@ import sys
 import glob
 import time
 import colorsys
+import tempfile
 import pickle
 import urllib.request
 import yaml
@@ -61,7 +62,7 @@ def _sample_to_idxs(df: pd.DataFrame, sample: str) -> List[int]:
     return idxs
 
 
-def dense_samples(samples: pd.DataFrame, config: dict) -> pd.DataFrame:
+def dense_samples(samples: pd.DataFrame, keep_technical_reps: bool, keep_biological_reps: bool, ignore_strandedness: bool, create_trackhub: bool) -> pd.DataFrame:
     """
     for each functional column, if found in samples.tsv:
     1) if it is incomplete, fill the blanks with replicate/sample names
@@ -73,7 +74,7 @@ def dense_samples(samples: pd.DataFrame, config: dict) -> pd.DataFrame:
         samples["technical_replicates"] = samples["technical_replicates"].mask(pd.isnull, samples["sample"])
         if (
                 len(samples["technical_replicates"].unique()) == len(samples["sample"].unique())
-                or config.get("technical_replicates") == "keep"
+                or keep_technical_reps
         ):
             samples.rename(columns={"technical_replicates": "_trep"}, inplace=True)
     col = "technical_replicates" if "technical_replicates" in samples else "sample"
@@ -81,7 +82,7 @@ def dense_samples(samples: pd.DataFrame, config: dict) -> pd.DataFrame:
         samples["biological_replicates"] = samples["biological_replicates"].mask(pd.isnull, samples[col])
         if (
                 len(samples["biological_replicates"].unique()) == len(samples[col].unique())
-                or config.get("biological_replicates") == "keep"
+                or keep_biological_reps
         ):
             samples.rename(columns={"biological_replicates": "_brep"}, inplace=True)
     if "descriptive_name" in samples:
@@ -90,12 +91,12 @@ def dense_samples(samples: pd.DataFrame, config: dict) -> pd.DataFrame:
             samples.rename(columns={"descriptive_name": "_dname"}, inplace=True)
     if "strandedness" in samples:
         samples["strandedness"] = samples["strandedness"].mask(pd.isnull, "nan")
-        if config.get("ignore_strandedness", True) or not any(
+        if ignore_strandedness or not any(
                 [field in list(samples["strandedness"]) for field in ["yes", "forward", "reverse", "no"]]
         ):
             samples = samples.drop(columns=["strandedness"])
     if "colors" in samples:
-        if config.get("create_trackhub", False):
+        if create_trackhub:
             samples["colors"] = samples["colors"].mask(pd.isnull, "0,0,0")  # nan -> black
             samples["colors"] = [color_parser(c) for c in samples["colors"]]  # convert input to HSV color
         else:
@@ -694,6 +695,11 @@ class PickleDict(dict):
             if assembly not in self:
                 self[assembly] = {"genome": None, "annotation": None}
 
+        # if no logfile exists we run from slurm and the logile doesnt exist
+        if logger.logfile is None:
+            templog = tempfile.NamedTemporaryFile()
+            logger.logfile = templog.name
+
         with open(logger.logfile, "w") as log:
             with contextlib.redirect_stdout(log), contextlib.redirect_stderr(log):
                 genomepy.logger.remove()
@@ -794,8 +800,8 @@ def _get_yaml_versions(yaml_file):
         # remove channel prefix
         if "::" in dependency:
             dependency = dependency.split("::")[1]
-        # split tool and version
-        package, version = dependency.split("=")
+        # split tool and version (ignore build if present)
+        package, version = dependency.split("=")[0:2]
         versions[package] = version
     return versions
 

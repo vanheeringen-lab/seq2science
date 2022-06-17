@@ -124,3 +124,17 @@ rule upset_plot_peaks:
         "../envs/upset.yaml"
     script:
         f"{config['rule_dir']}/../scripts/upset.py"
+
+
+rule maelstrom_report_preparation:
+    """
+    This rule injects the symlinked motif logos into the html so they get rendered in the multiqc report.
+    """
+    input:
+        rules.gimme_maelstrom.output
+    output:
+        expand("{qc_dir}/gimme/{{assembly}}-{{gimme_database}}-{{peak_caller}}_mqc.html", **config)
+    log:
+        expand("{log_dir}/maelstrom_report_preparation/{{assembly}}-{{gimme_database}}-{{peak_caller}}.log", **config),
+    script:
+        f"{config['rule_dir']}/../scripts/maelstrom_report.py"

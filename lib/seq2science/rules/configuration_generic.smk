@@ -199,7 +199,11 @@ def parse_samples():
         os._exit(1)  # noqa
 
     # remove unused columns, and populate empty cells in used columns
-    samples_df = dense_samples(samples_df, config)
+    samples_df = dense_samples(samples_df, 
+                               config.get("technical_replicates") == "keep", 
+                               config.get("biological_replicates") == "keep", 
+                               config.get("ignore_strandedness", True),
+                               config.get("create_trackhub", False))
 
     # check if replicate names are unique between assemblies
     if "technical_replicates" in samples_df:
@@ -335,15 +339,21 @@ if "assembly" in samples:
     def parse_assemblies():
         # list assemblies that are used in this workflow
         used_assemblies = list(set(samples["assembly"]))
-    
+        # we make a temporary _used assemblies as gimme maelstrom might need more assemblies downloaded
+        # and those assemblies need to be saved in the local/remote assemblies variable
+        if "motif2factors_reference" in config and config["run_gimme_maelstrom"]:
+            _used_assemblies = used_assemblies + config["motif2factors_reference"] + config["motif2factors_database_references"]
+        else:
+            _used_assemblies = used_assemblies
+
         # dictionary with which providers to use per genome
         providers = PickleDict(os.path.join(CACHE_DIR, "providers.p"))
     
         # split into local and remote assemblies, depending on if all required files can be found
         annotation_required = "rna_seq" in WORKFLOW or config["aligner"] == "star"
         ftype = "annotation" if annotation_required else "genome"
-        local_assemblies = [a for a in used_assemblies if is_local(a, ftype, config)]
-        remote_assemblies = [a for a in used_assemblies if a not in local_assemblies]
+        local_assemblies = [a for a in _used_assemblies if is_local(a, ftype, config)]
+        remote_assemblies = [a for a in _used_assemblies if a not in local_assemblies]
         search_assemblies = [assembly for assembly in remote_assemblies if providers.get(assembly, {}).get(ftype) is None]
     
         # custom assemblies without provider (for local/remote annotations)
@@ -531,6 +541,9 @@ def any_given(*args, prefix="", suffix=""):
         if column_name == "sample":
             elements.extend(samples.index)
         elif column_name in samples:
+            if (column_name == "assembly") and ("motif2factors_reference" in config):
+                elements.extend(config["motif2factors_database_references"])
+                elements.extend(config["motif2factors_reference"])
             elements.extend(samples[column_name])
 
     elements = [prefix + element + suffix for element in elements if isinstance(element, str)]
@@ -638,3 +651,9 @@ if 'alignment_general' in CONFIG_SCHEMAS:
     # will output the final bams: mark_duplicates, sieve_bam or samtools_sort
     FINAL_BAM = f"{config['final_bam_dir']}/{{assembly}}-{{sample}}.samtools-coordinate.bam"
     FINAL_BAI = f"{FINAL_BAM}.bai"
+
+# set the shell prefix
+shell_prefix = "set -euo pipefail; "
+if "niceness" in config:
+    shell_prefix += f"renice -n {config['niceness']} $$ > /dev/null; "
+shell.prefix(shell_prefix)

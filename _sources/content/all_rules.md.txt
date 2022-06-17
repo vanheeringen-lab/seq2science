@@ -161,6 +161,10 @@ CITE-seq-Count -R1 {input.reads[0]} -R2 {input.reads[1]} \
 {params.options} -o {params.outdir} > {log} 2>&1
 ```
 
+#### combine_biological_reps
+
+Combine biological replicates by taking their mean!
+
 #### combine_peaks
 
 Uses gimmemotifs' combine_peaks to "combine" peaks. This finds all peaks close
@@ -528,6 +532,22 @@ Requires genome.fa and annotation.gtf (with matching chromosome/scaffold names)
 gffread -w {output} -g {input.fa} {input.gtf} > {log} 2>&1
 ```
 
+#### gimme_maelstrom
+
+Gimme maelstrom is a method to infer differential motifs between two or more biological replicates.
+
+```
+NEW_CACHE={output.cache}
+mkdir -p $NEW_CACHE
+if [ -z $XDG_CACHE_HOME ]; then
+    XDG_CACHE_HOME=$HOME/.cache
+fi
+if [ -d $XDG_CACHE_HOME/gimmemotifs ]; then 
+    cp -r $XDG_CACHE_HOME/gimmemotifs $NEW_CACHE/
+fi
+export XDG_CACHE_HOME=$NEW_CACHE
+```
+
 #### hisat2_align
 
 Align reads against a genome (index) with hisat2, and pipe the output to the required sorter(s).
@@ -729,6 +749,10 @@ else
 fi
 ```
 
+#### maelstrom_report_preparation
+
+This rule injects the symlinked motif logos into the html so they get rendered in the multiqc report.
+
 #### mark_duplicates
 
 Mark all duplicate reads in a bam file with picard MarkDuplicates
@@ -776,6 +800,12 @@ mkdir -p $(dirname {output})
 
 minimap2 -t {threads} -d {output} {input} {params} > {log} 2>&1
 ```
+
+#### motif2factors
+
+Create a gimme pfm/motif2factor file with the gimme motif2factors command.
+For human/mouse it just uses the default database, for other species it is based
+on TF orthologs.
 
 #### mt_nuc_ratio_calculator
 
@@ -980,8 +1010,14 @@ done
 # be a global setting that we haven't discovered yet...
 # bug report: https://github.com/ncbi/sra-tools/issues/533
 if [[ -f "{params.outdir}/{wildcards.run}.sra" ]]; then
-    mkdir {params.outdir}/{wildcards.run}
+    mkdir -p {params.outdir}/{wildcards.run}
     mv {params.outdir}/{wildcards.run}.sra {output}
+fi
+
+# If an sralite file was downloaded instead of a sra file, just rename it
+if [[ -f "{params.outdir}/{wildcards.run}.sralite" ]]; then
+    mkdir -p {params.outdir}/{wildcards.run}
+    mv {params.outdir}/{wildcards.run}.sralite {output}
 fi
 ```
 
@@ -1278,14 +1314,18 @@ sources: https://genome.ucsc.edu/goldenPath/help/hubQuickStartSearch.html,
 https://www.biostars.org/p/272649/
 
 ```
+# filter out tiny tiny transcripts that make gtftogenepred fail
+min_transcript_length=15
+(awk -v minlen=$min_transcript_length 'BEGIN {{ FS = "\\t"; OFS="\\t" }}; {{ if(($3=="transcript") && ($5 - $4 <= minlen)) {{ print $9}} }}' {input.gtf} | grep . || echo "transcript_id \\\"DONTMATCHANYTHING\\\"") | grep -oP '(?<=transcript_id ").+?(?=")' | grep -v -f - {input.gtf} > {output.gtf_min_size} 2>> {log}
+
 # generate annotation files
-gtfToGenePred -allErrors -ignoreGroupsWithoutExons -geneNameAsName2 -genePredExt {input.gtf} {output.genePred} -infoOut={output.info} >> {log} 2>&1
+gtfToGenePred -allErrors -ignoreGroupsWithoutExons -geneNameAsName2 -genePredExt {output.gtf_min_size} {output.genePred} -infoOut={output.info} >> {log} 2>&1
     
 # check if gtf has gene_names > if l!=0, use gene_name, else transcript_id
-l=$(head -n 100 {input.gtf} | (grep gene_name || true) | wc -l)
+l=$(head -n 100 {output.gtf_min_size} | (grep gene_name || true) | wc -l)
     
 # switch columns 1 (transcript_id) and 12 (gene_name)
-awk -v len=$l 'BEGIN {{ FS = "\t" }}; {{ if(len!="0") {{ t = $1; $1 = $12; $12 = t; print; }} else {{ print; }} }}' {output.genePred} > {output.genePrednamed}
+awk -v len=$l 'BEGIN {{ FS = "\\t" }}; {{ if(len!="0") {{ t = $1; $1 = $12; $12 = t; print; }} else {{ print; }} }}' {output.genePred} > {output.genePrednamed}
     
 # remove lines with missing headers        
 grep -v "^ " {output.genePrednamed} > {output.genePred}

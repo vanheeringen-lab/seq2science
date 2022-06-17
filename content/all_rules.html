@@ -60,6 +60,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#call-peak-genrich">call_peak_genrich</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#chipseeker">chipseeker</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#citeseqcount">citeseqcount</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#combine-biological-reps">combine_biological_reps</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#combine-peaks">combine_peaks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#combine-qc-files">combine_qc_files</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#complement-blacklist">complement_blacklist</a></li>
@@ -100,6 +101,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#get-genome-blacklist">get_genome_blacklist</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#get-genome-support-files">get_genome_support_files</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#get-transcripts">get_transcripts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gimme-maelstrom">gimme_maelstrom</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#hisat2-align">hisat2_align</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#hisat2-index">hisat2_index</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#hisat2-splice-aware-index">hisat2_splice_aware_index</a></li>
@@ -118,12 +120,14 @@
 <li class="toctree-l3"><a class="reference internal" href="#macs2-callpeak">macs2_callpeak</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#macs-bdgcmp">macs_bdgcmp</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#macs-cmbreps">macs_cmbreps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#maelstrom-report-preparation">maelstrom_report_preparation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#mark-duplicates">mark_duplicates</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#mean-center">mean_center</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#merge-replicates">merge_replicates</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#merge-volcano-ma">merge_volcano_ma</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#minimap2-align">minimap2_align</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#minimap2-index">minimap2_index</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#motif2factors">motif2factors</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#mt-nuc-ratio-calculator">mt_nuc_ratio_calculator</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multibamsummary">multiBamSummary</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multiqc-explain">multiqc_explain</a></li>
@@ -354,6 +358,10 @@ to reduce the impact of genes with low expression levels.</p>
 <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">options</span><span class="p">}</span> <span class="o">-</span><span class="n">o</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">outdir</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
+</section>
+<section id="combine-biological-reps">
+<h2>combine_biological_reps<a class="headerlink" href="#combine-biological-reps" title="Permalink to this heading"></a></h2>
+<p>Combine biological replicates by taking their mean!</p>
 </section>
 <section id="combine-peaks">
 <h2>combine_peaks<a class="headerlink" href="#combine-peaks" title="Permalink to this heading"></a></h2>
@@ -689,6 +697,21 @@ not the best indication in these cases, since reads in repetitive regions
 </pre></div>
 </div>
 </section>
+<section id="gimme-maelstrom">
+<h2>gimme_maelstrom<a class="headerlink" href="#gimme-maelstrom" title="Permalink to this heading"></a></h2>
+<p>Gimme maelstrom is a method to infer differential motifs between two or more biological replicates.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>NEW_CACHE={output.cache}
+mkdir -p $NEW_CACHE
+if [ -z $XDG_CACHE_HOME ]; then
+    XDG_CACHE_HOME=$HOME/.cache
+fi
+if [ -d $XDG_CACHE_HOME/gimmemotifs ]; then
+    cp -r $XDG_CACHE_HOME/gimmemotifs $NEW_CACHE/
+fi
+export XDG_CACHE_HOME=$NEW_CACHE
+</pre></div>
+</div>
+</section>
 <section id="hisat2-align">
 <h2>hisat2_align<a class="headerlink" href="#hisat2-align" title="Permalink to this heading"></a></h2>
 <p>Align reads against a genome (index) with hisat2, and pipe the output to the required sorter(s).</p>
@@ -870,6 +893,10 @@ fi
 </pre></div>
 </div>
 </section>
+<section id="maelstrom-report-preparation">
+<h2>maelstrom_report_preparation<a class="headerlink" href="#maelstrom-report-preparation" title="Permalink to this heading"></a></h2>
+<p>This rule injects the symlinked motif logos into the html so they get rendered in the multiqc report.</p>
+</section>
 <section id="mark-duplicates">
 <h2>mark_duplicates<a class="headerlink" href="#mark-duplicates" title="Permalink to this heading"></a></h2>
 <p>Mark all duplicate reads in a bam file with picard MarkDuplicates</p>
@@ -911,6 +938,12 @@ contain the name of the original replicate.</p>
 minimap2 -t {threads} -d {output} {input} {params} &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
+</section>
+<section id="motif2factors">
+<h2>motif2factors<a class="headerlink" href="#motif2factors" title="Permalink to this heading"></a></h2>
+<p>Create a gimme pfm/motif2factor file with the gimme motif2factors command.
+For human/mouse it just uses the default database, for other species it is based
+on TF orthologs.</p>
 </section>
 <section id="mt-nuc-ratio-calculator">
 <h2>mt_nuc_ratio_calculator<a class="headerlink" href="#mt-nuc-ratio-calculator" title="Permalink to this heading"></a></h2>
@@ -1096,8 +1129,14 @@ falls back on the slower http protocol.</p>
 <span class="c1"># be a global setting that we haven&#39;t discovered yet...</span>
 <span class="c1"># bug report: https://github.com/ncbi/sra-tools/issues/533</span>
 <span class="k">if</span> <span class="p">[[</span> <span class="o">-</span><span class="n">f</span> <span class="s2">&quot;</span><span class="si">{params.outdir}</span><span class="s2">/</span><span class="si">{wildcards.run}</span><span class="s2">.sra&quot;</span> <span class="p">]];</span> <span class="n">then</span>
-    <span class="n">mkdir</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">outdir</span><span class="p">}</span><span class="o">/</span><span class="p">{</span><span class="n">wildcards</span><span class="o">.</span><span class="n">run</span><span class="p">}</span>
+    <span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">outdir</span><span class="p">}</span><span class="o">/</span><span class="p">{</span><span class="n">wildcards</span><span class="o">.</span><span class="n">run</span><span class="p">}</span>
     <span class="n">mv</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">outdir</span><span class="p">}</span><span class="o">/</span><span class="p">{</span><span class="n">wildcards</span><span class="o">.</span><span class="n">run</span><span class="p">}</span><span class="o">.</span><span class="n">sra</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span>
+<span class="n">fi</span>
+
+<span class="c1"># If an sralite file was downloaded instead of a sra file, just rename it</span>
+<span class="k">if</span> <span class="p">[[</span> <span class="o">-</span><span class="n">f</span> <span class="s2">&quot;</span><span class="si">{params.outdir}</span><span class="s2">/</span><span class="si">{wildcards.run}</span><span class="s2">.sralite&quot;</span> <span class="p">]];</span> <span class="n">then</span>
+    <span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">outdir</span><span class="p">}</span><span class="o">/</span><span class="p">{</span><span class="n">wildcards</span><span class="o">.</span><span class="n">run</span><span class="p">}</span>
+    <span class="n">mv</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">outdir</span><span class="p">}</span><span class="o">/</span><span class="p">{</span><span class="n">wildcards</span><span class="o">.</span><span class="n">run</span><span class="p">}</span><span class="o">.</span><span class="n">sralite</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span>
 <span class="n">fi</span>
 </pre></div>
 </div>
@@ -1381,14 +1420,18 @@ My Data &gt; Track Hubs &gt; My Hubs</p>
 <p>Generate a searchable annotation &amp; index for each assembly</p>
 <p>sources: <a class="reference external" href="https://genome.ucsc.edu/goldenPath/help/hubQuickStartSearch.html">https://genome.ucsc.edu/goldenPath/help/hubQuickStartSearch.html</a>,
 <a class="reference external" href="https://www.biostars.org/p/272649/">https://www.biostars.org/p/272649/</a></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># generate annotation files
-gtfToGenePred -allErrors -ignoreGroupsWithoutExons -geneNameAsName2 -genePredExt {input.gtf} {output.genePred} -infoOut={output.info} &gt;&gt; {log} 2&gt;&amp;1
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># filter out tiny tiny transcripts that make gtftogenepred fail
+min_transcript_length=15
+(awk -v minlen=$min_transcript_length &#39;BEGIN {{ FS = &quot;\\t&quot;; OFS=&quot;\\t&quot; }}; {{ if(($3==&quot;transcript&quot;) &amp;&amp; ($5 - $4 &lt;= minlen)) {{ print $9}} }}&#39; {input.gtf} | grep . || echo &quot;transcript_id \\\&quot;DONTMATCHANYTHING\\\&quot;&quot;) | grep -oP &#39;(?&lt;=transcript_id &quot;).+?(?=&quot;)&#39; | grep -v -f - {input.gtf} &gt; {output.gtf_min_size} 2&gt;&gt; {log}
+
+# generate annotation files
+gtfToGenePred -allErrors -ignoreGroupsWithoutExons -geneNameAsName2 -genePredExt {output.gtf_min_size} {output.genePred} -infoOut={output.info} &gt;&gt; {log} 2&gt;&amp;1
 
 # check if gtf has gene_names &gt; if l!=0, use gene_name, else transcript_id
-l=$(head -n 100 {input.gtf} | (grep gene_name || true) | wc -l)
+l=$(head -n 100 {output.gtf_min_size} | (grep gene_name || true) | wc -l)
 
 # switch columns 1 (transcript_id) and 12 (gene_name)
-awk -v len=$l &#39;BEGIN {{ FS = &quot;\t&quot; }}; {{ if(len!=&quot;0&quot;) {{ t = $1; $1 = $12; $12 = t; print; }} else {{ print; }} }}&#39; {output.genePred} &gt; {output.genePrednamed}
+awk -v len=$l &#39;BEGIN {{ FS = &quot;\\t&quot; }}; {{ if(len!=&quot;0&quot;) {{ t = $1; $1 = $12; $12 = t; print; }} else {{ print; }} }}&#39; {output.genePred} &gt; {output.genePrednamed}
 
 # remove lines with missing headers
 grep -v &quot;^ &quot; {output.genePrednamed} &gt; {output.genePred}

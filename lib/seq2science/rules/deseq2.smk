@@ -20,7 +20,7 @@ def deseq_input(wildcards):
     elif "atac" in WORKFLOW or "chip" in WORKFLOW:
         # only uses a single peak caller ------------------------------------------v
         # TODO different peak callers can probably be supported with wildcard_constraint peak_caller (.*) <-- empty allowed
-        return (expand("{counts_dir}/{peak_caller}/{{assembly}}_raw.tsv", **config)[0],)
+        return (expand("{counts_dir}/{peak_caller}/{{assembly}}_raw_technical_reps.tsv", **config)[0],)
     else:
         logger.error(
             f"The workflow you are running ({WORKFLOW}) does not support deseq2. "

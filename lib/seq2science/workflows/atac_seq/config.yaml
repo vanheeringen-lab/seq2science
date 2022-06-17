@@ -43,6 +43,9 @@ peak_caller:
 # (e.g. 100 means a 200 bp wide peak)
 slop: 100
 
+# whether or not to run gimme maelstrom to infer differential motifs
+run_gimme_maelstrom: false
+
 # differential accessibility analysis
 # for explanation, see: https://vanheeringen-lab.github.io/seq2science/content/DESeq2.html
 #contrasts:

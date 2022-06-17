@@ -53,6 +53,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#peak-calling">Peak calling</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#quality-report">Quality report</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#count-table">Count table</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#differential-motif-analysis">Differential motif analysis</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#differential-peak-analysis">Differential peak analysis</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#trackhub">Trackhub</a></li>
 </ul>
@@ -190,12 +191,19 @@ This file is stored as {assembly}_raw.tsv, and looks something like this:</p>
 </ul>
 <p>After these normalisations the counts are log normalised, and the base can be set with <code class="docutils literal notranslate"><span class="pre">logbase</span></code> and defaults to 2.
 As a final step the count tables are mean-centered.
-This final count table can be used for tools like <a class="reference external" href="https://gimmemotifs.readthedocs.io/en/master/reference.html#command-gimme-maelstrom">gimme maelstrom</a> to scan for enriched transcription factor motifs.
 Note that this table contains <strong>all</strong> peaks, and no selection on differential peaks has been made.</p>
+</section>
+<section id="differential-motif-analysis">
+<h3>Differential motif analysis<a class="headerlink" href="#differential-motif-analysis" title="Permalink to this heading"></a></h3>
+<p>Seq2science supports differential motif analysis!
+This analysis is based on the tool <a class="reference external" href="https://gimmemotifs.readthedocs.io/en/master/reference.html#command-gimme-maelstrom">gimme maelstrom</a>.
+As input to gimme maelstrom is the count table of the biological reps (average between reps) in the consensus peakset.
+It then tries to solve a system of linear equations, where the output is the read counts in a peak, and the input is the motif score in the peak times the “motif activity”.
+This motif activity can then be compared across biological replicates for differential motifs.</p>
 </section>
 <section id="differential-peak-analysis">
 <h3>Differential peak analysis<a class="headerlink" href="#differential-peak-analysis" title="Permalink to this heading"></a></h3>
-<p>Seq2science can optionally use the raw peak counts table to perform differential peak analysis.
+<p>On top of that, Seq2science can also use the raw peak counts table to perform differential peak analysis.
 See the <a class="reference external" href="../DESeq2.html">Differential gene/peak analysis page</a> for more information!</p>
 </section>
 <section id="trackhub">
