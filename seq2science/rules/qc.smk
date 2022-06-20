@@ -554,6 +554,10 @@ rule multiqc_explain:
             cores_index = [i for i, x in enumerate(cli_call) if re.match("-j\d+", x)][0]
             del cli_call[cores_index]
 
+        if "--profile" in cli_call:
+            profile_index = cli_call.index("--profile")
+            del cli_call[profile_index : profile_index + 2]
+
         # cores_index = cli_call.index("--cores" if "--cores" in cli_call else "-j")
         # del cli_call[cores_index:cores_index+2]
 
