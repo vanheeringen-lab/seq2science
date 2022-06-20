@@ -31,7 +31,7 @@ else:
         "fastqc": "http://www.bioinformatics.babraham.ac.uk/projects/fastqc",
         "genomepy": "https://doi.org/10.21105/joss.00320",
         "genrich": "https://github.com/jsh58/Genrich",
-        "gimmemotifs": "https://www.biorxiv.org/content/10.1101/474403v1.full",
+        "gimmemotifs-minimal": "https://www.biorxiv.org/content/10.1101/474403v1.full",
         "hisat2": "https://doi.org/10.1038/s41587-019-0201-4",
         "htseq": "https://doi.org/10.1093/bioinformatics/btu638",
         "idr": "http://dx.doi.org/10.1214/11-AOAS466",
@@ -194,8 +194,8 @@ else:
         "fastp_SE": f"Single-end reads were trimmed with {href_v('fastp')}{options('trimoptions')}.",
         "fastp_PE": f"Paired-end reads were trimmed with {href_v('fastp')}{options('trimoptions')}.",
         "chipseeker": f"A peak feature distribution plot and peak localization plot relative to TSS were made with {hyperref('chipseeker')}.",  # TODO: replace with href_v
-        "combine_peaks": f"A consensus set of summits was made with {href_v('gimmemotifs',text='gimmemotifs.combine_peaks',env='gimme')}.",
-        "gimme_maelstrom": f"Differential peaks analysis on the consensus peakset was performed with {href_v('gimmemotifs',text='gimme maelstrom',env='gimme')}.",
+        "combine_peaks": f"A consensus set of summits was made with {href_v('gimmemotifs-minimal',text='gimmemotifs.combine_peaks',env='gimme')}.",
+        "gimme_maelstrom": f"Differential peaks analysis on the consensus peakset was performed with gimme maelstrom.",  # already cited in "combine_peaks"
         "bed_slop": f"All summits were extended with {config.get('slop')} bp to get a consensus peakset.",
         "coverage_table": f"Finally, a count table from the consensus peakset was made with gimmemotifs.coverage_table.",  # already cited in "combine_peaks"
         "sce": f"{hyperref('sce')} S4 class was used to store scRNA-seq count tables and saved to RDATA format",
