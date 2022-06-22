@@ -151,6 +151,7 @@ if config.get("create_trackhub"):
                 ):
                     bed_handle.write(softmasked_regions_per_contig)
                 p.close()
+                p.join()
 
 
     rule softmask_track_2:
