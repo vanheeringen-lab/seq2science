@@ -5,6 +5,7 @@ import contextlib
 import re
 import os
 import sys
+import xdg
 import glob
 import time
 import colorsys
