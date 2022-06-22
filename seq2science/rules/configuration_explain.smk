@@ -11,7 +11,7 @@ if not config.get("explain_rule"):
 else:
     import os.path
     import yaml
-    import genomepy
+    from genomepy.__about__ import __version__ as genomepy_version
 
     REFERENCES = {
         "apeglm": "https://doi.org/10.1093/bioinformatics/bty895",
@@ -166,7 +166,7 @@ else:
         "tpm_matrix": f"TPM normalized gene counts were generated using genomepy based on longest transcript lengths.",
         "run2sra": f"Public samples were downloaded from the {hyperref('Sequence Read Archive')} with help of the ncbi e-utilities and {hyperref('pysradb')}.",
         "get_effective_genome_size": f"The effective genome size was estimated per sample by {href_v('khmer')} by calculating the number of unique kmers with k being the average read length.",
-        "get_genome": f"Genome assembly {{wildcards.assembly}} was downloaded with {hyperref('genomepy',text=f'genomepy {genomepy.__version__}')}.",
+        "get_genome": f"Genome assembly {{wildcards.assembly}} was downloaded with {hyperref('genomepy',text=f'genomepy {genomepy_version}')}.",
         "custom_extension": "The genome and gene annotations was extended with custom regions.",
         "call_peak_genrich": f"Peaks were called with {href_v('genrich')}{options('peak_caller','genrich')}.",
         "macs2_callpeak": f"Peaks were called with {href_v('macs2')}{options('peak_caller','macs2')} in {{params.format}} mode. The effective genome size was estimated by taking the number of unique kmers in the assembly of the same length as the average read length for each sample.",
