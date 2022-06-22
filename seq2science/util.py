@@ -695,8 +695,8 @@ class PickleDict(dict):
         for _ in range(2):
             # we get two tries, in case parallel executions are interfering with one another
             try:
-                prep_filelock(pysradb_cache_lock, 30)
-                with FileLock(pysradb_cache_lock):
+                prep_filelock(genomepy_lock, 30)
+                with FileLock(genomepy_lock):
                     import genomepy
                     break
             except FileNotFoundError:
