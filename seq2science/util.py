@@ -17,7 +17,6 @@ from typing import List
 from math import ceil, floor
 
 from filelock import FileLock
-import genomepy
 import matplotlib.colors as mcolors
 import numpy as np
 import pandas as pd
@@ -690,6 +689,18 @@ class PickleDict(dict):
         Check the genomepy database for a provider stat serves both genome and annotation for an assembly.
         If impossible, settle with the first provider that serves the genome.
         """
+        CACHE_DIR = os.path.join(xdg.XDG_CACHE_HOME, "seq2science", seq2science.__version__)
+        genomepy_lock = f"{CACHE_DIR}/genomepy.lock"
+        for _ in range(2):
+            # we get two tries, in case parallel executions are interfering with one another
+            try:
+                prep_filelock(pysradb_cache_lock, 30)
+                with FileLock(pysradb_cache_lock):
+                    import genomepy
+                    break
+            except FileNotFoundError:
+                time.sleep(1)
+
         logger.info("Determining assembly providers, this can take some time.")
         for assembly in search_assemblies:
             if assembly not in self:
