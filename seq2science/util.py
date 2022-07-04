@@ -838,6 +838,8 @@ def _get_current_version(package):
         package = "yaml"
     elif package == "biopython":
         package = "Bio"
+    elif package == "genomepy":
+        package = "genomepy.__about__"
 
     ldict = dict()
     exec(f"from {package} import __version__", {}, ldict)
