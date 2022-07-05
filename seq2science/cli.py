@@ -517,13 +517,13 @@ def _explain(args, base_dir, workflows_dir, config_path):
     parsed_args["log_handler"] = [log_handler]
     parsed_args["config"]["explain_rule"] = True
 
-    # run snakemake (silently)
-    with open(os.devnull, "w") as null:
-        with contextlib.redirect_stdout(null), contextlib.redirect_stderr(null):
-            success = run_snakemake(args.workflow.replace("-", "_"), **parsed_args)
-
     if args.debug:
-        print(f"Explain output:\n{rules_used}\n\n")
+        success = run_snakemake(args.workflow.replace("-", "_"), **parsed_args)
+    else:
+        # run snakemake (silently)
+        with open(os.devnull, "w") as null:
+            with contextlib.redirect_stdout(null), contextlib.redirect_stderr(null):
+                success = run_snakemake(args.workflow.replace("-", "_"), **parsed_args)
 
     if success:
         print(" ".join(rules_used.values()))
