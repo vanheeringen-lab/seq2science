@@ -700,6 +700,15 @@ def get_qc_files(wildcards):
         "variable 'QUALITY_CONTROL' exists and contains all the "
         "relevant quality control functions."
     )
+    
+    qc["header"] = expand("{qc_dir}/header_info.yaml", **config)[0]
+    qc["sample_names"] = expand("{qc_dir}/sample_names_{{assembly}}.tsv", **config)[0]
+    qc["schema"] = expand("{qc_dir}/schema.yaml", **config)[0]
+    if config["trimmer"] == "trimgalore" or len(
+        [x for x in MERGED_TREPS if treps.loc[x, "assembly"] == wildcards.assembly]
+    ):
+        qc["filter_buttons"] = expand("{qc_dir}/sample_filters_{{assembly}}.tsv", **config)[0]
+    
     qc["files"] = set(expand(["{qc_dir}/samplesconfig_mqc.html", "{log_dir}/workflow_explanation_mqc.html"], **config))
 
     # no assembly stats for single-cell kallisto|bustools kite workflow
@@ -780,18 +789,6 @@ def get_qc_files(wildcards):
     return qc
 
 
-def get_qc_schemas(wildcards):
-    qc = dict()
-    qc["header"] = expand("{qc_dir}/header_info.yaml", **config)[0]
-    qc["sample_names"] = expand("{qc_dir}/sample_names_{{assembly}}.tsv", **config)[0]
-    qc["schema"] = expand("{qc_dir}/schema.yaml", **config)[0]
-    if config["trimmer"] == "trimgalore" or len(
-        [x for x in MERGED_TREPS if treps.loc[x, "assembly"] == wildcards.assembly]
-    ):
-        qc["filter_buttons"] = expand("{qc_dir}/sample_filters_{{assembly}}.tsv", **config)[0]
-    return qc
-
-
 rule multiqc:
     """
     Aggregate all the quality control metrics for every sample into a single 
@@ -802,8 +799,6 @@ rule multiqc:
     multiqc.
     """
     input:
-        unpack(get_qc_schemas),
-        tmp=expand("{qc_dir}/samplesconfig_mqc.html", **config),
         unpack(get_qc_files),
     output:
         expand("{qc_dir}/multiqc_{{assembly}}.html", **config),
