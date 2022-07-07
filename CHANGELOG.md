@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Changed
+
+- no longer writes multiqc filenames to an intermediate file
+
 ### [0.9.4] - 2022-07-07
 
 ### Fixed
