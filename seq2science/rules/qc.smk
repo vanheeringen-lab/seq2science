@@ -780,16 +780,6 @@ def get_qc_files(wildcards):
     return qc
 
 
-rule combine_qc_files:
-    input:
-        unpack(get_qc_files),
-    output:
-        expand("{qc_dir}/multiqc_{{assembly}}.tmp.files", **config),
-    run:
-        with open(output[0], mode="w") as out:
-            out.write("\n".join(input.files))
-
-
 def get_qc_schemas(wildcards):
     qc = dict()
     qc["header"] = expand("{qc_dir}/header_info.yaml", **config)[0]
@@ -814,7 +804,7 @@ rule multiqc:
     input:
         unpack(get_qc_schemas),
         tmp=expand("{qc_dir}/samplesconfig_mqc.html", **config),
-        files=rules.combine_qc_files.output,
+        unpack(get_qc_files),
     output:
         expand("{qc_dir}/multiqc_{{assembly}}.html", **config),
         directory(expand("{qc_dir}/multiqc_{{assembly}}_data", **config)),
@@ -831,11 +821,11 @@ rule multiqc:
         "../envs/multiqc.yaml"
     shell:
         """
-        multiqc $(< {input.files}) -o {params.dir} -n multiqc_{wildcards.assembly}.html \
+        multiqc {input.files} -o {params.dir} -n multiqc_{wildcards.assembly}.html \
         --config {input.schema}                                                    \
         --config {input.header}                                                    \
         --sample-names {input.sample_names}                                        \
-        {params.filter_buttons}                                    \
+        {params.filter_buttons}                                                    \
         --cl_config "extra_fn_clean_exts: [                                        \
             {{'pattern': ^.*{wildcards.assembly}-, 'type': 'regex'}},              \
             {{'pattern': {params.fqext1},          'type': 'regex'}},              \
