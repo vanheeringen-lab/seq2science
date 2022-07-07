@@ -8,9 +8,11 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### [0.9.4] - 2022-07-07
+
 ### Fixed
 
-- Pinned the snakemake backend for working rerunning
+- (hotfix) pinned the snakemake backend for working rerunning
 
 ### [0.9.3] - 2022-06-17
 
