@@ -12,6 +12,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 - no longer writes multiqc filenames to an intermediate file
 
+### Fixed
+
+- downloading fastq from ena directly fixed 
+
 ### [0.9.4] - 2022-07-07
 
 ### Fixed
