@@ -11,6 +11,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Changed
 
 - no longer writes multiqc filenames to an intermediate file
+- Updated kb-python to 0.27.3
 
 ### Fixed
 
