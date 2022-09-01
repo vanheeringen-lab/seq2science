@@ -8,7 +8,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
-### [0.9.5] - 2022-09-01
+## [0.9.5] - 2022-09-01
 
 ### Changed
 
@@ -19,13 +19,13 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 - downloading fastq from ena directly fixed 
 
-### [0.9.4] - 2022-07-07
+## [0.9.4] - 2022-07-07
 
 ### Fixed
 
 - (hotfix) pinned the snakemake backend for working rerunning
 
-### [0.9.3] - 2022-06-17
+## [0.9.3] - 2022-06-17
 
 ### Added
 
