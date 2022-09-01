@@ -175,15 +175,6 @@ combine_peaks -i {input.summitfiles} -g {input.sizes} \
 --window {params.windowsize} > {output} 2> {log}
 ```
 
-#### combine_qc_files
-
-Aggregate all the quality control metrics for every sample into a single 
-multiqc report.
-
-The input can get very long (causing problems with the shell), so we have 
-to write the input to a file, and then we can use that file as input to 
-multiqc.
-
 #### complement_blacklist
 
 Take the complement of the blacklist. We need this complement to tell samtools
@@ -827,6 +818,28 @@ Pre-compute a bam summary with deeptools.
 ```
 multiBamSummary bins --bamfiles {input.bams} -out {output} {params.names} \
 {params.params} -p {threads} > {log} 2>&1
+```
+
+#### multiqc
+
+Aggregate all the quality control metrics for every sample into a single 
+multiqc report.
+
+The input can get very long (causing problems with the shell), so we have 
+to write the input to a file, and then we can use that file as input to 
+multiqc.
+
+```
+multiqc {input.files} -o {params.dir} -n multiqc_{wildcards.assembly}.html \
+--config {input.schema}                                                    \
+--config {input.header}                                                    \
+--sample-names {input.sample_names}                                        \
+{params.filter_buttons}                                                    \
+--cl_config "extra_fn_clean_exts: [                                        \
+    {{'pattern': ^.*{wildcards.assembly}-, 'type': 'regex'}},              \
+    {{'pattern': {params.fqext1},          'type': 'regex'}},              \
+    {{'pattern': _allsizes,                'type': 'regex'}},              \
+    ]" > {log} 2>&1
 ```
 
 #### multiqc_explain

@@ -62,7 +62,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#citeseqcount">citeseqcount</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#combine-biological-reps">combine_biological_reps</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#combine-peaks">combine_peaks</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#combine-qc-files">combine_qc_files</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#complement-blacklist">complement_blacklist</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#computematrix-gene">computeMatrix_gene</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#computematrix-peak">computeMatrix_peak</a></li>
@@ -130,6 +129,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#motif2factors">motif2factors</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#mt-nuc-ratio-calculator">mt_nuc_ratio_calculator</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multibamsummary">multiBamSummary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multiqc">multiqc</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multiqc-explain">multiqc_explain</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multiqc-filter-buttons">multiqc_filter_buttons</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multiqc-header-info">multiqc_header_info</a></li>
@@ -371,14 +371,6 @@ together and takes the most significant one as the true peak.</p>
 <span class="o">--</span><span class="n">window</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">windowsize</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span>
 </pre></div>
 </div>
-</section>
-<section id="combine-qc-files">
-<h2>combine_qc_files<a class="headerlink" href="#combine-qc-files" title="Permalink to this heading"></a></h2>
-<p>Aggregate all the quality control metrics for every sample into a single
-multiqc report.</p>
-<p>The input can get very long (causing problems with the shell), so we have
-to write the input to a file, and then we can use that file as input to
-multiqc.</p>
 </section>
 <section id="complement-blacklist">
 <h2>complement_blacklist<a class="headerlink" href="#complement-blacklist" title="Permalink to this heading"></a></h2>
@@ -961,6 +953,26 @@ against either “chrM” or “MT”.</p>
 <p>Pre-compute a bam summary with deeptools.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">multiBamSummary</span> <span class="n">bins</span> <span class="o">--</span><span class="n">bamfiles</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">bams</span><span class="p">}</span> <span class="o">-</span><span class="n">out</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">names</span><span class="p">}</span> \
 <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">params</span><span class="p">}</span> <span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
+</pre></div>
+</div>
+</section>
+<section id="multiqc">
+<h2>multiqc<a class="headerlink" href="#multiqc" title="Permalink to this heading"></a></h2>
+<p>Aggregate all the quality control metrics for every sample into a single
+multiqc report.</p>
+<p>The input can get very long (causing problems with the shell), so we have
+to write the input to a file, and then we can use that file as input to
+multiqc.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">multiqc</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">files</span><span class="p">}</span> <span class="o">-</span><span class="n">o</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">dir</span><span class="p">}</span> <span class="o">-</span><span class="n">n</span> <span class="n">multiqc_</span><span class="p">{</span><span class="n">wildcards</span><span class="o">.</span><span class="n">assembly</span><span class="p">}</span><span class="o">.</span><span class="n">html</span> \
+<span class="o">--</span><span class="n">config</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">schema</span><span class="p">}</span>                                                    \
+<span class="o">--</span><span class="n">config</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">header</span><span class="p">}</span>                                                    \
+<span class="o">--</span><span class="n">sample</span><span class="o">-</span><span class="n">names</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">sample_names</span><span class="p">}</span>                                        \
+<span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">filter_buttons</span><span class="p">}</span>                                                    \
+<span class="o">--</span><span class="n">cl_config</span> <span class="s2">&quot;extra_fn_clean_exts: [                                        </span><span class="se">\</span>
+<span class="s2">    {{&#39;pattern&#39;: ^.*</span><span class="si">{wildcards.assembly}</span><span class="s2">-, &#39;type&#39;: &#39;regex&#39;}},              </span><span class="se">\</span>
+<span class="s2">    {{&#39;pattern&#39;: </span><span class="si">{params.fqext1}</span><span class="s2">,          &#39;type&#39;: &#39;regex&#39;}},              </span><span class="se">\</span>
+<span class="s2">    {{&#39;pattern&#39;: _allsizes,                &#39;type&#39;: &#39;regex&#39;}},              </span><span class="se">\</span>
+<span class="s2">    ]&quot;</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
 </section>
