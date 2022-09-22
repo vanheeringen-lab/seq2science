@@ -147,7 +147,7 @@ if config.get("create_trackhub"):
                 # Each contig is scanned by get_masked_regions (in parallel by imap_unordered).
                 # As soon as a contig is scanned, the output is yielded and written to file.
                 for softmasked_regions_per_contig in p.imap_unordered(
-                    get_masked_regions, SeqIO.parse(genome_handle, "fasta")
+                    get_masked_regions, SeqIO.parse(genome_handle, "fasta"), 1, 600  # 10 min timeout
                 ):
                     bed_handle.write(softmasked_regions_per_contig)
                 p.close()
