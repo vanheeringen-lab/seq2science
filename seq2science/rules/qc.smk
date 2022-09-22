@@ -14,7 +14,6 @@ localrules:
     multiqc_filter_buttons,
     multiqc_samplesconfig,
     multiqc_schema,
-    combine_qc_files,
 
 
 def samtools_stats_input(wildcards):
