@@ -140,6 +140,7 @@ if config.get("create_trackhub"):
         threads: 4
         resources:
             mem_gb=2,
+        retries: 2
         run:
             with open(str(input.genome), "r") as genome_handle, open(str(output.mask_unsorted), "w+") as bed_handle:
                 p = Pool(threads)
