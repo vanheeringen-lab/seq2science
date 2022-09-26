@@ -1,7 +1,7 @@
 """
 - seqIO.parse(genomes) feeds contig sequences to get_masked_regions().
 - get_masked_regions() returns masked regions per contif in BED3 format.
-- mp.imap_unordered) runs this in parallel.
+- mp.imap_unordered() runs this in parallel.
 - as soon as a contig is scanned, the output is written to file.
 
 If a contig takes longer to scan than the timeout, the scripts terminates with an error.
