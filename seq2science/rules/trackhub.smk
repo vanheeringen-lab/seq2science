@@ -6,8 +6,6 @@ if config.get("create_trackhub"):
     import os.path
     import re
 
-    # from Bio import SeqIO
-    # from multiprocessing import Pool, TimeoutError
     import trackhub
 
     from seq2science.util import color_picker, color_gradient, hsv_to_ucsc, shorten
