@@ -47,7 +47,7 @@ def get_masked_regions(contig):
 
 with open(genome, "r") as genome_handle, open(mask_unsorted, "w+") as bed_handle:
     p = Pool(threads)
-    contigs = p.imap_unordered(get_masked_regions, SeqIO.parse(genome_handle, "fasta"), chunksize=1)
+    contigs = p.imap_unordered(get_masked_regions, SeqIO.parse(genome_handle, "fasta"))
     p.close()
     while True:
         try:
