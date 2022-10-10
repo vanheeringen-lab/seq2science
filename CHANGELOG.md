@@ -10,6 +10,13 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [0.9.5] - 2022-09-01
 
+### Fixed
+
+- softmask_track_1 should no longer hang indefinetly
+- On UCSC assembly hubs, the softmask track should align better (fixed off-by-1$
+
+## [0.9.5] - 2022-09-01
+
 ### Changed
 
 - no longer writes multiqc filenames to an intermediate file
