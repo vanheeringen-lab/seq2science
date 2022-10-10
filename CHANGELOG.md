@@ -8,6 +8,8 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+## [0.9.5] - 2022-09-01
+
 ### Changed
 
 - no longer writes multiqc filenames to an intermediate file
@@ -19,13 +21,13 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - softmask_track_1 should no longer hang indefinetly
 - On UCSC assembly hubs, the softmask track should align better (fixed off-by-1 error in #896)
 
-### [0.9.4] - 2022-07-07
+## [0.9.4] - 2022-07-07
 
 ### Fixed
 
 - (hotfix) pinned the snakemake backend for working rerunning
 
-### [0.9.3] - 2022-06-17
+## [0.9.3] - 2022-06-17
 
 ### Added
 
@@ -665,7 +667,9 @@ Many minor bug- and quality of life fixes.
 ## [0.0.0] - 2020-06-11
 First release of seq2science!
 
-[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.3...develop
+[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.5...develop
+[0.9.5]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.4...v0.9.5
+[0.9.4]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.3...v0.9.4
 [0.9.3]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.2...v0.9.3
 [0.9.2]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.1...v0.9.2
 [0.9.1]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.0...v0.9.1
