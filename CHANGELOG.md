@@ -18,6 +18,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - downloading fastq from ena directly fixed
 - softmask_track_1 should no longer hang indefinetly
 - On UCSC assembly hubs, the softmask track should align better (fixed off-by-1 error in #896)
+- clear error when specifying wrong trimmer (#888)
 
 ### [0.9.4] - 2022-07-07
 
