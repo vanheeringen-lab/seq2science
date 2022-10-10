@@ -8,8 +8,6 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
-## [0.9.5] - 2022-09-01
-
 ### Fixed
 
 - softmask_track_1 should no longer hang indefinetly
