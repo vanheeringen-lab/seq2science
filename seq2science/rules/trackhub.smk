@@ -253,10 +253,13 @@ if config.get("create_trackhub"):
         """
         palletes = {}
 
-        # pick colors for each main track
-        main_tracks = list(set(breps[breps["assembly"] == asmbly].index))
+        # get a dataframe with one color per biological replicate
+        df = breps[(breps["assembly"] == asmbly) & (~breps.index.duplicated(keep='first'))]
+        
+        # pick main colors for each main track
+        main_tracks = df.index.to_list()
         if "colors" in breps:
-            mc = breps[~breps.index.duplicated(keep='first')]["colors"].to_list()
+            mc = df["colors"].to_list()
         else:
             mc = color_picker(len(main_tracks))
 
