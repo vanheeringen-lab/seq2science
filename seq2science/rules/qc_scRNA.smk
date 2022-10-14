@@ -62,7 +62,8 @@ rule sctk_qc:
     Perform scRNA QC with singleCellTK, store output in SingleCellExperiment object and export to RData format.
     """
     input:
-       rds_raw=rules.export_sce_obj.output.dir[0]
+       rds_raw=rules.export_sce_obj.output.dir[0],
+       mt_genes=rules.get_mt_genes.output[0]
     output:
         dir=expand(
             "{result_dir}/scrna-preprocess/{quantifier}/sctk/{{assembly}}-{{sample}}/{file}",

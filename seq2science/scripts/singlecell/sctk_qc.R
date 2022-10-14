@@ -22,6 +22,7 @@ use_alt_exp <- snakemake@config$sc_preprocess$use_alt_expr
 pdf_out <- file.path(out_dir, "SCTK_DropletQC_figures.pdf", fsep = "/")
 numCores <- snakemake@threads
 export_formats <- snakemake@config$sc_preprocess$sctk_export_formats
+mt_list <- snakemake@input$mt_genes
 
 # Log all console output
 log <- file(log_file, open = "wt")
