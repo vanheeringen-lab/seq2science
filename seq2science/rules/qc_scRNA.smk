@@ -43,6 +43,20 @@ rule export_sce_obj:
         f"{config['rule_dir']}/../scripts/singlecell/read_kb_counts.R"
 
 
+rule get_mt_genes:
+    """
+    Extract MT genes from gtf annotation for QC
+    """
+    input:
+        gtf=rules.get_genome_annotation.output.gtf,
+    output:
+        dir=expand("{result_dir}/scrna-preprocess/{quantifier}/{{assembly}}-mt.txt", **config),
+    log:
+        expand("{log_dir}/scrna-preprocess/{quantifier}/{{assembly}}-mt.log", **config),
+    script:
+        f"{config['rule_dir']}/../scripts/genomepy/get_genome_mt.py"
+    
+
 rule sctk_qc:
     """
     Perform scRNA QC with singleCellTK, store output in SingleCellExperiment object and export to RData format.
