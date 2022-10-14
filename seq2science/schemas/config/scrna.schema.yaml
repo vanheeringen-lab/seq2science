@@ -54,14 +54,6 @@ properties:
         description: Type of UMI count matrix, either cell or droplet counts
         default: 'cell'
         enum: ['cell','droplet']
-      sctk_detect_mito:
-        description: Calculate mitochondrial gene ratio for quality control
-        default: True
-        type: boolean
-      sctk_mito_set:
-        description: Mitochondrial gene set to use for quality control
-        default: 'human-symbol'
-        enum: ['human-ensembl', 'mouse-ensembl', 'human-entrez', 'mouse-entrez', 'human-symbol', 'mouse-symbol']
       sctk_detect_cell:
         description: Perform cell calling for droplet based scRNA-seq assays
         default: True
@@ -73,10 +65,6 @@ properties:
       sctk_export_formats:
         description: File formats for SingleCellExperiment object export
         default: ['Seurat']
-        type: array
-      sctk_qc_algos:
-        description: QC algorithms for CellQC (debug only)
-        default: ["QCMetrics", "scDblFinder", "decontX"]
         type: array
       use_alt_expr:
         description: Process alternative experiments (if present) such as ERCC Spike-in's  
