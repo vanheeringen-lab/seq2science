@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- automated mitochondrial gene retrieval with genomepy for SCTK quality control
+
 ### Fixed
 
 - softmask_track_1 should no longer hang indefinetly
