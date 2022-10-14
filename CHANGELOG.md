@@ -11,7 +11,8 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Fixed
 
 - softmask_track_1 should no longer hang indefinetly
-- On UCSC assembly hubs, the softmask track should align better (fixed off-by-1$
+- On UCSC assembly hubs, the softmask track should align better (fixed off-by-1)
+- upsetplot environment being broken
 
 ## [0.9.5] - 2022-09-01
 
