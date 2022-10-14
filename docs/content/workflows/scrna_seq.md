@@ -178,6 +178,8 @@ barcodefile: "barcodes.tab"
 #### scRNA-seq pre-processing and quality control
 The seq2science scRNA workflow provides the option to perform automated pre-processing of raw scRNA-seq UMI count matrices. This is achieved by incorporating several quality control steps from the [singleCellTK](https://camplab.net/sctk/v2.4.1/index.html) Bioconductor package, such as cell-calling, doublet detection and assessment of cell-wise mitochondrial RNA content. 
 
+Genomepy will attempt to extract the correct list of mitochondrial genes for quality control automatically and store it in `path/to/results/scrna-preprocess/{quantifier}`. In case the list could not be extracted from the genome annotation, this step will be skipped and needs to be repeated manually.    
+
 The QC results are reported in comprehensive R Markdown reports and processed UMI count matrices are stored as [SingleCellExperiment](https://bioconductor.org/packages/release/bioc/html/SingleCellExperiment.html) S4 objects. Any sample level metadata that has been added to the `samples.tsv` file will be transferred to the `colData` slot of the corresponding object and assigned to each cell identifier. 
 
 After running seq2science, these objects can be directly imported into R with the `readRDS` function for further down-stream analysis with your favorite R packages.
@@ -192,8 +194,6 @@ sc_preprocess:
    use_alt_expr: False
    alt_exp_name: ""
    alt_exp_reg: ""
-   sctk_mito_set: human-ensembl
-   sctk_detect_mito: True
    sctk_detect_cell: False
    sctk_cell_calling: Knee
 ```
@@ -211,12 +211,8 @@ We do not perform any gene/cell level filtering, except for empty droplets that 
 
 #### Advanced settings
 
-To perform additional (optional) QC steps, consider the following parameters:
+To perform additional (optional) QC steps, consider the following parameters. 
 
-* `sctk_detect_mito` (*default*: `True`)<br/>
-Quantify the percentage of mitochondrial RNA for each cell. 
-* `sctk_mito_set` (*default*: `human-ensembl`)<br/> 
-The mitochondrial gene set to use for quantification with syntax `[human,mouse]-[ensembl,entrez,symbol]`. At the moment, only human and mouse gene annotations are supported. This option is only considered when `sctk_detect_mito=True`.
 * `sctk_detect_cell` (*default*: `True`)<br/> 
 Perform cell-calling for droplet based experiments. Empty droplets will not be removed if set to `False`.
 * `sctk_cell_calling` (*default*: `Knee`)<br/> 
