@@ -16,15 +16,12 @@ sample <- snakemake@params$sample
 isvelo <- snakemake@params$isvelo
 replicates <- snakemake@params$replicates
 data_type <- snakemake@config$sc_preprocess$sctk_data_type
-mito_set <- snakemake@config$sc_preprocess$sctk_mito_set
 detect_cell <- snakemake@config$sc_preprocess$sctk_detect_cell
-detect_mito <- snakemake@config$sc_preprocess$sctk_detect_mito
 cell_calling <- snakemake@config$sc_preprocess$sctk_cell_calling
 use_alt_exp <- snakemake@config$sc_preprocess$use_alt_expr
 pdf_out <- file.path(out_dir, "SCTK_DropletQC_figures.pdf", fsep = "/")
 numCores <- snakemake@threads
 export_formats <- snakemake@config$sc_preprocess$sctk_export_formats
-cellQCAlgos <- snakemake@config$sc_preprocess$sctk_qc_algos
 
 # Log all console output
 log <- file(log_file, open = "wt")
@@ -35,6 +32,8 @@ sink(log, type = "message")
 scrna_utils <- file.path(scripts_dir, "singlecell", "utils.R")
 source(scrna_utils)
 
+# Set QC algos
+cellQCAlgos <- c("QCMetrics", "scDblFinder", "decontX")
 
 # Log all variables for debugging purposes
 cat("# variables used for this analysis:\n")
@@ -47,13 +46,12 @@ cat('rds_in           <- "', rds_in, '"\n', sep = "")
 cat('out_dir          <- "', out_dir, '"\n', sep = "")
 cat('pdf_out          <- "', pdf_out, '"\n', sep = "")
 cat('data_type        <- "', data_type, '"\n', sep = "")
-cat('detect_mito      <- "', detect_mito, '"\n', sep = "")
-cat('mito_set         <- "', mito_set, '"\n', sep = "")
 cat('detect_cell      <- "', detect_cell, '"\n', sep = "")
 cat('cell_calling     <- "', cell_calling, '"\n', sep = "")
 cat('use_alt_exp      <- "', use_alt_exp, '"\n', sep = "")
 cat('cellQCAlgos      <- "', toString(cellQCAlgos), '"\n', sep = "")
 cat('export_formats   <- "', toString(export_formats), '"\n', sep = "")
+cat('mt_list          <- "', mt_list, '"\n', sep = "")
 
 # Setup parallel type
 # https://github.com/compbiomed/singleCellTK/blob/master/exec/SCTK_runQC.R
@@ -81,13 +79,20 @@ collectionName <- NULL
 if (tolower(data_type) == "cell") {
   message(paste0(date(), " .. Running CellQC"))
   # Import mitochondrial gene collection
-  if (isTRUE(detect_mito)) {
-    # Import mitoset
-    mitoset <- strsplit(mito_set, "-")
-    subset_name <- stringr::str_to_title(mitoset[[1]])
-    subset_name <- paste(c(subset_name, "Mito"), collapse = "")
-    collectionName <- subset_name
-    sce <- importMitoGeneSet(sce, reference = mitoset[[1]][1], id = mitoset[[1]][2], by = "rownames", collectionName = collectionName)
+  geneSetList <- read.table(mt_list, quote = "\"", comment.char = "")
+  if (!isTRUE(geneSetList$V1 == "NONE")) {
+    geneSetList <- list(geneSetList$V1)
+    names(geneSetList) <- "Mito"
+    collectionName <- "Mito"
+    # Read gene set collection from list
+    sce <- importGeneSetsFromList(
+      sce,
+      geneSetList,
+      collectionName = "Mito",
+      by = "rownames"
+    )
+  } else {
+    message(paste0(date(), "No mitochondrial genes found. Skipping QC!"))
   }
   # Run QC with mitochondrial gene collection
   cellSCE <- runCellQC(sce,
@@ -114,13 +119,20 @@ if (tolower(data_type) == "droplet") {
     cellSCE <- dropletSCE[, ix]
     message(paste0(date(), " .. Running CellQC"))
     # Detect mitochondrial genes
-    if (isTRUE(detect_mito)) {
-      # Import mitoset
-      mitoset <- strsplit(mito_set, "-")
-      subset_name <- stringr::str_to_title(mitoset[[1]])
-      subset_name <- paste(c(subset_name, "Mito"), collapse = "")
-      collectionName <- subset_name
-      cellSCE <- importMitoGeneSet(cellSCE, reference = mitoset[[1]][1], id = mitoset[[1]][2], by = "rownames", collectionName = collectionName)
+    geneSetList <- read.table(mt_list, quote = "\"", comment.char = "")
+    if (!isTRUE(geneSetList$V1 == "NONE")) {
+      geneSetList <- list(geneSetList$V1)
+      names(geneSetList) <- "Mito"
+      collectionName <- "Mito"
+      # Read gene set collection from list
+      cellSCE <- importGeneSetsFromList(
+        cellSCE,
+        geneSetList,
+        collectionName = "Mito",
+        by = "rownames"
+      )
+    } else {
+      message(paste0(date(), "No mitochondrial genes found. Skipping QC!"))
     }
     # Run QC with mitochondrial gene collection
     cellSCE <- runCellQC(cellSCE,
