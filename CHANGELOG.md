@@ -13,7 +13,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - softmask_track_1 should no longer hang indefinetly
 - On UCSC assembly hubs, the softmask track should align better (fixed off-by-1)
 - upsetplot environment being broken (matplotlib version pinned)
-- deeptools environment being broker (matplotlib version pinned)
+- deeptools environment being broken (matplotlib version pinned)
 
 ## [0.9.5] - 2022-09-01
 
