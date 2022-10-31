@@ -5,4 +5,5 @@ channels:
   - defaults
 dependencies:
   - bioconda::deeptools=3.5.1
+  - conda-forge::matplotlib-base=3.5.3
   - conda-forge::conda-ecosystem-user-package-isolation=1.0
