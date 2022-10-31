@@ -68,7 +68,7 @@ rule sctk_qc:
         replicates=True if "technical_replicates" in samples else False,
     message: EXPLAIN["sctk"]
     resources:
-        R_scripts=1,
-        mem_gb=50,# conda's R can have issues when starting multiple times
+        R_scripts=1,  # conda's R can have issues when starting multiple times
+        mem_gb=150,
     script:
         f"{config['rule_dir']}/../scripts/singlecell/sctk_qc.R"
