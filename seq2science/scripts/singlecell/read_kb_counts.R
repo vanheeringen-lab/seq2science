@@ -55,8 +55,11 @@ cat('use_alt_expr     <- "', use_alt_expr, '"\n', sep = "")
 cat('alt_exp_name     <- "', alt_exp_name, '"\n', sep = "")
 cat('alt_exp_reg      <- "', alt_exp_reg, '"\n', sep = "")
 cat('export_formats   <- "', toString(export_formats), '"\n', sep = "")
-
 cat("\n")
+
+cat('Sessioninfo:\n')
+sessionInfo()
+cat('\n')
 
 # Prepare data frame with cell metadata
 prep_cell_meta <- function(sample, sample_sheet, cell.names) {
