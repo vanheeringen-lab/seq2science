@@ -8,8 +8,16 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Changed
+
+- all conda environments now work with strict channel priorities
+- singlecellTK environment updated (no longer needs pip)
+- increased expected RAM usage of scRNA-seq rule `sctk_qc`
+
 ### Fixed
 
+- outdated dependency in scRNA-seq rule `export_sce_obj`
+- error in singlecellTK script with negative count values in `reportCellQC()`
 - softmask_track_1 should no longer hang indefinetly
 - On UCSC assembly hubs, the softmask track should align better (fixed off-by-1)
 - upsetplot environment being broken (matplotlib version pinned)
