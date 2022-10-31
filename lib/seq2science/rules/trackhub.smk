@@ -6,8 +6,6 @@ if config.get("create_trackhub"):
     import os.path
     import re
 
-    from Bio import SeqIO
-    from multiprocessing import Pool
     import trackhub
 
     from seq2science.util import color_picker, color_gradient, hsv_to_ucsc, shorten
@@ -101,30 +99,6 @@ if config.get("create_trackhub"):
             """
 
 
-    def get_masked_regions(contig):
-        masked_regions = ""
-
-        masked_seq = str(contig.seq)
-        in_masked = False
-
-        length = len(masked_seq) - 1
-        for x in range(0, length + 1):
-            # mark the starting position of a softmasked region
-            if masked_seq[x].islower() and in_masked == False:
-                mm_start = x + 1
-                in_masked = True
-
-            # mark end position of softmasked region (can be end of contig)
-            elif (not (masked_seq[x].islower()) or x == length) and in_masked == True:
-                mm_end = x
-                in_masked = False
-
-                # store softmasked region in a bed3 (chr, start, end) file
-                masked_regions += contig.id + "\t" + str(mm_start) + "\t" + str(mm_end) + "\n"
-
-        return masked_regions
-
-
     rule softmask_track_1:
         """
         Generate a track of all softmasked regions
@@ -140,17 +114,9 @@ if config.get("create_trackhub"):
         threads: 4
         resources:
             mem_gb=2,
-        run:
-            with open(str(input.genome), "r") as genome_handle, open(str(output.mask_unsorted), "w+") as bed_handle:
-                p = Pool(threads)
-                # seqIO.parse returns contig data.
-                # Each contig is scanned by get_masked_regions (in parallel by imap_unordered).
-                # As soon as a contig is scanned, the output is yielded and written to file.
-                for softmasked_regions_per_contig in p.imap_unordered(
-                    get_masked_regions, SeqIO.parse(genome_handle, "fasta")
-                ):
-                    bed_handle.write(softmasked_regions_per_contig)
-                p.close()
+        retries: 2
+        script:
+            f"{config['rule_dir']}/../scripts/softmask.py"
 
 
     rule softmask_track_2:
@@ -287,10 +253,13 @@ if config.get("create_trackhub"):
         """
         palletes = {}
 
-        # pick colors for each main track
-        main_tracks = list(set(breps[breps["assembly"] == asmbly].index))
+        # get a dataframe with one color per biological replicate
+        df = breps[(breps["assembly"] == asmbly) & (~breps.index.duplicated(keep='first'))]
+        
+        # pick main colors for each main track
+        main_tracks = df.index.to_list()
         if "colors" in breps:
-            mc = breps[~breps.index.duplicated(keep='first')]["colors"].to_list()
+            mc = df["colors"].to_list()
         else:
             mc = color_picker(len(main_tracks))
 

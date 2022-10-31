@@ -1,7 +1,7 @@
 name: s2s
 channels:
-  - bioconda
   - conda-forge
+  - bioconda
   - defaults
 dependencies:
   - conda-forge::python=3.8

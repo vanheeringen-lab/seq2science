@@ -16,6 +16,7 @@
         <script src="../_static/underscore.js"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -1007,62 +1008,60 @@
 <section id="sc-preprocess">
 <h3>sc_preprocess<a class="headerlink" href="#sc-preprocess" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sc_preprocess</span><span class="p">:</span>
-    <span class="n">description</span><span class="p">:</span> <span class="n">Pre</span><span class="o">-</span><span class="n">processing</span> <span class="n">settings</span> <span class="k">for</span> <span class="n">scRNA</span> <span class="n">data</span>
+    <span class="n">description</span><span class="p">:</span> <span class="n">Pre</span><span class="o">-</span><span class="n">processing</span> <span class="n">settings</span> <span class="k">for</span> <span class="n">scRNA</span><span class="o">-</span><span class="n">seq</span> <span class="n">data</span>
     <span class="n">properties</span><span class="p">:</span>
         <span class="n">export_sce_objects</span><span class="p">:</span>
-            <span class="n">description</span><span class="p">:</span> <span class="n">Export</span> <span class="n">scRNA</span> <span class="n">count</span> <span class="n">tables</span> <span class="n">to</span> <span class="n">SingleCellExperiment</span> <span class="ow">and</span> <span class="n">save</span> <span class="ow">in</span> <span class="n">RDATA</span> <span class="nb">format</span>
+            <span class="n">description</span><span class="p">:</span> <span class="n">Export</span> <span class="n">scRNA</span><span class="o">-</span><span class="n">seq</span> <span class="n">UMI</span> <span class="n">count</span> <span class="n">tables</span> <span class="n">to</span> <span class="n">SingleCellExperiment</span> <span class="n">objects</span> <span class="ow">and</span> <span class="n">save</span> <span class="ow">in</span> <span class="o">.</span><span class="n">Rds</span> <span class="n">file</span> <span class="nb">format</span>
+            <span class="n">default</span><span class="p">:</span> <span class="kc">False</span>
             <span class="nb">type</span><span class="p">:</span> <span class="n">boolean</span>
-        <span class="n">use_alt_expr</span><span class="p">:</span>
-            <span class="n">description</span><span class="p">:</span> <span class="n">Process</span> <span class="n">alternative</span> <span class="n">experiments</span>
+        <span class="n">run_sctk_qc</span><span class="p">:</span>
+            <span class="n">description</span><span class="p">:</span> <span class="n">Run</span> <span class="n">singleCellTK</span> <span class="n">quality</span> <span class="n">control</span> <span class="n">workflow</span>
+            <span class="n">default</span><span class="p">:</span> <span class="kc">False</span>
             <span class="nb">type</span><span class="p">:</span> <span class="n">boolean</span>
         <span class="n">velo_assay</span><span class="p">:</span>
-            <span class="n">description</span><span class="p">:</span> <span class="n">Assay</span> <span class="n">to</span> <span class="n">use</span> <span class="k">for</span> <span class="n">export</span><span class="o">/</span><span class="n">qc</span><span class="o">.</span> <span class="n">This</span> <span class="n">option</span> <span class="ow">is</span> <span class="n">only</span> <span class="n">considered</span> <span class="n">when</span> <span class="n">kb</span> <span class="ow">is</span> <span class="n">run</span> <span class="k">with</span> <span class="o">--</span><span class="n">workflow</span> <span class="n">lamanno</span>
+            <span class="n">description</span><span class="p">:</span> <span class="n">Count</span> <span class="n">assay</span> <span class="n">to</span> <span class="n">use</span> <span class="k">for</span> <span class="n">export</span> <span class="ow">and</span> <span class="n">quality</span> <span class="n">control</span> <span class="n">when</span> <span class="n">kb</span> <span class="ow">is</span> <span class="n">run</span> <span class="k">with</span> <span class="o">--</span><span class="n">workflow</span> <span class="n">lamanno</span>
+            <span class="n">default</span><span class="p">:</span> <span class="n">spliced</span>
             <span class="n">enum</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;spliced&#39;</span><span class="p">,</span> <span class="s1">&#39;unspliced&#39;</span><span class="p">]</span>
-        <span class="n">alt_exp_name</span><span class="p">:</span>
-            <span class="n">description</span><span class="p">:</span> <span class="n">Name</span> <span class="n">of</span> <span class="n">the</span> <span class="n">alternative</span> <span class="n">experiment</span>
-            <span class="nb">type</span><span class="p">:</span> <span class="n">string</span>
-        <span class="n">alt_exp_reg</span><span class="p">:</span>
-            <span class="n">description</span><span class="p">:</span> <span class="n">Regular</span> <span class="n">expression</span> <span class="n">to</span> <span class="n">extract</span> <span class="n">alternative</span> <span class="n">features</span>
-            <span class="nb">type</span><span class="p">:</span> <span class="n">string</span>
-        <span class="n">run_sctk_qc</span><span class="p">:</span>
-            <span class="n">description</span><span class="p">:</span> <span class="n">Generate</span> <span class="n">QC</span> <span class="n">reports</span> <span class="k">with</span> <span class="n">singleCellTK</span>
-            <span class="nb">type</span><span class="p">:</span> <span class="n">boolean</span>
         <span class="n">sctk_data_type</span><span class="p">:</span>
-            <span class="n">description</span><span class="p">:</span> <span class="n">Type</span> <span class="n">of</span> <span class="n">count</span> <span class="n">matrix</span><span class="p">,</span> <span class="n">either</span> <span class="n">cell</span> <span class="ow">or</span> <span class="n">droplet</span>
-            <span class="nb">type</span><span class="p">:</span> <span class="n">string</span>
+            <span class="n">description</span><span class="p">:</span> <span class="n">Type</span> <span class="n">of</span> <span class="n">UMI</span> <span class="n">count</span> <span class="n">matrix</span><span class="p">,</span> <span class="n">either</span> <span class="n">cell</span> <span class="ow">or</span> <span class="n">droplet</span> <span class="n">counts</span>
+            <span class="n">default</span><span class="p">:</span> <span class="n">cell</span>
+            <span class="n">enum</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;cell&#39;</span><span class="p">,</span> <span class="s1">&#39;droplet&#39;</span><span class="p">]</span>
         <span class="n">sctk_detect_mito</span><span class="p">:</span>
-            <span class="n">description</span><span class="p">:</span> <span class="n">Perform</span> <span class="n">mitochondrial</span> <span class="n">gene</span> <span class="n">detection</span>
+            <span class="n">description</span><span class="p">:</span> <span class="n">Calculate</span> <span class="n">mitochondrial</span> <span class="n">gene</span> <span class="n">ratio</span> <span class="k">for</span> <span class="n">quality</span> <span class="n">control</span>
+            <span class="n">default</span><span class="p">:</span> <span class="kc">True</span>
             <span class="nb">type</span><span class="p">:</span> <span class="n">boolean</span>
         <span class="n">sctk_mito_set</span><span class="p">:</span>
-            <span class="n">description</span><span class="p">:</span> <span class="n">Mitochondrial</span> <span class="n">gene</span> <span class="nb">set</span> <span class="k">for</span> <span class="n">quality</span> <span class="n">control</span>
+            <span class="n">description</span><span class="p">:</span> <span class="n">Mitochondrial</span> <span class="n">gene</span> <span class="nb">set</span> <span class="n">to</span> <span class="n">use</span> <span class="k">for</span> <span class="n">quality</span> <span class="n">control</span>
+            <span class="n">default</span><span class="p">:</span> <span class="n">human</span><span class="o">-</span><span class="n">symbol</span>
             <span class="n">enum</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;human-ensembl&#39;</span><span class="p">,</span> <span class="s1">&#39;mouse-ensembl&#39;</span><span class="p">,</span> <span class="s1">&#39;human-entrez&#39;</span><span class="p">,</span> <span class="s1">&#39;mouse-entrez&#39;</span><span class="p">,</span> <span class="s1">&#39;human-symbol&#39;</span><span class="p">,</span> <span class="s1">&#39;mouse-symbol&#39;</span><span class="p">]</span>
         <span class="n">sctk_detect_cell</span><span class="p">:</span>
-            <span class="n">description</span><span class="p">:</span> <span class="n">Perform</span> <span class="n">cell</span> <span class="n">calling</span> <span class="k">for</span> <span class="n">droplet</span> <span class="n">based</span> <span class="n">methods</span>
-            <span class="nb">type</span><span class="p">:</span> <span class="n">boolean</span>
+            <span class="n">description</span><span class="p">:</span> <span class="n">Perform</span> <span class="n">cell</span> <span class="n">calling</span> <span class="k">for</span> <span class="n">droplet</span> <span class="n">based</span> <span class="n">scRNA</span><span class="o">-</span><span class="n">seq</span> <span class="n">assays</span>
             <span class="n">default</span><span class="p">:</span> <span class="kc">True</span>
+            <span class="nb">type</span><span class="p">:</span> <span class="n">boolean</span>
         <span class="n">sctk_cell_calling</span><span class="p">:</span>
-            <span class="n">description</span><span class="p">:</span> <span class="n">Type</span> <span class="n">of</span> <span class="n">cell</span> <span class="n">calling</span> <span class="n">method</span>
+            <span class="n">description</span><span class="p">:</span> <span class="n">Cell</span> <span class="n">calling</span> <span class="n">method</span> <span class="n">to</span> <span class="n">use</span>
+            <span class="n">default</span><span class="p">:</span> <span class="n">Knee</span>
             <span class="n">enum</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;EmptyDrops&#39;</span><span class="p">,</span> <span class="s1">&#39;Knee&#39;</span><span class="p">]</span>
         <span class="n">sctk_export_formats</span><span class="p">:</span>
-            <span class="n">description</span><span class="p">:</span> <span class="n">Additional</span> <span class="n">file</span> <span class="n">formats</span> <span class="k">for</span> <span class="n">SCE</span> <span class="n">export</span>
+            <span class="n">description</span><span class="p">:</span> <span class="n">File</span> <span class="n">formats</span> <span class="k">for</span> <span class="n">SingleCellExperiment</span> <span class="nb">object</span> <span class="n">export</span>
+            <span class="n">default</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Seurat&#39;</span><span class="p">]</span>
             <span class="nb">type</span><span class="p">:</span> <span class="n">array</span>
         <span class="n">sctk_qc_algos</span><span class="p">:</span>
-            <span class="n">description</span><span class="p">:</span> <span class="n">QC</span> <span class="n">algorithms</span> <span class="k">for</span> <span class="n">CellQC</span>
+            <span class="n">description</span><span class="p">:</span> <span class="n">QC</span> <span class="n">algorithms</span> <span class="k">for</span> <span class="n">CellQC</span> <span class="p">(</span><span class="n">debug</span> <span class="n">only</span><span class="p">)</span>
+            <span class="n">default</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;QCMetrics&#39;</span><span class="p">,</span> <span class="s1">&#39;scDblFinder&#39;</span><span class="p">,</span> <span class="s1">&#39;decontX&#39;</span><span class="p">]</span>
             <span class="nb">type</span><span class="p">:</span> <span class="n">array</span>
-    <span class="n">default</span><span class="p">:</span>
-        <span class="n">export_sce_objects</span><span class="p">:</span> <span class="kc">False</span>
-        <span class="n">run_sctk_qc</span><span class="p">:</span> <span class="kc">False</span>
-        <span class="n">velo_assay</span><span class="p">:</span> <span class="n">spliced</span>
-        <span class="n">sctk_data_type</span><span class="p">:</span> <span class="n">cell</span>
-        <span class="n">sctk_detect_cell</span><span class="p">:</span> <span class="kc">True</span>
-        <span class="n">sctk_cell_calling</span><span class="p">:</span> <span class="n">Knee</span>
-        <span class="n">sctk_detect_mito</span><span class="p">:</span> <span class="kc">True</span>
-        <span class="n">sctk_mito_set</span><span class="p">:</span> <span class="n">human</span><span class="o">-</span><span class="n">ensembl</span>
-        <span class="n">sctk_export_formats</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Seurat&#39;</span><span class="p">]</span>
-        <span class="n">sctk_qc_algos</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;QCMetrics&#39;</span><span class="p">,</span> <span class="s1">&#39;scDblFinder&#39;</span><span class="p">,</span> <span class="s1">&#39;decontX&#39;</span><span class="p">]</span>
-        <span class="n">use_alt_expr</span><span class="p">:</span> <span class="kc">False</span>
-        <span class="n">alt_exp_name</span><span class="p">:</span> <span class="n">ALT</span>
+        <span class="n">use_alt_expr</span><span class="p">:</span>
+            <span class="n">description</span><span class="p">:</span> <span class="n">Process</span> <span class="n">alternative</span> <span class="n">experiments</span> <span class="p">(</span><span class="k">if</span> <span class="n">present</span><span class="p">)</span> <span class="n">such</span> <span class="k">as</span> <span class="n">ERCC</span> <span class="n">Spike</span><span class="o">-</span><span class="ow">in</span><span class="s1">&#39;s</span>
+            <span class="n">default</span><span class="p">:</span> <span class="kc">False</span>
+            <span class="nb">type</span><span class="p">:</span> <span class="n">boolean</span>
         <span class="n">alt_exp_reg</span><span class="p">:</span>
+            <span class="n">description</span><span class="p">:</span> <span class="n">Regular</span> <span class="n">expression</span> <span class="k">for</span> <span class="n">alternative</span> <span class="n">feature</span> <span class="n">filtering</span> <span class="kn">from</span> <span class="nn">gene</span> <span class="n">identifiers</span>
+            <span class="n">default</span><span class="p">:</span> <span class="n">ERCC</span><span class="o">-*</span>
+            <span class="nb">type</span><span class="p">:</span> <span class="n">string</span>
+        <span class="n">alt_exp_name</span><span class="p">:</span>
+            <span class="n">description</span><span class="p">:</span> <span class="n">Name</span> <span class="k">for</span> <span class="n">the</span> <span class="n">alternative</span> <span class="n">assay</span> <span class="n">to</span> <span class="n">store</span> <span class="n">along</span> <span class="n">SCE</span> <span class="nb">object</span>
+            <span class="n">default</span><span class="p">:</span> <span class="n">ALT</span>
+            <span class="nb">type</span><span class="p">:</span> <span class="n">string</span>
 </pre></div>
 </div>
 </section>

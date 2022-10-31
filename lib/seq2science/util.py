@@ -9,6 +9,7 @@ import glob
 import time
 import colorsys
 import tempfile
+import pathlib
 import pickle
 import urllib.request
 import yaml
@@ -111,6 +112,10 @@ def samples2metadata_local(samples: List[str], config: dict, logger) -> dict:
     SAMPLEDICT = dict()
     for sample in samples:
         local_fastqs = glob.glob(os.path.join(config["fastq_dir"], f'{sample}*{config["fqsuffix"]}*.gz'))
+        for fastq in local_fastqs:
+            if not pathlib.Path(fastq).exists():
+                logger.error(f"Encountered broken symlink: {fastq}")
+                os._exit(1)  # noqa
         if len(local_fastqs) == 1:
             SAMPLEDICT[sample] = dict()
             SAMPLEDICT[sample]["layout"] = "SINGLE"

@@ -36,18 +36,5 @@ quantifier:
 # Optional for unsupported technologies
 #barcodefile: "barcodes.txt"
 
-# scRNA pre-processing settings
-sc-preprocess:
-  export_sce_objects: True
-  #run_sctk_qc: False
-  #sctk_data_type: cell
-  #sctk_detect_cell: True
-  #sctk_cell_calling: Knee
-  #sctk_detect_mito: True
-  #sctk_mito_set: human-ensembl
-  #sctk_export_formats: ["Seurat"]
-  #sctk_qc_algos: ["QCMetrics", "scDblFinder", "decontX"]
-  #velo_assay: True
-  #use_alt_expr: False
-  #alt_exp_name: "ALT"
-  #alt_exp_reg: ""
+# For additional scRNA-seq quality control options visit
+# https://vanheeringen-lab.github.io/seq2science/content/workflows/scrna_seq.html#scrna-seq-pre-processing-and-quality-control

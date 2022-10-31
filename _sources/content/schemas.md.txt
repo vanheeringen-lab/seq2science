@@ -666,62 +666,60 @@ barcodefile:
 #####sc_preprocess
 ```
 sc_preprocess:
-    description: Pre-processing settings for scRNA data
+    description: Pre-processing settings for scRNA-seq data
     properties:
         export_sce_objects:
-            description: Export scRNA count tables to SingleCellExperiment and save in RDATA format
+            description: Export scRNA-seq UMI count tables to SingleCellExperiment objects and save in .Rds file format
+            default: False
             type: boolean
-        use_alt_expr:
-            description: Process alternative experiments
+        run_sctk_qc:
+            description: Run singleCellTK quality control workflow
+            default: False
             type: boolean
         velo_assay:
-            description: Assay to use for export/qc. This option is only considered when kb is run with --workflow lamanno
+            description: Count assay to use for export and quality control when kb is run with --workflow lamanno
+            default: spliced
             enum: ['spliced', 'unspliced']
-        alt_exp_name:
-            description: Name of the alternative experiment
-            type: string
-        alt_exp_reg:
-            description: Regular expression to extract alternative features
-            type: string
-        run_sctk_qc:
-            description: Generate QC reports with singleCellTK
-            type: boolean
         sctk_data_type:
-            description: Type of count matrix, either cell or droplet
-            type: string
+            description: Type of UMI count matrix, either cell or droplet counts
+            default: cell
+            enum: ['cell', 'droplet']
         sctk_detect_mito:
-            description: Perform mitochondrial gene detection
+            description: Calculate mitochondrial gene ratio for quality control
+            default: True
             type: boolean
         sctk_mito_set:
-            description: Mitochondrial gene set for quality control
+            description: Mitochondrial gene set to use for quality control
+            default: human-symbol
             enum: ['human-ensembl', 'mouse-ensembl', 'human-entrez', 'mouse-entrez', 'human-symbol', 'mouse-symbol']
         sctk_detect_cell:
-            description: Perform cell calling for droplet based methods
-            type: boolean
+            description: Perform cell calling for droplet based scRNA-seq assays
             default: True
+            type: boolean
         sctk_cell_calling:
-            description: Type of cell calling method
+            description: Cell calling method to use
+            default: Knee
             enum: ['EmptyDrops', 'Knee']
         sctk_export_formats:
-            description: Additional file formats for SCE export
+            description: File formats for SingleCellExperiment object export
+            default: ['Seurat']
             type: array
         sctk_qc_algos:
-            description: QC algorithms for CellQC
+            description: QC algorithms for CellQC (debug only)
+            default: ['QCMetrics', 'scDblFinder', 'decontX']
             type: array
-    default:
-        export_sce_objects: False
-        run_sctk_qc: False
-        velo_assay: spliced
-        sctk_data_type: cell
-        sctk_detect_cell: True
-        sctk_cell_calling: Knee
-        sctk_detect_mito: True
-        sctk_mito_set: human-ensembl
-        sctk_export_formats: ['Seurat']
-        sctk_qc_algos: ['QCMetrics', 'scDblFinder', 'decontX']
-        use_alt_expr: False
-        alt_exp_name: ALT
-        alt_exp_reg: 
+        use_alt_expr:
+            description: Process alternative experiments (if present) such as ERCC Spike-in's
+            default: False
+            type: boolean
+        alt_exp_reg:
+            description: Regular expression for alternative feature filtering from gene identifiers
+            default: ERCC-*
+            type: string
+        alt_exp_name:
+            description: Name for the alternative assay to store along SCE object
+            default: ALT
+            type: string
 ```
 
 ## Differential gene/peak analysis
