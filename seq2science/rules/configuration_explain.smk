@@ -170,7 +170,7 @@ else:
         "custom_extension": "The genome and gene annotations was extended with custom regions.",
         "call_peak_genrich": f"Peaks were called with {href_v('genrich')}{options('peak_caller','genrich')}.",
         "macs2_callpeak": f"Peaks were called with {href_v('macs2')}{options('peak_caller','macs2')} in {{params.format}} mode. The effective genome size was estimated by taking the number of unique kmers in the assembly of the same length as the average read length for each sample.",
-        "keep_mates": "After alignment paired-end info from reads was removed with seq2science to utilize both mates in the paired-end reads.",
+        "keep_mates": "Before peak calling, paired-end info from reads was removed with seq2science so that both mates in a pair get used.",
         "idr": f"Narrowpeak files of biological replicates belonging to the same condition were merged with the {href_v('idr',text='irreproducible discovery rate')}{options('idr_options')}.",
         "macs_cmbreps": "Narrowpeak files of biological replicates belonging to the same condition were merged with fisher's method in macs2.",
         "multiqc": f"Quality control metrics were aggregated by {href_v('MultiQC')}.",
