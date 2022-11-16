@@ -10,13 +10,13 @@ dir=$(pwd)
 for f in seq2science/workflows/*; do
     (
     if [ -d "$f" ]; then
-        cd "$dir/$f"
+        cd "${dir}/$f"
         if [[ $f == *"scrna_seq"* ]]; then
             touch barcodes.txt
         fi
         $CONDA/bin/snakemake --configfile config.yaml --config rule_dir="${dir}/seq2science/rules" --quiet --rulegraph > .tmp_graph.txt
-        python ${dir}/../docs/scripts/clean_dags.py .tmp_graph.txt
-        $CONDA/bin/dot -Tpng -Gbgcolor=transparent -Gdpi=450 .tmp_graph.txt > "$dir/docs/resources/$(basename $f).png"
+        python ${dir}/docs/scripts/clean_dags.py .tmp_graph.txt
+        $CONDA/bin/dot -Tpng -Gbgcolor=transparent -Gdpi=450 .tmp_graph.txt > "${dir}/docs/resources/$(basename $f).png"
         rm .tmp_graph.txt
     fi
     )
