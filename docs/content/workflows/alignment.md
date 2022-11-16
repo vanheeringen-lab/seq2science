@@ -1,7 +1,7 @@
 ## Alignment
 Aligning samples has never been easier!
 
-### Pipeline steps
+### Workflow overview
 <p align="center">
   <img src="../../_static/alignment.png">
 </p>

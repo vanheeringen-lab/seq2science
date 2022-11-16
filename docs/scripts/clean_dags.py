@@ -1,110 +1,7 @@
 import re
 import networkx as nx
 
-rules_to_hide = [
-    # preprocessing
-    "runs2sample",
-    "run2sra",
-    "fastq_pair",
-    "get_genome_support_files",
-    "get_genome_annotation",
-    "get_genome_blacklist",
-    "setup_blacklist",
-    "complement_blacklist",
-    "extend_genome_annotation",
-    "extend_genome_blacklist",
-    "get_effective_genome_size",
-
-    # aligner indexes
-    "bowtie2_index",
-    "bwa_index",
-    "bwa_mem2_index",
-    "hisat2_splice_aware_index",
-    "hisat2_index",
-    "minimap2_index",
-    "star_index",
-
-    # quantifier indexes
-    "get_transcripts",
-    "partial_decoy_transcripts",
-    "full_decoy_transcripts",
-    "salmon_index",
-    "linked_txome",
-    "kallistobus_ref",
-    "kallistobus_ref_kite",
-
-    # sam/bam intermediate rules
-    "samtools_presort",
-    "samtools_index",
-    "samtools_sort",
-    "sambamba_sort",
-    "samtools_sort_allsizes",
-    "sam2bam",
-
-    # genes/peaks intermediate rules
-    "macs_bdgcmp",
-    "macs_cmbreps",
-    "idr",
-    "genrich_pileup",
-    "keep_mates",
-    "hmmratac_genome_info",
-    "narrowpeak_summit",
-    "combine_peaks",
-    "random_subset_peaks",
-    "bedtools_slop",
-    "motif2factors",
-    "prepare_DEXseq_annotation",
-    "log_normalization",
-    "quantile_normalization",
-    "edgeR_normalization",
-    "mean_center",
-    "combine_biological_reps",
-    # "onehot_peaks",
-
-    # trackhub input
-    "softmask_track_1",
-    "softmask_track_2",
-    "trackhub_index",
-    "twobit",
-    "gcPercent",
-    "cytoband",
-
-    # multiqc input
-    "multiqc_header_info",
-    "multiqc_rename_buttons",
-    "multiqc_schema",
-    "multiqc_samplesconfig",
-    "multiqc_explain",
-    "multiqc_filter_buttons",
-    "multiqc_assembly_stats",
-    "fastp_qc_SE",
-    "fastp_qc_PE",
-    "fastqc",
-    "mt_nuc_ratio_calculator",
-    "samtools_stats",
-    "insert_size_metrics",
-    "multiBamSummary",
-    "plotPCA",
-    "plotCorrelation",
-    "plotFingerprint",
-    "computeMatrix_peak",
-    "computeMatrix_gene",
-    "plotProfile_gene",
-    "plotHeatmap_peak",
-    "featureCounts",
-    "upset_plot_peaks",
-    "chipseeker",
-    "maelstrom_report_preparation",
-    "infer_strandedness",
-    "dupRadar",
-    "dupRadar_combine",
-    "blind_clustering",
-    "merge_volcano_ma",
-
-    "seq2science",
-]
-
-rules_to_color = {
+rules_to_keep = {
     # "0.13 0.6 0.85",  # yellow
     # "0.09 0.6 0.85",  # brown
     # "0.28 0.6 0.85",  # green
@@ -114,41 +11,59 @@ rules_to_color = {
     # "0.59 0.6 0.85",  # dark blue
     # "0.58 0.6 0.85",  # blue
     # "0.49 0.6 0.85",  # teal
-
     # input
     "get_genome": "0.49 0.6 0.85",  # teal
     "ena2fastq_SE": "0.49 0.6 0.85",  # teal
     "ena2fastq_PE": "0.49 0.6 0.85",  # teal
     "sra2fastq_SE": "0.49 0.6 0.85",  # teal
     "sra2fastq_PE": "0.49 0.6 0.85",  # teal
-
+    # fastq
+    "fastp_SE": "0.13 0.6 0.85",  # yellow
+    "fastp_PE": "0.13 0.6 0.85",  # yellow
+    "trimgalore_SE": "0.13 0.6 0.85",  # yellow
+    "trimgalore_PE": "0.13 0.6 0.85",  # yellow
+    "merge_replicates": "0.13 0.6 0.85",  # yellow
+    # align
+    "bowtie2_align": "0.13 0.6 0.85",  # yellow
+    "bwa_mem": "0.13 0.6 0.85",  # yellow
+    "bwa_mem2": "0.13 0.6 0.85",  # yellow
+    "hisat2_align": "0.13 0.6 0.85",  # yellow
+    "minimap2_align": "0.13 0.6 0.85",  # yellow
+    "star_align": "0.13 0.6 0.85",  # yellow
+    "mark_duplicates": "0.13 0.6 0.85",  # yellow
+    "sieve_bam": "0.13 0.6 0.85",  # yellow
+    # peak counting
+    "macs2_callpeak": "0.13 0.6 0.85",  # yellow
+    "call_peak_genrich": "0.13 0.6 0.85",  # yellow
+    "hmmratac": "0.13 0.6 0.85",  # yellow
+    "create_SNAP_object": "0.13 0.6 0.85",  # yellow
+    # gene counting/quantification
+    "htseq_count": "0.13 0.6 0.85",  # yellow
+    "featurecounts": "0.13 0.6 0.85",  # yellow
+    "salmon_quant": "0.13 0.6 0.85",  # yellow
     # trackhub
     "bam_bigwig": "0.00 0.6 0.85",  # cherry
     "peak_bigpeak": "0.00 0.6 0.85",  # cherry
     "bedgraph_bigwig": "0.00 0.6 0.85",  # cherry
     "trackhub": "0.00 0.6 0.85",  # cherry
-
     # multiqc
     "multiqc": "0.63 0.6 0.85",  # purple
-
-    # count files
+    # peak files
     "coverage_table": "0.28 0.6 0.85",  # green
     "onehot_peaks": "0.28 0.6 0.85",  # green
-    "quantile_normalization": "0.28 0.6 0.85",  # green
-    "edgeR_normalization": "0.28 0.6 0.85",  # green
-    "mean_center": "0.28 0.6 0.85",  # green
-    "combine_biological_reps": "0.28 0.6 0.85",  # green
-
+    "create_bins_SNAP_object": "0.28 0.6 0.85",  # green
+    # gene files
     "gene_id2name": "0.28 0.6 0.85",  # green
     "tpm_matrix": "0.28 0.6 0.85",  # green
     "count_matrix": "0.28 0.6 0.85",  # green
     "txi_count_matrix": "0.28 0.6 0.85",  # green
     "pytxi_count_matrix": "0.28 0.6 0.85",  # green
-
+    "citeseqcount": "0.28 0.6 0.85",  # green
+    "kallistobus_count": "0.28 0.6 0.85",  # green
+    # other
+    "gimme_maelstrom": "0.28 0.6 0.85",  # green
     "deseq2": "0.28 0.6 0.85",  # green
     "dexseq_count_matrix": "0.28 0.6 0.85",  # green
-    "kallistobus_count": "0.28 0.6 0.85",  # green
-    "create_bins_SNAP_object": "0.28 0.6 0.85",  # green
 }
 
 
@@ -221,19 +136,26 @@ class Digraph:
                 f.write(line)
             f.write("}\n")
 
-    def color_node(self, label, color):
-        node_id = self.label2id.get(label)
+    def _get_node_id(self, node):
+        node = str(node)
+        if node.isdigit() and node in self.nodes:
+            return node
+        return self.label2id.get(node)
+
+    def color_node(self, node, color):
+        node_id = self._get_node_id(node)
         if node_id is None:
             return
 
         self.nodes[node_id]["color"] = color
 
-    def remove_node(self, label):
-        node_id = self.label2id.get(label)
+    def remove_node(self, node):
+        node_id = self._get_node_id(node)
         if node_id is None:
             return
 
         # remove the node
+        label = self.nodes[node_id]["label"]
         del self.nodes[node_id]
         del self.label2id[label]
         # remove all edges with this node
@@ -242,15 +164,15 @@ class Digraph:
                 self.edges.remove(edge)
 
     def remove_edge(self, source, target):
-        source_id = self.label2id.get(source)
-        target_id = self.label2id.get(target)
+        source_id = self._get_node_id(source)
+        target_id = self._get_node_id(target)
         edge = (source_id, target_id)
         if edge in self.edges:
             self.edges.remove(edge)
 
-    def hide_node(self, label):
+    def hide_node(self, node):
         """remove a node, and connect incoming edges and outgoing edges"""
-        node_id = self.label2id.get(label)
+        node_id = self._get_node_id(node)
         if node_id is None:
             return
 
@@ -264,7 +186,7 @@ class Digraph:
                 parents.append(edge[0])
 
         # remove the node
-        self.remove_node(label)
+        self.remove_node(node)
         # connect the neighboring nodes
         for parent in parents:
             for daughter in daughters:
