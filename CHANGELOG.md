@@ -11,6 +11,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Added
 
 - automated mitochondrial gene retrieval with genomepy for SCTK quality control
+
 ## [0.9.6] - 2022-10-31
 
 ### Changed
