@@ -12,7 +12,7 @@ Alternatively, if you have a large FASTQ file containing a cell specific ID in t
 The 'merge_replica' outputs a fastq trimmed fastq file with the cell_id after the `@` in the header, e.g. `@sampleXcellY:NS500173:518:HTYVTBGXB:4:23609:2756:19401 2:N:0:ACTCGCTA+ATTAGACG`.
 
 
-### Pipeline steps
+### Workflow overview (simplified)
 <p align="center">
   <img src="../../_static/scatac_seq.png">
 </p>
