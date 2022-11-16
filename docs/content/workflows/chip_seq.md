@@ -1,7 +1,7 @@
 ## ChIP-seq
 Running a ChIP-seq analysis has never been easier!
 
-### Workflow overview
+### Workflow overview (simplified)
 <p align="center">
   <img src="../../_static/chip_seq.png">
 </p>
