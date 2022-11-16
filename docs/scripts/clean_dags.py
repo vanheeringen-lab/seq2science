@@ -1,5 +1,4 @@
 import re
-import sys
 import networkx as nx
 
 rules_to_hide = [
@@ -285,15 +284,3 @@ class Digraph:
     #     if kind == "daughters":
     #         return [e for e in self.edges if e[0] == node_id]
     #     raise ValueError
-
-
-graph_file = sys.argv[1]
-g = Digraph(graph_file)
-for rule in rules_to_hide:
-    g.hide_node(rule)
-for rule in g.nodes:
-    g.nodes[rule]["color"] = "0.13 0.6 0.85"  # yellow
-for rule, color in rules_to_color.items():
-    g.color_node(rule, color)
-g.transitive_reduction()
-g.write(graph_file)

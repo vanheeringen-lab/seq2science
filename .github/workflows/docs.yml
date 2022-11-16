@@ -31,7 +31,7 @@ jobs:
         run: |
           $CONDA/bin/python docs/scripts/schemas.py
           $CONDA/bin/python docs/scripts/rule_description.py
-          ./docs/scripts/gen_dags
+          $CONDA/bin/python docs/scripts/gen_dags.py
           cp CHANGELOG.md docs/content
           $CONDA/bin/sphinx-build docs/ build -W
           touch build/.nojekyll
