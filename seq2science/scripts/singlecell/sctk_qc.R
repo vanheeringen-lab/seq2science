@@ -53,6 +53,11 @@ cat('use_alt_exp      <- "', use_alt_exp, '"\n', sep = "")
 cat('cellQCAlgos      <- "', toString(cellQCAlgos), '"\n', sep = "")
 cat('export_formats   <- "', toString(export_formats), '"\n', sep = "")
 cat('mt_list          <- "', mt_list, '"\n', sep = "")
+cat('\n')
+
+cat('Sessioninfo:\n')
+sessionInfo()
+cat('\n')
 
 # Setup parallel type
 # https://github.com/compbiomed/singleCellTK/blob/master/exec/SCTK_runQC.R
@@ -149,9 +154,10 @@ if (tolower(data_type) == "droplet") {
 # Merge result objects
 if (tolower(data_type) == "cell") {
   mergedFilteredSCE <- cellSCE
+  nonzero_sce <- mergedFilteredSCE[, colSums(counts(mergedFilteredSCE)) > 0]
   # Generate CellQC report
   message(paste0(date(), " .. Generating CellQC report"))
-  reportCellQC(inSCE = mergedFilteredSCE, subTitle = paste0("Sample: ", sample), output_dir = out_dir, output_file = "SCTK_CellQC.html")
+  reportCellQC(inSCE = nonzero_sce, subTitle = paste0("Sample: ", sample), output_dir = out_dir, output_file = "SCTK_CellQC.html")
   # Save final rds objects
   if (isTRUE(use_alt_exp)) {
     plotAltExps(out_dir, mergedFilteredSCE)
@@ -165,6 +171,7 @@ if (tolower(data_type) == "droplet") {
   if (isTRUE(detect_cell)) {
     mergedDropletSCE <- mergeSCEColData(dropletSCE, cellSCE)
     mergedFilteredSCE <- mergeSCEColData(cellSCE, dropletSCE)
+    nonzero_sce <- mergedFilteredSCE[, colSums(counts(mergedFilteredSCE)) > 0]
     # Generate DropletQC Report
     message(paste0(date(), " .. Generating DropletQC report"))
     pdf(file.path(out_dir, "SCTK_DropletQC_figures.pdf", fsep = "/"))
@@ -187,7 +194,7 @@ if (tolower(data_type) == "droplet") {
     reportDropletQC(inSCE = mergedDropletSCE, subTitle = paste0("Sample: ", sample), output_dir = out_dir, output_file = "SCTK_DropletQC.html")
     # Generate CellQC report
     message(paste0(date(), " .. Generating CellQC report"))
-    reportCellQC(inSCE = mergedFilteredSCE, subTitle = paste0("Sample: ", sample), output_dir = out_dir, output_file = "SCTK_CellQC.html")
+    reportCellQC(inSCE = nonzero_sce, subTitle = paste0("Sample: ", sample), output_dir = out_dir, output_file = "SCTK_CellQC.html")
     # Generate report for alternative experiments
     if (isTRUE(use_alt_exp)) {
       plotAltExps(out_dir, mergedFilteredSCE)
