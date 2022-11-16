@@ -48,7 +48,7 @@
 <li class="toctree-l2"><a class="reference internal" href="chip_seq.html">ChIP-seq</a></li>
 <li class="toctree-l2"><a class="reference internal" href="rna_seq.html">RNA-seq</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">scATAC-seq</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#pipeline-steps">Pipeline steps</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#workflow-overview-simplified">Workflow overview (simplified)</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#downloading-of-sample-s">Downloading of sample(s)</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#merge-cell-fastq-files-based-on-processing">merge cell fastq files based on processing</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#alignment">Alignment</a></li>
@@ -88,9 +88,9 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../workflows.html">Workflows</a> &raquo;</li>
-      <li>scATAC-seq</li>
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../workflows.html">Workflows</a></li>
+      <li class="breadcrumb-item active">scATAC-seq</li>
       <li class="wy-breadcrumbs-aside">
               <a href="https://github.com/vanheeringen-lab/seq2science/blob/master/docs/content/workflows/scatac_seq.md" class="fa fa-github"> Edit on GitHub</a>
       </li>
@@ -110,8 +110,8 @@ This pipeline takes single cell fastq files, performs extensive (plate based) QC
 <p>If you have a Cellranger object instead (output 10x), it is relatively easy to directly generate a SNAPobject, look at the documentation on the <a class="reference external" href="https://github.com/r3fang/SnapATAC/wiki/FAQs#10X_snap">SnapATAC github</a> instead.</p>
 <p>Alternatively, if you have a large FASTQ file containing a cell specific ID in the header, it might be possible to run this pipeline with some alterations.
 The ‘merge_replica’ outputs a fastq trimmed fastq file with the cell_id after the <code class="docutils literal notranslate"><span class="pre">&#64;</span></code> in the header, e.g. <code class="docutils literal notranslate"><span class="pre">&#64;sampleXcellY:NS500173:518:HTYVTBGXB:4:23609:2756:19401</span> <span class="pre">2:N:0:ACTCGCTA+ATTAGACG</span></code>.</p>
-<section id="pipeline-steps">
-<h2>Pipeline steps<a class="headerlink" href="#pipeline-steps" title="Permalink to this heading"></a></h2>
+<section id="workflow-overview-simplified">
+<h2>Workflow overview (simplified)<a class="headerlink" href="#workflow-overview-simplified" title="Permalink to this heading"></a></h2>
 <p align="center">
   <img src="../../_static/scatac_seq.png">
 </p><section id="downloading-of-sample-s">
