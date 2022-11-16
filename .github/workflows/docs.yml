@@ -23,7 +23,7 @@ jobs:
           VERSION=$(cat requirements.yaml | grep mamba | cut -d '=' -f2)
           $CONDA/bin/conda install conda-forge::mamba=$VERSION
           $CONDA/bin/mamba env update --file requirements.yaml --name base
-          $CONDA/bin/mamba install m2r2 sphinx sphinx_rtd_theme sphinx-argparse graphviz importlib_metadata=4.11.4
+          $CONDA/bin/mamba install m2r2 sphinx sphinx_rtd_theme sphinx-argparse graphviz networkx importlib_metadata=4.11.4
           $CONDA/bin/pip3 install .
 
       # -W = error on warning
