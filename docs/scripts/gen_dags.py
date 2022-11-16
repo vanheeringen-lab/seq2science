@@ -4,11 +4,13 @@ This script auto-generates workflow DAGs in docs/resources/*.png
 import os
 from os.path import abspath, join
 from pathlib import Path
+import sys
 import subprocess as sp
 
 from clean_dags import rules_to_hide, rules_to_color, Digraph
 
 
+conda_dir = sys.base_exec_prefix
 rule_dir = abspath("seq2science/rules")
 out_dir = abspath("docs/resources")
 in_dir = abspath("seq2science/workflows")
@@ -25,8 +27,9 @@ for workflow in os.listdir(in_dir):
         Path(barcodes).touch()
 
     # create a DAG rulegraph
+    cmd = join(conda_dir, "bin", "snakemake")
     sp.check_call(
-        f'snakemake -s {snakefile} --configfile {config} --config samples={samples} rule_dir={rule_dir} '
+        f'{cmd} -s {snakefile} --configfile {config} --config samples={samples} rule_dir={rule_dir} '
         f'--quiet --rulegraph > {tmp}', shell=True
     )
 
@@ -42,6 +45,7 @@ for workflow in os.listdir(in_dir):
     g.write(tmp)
 
     # convert to image
-    sp.check_call(f'dot -Tpng -Gbgcolor=transparent -Gdpi=450 {tmp} > {graph}', shell=True)
+    cmd = join(conda_dir, "bin", "dot")
+    sp.check_call(f'{cmd} -Tpng -Gbgcolor=transparent -Gdpi=450 {tmp} > {graph}', shell=True)
 
     os.remove(tmp)
