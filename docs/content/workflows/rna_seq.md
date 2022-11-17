@@ -3,7 +3,7 @@ Running an RNA-seq analysis has never been easier!
 
 ### Workflow overview (simplified)
 <p align="center">
-  <img src="../../_static/rna_seq.png" width="50%">
+  <img src="../../_static/rna_seq.png" style="width:auto;height:500px;">
 </p>
 
 #### Downloading of sample(s)
