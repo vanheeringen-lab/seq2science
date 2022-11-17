@@ -3,7 +3,7 @@ Aligning samples has never been easier!
 
 ### Workflow overview (simplified)
 <p align="center">
-  <img src="../../_static/alignment.png">
+  <img src="../../_static/alignment.png" width="50%">
 </p>
 
 #### Downloading of sample(s)

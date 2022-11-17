@@ -14,7 +14,7 @@ The 'merge_replica' outputs a fastq trimmed fastq file with the cell_id after th
 
 ### Workflow overview (simplified)
 <p align="center">
-  <img src="../../_static/scatac_seq.png">
+  <img src="../../_static/scatac_seq.png" width="50%">
 </p>
 
 #### Downloading of sample(s)
