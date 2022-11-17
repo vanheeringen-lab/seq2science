@@ -3,7 +3,7 @@ Running an ATAC-seq analysis has never been easier!
 
 ### Workflow overview (simplified)
 <p align="center">
-  <img src="../../_static/atac_seq.png" width="60%">
+  <img src="../../_static/atac_seq.png" style="width:auto;height:500px;">
 </p>
 
 #### Downloading of sample(s)
