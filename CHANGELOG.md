@@ -8,11 +8,30 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Changed
+
+- Workflow DAGs in the documentation are now simplified
+
 ### Fixed
 
+- clear error when specifying unavailable trimmer (#888)
+
+## [0.9.6] - 2022-10-31
+
+### Changed
+
+- all conda environments now work with strict channel priorities
+- singlecellTK environment updated (no longer needs pip)
+- increased expected RAM usage of scRNA-seq rule `sctk_qc`
+
+### Fixed
+
+- outdated dependency in scRNA-seq rule `export_sce_obj`
+- error in singlecellTK script with negative count values in `reportCellQC()`
 - softmask_track_1 should no longer hang indefinetly
-- On UCSC assembly hubs, the softmask track should align better (fixed off-by-1$
-- clear error when specifying wrong trimmer (#888)
+- On UCSC assembly hubs, the softmask track should align better (fixed off-by-1)
+- upsetplot environment being broken (matplotlib version pinned)
+- deeptools environment being broken (matplotlib version pinned)
 
 ## [0.9.5] - 2022-09-01
 
@@ -673,7 +692,8 @@ Many minor bug- and quality of life fixes.
 ## [0.0.0] - 2020-06-11
 First release of seq2science!
 
-[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.5...develop
+[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.6...develop
+[0.9.6]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.5...v0.9.6
 [0.9.5]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.4...v0.9.5
 [0.9.4]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.3...v0.9.4
 [0.9.3]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.2...v0.9.3
