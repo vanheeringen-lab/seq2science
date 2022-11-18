@@ -7,4 +7,5 @@ dependencies:
   - python>=3.7
   - bioconda::kb-python=0.27.3
   - conda-forge::numpy=1.21.5
+  - conda-forge::requests=2.28.1
   - conda-forge::conda-ecosystem-user-package-isolation=1.0
