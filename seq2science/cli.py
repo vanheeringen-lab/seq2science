@@ -339,6 +339,7 @@ def _run(args, base_dir, workflows_dir, config_path):
         "unlock": args.unlock,
         "cleanup_metadata": args.cleanup_metadata,
         "force_incomplete": args.rerun_incomplete,
+        "rerun_triggers": ["mtime", "input", "software-env"],
     }
 
     # get the additional snakemake options

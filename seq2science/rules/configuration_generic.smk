@@ -19,7 +19,6 @@ from filelock import FileLock
 from pandas_schema import Column, Schema
 from pandas_schema.validation import MatchesPatternValidation, IsDistinctValidation
 
-from snakemake.dag import DAG
 from snakemake.logging import logger
 from snakemake.utils import validate
 
@@ -657,3 +656,4 @@ shell_prefix = "set -euo pipefail; "
 if "niceness" in config:
     shell_prefix += f"renice -n {config['niceness']} $$ > /dev/null; "
 shell.prefix(shell_prefix)
+

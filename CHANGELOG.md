@@ -10,6 +10,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Changed
 
+- Snakemake backend updated to most recent version
 - Workflow DAGs in the documentation are now simplified
 
 ## [0.9.6] - 2022-10-31
