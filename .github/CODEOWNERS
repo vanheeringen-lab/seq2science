@@ -2,7 +2,10 @@
 # the repo. Unless a later match takes precedence,
 # @global-owner1 and @global-owner2 will be requested for
 # review when someone opens a pull request.
-* @Maarten-vd-Sande @siebrenf @tilschaef
+* @Maarten-vd-Sande @siebrenf 
+
+# legacy owners:
+# @tilschaef
 
 
 # Order is important; the last matching pattern takes the most
