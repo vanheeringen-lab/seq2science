@@ -10,6 +10,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Changed
 
+- for atac-seq workflow `macs2_keep_mates` is enabled by default.
 - Workflow DAGs in the documentation are now simplified
 
 ### Fixed
