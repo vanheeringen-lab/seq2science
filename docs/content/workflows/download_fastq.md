@@ -1,9 +1,9 @@
 ## Downloading fastqs
 Downloading public data in bulk from the NCBI, ENA, and DDBJ databases has never been easier!
 
-### Pipeline steps
+### Workflow overview (simplified)
 <p align="center">
-  <img src="../../_static/download_fastq.png">
+  <img src="../../_static/download_fastq.png" width="50%">
 </p>
 
 #### Download SRA file
