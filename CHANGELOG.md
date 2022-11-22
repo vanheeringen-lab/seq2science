@@ -13,6 +13,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - Snakemake backend updated to most recent version
 - Workflow DAGs in the documentation are now simplified
 
+### Fixed
+
+- clear error when specifying unavailable trimmer (#888)
+
 ## [0.9.6] - 2022-10-31
 
 ### Changed
