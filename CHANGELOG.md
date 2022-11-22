@@ -11,6 +11,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Changed
 
 - Workflow DAGs in the documentation are now simplified
+- MultiQC version updated
 
 ### Fixed
 
