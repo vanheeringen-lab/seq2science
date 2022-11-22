@@ -465,6 +465,14 @@ if config.get("create_trackhub"):
                     pcs = shorten(peak_caller_suffix, 5)
                     peak_caller_prefix = "" if len(config["peak_caller"]) == 1 else f"{peak_caller} "
                     pcp = shorten(peak_caller_prefix, 5)
+                    peak_caller_sort_order = {
+                        "macs2": "coordinate",
+                        "genrich": "queryname",
+                    }[peak_caller]
+                    peak_caller_sorter = {
+                        "macs2": "samtools",
+                        "genrich": "sambamba",
+                    }[peak_caller]
 
                     # one composite track to rule them all...
                     name = f"{SEQUENCING_PROTOCOL}{peak_caller_suffix} samples"
@@ -560,13 +568,13 @@ if config.get("create_trackhub"):
                             if "control" in treps and isinstance(treps.loc[trep, "control"], str):
                                 control_name = treps.loc[trep, "control"]
 
-                                file = f"{config['result_dir']}/{peak_caller}/{assembly}-{control_name}.bw"
+                                file = f"{config['bigwig_dir']}/{assembly}-{control_name}.{peak_caller_sorter}-{peak_caller_sort_order}.bw"
                                 priority += 1.0
                                 track = trackhub.Track(
-                                    name=trackhub.helpers.sanitize(f"control_{control_name}{peak_caller_suffix} bw"),
+                                    name=trackhub.helpers.sanitize(f"{rep_to_descriptive(trep)}_control bw"),
                                     tracktype="bigWig",
-                                    short_label=f"{shorten(control_name, 14-len(pcs), ['signs', 'vowels', 'center'])}{pcs} bw",  # <= 17 characters suggested
-                                    long_label=f"{control_name}{peak_caller_suffix} bigWig",
+                                    short_label=f"{shorten(rep_to_descriptive(trep), 14-len(pcs), ['signs', 'vowels', 'center'])}_control{pcs} bw",  # <= 17 characters suggested
+                                    long_label=f"{rep_to_descriptive(trep)}_control{peak_caller_suffix} bigWig",
                                     subgroups={"conditions": safedescr},
                                     source=file,
                                     visibility="full",  # full/squish/pack/dense/hide visibility of the track
