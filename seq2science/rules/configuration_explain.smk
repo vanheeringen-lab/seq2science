@@ -170,7 +170,7 @@ else:
         "custom_extension": "The genome and gene annotations was extended with custom regions.",
         "call_peak_genrich": f"Peaks were called with {href_v('genrich')}{options('peak_caller','genrich')}.",
         "macs2_callpeak": f"Peaks were called with {href_v('macs2')}{options('peak_caller','macs2')} in {{params.format}} mode. The effective genome size was estimated by taking the number of unique kmers in the assembly of the same length as the average read length for each sample.",
-        "keep_mates": "After alignment paired-end info from reads was removed with seq2science to utilize both mates in the paired-end reads.",
+        "keep_mates": "Before peak calling, paired-end info from reads was removed with seq2science so that both mates in a pair get used.",
         "idr": f"Narrowpeak files of biological replicates belonging to the same condition were merged with the {href_v('idr',text='irreproducible discovery rate')}{options('idr_options')}.",
         "macs_cmbreps": "Narrowpeak files of biological replicates belonging to the same condition were merged with fisher's method in macs2.",
         "multiqc": f"Quality control metrics were aggregated by {href_v('MultiQC')}.",
@@ -195,7 +195,7 @@ else:
         "fastp_PE": f"Paired-end reads were trimmed with {href_v('fastp')}{options('trimoptions')}.",
         "chipseeker": f"A peak feature distribution plot and peak localization plot relative to TSS were made with {hyperref('chipseeker')}.",  # TODO: replace with href_v
         "combine_peaks": f"A consensus set of summits was made with {href_v('gimmemotifs-minimal',text='gimmemotifs.combine_peaks',env='gimme')}.",
-        "gimme_maelstrom": f"Differential peaks analysis on the consensus peakset was performed with gimme maelstrom.",  # already cited in "combine_peaks"
+        "gimme_maelstrom": f"Differential motif analysis on the consensus peakset was performed with {href_v('gimmemotifs',text='gimme maelstrom',env='gimme')}.",
         "bed_slop": f"All summits were extended with {config.get('slop')} bp to get a consensus peakset.",
         "coverage_table": f"Finally, a count table from the consensus peakset was made with gimmemotifs.coverage_table.",  # already cited in "combine_peaks"
         "sce": f"{hyperref('sce')} S4 class was used to store scRNA-seq count tables and saved to RDATA format",
