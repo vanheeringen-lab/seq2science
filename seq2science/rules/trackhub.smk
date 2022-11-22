@@ -556,6 +556,27 @@ if config.get("create_trackhub"):
                             out["files"].append(file)
                             signal_view.add_tracks(track)
 
+                            # add the control sample(s)
+                            if "control" in treps and isinstance(treps.loc[trep, "control"], str):
+                                control_name = treps.loc[trep, "control"]
+
+                                file = f"{config['result_dir']}/{peak_caller}/{assembly}-{control_name}.bw"
+                                priority += 1.0
+                                track = trackhub.Track(
+                                    name=trackhub.helpers.sanitize(f"control_{control_name}{peak_caller_suffix} bw"),
+                                    tracktype="bigWig",
+                                    short_label=f"{shorten(control_name, 14-len(pcs), ['signs', 'vowels', 'center'])}{pcs} bw",  # <= 17 characters suggested
+                                    long_label=f"{control_name}{peak_caller_suffix} bigWig",
+                                    subgroups={"conditions": safedescr},
+                                    source=file,
+                                    visibility="full",  # full/squish/pack/dense/hide visibility of the track
+                                    color=hsv_to_ucsc(palletes[brep][n + 1]),
+                                    priority=priority,  # the order this track will appear in
+                                )
+                                out["files"].append(file)
+                                signal_view.add_tracks(track)
+
+
             elif WORKFLOW in ["alignment", "rna_seq"]:
                 has_strandedness = strandedness_in_assembly(assembly)
 
