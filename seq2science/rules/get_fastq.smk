@@ -226,7 +226,7 @@ def get_runs_from_sample(wildcards):
 
 
 public_samples = [sample for sample, values in SAMPLEDICT.items() if "runs" in values]
-keep_fastqs = (WORKFLOW is "download_fastq") or config.get("keep_downloaded_fastq")
+keep_fastqs = (WORKFLOW == "download_fastq") or config.get("keep_downloaded_fastq")
 
 
 rule runs2sample:
