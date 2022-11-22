@@ -1,9 +1,9 @@
 ## ATAC-seq
 Running an ATAC-seq analysis has never been easier!
 
-### Pipeline steps
+### Workflow overview (simplified)
 <p align="center">
-  <img src="../../_static/atac_seq.png">
+  <img src="../../_static/atac_seq.png" width="60%">
 </p>
 
 #### Downloading of sample(s)

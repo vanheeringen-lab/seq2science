@@ -10,6 +10,17 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Changed
 
+- for atac-seq workflow `macs2_keep_mates` is enabled by default.
+- Workflow DAGs in the documentation are now simplified
+
+### Fixed
+
+- clear error when specifying unavailable trimmer (#888)
+
+## [0.9.6] - 2022-10-31
+
+### Changed
+
 - all conda environments now work with strict channel priorities
 - singlecellTK environment updated (no longer needs pip)
 - increased expected RAM usage of scRNA-seq rule `sctk_qc`
@@ -682,7 +693,8 @@ Many minor bug- and quality of life fixes.
 ## [0.0.0] - 2020-06-11
 First release of seq2science!
 
-[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.5...develop
+[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.6...develop
+[0.9.6]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.5...v0.9.6
 [0.9.5]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.4...v0.9.5
 [0.9.4]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.3...v0.9.4
 [0.9.3]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.2...v0.9.3

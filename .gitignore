@@ -5,6 +5,7 @@ report.html
 *samples*tsv*
 *config*yaml*
 seq2science.*.log
+**/.tmp_graph.txt
 *test*
 build/
 *.egg*
