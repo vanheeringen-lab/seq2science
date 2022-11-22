@@ -8,9 +8,6 @@ import os
 rule run2sra:
     """
     Download the SRA of a sample by its unique identifier.
-
-    Tries first downloading with the faster ascp protocol, if that fails it
-    falls back on the slower http protocol.
     """
     output:
         temp(expand("{sra_dir}/{{run}}/{{run}}/{{run}}.sra", **config)),
@@ -229,6 +226,7 @@ def get_runs_from_sample(wildcards):
 
 
 public_samples = [sample for sample, values in SAMPLEDICT.items() if "runs" in values]
+keep_fastqs = (WORKFLOW is "download_fastq") or config.get("keep_downloaded_fastq")
 
 
 rule runs2sample:
@@ -238,7 +236,8 @@ rule runs2sample:
     input:
         get_runs_from_sample,
     output:
-        temp(expand("{fastq_dir}/{{sample}}{{suffix}}", **config)),
+             expand("{fastq_dir}/{{sample}}{{suffix}}", **config) if keep_fastqs else \
+        temp(expand("{fastq_dir}/{{sample}}{{suffix}}", **config))
     log:
         expand("{log_dir}/run2sample/{{sample}}{{suffix}}.log", **config),
     benchmark:
