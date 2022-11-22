@@ -656,4 +656,3 @@ shell_prefix = "set -euo pipefail; "
 if "niceness" in config:
     shell_prefix += f"renice -n {config['niceness']} $$ > /dev/null; "
 shell.prefix(shell_prefix)
-
