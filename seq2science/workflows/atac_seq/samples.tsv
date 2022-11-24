@@ -1,3 +1,7 @@
+# example samples file for paper "Chromatin accessibility established by Pou5f3, Sox19b and Nanog primes
+# genes for activity during zebrafish genome activation". For help with filling out this file:
+# https://vanheeringen-lab.github.io/seq2science/content/workflows/atac_seq.html#filling-out-the-samples-tsv
+# Make sure that you use tab as a delimiter
 sample	assembly	biological_replicates	descriptive_name
 GSM3756599	danRer11	256-cell	256-cell-rep1
 GSM3756600	danRer11	256-cell	256-cell-rep2
