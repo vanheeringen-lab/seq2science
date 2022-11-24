@@ -1,10 +1,18 @@
-# for help with filling out the samples.tsv:
-# https://vanheeringen-lab.github.io/seq2science/content/workflows/atac_seq.html#filling-out-the-samples-tsv
-# also make sure that you use tab as a delimiter
 sample	assembly	biological_replicates	descriptive_name
-GSM2837488	Bl71nemr	adult	adult_1
-GSM2837489	Bl71nemr	adult	adult_2
-GSM2837490	Bl71nemr	adult	adult_3
-GSM2837491	Bl71nemr	embryo	embryo_1
-GSM2837492	Bl71nemr	embryo	embryo_2
-GSM2837493	Bl71nemr	heart	heart_1
+GSM3756599	danRer11	256-cell	256-cell-rep1
+GSM3756600	danRer11	256-cell	256-cell-rep2
+GSM3756606	danRer11	high	High-rep1
+GSM3756607	danRer11	high	High-rep2
+GSM3756608	danRer11	high	High-rep3
+GSM3756609	danRer11	oblong	Oblong-rep1
+GSM3756610	danRer11	oblong	Oblong-rep2
+GSM3756611	danRer11	oblong	Oblong-rep3
+GSM3756614	danRer11	sphere	Sphere-rep1
+GSM3756615	danRer11	sphere	Sphere-rep2
+GSM3756603	danRer11	dome	Dome-rep1
+GSM3756604	danRer11	dome	Dome-rep2
+GSM3756605	danRer11	dome	Dome-rep3
+GSM3756612	danRer11	shield	Shield-rep1
+GSM3756613	danRer11	shield	Shield-rep2
+GSM3756601	danRer11	80epiboly	80epiboly-rep1
+GSM3756602	danRer11	80epiboly	80epiboly-rep2
