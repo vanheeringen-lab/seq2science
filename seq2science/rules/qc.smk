@@ -381,7 +381,7 @@ rule computeMatrix_peak:
     params:
         labels=lambda wildcards, input: "--samplesLabel " + get_descriptive_names(wildcards, input.bw)
         if get_descriptive_names(wildcards, input.bw) != ""
-        else "",
+        else "", ## TO DO: set configurable --beforeRegionStartLength --afterRegionStartLength
     shell:
         """
         computeMatrix scale-regions -S {input.bw} {params.labels} -R {input.peaks} \
