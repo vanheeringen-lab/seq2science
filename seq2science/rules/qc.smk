@@ -329,10 +329,11 @@ rule computeMatrix_gene:
         if get_descriptive_names(wildcards, input.bw) != ""
         else "",
         gtf=rules.get_genome_annotation.output.gtf,  # TODO: move genomepy to checkpoint and this as input
+        params=config["deeptools_computematrix_gene"],
     shell:
         """
         computeMatrix scale-regions -S {input.bw} {params.labels} -R {params.gtf} \
-        -p {threads} -b 2000 -a 500 -o {output} > {log} 2>&1
+        -p {threads} --beforeRegionStartLength 3000 --regionBodyLength 5000 --afterRegionStartLength 3000 -o {output} > {log} 2>&1
         """
 
 
@@ -381,7 +382,7 @@ rule computeMatrix_peak:
     params:
         labels=lambda wildcards, input: "--samplesLabel " + get_descriptive_names(wildcards, input.bw)
         if get_descriptive_names(wildcards, input.bw) != ""
-        else "", ## TO DO: set configurable --beforeRegionStartLength --afterRegionStartLength
+        else "", 
     shell:
         """
         computeMatrix scale-regions -S {input.bw} {params.labels} -R {input.peaks} \
