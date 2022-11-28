@@ -333,7 +333,7 @@ rule computeMatrix_gene:
     shell:
         """
         computeMatrix scale-regions -S {input.bw} {params.labels} -R {params.gtf} \
-        -p {threads} --beforeRegionStartLength 3000 --regionBodyLength 5000 --afterRegionStartLength 3000 -o {output} > {log} 2>&1
+        -p {threads} {params.params} -o {output} > {log} 2>&1
         """
 
 
