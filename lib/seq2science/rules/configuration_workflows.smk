@@ -190,7 +190,7 @@ def get_read_length(sample):
         kmer_size = re.search("Sequence length\\t(\d+)", qc_report.decode("utf-8")).group(1)
 
     # fastp
-    if config["trimmer"] == "fastp":
+    elif config["trimmer"] == "fastp":
         if SAMPLEDICT[sample]["layout"] == "SINGLE":
             qc_file = checkpoints.fastp_SE.get(sample=sample).output.qc_json[0]
         if SAMPLEDICT[sample]["layout"] == "PAIRED":
@@ -201,5 +201,10 @@ def get_read_length(sample):
         with open(qc_file) as f:
             data = json.load(f)
         kmer_size = data["summary"]["after_filtering"]["read1_mean_length"]
+    else:
+        logger.error(
+            f"Trimmer {config['trimmer']} is not recognized! Only trimgalore and fastp are supported."
+        )
+        os._exit(1)  # noqa
 
     return kmer_size

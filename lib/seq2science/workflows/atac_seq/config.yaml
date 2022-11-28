@@ -28,9 +28,13 @@ remove_blacklist: true
 remove_mito: true
 tn5_shift: true
 min_mapping_quality: 30
-only_primary_align: True
+only_primary_align: true
 max_template_length: 150
 remove_dups: true
+
+# macs2 ignores the mates in a paired sequencing sample. with this option enabled
+# seq2science removes the mate information after alignment, so all reads are used
+macs2_keep_mates: true
 
 # peak callers (supported peak callers are macs2, and genrich)
 peak_caller:
