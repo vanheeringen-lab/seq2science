@@ -16,6 +16,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Fixed
 
 - clear error when specifying unavailable trimmer (#888)
+- fixed the ordering of deseq2 output in the multiqc report
 
 ## [0.9.6] - 2022-10-31
 
