@@ -2,9 +2,12 @@
 Running a ChIP-seq analysis has never been easier!
 
 ### Workflow overview (simplified)
+
 <p align="center">
   <img src="../../_static/chip_seq.png" width="60%">
 </p>
+
+An example quality control report can be viewed [here](https://vanheeringen-lab.github.io/seq2science/_static/chip_seq_multiqc.html).
 
 #### Downloading of sample(s)
 Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples.

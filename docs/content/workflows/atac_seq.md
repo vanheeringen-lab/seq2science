@@ -6,6 +6,8 @@ Running an ATAC-seq analysis has never been easier!
   <img src="../../_static/atac_seq.png" width="60%">
 </p>
 
+An example quality control report can be viewed [here](https://vanheeringen-lab.github.io/seq2science/_static/atac_seq_multiqc.html).
+
 #### Downloading of sample(s)
 Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples.
 You control which samples are used in the [samples.tsv](#filling-out-the-samples-tsv).
