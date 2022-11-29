@@ -3,7 +3,7 @@ Running a scRNA-seq pipeline has never been easier!
 
 ### Workflow overview (simplified)
 <p align="center">
-  <img src="../../_static/scrna_seq.png" width="40%">
+  <img src="../../_static/scrna_seq.png" style="width:auto;height:300px;">
 </p>
 
 #### Downloading of sample(s)
