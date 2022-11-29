@@ -820,7 +820,7 @@ rule multiqc:
         --config {input.header}                                                    \
         --sample-names {input.sample_names}                                        \
         {params.filter_buttons}                                                    \
-        --cl_config "extra_fn_clean_exts: [                                        \
+        --cl-config "extra_fn_clean_exts: [                                        \
             {{'pattern': ^.*{wildcards.assembly}-, 'type': 'regex'}},              \
             {{'pattern': {params.fqext1},          'type': 'regex'}},              \
             {{'pattern': _allsizes,                'type': 'regex'}},              \
