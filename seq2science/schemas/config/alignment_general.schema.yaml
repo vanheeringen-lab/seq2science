@@ -199,6 +199,11 @@ properties:
     default: True
     type: boolean
 
+  deeptools_computematrix_gene:
+    description: Deeptools computeMatrix params
+    default: '--beforeRegionStartLength 3000 --regionBodyLength 5000 --afterRegionStartLength 3000'
+    type: string
+
   deeptools_plotcorrelation:
     description: Deeptools plotCorrelation params
     default: '--colorMap RdYlBu_r --plotNumbers'
