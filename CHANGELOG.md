@@ -8,6 +8,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- nicer error when genomepy has trouble querying the providers
+
 ### Changed
 
 - for atac-seq workflow `macs2_keep_mates` is enabled by default.
