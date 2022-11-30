@@ -713,21 +713,27 @@ class PickleDict(dict):
                     format="<green>{time:HH:mm:ss}</green> <bold>|</bold> <blue>{level}</blue> <bold>|</bold> {message}",
                     level="INFO",
                 )
-                for p in genomepy.providers.online_providers():
-                    search_assemblies = [a for a in search_assemblies if self[a]["annotation"] is None]
-                    for assembly in search_assemblies:
-                        if assembly not in p.genomes:
-                            continue  # check again next provider
+                try:
+                    for p in genomepy.providers.online_providers():
+                        search_assemblies = [a for a in search_assemblies if self[a]["annotation"] is None]
+                        for assembly in search_assemblies:
+                            if assembly not in p.genomes:
+                                continue  # check again next provider
 
-                        if p.annotation_links(assembly):
-                            self[assembly]["genome"] = p.name
-                            self[assembly]["annotation"] = p.name
+                            if p.annotation_links(assembly):
+                                self[assembly]["genome"] = p.name
+                                self[assembly]["annotation"] = p.name
 
-                        elif self[assembly]["genome"] is None:
-                            self[assembly]["genome"] = p.name
+                            elif self[assembly]["genome"] is None:
+                                self[assembly]["genome"] = p.name
 
-                    if all(self[a]["annotation"] for a in search_assemblies):
-                        break  # don't load the next provider
+                        if all(self[a]["annotation"] for a in search_assemblies):
+                            break  # don't load the next provider
+                except Exception as e:
+                    logger.error("Seq2science has trouble querying the assembly providers. Try again in a bit.")
+                    logger.error("To see the error stack trace run seq2science with --debug.")
+                    logger.debug(e)
+                    sys.exit(1)
 
         # store added assemblies
         self.save()
