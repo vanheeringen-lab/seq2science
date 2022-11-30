@@ -323,9 +323,10 @@ if config.get("create_trackhub"):
         └──composite (1 per peak caller, group trackhub - assembly hub only)
            ├──view: peaks  (forward strand/unstranded for Alignment/RNA-seq)
            ├──view: signal (reverse strand for Alignment/RNA-seq)
-           ├──----brep1       view peak, subgroup brep
-           ├──----brep1 trep1 view signal, subgroup brep
-           └──----brep1 trep2 view signal, subgroup brep
+           ├──----brep1               view peak, subgroup brep
+           ├──----brep1 trep1         view signal, subgroup brep
+           ├──----brep1 trep1_control view signal, subgroup brep
+           └──----brep1 trep2         view signal, subgroup brep
         """
         out = {
             "hub": None,  # the complete trackhub
@@ -515,6 +516,20 @@ if config.get("create_trackhub"):
                     )
                     composite.add_view(signal_view)
 
+                    # input control view
+                    if "control" in treps:
+                        control_view = trackhub.ViewTrack(
+                            name=trackhub.helpers.sanitize("input control"),
+                            short_label=f"control",  # <= 17 characters suggested
+                            long_label="input control",
+                            view="control",
+                            visibility="full",  # default
+                            maxHeightPixels="100:50:8",  # with 50 the y-axis is visible
+                            tracktype="bigWig",
+                        )
+                        composite.add_view(control_view)
+
+
                     # ...and in subgroup bind them.
                     subgroup = trackhub.SubGroupDefinition(
                         name="conditions", label="Conditions", mapping={}  # breps are added to this filter
@@ -582,7 +597,7 @@ if config.get("create_trackhub"):
                                     priority=priority,  # the order this track will appear in
                                 )
                                 out["files"].append(file)
-                                signal_view.add_tracks(track)
+                                control_view.add_tracks(track)
 
 
             elif WORKFLOW in ["alignment", "rna_seq"]:
