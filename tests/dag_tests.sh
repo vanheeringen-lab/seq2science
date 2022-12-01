@@ -572,7 +572,7 @@ if [ $1 = "explain" ]; then
 
   printf "\n  Download-fastq: \n"
   seq2science init download-fastq --force
-  seq2science explain download-fastq --debug | tee $explain
+  seq2science explain download-fastq | tee $explain
   assert_explain
 
   printf "\n  Alignment: \n"
