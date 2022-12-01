@@ -561,6 +561,13 @@ if [ $1 = "explain" ]; then
     if [[ $val == *"(https://doi.org/10.5281/zenodo.3921913)." ]]; then
       printf "\nExplain message appears truncated! Exiting.\n"
       exit 1;
+
+    # exit if nothing is printed at all
+    if [[ $val != *"seq2science"* ]]; then
+      printf "\nExplain message appears empty? Exiting.\n"
+      exit 1;
+
+
     fi;
   }
 
