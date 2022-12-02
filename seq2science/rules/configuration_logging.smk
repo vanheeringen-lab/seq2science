@@ -26,22 +26,22 @@ onsuccess:
         os.system(
             f"""echo "Succesful pipeline run! :)" | mail -s "The seq2science pipeline finished succesfully." {config["email"]} 2> /dev/null"""
         )
-    message = ""
+    message = f"Nice, a succesful run! Check out the docs for help with the results: https://vanheeringen-lab.github.io/seq2science/content/workflows/{WORKFLOW}.html. "
     if WORKFLOW != "download-fastq":
         if config.get("create_qc_report"):
-            message += f"Make sure to check out the QC report. "
-        if config.get("create_trackhub"):
-            message += f"And make sure to visually check the samples on the UCSC trackhub. "
+            message += f"Make sure to check out the QC report, it can be found at {config['qc_dir']}/multiqc_TEST.html. "
+        if WORKFLOW not in ("scatac-seq, "scrna-seq") and config.get("create_trackhub"):
+            message += f"And make sure to check the samples on the UCSC trackhub. It's "
     logger.info(
         f"""
    ⊂_ヽ
    　 ＼＼
-   　　 ＼( ͡° ͜ʖ ͡°)  --  Nice, a succesful run!
-   　　　 >　⌒ヽ        {message}
-   　　　/ 　 へ＼
-   　　 /　　/　＼＼
-   　　 ﾚ　ノ　　 ヽ_つ
-   　　/　/
+   　　 ＼( ͡° ͜ʖ ͡°)  -- 
+   　　　 >　⌒ヽ        
+   　　　/ 　 へ＼      
+   　　 /　　/　＼＼     
+   　　 ﾚ　ノ　　 ヽ_つ  
+   　　/　/            
    　 /　/|
    　(　(ヽ
    　|　|、＼
