@@ -25,18 +25,22 @@ GSMabc  <-- GEO sample
 SRX456  <-- SRA experiment
 SRRxzy  <-- SRA run
 DRX890  <-- DDBJ experiment
-DRR890  <-- DDBJ run
+DRR098  <-- DDBJ run
 ```
 
 #### Sample column
-If you use the pipeline on public data this should be the name of the accession (e.g. GSM2837484).
+
+When downloading fastq files there is only one column in the samples.txt. 
+This is the sample column, where each sample is specified.
+Samples are specified with their name of the accession (e.g. GSM2837484).
 (Accepted formats start with "GSM", "SRR", "SRX", "DRR", "DRX", "ERR" or "ERX")
 
 #### Final notes
-- Make sure that the samples.tsv is a tab separated values file when running the pipeline.
+
 - Feel free to add columns to your liking (these will be ignored).
 
 ### Filling out the config.yaml
+
 Every workflow has many configurable options, and can be set in the `config.yaml` file.
 In each `config.yaml` we highlighted a couple options that we think are relevant for that specific workflow, and set (we think) **reasonable default** values.
 
@@ -44,7 +48,9 @@ When a workflow starts it prints the configuration variables influencing the wor
 You can see the complete set of configurable options in the [extensive docs](../schemas.html).
 
 ### Best practices
+
 #### Downloading with ascp
+
 ascp is a downloading protocol that allows for (sometimes much) faster speeds. If you have ascp installed you can make the workflow download through this protocol. You can specify the path to the binary in the config.yaml by key `ascp_path` and the ascp key in the config by key `ascp_key`:
 
 See this [gist](https://gist.github.com/mfansler/71f09c8b6c9a95ec4e759a8ffc488be3) for an easy installation of ascp.
