@@ -26,31 +26,6 @@ onsuccess:
         os.system(
             f"""echo "Succesful pipeline run! :)" | mail -s "The seq2science pipeline finished succesfully." {config["email"]} 2> /dev/null"""
         )
-    message = ""
-    if WORKFLOW != "download-fastq":
-        if config.get("create_qc_report"):
-            message += f"Make sure to check out the QC report. "
-        if config.get("create_trackhub"):
-            message += f"And make sure to visually check the samples on the UCSC trackhub. "
-    logger.info(
-        f"""
-   ⊂_ヽ
-   　 ＼＼
-   　　 ＼( ͡° ͜ʖ ͡°)  --  Nice, a succesful run!
-   　　　 >　⌒ヽ        {message}
-   　　　/ 　 へ＼
-   　　 /　　/　＼＼
-   　　 ﾚ　ノ　　 ヽ_つ
-   　　/　/
-   　 /　/|
-   　(　(ヽ
-   　|　|、＼
-   　| 丿 ＼ ⌒)
-   　| |　　) /
-    ノ )　　Lﾉ
-   (_／
-""")
-
 
 
 onerror:
@@ -80,6 +55,7 @@ onerror:
         os.system(
             f"""echo "Unsuccessful pipeline run! :(" | mail -s "The seq2science pipeline finished prematurely..." {config["email"]} 2> /dev/null """
         )
+
 
 def rmkeys(del_list, target_list):
     """
