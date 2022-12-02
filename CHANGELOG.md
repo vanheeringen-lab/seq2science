@@ -11,6 +11,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Added
 
 - nicer error when genomepy has trouble querying the providers
+- flag `infer_motif2factors` for whether or not motif2factors should be run
 
 ### Changed
 
