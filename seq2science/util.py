@@ -733,7 +733,7 @@ class PickleDict(dict):
                     logger.error("Seq2science has trouble querying the assembly providers. Try again in a bit.")
                     logger.error("To see the error stack trace run seq2science with --debug.")
                     logger.debug(e)
-                    sys.exit(1)
+                    os._exit(1) # noqa
 
         # store added assemblies
         self.save()
