@@ -100,7 +100,10 @@ for rule in sorted(all_rules_doc.keys()):
         final_md += f"{all_rules_shell[rule]}\n"
         final_md += "```\n\n"
         if rule in all_rules_conda:
-            final_md += f"conda [environment yaml]({all_rules_conda[rule]}).\n\n"
+            final_md += f"[{rule} environment][{rule}].\n\n"
+
+for rule, conda_env in all_rules_conda.items():
+    final_md += f"[{rule}]: {conda_env}\n"
 
 with open("docs/content/all_rules.md", "w") as text_file:
     text_file.write(final_md)
