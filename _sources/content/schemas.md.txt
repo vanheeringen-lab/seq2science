@@ -118,7 +118,7 @@ ncbi_requests:
 #####ascp_path
 ```
 ascp_path:
-    description: the pipeline supports downloading through ascp if this variable is set.
+    description: the pipeline supports downloading through ascp from ena if this variable is set.
     type: string
 ```
 #####ascp_key
@@ -126,6 +126,13 @@ ascp_path:
 ascp_key:
     description: the public key of ascp
     type: string
+```
+#####keep_downloaded_fastq
+```
+keep_downloaded_fastq:
+    description: whether or not to remove (raw) fastqs after downloading.
+    default: False
+    type: boolean
 ```
 
 ## Alignment general
@@ -354,6 +361,13 @@ deeptools_qc:
     default: True
     type: boolean
 ```
+#####deeptools_computematrix_gene
+```
+deeptools_computematrix_gene:
+    description: Deeptools computeMatrix params
+    default: --beforeRegionStartLength 3000 --regionBodyLength 5000 --afterRegionStartLength 3000
+    type: string
+```
 #####deeptools_plotcorrelation
 ```
 deeptools_plotcorrelation:
@@ -504,6 +518,13 @@ gimme_maelstrom_params:
     default: 
     type: string
 ```
+#####infer_motif2factors
+```
+infer_motif2factors:
+    description: whether or not seq2science should try to infer the motif-TF relationships based on orthology
+    default: True
+    type: boolean
+```
 #####motif2factors_database_references
 ```
 motif2factors_database_references:
@@ -517,7 +538,7 @@ motif2factors_database_references:
 ```
 motif2factors_reference:
     description: Which assemblies should be taken along for the orthology inference.
-    default: ['danRer11', 'UCB_Xtro_10.0', 'GRCg6a', 'BraLan2', 'oryLat2', 'ARS-UCD1.2', 'phaCin_unsw_v4.1', 'rCheMyd1.pri']
+    default: ['danRer11', 'UCB_Xtro_10.0', 'galGal6', 'BraLan2', 'oryLat2', 'ARS-UCD1.2', 'phaCin_unsw_v4.1', 'rCheMyd1.pri']
     type: array
     items:
         type: string

@@ -69,6 +69,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ncbi-requests">ncbi_requests</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ascp-path">ascp_path</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ascp-key">ascp_key</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#keep-downloaded-fastq">keep_downloaded_fastq</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#alignment-general">Alignment general</a><ul>
@@ -94,6 +95,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#custom-annotation-extension">custom_annotation_extension</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#custom-assembly-suffix">custom_assembly_suffix</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#deeptools-qc">deeptools_qc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#deeptools-computematrix-gene">deeptools_computematrix_gene</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#deeptools-plotcorrelation">deeptools_plotcorrelation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#deeptools-multibamsummary">deeptools_multibamsummary</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#min-template-length">min_template_length</a></li>
@@ -119,6 +121,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#run-gimme-maelstrom">run_gimme_maelstrom</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gimme-maelstrom-database">gimme_maelstrom_database</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gimme-maelstrom-params">gimme_maelstrom_params</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#infer-motif2factors">infer_motif2factors</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#motif2factors-database-references">motif2factors_database_references</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#motif2factors-reference">motif2factors_reference</a></li>
 </ul>
@@ -344,7 +347,7 @@
 <section id="ascp-path">
 <h3>ascp_path<a class="headerlink" href="#ascp-path" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ascp_path</span><span class="p">:</span>
-    <span class="n">description</span><span class="p">:</span> <span class="n">the</span> <span class="n">pipeline</span> <span class="n">supports</span> <span class="n">downloading</span> <span class="n">through</span> <span class="n">ascp</span> <span class="k">if</span> <span class="n">this</span> <span class="n">variable</span> <span class="ow">is</span> <span class="nb">set</span><span class="o">.</span>
+    <span class="n">description</span><span class="p">:</span> <span class="n">the</span> <span class="n">pipeline</span> <span class="n">supports</span> <span class="n">downloading</span> <span class="n">through</span> <span class="n">ascp</span> <span class="kn">from</span> <span class="nn">ena</span> <span class="k">if</span> <span class="n">this</span> <span class="n">variable</span> <span class="ow">is</span> <span class="nb">set</span><span class="o">.</span>
     <span class="nb">type</span><span class="p">:</span> <span class="n">string</span>
 </pre></div>
 </div>
@@ -354,6 +357,15 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ascp_key</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">the</span> <span class="n">public</span> <span class="n">key</span> <span class="n">of</span> <span class="n">ascp</span>
     <span class="nb">type</span><span class="p">:</span> <span class="n">string</span>
+</pre></div>
+</div>
+</section>
+<section id="keep-downloaded-fastq">
+<h3>keep_downloaded_fastq<a class="headerlink" href="#keep-downloaded-fastq" title="Permalink to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">keep_downloaded_fastq</span><span class="p">:</span>
+    <span class="n">description</span><span class="p">:</span> <span class="n">whether</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">to</span> <span class="n">remove</span> <span class="p">(</span><span class="n">raw</span><span class="p">)</span> <span class="n">fastqs</span> <span class="n">after</span> <span class="n">downloading</span><span class="o">.</span>
+    <span class="n">default</span><span class="p">:</span> <span class="kc">False</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="n">boolean</span>
 </pre></div>
 </div>
 </section>
@@ -629,6 +641,15 @@
 </pre></div>
 </div>
 </section>
+<section id="deeptools-computematrix-gene">
+<h3>deeptools_computematrix_gene<a class="headerlink" href="#deeptools-computematrix-gene" title="Permalink to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">deeptools_computematrix_gene</span><span class="p">:</span>
+    <span class="n">description</span><span class="p">:</span> <span class="n">Deeptools</span> <span class="n">computeMatrix</span> <span class="n">params</span>
+    <span class="n">default</span><span class="p">:</span> <span class="o">--</span><span class="n">beforeRegionStartLength</span> <span class="mi">3000</span> <span class="o">--</span><span class="n">regionBodyLength</span> <span class="mi">5000</span> <span class="o">--</span><span class="n">afterRegionStartLength</span> <span class="mi">3000</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="n">string</span>
+</pre></div>
+</div>
+</section>
 <section id="deeptools-plotcorrelation">
 <h3>deeptools_plotcorrelation<a class="headerlink" href="#deeptools-plotcorrelation" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">deeptools_plotcorrelation</span><span class="p">:</span>
@@ -819,6 +840,15 @@
 </pre></div>
 </div>
 </section>
+<section id="infer-motif2factors">
+<h3>infer_motif2factors<a class="headerlink" href="#infer-motif2factors" title="Permalink to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">infer_motif2factors</span><span class="p">:</span>
+    <span class="n">description</span><span class="p">:</span> <span class="n">whether</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">seq2science</span> <span class="n">should</span> <span class="k">try</span> <span class="n">to</span> <span class="n">infer</span> <span class="n">the</span> <span class="n">motif</span><span class="o">-</span><span class="n">TF</span> <span class="n">relationships</span> <span class="n">based</span> <span class="n">on</span> <span class="n">orthology</span>
+    <span class="n">default</span><span class="p">:</span> <span class="kc">True</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="n">boolean</span>
+</pre></div>
+</div>
+</section>
 <section id="motif2factors-database-references">
 <h3>motif2factors_database_references<a class="headerlink" href="#motif2factors-database-references" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">motif2factors_database_references</span><span class="p">:</span>
@@ -834,7 +864,7 @@
 <h3>motif2factors_reference<a class="headerlink" href="#motif2factors-reference" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">motif2factors_reference</span><span class="p">:</span>
     <span class="n">description</span><span class="p">:</span> <span class="n">Which</span> <span class="n">assemblies</span> <span class="n">should</span> <span class="n">be</span> <span class="n">taken</span> <span class="n">along</span> <span class="k">for</span> <span class="n">the</span> <span class="n">orthology</span> <span class="n">inference</span><span class="o">.</span>
-    <span class="n">default</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;danRer11&#39;</span><span class="p">,</span> <span class="s1">&#39;UCB_Xtro_10.0&#39;</span><span class="p">,</span> <span class="s1">&#39;GRCg6a&#39;</span><span class="p">,</span> <span class="s1">&#39;BraLan2&#39;</span><span class="p">,</span> <span class="s1">&#39;oryLat2&#39;</span><span class="p">,</span> <span class="s1">&#39;ARS-UCD1.2&#39;</span><span class="p">,</span> <span class="s1">&#39;phaCin_unsw_v4.1&#39;</span><span class="p">,</span> <span class="s1">&#39;rCheMyd1.pri&#39;</span><span class="p">]</span>
+    <span class="n">default</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;danRer11&#39;</span><span class="p">,</span> <span class="s1">&#39;UCB_Xtro_10.0&#39;</span><span class="p">,</span> <span class="s1">&#39;galGal6&#39;</span><span class="p">,</span> <span class="s1">&#39;BraLan2&#39;</span><span class="p">,</span> <span class="s1">&#39;oryLat2&#39;</span><span class="p">,</span> <span class="s1">&#39;ARS-UCD1.2&#39;</span><span class="p">,</span> <span class="s1">&#39;phaCin_unsw_v4.1&#39;</span><span class="p">,</span> <span class="s1">&#39;rCheMyd1.pri&#39;</span><span class="p">]</span>
     <span class="nb">type</span><span class="p">:</span> <span class="n">array</span>
     <span class="n">items</span><span class="p">:</span>
         <span class="nb">type</span><span class="p">:</span> <span class="n">string</span>

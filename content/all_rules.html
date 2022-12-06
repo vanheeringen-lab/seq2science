@@ -386,7 +386,7 @@ to only keep reads that are in the complement of the blacklist.</p>
 <h2>computeMatrix_gene<a class="headerlink" href="#computematrix-gene" title="Permalink to this heading"></a></h2>
 <p>Pre-compute correlations between bams using deeptools.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">computeMatrix</span> <span class="n">scale</span><span class="o">-</span><span class="n">regions</span> <span class="o">-</span><span class="n">S</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">bw</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">labels</span><span class="p">}</span> <span class="o">-</span><span class="n">R</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">gtf</span><span class="p">}</span> \
-<span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">-</span><span class="n">b</span> <span class="mi">2000</span> <span class="o">-</span><span class="n">a</span> <span class="mi">500</span> <span class="o">-</span><span class="n">o</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
+<span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">params</span><span class="p">}</span> <span class="o">-</span><span class="n">o</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
 </section>
@@ -969,7 +969,7 @@ multiqc.</p>
 <span class="o">--</span><span class="n">config</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">header</span><span class="p">}</span>                                                    \
 <span class="o">--</span><span class="n">sample</span><span class="o">-</span><span class="n">names</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">sample_names</span><span class="p">}</span>                                        \
 <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">filter_buttons</span><span class="p">}</span>                                                    \
-<span class="o">--</span><span class="n">cl_config</span> <span class="s2">&quot;extra_fn_clean_exts: [                                        </span><span class="se">\</span>
+<span class="o">--</span><span class="n">cl</span><span class="o">-</span><span class="n">config</span> <span class="s2">&quot;extra_fn_clean_exts: [                                        </span><span class="se">\</span>
 <span class="s2">    {{&#39;pattern&#39;: ^.*</span><span class="si">{wildcards.assembly}</span><span class="s2">-, &#39;type&#39;: &#39;regex&#39;}},              </span><span class="se">\</span>
 <span class="s2">    {{&#39;pattern&#39;: </span><span class="si">{params.fqext1}</span><span class="s2">,          &#39;type&#39;: &#39;regex&#39;}},              </span><span class="se">\</span>
 <span class="s2">    {{&#39;pattern&#39;: _allsizes,                &#39;type&#39;: &#39;regex&#39;}},              </span><span class="se">\</span>
@@ -1117,8 +1117,6 @@ comparison between normalisation techniques.</p>
 <section id="run2sra">
 <h2>run2sra<a class="headerlink" href="#run2sra" title="Permalink to this heading"></a></h2>
 <p>Download the SRA of a sample by its unique identifier.</p>
-<p>Tries first downloading with the faster ascp protocol, if that fails it
-falls back on the slower http protocol.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># move to output dir since somehow prefetch sometimes puts files in the cwd...</span>
 <span class="c1"># and remove the top level folder since prefetch will assume we are done otherwise</span>
 <span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">outdir</span><span class="p">};</span> <span class="n">cd</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">outdir</span><span class="p">};</span> <span class="n">rm</span> <span class="o">-</span><span class="n">r</span> <span class="p">{</span><span class="n">wildcards</span><span class="o">.</span><span class="n">run</span><span class="p">}</span>

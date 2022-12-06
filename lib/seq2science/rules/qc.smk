@@ -329,10 +329,11 @@ rule computeMatrix_gene:
         if get_descriptive_names(wildcards, input.bw) != ""
         else "",
         gtf=rules.get_genome_annotation.output.gtf,  # TODO: move genomepy to checkpoint and this as input
+        params=config["deeptools_computematrix_gene"],
     shell:
         """
         computeMatrix scale-regions -S {input.bw} {params.labels} -R {params.gtf} \
-        -p {threads} -b 2000 -a 500 -o {output} > {log} 2>&1
+        -p {threads} {params.params} -o {output} > {log} 2>&1
         """
 
 
@@ -820,7 +821,7 @@ rule multiqc:
         --config {input.header}                                                    \
         --sample-names {input.sample_names}                                        \
         {params.filter_buttons}                                                    \
-        --cl_config "extra_fn_clean_exts: [                                        \
+        --cl-config "extra_fn_clean_exts: [                                        \
             {{'pattern': ^.*{wildcards.assembly}-, 'type': 'regex'}},              \
             {{'pattern': {params.fqext1},          'type': 'regex'}},              \
             {{'pattern': _allsizes,                'type': 'regex'}},              \

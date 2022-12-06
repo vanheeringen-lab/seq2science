@@ -191,7 +191,7 @@ Pre-compute correlations between bams using deeptools.
 
 ```
 computeMatrix scale-regions -S {input.bw} {params.labels} -R {params.gtf} \
--p {threads} -b 2000 -a 500 -o {output} > {log} 2>&1
+-p {threads} {params.params} -o {output} > {log} 2>&1
 ```
 
 #### computeMatrix_peak
@@ -835,7 +835,7 @@ multiqc {input.files} -o {params.dir} -n multiqc_{wildcards.assembly}.html \
 --config {input.header}                                                    \
 --sample-names {input.sample_names}                                        \
 {params.filter_buttons}                                                    \
---cl_config "extra_fn_clean_exts: [                                        \
+--cl-config "extra_fn_clean_exts: [                                        \
     {{'pattern': ^.*{wildcards.assembly}-, 'type': 'regex'}},              \
     {{'pattern': {params.fqext1},          'type': 'regex'}},              \
     {{'pattern': _allsizes,                'type': 'regex'}},              \
@@ -995,9 +995,6 @@ shuf -n {wildcards.nrpeaks} {input.peaks} | bedtools slop -i stdin -g {input.siz
 #### run2sra
 
 Download the SRA of a sample by its unique identifier.
-
-Tries first downloading with the faster ascp protocol, if that fails it
-falls back on the slower http protocol.
 
 ```
 # move to output dir since somehow prefetch sometimes puts files in the cwd...
