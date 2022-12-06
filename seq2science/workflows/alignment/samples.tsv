@@ -1,7 +1,7 @@
 # for help with filling out the samples.tsv:
 # https://vanheeringen-lab.github.io/seq2science/content/workflows/alignment.html#filling-out-the-samples-tsv
 # also make sure that you use tab as a delimiter
-sample	assembly  descriptive_name
+sample	assembly	descriptive_name
 GSM2520641	Spur_4.2	18hpf_rep1
 GSM2520642	Spur_4.2	18hpf_rep2
 GSM2520643	Spur_4.2	18hpf_rep3
