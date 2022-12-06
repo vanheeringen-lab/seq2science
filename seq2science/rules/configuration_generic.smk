@@ -19,7 +19,6 @@ from filelock import FileLock
 from pandas_schema import Column, Schema
 from pandas_schema.validation import MatchesPatternValidation, IsDistinctValidation
 
-from snakemake.dag import DAG
 from snakemake.logging import logger
 from snakemake.utils import validate
 
