@@ -8,14 +8,22 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- nicer error when genomepy has trouble querying the providers
+- flag `infer_motif2factors` for whether or not motif2factors should be run
+
 ### Changed
 
+- Snakemake backend updated to most recent version
 - for atac-seq workflow `macs2_keep_mates` is enabled by default.
 - Workflow DAGs in the documentation are now simplified
+- MultiQC version updated
 
 ### Fixed
 
 - clear error when specifying unavailable trimmer (#888)
+- issue computeMatrix_gene without configurable distances, visualized in multiQC plotProfile (#905; default now 3000 bp up&down stream of gene)
 
 ## [0.9.6] - 2022-10-31
 
