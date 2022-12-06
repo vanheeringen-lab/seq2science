@@ -19,6 +19,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - for atac-seq workflow `macs2_keep_mates` is enabled by default.
 - Workflow DAGs in the documentation are now simplified
 - MultiQC version updated
+- Fastqs downloaded by seq2science are now removed when not used anymore, can be turned on/off with `keep_downloaded_fastq`
 
 ### Fixed
 
