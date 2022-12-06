@@ -8,11 +8,18 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- nicer error when genomepy has trouble querying the providers
+- flag `infer_motif2factors` for whether or not motif2factors should be run
+
 ### Changed
 
+- Snakemake backend updated to most recent version
 - for atac-seq workflow `macs2_keep_mates` is enabled by default.
 - Workflow DAGs in the documentation are now simplified
 - MultiQC version updated
+- Fastqs downloaded by seq2science are now removed when not used anymore, can be turned on/off with `keep_downloaded_fastq`
 
 ### Fixed
 

@@ -71,6 +71,11 @@ properties:
     default: ''
     type: string
 
+  infer_motif2factors:
+    description: whether or not seq2science should try to infer the motif-TF relationships based on orthology
+    default: true
+    type: boolean
+
   motif2factors_database_references:
     description: On which assembly(s) the original gimme motif2factors is based. Defaults to human and mouse.
     default:
@@ -85,7 +90,7 @@ properties:
     default:
       - danRer11
       - UCB_Xtro_10.0
-      - GRCg6a
+      - galGal6
       - BraLan2
       - oryLat2
       - ARS-UCD1.2
