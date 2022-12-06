@@ -562,6 +562,12 @@ if [ $1 = "explain" ]; then
       printf "\nExplain message appears truncated! Exiting.\n"
       exit 1;
     fi;
+
+    # exit if nothing is printed at all
+    if [[ $val != *"seq2science"* ]]; then
+      printf "\nExplain message appears empty? Exiting.\n"
+      exit 1;
+    fi;
   }
 
   printf "\n  Download-fastq: \n"
