@@ -36,7 +36,7 @@ onsuccess:
             rand_assembly = list(ORI_ASSEMBLIES.keys())[0]
             message += f"Make sure to check out the QC report, it can be found at {config['qc_dir']}/multiqc_{rand_assembly}.html. "
         if WORKFLOW not in ("scatac-seq", "scrna-seq") and config.get("create_trackhub"):
-            message += f"And make sure to upload the trackhub on UCSC. The hub is located in {config['trackhub_dir']}/."
+            message += f"And make sure to publicly host the trackhub for UCSC. The hub is located in {config['trackhub_dir']}/."
 
     message = textwrap.wrap(message, 70, break_long_words=False, break_on_hyphens=False)
     dancer = """
