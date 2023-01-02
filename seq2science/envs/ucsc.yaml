@@ -4,6 +4,7 @@ channels:
   - bioconda
   - defaults
 dependencies:
+  - bioconda::grep=3.4
   - bioconda::ucsc-bedsort=377
   - bioconda::ucsc-bedGraphToBigWig=377
   - bioconda::ucsc-bedToBigBed=377
