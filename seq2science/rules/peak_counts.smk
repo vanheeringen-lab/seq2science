@@ -97,6 +97,7 @@ rule combine_peaks:
     input:
         summitfiles=get_summitfiles,
         sizes=rules.get_genome_support_files.output.sizes,
+        genome=rules.get_genome.output,
     output:
         temp(expand("{result_dir}/{{peak_caller}}/{{assembly}}_combinedsummits.bed", **config)),
     log:
@@ -111,7 +112,7 @@ rule combine_peaks:
     message: EXPLAIN["combine_peaks"]
     shell:
         """
-        combine_peaks --genome {input.sizes} --window {params.windowsize} \
+        combine_peaks --genome {input.genome} --window {params.windowsize} \
         {input.summitfiles} > {output} 2> {log}
         """
 
