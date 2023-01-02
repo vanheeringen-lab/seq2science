@@ -111,8 +111,8 @@ rule combine_peaks:
     message: EXPLAIN["combine_peaks"]
     shell:
         """
-        combine_peaks -i {input.summitfiles} -g {input.sizes} \
-        --window {params.windowsize} > {output} 2> {log}
+        combine_peaks --genome {input.sizes} --window {params.windowsize} \
+        {input.summitfiles} > {output} 2> {log}
         """
 
 
