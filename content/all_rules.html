@@ -1,36 +1,73 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" />
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
   <title>Per rule explanation &mdash; seq2science  documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
         <script src="../_static/sphinx_highlight.js"></script>
-    <script src="../_static/js/theme.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="All configurable options" href="schemas.html" />
     <link rel="prev" title="Command line interface" href="cli.html" /> 
 </head>
 
-<body class="wy-body-for-nav"> 
+<body class="wy-body-for-nav">
+
+   
   <div class="wy-grid-for-nav">
+    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
+          
+
+          
             <a href="../index.html" class="icon icon-home"> seq2science
+          
+
+          
           </a>
+
+          
+            
+            
+          
+
+          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -38,7 +75,18 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="gettingstarted.html">Getting started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="workflows.html">Workflows</a></li>
@@ -188,43 +236,88 @@
 <li class="toctree-l1"><a class="reference internal" href="../CONTRIBUTING.html">Contributing to seq2science</a></li>
 </ul>
 
+            
+          
         </div>
+        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">seq2science</a>
+        
       </nav>
 
+
       <div class="wy-nav-content">
+        
         <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a></li>
-          <li class="breadcrumb-item"><a href="extensive_docs.html">Extensive docs</a></li>
-      <li class="breadcrumb-item active">Per rule explanation</li>
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="extensive_docs.html">Extensive docs</a> &raquo;</li>
+        
+      <li>Per rule explanation</li>
+    
+    
       <li class="wy-breadcrumbs-aside">
+        
+          
+            
               <a href="https://github.com/vanheeringen-lab/seq2science/blob/master/docs/content/all_rules.md" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
       </li>
+    
   </ul>
+
+  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-             
+            
   <section id="per-rule-explanation">
-<h1>Per rule explanation<a class="headerlink" href="#per-rule-explanation" title="Permalink to this heading"></a></h1>
-<p>This is an automatically generated list of all supported rules, their docstrings, and command. At the start of each workflow run a list is printed of which rules will be run. And while the workflow is running it prints which rules are being started and finished. This page is here to give an explanation to the user about what each rule does, and for developers to find what is, and isn’t yet supported.</p>
+<h1>Per rule explanation<a class="headerlink" href="#per-rule-explanation" title="Permalink to this heading">¶</a></h1>
+<p>This is an automatically generated list of all supported rules, their docstrings, command, and virtual environment. At the start of each workflow run a list is printed of which rules will be run. And while the workflow is running it prints which rules are being started and finished. This page is here to give an explanation to the user about what each rule does, and for developers to find what is, and isn’t yet supported.</p>
 <section id="bam2cram">
-<h2>bam2cram<a class="headerlink" href="#bam2cram" title="Permalink to this heading"></a></h2>
+<h2>bam2cram<a class="headerlink" href="#bam2cram" title="Permalink to this heading">¶</a></h2>
 <p>Convert a bam file to the more compressed cram format.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">samtools</span> <span class="n">view</span> <span class="o">-</span><span class="n">T</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">genome</span><span class="p">}</span> <span class="o">-</span><span class="n">C</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">bam</span><span class="p">}</span> <span class="o">-@</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/samtools.yaml">bam2cram environment</a>.</p>
 </section>
 <section id="bam-bigwig">
-<h2>bam_bigwig<a class="headerlink" href="#bam-bigwig" title="Permalink to this heading"></a></h2>
+<h2>bam_bigwig<a class="headerlink" href="#bam-bigwig" title="Permalink to this heading">¶</a></h2>
 <p>Convert a bam file into a bigwig file (or two).
 Can output strand specific bams. The reverse bam is created “secretly” to avoid checkpoints.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>if [[ &quot;{params.strandedness}&quot; == &quot;no&quot; ]]; then
@@ -240,18 +333,20 @@ else
 fi
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/deeptools.yaml">bam_bigwig environment</a>.</p>
 </section>
 <section id="bedgraph-bigwig">
-<h2>bedgraph_bigwig<a class="headerlink" href="#bedgraph-bigwig" title="Permalink to this heading"></a></h2>
+<h2>bedgraph_bigwig<a class="headerlink" href="#bedgraph-bigwig" title="Permalink to this heading">¶</a></h2>
 <p>Convert a bedgraph file into a bigwig.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">awk</span> <span class="o">-</span><span class="n">v</span> <span class="n">OFS</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">t&#39;</span> <span class="s1">&#39;{{print $1, $2, $3, $4}}&#39;</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">bedgraph</span><span class="p">}</span> <span class="o">|</span> <span class="n">sed</span> <span class="s1">&#39;/experimental/d&#39;</span> <span class="o">|</span>
 <span class="n">bedSort</span> <span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">stdin</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">tmp</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 <span class="n">bedGraphToBigWig</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">tmp</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">sizes</span><span class="p">}</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">out</span><span class="p">}</span> <span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/ucsc.yaml">bedgraph_bigwig environment</a>.</p>
 </section>
 <section id="bedgraphish-to-bedgraph">
-<h2>bedgraphish_to_bedgraph<a class="headerlink" href="#bedgraphish-to-bedgraph" title="Permalink to this heading"></a></h2>
+<h2>bedgraphish_to_bedgraph<a class="headerlink" href="#bedgraphish-to-bedgraph" title="Permalink to this heading">¶</a></h2>
 <p>Convert the bedgraph-ish file generated by genrich into a true bedgraph file.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>splits=$(grep -Pno &quot;([^\/]*)(?=\.bam)&quot; {input})
 splits=($splits)
@@ -278,132 +373,145 @@ done
 </div>
 </section>
 <section id="bedtools-slop">
-<h2>bedtools_slop<a class="headerlink" href="#bedtools-slop" title="Permalink to this heading"></a></h2>
+<h2>bedtools_slop<a class="headerlink" href="#bedtools-slop" title="Permalink to this heading">¶</a></h2>
 <p>After combine_peaks we end up with just a bed file of summits. We extend all peaks
 to the same width, for a fair comparison between peaks.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bedtools</span> <span class="n">slop</span> <span class="o">-</span><span class="n">i</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">bedfile</span><span class="p">}</span> <span class="o">-</span><span class="n">g</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">sizes</span><span class="p">}</span> <span class="o">-</span><span class="n">b</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">slop</span><span class="p">}</span> <span class="o">|</span> <span class="n">uniq</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/bedtools.yaml">bedtools_slop environment</a>.</p>
 </section>
 <section id="blind-clustering">
-<h2>blind_clustering<a class="headerlink" href="#blind-clustering" title="Permalink to this heading"></a></h2>
+<h2>blind_clustering<a class="headerlink" href="#blind-clustering" title="Permalink to this heading">¶</a></h2>
 <p>Create a sample distance cluster heatmap,
 and various correlation cluster heatmaps.</p>
 <p>A (blind) variance stabilizing transformation is applied to the counts,
 to reduce the impact of genes with low expression levels.</p>
 </section>
 <section id="bowtie2-align">
-<h2>bowtie2_align<a class="headerlink" href="#bowtie2-align" title="Permalink to this heading"></a></h2>
+<h2>bowtie2_align<a class="headerlink" href="#bowtie2-align" title="Permalink to this heading">¶</a></h2>
 <p>Align reads against a genome (index) with bowtie2, and pipe the output to the required sorter(s).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bowtie2</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">params</span><span class="p">}</span> <span class="o">--</span><span class="n">threads</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">-</span><span class="n">x</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">index</span><span class="p">}</span><span class="o">/</span><span class="p">{</span><span class="n">wildcards</span><span class="o">.</span><span class="n">assembly</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">input</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="o">|</span> <span class="n">tee</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="mi">1</span><span class="o">&gt;</span> <span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">null</span> <span class="mi">2</span><span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/bowtie2.yaml">bowtie2_align environment</a>.</p>
 </section>
 <section id="bowtie2-index">
-<h2>bowtie2_index<a class="headerlink" href="#bowtie2-index" title="Permalink to this heading"></a></h2>
+<h2>bowtie2_index<a class="headerlink" href="#bowtie2-index" title="Permalink to this heading">¶</a></h2>
 <p>Make a genome index for bowtie2. This index is required for alignment.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span>
 
 <span class="n">bowtie2</span><span class="o">-</span><span class="n">build</span> <span class="p">{</span><span class="n">params</span><span class="p">}</span> <span class="o">--</span><span class="n">threads</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span><span class="o">/</span><span class="p">{</span><span class="n">wildcards</span><span class="o">.</span><span class="n">assembly</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/bowtie2.yaml">bowtie2_index environment</a>.</p>
 </section>
 <section id="bwa-index">
-<h2>bwa_index<a class="headerlink" href="#bwa-index" title="Permalink to this heading"></a></h2>
+<h2>bwa_index<a class="headerlink" href="#bwa-index" title="Permalink to this heading">¶</a></h2>
 <p>Make a genome index for bwa (mem). This index is required for alignment.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span>
 
 <span class="n">bwa</span> <span class="n">index</span> <span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">prefix</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">params</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/bwa.yaml">bwa_index environment</a>.</p>
 </section>
 <section id="bwa-mem">
-<h2>bwa_mem<a class="headerlink" href="#bwa-mem" title="Permalink to this heading"></a></h2>
+<h2>bwa_mem<a class="headerlink" href="#bwa-mem" title="Permalink to this heading">¶</a></h2>
 <p>Align reads against a genome (index) with bwa-mem, and pipe the output to the required sorter(s).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bwa</span> <span class="n">mem</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">params</span><span class="p">}</span> <span class="o">-</span><span class="n">t</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">index_dir</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">reads</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="o">|</span> <span class="n">tee</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="mi">1</span><span class="o">&gt;</span> <span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">null</span> <span class="mi">2</span><span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/bwa.yaml">bwa_mem environment</a>.</p>
 </section>
 <section id="bwa-mem2">
-<h2>bwa_mem2<a class="headerlink" href="#bwa-mem2" title="Permalink to this heading"></a></h2>
+<h2>bwa_mem2<a class="headerlink" href="#bwa-mem2" title="Permalink to this heading">¶</a></h2>
 <p>Align reads against a genome (index) with bwa-mem2, and pipe the output to the required sorter(s).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bwa</span><span class="o">-</span><span class="n">mem2</span> <span class="n">mem</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">params</span><span class="p">}</span> <span class="o">-</span><span class="n">t</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">index_dir</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">reads</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="o">|</span> <span class="n">tee</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="mi">1</span><span class="o">&gt;</span> <span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">null</span> <span class="mi">2</span><span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/bwamem2.yaml">bwa_mem2 environment</a>.</p>
 </section>
 <section id="bwa-mem2-index">
-<h2>bwa_mem2_index<a class="headerlink" href="#bwa-mem2-index" title="Permalink to this heading"></a></h2>
+<h2>bwa_mem2_index<a class="headerlink" href="#bwa-mem2-index" title="Permalink to this heading">¶</a></h2>
 <p>Make a genome index for bwa-mem2. This index is required for alignment.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span>
 
 <span class="n">bwa</span><span class="o">-</span><span class="n">mem2</span> <span class="n">index</span> <span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">prefix</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/bwamem2.yaml">bwa_mem2_index environment</a>.</p>
 </section>
 <section id="call-peak-genrich">
-<h2>call_peak_genrich<a class="headerlink" href="#call-peak-genrich" title="Permalink to this heading"></a></h2>
+<h2>call_peak_genrich<a class="headerlink" href="#call-peak-genrich" title="Permalink to this heading">¶</a></h2>
 <p>Call peaks with genrich based on the pileup.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Genrich</span> <span class="o">-</span><span class="n">P</span> <span class="o">-</span><span class="n">f</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">log</span><span class="p">}</span> <span class="o">-</span><span class="n">o</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">narrowpeak</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="p">}</span> <span class="o">-</span><span class="n">v</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/genrich.yaml">call_peak_genrich environment</a>.</p>
 </section>
 <section id="chipseeker">
-<h2>chipseeker<a class="headerlink" href="#chipseeker" title="Permalink to this heading"></a></h2>
+<h2>chipseeker<a class="headerlink" href="#chipseeker" title="Permalink to this heading">¶</a></h2>
 <p>Make chipseeker plots, with the percentage of peaks in e.g. promoters.</p>
 </section>
 <section id="citeseqcount">
-<h2>citeseqcount<a class="headerlink" href="#citeseqcount" title="Permalink to this heading"></a></h2>
+<h2>citeseqcount<a class="headerlink" href="#citeseqcount" title="Permalink to this heading">¶</a></h2>
 <p>ADT mapping and quantification with cite-seq-count and output a umi/read matrix per sample.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">CITE</span><span class="o">-</span><span class="n">seq</span><span class="o">-</span><span class="n">Count</span> <span class="o">-</span><span class="n">R1</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">reads</span><span class="p">[</span><span class="mi">0</span><span class="p">]}</span> <span class="o">-</span><span class="n">R2</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">reads</span><span class="p">[</span><span class="mi">1</span><span class="p">]}</span> \
 <span class="o">-</span><span class="n">t</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">tags</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">barcode_arg</span><span class="p">}</span> <span class="o">-</span><span class="n">T</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> \
 <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">options</span><span class="p">}</span> <span class="o">-</span><span class="n">o</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">outdir</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/cite-seq-count.yaml">citeseqcount environment</a>.</p>
 </section>
 <section id="combine-biological-reps">
-<h2>combine_biological_reps<a class="headerlink" href="#combine-biological-reps" title="Permalink to this heading"></a></h2>
+<h2>combine_biological_reps<a class="headerlink" href="#combine-biological-reps" title="Permalink to this heading">¶</a></h2>
 <p>Combine biological replicates by taking their mean!</p>
 </section>
 <section id="combine-peaks">
-<h2>combine_peaks<a class="headerlink" href="#combine-peaks" title="Permalink to this heading"></a></h2>
+<h2>combine_peaks<a class="headerlink" href="#combine-peaks" title="Permalink to this heading">¶</a></h2>
 <p>Uses gimmemotifs’ combine_peaks to “combine” peaks. This finds all peaks close
 together and takes the most significant one as the true peak.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">combine_peaks</span> <span class="o">-</span><span class="n">i</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">summitfiles</span><span class="p">}</span> <span class="o">-</span><span class="n">g</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">sizes</span><span class="p">}</span> \
 <span class="o">--</span><span class="n">window</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">windowsize</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/gimme.yaml">combine_peaks environment</a>.</p>
 </section>
 <section id="complement-blacklist">
-<h2>complement_blacklist<a class="headerlink" href="#complement-blacklist" title="Permalink to this heading"></a></h2>
+<h2>complement_blacklist<a class="headerlink" href="#complement-blacklist" title="Permalink to this heading">¶</a></h2>
 <p>Take the complement of the blacklist. We need this complement to tell samtools
 to only keep reads that are in the complement of the blacklist.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sortBed</span> <span class="o">-</span><span class="n">faidx</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">sizes</span><span class="p">}</span> <span class="o">-</span><span class="n">i</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">blacklist</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="o">|</span>
 <span class="n">complementBed</span> <span class="o">-</span><span class="n">i</span> <span class="n">stdin</span> <span class="o">-</span><span class="n">g</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">sizes</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/bedtools.yaml">complement_blacklist environment</a>.</p>
 </section>
 <section id="computematrix-gene">
-<h2>computeMatrix_gene<a class="headerlink" href="#computematrix-gene" title="Permalink to this heading"></a></h2>
+<h2>computeMatrix_gene<a class="headerlink" href="#computematrix-gene" title="Permalink to this heading">¶</a></h2>
 <p>Pre-compute correlations between bams using deeptools.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">computeMatrix</span> <span class="n">scale</span><span class="o">-</span><span class="n">regions</span> <span class="o">-</span><span class="n">S</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">bw</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">labels</span><span class="p">}</span> <span class="o">-</span><span class="n">R</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">gtf</span><span class="p">}</span> \
 <span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">params</span><span class="p">}</span> <span class="o">-</span><span class="n">o</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/deeptools.yaml">computeMatrix_gene environment</a>.</p>
 </section>
 <section id="computematrix-peak">
-<h2>computeMatrix_peak<a class="headerlink" href="#computematrix-peak" title="Permalink to this heading"></a></h2>
+<h2>computeMatrix_peak<a class="headerlink" href="#computematrix-peak" title="Permalink to this heading">¶</a></h2>
 <p>Pre-compute correlations between bams using deeptools.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">computeMatrix</span> <span class="n">scale</span><span class="o">-</span><span class="n">regions</span> <span class="o">-</span><span class="n">S</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">bw</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">labels</span><span class="p">}</span> <span class="o">-</span><span class="n">R</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">peaks</span><span class="p">}</span> \
 <span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">--</span><span class="n">binSize</span> <span class="mi">5</span> <span class="o">-</span><span class="n">o</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/deeptools.yaml">computeMatrix_peak environment</a>.</p>
 </section>
 <section id="count-matrix">
-<h2>count_matrix<a class="headerlink" href="#count-matrix" title="Permalink to this heading"></a></h2>
+<h2>count_matrix<a class="headerlink" href="#count-matrix" title="Permalink to this heading">¶</a></h2>
 <p>Combine count tables into one count matrix per assembly</p>
 </section>
 <section id="coverage-table">
-<h2>coverage_table<a class="headerlink" href="#coverage-table" title="Permalink to this heading"></a></h2>
+<h2>coverage_table<a class="headerlink" href="#coverage-table" title="Permalink to this heading">¶</a></h2>
 <p>Use gimmemotif’s coverage_table to generate a count table with the nr of reads
 under each peak per sample.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">echo</span> <span class="s2">&quot;# The number of reads under each peak&quot;</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span>
@@ -416,18 +524,20 @@ under each peak per sample.</p>
 <span class="n">sed</span> <span class="o">-</span><span class="n">i</span> <span class="s2">&quot;2s/.*/</span><span class="si">{params.names}</span><span class="s2">/&quot;</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/gimme.yaml">coverage_table environment</a>.</p>
 </section>
 <section id="create-snap-object">
-<h2>create_SNAP_object<a class="headerlink" href="#create-snap-object" title="Permalink to this heading"></a></h2>
+<h2>create_SNAP_object<a class="headerlink" href="#create-snap-object" title="Permalink to this heading">¶</a></h2>
 <p>Create a snapobject for each BAM file.</p>
 <p>These snapobjects can be merged later using snaptools in R.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">snaptools</span> <span class="n">snap</span><span class="o">-</span><span class="n">pre</span> <span class="o">--</span><span class="nb">input</span><span class="o">-</span><span class="n">file</span><span class="o">=</span><span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">bam</span><span class="p">}</span> <span class="o">--</span><span class="n">output</span><span class="o">-</span><span class="n">snap</span><span class="o">=</span><span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="o">--</span><span class="n">genome</span><span class="o">-</span><span class="n">name</span><span class="o">=</span><span class="p">{</span><span class="n">wildcards</span><span class="o">.</span><span class="n">assembly</span><span class="p">}</span> \
 <span class="o">--</span><span class="n">genome</span><span class="o">-</span><span class="n">size</span><span class="o">=</span><span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">sizes</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">params</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">chrm</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">mapq</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/snaptools.yaml">create_SNAP_object environment</a>.</p>
 </section>
 <section id="create-bins-snap-object">
-<h2>create_bins_SNAP_object<a class="headerlink" href="#create-bins-snap-object" title="Permalink to this heading"></a></h2>
+<h2>create_bins_SNAP_object<a class="headerlink" href="#create-bins-snap-object" title="Permalink to this heading">¶</a></h2>
 <p>Add a Binned genome matrix to the SNAPobject, after which it is renamed and moved
 to the Snapfiles folder for downstream analysis in R using Snaptools</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">snaptools</span> <span class="n">snap</span><span class="o">-</span><span class="n">add</span><span class="o">-</span><span class="n">bmat</span> <span class="o">--</span><span class="n">snap</span><span class="o">-</span><span class="n">file</span><span class="o">=</span><span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
@@ -435,9 +545,10 @@ to the Snapfiles folder for downstream analysis in R using Snaptools</p>
 <span class="n">mv</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/snaptools.yaml">create_bins_SNAP_object environment</a>.</p>
 </section>
 <section id="cytoband">
-<h2>cytoband<a class="headerlink" href="#cytoband" title="Permalink to this heading"></a></h2>
+<h2>cytoband<a class="headerlink" href="#cytoband" title="Permalink to this heading">¶</a></h2>
 <p>Generate a cytoband track for each assembly</p>
 <p>source: <a class="reference external" href="http://genomewiki.ucsc.edu/index.php/Assembly_Hubs#Cytoband_Track">http://genomewiki.ucsc.edu/index.php/Assembly_Hubs#Cytoband_Track</a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cat</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">sizes</span><span class="p">}</span> <span class="o">|</span>
@@ -448,13 +559,14 @@ to the Snapfiles folder for downstream analysis in R using Snaptools</p>
 <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">sizes</span><span class="p">}</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">cytoband_bb</span><span class="p">}</span> <span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/ucsc.yaml">cytoband environment</a>.</p>
 </section>
 <section id="deseq2">
-<h2>deseq2<a class="headerlink" href="#deseq2" title="Permalink to this heading"></a></h2>
+<h2>deseq2<a class="headerlink" href="#deseq2" title="Permalink to this heading">¶</a></h2>
 <p>Differential gene expression analysis with DESeq2.</p>
 </section>
 <section id="dexseq-count">
-<h2>dexseq_count<a class="headerlink" href="#dexseq-count" title="Permalink to this heading"></a></h2>
+<h2>dexseq_count<a class="headerlink" href="#dexseq-count" title="Permalink to this heading">¶</a></h2>
 <p>count exon usage</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>current_conda_env=$(conda env list | grep \* | cut -d &quot;*&quot; -f2-)
 DEXseq_path=${{current_conda_env}}/lib/R/library/DEXSeq/python_scripts
@@ -462,45 +574,47 @@ DEXseq_path=${{current_conda_env}}/lib/R/library/DEXSeq/python_scripts
 python ${{DEXseq_path}}/dexseq_count.py -f bam -r pos {params.endedness} -s {params.strandedness} {input.gff} {input.bam} {output} &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/dexseq.yaml">dexseq_count environment</a>.</p>
 </section>
 <section id="dexseq-count-matrix">
-<h2>dexseq_count_matrix<a class="headerlink" href="#dexseq-count-matrix" title="Permalink to this heading"></a></h2>
+<h2>dexseq_count_matrix<a class="headerlink" href="#dexseq-count-matrix" title="Permalink to this heading">¶</a></h2>
 <p>Combine DEXSeq counts into one count matrix per assembly
 for use in function <code class="docutils literal notranslate"><span class="pre">DEXSeqDataSet()</span></code></p>
 </section>
 <section id="dupradar">
-<h2>dupRadar<a class="headerlink" href="#dupradar" title="Permalink to this heading"></a></h2>
+<h2>dupRadar<a class="headerlink" href="#dupradar" title="Permalink to this heading">¶</a></h2>
 <p>visualize fraction of artifactual reads to normal read duplication
 (due to natural over-sequencing of highly expressed genes).</p>
 </section>
 <section id="dupradar-combine">
-<h2>dupRadar_combine<a class="headerlink" href="#dupradar-combine" title="Permalink to this heading"></a></h2>
+<h2>dupRadar_combine<a class="headerlink" href="#dupradar-combine" title="Permalink to this heading">¶</a></h2>
 <p>Combine the individual images (so we can group them nicely in the MultiQC).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">convert</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">good_example</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">bad_example</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="o">-</span><span class="n">append</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/imagemick.yaml">dupRadar_combine environment</a>.</p>
 </section>
 <section id="edger-normalization">
-<h2>edgeR_normalization<a class="headerlink" href="#edger-normalization" title="Permalink to this heading"></a></h2>
+<h2>edgeR_normalization<a class="headerlink" href="#edger-normalization" title="Permalink to this heading">¶</a></h2>
 <p>edgeR supports three different types of normalization: TMM, RLE, and upperquartile.</p>
 <p>TMM: is the weighted trimmed mean of M-values proposed by Robinson and Oshlack (2010).
 RLE: is the scaling factor method proposed by Anders and Huber (2010). DEseq2 normalisation is based on this.
 upperquartile: is the upper-quartile normalization method of Bullard et al (2010).</p>
 </section>
 <section id="ena2fastq-pe">
-<h2>ena2fastq_PE<a class="headerlink" href="#ena2fastq-pe" title="Permalink to this heading"></a></h2>
+<h2>ena2fastq_PE<a class="headerlink" href="#ena2fastq-pe" title="Permalink to this heading">¶</a></h2>
 <p>Download paired-end fastq files directly from the ENA.</p>
 </section>
 <section id="ena2fastq-se">
-<h2>ena2fastq_SE<a class="headerlink" href="#ena2fastq-se" title="Permalink to this heading"></a></h2>
+<h2>ena2fastq_SE<a class="headerlink" href="#ena2fastq-se" title="Permalink to this heading">¶</a></h2>
 <p>Download single-end fastq files directly from the ENA.</p>
 </section>
 <section id="export-sce-obj">
-<h2>export_sce_obj<a class="headerlink" href="#export-sce-obj" title="Permalink to this heading"></a></h2>
+<h2>export_sce_obj<a class="headerlink" href="#export-sce-obj" title="Permalink to this heading">¶</a></h2>
 <p>Read scRNA UMI counts into a SingleCellExperiment object, add colData and export to RData format.</p>
 </section>
 <section id="extend-genome">
-<h2>extend_genome<a class="headerlink" href="#extend-genome" title="Permalink to this heading"></a></h2>
+<h2>extend_genome<a class="headerlink" href="#extend-genome" title="Permalink to this heading">¶</a></h2>
 <p>Append given file(s) to genome</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span># extend the genome.fa
 cp {input.genome} {output.genome}
@@ -512,7 +626,7 @@ done
 </div>
 </section>
 <section id="extend-genome-annotation">
-<h2>extend_genome_annotation<a class="headerlink" href="#extend-genome-annotation" title="Permalink to this heading"></a></h2>
+<h2>extend_genome_annotation<a class="headerlink" href="#extend-genome-annotation" title="Permalink to this heading">¶</a></h2>
 <p>Append given file(s) to genome annotation</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span># extend the genome.annotation.gtf
 cp {input.gtf} {output.gtf}
@@ -528,14 +642,14 @@ genePredToBed {output.gp} {output.bed}
 </div>
 </section>
 <section id="extend-genome-blacklist">
-<h2>extend_genome_blacklist<a class="headerlink" href="#extend-genome-blacklist" title="Permalink to this heading"></a></h2>
+<h2>extend_genome_blacklist<a class="headerlink" href="#extend-genome-blacklist" title="Permalink to this heading">¶</a></h2>
 <p>Copy blacklist to the custom genome directory</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cp</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span>
 </pre></div>
 </div>
 </section>
 <section id="fastp-pe">
-<h2>fastp_PE<a class="headerlink" href="#fastp-pe" title="Permalink to this heading"></a></h2>
+<h2>fastp_PE<a class="headerlink" href="#fastp-pe" title="Permalink to this heading">¶</a></h2>
 <p>Automated adapter detection, adapter trimming, and quality trimming through fastp (paired-end).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>threads=$(( {threads} - 2  &gt; 1 ? {threads} - 2 : 1 ))
 
@@ -544,9 +658,10 @@ fastp -w $threads --in1 {input[0]} --in2 {input[1]} \
 {params.config} &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/fastp.yaml">fastp_PE environment</a>.</p>
 </section>
 <section id="fastp-se">
-<h2>fastp_SE<a class="headerlink" href="#fastp-se" title="Permalink to this heading"></a></h2>
+<h2>fastp_SE<a class="headerlink" href="#fastp-se" title="Permalink to this heading">¶</a></h2>
 <p>Automated adapter detection, adapter trimming, and quality trimming through fastp (single-end).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>threads=$(( {threads} - 2  &gt; 1 ? {threads} - 2 : 1 ))
 
@@ -554,25 +669,28 @@ fastp -w $threads --in1 {input} --out1 {output.se} -h {output.qc_html} -j {outpu
 {params.config} &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/fastp.yaml">fastp_SE environment</a>.</p>
 </section>
 <section id="fastp-qc-pe">
-<h2>fastp_qc_PE<a class="headerlink" href="#fastp-qc-pe" title="Permalink to this heading"></a></h2>
+<h2>fastp_qc_PE<a class="headerlink" href="#fastp-qc-pe" title="Permalink to this heading">¶</a></h2>
 <p>Get quality scores for (technical) replicates</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fastp</span> <span class="o">-</span><span class="n">w</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">--</span><span class="n">in1</span> <span class="p">{</span><span class="nb">input</span><span class="p">[</span><span class="mi">0</span><span class="p">]}</span> <span class="o">--</span><span class="n">in2</span> <span class="p">{</span><span class="nb">input</span><span class="p">[</span><span class="mi">1</span><span class="p">]}</span> \
 <span class="o">-</span><span class="n">h</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">qc_html</span><span class="p">}</span> <span class="o">-</span><span class="n">j</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">qc_json</span><span class="p">}</span> \
 <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">config</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/fastp.yaml">fastp_qc_PE environment</a>.</p>
 </section>
 <section id="fastp-qc-se">
-<h2>fastp_qc_SE<a class="headerlink" href="#fastp-qc-se" title="Permalink to this heading"></a></h2>
+<h2>fastp_qc_SE<a class="headerlink" href="#fastp-qc-se" title="Permalink to this heading">¶</a></h2>
 <p>Get quality scores for (technical) replicates</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fastp</span> <span class="o">-</span><span class="n">w</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">--</span><span class="n">in1</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="o">-</span><span class="n">h</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">qc_html</span><span class="p">}</span> <span class="o">-</span><span class="n">j</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">qc_json</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/fastp.yaml">fastp_qc_SE environment</a>.</p>
 </section>
 <section id="fastq-pair">
-<h2>fastq_pair<a class="headerlink" href="#fastq-pair" title="Permalink to this heading"></a></h2>
+<h2>fastq_pair<a class="headerlink" href="#fastq-pair" title="Permalink to this heading">¶</a></h2>
 <p>fastq_pair re-writes paired-end fastq files to ensure that each read has a mate and
 discards singleton reads. This step is required after scRNA trimming since we only trim the fastq
 containing reads and not the barcode fastq.</p>
@@ -590,16 +708,18 @@ gzip -c {output.intermediates3[0]} &gt; {output.reads[0]} 2&gt; {log}
 gzip -c {output.intermediates3[1]} &gt; {output.reads[1]} 2&gt;&gt; {log}
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/fastq-pair.yaml">fastq_pair environment</a>.</p>
 </section>
 <section id="fastqc">
-<h2>fastqc<a class="headerlink" href="#fastqc" title="Permalink to this heading"></a></h2>
+<h2>fastqc<a class="headerlink" href="#fastqc" title="Permalink to this heading">¶</a></h2>
 <p>Generate quality control report for fastq files.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fastqc</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="o">-</span><span class="n">O</span> <span class="p">{</span><span class="n">params</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/fastqc.yaml">fastqc environment</a>.</p>
 </section>
 <section id="featurecounts">
-<h2>featureCounts<a class="headerlink" href="#featurecounts" title="Permalink to this heading"></a></h2>
+<h2>featureCounts<a class="headerlink" href="#featurecounts" title="Permalink to this heading">¶</a></h2>
 <p>Use featureCounts to generate the fraction reads in peaks score
 (frips/assigned reads). See: <a class="reference external" href="https://www.biostars.org/p/337872/">https://www.biostars.org/p/337872/</a> and
 <a class="reference external" href="https://www.biostars.org/p/228636/">https://www.biostars.org/p/228636/</a></p>
@@ -614,16 +734,18 @@ featureCounts -T {threads} -p -a {output.tmp_saf} -F SAF -o {output.real_out} {i
 mv $(dirname {output.real_out})/$(basename {output.summary}) {output.summary}
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/gene_counts.yaml">featureCounts environment</a>.</p>
 </section>
 <section id="id1">
-<h2>featurecounts<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h2>
+<h2>featurecounts<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h2>
 <p>summarize reads to gene level. Outputs a counts table per bam file.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">featureCounts</span> <span class="o">-</span><span class="n">a</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">gtf</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">bam</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">endedness</span><span class="p">}</span> <span class="o">-</span><span class="n">s</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">strandedness</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">user_flags</span><span class="p">}</span> <span class="o">-</span><span class="n">T</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">-</span><span class="n">o</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/gene_counts.yaml">featurecounts environment</a>.</p>
 </section>
 <section id="full-decoy-transcripts">
-<h2>full_decoy_transcripts<a class="headerlink" href="#full-decoy-transcripts" title="Permalink to this heading"></a></h2>
+<h2>full_decoy_transcripts<a class="headerlink" href="#full-decoy-transcripts" title="Permalink to this heading">¶</a></h2>
 <p>Use the entire genome as decoy sequence.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cut</span> <span class="o">-</span><span class="n">f</span> <span class="mi">1</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">sizes</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">decoys</span><span class="p">}</span>
 <span class="n">cat</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">transcripts</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">genome</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">gentrome</span><span class="p">}</span>
@@ -631,7 +753,7 @@ mv $(dirname {output.real_out})/$(basename {output.summary}) {output.summary}
 </div>
 </section>
 <section id="gcpercent">
-<h2>gcPercent<a class="headerlink" href="#gcpercent" title="Permalink to this heading"></a></h2>
+<h2>gcPercent<a class="headerlink" href="#gcpercent" title="Permalink to this heading">¶</a></h2>
 <p>Generate a gc content track</p>
 <p>source: <a class="reference external" href="http://hgdownload.cse.ucsc.edu/goldenPath/hg19/gc5Base/">http://hgdownload.cse.ucsc.edu/goldenPath/hg19/gc5Base/</a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">hgGcPercent</span> <span class="o">-</span><span class="n">wigOut</span> <span class="o">-</span><span class="n">doGaps</span> <span class="o">-</span><span class="n">file</span><span class="o">=</span><span class="n">stdout</span> <span class="o">-</span><span class="n">win</span><span class="o">=</span><span class="mi">5</span> <span class="o">-</span><span class="n">verbose</span><span class="o">=</span><span class="mi">0</span> <span class="p">{</span><span class="n">wildcards</span><span class="o">.</span><span class="n">assembly</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">twobit</span><span class="p">}</span> \
@@ -640,13 +762,14 @@ mv $(dirname {output.real_out})/$(basename {output.summary}) {output.summary}
 <span class="n">wigToBigWig</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">gcpcvar</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">sizes</span><span class="p">}</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">gcpc</span><span class="p">}</span> <span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/ucsc.yaml">gcPercent environment</a>.</p>
 </section>
 <section id="gene-id2name">
-<h2>gene_id2name<a class="headerlink" href="#gene-id2name" title="Permalink to this heading"></a></h2>
+<h2>gene_id2name<a class="headerlink" href="#gene-id2name" title="Permalink to this heading">¶</a></h2>
 <p>Parse the gtf file to generate a gene_id to gene_name conversion table.</p>
 </section>
 <section id="genrich-pileup">
-<h2>genrich_pileup<a class="headerlink" href="#genrich-pileup" title="Permalink to this heading"></a></h2>
+<h2>genrich_pileup<a class="headerlink" href="#genrich-pileup" title="Permalink to this heading">¶</a></h2>
 <p>Generate the pileup. We do this separately from peak-calling since these two
 processes have a very different computational footprint.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>input=$(echo {input.reps} | tr &#39; &#39; &#39;,&#39;)
@@ -654,9 +777,10 @@ Genrich -X -t $input -f {output.log} {params.control} -k {output.bedgraphish} \
 {params.params} -v &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/genrich.yaml">genrich_pileup environment</a>.</p>
 </section>
 <section id="get-effective-genome-size">
-<h2>get_effective_genome_size<a class="headerlink" href="#get-effective-genome-size" title="Permalink to this heading"></a></h2>
+<h2>get_effective_genome_size<a class="headerlink" href="#get-effective-genome-size" title="Permalink to this heading">¶</a></h2>
 <p>Get the effective genome size for a kmer length. Some tools (e.g. macs2) require
 an estimation of the effective genome size to better estimate how (un)likely it
 is to have a certain number of reads on a position. The actual genome size is
@@ -665,33 +789,35 @@ not the best indication in these cases, since reads in repetitive regions
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">unique</span><span class="o">-</span><span class="n">kmers</span><span class="o">.</span><span class="n">py</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="o">-</span><span class="n">k</span> <span class="p">{</span><span class="n">wildcards</span><span class="o">.</span><span class="n">kmer_size</span><span class="p">}</span> <span class="o">--</span><span class="n">quiet</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span> <span class="o">|</span> <span class="n">grep</span> <span class="o">-</span><span class="n">P</span> <span class="o">-</span><span class="n">o</span> <span class="s1">&#39;(?&lt;=\.fa: ).*&#39;</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/khmer.yaml">get_effective_genome_size environment</a>.</p>
 </section>
 <section id="get-genome">
-<h2>get_genome<a class="headerlink" href="#get-genome" title="Permalink to this heading"></a></h2>
+<h2>get_genome<a class="headerlink" href="#get-genome" title="Permalink to this heading">¶</a></h2>
 <p>Download a genome through genomepy.</p>
 </section>
 <section id="get-genome-annotation">
-<h2>get_genome_annotation<a class="headerlink" href="#get-genome-annotation" title="Permalink to this heading"></a></h2>
+<h2>get_genome_annotation<a class="headerlink" href="#get-genome-annotation" title="Permalink to this heading">¶</a></h2>
 <p>Download a gene annotation through genomepy.</p>
 </section>
 <section id="get-genome-blacklist">
-<h2>get_genome_blacklist<a class="headerlink" href="#get-genome-blacklist" title="Permalink to this heading"></a></h2>
+<h2>get_genome_blacklist<a class="headerlink" href="#get-genome-blacklist" title="Permalink to this heading">¶</a></h2>
 <p>Download a genome blacklist for a genome, if it exists, through genomepy.</p>
 </section>
 <section id="get-genome-support-files">
-<h2>get_genome_support_files<a class="headerlink" href="#get-genome-support-files" title="Permalink to this heading"></a></h2>
+<h2>get_genome_support_files<a class="headerlink" href="#get-genome-support-files" title="Permalink to this heading">¶</a></h2>
 <p>Generate supporting files for a genome.</p>
 </section>
 <section id="get-transcripts">
-<h2>get_transcripts<a class="headerlink" href="#get-transcripts" title="Permalink to this heading"></a></h2>
+<h2>get_transcripts<a class="headerlink" href="#get-transcripts" title="Permalink to this heading">¶</a></h2>
 <p>Generate transcripts.fasta using gffread.</p>
 <p>Requires genome.fa and annotation.gtf (with matching chromosome/scaffold names)</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">gffread</span> <span class="o">-</span><span class="n">w</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="o">-</span><span class="n">g</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">fa</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">gtf</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/salmon.yaml">get_transcripts environment</a>.</p>
 </section>
 <section id="gimme-maelstrom">
-<h2>gimme_maelstrom<a class="headerlink" href="#gimme-maelstrom" title="Permalink to this heading"></a></h2>
+<h2>gimme_maelstrom<a class="headerlink" href="#gimme-maelstrom" title="Permalink to this heading">¶</a></h2>
 <p>Gimme maelstrom is a method to infer differential motifs between two or more biological replicates.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>NEW_CACHE={output.cache}
 mkdir -p $NEW_CACHE
@@ -704,25 +830,28 @@ fi
 export XDG_CACHE_HOME=$NEW_CACHE
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/gimme.yaml">gimme_maelstrom environment</a>.</p>
 </section>
 <section id="hisat2-align">
-<h2>hisat2_align<a class="headerlink" href="#hisat2-align" title="Permalink to this heading"></a></h2>
+<h2>hisat2_align<a class="headerlink" href="#hisat2-align" title="Permalink to this heading">¶</a></h2>
 <p>Align reads against a genome (index) with hisat2, and pipe the output to the required sorter(s).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">hisat2</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">params</span><span class="p">}</span> <span class="o">--</span><span class="n">threads</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">-</span><span class="n">x</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">index</span><span class="p">}</span><span class="o">/</span><span class="n">part</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">input</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="o">|</span> <span class="n">tee</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="mi">1</span><span class="o">&gt;</span> <span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">null</span> <span class="mi">2</span><span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/hisat2.yaml">hisat2_align environment</a>.</p>
 </section>
 <section id="hisat2-index">
-<h2>hisat2_index<a class="headerlink" href="#hisat2-index" title="Permalink to this heading"></a></h2>
+<h2>hisat2_index<a class="headerlink" href="#hisat2-index" title="Permalink to this heading">¶</a></h2>
 <p>Make a genome index for hisat2. This index is required for alignment.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span>
 
 <span class="n">hisat2</span><span class="o">-</span><span class="n">build</span> <span class="p">{</span><span class="n">params</span><span class="p">}</span> <span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span><span class="o">/</span><span class="n">part</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/hisat2.yaml">hisat2_index environment</a>.</p>
 </section>
 <section id="hisat2-splice-aware-index">
-<h2>hisat2_splice_aware_index<a class="headerlink" href="#hisat2-splice-aware-index" title="Permalink to this heading"></a></h2>
+<h2>hisat2_splice_aware_index<a class="headerlink" href="#hisat2-splice-aware-index" title="Permalink to this heading">¶</a></h2>
 <p>Make an exon-junction and splice aware index for hisat2.
 This index is required for alignment and quantification of RNA-seq data.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>mkdir -p {output}
@@ -735,16 +864,18 @@ hisat2-build {params} -p {threads} --ss {output}/splice_sites.tsv --exon {output
 {input.fasta} {output}/part &gt;&gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/hisat2.yaml">hisat2_splice_aware_index environment</a>.</p>
 </section>
 <section id="hmmratac">
-<h2>hmmratac<a class="headerlink" href="#hmmratac" title="Permalink to this heading"></a></h2>
+<h2>hmmratac<a class="headerlink" href="#hmmratac" title="Permalink to this heading">¶</a></h2>
 <p>Call gappedpeaks with HMMRATAC.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">HMMRATAC</span> <span class="o">--</span><span class="n">bedgraph</span> <span class="n">true</span> <span class="o">-</span><span class="n">o</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">basename</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">hmmratac_params</span><span class="p">}</span> <span class="o">-</span><span class="n">Xmx22G</span> <span class="o">-</span><span class="n">b</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">bam</span><span class="p">}</span> <span class="o">-</span><span class="n">i</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">bam_index</span><span class="p">}</span> <span class="o">-</span><span class="n">g</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">genome_size</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/hmmratac.yaml">hmmratac environment</a>.</p>
 </section>
 <section id="hmmratac-genome-info">
-<h2>hmmratac_genome_info<a class="headerlink" href="#hmmratac-genome-info" title="Permalink to this heading"></a></h2>
+<h2>hmmratac_genome_info<a class="headerlink" href="#hmmratac-genome-info" title="Permalink to this heading">¶</a></h2>
 <p>Generate the ‘genome info’ that hmmratac requires for peak calling.
 <a class="reference external" href="https://github.com/LiuLabUB/HMMRATAC/issues/17">https://github.com/LiuLabUB/HMMRATAC/issues/17</a></p>
 <p>TODO: isnt this just .fa.sizes?</p>
@@ -753,16 +884,18 @@ hisat2-build {params} -p {threads} --ss {output}/splice_sites.tsv --exon {output
 <span class="n">paste</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">tmp1</span><span class="p">}</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">tmp2</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">out</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/samtools.yaml">hmmratac_genome_info environment</a>.</p>
 </section>
 <section id="htseq-count">
-<h2>htseq_count<a class="headerlink" href="#htseq-count" title="Permalink to this heading"></a></h2>
+<h2>htseq_count<a class="headerlink" href="#htseq-count" title="Permalink to this heading">¶</a></h2>
 <p>summarize reads to gene level. Outputs a counts table per bam file.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">htseq</span><span class="o">-</span><span class="n">count</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">bam</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">gtf</span><span class="p">}</span> <span class="o">-</span><span class="n">r</span> <span class="n">pos</span> <span class="o">-</span><span class="n">s</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">strandedness</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">user_flags</span><span class="p">}</span> <span class="o">-</span><span class="n">n</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">-</span><span class="n">c</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/gene_counts.yaml">htseq_count environment</a>.</p>
 </section>
 <section id="idr">
-<h2>idr<a class="headerlink" href="#idr" title="Permalink to this heading"></a></h2>
+<h2>idr<a class="headerlink" href="#idr" title="Permalink to this heading">¶</a></h2>
 <p>Combine replicates based on the irreproducible discovery rate (IDR). Can only handle two replicates.
 For more than two replicates use fisher’s method.</p>
 <p>When combining narrowpeak files with IDR, the q-score and summit are set to -1 (means not set). However some
@@ -781,25 +914,28 @@ the middle of the peak.</p>
 <span class="n">fi</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/idr.yaml">idr environment</a>.</p>
 </section>
 <section id="infer-strandedness">
-<h2>infer_strandedness<a class="headerlink" href="#infer-strandedness" title="Permalink to this heading"></a></h2>
+<h2>infer_strandedness<a class="headerlink" href="#infer-strandedness" title="Permalink to this heading">¶</a></h2>
 <p>Use RSeqQC’s infer_experiment.py to determine the strandedness of a sample</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">infer_experiment</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">i</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">bam</span><span class="p">}</span> <span class="o">-</span><span class="n">r</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">bed</span><span class="p">}</span> <span class="o">-</span><span class="n">q</span> <span class="p">{</span><span class="n">params</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="o">|</span> <span class="n">awk</span> <span class="n">NF</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/gene_counts.yaml">infer_strandedness environment</a>.</p>
 </section>
 <section id="insert-size-metrics">
-<h2>insert_size_metrics<a class="headerlink" href="#insert-size-metrics" title="Permalink to this heading"></a></h2>
+<h2>insert_size_metrics<a class="headerlink" href="#insert-size-metrics" title="Permalink to this heading">¶</a></h2>
 <p>Get insert size metrics from a (paired-end) bam. This score is then used by
 MultiQC in the report.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">picard</span> <span class="n">CollectInsertSizeMetrics</span> <span class="n">INPUT</span><span class="o">=</span><span class="p">{</span><span class="nb">input</span><span class="p">}</span> \
 <span class="n">OUTPUT</span><span class="o">=</span><span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">tsv</span><span class="p">}</span> <span class="n">H</span><span class="o">=</span><span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">pdf</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/picard.yaml">insert_size_metrics environment</a>.</p>
 </section>
 <section id="kallistobus-count">
-<h2>kallistobus_count<a class="headerlink" href="#kallistobus-count" title="Permalink to this heading"></a></h2>
+<h2>kallistobus_count<a class="headerlink" href="#kallistobus-count" title="Permalink to this heading">¶</a></h2>
 <p>Align reads against a transcriptome (index) with kallistobus and output a quantification file per sample.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kb</span> <span class="n">count</span> \
 <span class="o">-</span><span class="n">i</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">basename</span><span class="p">}</span><span class="o">.</span><span class="n">idx</span> \
@@ -812,9 +948,10 @@ MultiQC in the report.</p>
 <span class="n">fi</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/kallistobus.yaml">kallistobus_count environment</a>.</p>
 </section>
 <section id="kallistobus-ref">
-<h2>kallistobus_ref<a class="headerlink" href="#kallistobus-ref" title="Permalink to this heading"></a></h2>
+<h2>kallistobus_ref<a class="headerlink" href="#kallistobus-ref" title="Permalink to this heading">¶</a></h2>
 <p>Make a genome index for kallistobus. This index is required for counting.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span>
 <span class="n">kb</span> <span class="n">ref</span> \
@@ -824,9 +961,10 @@ MultiQC in the report.</p>
 <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">options</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/kallistobus.yaml">kallistobus_ref environment</a>.</p>
 </section>
 <section id="kallistobus-ref-kite">
-<h2>kallistobus_ref_kite<a class="headerlink" href="#kallistobus-ref-kite" title="Permalink to this heading"></a></h2>
+<h2>kallistobus_ref_kite<a class="headerlink" href="#kallistobus-ref-kite" title="Permalink to this heading">¶</a></h2>
 <p>Make a mismatch index for kallistobus. This index is required to count feature barcodes, such as antibody tags.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span>
 <span class="n">kb</span> <span class="n">ref</span>  \
@@ -835,25 +973,26 @@ MultiQC in the report.</p>
 <span class="o">-</span><span class="n">i</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">basename</span><span class="p">}</span><span class="o">.</span><span class="n">idx</span> <span class="o">-</span><span class="n">g</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">basename</span><span class="p">}</span><span class="n">_t2g</span><span class="o">.</span><span class="n">txt</span> <span class="o">-</span><span class="n">f1</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">basename</span><span class="p">}</span><span class="n">_cdna</span><span class="o">.</span><span class="n">fa</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/kallistobus.yaml">kallistobus_ref_kite environment</a>.</p>
 </section>
 <section id="keep-mates">
-<h2>keep_mates<a class="headerlink" href="#keep-mates" title="Permalink to this heading"></a></h2>
+<h2>keep_mates<a class="headerlink" href="#keep-mates" title="Permalink to this heading">¶</a></h2>
 <p>In-house script that, after alignment, removes the information that reads are paired.
 This can be beneficial when peak calling with macs2 when shifting + extending, since
 macs2 in this case only keeps the first in pair.</p>
 </section>
 <section id="linked-txome">
-<h2>linked_txome<a class="headerlink" href="#linked-txome" title="Permalink to this heading"></a></h2>
+<h2>linked_txome<a class="headerlink" href="#linked-txome" title="Permalink to this heading">¶</a></h2>
 <p>Generate a linked transcriptome for tximeta</p>
 <p>Also creates a symlink to the gtf in an Ensembl format (required by tximeta)</p>
 <p>Required to converting salmon output (estimated transcript abundances) to gene counts</p>
 </section>
 <section id="log-normalization">
-<h2>log_normalization<a class="headerlink" href="#log-normalization" title="Permalink to this heading"></a></h2>
+<h2>log_normalization<a class="headerlink" href="#log-normalization" title="Permalink to this heading">¶</a></h2>
 <p>Log1p normalization of a count table.</p>
 </section>
 <section id="macs2-callpeak">
-<h2>macs2_callpeak<a class="headerlink" href="#macs2-callpeak" title="Permalink to this heading"></a></h2>
+<h2>macs2_callpeak<a class="headerlink" href="#macs2-callpeak" title="Permalink to this heading">¶</a></h2>
 <p>Call peaks using macs2.
 Macs2 requires a genome size, which is estimated from the amount of unique kmers of the average read length.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>GENSIZE=$(cat {input.genome_size})
@@ -863,16 +1002,18 @@ macs2 callpeak --bdg -t {input.bam} {params.control} --outdir {config[result_dir
 {params.macs_params} -g $GENSIZE -f {params.format} &gt;&gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/macs2.yaml">macs2_callpeak environment</a>.</p>
 </section>
 <section id="macs-bdgcmp">
-<h2>macs_bdgcmp<a class="headerlink" href="#macs-bdgcmp" title="Permalink to this heading"></a></h2>
+<h2>macs_bdgcmp<a class="headerlink" href="#macs-bdgcmp" title="Permalink to this heading">¶</a></h2>
 <p>Prepare p-value files for rule macs_cmbreps</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">macs2</span> <span class="n">bdgcmp</span> <span class="o">-</span><span class="n">t</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">treatment</span><span class="p">}</span> <span class="o">-</span><span class="n">c</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">control</span><span class="p">}</span> <span class="o">-</span><span class="n">m</span> <span class="n">qpois</span> <span class="o">-</span><span class="n">o</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/macs2.yaml">macs_bdgcmp environment</a>.</p>
 </section>
 <section id="macs-cmbreps">
-<h2>macs_cmbreps<a class="headerlink" href="#macs-cmbreps" title="Permalink to this heading"></a></h2>
+<h2>macs_cmbreps<a class="headerlink" href="#macs-cmbreps" title="Permalink to this heading">¶</a></h2>
 <p>Combine biological replicates through Fisher’s method</p>
 <p>(Link original peakfile in replicate_processed if there is only 1 sample for a condition)</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>if [ &quot;{params.nr_reps}&quot; == &quot;1&quot; ]; then
@@ -885,61 +1026,66 @@ else
 fi
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/macs2.yaml">macs_cmbreps environment</a>.</p>
 </section>
 <section id="maelstrom-report-preparation">
-<h2>maelstrom_report_preparation<a class="headerlink" href="#maelstrom-report-preparation" title="Permalink to this heading"></a></h2>
+<h2>maelstrom_report_preparation<a class="headerlink" href="#maelstrom-report-preparation" title="Permalink to this heading">¶</a></h2>
 <p>This rule injects the symlinked motif logos into the html so they get rendered in the multiqc report.</p>
 </section>
 <section id="mark-duplicates">
-<h2>mark_duplicates<a class="headerlink" href="#mark-duplicates" title="Permalink to this heading"></a></h2>
+<h2>mark_duplicates<a class="headerlink" href="#mark-duplicates" title="Permalink to this heading">¶</a></h2>
 <p>Mark all duplicate reads in a bam file with picard MarkDuplicates</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">picard</span> <span class="n">MarkDuplicates</span> <span class="n">TMP_DIR</span><span class="o">=</span><span class="p">{</span><span class="n">resources</span><span class="o">.</span><span class="n">tmpdir</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="p">}</span> <span class="n">INPUT</span><span class="o">=</span><span class="p">{</span><span class="nb">input</span><span class="p">}</span> \
 <span class="n">OUTPUT</span><span class="o">=</span><span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">bam</span><span class="p">}</span> <span class="n">METRICS_FILE</span><span class="o">=</span><span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">metrics</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/picard.yaml">mark_duplicates environment</a>.</p>
 </section>
 <section id="mean-center">
-<h2>mean_center<a class="headerlink" href="#mean-center" title="Permalink to this heading"></a></h2>
+<h2>mean_center<a class="headerlink" href="#mean-center" title="Permalink to this heading">¶</a></h2>
 <p>Mean centering of a count table.</p>
 </section>
 <section id="merge-replicates">
-<h2>merge_replicates<a class="headerlink" href="#merge-replicates" title="Permalink to this heading"></a></h2>
+<h2>merge_replicates<a class="headerlink" href="#merge-replicates" title="Permalink to this heading">¶</a></h2>
 <p>Merge replicates (fastqs) simply by concatenating the files. We also change the name of the read headers to
 contain the name of the original replicate.</p>
 <p>Must happen after trimming due to trim-galore’s automatic adapter trimming method</p>
 <p>If a replicate has only 1 sample in it, simply move the file.</p>
 </section>
 <section id="merge-volcano-ma">
-<h2>merge_volcano_ma<a class="headerlink" href="#merge-volcano-ma" title="Permalink to this heading"></a></h2>
+<h2>merge_volcano_ma<a class="headerlink" href="#merge-volcano-ma" title="Permalink to this heading">¶</a></h2>
 <p>Combine the volcano and maplot resulting of the deseq2 rule into a single figure.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">convert</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">maplot</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">volcanoplot</span><span class="p">}</span> <span class="o">+</span><span class="n">append</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/imagemick.yaml">merge_volcano_ma environment</a>.</p>
 </section>
 <section id="minimap2-align">
-<h2>minimap2_align<a class="headerlink" href="#minimap2-align" title="Permalink to this heading"></a></h2>
+<h2>minimap2_align<a class="headerlink" href="#minimap2-align" title="Permalink to this heading">¶</a></h2>
 <p>Align reads against a genome (index) with minimap2, and pipe the output to the required sorter(s).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">minimap2</span> <span class="o">-</span><span class="n">t</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">-</span><span class="n">a</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">index</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">reads</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/minimap2.yaml">minimap2_align environment</a>.</p>
 </section>
 <section id="minimap2-index">
-<h2>minimap2_index<a class="headerlink" href="#minimap2-index" title="Permalink to this heading"></a></h2>
+<h2>minimap2_index<a class="headerlink" href="#minimap2-index" title="Permalink to this heading">¶</a></h2>
 <p>Make a genome index for minimap2. This index is required for alignment.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>mkdir -p $(dirname {output})
 
 minimap2 -t {threads} -d {output} {input} {params} &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/minimap2.yaml">minimap2_index environment</a>.</p>
 </section>
 <section id="motif2factors">
-<h2>motif2factors<a class="headerlink" href="#motif2factors" title="Permalink to this heading"></a></h2>
+<h2>motif2factors<a class="headerlink" href="#motif2factors" title="Permalink to this heading">¶</a></h2>
 <p>Create a gimme pfm/motif2factor file with the gimme motif2factors command.
 For human/mouse it just uses the default database, for other species it is based
 on TF orthologs.</p>
 </section>
 <section id="mt-nuc-ratio-calculator">
-<h2>mt_nuc_ratio_calculator<a class="headerlink" href="#mt-nuc-ratio-calculator" title="Permalink to this heading"></a></h2>
+<h2>mt_nuc_ratio_calculator<a class="headerlink" href="#mt-nuc-ratio-calculator" title="Permalink to this heading">¶</a></h2>
 <p>Estimate the amount of nuclear and mitochondrial reads in a sample. This metric
 is especially important in ATAC-seq experiments where mitochondrial DNA can
 be overrepresented. Reads are classified as mitochondrial reads if they map
@@ -948,17 +1094,19 @@ against either “chrM” or “MT”.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mtnucratio</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">bam</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">mitochondria</span><span class="p">}</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/mtnucratio.yaml">mt_nuc_ratio_calculator environment</a>.</p>
 </section>
 <section id="multibamsummary">
-<h2>multiBamSummary<a class="headerlink" href="#multibamsummary" title="Permalink to this heading"></a></h2>
+<h2>multiBamSummary<a class="headerlink" href="#multibamsummary" title="Permalink to this heading">¶</a></h2>
 <p>Pre-compute a bam summary with deeptools.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">multiBamSummary</span> <span class="n">bins</span> <span class="o">--</span><span class="n">bamfiles</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">bams</span><span class="p">}</span> <span class="o">-</span><span class="n">out</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">names</span><span class="p">}</span> \
 <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">params</span><span class="p">}</span> <span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/deeptools.yaml">multiBamSummary environment</a>.</p>
 </section>
 <section id="multiqc">
-<h2>multiqc<a class="headerlink" href="#multiqc" title="Permalink to this heading"></a></h2>
+<h2>multiqc<a class="headerlink" href="#multiqc" title="Permalink to this heading">¶</a></h2>
 <p>Aggregate all the quality control metrics for every sample into a single
 multiqc report.</p>
 <p>The input can get very long (causing problems with the shell), so we have
@@ -976,36 +1124,37 @@ multiqc.</p>
 <span class="s2">    ]&quot;</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/multiqc.yaml">multiqc environment</a>.</p>
 </section>
 <section id="multiqc-explain">
-<h2>multiqc_explain<a class="headerlink" href="#multiqc-explain" title="Permalink to this heading"></a></h2>
+<h2>multiqc_explain<a class="headerlink" href="#multiqc-explain" title="Permalink to this heading">¶</a></h2>
 <p>Generate rename buttons for the multiqc report.</p>
 </section>
 <section id="multiqc-filter-buttons">
-<h2>multiqc_filter_buttons<a class="headerlink" href="#multiqc-filter-buttons" title="Permalink to this heading"></a></h2>
+<h2>multiqc_filter_buttons<a class="headerlink" href="#multiqc-filter-buttons" title="Permalink to this heading">¶</a></h2>
 <p>Generate filter buttons.</p>
 </section>
 <section id="multiqc-header-info">
-<h2>multiqc_header_info<a class="headerlink" href="#multiqc-header-info" title="Permalink to this heading"></a></h2>
+<h2>multiqc_header_info<a class="headerlink" href="#multiqc-header-info" title="Permalink to this heading">¶</a></h2>
 <p>Generate a multiqc header file with contact info and date of multiqc generation.</p>
 </section>
 <section id="multiqc-samplesconfig">
-<h2>multiqc_samplesconfig<a class="headerlink" href="#multiqc-samplesconfig" title="Permalink to this heading"></a></h2>
+<h2>multiqc_samplesconfig<a class="headerlink" href="#multiqc-samplesconfig" title="Permalink to this heading">¶</a></h2>
 <p>Add a section in the multiqc report that reports the samples.tsv and config.yaml</p>
 </section>
 <section id="multiqc-schema">
-<h2>multiqc_schema<a class="headerlink" href="#multiqc-schema" title="Permalink to this heading"></a></h2>
+<h2>multiqc_schema<a class="headerlink" href="#multiqc-schema" title="Permalink to this heading">¶</a></h2>
 <p>Generate a multiqc config schema. Used for the ordering of modules.</p>
 </section>
 <section id="narrowpeak-summit">
-<h2>narrowpeak_summit<a class="headerlink" href="#narrowpeak-summit" title="Permalink to this heading"></a></h2>
+<h2>narrowpeak_summit<a class="headerlink" href="#narrowpeak-summit" title="Permalink to this heading">¶</a></h2>
 <p>Convert a narrowpeak file to a “macs2 summits” file.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">awk</span> <span class="s1">&#39;BEGIN {{OFS=&quot;</span><span class="se">\t</span><span class="s1">&quot;}} {{ print $1,$2+$10,$2+$10+1,$4,$9; }}&#39;</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span>
 </pre></div>
 </div>
 </section>
 <section id="onehot-peaks">
-<h2>onehot_peaks<a class="headerlink" href="#onehot-peaks" title="Permalink to this heading"></a></h2>
+<h2>onehot_peaks<a class="headerlink" href="#onehot-peaks" title="Permalink to this heading">¶</a></h2>
 <p>Get onehot encodings of which peaks are found in which samples</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>awk &#39;{{print $1&quot;:&quot;$2&quot;-&quot;$3}}&#39; {input.combinedpeaks} &gt; {output.real} 2&gt; {log}
 
@@ -1021,17 +1170,19 @@ done
 echo -e &quot;# onehot encoding of which condition contains which peaks\\n{params.names}\n$(cat {output.real})&quot; &gt; {output.tmp} &amp;&amp; cp {output.tmp} {output.real}
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/bedtools.yaml">onehot_peaks environment</a>.</p>
 </section>
 <section id="partial-decoy-transcripts">
-<h2>partial_decoy_transcripts<a class="headerlink" href="#partial-decoy-transcripts" title="Permalink to this heading"></a></h2>
+<h2>partial_decoy_transcripts<a class="headerlink" href="#partial-decoy-transcripts" title="Permalink to this heading">¶</a></h2>
 <p>Compute a set of decoy sequences by mapping the annotated transcripts against
 a hard-masked version of the organism’s genome.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>sh {params.script} -j {threads} -g {input.genome} -a {input.gtf} -t {input.transcripts} -o $(dirname {output[0]}) &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/decoy.yaml">partial_decoy_transcripts environment</a>.</p>
 </section>
 <section id="peak-bigpeak">
-<h2>peak_bigpeak<a class="headerlink" href="#peak-bigpeak" title="Permalink to this heading"></a></h2>
+<h2>peak_bigpeak<a class="headerlink" href="#peak-bigpeak" title="Permalink to this heading">¶</a></h2>
 <p>Convert a narrowpeak file into a bignarrowpeak file.
 <a class="reference external" href="https://genome-source.gi.ucsc.edu/gitlist/kent.git/tree/master/src/hg/lib/">https://genome-source.gi.ucsc.edu/gitlist/kent.git/tree/master/src/hg/lib/</a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span># keep first 10 columns, idr adds extra columns we do not need for our bigpeak
@@ -1043,45 +1194,51 @@ bedToBigBed -type={params.type} -as={params.schema} {output.tmp} \
 {input.sizes} {output.out} &gt;&gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/ucsc.yaml">peak_bigpeak environment</a>.</p>
 </section>
 <section id="plotcorrelation">
-<h2>plotCorrelation<a class="headerlink" href="#plotcorrelation" title="Permalink to this heading"></a></h2>
+<h2>plotCorrelation<a class="headerlink" href="#plotcorrelation" title="Permalink to this heading">¶</a></h2>
 <p>Calculate the correlation between bams with deepTools.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plotCorrelation</span> <span class="o">--</span><span class="n">corData</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">cordata</span><span class="p">}</span> <span class="o">--</span><span class="n">plotFile</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="o">-</span><span class="n">c</span> <span class="p">{</span><span class="n">wildcards</span><span class="o">.</span><span class="n">method</span><span class="p">}</span> \
 <span class="o">-</span><span class="n">p</span> <span class="n">heatmap</span> <span class="o">--</span><span class="n">plotTitle</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">title</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">params</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/deeptools.yaml">plotCorrelation environment</a>.</p>
 </section>
 <section id="plotfingerprint">
-<h2>plotFingerprint<a class="headerlink" href="#plotfingerprint" title="Permalink to this heading"></a></h2>
+<h2>plotFingerprint<a class="headerlink" href="#plotfingerprint" title="Permalink to this heading">¶</a></h2>
 <p>Plot the “fingerprint” of your bams, using deeptools.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plotFingerprint</span> <span class="o">-</span><span class="n">b</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">bams</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="p">}</span> <span class="o">--</span><span class="n">outRawCounts</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/deeptools.yaml">plotFingerprint environment</a>.</p>
 </section>
 <section id="plotheatmap-peak">
-<h2>plotHeatmap_peak<a class="headerlink" href="#plotheatmap-peak" title="Permalink to this heading"></a></h2>
+<h2>plotHeatmap_peak<a class="headerlink" href="#plotheatmap-peak" title="Permalink to this heading">¶</a></h2>
 <p>Plot the peak heatmap using deepTools.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plotHeatmap</span> <span class="o">--</span><span class="n">matrixFile</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="o">--</span><span class="n">outFileName</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">img</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">params</span><span class="p">}</span> <span class="o">--</span><span class="n">startLabel</span><span class="o">=</span><span class="s2">&quot;-</span><span class="si">{params.slop}</span><span class="s2">&quot;</span> <span class="o">--</span><span class="n">endLabel</span><span class="o">=</span><span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">slop</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/deeptools.yaml">plotHeatmap_peak environment</a>.</p>
 </section>
 <section id="plotpca">
-<h2>plotPCA<a class="headerlink" href="#plotpca" title="Permalink to this heading"></a></h2>
+<h2>plotPCA<a class="headerlink" href="#plotpca" title="Permalink to this heading">¶</a></h2>
 <p>Plot a PCA between bams using deepTools.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plotPCA</span> <span class="o">--</span><span class="n">corData</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="o">--</span><span class="n">outFileNameData</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/deeptools.yaml">plotPCA environment</a>.</p>
 </section>
 <section id="plotprofile-gene">
-<h2>plotProfile_gene<a class="headerlink" href="#plotprofile-gene" title="Permalink to this heading"></a></h2>
+<h2>plotProfile_gene<a class="headerlink" href="#plotprofile-gene" title="Permalink to this heading">¶</a></h2>
 <p>Plot the gene profile using deeptools.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plotProfile</span> <span class="o">-</span><span class="n">m</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="o">--</span><span class="n">outFileName</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">img</span><span class="p">}</span> <span class="o">--</span><span class="n">outFileNameData</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">file</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/deeptools.yaml">plotProfile_gene environment</a>.</p>
 </section>
 <section id="prepare-dexseq-annotation">
-<h2>prepare_DEXseq_annotation<a class="headerlink" href="#prepare-dexseq-annotation" title="Permalink to this heading"></a></h2>
+<h2>prepare_DEXseq_annotation<a class="headerlink" href="#prepare-dexseq-annotation" title="Permalink to this heading">¶</a></h2>
 <p>generate a DEXseq annotation.gff from the annotation.gtf</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>current_conda_env=$(conda env list | grep \* | cut -d &quot;*&quot; -f2-)
 DEXseq_path=${{current_conda_env}}/lib/R/library/DEXSeq/python_scripts
@@ -1089,16 +1246,17 @@ DEXseq_path=${{current_conda_env}}/lib/R/library/DEXSeq/python_scripts
 python ${{DEXseq_path}}/dexseq_prepare_annotation.py {input} {output} &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/dexseq.yaml">prepare_DEXseq_annotation environment</a>.</p>
 </section>
 <section id="pytxi-count-matrix">
-<h2>pytxi_count_matrix<a class="headerlink" href="#pytxi-count-matrix" title="Permalink to this heading"></a></h2>
+<h2>pytxi_count_matrix<a class="headerlink" href="#pytxi-count-matrix" title="Permalink to this heading">¶</a></h2>
 <p>Convert transcript abundance estimations to gene count estimations and merge
 gene counts per assembly.</p>
 <p>If the GTF is not used, a taxonomy ID is required for myGene.info.
 Seq2science will try to read this ID from the genomepy README.txt or assembly database.</p>
 </section>
 <section id="quantile-normalization">
-<h2>quantile_normalization<a class="headerlink" href="#quantile-normalization" title="Permalink to this heading"></a></h2>
+<h2>quantile_normalization<a class="headerlink" href="#quantile-normalization" title="Permalink to this heading">¶</a></h2>
 <p>Quantile normalization is a type of normalization that makes the distribution
 between samples identical. This means that the actual count distribution
 within a sample changes. After quantile normalization, samples are CPM
@@ -1108,14 +1266,15 @@ comparison between normalisation techniques.</p>
 <a class="reference external" href="https://en.wikipedia.org/wiki/Quantile_normalization">https://en.wikipedia.org/wiki/Quantile_normalization</a></p>
 </section>
 <section id="random-subset-peaks">
-<h2>random_subset_peaks<a class="headerlink" href="#random-subset-peaks" title="Permalink to this heading"></a></h2>
+<h2>random_subset_peaks<a class="headerlink" href="#random-subset-peaks" title="Permalink to this heading">¶</a></h2>
 <p>Take a random subset of all summits, and make them all same width.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">shuf</span> <span class="o">-</span><span class="n">n</span> <span class="p">{</span><span class="n">wildcards</span><span class="o">.</span><span class="n">nrpeaks</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">peaks</span><span class="p">}</span> <span class="o">|</span> <span class="n">bedtools</span> <span class="n">slop</span> <span class="o">-</span><span class="n">i</span> <span class="n">stdin</span> <span class="o">-</span><span class="n">g</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">sizes</span><span class="p">}</span> <span class="o">-</span><span class="n">b</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">slop</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/bedtools.yaml">random_subset_peaks environment</a>.</p>
 </section>
 <section id="run2sra">
-<h2>run2sra<a class="headerlink" href="#run2sra" title="Permalink to this heading"></a></h2>
+<h2>run2sra<a class="headerlink" href="#run2sra" title="Permalink to this heading">¶</a></h2>
 <p>Download the SRA of a sample by its unique identifier.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># move to output dir since somehow prefetch sometimes puts files in the cwd...</span>
 <span class="c1"># and remove the top level folder since prefetch will assume we are done otherwise</span>
@@ -1151,13 +1310,14 @@ comparison between normalisation techniques.</p>
 <span class="n">fi</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/get_fastq.yaml">run2sra environment</a>.</p>
 </section>
 <section id="runs2sample">
-<h2>runs2sample<a class="headerlink" href="#runs2sample" title="Permalink to this heading"></a></h2>
+<h2>runs2sample<a class="headerlink" href="#runs2sample" title="Permalink to this heading">¶</a></h2>
 <p>Concatenate a single run or multiple runs together into a fastq</p>
 </section>
 <section id="salmon-index">
-<h2>salmon_index<a class="headerlink" href="#salmon-index" title="Permalink to this heading"></a></h2>
+<h2>salmon_index<a class="headerlink" href="#salmon-index" title="Permalink to this heading">¶</a></h2>
 <p>Generate a transcriptome index for Salmon.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span>
 
@@ -1165,39 +1325,44 @@ comparison between normalisation techniques.</p>
 <span class="o">--</span><span class="n">threads</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/salmon.yaml">salmon_index environment</a>.</p>
 </section>
 <section id="salmon-quant">
-<h2>salmon_quant<a class="headerlink" href="#salmon-quant" title="Permalink to this heading"></a></h2>
+<h2>salmon_quant<a class="headerlink" href="#salmon-quant" title="Permalink to this heading">¶</a></h2>
 <p>Align reads against a transcriptome (index) with Salmon (mapping-based mode) and output a quantification file per sample.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>salmon quant -i {input.index} -l A {params.input} {params.params} -o $(dirname {output}) \
 --threads {threads} &gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/salmon.yaml">salmon_quant environment</a>.</p>
 </section>
 <section id="sam2bam">
-<h2>sam2bam<a class="headerlink" href="#sam2bam" title="Permalink to this heading"></a></h2>
+<h2>sam2bam<a class="headerlink" href="#sam2bam" title="Permalink to this heading">¶</a></h2>
 <p>Convert a file in sam format into a bam format (binary)</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">samtools</span> <span class="n">view</span> <span class="o">-</span><span class="n">b</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/samtools.yaml">sam2bam environment</a>.</p>
 </section>
 <section id="sambamba-sort">
-<h2>sambamba_sort<a class="headerlink" href="#sambamba-sort" title="Permalink to this heading"></a></h2>
+<h2>sambamba_sort<a class="headerlink" href="#sambamba-sort" title="Permalink to this heading">¶</a></h2>
 <p>Sort the result of alignment or sieving with the sambamba sorter.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sambamba</span> <span class="n">view</span> <span class="o">--</span><span class="n">nthreads</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">-</span><span class="n">f</span> <span class="n">bam</span>  <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="o">-</span><span class="n">o</span> <span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">stdout</span>  <span class="mi">2</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="o">|</span>
 <span class="n">sambamba</span> <span class="n">sort</span> <span class="o">--</span><span class="n">nthreads</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="p">}</span> <span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">stdin</span> <span class="o">-</span><span class="n">o</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span>  <span class="mi">2</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/sambamba.yaml">sambamba_sort environment</a>.</p>
 </section>
 <section id="samtools-index">
-<h2>samtools_index<a class="headerlink" href="#samtools-index" title="Permalink to this heading"></a></h2>
+<h2>samtools_index<a class="headerlink" href="#samtools-index" title="Permalink to this heading">¶</a></h2>
 <p>Create an index of a bam/cram file which can be used for e.g. visualization.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">samtools</span> <span class="n">index</span> <span class="p">{</span><span class="n">params</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/samtools.yaml">samtools_index environment</a>.</p>
 </section>
 <section id="samtools-presort">
-<h2>samtools_presort<a class="headerlink" href="#samtools-presort" title="Permalink to this heading"></a></h2>
+<h2>samtools_presort<a class="headerlink" href="#samtools-presort" title="Permalink to this heading">¶</a></h2>
 <p>(Pre)sort the result of alignment with the samtools sorter.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span># we set this trap to remove temp files when prematurely ending the rule
 trap &quot;rm -f {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam&quot; INT;
@@ -1210,9 +1375,10 @@ samtools sort -@ {threads} -m $memory {input} -o {output} \
 -T {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp 2&gt; {log}
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/samtools.yaml">samtools_presort environment</a>.</p>
 </section>
 <section id="samtools-sort">
-<h2>samtools_sort<a class="headerlink" href="#samtools-sort" title="Permalink to this heading"></a></h2>
+<h2>samtools_sort<a class="headerlink" href="#samtools-sort" title="Permalink to this heading">¶</a></h2>
 <p>Sort the result of alignment or sieving with the samtools sorter.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span># we set this trap to remove temp files when prematurely ending the rule
 trap &quot;rm -f {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp*bam&quot; INT;
@@ -1225,9 +1391,10 @@ samtools sort {params.sort_order} -@ {threads} -m $memory {input} -o {output} \
 -T {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp 2&gt; {log}
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/samtools.yaml">samtools_sort environment</a>.</p>
 </section>
 <section id="samtools-sort-allsizes">
-<h2>samtools_sort_allsizes<a class="headerlink" href="#samtools-sort-allsizes" title="Permalink to this heading"></a></h2>
+<h2>samtools_sort_allsizes<a class="headerlink" href="#samtools-sort-allsizes" title="Permalink to this heading">¶</a></h2>
 <p>Sort the allsizes output of sieve_bam. This rule is identical to the
 samtools_sort rule except that the input must contain _allsizes, and the output is temporary.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span># we set this trap to remove temp files when prematurely ending the rule
@@ -1241,24 +1408,26 @@ samtools sort {params.sort_order} -@ {threads} -m $memory {input} -o {output} \
 -T {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp 2&gt; {log}
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/samtools.yaml">samtools_sort_allsizes environment</a>.</p>
 </section>
 <section id="samtools-stats">
-<h2>samtools_stats<a class="headerlink" href="#samtools-stats" title="Permalink to this heading"></a></h2>
+<h2>samtools_stats<a class="headerlink" href="#samtools-stats" title="Permalink to this heading">¶</a></h2>
 <p>Get general stats from bam files like percentage mapped.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">samtools</span> <span class="n">stats</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="mi">1</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/samtools.yaml">samtools_stats environment</a>.</p>
 </section>
 <section id="sctk-qc">
-<h2>sctk_qc<a class="headerlink" href="#sctk-qc" title="Permalink to this heading"></a></h2>
+<h2>sctk_qc<a class="headerlink" href="#sctk-qc" title="Permalink to this heading">¶</a></h2>
 <p>Perform scRNA QC with singleCellTK, store output in SingleCellExperiment object and export to RData format.</p>
 </section>
 <section id="setup-blacklist">
-<h2>setup_blacklist<a class="headerlink" href="#setup-blacklist" title="Permalink to this heading"></a></h2>
+<h2>setup_blacklist<a class="headerlink" href="#setup-blacklist" title="Permalink to this heading">¶</a></h2>
 <p>Combine the encode blacklist with mitochondrial DNA depending on config.</p>
 </section>
 <section id="sieve-bam">
-<h2>sieve_bam<a class="headerlink" href="#sieve-bam" title="Permalink to this heading"></a></h2>
+<h2>sieve_bam<a class="headerlink" href="#sieve-bam" title="Permalink to this heading">¶</a></h2>
 <p>“Sieve” a bam.</p>
 <p>This rule does (at least) one of these:</p>
 <ul class="simple">
@@ -1278,14 +1447,15 @@ samtools sort {params.sort_order} -@ {threads} -m $memory {input} -o {output} \
 <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">sizesieve_touch</span><span class="p">}</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/samtools.yaml">sieve_bam environment</a>.</p>
 </section>
 <section id="softmask-track-1">
-<h2>softmask_track_1<a class="headerlink" href="#softmask-track-1" title="Permalink to this heading"></a></h2>
+<h2>softmask_track_1<a class="headerlink" href="#softmask-track-1" title="Permalink to this heading">¶</a></h2>
 <p>Generate a track of all softmasked regions</p>
 <p>source: <a class="reference external" href="https://github.com/Gaius-Augustus/MakeHub/blob/master/make_hub.py">https://github.com/Gaius-Augustus/MakeHub/blob/master/make_hub.py</a></p>
 </section>
 <section id="softmask-track-2">
-<h2>softmask_track_2<a class="headerlink" href="#softmask-track-2" title="Permalink to this heading"></a></h2>
+<h2>softmask_track_2<a class="headerlink" href="#softmask-track-2" title="Permalink to this heading">¶</a></h2>
 <p>Generate a track of all softmasked regions</p>
 <p>source: <a class="reference external" href="https://github.com/Gaius-Augustus/MakeHub/blob/master/make_hub.py">https://github.com/Gaius-Augustus/MakeHub/blob/master/make_hub.py</a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bedSort</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">mask_unsorted</span><span class="p">}</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">maskbed</span><span class="p">}</span> <span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
@@ -1293,9 +1463,10 @@ samtools sort {params.sort_order} -@ {threads} -m $memory {input} -o {output} \
 <span class="n">bedToBigBed</span> <span class="o">-</span><span class="nb">type</span><span class="o">=</span><span class="n">bed3</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">maskbed</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">sizes</span><span class="p">}</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">mask</span><span class="p">}</span> <span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/ucsc.yaml">softmask_track_2 environment</a>.</p>
 </section>
 <section id="sra2fastq-pe">
-<h2>sra2fastq_PE<a class="headerlink" href="#sra2fastq-pe" title="Permalink to this heading"></a></h2>
+<h2>sra2fastq_PE<a class="headerlink" href="#sra2fastq-pe" title="Permalink to this heading">¶</a></h2>
 <p>Downloaded (raw) SRAs are converted to paired-end fastq files.
 Forward and reverse samples will be switched if forward/reverse names are not lexicographically ordered.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># move to output dir since somehow parallel-fastq-dump sometimes puts files in the cwd...</span>
@@ -1318,9 +1489,10 @@ Forward and reverse samples will be switched if forward/reverse names are not le
 <span class="n">mv</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">tmpdir</span><span class="p">}</span><span class="o">/*</span><span class="n">_2</span><span class="o">*</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">fastq</span><span class="p">[</span><span class="mi">1</span><span class="p">]}</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/get_fastq.yaml">sra2fastq_PE environment</a>.</p>
 </section>
 <section id="sra2fastq-se">
-<h2>sra2fastq_SE<a class="headerlink" href="#sra2fastq-se" title="Permalink to this heading"></a></h2>
+<h2>sra2fastq_SE<a class="headerlink" href="#sra2fastq-se" title="Permalink to this heading">¶</a></h2>
 <p>Downloaded (raw) SRAs are converted to single-end fastq files.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># move to output dir since somehow parallel-fastq-dump sometimes puts files in the cwd...</span>
 <span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">tmpdir</span><span class="p">};</span> <span class="n">cd</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">tmpdir</span><span class="p">}</span>
@@ -1341,9 +1513,10 @@ Forward and reverse samples will be switched if forward/reverse names are not le
 <span class="n">mv</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">tmpdir</span><span class="p">}</span><span class="o">/*.</span><span class="n">fastq</span><span class="o">.</span><span class="n">gz</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">fastq</span><span class="p">}</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/get_fastq.yaml">sra2fastq_SE environment</a>.</p>
 </section>
 <section id="star-align">
-<h2>star_align<a class="headerlink" href="#star-align" title="Permalink to this heading"></a></h2>
+<h2>star_align<a class="headerlink" href="#star-align" title="Permalink to this heading">¶</a></h2>
 <p>Align reads against a genome (index) with STAR, and pipe the output to the required sorter(s).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>trap &quot;find {log} -type f ! -name Log* -exec rm {{}} \;&quot; EXIT
 mkdir -p {log}
@@ -1358,9 +1531,10 @@ STAR --genomeDir {input.index} --readFilesIn {params.input} --readFilesCommand g
 find {log} -type f ! -name Log* -exec mv {{}} {output.dir} \;
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/star.yaml">star_align environment</a>.</p>
 </section>
 <section id="star-index">
-<h2>star_index<a class="headerlink" href="#star-index" title="Permalink to this heading"></a></h2>
+<h2>star_index<a class="headerlink" href="#star-index" title="Permalink to this heading">¶</a></h2>
 <p>Make a genome index for STAR.</p>
 <p>Troubleshooting:</p>
 <ol class="arabic simple">
@@ -1414,20 +1588,21 @@ STAR --runMode genomeGenerate --genomeFastaFiles {input.genome} --sjdbGTFfile {i
 --runThreadN {threads} $NBits $NBases {params} &gt;&gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/star.yaml">star_index environment</a>.</p>
 </section>
 <section id="tpm-matrix">
-<h2>tpm_matrix<a class="headerlink" href="#tpm-matrix" title="Permalink to this heading"></a></h2>
+<h2>tpm_matrix<a class="headerlink" href="#tpm-matrix" title="Permalink to this heading">¶</a></h2>
 <p>Create a TPM normalized table from a counts table.</p>
 </section>
 <section id="trackhub">
-<h2>trackhub<a class="headerlink" href="#trackhub" title="Permalink to this heading"></a></h2>
+<h2>trackhub<a class="headerlink" href="#trackhub" title="Permalink to this heading">¶</a></h2>
 <p>Generate a UCSC track hub/assembly hub.</p>
 <p>To view the hub, the output directory must be hosted on an web accessible location,
 and the location of the hub.txt file given the UCSC genome browser at
 My Data &gt; Track Hubs &gt; My Hubs</p>
 </section>
 <section id="trackhub-index">
-<h2>trackhub_index<a class="headerlink" href="#trackhub-index" title="Permalink to this heading"></a></h2>
+<h2>trackhub_index<a class="headerlink" href="#trackhub-index" title="Permalink to this heading">¶</a></h2>
 <p>Generate a searchable annotation &amp; index for each assembly</p>
 <p>sources: <a class="reference external" href="https://genome.ucsc.edu/goldenPath/help/hubQuickStartSearch.html">https://genome.ucsc.edu/goldenPath/help/hubQuickStartSearch.html</a>,
 <a class="reference external" href="https://www.biostars.org/p/272649/">https://www.biostars.org/p/272649/</a></p>
@@ -1459,9 +1634,10 @@ grep -v &quot;^#&quot; {output.info} | awk -v len=$l &#39;BEGIN {{ FS = &quot;\t
 ixIxx {output.indexinfo} {output.ix} {output.ixx} &gt;&gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/ucsc.yaml">trackhub_index environment</a>.</p>
 </section>
 <section id="trimgalore-pe">
-<h2>trimgalore_PE<a class="headerlink" href="#trimgalore-pe" title="Permalink to this heading"></a></h2>
+<h2>trimgalore_PE<a class="headerlink" href="#trimgalore-pe" title="Permalink to this heading">¶</a></h2>
 <p>Automated adapter detection, adapter trimming, and quality trimming through trim galore (paired-end).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>trim_galore --paired -j {threads} {params.config} -o $(dirname {output.r1}) {input.r1} {input.r2} &gt; {log} 2&gt;&amp;1
 
@@ -1476,9 +1652,10 @@ for f in $(find &quot;$(dirname {output.r1})/&quot; -name &quot;{wildcards.sampl
     mv &quot;$f&quot; &quot;$(dirname {output.qc[0]})/$(basename $f)&quot;; done
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/trimgalore.yaml">trimgalore_PE environment</a>.</p>
 </section>
 <section id="trimgalore-se">
-<h2>trimgalore_SE<a class="headerlink" href="#trimgalore-se" title="Permalink to this heading"></a></h2>
+<h2>trimgalore_SE<a class="headerlink" href="#trimgalore-se" title="Permalink to this heading">¶</a></h2>
 <p>Automated adapter detection, adapter trimming, and quality trimming through trim galore (single-end).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>trim_galore -j {threads} {params.config} -o $(dirname {output.se}) {input} &gt; {log} 2&gt;&amp;1
 
@@ -1492,16 +1669,18 @@ report=$(dirname {output.se})/{wildcards.sample}.{params.fqsuffix}.gz_trimming_r
 mv $report {output.qc}
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/trimgalore.yaml">trimgalore_SE environment</a>.</p>
 </section>
 <section id="twobit">
-<h2>twobit<a class="headerlink" href="#twobit" title="Permalink to this heading"></a></h2>
+<h2>twobit<a class="headerlink" href="#twobit" title="Permalink to this heading">¶</a></h2>
 <p>Generate a 2bit file for each assembly</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">faToTwoBit</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/ucsc.yaml">twobit environment</a>.</p>
 </section>
 <section id="txi-count-matrix">
-<h2>txi_count_matrix<a class="headerlink" href="#txi-count-matrix" title="Permalink to this heading"></a></h2>
+<h2>txi_count_matrix<a class="headerlink" href="#txi-count-matrix" title="Permalink to this heading">¶</a></h2>
 <p>Convert transcript abundance estimations to gene count estimations and merge
 gene counts per assembly.</p>
 <p>Also outputs a single cell experiment object similar to ARMOR
@@ -1509,40 +1688,57 @@ gene counts per assembly.</p>
 <p>Only works with Ensembl assemblies.</p>
 </section>
 <section id="upset-plot-peaks">
-<h2>upset_plot_peaks<a class="headerlink" href="#upset-plot-peaks" title="Permalink to this heading"></a></h2>
+<h2>upset_plot_peaks<a class="headerlink" href="#upset-plot-peaks" title="Permalink to this heading">¶</a></h2>
 <p>make an upset plot which shows the distribution of peaks amongst the biological replicates.</p>
 </section>
 </section>
 
 
            </div>
+           
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="cli.html" class="btn btn-neutral float-left" title="Command line interface" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
         <a href="schemas.html" class="btn btn-neutral float-right" title="All configurable options" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="cli.html" class="btn btn-neutral float-left" title="Command line interface" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright Maarten van der Sande, Siebren Frölich, Jos Smits, Rebecca Snabel, Tilman Schäfers, &amp; Simon van Heeringen..</p>
-  </div>
+    <p>
+        &#169; Copyright Maarten van der Sande, Siebren Frölich, Jos Smits, Rebecca Snabel, Tilman Schäfers, &amp; Simon van Heeringen..
 
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
         </div>
       </div>
+
     </section>
+
   </div>
-  <script>
+  
+
+  <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>

@@ -1,7 +1,7 @@
 
 # Per rule explanation
 
-This is an automatically generated list of all supported rules, their docstrings, and command. At the start of each workflow run a list is printed of which rules will be run. And while the workflow is running it prints which rules are being started and finished. This page is here to give an explanation to the user about what each rule does, and for developers to find what is, and isn't yet supported.
+This is an automatically generated list of all supported rules, their docstrings, command, and virtual environment. At the start of each workflow run a list is printed of which rules will be run. And while the workflow is running it prints which rules are being started and finished. This page is here to give an explanation to the user about what each rule does, and for developers to find what is, and isn't yet supported.
 
 #### bam2cram
 
@@ -10,6 +10,8 @@ Convert a bam file to the more compressed cram format.
 ```
 samtools view -T {input.genome} -C {input.bam} -@ {threads} > {output} 2> {log}
 ```
+
+[bam2cram environment][bam2cram].
 
 #### bam_bigwig
 
@@ -30,6 +32,8 @@ else
 fi
 ```
 
+[bam_bigwig environment][bam_bigwig].
+
 #### bedgraph_bigwig
 
 Convert a bedgraph file into a bigwig.
@@ -39,6 +43,8 @@ awk -v OFS='\\t' '{{print $1, $2, $3, $4}}' {input.bedgraph} | sed '/experimenta
 bedSort /dev/stdin {output.tmp} > {log} 2>&1
 bedGraphToBigWig {output.tmp} {input.sizes} {output.out} >> {log} 2>&1
 ```
+
+[bedgraph_bigwig environment][bedgraph_bigwig].
 
 #### bedgraphish_to_bedgraph
 
@@ -77,6 +83,8 @@ to the same width, for a fair comparison between peaks.
 bedtools slop -i {input.bedfile} -g {input.sizes} -b {params.slop} | uniq > {output} 2> {log}
 ```
 
+[bedtools_slop environment][bedtools_slop].
+
 #### blind_clustering
 
 Create a sample distance cluster heatmap, 
@@ -93,6 +101,8 @@ Align reads against a genome (index) with bowtie2, and pipe the output to the re
 bowtie2 {params.params} --threads {threads} -x {input.index}/{wildcards.assembly} {params.input} 2> {log} | tee {output} 1> /dev/null 2>> {log}
 ```
 
+[bowtie2_align environment][bowtie2_align].
+
 #### bowtie2_index
 
 Make a genome index for bowtie2. This index is required for alignment.
@@ -102,6 +112,8 @@ mkdir -p {output}
 
 bowtie2-build {params} --threads {threads} {input} {output}/{wildcards.assembly} > {log} 2>&1
 ```
+
+[bowtie2_index environment][bowtie2_index].
 
 #### bwa_index
 
@@ -113,6 +125,8 @@ mkdir -p {output}
 bwa index -p {params.prefix} {params.params} {input} > {log} 2>&1
 ```
 
+[bwa_index environment][bwa_index].
+
 #### bwa_mem
 
 Align reads against a genome (index) with bwa-mem, and pipe the output to the required sorter(s).
@@ -121,6 +135,8 @@ Align reads against a genome (index) with bwa-mem, and pipe the output to the re
 bwa mem {params.params} -t {threads} {params.index_dir} {input.reads} 2> {log} | tee {output} 1> /dev/null 2>> {log}
 ```
 
+[bwa_mem environment][bwa_mem].
+
 #### bwa_mem2
 
 Align reads against a genome (index) with bwa-mem2, and pipe the output to the required sorter(s).
@@ -128,6 +144,8 @@ Align reads against a genome (index) with bwa-mem2, and pipe the output to the r
 ```
 bwa-mem2 mem {params.params} -t {threads} {params.index_dir} {input.reads} 2> {log} | tee {output} 1> /dev/null 2>> {log}
 ```
+
+[bwa_mem2 environment][bwa_mem2].
 
 #### bwa_mem2_index
 
@@ -139,6 +157,8 @@ mkdir -p {output}
 bwa-mem2 index -p {params.prefix} {input} > {log} 2>&1
 ```
 
+[bwa_mem2_index environment][bwa_mem2_index].
+
 #### call_peak_genrich
 
 Call peaks with genrich based on the pileup.
@@ -146,6 +166,8 @@ Call peaks with genrich based on the pileup.
 ```
 Genrich -P -f {input.log} -o {output.narrowpeak} {params} -v > {log} 2>&1
 ```
+
+[call_peak_genrich environment][call_peak_genrich].
 
 #### chipseeker
 
@@ -161,6 +183,8 @@ CITE-seq-Count -R1 {input.reads[0]} -R2 {input.reads[1]} \
 {params.options} -o {params.outdir} > {log} 2>&1
 ```
 
+[citeseqcount environment][citeseqcount].
+
 #### combine_biological_reps
 
 Combine biological replicates by taking their mean!
@@ -175,6 +199,8 @@ combine_peaks -i {input.summitfiles} -g {input.sizes} \
 --window {params.windowsize} > {output} 2> {log}
 ```
 
+[combine_peaks environment][combine_peaks].
+
 #### complement_blacklist
 
 Take the complement of the blacklist. We need this complement to tell samtools
@@ -185,6 +211,8 @@ sortBed -faidx {input.sizes} -i {input.blacklist} 2>> {log} |
 complementBed -i stdin -g {input.sizes} > {output} 2>> {log}
 ```
 
+[complement_blacklist environment][complement_blacklist].
+
 #### computeMatrix_gene
 
 Pre-compute correlations between bams using deeptools.
@@ -194,6 +222,8 @@ computeMatrix scale-regions -S {input.bw} {params.labels} -R {params.gtf} \
 -p {threads} {params.params} -o {output} > {log} 2>&1
 ```
 
+[computeMatrix_gene environment][computeMatrix_gene].
+
 #### computeMatrix_peak
 
 Pre-compute correlations between bams using deeptools.
@@ -202,6 +232,8 @@ Pre-compute correlations between bams using deeptools.
 computeMatrix scale-regions -S {input.bw} {params.labels} -R {input.peaks} \
 -p {threads} --binSize 5 -o {output} > {log} 2>&1
 ```
+
+[computeMatrix_peak environment][computeMatrix_peak].
 
 #### count_matrix
 
@@ -223,6 +255,8 @@ awk 'BEGIN {{ FS = "@" }} NR==1{{gsub("{wildcards.assembly}-|.samtools-coordinat
 sed -i "2s/.*/{params.names}/" {output}
 ```
 
+[coverage_table environment][coverage_table].
+
 #### create_SNAP_object
 
 Create a snapobject for each BAM file. 
@@ -233,6 +267,8 @@ These snapobjects can be merged later using snaptools in R.
 snaptools snap-pre --input-file={input.bam} --output-snap={output} --genome-name={wildcards.assembly} \
 --genome-size={input.sizes} {params.params} {params.chrm} {params.mapq} > {log} 2>&1
 ```
+
+[create_SNAP_object environment][create_SNAP_object].
 
 #### create_bins_SNAP_object
 
@@ -245,6 +281,8 @@ snaptools snap-add-bmat --snap-file={input} {params} > {log} 2>&1
 echo "bmat added, moving file" >> {log}
 mv {input} {output} >> {log} 2>&1
 ```
+
+[create_bins_SNAP_object environment][create_bins_SNAP_object].
 
 #### cytoband
 
@@ -261,6 +299,8 @@ bedToBigBed -type=bed4 {output.cytoband_bd} -as={params.schema} \
 {input.sizes} {output.cytoband_bb} >> {log} 2>&1
 ```
 
+[cytoband environment][cytoband].
+
 #### deseq2
 
 Differential gene expression analysis with DESeq2.
@@ -275,6 +315,8 @@ DEXseq_path=${{current_conda_env}}/lib/R/library/DEXSeq/python_scripts
 
 python ${{DEXseq_path}}/dexseq_count.py -f bam -r pos {params.endedness} -s {params.strandedness} {input.gff} {input.bam} {output} > {log} 2>&1
 ```
+
+[dexseq_count environment][dexseq_count].
 
 #### dexseq_count_matrix
 
@@ -293,6 +335,8 @@ Combine the individual images (so we can group them nicely in the MultiQC).
 ```
 convert {params.good_example} {params.bad_example} {input} -append {output} 2> {log}
 ```
+
+[dupRadar_combine environment][dupRadar_combine].
 
 #### edgeR_normalization
 
@@ -364,6 +408,8 @@ fastp -w $threads --in1 {input[0]} --in2 {input[1]} \
 {params.config} > {log} 2>&1
 ```
 
+[fastp_PE environment][fastp_PE].
+
 #### fastp_SE
 
 Automated adapter detection, adapter trimming, and quality trimming through fastp (single-end).
@@ -375,6 +421,8 @@ fastp -w $threads --in1 {input} --out1 {output.se} -h {output.qc_html} -j {outpu
 {params.config} > {log} 2>&1
 ```
 
+[fastp_SE environment][fastp_SE].
+
 #### fastp_qc_PE
 
 Get quality scores for (technical) replicates
@@ -385,6 +433,8 @@ fastp -w {threads} --in1 {input[0]} --in2 {input[1]} \
 {params.config} > {log} 2>&1
 ```
 
+[fastp_qc_PE environment][fastp_qc_PE].
+
 #### fastp_qc_SE
 
 Get quality scores for (technical) replicates
@@ -392,6 +442,8 @@ Get quality scores for (technical) replicates
 ```
 fastp -w {threads} --in1 {input} -h {output.qc_html} -j {output.qc_json} > {log} 2>&1
 ```
+
+[fastp_qc_SE environment][fastp_qc_SE].
 
 #### fastq_pair
 
@@ -414,6 +466,8 @@ gzip -c {output.intermediates3[0]} > {output.reads[0]} 2> {log}
 gzip -c {output.intermediates3[1]} > {output.reads[1]} 2>> {log}
 ```
 
+[fastq_pair environment][fastq_pair].
+
 #### fastqc
 
 Generate quality control report for fastq files.
@@ -421,6 +475,8 @@ Generate quality control report for fastq files.
 ```
 fastqc {input} -O {params} > {log} 2>&1
 ```
+
+[fastqc environment][fastqc].
 
 #### featureCounts
 
@@ -440,6 +496,8 @@ featureCounts -T {threads} -p -a {output.tmp_saf} -F SAF -o {output.real_out} {i
 mv $(dirname {output.real_out})/$(basename {output.summary}) {output.summary}
 ```
 
+[featureCounts environment][featureCounts].
+
 #### featurecounts
 
 summarize reads to gene level. Outputs a counts table per bam file.
@@ -447,6 +505,8 @@ summarize reads to gene level. Outputs a counts table per bam file.
 ```
 featureCounts -a {input.gtf} {input.bam} {params.endedness} -s {params.strandedness} {params.user_flags} -T {threads} -o {output} > {log} 2>&1
 ```
+
+[featurecounts environment][featurecounts].
 
 #### full_decoy_transcripts
 
@@ -470,6 +530,8 @@ hgGcPercent -wigOut -doGaps -file=stdout -win=5 -verbose=0 {wildcards.assembly} 
 wigToBigWig {output.gcpcvar} {input.sizes} {output.gcpc} >> {log} 2>&1
 ```
 
+[gcPercent environment][gcPercent].
+
 #### gene_id2name
 
 Parse the gtf file to generate a gene_id to gene_name conversion table.
@@ -485,6 +547,8 @@ Genrich -X -t $input -f {output.log} {params.control} -k {output.bedgraphish} \
 {params.params} -v > {log} 2>&1
 ```
 
+[genrich_pileup environment][genrich_pileup].
+
 #### get_effective_genome_size
 
 Get the effective genome size for a kmer length. Some tools (e.g. macs2) require
@@ -496,6 +560,8 @@ not the best indication in these cases, since reads in repetitive regions
 ```
 unique-kmers.py {input} -k {wildcards.kmer_size} --quiet 2>&1 | grep -P -o '(?<=\.fa: ).*' > {output} 2> {log}
 ```
+
+[get_effective_genome_size environment][get_effective_genome_size].
 
 #### get_genome
 
@@ -523,6 +589,8 @@ Requires genome.fa and annotation.gtf (with matching chromosome/scaffold names)
 gffread -w {output} -g {input.fa} {input.gtf} > {log} 2>&1
 ```
 
+[get_transcripts environment][get_transcripts].
+
 #### gimme_maelstrom
 
 Gimme maelstrom is a method to infer differential motifs between two or more biological replicates.
@@ -539,6 +607,8 @@ fi
 export XDG_CACHE_HOME=$NEW_CACHE
 ```
 
+[gimme_maelstrom environment][gimme_maelstrom].
+
 #### hisat2_align
 
 Align reads against a genome (index) with hisat2, and pipe the output to the required sorter(s).
@@ -546,6 +616,8 @@ Align reads against a genome (index) with hisat2, and pipe the output to the req
 ```
 hisat2 {params.params} --threads {threads} -x {input.index}/part {params.input} 2> {log} | tee {output} 1> /dev/null 2>> {log}
 ```
+
+[hisat2_align environment][hisat2_align].
 
 #### hisat2_index
 
@@ -556,6 +628,8 @@ mkdir -p {output}
 
 hisat2-build {params} -p {threads} {input} {output}/part > {log} 2>&1
 ```
+
+[hisat2_index environment][hisat2_index].
 
 #### hisat2_splice_aware_index
 
@@ -573,6 +647,8 @@ hisat2-build {params} -p {threads} --ss {output}/splice_sites.tsv --exon {output
 {input.fasta} {output}/part >> {log} 2>&1
 ```
 
+[hisat2_splice_aware_index environment][hisat2_splice_aware_index].
+
 #### hmmratac
 
 Call gappedpeaks with HMMRATAC.
@@ -580,6 +656,8 @@ Call gappedpeaks with HMMRATAC.
 ```
 HMMRATAC --bedgraph true -o {params.basename} {params.hmmratac_params} -Xmx22G -b {input.bam} -i {input.bam_index} -g {input.genome_size} > {log} 2>&1
 ```
+
+[hmmratac environment][hmmratac].
 
 #### hmmratac_genome_info
 
@@ -594,6 +672,8 @@ samtools view -H {input} 2>> {log} | grep SQ 2>> {log} | cut -f 2-3 2>> {log} | 
 paste {output.tmp1} {output.tmp2} > {output.out} 2> {log}
 ```
 
+[hmmratac_genome_info environment][hmmratac_genome_info].
+
 #### htseq_count
 
 summarize reads to gene level. Outputs a counts table per bam file.
@@ -601,6 +681,8 @@ summarize reads to gene level. Outputs a counts table per bam file.
 ```
 htseq-count {input.bam} {input.gtf} -r pos -s {params.strandedness} {params.user_flags} -n {threads} -c {output} > {log} 2>&1
 ```
+
+[htseq_count environment][htseq_count].
 
 #### idr
 
@@ -625,6 +707,8 @@ else
 fi
 ```
 
+[idr environment][idr].
+
 #### infer_strandedness
 
 Use RSeqQC's infer_experiment.py to determine the strandedness of a sample
@@ -632,6 +716,8 @@ Use RSeqQC's infer_experiment.py to determine the strandedness of a sample
 ```
 infer_experiment.py -i {input.bam} -r {input.bed} -q {params} 2> {log} | awk NF > {output} 
 ```
+
+[infer_strandedness environment][infer_strandedness].
 
 #### insert_size_metrics
 
@@ -642,6 +728,8 @@ MultiQC in the report.
 picard CollectInsertSizeMetrics INPUT={input} \
 OUTPUT={output.tsv} H={output.pdf} > {log} 2>&1
 ```
+
+[insert_size_metrics environment][insert_size_metrics].
 
 #### kallistobus_count
 
@@ -659,6 +747,8 @@ if grep -q 'ERROR\|bad_alloc' "{log}"; then
 fi
 ```
 
+[kallistobus_count environment][kallistobus_count].
+
 #### kallistobus_ref
 
 Make a genome index for kallistobus. This index is required for counting.
@@ -672,6 +762,8 @@ kb ref \
 {params.options} > {log} 2>&1
 ```
 
+[kallistobus_ref environment][kallistobus_ref].
+
 #### kallistobus_ref_kite
 
 Make a mismatch index for kallistobus. This index is required to count feature barcodes, such as antibody tags.
@@ -683,6 +775,8 @@ kb ref  \
 {params.options} \
 -i {params.basename}.idx -g {params.basename}_t2g.txt -f1 {params.basename}_cdna.fa > {log} 2>&1
 ```
+
+[kallistobus_ref_kite environment][kallistobus_ref_kite].
 
 #### keep_mates
 
@@ -715,6 +809,8 @@ macs2 callpeak --bdg -t {input.bam} {params.control} --outdir {config[result_dir
 {params.macs_params} -g $GENSIZE -f {params.format} >> {log} 2>&1
 ```
 
+[macs2_callpeak environment][macs2_callpeak].
+
 #### macs_bdgcmp
 
 Prepare p-value files for rule macs_cmbreps
@@ -722,6 +818,8 @@ Prepare p-value files for rule macs_cmbreps
 ```
 macs2 bdgcmp -t {input.treatment} -c {input.control} -m qpois -o {output} > {log} 2>&1
 ```
+
+[macs_bdgcmp environment][macs_bdgcmp].
 
 #### macs_cmbreps
 
@@ -740,6 +838,8 @@ else
 fi
 ```
 
+[macs_cmbreps environment][macs_cmbreps].
+
 #### maelstrom_report_preparation
 
 This rule injects the symlinked motif logos into the html so they get rendered in the multiqc report.
@@ -752,6 +852,8 @@ Mark all duplicate reads in a bam file with picard MarkDuplicates
 picard MarkDuplicates TMP_DIR={resources.tmpdir} {params} INPUT={input} \
 OUTPUT={output.bam} METRICS_FILE={output.metrics} > {log} 2>&1
 ```
+
+[mark_duplicates environment][mark_duplicates].
 
 #### mean_center
 
@@ -774,6 +876,8 @@ Combine the volcano and maplot resulting of the deseq2 rule into a single figure
 convert {input.maplot} {input.volcanoplot} +append {output} 2> {log}
 ```
 
+[merge_volcano_ma environment][merge_volcano_ma].
+
 #### minimap2_align
 
 Align reads against a genome (index) with minimap2, and pipe the output to the required sorter(s).
@@ -781,6 +885,8 @@ Align reads against a genome (index) with minimap2, and pipe the output to the r
 ```
 minimap2 -t {threads} -a {input.index} {input.reads} {params} > {output} 2> {log}
 ```
+
+[minimap2_align environment][minimap2_align].
 
 #### minimap2_index
 
@@ -791,6 +897,8 @@ mkdir -p $(dirname {output})
 
 minimap2 -t {threads} -d {output} {input} {params} > {log} 2>&1
 ```
+
+[minimap2_index environment][minimap2_index].
 
 #### motif2factors
 
@@ -811,6 +919,8 @@ These values are aggregated and displayed in the MultiQC report.
 mtnucratio {input.bam} {params.mitochondria}
 ```
 
+[mt_nuc_ratio_calculator environment][mt_nuc_ratio_calculator].
+
 #### multiBamSummary
 
 Pre-compute a bam summary with deeptools.
@@ -819,6 +929,8 @@ Pre-compute a bam summary with deeptools.
 multiBamSummary bins --bamfiles {input.bams} -out {output} {params.names} \
 {params.params} -p {threads} > {log} 2>&1
 ```
+
+[multiBamSummary environment][multiBamSummary].
 
 #### multiqc
 
@@ -841,6 +953,8 @@ multiqc {input.files} -o {params.dir} -n multiqc_{wildcards.assembly}.html \
     {{'pattern': _allsizes,                'type': 'regex'}},              \
     ]" > {log} 2>&1
 ```
+
+[multiqc environment][multiqc].
 
 #### multiqc_explain
 
@@ -889,6 +1003,8 @@ done
 echo -e "# onehot encoding of which condition contains which peaks\\n{params.names}\n$(cat {output.real})" > {output.tmp} && cp {output.tmp} {output.real}
 ```
 
+[onehot_peaks environment][onehot_peaks].
+
 #### partial_decoy_transcripts
 
 Compute a set of decoy sequences by mapping the annotated transcripts against 
@@ -897,6 +1013,8 @@ a hard-masked version of the organism’s genome.
 ```
 sh {params.script} -j {threads} -g {input.genome} -a {input.gtf} -t {input.transcripts} -o $(dirname {output[0]}) > {log} 2>&1
 ```
+
+[partial_decoy_transcripts environment][partial_decoy_transcripts].
 
 #### peak_bigpeak
 
@@ -913,6 +1031,8 @@ bedToBigBed -type={params.type} -as={params.schema} {output.tmp} \
 {input.sizes} {output.out} >> {log} 2>&1
 ```
 
+[peak_bigpeak environment][peak_bigpeak].
+
 #### plotCorrelation
 
 Calculate the correlation between bams with deepTools.
@@ -922,6 +1042,8 @@ plotCorrelation --corData {input.cordata} --plotFile {output} -c {wildcards.meth
 -p heatmap --plotTitle {params.title} {params.params} > {log} 2>&1
 ```
 
+[plotCorrelation environment][plotCorrelation].
+
 #### plotFingerprint
 
 Plot the "fingerprint" of your bams, using deeptools. 
@@ -929,6 +1051,8 @@ Plot the "fingerprint" of your bams, using deeptools.
 ```
 plotFingerprint -b {input.bams} {params} --outRawCounts {output} -p {threads} > {log} 2>&1 
 ```
+
+[plotFingerprint environment][plotFingerprint].
 
 #### plotHeatmap_peak
 
@@ -938,6 +1062,8 @@ Plot the peak heatmap using deepTools.
 plotHeatmap --matrixFile {input} --outFileName {output.img} {params.params} --startLabel="-{params.slop}" --endLabel={params.slop} > {log} 2>&1
 ```
 
+[plotHeatmap_peak environment][plotHeatmap_peak].
+
 #### plotPCA
 
 Plot a PCA between bams using deepTools.
@@ -946,6 +1072,8 @@ Plot a PCA between bams using deepTools.
 plotPCA --corData {input} --outFileNameData {output} > {log} 2>&1
 ```
 
+[plotPCA environment][plotPCA].
+
 #### plotProfile_gene
 
 Plot the gene profile using deeptools.
@@ -953,6 +1081,8 @@ Plot the gene profile using deeptools.
 ```
 plotProfile -m {input} --outFileName {output.img} --outFileNameData {output.file} > {log} 2>&1
 ```
+
+[plotProfile_gene environment][plotProfile_gene].
 
 #### prepare_DEXseq_annotation
 
@@ -964,6 +1094,8 @@ DEXseq_path=${{current_conda_env}}/lib/R/library/DEXSeq/python_scripts
 
 python ${{DEXseq_path}}/dexseq_prepare_annotation.py {input} {output} > {log} 2>&1
 ```
+
+[prepare_DEXseq_annotation environment][prepare_DEXseq_annotation].
 
 #### pytxi_count_matrix
 
@@ -991,6 +1123,8 @@ Take a random subset of all summits, and make them all same width.
 ```
 shuf -n {wildcards.nrpeaks} {input.peaks} | bedtools slop -i stdin -g {input.sizes} -b {params.slop} > {output}
 ```
+
+[random_subset_peaks environment][random_subset_peaks].
 
 #### run2sra
 
@@ -1031,6 +1165,8 @@ if [[ -f "{params.outdir}/{wildcards.run}.sralite" ]]; then
 fi
 ```
 
+[run2sra environment][run2sra].
+
 #### runs2sample
 
 Concatenate a single run or multiple runs together into a fastq
@@ -1046,6 +1182,8 @@ salmon index -t {input[0]} {params.decoys} -i {output} {params.params} \
 --threads {threads} > {log} 2>&1
 ```
 
+[salmon_index environment][salmon_index].
+
 #### salmon_quant
 
 Align reads against a transcriptome (index) with Salmon (mapping-based mode) and output a quantification file per sample.
@@ -1055,6 +1193,8 @@ salmon quant -i {input.index} -l A {params.input} {params.params} -o $(dirname {
 --threads {threads} > {log} 2>&1
 ```
 
+[salmon_quant environment][salmon_quant].
+
 #### sam2bam
 
 Convert a file in sam format into a bam format (binary)
@@ -1062,6 +1202,8 @@ Convert a file in sam format into a bam format (binary)
 ```
 samtools view -b {input} > {output}
 ```
+
+[sam2bam environment][sam2bam].
 
 #### sambamba_sort
 
@@ -1072,6 +1214,8 @@ sambamba view --nthreads {threads} -f bam  {input} -o /dev/stdout  2> {log} |
 sambamba sort --nthreads {threads} {params} /dev/stdin -o {output}  2> {log}
 ```
 
+[sambamba_sort environment][sambamba_sort].
+
 #### samtools_index
 
 Create an index of a bam/cram file which can be used for e.g. visualization.
@@ -1079,6 +1223,8 @@ Create an index of a bam/cram file which can be used for e.g. visualization.
 ```
 samtools index {params} {input} {output}
 ```
+
+[samtools_index environment][samtools_index].
 
 #### samtools_presort
 
@@ -1096,6 +1242,8 @@ samtools sort -@ {threads} -m $memory {input} -o {output} \
 -T {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
 ```
 
+[samtools_presort environment][samtools_presort].
+
 #### samtools_sort
 
 Sort the result of alignment or sieving with the samtools sorter.
@@ -1111,6 +1259,8 @@ memory=$((1024*{resources.mem_gb}/{threads}))M
 samtools sort {params.sort_order} -@ {threads} -m $memory {input} -o {output} \
 -T {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
 ```
+
+[samtools_sort environment][samtools_sort].
 
 #### samtools_sort_allsizes
 
@@ -1129,6 +1279,8 @@ samtools sort {params.sort_order} -@ {threads} -m $memory {input} -o {output} \
 -T {resources.tmpdir}/{wildcards.assembly}-{wildcards.sample}.tmp 2> {log}
 ```
 
+[samtools_sort_allsizes environment][samtools_sort_allsizes].
+
 #### samtools_stats
 
 Get general stats from bam files like percentage mapped.
@@ -1136,6 +1288,8 @@ Get general stats from bam files like percentage mapped.
 ```
 samtools stats {input} 1> {output} 2> {log}
 ```
+
+[samtools_stats environment][samtools_stats].
 
 #### sctk_qc
 
@@ -1167,6 +1321,8 @@ samtools view -b > {output.bam} 2> {log}
 {params.sizesieve_touch}
 ```
 
+[sieve_bam environment][sieve_bam].
+
 #### softmask_track_1
 
 Generate a track of all softmasked regions
@@ -1184,6 +1340,8 @@ bedSort {input.mask_unsorted} {output.maskbed} >> {log} 2>&1
     
 bedToBigBed -type=bed3 {output.maskbed} {input.sizes} {output.mask} >> {log} 2>&1
 ```
+
+[softmask_track_2 environment][softmask_track_2].
 
 #### sra2fastq_PE
 
@@ -1211,6 +1369,8 @@ mv {output.tmpdir}/*_1* {output.fastq[0]}
 mv {output.tmpdir}/*_2* {output.fastq[1]}
 ```
 
+[sra2fastq_PE environment][sra2fastq_PE].
+
 #### sra2fastq_SE
 
 Downloaded (raw) SRAs are converted to single-end fastq files.
@@ -1235,6 +1395,8 @@ parallel-fastq-dump -s {input} -O {output.tmpdir} \
 mv {output.tmpdir}/*.fastq.gz {output.fastq}
 ```
 
+[sra2fastq_SE environment][sra2fastq_SE].
+
 #### star_align
 
 Align reads against a genome (index) with STAR, and pipe the output to the required sorter(s).
@@ -1252,6 +1414,8 @@ STAR --genomeDir {input.index} --readFilesIn {params.input} --readFilesCommand g
 # move all non-log files to output directory (this way the log files are kept on error)
 find {log} -type f ! -name Log* -exec mv {{}} {output.dir} \;
 ```
+
+[star_align environment][star_align].
 
 #### star_index
 
@@ -1304,6 +1468,8 @@ STAR --runMode genomeGenerate --genomeFastaFiles {input.genome} --sjdbGTFfile {i
 --runThreadN {threads} $NBits $NBases {params} >> {log} 2>&1
 ```
 
+[star_index environment][star_index].
+
 #### tpm_matrix
 
 Create a TPM normalized table from a counts table.
@@ -1352,6 +1518,8 @@ grep -v "^#" {output.info} | awk -v len=$l 'BEGIN {{ FS = "\t" }} ; {{ if(len!="
 ixIxx {output.indexinfo} {output.ix} {output.ixx} >> {log} 2>&1
 ```
 
+[trackhub_index environment][trackhub_index].
+
 #### trimgalore_PE
 
 Automated adapter detection, adapter trimming, and quality trimming through trim galore (paired-end).
@@ -1370,6 +1538,8 @@ for f in $(find "$(dirname {output.r1})/" -name "{wildcards.sample}_*.{params.fq
     mv "$f" "$(dirname {output.qc[0]})/$(basename $f)"; done
 ```
 
+[trimgalore_PE environment][trimgalore_PE].
+
 #### trimgalore_SE
 
 Automated adapter detection, adapter trimming, and quality trimming through trim galore (single-end).
@@ -1387,6 +1557,8 @@ report=$(dirname {output.se})/{wildcards.sample}.{params.fqsuffix}.gz_trimming_r
 mv $report {output.qc}
 ```
 
+[trimgalore_SE environment][trimgalore_SE].
+
 #### twobit
 
 Generate a 2bit file for each assembly
@@ -1394,6 +1566,8 @@ Generate a 2bit file for each assembly
 ```
 faToTwoBit {input} {output} >> {log} 2>&1
 ```
+
+[twobit environment][twobit].
 
 #### txi_count_matrix
 
@@ -1409,3 +1583,106 @@ Only works with Ensembl assemblies.
 
 make an upset plot which shows the distribution of peaks amongst the biological replicates.
 
+[featureCounts]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/subread.yaml
+[plotHeatmap_peak]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/deeptools.yaml
+[chipseeker]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/chipseeker.yaml
+[upset_plot_peaks]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/upset.yaml
+[linked_txome]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/tximeta.yaml
+[txi_count_matrix]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/tximeta.yaml
+[pytxi_count_matrix]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/pytxi.yaml
+[mark_duplicates]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/picard.yaml
+[sieve_bam]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/samtools.yaml
+[samtools_sort_allsizes]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/samtools.yaml
+[sam2bam]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/samtools.yaml
+[samtools_index]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/samtools.yaml
+[samtools_sort]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/samtools.yaml
+[sambamba_sort]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/sambamba.yaml
+[bam2cram]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/samtools.yaml
+[dupRadar]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/dupradar.yaml
+[dupRadar_combine]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/imagemick.yaml
+[get_effective_genome_size]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/khmer.yaml
+[create_SNAP_object]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/snaptools.yaml
+[create_bins_SNAP_object]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/snaptools.yaml
+[samtools_stats]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/samtools.yaml
+[fastqc]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/fastqc.yaml
+[fastp_qc_SE]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/fastp.yaml
+[fastp_qc_PE]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/fastp.yaml
+[insert_size_metrics]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/picard.yaml
+[mt_nuc_ratio_calculator]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/mtnucratio.yaml
+[plotFingerprint]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/deeptools.yaml
+[computeMatrix_gene]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/deeptools.yaml
+[plotProfile_gene]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/deeptools.yaml
+[computeMatrix_peak]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/deeptools.yaml
+[multiBamSummary]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/deeptools.yaml
+[plotCorrelation]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/deeptools.yaml
+[plotPCA]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/deeptools.yaml
+[multiqc_assembly_stats]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/assembly_stats.yaml
+[multiqc_samplesconfig]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/htmltable.yaml
+[multiqc]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/multiqc.yaml
+[infer_strandedness]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/gene_counts.yaml
+[motif2factors]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/gimme.yaml
+[gimme_maelstrom]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/gimme.yaml
+[trimgalore_SE]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/trimgalore.yaml
+[trimgalore_PE]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/trimgalore.yaml
+[fastp_SE]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/fastp.yaml
+[fastp_PE]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/fastp.yaml
+[genrich_pileup]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/genrich.yaml
+[call_peak_genrich]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/genrich.yaml
+[macs2_callpeak]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/macs2.yaml
+[keep_mates]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/pysam.yaml
+[hmmratac_genome_info]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/samtools.yaml
+[hmmratac]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/hmmratac.yaml
+[idr]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/idr.yaml
+[macs_bdgcmp]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/macs2.yaml
+[macs_cmbreps]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/macs2.yaml
+[run2sra]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/get_fastq.yaml
+[sra2fastq_SE]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/get_fastq.yaml
+[sra2fastq_PE]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/get_fastq.yaml
+[twobit]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/ucsc.yaml
+[gcPercent]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/ucsc.yaml
+[cytoband]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/ucsc.yaml
+[softmask_track_2]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/ucsc.yaml
+[trackhub_index]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/ucsc.yaml
+[deseq2]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/deseq2.yaml
+[merge_volcano_ma]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/imagemick.yaml
+[blind_clustering]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/deseq2.yaml
+[bedgraph_bigwig]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/ucsc.yaml
+[peak_bigpeak]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/ucsc.yaml
+[bam_bigwig]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/deeptools.yaml
+[export_sce_obj]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/sce.yaml
+[sctk_qc]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/sctk.yaml
+[combine_peaks]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/gimme.yaml
+[bedtools_slop]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/bedtools.yaml
+[coverage_table]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/gimme.yaml
+[quantile_normalization]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/qnorm.yaml
+[edgeR_normalization]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/edger.yaml
+[onehot_peaks]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/bedtools.yaml
+[random_subset_peaks]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/bedtools.yaml
+[bowtie2_index]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/bowtie2.yaml
+[bowtie2_align]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/bowtie2.yaml
+[bwa_index]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/bwa.yaml
+[bwa_mem]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/bwa.yaml
+[bwa_mem2_index]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/bwamem2.yaml
+[bwa_mem2]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/bwamem2.yaml
+[hisat2_splice_aware_index]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/hisat2.yaml
+[hisat2_index]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/hisat2.yaml
+[hisat2_align]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/hisat2.yaml
+[minimap2_index]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/minimap2.yaml
+[minimap2_align]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/minimap2.yaml
+[star_index]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/star.yaml
+[star_align]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/star.yaml
+[samtools_presort]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/samtools.yaml
+[get_transcripts]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/salmon.yaml
+[partial_decoy_transcripts]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/decoy.yaml
+[salmon_index]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/salmon.yaml
+[salmon_quant]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/salmon.yaml
+[fastq_pair]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/fastq-pair.yaml
+[kallistobus_ref]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/kallistobus.yaml
+[kallistobus_ref_kite]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/kallistobus.yaml
+[kallistobus_count]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/kallistobus.yaml
+[citeseqcount]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/cite-seq-count.yaml
+[htseq_count]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/gene_counts.yaml
+[featurecounts]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/gene_counts.yaml
+[prepare_DEXseq_annotation]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/dexseq.yaml
+[dexseq_count]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/dexseq.yaml
+[complement_blacklist]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/bedtools.yaml

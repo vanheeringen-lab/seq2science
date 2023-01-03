@@ -28,9 +28,11 @@ The most straightforward way to install seq2science is by using [conda](https://
 (base) user@comp:~$ conda create -n seq2science seq2science
 ```
 
+This should install the *newest* official release of seq2science.
+
 ### Install from source (not recommended)
 
-To install the latest (potentially unreleased) version of seq2science you can install from source:
+To install the latest (potentially unreleased) version of seq2science you can install from source. We generally don't recommend you doing this.
 
 ```console
 (base) user@comp:~$ git clone https://github.com/vanheeringen-lab/seq2science
@@ -60,13 +62,13 @@ Where you initialize the workflow with a configuration file and samples file, an
 (seq2science) user@comp:~/my_project$ seq2science init {workflow}
 ```
 
-And finally run the workflow. Note that the first time you run a workflow it will take longer as it will create the snakemake environments for all analysis steps.
+And finally run the workflow. Note that the first time you run a workflow it will take a while before the real run starts, as seq2science will first install all the necessary software for the analysis steps.
 
 ```console
 (seq2science) user@comp:~.my_project$ seq2science run {workflow} --cores 24
 ```
 
-## Getting an explanation of what seq2science did
+## Getting an explanation of what seq2science did (or will do)
 
 Seq2science has a function to write an explanation of what has/will be done with the configuration file for a workflow: 
 
@@ -74,7 +76,7 @@ Seq2science has a function to write an explanation of what has/will be done with
 (seq2science) user@comp:~.my_project$ seq2science explain {workflow}
 ```
 
-This will print an extensive (quite technical) explanation that can also serve as a starting point for a material and methods section. This is not a replacement for the documentation, which we definitely recommend you to always read!  
+This will print an extensive (quite technical) explanation that can also serve as a starting point for a material and methods section. This is not a replacement for the documentation, which we definitely recommend you to always read! This explanation is also automatically added to the final QC report.
 
 ## Where does seq2science store results and looks for 'starting points'?
 

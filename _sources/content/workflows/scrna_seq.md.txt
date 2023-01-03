@@ -1,20 +1,25 @@
 ## scRNA-seq
-Running a scRNA-seq pipeline has never been easier!
+
+Preprocessing of scRNA-seq has never been easier!
 
 ### Workflow overview (simplified)
+
 <p align="center">
   <img src="../../_static/scrna_seq.png" style="width:auto;height:300px;">
 </p>
 
 #### Downloading of sample(s)
+
 Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples.
 You control which samples are used in the [samples.tsv](#filling-out-the-samples-tsv).
 Background on public data can be found [here](./download_fastq.html#download-sra-file).
 
 #### Downloading and indexing of assembly(s)
+
 Depending on whether the assembly and its index you align your samples against already exist seq2science will start with downloading of the assembly through [genomepy](https://github.com/vanheeringen-lab/genomepy).
 
 #### Read trimming
+
 The pipeline starts by trimming the reads with fastp.
 Fastp automatically detects sequencing adapters, removes short reads and performs quality filtering.
 The parameters of fastp for the pipeline can be set in the configuration by the variable fastp.
@@ -25,11 +30,13 @@ After trimming, the fastq containing the reads, usually R2, may contains less re
 Therefore, we perform an intermediate step by running `fastq-pair` to remove singleton reads before proceeding any further.
 
 #### Quantification
+
 Quantification is performed by running either the kb-python wrapper for Kallisto bustools or CITE-seq-Count for ADT tags.
 Kallisto bustools relies on pseudo-alignment of scRNA reads against a reference transcriptome index.
 The resulting count matrices can be further processed with scRNA toolkits, such as Seurat or Scanpy.
 
 ### Filling out the samples.tsv
+
 Before running a workflow you will have to specify which samples you want to run the workflow on.
 Each workflow starts with a `samples.tsv` as an example, and you should adapt it to your specific needs.
 As an example, the `samples.tsv` could look something like this:
@@ -39,6 +46,7 @@ pbmc    GRCh38.p13      pbmc
 ```
 
 #### Sample column
+
 If you use the pipeline on **public data** this should be the name of the accession (e.g. GSM2837484).
 Accepted formats start with "GSM", "SRR", "SRX", "DRR", "DRX", "ERR" or "ERX".
 
@@ -57,23 +65,28 @@ In the example above, the `fastq_dir` should be set to `/home/user/myfastqs`.
 These setting can be changed in the `config.yaml`.
 
 #### Assembly column
+
 Here you simply add the name of the assembly you want your samples aligned against and the workflow will download it for you. In case your intend to run kb-python's kite workflow, the assembly name becomes the basename of the tab delimited feature barcode file. 
 
 #### Descriptive_name column
+
 The descriptive_name column is used for the multiqc report.
 In the multiqc report there will be a button to rename your samples after this column.
 
 ### Filling out the config.yaml
+
 Every workflow has many configurable options, and can be set in the config.yaml file.
 In each config.yaml we highlighted a couple options that we think are relevant for that specific workflow, and set (we think) reasonable default values.
 
 #### Custom assembly extensions
+
 The genome and/or gene annotation can be extended with custom files, such as ERCC spike-ins for scRNA-seq.
 To do so, add `custom_genome_extension: path/to/spike_in.fa` and `custom_annotation_extension: path/to/spike_in.gtf` to the config.
 Seq2science will place the customized assembly in a separate folder in the `genome_dir`.
 You can control the name of the customized assembly by setting `custom_assembly_suffix` in the config.
 
 #### Quantification with kallistobus
+
 After initializing your working directory and editing the `samples.tsv` file, specify the desired arguments for kb-pyhon via the ref (kb ref) and count (kb count) properties except for the barcode whilteist (`-w`). The path to the barcode whiltelist can be supplied via the `barcodefile` property. This step is optional since kb python python provides several pre-installed whitelists for the following technologies.
 
 - 10XV1
@@ -84,6 +97,7 @@ After initializing your working directory and editing the `samples.tsv` file, sp
 The white-list will be installed automatically if the appropiate technology argument is provided via the `-x` parameter in short-hand syntax.
 
 ###### BUS (Barcode/UMI/Set) format
+
 The `-x` argument indicates the read and file positions of the UMI and barcode. Kallisto bustools should auto-detect the correct settings barcode/umi layout for the following technologies if the name is supplied:
 
 ```
@@ -106,6 +120,7 @@ SMARTSEQ                                                      0,None,None 1,None
 Alternatively, the layout can be specified as a `bc:umi:set` triplet. The first position indicates the read, the second position the start of the feature and the third position the end of the feature. For more information and examples on the BUS format, consider the **Bus** section in the [Kallisto](https://pachterlab.github.io/kallisto/manual) manual.
 
 ###### Input preparations for KITE workflow
+
 The steps to prepare a scRNA analysis for Feature Barcoding experiments deviates slighlty from the standard seq2science workflow. In essence, we quantify the abundance of sequence features, such as antibody barcodes, rather than a set of transcripts for a certain species. Therefore, our index does not rely on a particular assembly but is build from these sequence features. Please consider the offical [kite](https://github.com/pachterlab/kite) documentation for more details.
 
 **1**. Prepare a two-column, tab-delimited file with your feature barcode in the first column and feature names in the second.
@@ -162,6 +177,7 @@ barcodefile: "1col_barcode_384.tab"
 ```
 
 ##### Quantification with CITE-seq-Count
+
 [CITE-seq-Count](https://hoohm.github.io/CITE-seq-Count/) count can be used as an alternative quantifier to pre-process ADT/Cell-hashing experiments and generate read/umi count matrices. This option cannot be used in conjunction with kallistobus.
 
 To enable quantification with CITE-Seq-count, add the following section to your config file
@@ -176,6 +192,7 @@ barcodefile: "barcodes.tab"
 ```
 
 #### scRNA-seq pre-processing and quality control
+
 The seq2science scRNA workflow provides the option to perform automated pre-processing of raw scRNA-seq UMI count matrices. This is achieved by incorporating several quality control steps from the [singleCellTK](https://camplab.net/sctk/v2.4.1/index.html) Bioconductor package, such as cell-calling, doublet detection and assessment of cell-wise mitochondrial RNA content. 
 
 The QC results are reported in comprehensive R Markdown reports and processed UMI count matrices are stored as [SingleCellExperiment](https://bioconductor.org/packages/release/bioc/html/SingleCellExperiment.html) S4 objects. Any sample level metadata that has been added to the `samples.tsv` file will be transferred to the `colData` slot of the corresponding object and assigned to each cell identifier. 
@@ -229,6 +246,7 @@ List of QC algorithms for [runCellQC's](https://rdrr.io/github/compbiomed/single
 The assay to use for exporting and QC when kb is run in velocity mode with `--workflow lamanno` parameter. Valid options are either `spliced` or `unspliced`.
 
 #### Alternative experiments
+
 Information about alternative sequencing features, such as ERCC spike-ins, can be provided as an alternative experiment. An alternative experiment will be stored within the same SingleCellExperiment object as the main experiment but processed separately. To process alternative experiments, set the following options:
 
 * `use_alt_expr` (*default*: `False`)<br/> 
@@ -241,6 +259,7 @@ Regular expression to filter alternative features from main experiment (.i.e,; `
 A previous addition of alternative features to the genome assembly (see section on custom assembly extensions) is a prerequisite. 
 
 #### Output files
+
 After running the scRNA QC workflow, the output can be found in the following locations:<br/>
 
 `path/to/results/scrna-preprocess/{quantifier}/export`:<br/>
@@ -258,8 +277,3 @@ Droplet-level QC report generate by [singleCellTK's](https://camplab.net/sctk/v2
 Barcode rank plot generated by [runBarcodeRankDrops](https://rdrr.io/github/compbiomed/singleCellTK/man/plotBarcodeRankScatter.html).
 - `SCTK_altexps.pdf `(optional)<br/>
 Scatter plot displaying the percentage of alternative features vs. detected features.
-
-
-
-
-

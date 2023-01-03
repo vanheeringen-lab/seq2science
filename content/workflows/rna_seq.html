@@ -1,36 +1,73 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" />
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
   <title>RNA-seq &mdash; seq2science  documentation</title>
-      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
         <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/jquery.js"></script>
-        <script src="../../_static/underscore.js"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../_static/doctools.js"></script>
         <script src="../../_static/sphinx_highlight.js"></script>
-    <script src="../../_static/js/theme.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="scATAC-seq" href="scatac_seq.html" />
     <link rel="prev" title="ChIP-seq" href="chip_seq.html" /> 
 </head>
 
-<body class="wy-body-for-nav"> 
+<body class="wy-body-for-nav">
+
+   
   <div class="wy-grid-for-nav">
+    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
+          
+
+          
             <a href="../../index.html" class="icon icon-home"> seq2science
+          
+
+          
           </a>
+
+          
+            
+            
+          
+
+          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -38,7 +75,18 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../gettingstarted.html">Getting started</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../workflows.html">Workflows</a><ul class="current">
@@ -91,69 +139,126 @@
 <li class="toctree-l1"><a class="reference internal" href="../../CONTRIBUTING.html">Contributing to seq2science</a></li>
 </ul>
 
+            
+          
         </div>
+        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../../index.html">seq2science</a>
+        
       </nav>
 
+
       <div class="wy-nav-content">
+        
         <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-      <li><a href="../../index.html" class="icon icon-home"></a></li>
-          <li class="breadcrumb-item"><a href="../workflows.html">Workflows</a></li>
-      <li class="breadcrumb-item active">RNA-seq</li>
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../workflows.html">Workflows</a> &raquo;</li>
+        
+      <li>RNA-seq</li>
+    
+    
       <li class="wy-breadcrumbs-aside">
+        
+          
+            
               <a href="https://github.com/vanheeringen-lab/seq2science/blob/master/docs/content/workflows/rna_seq.md" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
       </li>
+    
   </ul>
+
+  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-             
+            
   <section id="rna-seq">
-<h1>RNA-seq<a class="headerlink" href="#rna-seq" title="Permalink to this heading"></a></h1>
-<p>Running an RNA-seq analysis has never been easier!</p>
+<h1>RNA-seq<a class="headerlink" href="#rna-seq" title="Permalink to this heading">¶</a></h1>
+<p>Preprocessing of RNA-seq has never been easier!</p>
 <section id="workflow-overview-simplified">
-<h2>Workflow overview (simplified)<a class="headerlink" href="#workflow-overview-simplified" title="Permalink to this heading"></a></h2>
+<h2>Workflow overview (simplified)<a class="headerlink" href="#workflow-overview-simplified" title="Permalink to this heading">¶</a></h2>
 <p align="center">
   <img src="../../_static/rna_seq.png" style="width:auto;height:500px;">
 </p><section id="downloading-of-sample-s">
-<h3>Downloading of sample(s)<a class="headerlink" href="#downloading-of-sample-s" title="Permalink to this heading"></a></h3>
+<h3>Downloading of sample(s)<a class="headerlink" href="#downloading-of-sample-s" title="Permalink to this heading">¶</a></h3>
 <p>Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples.
+The downloading of samples is integrated into each workflow, so you don’t have to start a download workflow first.
 You control which samples are used in the <a class="reference external" href="#filling-out-the-samples-tsv">samples.tsv</a>.
 Background on public data can be found <a class="reference external" href="./download_fastq.html#download-sra-file">here</a>.</p>
 </section>
 <section id="downloading-and-indexing-of-assembly-s">
-<h3>Downloading and indexing of assembly(s)<a class="headerlink" href="#downloading-and-indexing-of-assembly-s" title="Permalink to this heading"></a></h3>
+<h3>Downloading and indexing of assembly(s)<a class="headerlink" href="#downloading-and-indexing-of-assembly-s" title="Permalink to this heading">¶</a></h3>
 <p>Depending on whether the assembly and its index you align your samples against already exist seq2science will start with downloading of the assembly through <a class="reference external" href="https://github.com/vanheeringen-lab/genomepy">genomepy</a>.</p>
 </section>
 <section id="read-trimming">
-<h3>Read trimming<a class="headerlink" href="#read-trimming" title="Permalink to this heading"></a></h3>
+<h3>Read trimming<a class="headerlink" href="#read-trimming" title="Permalink to this heading">¶</a></h3>
 <p>The pipeline starts by trimming the reads with Trim Galore! or Fastp (the default).
 The trimmer will automatically trim the low quality 3’ ends of reads, and removes short reads.
-During the quality trimming it automatically detects which adapter was used, and trims this as well.
-Trimming parameters for the pipeline can be set in the configuration.</p>
+During quality trimming it automatically detects which sequencing adapter was used (if it wasn’t trimmed off yet), and then trims this as well.
+Trimming parameters for the pipeline can be set in the configuration, for example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">trimmer</span><span class="p">:</span>
+  <span class="n">fastp</span><span class="p">:</span>
+    <span class="n">trimoptions</span><span class="p">:</span> <span class="o">--</span><span class="n">trim_front1</span> <span class="mi">3</span> <span class="o">--</span><span class="n">trim_front2</span> <span class="mi">14</span> <span class="o">--</span><span class="n">trim_poly_x</span>
+</pre></div>
+</div>
 </section>
 <section id="alignment">
-<h3>Alignment<a class="headerlink" href="#alignment" title="Permalink to this heading"></a></h3>
+<h3>Alignment<a class="headerlink" href="#alignment" title="Permalink to this heading">¶</a></h3>
 <p>Reads are aligned using <code class="docutils literal notranslate"><span class="pre">HISAT2</span></code> or <code class="docutils literal notranslate"><span class="pre">STAR</span></code> (the default).
 Sensible defaults have been set, but can be overwritten for either (or both) the indexing and alignment by specifying them in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>.</p>
+<p>After trimming the reads are aligned against an assembly. Currently we support <em>bowtie2</em>, <em>bwa</em>, <em>bwa-mem2</em>, <em>hisat2</em>, <em>minimap2</em> and <em>STAR</em> as aligners. Choosing which aligner is as easy as setting the <em>aligner</em> variable in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>, for example: <code class="docutils literal notranslate"><span class="pre">aligner:</span> <span class="pre">bwa</span></code>. Sensible defaults have been set for every aligner, but can be overwritten for either (or both) the indexing and alignment by specifying them in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">aligner</span><span class="p">:</span>
+  <span class="n">bwa</span><span class="o">-</span><span class="n">mem</span><span class="p">:</span>
+    <span class="n">index</span><span class="p">:</span> <span class="s1">&#39;-a bwtsw&#39;</span>
+    <span class="n">align</span><span class="p">:</span> <span class="s1">&#39;-M&#39;</span>
+</pre></div>
+</div>
 <p>The pipeline will check if the assembly you specified is present in the <em>genome_dir</em>, and otherwise will download it for you through <a class="reference external" href="https://github.com/vanheeringen-lab/genomepy">genomepy</a>.
 All these aligners require an index to be formed first for each assembly, but don’t worry, the pipeline does this for you.</p>
 </section>
 <section id="bam-sieving">
-<h3>Bam sieving<a class="headerlink" href="#bam-sieving" title="Permalink to this heading"></a></h3>
+<h3>Bam sieving<a class="headerlink" href="#bam-sieving" title="Permalink to this heading">¶</a></h3>
 <p>After aligning the bam you can choose to remove unmapped reads, low quality mappings, duplicates, and multimappers.
 Again, sensible defaults have been set, but can be overwritten.</p>
 </section>
 <section id="strandedness">
-<h3>Strandedness<a class="headerlink" href="#strandedness" title="Permalink to this heading"></a></h3>
+<h3>Strandedness<a class="headerlink" href="#strandedness" title="Permalink to this heading">¶</a></h3>
 <p>Most sequencing protocols at present are strand-specific.
 This specificity can be used to help identify pseudogenes originating from antisense DNA, or genes with overlapping regions on opposite strands without ambiguity.
 Strandedness is inferred automatically for all RNA-seq samples.
@@ -164,17 +269,17 @@ If strandedness is unknown (for some samples), fields may be left blank or fille
 Setting <code class="docutils literal notranslate"><span class="pre">ignore_strandedness</span></code> in the config.yaml will resulting in gene counting to assume all reads are unstranded.</p>
 </section>
 <section id="gene-quantification-methods">
-<h3>Gene quantification methods<a class="headerlink" href="#gene-quantification-methods" title="Permalink to this heading"></a></h3>
+<h3>Gene quantification methods<a class="headerlink" href="#gene-quantification-methods" title="Permalink to this heading">¶</a></h3>
 <p>RNA-seq can be performed using gene counting or abundance estimation methods.
 Gene counting methods require BAM files, which are generated and processed in the Alignment, Bam sieving and Strandedness steps.
 Gene abundances require trimmed fastqs, and are therefore not influenced by the aforementioned steps.</p>
 <section id="gene-counts-with-htseq-featurecounts">
-<h4>Gene counts  (with HTSeq/featureCounts)<a class="headerlink" href="#gene-counts-with-htseq-featurecounts" title="Permalink to this heading"></a></h4>
+<h4>Gene counts  (with HTSeq/featureCounts)<a class="headerlink" href="#gene-counts-with-htseq-featurecounts" title="Permalink to this heading">¶</a></h4>
 <p>Gene counts are obtained from the filtered BAM files using either <code class="docutils literal notranslate"><span class="pre">HTSeq</span></code> or <code class="docutils literal notranslate"><span class="pre">featureCounts</span></code> (default <code class="docutils literal notranslate"><span class="pre">HTSeq</span></code>).
 These counts are then combined into a count matrix per assembly for use in downstream analyses.</p>
 </section>
 <section id="gene-abundances-with-salmon">
-<h4>Gene abundances (with Salmon)<a class="headerlink" href="#gene-abundances-with-salmon" title="Permalink to this heading"></a></h4>
+<h4>Gene abundances (with Salmon)<a class="headerlink" href="#gene-abundances-with-salmon" title="Permalink to this heading">¶</a></h4>
 <p>Gene abundances can be estimated using <code class="docutils literal notranslate"><span class="pre">Salmon</span></code>.
 Reads are aligned against the transcriptome to obtain transcript abundances (sequence strandedness is inferred automatically by Salmon), then summarized to gene-level using tximeta.
 The Gene-level counts matrix are output similar to the gene counts method.
@@ -182,29 +287,29 @@ Additionally, <code class="docutils literal notranslate"><span class="pre">Salmo
 </section>
 </section>
 <section id="differential-gene-expression-analysis">
-<h3>Differential gene expression analysis<a class="headerlink" href="#differential-gene-expression-analysis" title="Permalink to this heading"></a></h3>
+<h3>Differential gene expression analysis<a class="headerlink" href="#differential-gene-expression-analysis" title="Permalink to this heading">¶</a></h3>
 <p>Seq2science outputs gene counts matrices for each assembly.
 Additionally, it can perform differential expression analysis automatically.
 See the <a class="reference external" href="../DESeq2.html">Differential gene/peak analysis page</a> for more information!</p>
 </section>
 <section id="differential-transcript-usage">
-<h3>Differential transcript usage<a class="headerlink" href="#differential-transcript-usage" title="Permalink to this heading"></a></h3>
+<h3>Differential transcript usage<a class="headerlink" href="#differential-transcript-usage" title="Permalink to this heading">¶</a></h3>
 <p>Quantifying with <code class="docutils literal notranslate"><span class="pre">Salmon</span></code>, the transcript-level summaries in the SingleCellExperiment object <em>should</em> be usable for differential transcript analysis with <code class="docutils literal notranslate"><span class="pre">DEXseq</span></code>, as described <a class="reference external" href="http://www.bioconductor.org/packages/devel/workflows/vignettes/rnaseqDTU/inst/doc/rnaseqDTU.html#dexseq">in this vignette</a>.</p>
 </section>
 <section id="differential-exon-usage">
-<h3>Differential exon usage<a class="headerlink" href="#differential-exon-usage" title="Permalink to this heading"></a></h3>
+<h3>Differential exon usage<a class="headerlink" href="#differential-exon-usage" title="Permalink to this heading">¶</a></h3>
 <p>Differential exon analysis by <a class="reference external" href="https://bioconductor.org/packages/release/bioc/html/DEXSeq.html">DEXseq</a> can be automatically prepared by setting <code class="docutils literal notranslate"><span class="pre">dexseq:</span> <span class="pre">True</span></code> in the config.yaml.
 This will let seq2science to output an exon counts matrix per assembly, which can be loaded directly into <code class="docutils literal notranslate"><span class="pre">DEXSeqDataSet()</span></code>.</p>
 <p>Note: this utilizes scripts implemented by DEXseq, which are <a class="reference external" href="https://bioconductor.org/packages/devel/bioc/vignettes/DEXSeq/inst/doc/DEXSeq.html#24_Preparing_the_annotation">built for Ensembl genomes</a>.</p>
 </section>
 <section id="trackhub">
-<h3>Trackhub<a class="headerlink" href="#trackhub" title="Permalink to this heading"></a></h3>
+<h3>Trackhub<a class="headerlink" href="#trackhub" title="Permalink to this heading">¶</a></h3>
 <p>A UCSC compatible trackhub can be generated for this workflow.
 See the <a class="reference external" href="../results.html#trackhub">trackhub page</a><span class="raw-html-m2r"><!-- @IGNORE PREVIOUS: link --></span> for more information!</p>
 </section>
 </section>
 <section id="filling-out-the-samples-tsv">
-<h2>Filling out the samples.tsv<a class="headerlink" href="#filling-out-the-samples-tsv" title="Permalink to this heading"></a></h2>
+<h2>Filling out the samples.tsv<a class="headerlink" href="#filling-out-the-samples-tsv" title="Permalink to this heading">¶</a></h2>
 <p>Before running a workflow you will have to specify which samples you want to run the workflow on.
 Each workflow starts with a <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> as an example, and you should adapt it to your specific needs.
 As an example, the <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> could look something like this:</p>
@@ -217,7 +322,7 @@ As an example, the <code class="docutils literal notranslate"><span class="pre">
 </pre></div>
 </div>
 <section id="sample-column">
-<h3>Sample column<a class="headerlink" href="#sample-column" title="Permalink to this heading"></a></h3>
+<h3>Sample column<a class="headerlink" href="#sample-column" title="Permalink to this heading">¶</a></h3>
 <p>If you use the pipeline on <strong>public data</strong> this should be the name of the accession (e.g. GSM2837484).
 Accepted formats start with “GSM”, “SRR”, “SRX”, “DRR”, “DRX”, “ERR” or “ERX”.</p>
 <p>If you use the pipeline on <strong>local data</strong> this should be the <em>basename</em> of the file without the <em>extension(s)</em>.
@@ -235,18 +340,18 @@ In the example above, the <code class="docutils literal notranslate"><span class
 These setting can be changed in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>.</p>
 </section>
 <section id="assembly-column">
-<h3>Assembly column<a class="headerlink" href="#assembly-column" title="Permalink to this heading"></a></h3>
+<h3>Assembly column<a class="headerlink" href="#assembly-column" title="Permalink to this heading">¶</a></h3>
 <p>Here you simply add the name of the assembly you want your samples aligned against and the workflow will download it for you.</p>
 </section>
 <section id="descriptive-name-column">
-<h3>Descriptive_name column<a class="headerlink" href="#descriptive-name-column" title="Permalink to this heading"></a></h3>
+<h3>Descriptive_name column<a class="headerlink" href="#descriptive-name-column" title="Permalink to this heading">¶</a></h3>
 <p>The descriptive_name column is used for the trackhub and multiqc report.
 In the trackhub your tracks will be called after the descriptive name, and in the multiqc report there will be a button to rename your samples after this column.
 The descriptive name can not contain ‘-’ characters, but underscores ‘_’ are allowed.</p>
 </section>
 <section id="technical-replicates-column">
-<h3>technical_replicates column<a class="headerlink" href="#technical-replicates-column" title="Permalink to this heading"></a></h3>
-<p>Technical replicates, or any fastq file you may wish to merge, are set using the <code class="docutils literal notranslate"><span class="pre">technical_replicates</span></code> column in the samples.tsv file.
+<h3>technical_replicates column<a class="headerlink" href="#technical-replicates-column" title="Permalink to this heading">¶</a></h3>
+<p>Technical replicates, or any fastq file you may wish to merge on the fastq level, are set using the <code class="docutils literal notranslate"><span class="pre">technical_replicates</span></code> column in the samples.tsv file.
 All samples with the same name in the <code class="docutils literal notranslate"><span class="pre">technical_replicates</span></code> column will be concatenated into one file with the replicate name.</p>
 <p>Example <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> utilizing replicate merging:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sample</span>    <span class="n">assembly</span>    <span class="n">technical_replicates</span>
@@ -260,13 +365,13 @@ All samples with the same name in the <code class="docutils literal notranslate"
 The MultiQC will inform you of the trimming steps performed on all samples, and subsequent information of the ‘replicate’ files (of which only <em>heart</em> is merged).</p>
 <p>Note: If you are working with multiple assemblies in one workflow, replicate names have to be unique between assemblies (you will receive a warning if names overlap).</p>
 <section id="keep">
-<h4>keep<a class="headerlink" href="#keep" title="Permalink to this heading"></a></h4>
+<h4>keep<a class="headerlink" href="#keep" title="Permalink to this heading">¶</a></h4>
 <p>Replicate merging is turned on by default.
 It can be turned off by setting <code class="docutils literal notranslate"><span class="pre">technical_replicates</span></code> in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> to <code class="docutils literal notranslate"><span class="pre">keep</span></code>.</p>
 </section>
 </section>
 <section id="colors-column">
-<h3>Colors column<a class="headerlink" href="#colors-column" title="Permalink to this heading"></a></h3>
+<h3>Colors column<a class="headerlink" href="#colors-column" title="Permalink to this heading">¶</a></h3>
 <p>If you are producing a UCSC trackhub, seq2science will assign an alternating color gradient to your samples to distinguish them.
 You can optionally specify the colors of each track by adding this column.
 Colors can be added by name (google “matplotlib colors” for the options), or RGB values.
@@ -274,37 +379,37 @@ Empty fields are considered black.</p>
 </section>
 </section>
 <section id="filling-out-the-config-yaml">
-<h2>Filling out the config.yaml<a class="headerlink" href="#filling-out-the-config-yaml" title="Permalink to this heading"></a></h2>
+<h2>Filling out the config.yaml<a class="headerlink" href="#filling-out-the-config-yaml" title="Permalink to this heading">¶</a></h2>
 <p>Every workflow has many configurable options, and can be set in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file.
 In each <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> we highlighted a couple options that we think are relevant for that specific workflow, and set (we think) <strong>reasonable default</strong> values.</p>
 <p>When a workflow starts it prints the configuration variables influencing the workflow, and (almost) all these values can be added in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> and changed to your liking.
 You can see the complete set of configurable options in the <a class="reference external" href="../schemas.html">extensive docs</a>.</p>
 </section>
 <section id="best-practices">
-<h2>Best practices<a class="headerlink" href="#best-practices" title="Permalink to this heading"></a></h2>
+<h2>Best practices<a class="headerlink" href="#best-practices" title="Permalink to this heading">¶</a></h2>
 <section id="genome-assembly-and-gene-annotation">
-<h3>Genome assembly and gene annotation<a class="headerlink" href="#genome-assembly-and-gene-annotation" title="Permalink to this heading"></a></h3>
+<h3>Genome assembly and gene annotation<a class="headerlink" href="#genome-assembly-and-gene-annotation" title="Permalink to this heading">¶</a></h3>
 <p>The choice of genome assembly and gene annotation is of significant influence to the downstream analysis.
 To explore available options, you could use <a class="reference external" href="https://github.com/vanheeringen-lab/genomepy">genomepy</a>, which comes installed in the seq2science conda environment.
 Installing the desired genome and gene annotation in the {genomes_dir} will cause seq2science to use these files.</p>
 <p>If the genome/annotation is missing from the {genomes_dir}, seq2science will attempt to download the named assembly from Ensembl, UCSC and the NCBI (in that order).</p>
 </section>
 <section id="aligners-star-vs-hisat2">
-<h3>Aligners: STAR vs HISAT2<a class="headerlink" href="#aligners-star-vs-hisat2" title="Permalink to this heading"></a></h3>
+<h3>Aligners: STAR vs HISAT2<a class="headerlink" href="#aligners-star-vs-hisat2" title="Permalink to this heading">¶</a></h3>
 <p>Both aligners have been found to perform well.
 Selection should be dependent on familiarity and configuration options.</p>
 </section>
 <section id="quantifier-counts-vs-quantification">
-<h3>Quantifier: counts vs quantification<a class="headerlink" href="#quantifier-counts-vs-quantification" title="Permalink to this heading"></a></h3>
+<h3>Quantifier: counts vs quantification<a class="headerlink" href="#quantifier-counts-vs-quantification" title="Permalink to this heading">¶</a></h3>
 <p>Both methods have been found valid for differential gene expression analysis, although results vary somewhat.
 Caution is advised for the genes found by only one of the two methods.</p>
 </section>
 <section id="genome-aligner-quantifier">
-<h3>Genome/Aligner/Quantifier<a class="headerlink" href="#genome-aligner-quantifier" title="Permalink to this heading"></a></h3>
+<h3>Genome/Aligner/Quantifier<a class="headerlink" href="#genome-aligner-quantifier" title="Permalink to this heading">¶</a></h3>
 <p>The most significant choice to be made is the genome assembly and gene annotation.</p>
 </section>
 <section id="reviewing-the-results">
-<h3>Reviewing the results<a class="headerlink" href="#reviewing-the-results" title="Permalink to this heading"></a></h3>
+<h3>Reviewing the results<a class="headerlink" href="#reviewing-the-results" title="Permalink to this heading">¶</a></h3>
 <p>Unless configured not to, Seq2science makes several assumptions on your data which may be incorrect:</p>
 <ul class="simple">
 <li><p>that strandedness of each sample can be determined automatically.</p></li>
@@ -318,33 +423,50 @@ Should the results be disappointing, they can be overwritten using the <code cla
 
 
            </div>
+           
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="chip_seq.html" class="btn btn-neutral float-left" title="ChIP-seq" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
         <a href="scatac_seq.html" class="btn btn-neutral float-right" title="scATAC-seq" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="chip_seq.html" class="btn btn-neutral float-left" title="ChIP-seq" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright Maarten van der Sande, Siebren Frölich, Jos Smits, Rebecca Snabel, Tilman Schäfers, &amp; Simon van Heeringen..</p>
-  </div>
+    <p>
+        &#169; Copyright Maarten van der Sande, Siebren Frölich, Jos Smits, Rebecca Snabel, Tilman Schäfers, &amp; Simon van Heeringen..
 
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
         </div>
       </div>
+
     </section>
+
   </div>
-  <script>
+  
+
+  <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>
