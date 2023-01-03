@@ -603,7 +603,7 @@ if config.get("create_trackhub"):
                             logger.error("Make sure you are connected to the internet")
                             os._exit(1)  # noqa
 
-                        with urllib.request.urlopen("https://api.genome.ucsc.edu/list/ucscGenomes") as url:
+                        with urllib.request.urlopen("https://api.genome.ucsc.edu/list/ucscGenomes", timeout=15) as url:
                             data = json.loads(url.read().decode())["ucscGenomes"]
 
                         # generate a dict ucsc assemblies
