@@ -21,6 +21,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - Workflow DAGs in the documentation are now simplified
 - MultiQC version updated
 - Fastqs downloaded by seq2science are now removed when not used anymore, can be turned on/off with `keep_downloaded_fastq`
+- updated gimmemotifs
 
 ### Fixed
 
