@@ -1,5 +1,9 @@
-# for help with filling out the samples.tsv:
+# Example samples file for paper "Genome-wide identification of Drosophila dorso-ventral enhancers
+# by differential histone acetylation analysis". For help with filling out this file:
 # https://vanheeringen-lab.github.io/seq2science/content/workflows/chip_seq.html#filling-out-the-samples-tsv
-# also make sure that you use tab as a delimiter
-sample	assembly	descriptive_name
-GSM4404624	GRCh38.p13	HEL
+# Make sure that you use tab as a delimiter
+sample	assembly	biological_replicates	descriptive_name	control
+GSM1689671	BDGP6.32	gd7_ectoderm	gd7_ectodermal_rep1	GSM1689679
+GSM1689672	BDGP6.32	gd7_ectoderm	gd7_ectodermal_rep2	GSM1689680
+GSM1689692	BDGP6.32	tl10b_mesoderm	tl10b_mesodermal_rep1	GSM1689700
+GSM1689693	BDGP6.32	tl10b_mesoderm	tl10b_mesodermal_rep2	GSM1689701

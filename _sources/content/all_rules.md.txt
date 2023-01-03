@@ -195,8 +195,8 @@ Uses gimmemotifs' combine_peaks to "combine" peaks. This finds all peaks close
 together and takes the most significant one as the true peak.
 
 ```
-combine_peaks -i {input.summitfiles} -g {input.sizes} \
---window {params.windowsize} > {output} 2> {log}
+combine_peaks --genome {input.genome} --window {params.windowsize} \
+{input.summitfiles} > {output} 2> {log}
 ```
 
 [combine_peaks environment][combine_peaks].
@@ -246,7 +246,7 @@ under each peak per sample.
 
 ```
 echo "# The number of reads under each peak" > {output} 
-coverage_table -p {input.peaks} -d {input.replicates} -w {params.peak_width} --nthreads {threads} \
+coverage_table {input.peaks} {input.replicates} --window {params.peak_width} --nthreads {threads} \
 2> {log} | grep -vE "^#" 2>> {log} |  
 awk 'BEGIN {{ FS = "@" }} NR==1{{gsub("{wildcards.assembly}-|.samtools-coordinate","",$0)}}; \
 {{print $0}}' >> {output}

@@ -381,6 +381,7 @@ and this project adheres to <a class="reference external" href="https://semver.o
 <section id="added">
 <h3>Added<a class="headerlink" href="#added" title="Permalink to this heading">¶</a></h3>
 <ul class="simple">
+<li><p>a message at the end of a succesful seq2science run where to find the report and the trackhub</p></li>
 <li><p>nicer error when genomepy has trouble querying the providers</p></li>
 <li><p>flag <code class="docutils literal notranslate"><span class="pre">infer_motif2factors</span></code> for whether or not motif2factors should be run</p></li>
 </ul>
@@ -393,12 +394,15 @@ and this project adheres to <a class="reference external" href="https://semver.o
 <li><p>Workflow DAGs in the documentation are now simplified</p></li>
 <li><p>MultiQC version updated</p></li>
 <li><p>Fastqs downloaded by seq2science are now removed when not used anymore, can be turned on/off with <code class="docutils literal notranslate"><span class="pre">keep_downloaded_fastq</span></code></p></li>
+<li><p>updated gimmemotifs</p></li>
 </ul>
 </section>
 <section id="fixed">
 <h3>Fixed<a class="headerlink" href="#fixed" title="Permalink to this heading">¶</a></h3>
 <ul class="simple">
+<li><p>fixed macos errors thanks to reporting of &#64;Jerolen and &#64;WouterVGKULEUVEN</p></li>
 <li><p>clear error when specifying unavailable trimmer (#888)</p></li>
+<li><p>fixed bug with rule combine_biological_reps when no biological reps/descriptive names are present</p></li>
 <li><p>issue computeMatrix_gene without configurable distances, visualized in multiQC plotProfile (#905; default now 3000 bp up&amp;down stream of gene)</p></li>
 </ul>
 </section>
