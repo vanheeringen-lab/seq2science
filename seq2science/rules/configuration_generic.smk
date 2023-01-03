@@ -281,20 +281,17 @@ if "assembly" in samples:
 
         # make a dict that returns the treps that belong to a brep
         treps_from_brep = dict()
-        if "biological_replicates" in treps:
-            for brep, row in breps.iterrows():
-                assembly = row["assembly"]
-                treps_from_brep[(brep, assembly)] = list(
-                    treps[(treps["assembly"] == assembly) & (treps["biological_replicates"] == brep)].index
-                )
-                treps_from_brep[(brep, assembly + config.get("custom_assembly_suffix",""))] = list(
-                    treps[(treps["assembly"] == assembly) & (treps["biological_replicates"] == brep)].index
-                )
-        else:
-            for brep, row in breps.iterrows():
-                assembly = row["assembly"]
-                treps_from_brep[(brep, assembly)] = [brep]
-                treps_from_brep[(brep, assembly + config.get("custom_assembly_suffix",""))] = [brep]
+        for brep in breps.index.to_list():
+            assembly = breps.at[brep, "assembly"]
+            if "biological_replicates" in treps:
+                tr = treps[(treps["assembly"] == assembly) & (treps["biological_replicates"] == brep)].index.to_list()
+            else:
+                tr = [brep]
+            treps_from_brep[(brep, assembly)] = tr
+
+            # in case we use a custom assembly
+            custom_assembly = assembly + config.get("custom_assembly_suffix","")
+            treps_from_brep[(brep, custom_assembly)] = tr
 
         # and vice versa
         brep_from_treps = dict()
@@ -601,12 +598,12 @@ if config.get("create_trackhub"):
                             response = requests.get(f"https://genome.ucsc.edu/cgi-bin/hgGateway", allow_redirects=True)
                         except:
                             logger.error("There seems to be some problems with connecting to UCSC, try again in some time")
-                            assert False
+                            os._exit(1)  # noqa
                         if not response.ok:
                             logger.error("Make sure you are connected to the internet")
-                            assert False
+                            os._exit(1)  # noqa
 
-                        with urllib.request.urlopen("https://api.genome.ucsc.edu/list/ucscGenomes") as url:
+                        with urllib.request.urlopen("https://api.genome.ucsc.edu/list/ucscGenomes", timeout=15) as url:
                             data = json.loads(url.read().decode())["ucscGenomes"]
 
                         # generate a dict ucsc assemblies

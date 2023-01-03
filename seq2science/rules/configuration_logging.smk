@@ -22,11 +22,50 @@ onstart:
 
 
 onsuccess:
+    # email that seq2science finished
     if config.get("email") not in ["none@provided.com", "yourmail@here.com", None]:
         os.system(
             f"""echo "Succesful pipeline run! :)" | mail -s "The seq2science pipeline finished succesfully." {config["email"]} 2> /dev/null"""
         )
 
+    # be happy that it finished succesfully
+    # and indicate where important files are located
+    message = f"Nice, a succesful run! Check out the docs for help with the results: https://vanheeringen-lab.github.io/seq2science/content/workflows/{WORKFLOW}.html. "
+    if WORKFLOW != "download-fastq":
+        if config.get("create_qc_report"):
+            rand_assembly = list(ORI_ASSEMBLIES.keys())[0]
+            message += f"Make sure to check out the QC report, it can be found at {config['qc_dir']}/multiqc_{rand_assembly}.html. "
+        if WORKFLOW not in ("scatac-seq", "scrna-seq") and config.get("create_trackhub"):
+            message += f"And make sure to publicly host the trackhub for UCSC. The hub is located in {config['trackhub_dir']}/."
+
+    message = textwrap.wrap(message, 70, break_long_words=False, break_on_hyphens=False)
+    dancer = """
+      ⊂_ヽ
+      　 ＼＼
+      　　 ＼( ͡° ͜ʖ ͡°)  --  
+       　　　 >　⌒ヽ       
+       　　　/ 　 へ＼      
+       　　 /　　/　＼＼    
+       　　 ﾚ　ノ　　 ヽ_つ  
+       　　/　/            
+       　 /　/|            
+       　(　(ヽ            
+       　|　|、＼
+       　| 丿 ＼ ⌒)
+       　| |　　) /
+        ノ )　　Lﾉ
+       (_／
+    """
+
+    # wrap the dancer and the message
+    dance_message = ""
+    offset = 3
+    for i, msg in enumerate(dancer.split("\n")):
+        dance_message += msg
+        if i >= offset and (i - offset) < len(message):
+            dance_message += message[i - offset]
+        dance_message += "\n"
+    logger.info(dance_message)
 
 onerror:
     logger.info(
