@@ -25,6 +25,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Fixed
 
+- fixed macos errors thanks to reporting of @WouterVGKULEUVEN
 - clear error when specifying unavailable trimmer (#888)
 - fixed bug with rule combine_biological_reps when no biological reps/descriptive names are present
 - issue computeMatrix_gene without configurable distances, visualized in multiQC plotProfile (#905; default now 3000 bp up&down stream of gene)
