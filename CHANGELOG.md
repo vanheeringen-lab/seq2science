@@ -9,6 +9,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Changed
+
+- MultiQC version updated (1.14)
+
 ## [0.9.7] - 2023-01-03
 
 ### Added
