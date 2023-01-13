@@ -331,7 +331,7 @@ SEQUENCING_PROTOCOL = (
 )
 
 modified = False
-if WORKFLOW != "download_fastq" or "assembly" in samples:
+if WORKFLOW != "download_fastq":
     def parse_assemblies():
         # list assemblies that are used in this workflow
         used_assemblies = list(set(samples["assembly"]))
