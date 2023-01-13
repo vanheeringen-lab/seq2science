@@ -9,6 +9,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Fixed
+
+- edge case with the downloading-fastq workflow when samples file has an assembly column
+
 ## [0.9.7] - 2023-01-03
 
 ### Added
