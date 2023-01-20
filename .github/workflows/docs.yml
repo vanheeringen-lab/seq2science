@@ -17,8 +17,9 @@ jobs:
 
       - name: Install dependencies 🔨
         run: |
-          $CONDA/bin/conda config --add channels conda-forge
+          $CONDA/bin/conda config --add channels defaults
           $CONDA/bin/conda config --add channels bioconda
+          $CONDA/bin/conda config --add channels conda-forge
           rm /usr/share/miniconda/pkgs/cache/*.json  # see mamba/issues/488
           $CONDA/bin/conda env update --file requirements.yaml --name base
           $CONDA/bin/conda install m2r2 sphinx sphinx_rtd_theme sphinx-argparse graphviz networkx importlib_metadata=4.11.4 mamba=$VERSION
