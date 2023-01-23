@@ -9,6 +9,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- a `force_assembly_hub` flag to make an ucsc assembly hub even though a trackhub already exists
+
 ## [0.9.7] - 2023-01-03
 
 ### Added
