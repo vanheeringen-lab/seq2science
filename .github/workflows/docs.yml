@@ -15,7 +15,7 @@ jobs:
         with:
           python-version: 3.8
 
-      - name: Install dependencies 🔨
+      - name: Install dependencies 🔨 & Build 🔧
         run: |
           # setup mambaforge
           wget -q -O Mambaforge.sh  "https://github.com/conda-forge/miniforge/releases/download/4.11.0-1/Mambaforge-$(uname)-$(uname -m).sh"
@@ -46,7 +46,7 @@ jobs:
           touch build/.nojekyll
 
       # only deploy
-      - name: Deploy
+      - name: Deploy :mailbox:
         uses: JamesIves/github-pages-deploy-action@releases/v3
         if: github.ref == 'refs/heads/master'
         with:
