@@ -17,12 +17,20 @@ jobs:
 
       - name: Install dependencies 🔨
         run: |
+          # setup mambaforge
+          wget -q -O Mambaforge.sh  "https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh"
+          bash Mambaforge.sh -b -p "${HOME}/conda" > /dev/null
+          source "${HOME}/conda/etc/profile.d/conda.sh"
+          source "${HOME}/conda/etc/profile.d/mamba.sh"
+          mamba activate
+
+          # load channels
           $CONDA/bin/conda config --add channels defaults
           $CONDA/bin/conda config --add channels bioconda
           $CONDA/bin/conda config --add channels conda-forge
           rm /usr/share/miniconda/pkgs/cache/*.json  # see mamba/issues/488
-          VERSION=$(cat requirements.yaml | grep conda | cut -d '=' -f2)
-          $CONDA/bin/conda install conda-forge::conda=$VERSION
+          
+          # get 
           $CONDA/bin/conda env update --file requirements.yaml --name base
           $CONDA/bin/conda install m2r2 sphinx sphinx_rtd_theme sphinx-argparse graphviz networkx importlib_metadata=4.11.4 mamba=$VERSION
           $CONDA/bin/pip3 install .
