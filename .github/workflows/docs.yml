@@ -30,13 +30,14 @@ jobs:
           $CONDA/bin/conda config --add channels conda-forge
           rm /usr/share/miniconda/pkgs/cache/*.json  # see mamba/issues/488
           
-          # get 
+          # install seq2science env and docs env
           mamba env create --name seq2science --file requirements.yaml
           mamba activate seq2science
-          mamba install m2r2 sphinx sphinx_rtd_theme sphinx-argparse graphviz networkx importlib_metadata=4.11.4 mamba=0.20.0
+          VERSION=$(cat requirements.yaml | grep mamba | cut -d '=' -f2)
+          mamba install m2r2 sphinx sphinx_rtd_theme sphinx-argparse graphviz networkx importlib_metadata=4.11.4 mamba=$VERSION
           pip3 install .
 
-          # blabla
+          # make the docs
           python docs/scripts/schemas.py
           python docs/scripts/rule_description.py
           python docs/scripts/gen_dags.py
