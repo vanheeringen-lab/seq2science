@@ -37,11 +37,11 @@ jobs:
           pip3 install .
 
           # blabla
-          $CONDA/bin/python docs/scripts/schemas.py
-          $CONDA/bin/python docs/scripts/rule_description.py
-          $CONDA/bin/python docs/scripts/gen_dags.py
+          python docs/scripts/schemas.py
+          python docs/scripts/rule_description.py
+          python docs/scripts/gen_dags.py
           cp CHANGELOG.md docs/content
-          $CONDA/bin/sphinx-build docs/ build -W
+          sphinx-build docs/ build -W
           touch build/.nojekyll
 
       # only deploy
