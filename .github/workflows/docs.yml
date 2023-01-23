@@ -46,7 +46,7 @@ jobs:
           touch build/.nojekyll
 
       # only deploy
-      - name: Deploy :mailbox:
+      - name: Deploy 📬
         uses: JamesIves/github-pages-deploy-action@releases/v3
         if: github.ref == 'refs/heads/master'
         with:
