@@ -230,9 +230,11 @@ if config.get("create_trackhub"):
         # if not found, return the original name
         return False, assembly
 
-
-    ucsc_names = {a: get_ucsc_name(a) for a in ALL_ASSEMBLIES}
-
+    # check if trackhubs are available on ucsc (in case we dont force an assembly hub)
+    if config.get("force_assembly_hub", False):
+        ucsc_names = {a: (False, a) for a in ALL_ASSEMBLIES}
+    else:
+        ucsc_names = {a: get_ucsc_name(a) for a in ALL_ASSEMBLIES}
 
     def get_defaultpos(sizefile):
         # extract a default position spanning the first scaffold/chromosome in the sizefile.
