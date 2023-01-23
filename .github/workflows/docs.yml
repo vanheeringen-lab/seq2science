@@ -31,8 +31,8 @@ jobs:
           rm /usr/share/miniconda/pkgs/cache/*.json  # see mamba/issues/488
           
           # get 
+          mamba install m2r2 sphinx sphinx_rtd_theme sphinx-argparse graphviz networkx importlib_metadata=4.11.4
           mamba env update --file requirements.yaml --name base
-          mamba  install m2r2 sphinx sphinx_rtd_theme sphinx-argparse graphviz networkx importlib_metadata=4.11.4 mamba=$VERSION
           $CONDA/bin/pip3 install .
 
       # -W = error on warning
