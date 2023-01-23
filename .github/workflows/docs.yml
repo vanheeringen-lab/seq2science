@@ -36,9 +36,7 @@ jobs:
           mamba install m2r2 sphinx sphinx_rtd_theme sphinx-argparse graphviz networkx importlib_metadata=4.11.4
           pip3 install .
 
-      # -W = error on warning
-      - name: Build 🔧
-        run: |
+          # blabla
           $CONDA/bin/python docs/scripts/schemas.py
           $CONDA/bin/python docs/scripts/rule_description.py
           $CONDA/bin/python docs/scripts/gen_dags.py
