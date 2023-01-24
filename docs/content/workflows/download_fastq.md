@@ -9,8 +9,8 @@ Downloading public data in bulk from the NCBI, ENA, and DDBJ databases has never
 
 #### Download SRA file
 
-The three largest databases that store sequencing data are National Center for Biotechnology Information (NCBI), the European Nucleotide Archive (ENA) and the DNA Data Bank of Japan (DDBJ).
-Only the ENA stores the actual fastq files, but all three of them store the raw data (as a sra file) from which a fastq can be derived.
+The four most popular databases that store sequencing data are National Center for Biotechnology Information (NCBI), the European Nucleotide Archive (ENA), the DNA Data Bank of Japan (DDBJ), and the Genome Sequence Archive (GSA).
+Only ENA and GSA store the actual fastq files, and DDBJ and NCBI store the raw data (as a sra file) from which a fastq can be derived.
 For this reason for each sample will first be checked if it can be downloaded from ENA.
 Otherwise we will download the samples in its raw format. To convert this data to a fastq it has to be "*dumped*".
 
@@ -29,6 +29,7 @@ SRX456  <-- SRA experiment
 SRRxzy  <-- SRA run
 DRX890  <-- DDBJ experiment
 DRR098  <-- DDBJ run
+CRX123  <-- GSA experiment
 ```
 
 #### Sample column
@@ -36,7 +37,7 @@ DRR098  <-- DDBJ run
 When downloading fastq files there is only one column in the samples.txt. 
 This is the sample column, where each sample is specified.
 Samples are specified with their name of the accession (e.g. GSM2837484).
-(Accepted formats start with "GSM", "SRR", "SRX", "DRR", "DRX", "ERR" or "ERX")
+(Accepted formats start with "GSM", "SRR", "SRX", "DRR", "DRX", "ERR" "ERX", or "CRX")
 
 #### Final notes
 
