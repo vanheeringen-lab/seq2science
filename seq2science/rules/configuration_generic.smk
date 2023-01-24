@@ -498,7 +498,7 @@ def parse_pysradb():
         if (values["layout"] == "PAIRED")
         for run in values.get("runs", [])
         if (run not in ena_paired_end and run not in gsa_paired_end)
-]
+    ]
 
     # get download link per run
     run2download = dict()

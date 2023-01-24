@@ -174,20 +174,14 @@ def crx2downloads(crx_id, logger):
 
     final_res = {}
     for crr_id in search:
-        logger.info(f"{crx_id=}, {crr_id=}")
         crr_url = f"https://ngdc.cncb.ac.cn/gsa/browse/{cra_id}/{crr_id}"
 
         # finally find the download links that belong to the run
         r = requests.get(crr_url)
-        logger.info(f"{r.status_code=}")
         if r.status_code != 200:
             return []
 
-        logger.info(f"{crr_url=}")
-
         urls = re.findall(f"https://download[^\s]+.gz", r.text)
-        logger.info(f"{urls=}")
-
         final_res[crr_id] = urls
 
     return final_res
@@ -341,7 +335,6 @@ def samples2metadata(samples: List[str], config: dict, logger) -> dict:
 
     gsa_samples = [sample for sample in public_samples if sample.startswith("CRX")]
     gsa_samples = samples2metadata_gsa(gsa_samples, logger)
-    logger.info(gsa_samples)
     rest_public_samples = [sample for sample in public_samples if sample not in gsa_samples]
 
     # chop public samples into smaller chunks, doing large queries results into
