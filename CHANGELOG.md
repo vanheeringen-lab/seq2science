@@ -13,6 +13,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 - a `force_assembly_hub` flag to make an ucsc assembly hub even though a trackhub already exists
 
+### Changed
+
+- MultiQC version updated (1.14)
+
 ### Fixed
 
 - edge case with the downloading-fastq workflow when samples file has an assembly column
