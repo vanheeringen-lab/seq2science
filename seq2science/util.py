@@ -14,6 +14,7 @@ import pickle
 import urllib.request
 import yaml
 import requests
+import traceback
 from io import StringIO
 from typing import List
 from math import ceil, floor
@@ -249,32 +250,38 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
     if len(geo_samples):
         try:
             df_geo = db_sra.gsm_to_srx(geo_samples)
-        except:
+        except BaseException as e: 
             logger.error(
                 "We had trouble querying the SRA. This probably means that the SRA was unresponsive, and their servers "
                 "are overloaded or slow. Please try again in a bit...\n"
                 "Another possible option is that you try to access samples that do not exist or are protected, and "
                 "seq2science does not support downloading those..\n\n"
             )
+            logger.debug(f"Affected samples: {', '.join(geo_samples)}")
+            tb_str = traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__)
+            logger.debug("".join(tb_str))
             os._exit(1)  # noqa
 
         sample2clean = dict(zip(df_geo.experiment_alias, df_geo.experiment_accession))
     else:
         sample2clean = dict()
-
+   
     # now add the already SRA compliant names with a reference to itself
     sample2clean.update({sample: sample for sample in samples if sample not in geo_samples})
-
+   
     # check our samples on sra
     try:
         df_sra = db_sra.sra_metadata(list(sample2clean.values()), detailed=True)
-    except:
+    except BaseException as e:
         logger.error(
             "We had trouble querying the SRA. This probably means that the SRA was unresponsive, and their servers "
             "are overloaded or slow. Please try again in a bit...\n"
             "Another possible option is that you try to access samples that do not exist or are protected, and "
             "seq2science does not support downloading those..\n\n"
         )
+        logger.debug(f"Affected samples: {', '.join(sample2clean.values())}")
+        tb_str = traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__)
+        logger.debug("".join(tb_str))
         os._exit(1)  # noqa
 
     # keep track of not-supported samples
