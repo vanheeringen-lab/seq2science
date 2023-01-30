@@ -68,7 +68,7 @@ if [ $1 = "alignment" ]; then
   assert_rulecount $1 'ena2fastq_PE|sra2fastq_PE' 1
 
   printf "\ndownload gsa\n"
-  seq2science run download-fastq -nr --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/download_fastq/gsa.tsv} | tee tests/local_test_results/${1}_dag
+  seq2science run download-fastq -nr --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/download_fastq/gsa_samples.tsv} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 'gsa2fastq_SE' 1
 
   # alignment workflow
