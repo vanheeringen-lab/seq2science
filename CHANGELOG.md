@@ -20,6 +20,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Fixed
 
 - edge case with the downloading-fastq workflow when samples file has an assembly column
+- download-fastq finishing succesfully with an error message..
 
 ## [0.9.7] - 2023-01-03
 
