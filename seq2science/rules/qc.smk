@@ -562,6 +562,8 @@ rule multiqc_explain:
 
         result = subprocess.run(cli_call, stdout=subprocess.PIPE)
         explanation = result.stdout.decode("utf-8")
+        
+        assert len(explanation) > 0
 
         with open(output[0], "w") as f:
             f.write("<!--\n" "id: 'explanation'\n" "section_name: 'Workflow explanation'\n" "-->\n" f"{explanation}")
