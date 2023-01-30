@@ -152,27 +152,31 @@ def samples2metadata_local(samples: List[str], config: dict, logger) -> dict:
 
 
 def crx2downloads(crx_id, logger):
+    """
+    Get the crr (run) and the corresponding download link(s) from a crx id.
+    """
     # get from the crx number the accession number and the experiment url
     url = f"https://ngdc.cncb.ac.cn/search/?dbId=gsa&q={crx_id}"
     r = requests.get(url)
     if r.status_code != 200:
-        return []
+        return {}
 
     search = re.search(f"https://ngdc.cncb.ac.cn/gsa/browse/(.+)/{crx_id}", r.text)
     if search is None:
-        return []
+        return {}
     crx_url = search.group(0)
     cra_id = search.group(1)
 
     # then get the run id and url from the experiment number page
     r = requests.get(crx_url)
     if r.status_code != 200:
-        return []
+        return {}
 
     search = re.findall(f"browse/{cra_id}/(CRR\d+)", r.text)
     if search is None:
-        return []
+        return {}
 
+    # and finally find the download link(s) per run and add them to the final_res dict
     final_res = {}
     for crr_id in search:
         crr_url = f"https://ngdc.cncb.ac.cn/gsa/browse/{cra_id}/{crr_id}"
@@ -190,13 +194,30 @@ def crx2downloads(crx_id, logger):
 
 def samples2metadata_gsa(samples: List[str], logger) -> dict:
     """
+    Based on a list of gsa crx numbers, this function returns the layout, runs, and download links.
+    
+    output:
+        dict(
+            "CRX1234": {"layout": "PAIRED",
+                        "runs": ["CRR1234", "CRR4321"],
+                        "gsa_fastq_http": {CRR1234: [link_1, link_2], ...,
 
+            "SRR5678": {"layout": "SINGLE",
+                        "runs": ["CRR5678"],
+                        gsa_fastq_http: {CRR5678: [link_1]},
+            ...
+        )
     """
     failed_samples = []
     sampledict = {sample: dict() for sample in samples}
     for crx_id in samples:
         rundict = crx2downloads(crx_id, logger)
+        # if nothing returned it failed
+        if not rundict:
+            failed_samples.append(crx_id)
+
         for run, urls in rundict.items():
+            # if more than 2 urls we fail
             if 1 > len(urls) >= 2:
                 failed_samples.append(crx_id)
                 continue
@@ -209,7 +230,7 @@ def samples2metadata_gsa(samples: List[str], logger) -> dict:
             sampledict[crx_id]["gsa_fastq_http"][run] = urls
 
     if len(failed_samples) > 0:
-        logger.error("DSJKADHSJKADHSJKAHDSAD")
+        logger.error(f"We had trouble querying GSA. These sample(s) failed: {failed_samples}")
         os._exit(1)  # noqa
 
     return sampledict
