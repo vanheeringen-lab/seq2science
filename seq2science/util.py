@@ -151,7 +151,7 @@ def samples2metadata_local(samples: List[str], config: dict, logger) -> dict:
     return SAMPLEDICT
 
 
-def crx2downloads(crx_id, logger):
+def crx2downloads(crx_id):
     """
     Get the crr (run) and the corresponding download link(s) from a crx id.
     """
@@ -187,6 +187,8 @@ def crx2downloads(crx_id, logger):
             return []
 
         urls = re.findall(f"https://download[^\s]+.gz", r.text)
+        # remove duplicate urls but keep order
+        urls = list(dict.fromkeys(urls))
         final_res[crr_id] = urls
 
     return final_res
@@ -195,7 +197,7 @@ def crx2downloads(crx_id, logger):
 def samples2metadata_gsa(samples: List[str], logger) -> dict:
     """
     Based on a list of gsa crx numbers, this function returns the layout, runs, and download links.
-    
+
     output:
         dict(
             "CRX1234": {"layout": "PAIRED",
@@ -211,7 +213,7 @@ def samples2metadata_gsa(samples: List[str], logger) -> dict:
     failed_samples = []
     sampledict = {sample: dict() for sample in samples}
     for crx_id in samples:
-        rundict = crx2downloads(crx_id, logger)
+        rundict = crx2downloads(crx_id)
         # if nothing returned it failed
         if not rundict:
             failed_samples.append(crx_id)
@@ -234,7 +236,6 @@ def samples2metadata_gsa(samples: List[str], logger) -> dict:
         os._exit(1)  # noqa
 
     return sampledict
-
 
 def samples2metadata_sra(samples: List[str], logger) -> dict:
     """
