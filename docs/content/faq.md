@@ -81,3 +81,11 @@ bad alloc generally means that kallisto|bustools tried to reserve some memory, b
 Are there other programs running that take up a lot of memory?
 For us (the developers) it also seems as if this rule sometimes happens, seemingly at random.
 Simply restarting seq2science might just solve the problem!
+
+## UCSC trackhub displays no data
+Sometimes this happens because even though the genome assembly used is supported by ucsc, somehow the chromosome ids are different. 
+For instance chr1 vs Chr1 vs 1, etc.
+To solve this one can try to change assembly, with the downside that all the alignment etc. has to be re-run again.
+Or you can add `force_assembly_hub: true` in the config, so that only the trackhub gets remade, but this time as a so-called assembly hub.
+An assembly hub does not use a genome assembly that's provided by UCSC, so that no chromosome id mismatches can occur.
+
