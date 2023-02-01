@@ -473,6 +473,7 @@ def _explain(args, base_dir, workflows_dir, config_path):
         "dryrun": True,
         "forceall": True,
         "quiet": False,
+        "force_incomplete": True,
     }
 
     # get the additional snakemake options
