@@ -63,11 +63,12 @@ rule run2sra:
 
 
 # ENA > SRA
-ruleorder: ena2fastq_SE > sra2fastq_SE
-ruleorder: ena2fastq_PE > sra2fastq_PE
+ruleorder: ena2fastq_SE > gsa2fastq_SE > sra2fastq_SE
+ruleorder: ena2fastq_PE > gsa2fastq_PE > sra2fastq_PE
 # PE > SE
 ruleorder: ena2fastq_PE > ena2fastq_SE
 ruleorder: sra2fastq_PE > sra2fastq_SE
+ruleorder: gsa2fastq_PE > gsa2fastq_SE
 
 
 rule sra2fastq_SE:
@@ -206,6 +207,64 @@ rule ena2fastq_PE:
         else:
             shell("wget {urls[0]} -O {output[0]} --waitretry 20 >> {log} 2>&1")
             shell("wget {urls[1]} -O {output[1]} --waitretry 20 >> {log} 2>&1")
+
+        if not (
+            os.path.exists(output[0])
+            and (os.path.getsize(output[0]) > 0)
+            and os.path.exists(output[1])
+            and (os.path.getsize(output[1]) > 0)
+        ):
+            shell('echo "Something went wrong.. The downloaded file(s) were empty!" >> {log} 2>&1')
+            shell("exit 1 >> {log} 2>&1")
+
+
+rule gsa2fastq_SE:
+    """
+    Download single-end fastq files from the GSA.
+    """
+    output:
+        temp(expand("{fastq_dir}/runs/{{run}}.{fqsuffix}.gz", **config)),
+    resources:
+        parallel_downloads=1,
+    log:
+        expand("{log_dir}/gsa2fastq_SE/{{run}}.log", **config),
+    benchmark:
+        expand("{benchmark_dir}/gsa2fastq_SE/{{run}}.benchmark.txt", **config)[0]
+    wildcard_constraints:
+        run="|".join(GSA_SINGLE_END) if len(GSA_SINGLE_END) else "$a",
+    retries: 2
+    run:
+        shell("mkdir -p {config[fastq_dir]}/tmp/ >> {log} 2>&1")
+        url = RUN2DOWNLOAD[wildcards.run]
+
+        shell("wget {url} -O {output} --waitretry 20 >> {log} 2>&1")
+
+        if not (os.path.exists(output[0]) and os.path.getsize(output[0]) > 0):
+            shell('echo "Something went wrong.. The downloaded file was empty!" >> {log} 2>&1')
+            shell("exit 1 >> {log} 2>&1")
+
+
+rule gsa2fastq_PE:
+    """
+    Download paired-end fastq files from the GSA.
+    """
+    output:
+        temp(expand("{fastq_dir}/runs/{{run}}_{fqext}.{fqsuffix}.gz", **config)),
+    resources:
+        parallel_downloads=1,
+    log:
+        expand("{log_dir}/gsa2fastq_PE/{{run}}.log", **config),
+    benchmark:
+        expand("{benchmark_dir}/gsa2fastq_PE/{{run}}.benchmark.txt", **config)[0]
+    wildcard_constraints:
+        run="|".join(GSA_PAIRED_END) if len(GSA_PAIRED_END) else "$a",
+    retries: 2
+    run:
+        shell("mkdir -p {config[fastq_dir]}/tmp >> {log} 2>&1")
+        urls = RUN2DOWNLOAD[wildcards.run]
+
+        shell("wget {urls[0]} -O {output[0]} --waitretry 20 >> {log} 2>&1")
+        shell("wget {urls[1]} -O {output[1]} --waitretry 20 >> {log} 2>&1")
 
         if not (
             os.path.exists(output[0])
