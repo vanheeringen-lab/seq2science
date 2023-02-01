@@ -331,7 +331,7 @@ SEQUENCING_PROTOCOL = (
 )
 
 modified = False
-if "assembly" in samples:
+if WORKFLOW != "download_fastq":
     def parse_assemblies():
         # list assemblies that are used in this workflow
         used_assemblies = list(set(samples["assembly"]))
@@ -473,30 +473,45 @@ def parse_pysradb():
         if (values["layout"] == "PAIRED") and values.get("ena_fastq_ftp") is not None
         for run in values["runs"]
     ]
+    gsa_single_end = [
+        run
+        for values in sampledict.values()
+        if (values["layout"] == "SINGLE") and values.get("gsa_fastq_http") is not None
+        for run in values["runs"]
+    ]
+    gsa_paired_end = [
+        run
+        for values in sampledict.values()
+        if (values["layout"] == "PAIRED") and values.get("gsa_fastq_http") is not None
+        for run in values["runs"]
+    ]
     sra_single_end = [
         run
         for values in sampledict.values()
         if (values["layout"] == "SINGLE")
         for run in values.get("runs", [])
-        if run not in ena_single_end
+        if (run not in ena_single_end and run not in gsa_paired_end)
     ]
     sra_paired_end = [
         run
         for values in sampledict.values()
         if (values["layout"] == "PAIRED")
         for run in values.get("runs", [])
-        if run not in ena_paired_end
+        if (run not in ena_paired_end and run not in gsa_paired_end)
     ]
 
     # get download link per run
     run2download = dict()
     for sample, values in sampledict.items():
         for run in values.get("runs", []):
-            if values["ena_fastq_ftp"] and values["ena_fastq_ftp"][run]:
-                if not (config.get("ascp_path") and config.get("ascp_key")):
-                    run2download[run] = [url.replace("era-fasp@fasp", "ftp") for url in values["ena_fastq_ftp"][run]]
-                else:
-                    run2download[run] = values["ena_fastq_ftp"][run]
+            if "ena_fastq_ftp" in values:
+                if values["ena_fastq_ftp"] and values["ena_fastq_ftp"][run]:
+                    if not (config.get("ascp_path") and config.get("ascp_key")):
+                        run2download[run] = [url.replace("era-fasp@fasp", "ftp") for url in values["ena_fastq_ftp"][run]]
+                    else:
+                        run2download[run] = values["ena_fastq_ftp"][run]
+            if "gsa_fastq_http" in values:
+                run2download[run] = values["gsa_fastq_http"][run]
 
     # if samples are merged add the layout of the technical replicate to the config
     failed_samples = dict()
@@ -521,10 +536,9 @@ def parse_pysradb():
             logger.error("\n")
         os._exit(1)  # noqa
 
-    return sampledict, ena_single_end, ena_paired_end, sra_single_end, sra_paired_end, run2download, pysradb_cache_lock
+    return sampledict, ena_single_end, ena_paired_end, gsa_single_end, gsa_paired_end, sra_single_end, sra_paired_end, run2download, pysradb_cache_lock
 
-SAMPLEDICT, ENA_SINGLE_END, ENA_PAIRED_END, SRA_SINGLE_END, SRA_PAIRED_END, RUN2DOWNLOAD, PYSRADB_CACHE_LOCK = parse_pysradb()
-
+SAMPLEDICT, ENA_SINGLE_END, ENA_PAIRED_END, GSA_SINGLE_END, GSA_PAIRED_END, SRA_SINGLE_END, SRA_PAIRED_END, RUN2DOWNLOAD, PYSRADB_CACHE_LOCK = parse_pysradb()
 
 # workflow
 

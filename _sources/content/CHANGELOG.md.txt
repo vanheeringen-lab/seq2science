@@ -9,6 +9,21 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- (experimental) support for the Chinese Genome Sequence Archive (GSA). Samples can start with their CRX identifiers.
+- a `force_assembly_hub` flag to make an ucsc assembly hub even though a trackhub already exists
+
+### Changed
+
+- MultiQC version updated (1.14)
+
+### Fixed
+
+- edge case with the downloading-fastq workflow when samples file has an assembly column
+- workflow explanation not being properly added to qc report
+- download-fastq finishing succesfully with an error message..
+
 ## [0.9.7] - 2023-01-03
 
 ### Added

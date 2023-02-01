@@ -817,4 +817,11 @@ deeptools_bamcoverage:
     description: flags for bam to bigwig conversions with deeptools bamCoverage
     default: --normalizeUsing BPM --binSize 1
 ```
+#####force_assembly_hub
+```
+force_assembly_hub:
+    description: whether an assembly hub should be made even though the assembly is supported by ucsc. Sometimes e.g. chromosomes have different names (chr1 vs 1) which makes the trackhub not display the data properly. Forcing an assembly hub can help in these cases.
+    default: False
+    type: boolean
+```
 

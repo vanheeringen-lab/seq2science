@@ -1,34 +1,24 @@
 
 
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8">
   <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <title>Frequently Asked Questions (FAQ) &mdash; seq2science  documentation</title>
   
 
   
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-
+  
   
   
 
   
-  
-
-  
-
-  
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -39,6 +29,12 @@
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
     
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Contributing to seq2science" href="../CONTRIBUTING.html" />
@@ -79,7 +75,6 @@
           
         </div>
 
-        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -106,6 +101,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#rna-seq-this-gene-should-be-expressed">RNA-seq: this gene should be expressed!</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#scrna-seq-kallisto-bustools-warn-no-reads-pseudoaligned">scRNA-seq: Kallisto|Bustools: [~warn] no reads pseudoaligned</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#scrna-seq-kallisto-bustools-what-std-bad-alloc">scRNA-seq: Kallisto|Bustools: what():  std::bad_alloc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ucsc-trackhub-displays-no-data">UCSC trackhub displays no data</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../CONTRIBUTING.html">Contributing to seq2science</a></li>
@@ -114,7 +110,6 @@
             
           
         </div>
-        
       </div>
     </nav>
 
@@ -149,20 +144,18 @@
 
 
 
-
-
 <div role="navigation" aria-label="breadcrumbs navigation">
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li><a href="../index.html">Docs</a> &raquo;</li>
         
       <li>Frequently Asked Questions (FAQ)</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
-          
+            
             
               <a href="https://github.com/vanheeringen-lab/seq2science/blob/master/docs/content/faq.md" class="fa fa-github"> Edit on GitHub</a>
             
@@ -263,6 +256,14 @@ Are there other programs running that take up a lot of memory?
 For us (the developers) it also seems as if this rule sometimes happens, seemingly at random.
 Simply restarting seq2science might just solve the problem!</p>
 </section>
+<section id="ucsc-trackhub-displays-no-data">
+<h2>UCSC trackhub displays no data<a class="headerlink" href="#ucsc-trackhub-displays-no-data" title="Permalink to this heading">¶</a></h2>
+<p>Sometimes this happens because even though the genome assembly used is supported by ucsc, somehow the chromosome ids are different.
+For instance chr1 vs Chr1 vs 1, etc.
+To solve this one can try to change assembly, with the downside that all the alignment etc. has to be re-run again.
+Or you can add <code class="docutils literal notranslate"><span class="pre">force_assembly_hub:</span> <span class="pre">true</span></code> in the config, so that only the trackhub gets remade, but this time as a so-called assembly hub.
+An assembly hub does not use a genome assembly that’s provided by UCSC, so that no chromosome id mismatches can occur.</p>
+</section>
 </section>
 
 
@@ -270,29 +271,29 @@ Simply restarting seq2science might just solve the problem!</p>
            
           </div>
           <footer>
+  
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="../CONTRIBUTING.html" class="btn btn-neutral float-right" title="Contributing to seq2science" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="seq2science_profiles.html" class="btn btn-neutral float-left" title="Seq2science profiles" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+      
+        <a href="../CONTRIBUTING.html" class="btn btn-neutral float-right" title="Contributing to seq2science" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="seq2science_profiles.html" class="btn btn-neutral float-left" title="Seq2science profiles" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
     </div>
+  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        &#169; Copyright Maarten van der Sande, Siebren Frölich, Jos Smits, Rebecca Snabel, Tilman Schäfers, &amp; Simon van Heeringen..
+        &copy; Copyright Maarten van der Sande, Siebren Frölich, Jos Smits, Rebecca Snabel, Tilman Schäfers, &amp; Simon van Heeringen.
 
     </p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
+
         </div>
       </div>
 
@@ -300,6 +301,7 @@ Simply restarting seq2science might just solve the problem!</p>
 
   </div>
   
+
 
   <script type="text/javascript">
       jQuery(function () {
