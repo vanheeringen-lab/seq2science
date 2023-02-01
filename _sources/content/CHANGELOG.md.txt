@@ -9,6 +9,8 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+## [0.9.8] - 2023-02-01
+
 ### Added
 
 - (experimental) support for the Chinese Genome Sequence Archive (GSA). Samples can start with their CRX identifiers.
@@ -724,7 +726,9 @@ Many minor bug- and quality of life fixes.
 ## [0.0.0] - 2020-06-11
 First release of seq2science!
 
-[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.6...develop
+[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.8...develop
+[0.9.8]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.7...v0.9.8
+[0.9.7]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.6...v0.9.7
 [0.9.6]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.5...v0.9.6
 [0.9.5]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.4...v0.9.5
 [0.9.4]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.3...v0.9.4
