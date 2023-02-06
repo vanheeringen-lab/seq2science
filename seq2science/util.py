@@ -311,6 +311,9 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
     not_supported_samples = []
 
     for sample, clean in sample2clean.items():
+        # catch edge case when sample is a reanalysis so multple GSM numbers are associated with the same data
+        if sample not in SAMPLEDICT:
+            continue
         # table indices
         idxs = _sample_to_idxs(df_sra, clean)
 
