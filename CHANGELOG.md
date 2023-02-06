@@ -9,6 +9,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Fixed
+
+- edge case when a GSM sample is a reanalysis of another GSM sample.
+
 ## [0.9.8] - 2023-02-01
 
 ### Added
