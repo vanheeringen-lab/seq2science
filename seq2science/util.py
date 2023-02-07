@@ -260,7 +260,7 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
         )
     """
     # start with empty dictionary which we fill out later
-    SAMPLEDICT = {sample: dict() for sample in samples}
+    sampledict = {sample: dict() for sample in samples}
 
     # only continue with public samples
     db_sra = pysradb.SRAweb()
@@ -311,13 +311,16 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
     not_supported_samples = []
 
     for sample, clean in sample2clean.items():
+        # catch edge case when sample is a reanalysis so multple GSM numbers are associated with the same data
+        if sample not in sampledict:
+            continue
         # table indices
         idxs = _sample_to_idxs(df_sra, clean)
 
         # get all runs that belong to the sample
         runs = df_sra.loc[idxs].run_accession.tolist()
         assert len(runs) >= 1
-        SAMPLEDICT[sample]["runs"] = runs
+        sampledict[sample]["runs"] = runs
 
         # check if sample is from a supported format
         for bad_format in not_supported_formats:
@@ -329,22 +332,22 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
         layout = df_sra.loc[idxs].library_layout.tolist()
         assert len(set(layout)) == 1, f"sample {sample} consists of mixed layouts, bad!"
         assert layout[0] in ["PAIRED", "SINGLE"], f"sample {sample} is an unclear layout, bad!"
-        SAMPLEDICT[sample]["layout"] = layout[0]
+        sampledict[sample]["layout"] = layout[0]
 
         # get the ena url
-        SAMPLEDICT[sample]["ena_fastq_ftp"] = dict()
+        sampledict[sample]["ena_fastq_ftp"] = dict()
         for run in runs:
             if layout[0] == "SINGLE":
-                SAMPLEDICT[sample]["ena_fastq_ftp"][run] = df_sra[df_sra.run_accession == run].ena_fastq_ftp.tolist()
+                sampledict[sample]["ena_fastq_ftp"][run] = df_sra[df_sra.run_accession == run].ena_fastq_ftp.tolist()
             elif layout[0] == "PAIRED":
-                SAMPLEDICT[sample]["ena_fastq_ftp"][run] = (
+                sampledict[sample]["ena_fastq_ftp"][run] = (
                     df_sra[df_sra.run_accession == run].ena_fastq_ftp_1.tolist()
                     + df_sra[df_sra.run_accession == run].ena_fastq_ftp_2.tolist()
                 )
 
         # if any run from a sample is not found on ENA, better be safe, and assume that sample as a whole is not on ENA
-        if any([any(pd.isna(urls)) for urls in SAMPLEDICT[sample]["ena_fastq_ftp"].values()]):
-            SAMPLEDICT[sample]["ena_fastq_ftp"] = None
+        if any([any(pd.isna(urls)) for urls in sampledict[sample]["ena_fastq_ftp"].values()]):
+            sampledict[sample]["ena_fastq_ftp"] = None
 
     # now report single message for all sample(s) that are from a sequencing platform that is not supported
     assert len(not_supported_samples) == 0, (
@@ -352,7 +355,7 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
         f'these formats; [{", ".join(not_supported_formats)}] are not supported.'
     )
 
-    return SAMPLEDICT
+    return sampledict
 
 
 def samples2metadata(samples: List[str], config: dict, logger) -> dict:
