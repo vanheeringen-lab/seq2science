@@ -1,6 +1,8 @@
 """
 all rules/logic related downloading public fastqs should be here.
 """
+localrules: run2sra, ena2fastq_SE, ena2fastq_PE, gsa2fastq_SE, gsa2fastq_PE, runs2sample
+
 
 import os
 
