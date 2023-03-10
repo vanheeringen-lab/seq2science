@@ -9,6 +9,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Fixed
+
+- error message referring to `--config` while it should be `--configfile`
+
 ## [0.9.8] - 2023-02-01
 
 ### Added
