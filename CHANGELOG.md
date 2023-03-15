@@ -13,6 +13,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 - moved downloading fastqs to localrules
 - bam indexes are kept (not automatically removed)
+- Salmon updated to the latest version v1.10.1
 
 ### Fixed
 
