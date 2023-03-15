@@ -12,6 +12,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Changed
 
 - moved downloading fastqs to localrules
+- bam indexes are kept (not automatically removed)
 
 ### Fixed
 
