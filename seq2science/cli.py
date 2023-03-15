@@ -321,7 +321,7 @@ def _run(args, base_dir, workflows_dir, config_path):
     if not os.path.exists(config_path):
         sys.stdout.write(
             f"The config file: {config_path} does not exist.\nProvide a path to the config file with "
-            f"--config or if you do not have a config file run:\n"
+            f"--configfile or if you do not have a config file run:\n"
             f"seq2science init {args.workflow}\n"
         )
         os._exit(1)  # noqa
