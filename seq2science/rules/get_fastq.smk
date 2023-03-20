@@ -26,6 +26,7 @@ rule sra2fastq_SE:
         expand("{log_dir}/sra2fastq_SE/{{run}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/sra2fastq_SE/{{run}}.benchmark.txt", **config)[0]
+    message: EXPLAIN["run2sra"]
     resources:
         parallel_downloads=1,
     wildcard_constraints:
@@ -81,6 +82,7 @@ rule sra2fastq_PE:
         expand("{log_dir}/sra2fastq_PE/{{run}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/sra2fastq_PE/{{run}}.benchmark.txt", **config)[0]
+    message: EXPLAIN["run2sra"]
     resources:
         parallel_downloads=1,
     threads: 8
