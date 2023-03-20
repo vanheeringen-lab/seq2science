@@ -9,6 +9,17 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Changed
+
+- moved downloading fastqs to localrules
+- bam indexes are kept (not automatically removed)
+- Salmon updated to the latest version v1.10.1
+
+### Fixed
+
+- edge case when a GSM sample is a reanalysis of another GSM sample.
+- error message referring to `--config` while it should be `--configfile`
+
 ## [0.9.8] - 2023-02-01
 
 ### Added
