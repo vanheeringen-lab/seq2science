@@ -190,7 +190,7 @@ rule samtools_index:
     input:
         "{filepath}.{b}am",
     output:
-        temp("{filepath}.{b}am.{b}ai"),
+        "{filepath}.{b}am.{b}ai",
     params:
         config["samtools_index"],
     wildcard_constraints:
