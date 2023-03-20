@@ -26,6 +26,8 @@ rule sra2fastq_SE:
         expand("{log_dir}/sra2fastq_SE/{{run}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/sra2fastq_SE/{{run}}.benchmark.txt", **config)[0]
+    resources:
+        parallel_downloads=1,
     wildcard_constraints:
         run="|".join(SRA_SINGLE_END) if len(SRA_SINGLE_END) else "$a",  # only try to dump (single-end) SRA samples
     threads: 8
@@ -79,6 +81,8 @@ rule sra2fastq_PE:
         expand("{log_dir}/sra2fastq_PE/{{run}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/sra2fastq_PE/{{run}}.benchmark.txt", **config)[0]
+    resources:
+        parallel_downloads=1,
     threads: 8
     wildcard_constraints:
         run="|".join(SRA_PAIRED_END) if len(SRA_PAIRED_END) else "$a",  # only try to dump (paired-end) SRA samples
