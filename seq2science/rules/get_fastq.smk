@@ -1,67 +1,10 @@
 """
 all rules/logic related downloading public fastqs should be here.
 """
-localrules: run2sra, ena2fastq_SE, ena2fastq_PE, gsa2fastq_SE, gsa2fastq_PE, runs2sample
+localrules: ena2fastq_SE, ena2fastq_PE, gsa2fastq_SE, gsa2fastq_PE, runs2sample
 
 
 import os
-
-
-rule run2sra:
-    """
-    Download the SRA of a sample by its unique identifier.
-    """
-    output:
-        temp(expand("{sra_dir}/{{run}}/{{run}}/{{run}}.sra", **config)),
-    log:
-        expand("{log_dir}/run2sra/{{run}}.log", **config),
-    benchmark:
-        expand("{benchmark_dir}/run2sra/{{run}}.benchmark.txt", **config)[0]
-    message: EXPLAIN["run2sra"]
-    resources:
-        parallel_downloads=1,
-    params:
-        outdir=lambda wildcards: f"{config['sra_dir']}/{wildcards.run}",
-    conda:
-        "../envs/get_fastq.yaml"
-    wildcard_constraints:
-        run="[DES]RR\d+",
-    retries: 2
-    shell:
-        """
-        # move to output dir since somehow prefetch sometimes puts files in the cwd...
-        # and remove the top level folder since prefetch will assume we are done otherwise
-        mkdir -p {params.outdir}; cd {params.outdir}; rm -r {wildcards.run}
-
-        # three attempts
-        for i in {{1..3}}
-        do
-            # acquire a lock
-            (
-                flock -w 30 200 || continue
-                sleep 2
-            ) 200>{PYSRADB_CACHE_LOCK}
-
-            # dump
-            prefetch --max-size 999999999999 --output-directory ./ --log-level debug --progress {wildcards.run} >> {log} 2>&1 && break
-            sleep 10
-        done
-
-        # TODO: this is the strangest bug, in that on some machines (ocimum) prefetch downloads
-        # to a different location. Not sure what causes this, but this should fix that. Could simply
-        # be a global setting that we haven't discovered yet...
-        # bug report: https://github.com/ncbi/sra-tools/issues/533
-        if [[ -f "{params.outdir}/{wildcards.run}.sra" ]]; then
-            mkdir -p {params.outdir}/{wildcards.run}
-            mv {params.outdir}/{wildcards.run}.sra {output}
-        fi
-
-        # If an sralite file was downloaded instead of a sra file, just rename it
-        if [[ -f "{params.outdir}/{wildcards.run}.sralite" ]]; then
-            mkdir -p {params.outdir}/{wildcards.run}
-            mv {params.outdir}/{wildcards.run}.sralite {output}
-        fi
-        """
 
 
 # ENA > SRA
@@ -77,11 +20,8 @@ rule sra2fastq_SE:
     """
     Downloaded (raw) SRAs are converted to single-end fastq files.
     """
-    input:
-        rules.run2sra.output,
     output:
-        fastq=temp(expand("{fastq_dir}/runs/{{run}}.{fqsuffix}.gz", **config)),
-        tmpdir=temp(directory(expand("{fastq_dir}/runs/tmp/{{run}}", **config))),
+        temp(expand("{fastq_dir}/runs/{{run}}.{fqsuffix}.gz", **config))
     log:
         expand("{log_dir}/sra2fastq_SE/{{run}}.log", **config),
     benchmark:
@@ -94,8 +34,11 @@ rule sra2fastq_SE:
     retries: 2
     shell:
         """
-        # move to output dir since somehow parallel-fastq-dump sometimes puts files in the cwd...
-        mkdir -p {output.tmpdir}; cd {output.tmpdir}
+        tmpdir=`mktemp -d`
+        echo "Using tmpdir $tmpdir" >> {log}
+
+        # move to output dir since somehow prefetch and parallel-fastq-dump sometimes put files in the cwd...
+        cd $tmpdir
 
         # acquire the lock
         (
@@ -103,14 +46,25 @@ rule sra2fastq_SE:
             sleep 3
         ) 200>{PYSRADB_CACHE_LOCK}
 
+        # three attempts
+        for i in {{1..3}}
+        do
+            # dump
+            source {workflow.basedir}/../../scripts/download_sra.sh {wildcards.run} {log} && break
+            sleep 10
+        done
+
         # dump to tmp dir
-        parallel-fastq-dump -s {input} -O {output.tmpdir} \
+        parallel-fastq-dump -s {wildcards.run}/{wildcards.run}.sra -O $tmpdir \
         --threads {threads} --split-spot --skip-technical --dumpbase --readids \
         --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' \
         --defline-qual '+' --gzip >> {log} 2>&1
 
         # rename file and move to output dir
-        mv {output.tmpdir}/*.fastq.gz {output.fastq}
+        mv $tmpdir/*fastq.gz {output} >> {log} 2>&1
+
+        # Remove temporary directory
+        rm -rf $tmpdir >> {log} 2>&1
         """
 
 
@@ -119,11 +73,8 @@ rule sra2fastq_PE:
     Downloaded (raw) SRAs are converted to paired-end fastq files.
     Forward and reverse samples will be switched if forward/reverse names are not lexicographically ordered.
     """
-    input:
-        rules.run2sra.output,
     output:
-        fastq=temp(expand("{fastq_dir}/runs/{{run}}_{fqext}.{fqsuffix}.gz", **config)),
-        tmpdir=temp(directory(expand("{fastq_dir}/runs/tmp/{{run}}", **config))),
+        temp(expand("{fastq_dir}/runs/{{run}}_{fqext}.{fqsuffix}.gz", **config))
     log:
         expand("{log_dir}/sra2fastq_PE/{{run}}.log", **config),
     benchmark:
@@ -136,8 +87,11 @@ rule sra2fastq_PE:
     retries: 2
     shell:
         """
-        # move to output dir since somehow parallel-fastq-dump sometimes puts files in the cwd...
-        mkdir -p {output.tmpdir}; cd {output.tmpdir}
+        tmpdir=`mktemp -d`
+        echo "Using tmpdir $tmpdir" >> {log}
+
+        # move to output dir since somehow prefetch and parallel-fastq-dump sometimes put files in the cwd...
+        cd $tmpdir
 
         # acquire the lock
         (
@@ -145,17 +99,21 @@ rule sra2fastq_PE:
             sleep 3
         ) 200>{PYSRADB_CACHE_LOCK}
 
-        # dump to tmp dir
-        parallel-fastq-dump -s {input} -O {output.tmpdir} \
-        --threads {threads} --split-e --skip-technical --dumpbase \
-        --readids --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' \
-        --defline-qual '+' --gzip >> {log} 2>&1
+        # three attempts
+        for i in {{1..3}}
+        do
+            # dump
+            source {workflow.basedir}/../../scripts/download_sra.sh {wildcards.run} {log} && break
+            sleep 10
+        done
 
         # rename file and move to output dir
-        mv {output.tmpdir}/*_1* {output.fastq[0]}
-        mv {output.tmpdir}/*_2* {output.fastq[1]}
+        mv $tmpdir/*_1* {output.fastq[0]} >> {log} 2>&1
+        mv $tmpdir/*_2* {output.fastq[1]} >> {log} 2>&1
+        
+        # Remove temporary directory
+        rm -rf $tmpdir >> {log} 2>&1
         """
-
 
 rule ena2fastq_SE:
     """
