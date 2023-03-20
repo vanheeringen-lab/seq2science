@@ -106,10 +106,16 @@ rule sra2fastq_PE:
             source {workflow.basedir}/../../scripts/download_sra.sh {wildcards.run} {log} && break
             sleep 10
         done
+        
+        # dump to tmp dir
+        parallel-fastq-dump -s {wildcards.run}/{wildcards.run}.sra -O $tmpdir \
+        --threads {threads} --split-e --skip-technical --dumpbase --readids \
+        --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' \
+        --defline-qual '+' --gzip >> {log} 2>&1
 
         # rename file and move to output dir
-        mv $tmpdir/*_1* {output.fastq[0]} >> {log} 2>&1
-        mv $tmpdir/*_2* {output.fastq[1]} >> {log} 2>&1
+        mv $tmpdir/*_1* {output[0]} >> {log} 2>&1
+        mv $tmpdir/*_2* {output[1]} >> {log} 2>&1
         
         # Remove temporary directory
         rm -rf $tmpdir >> {log} 2>&1

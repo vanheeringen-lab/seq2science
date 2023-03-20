@@ -11,6 +11,7 @@ if [ -e $RUN ]; then
 fi
 
 # three attempts
+echo "Downloading $RUN using prefetch" >> $LOG
 prefetch --max-size 999999999999 --output-directory ./ --log-level debug --progress $RUN >> $LOG 2>&1
 
 # TODO: this is the strangest bug, in that on some machines (ocimum) prefetch downloads
@@ -26,4 +27,9 @@ fi
 if [[ -f "$RUN.sralite" ]]; then
     mkdir -p $RUN
     mv $RUN.sralite $RUN/$RUN.sra
+fi
+
+if [[ ! -f "$RUN/$RUN.sra" ]]; then
+    echo "prefetch failed, file $RUN/$RUN.sra not found!"
+    exit 1
 fi
