@@ -54,6 +54,10 @@ parse_samples <- function(samples_file, assembly_name, replicates) {
     rownames(samples) <- samples$descriptive_name
   }
 
+  if (nrow(samples) == 0){
+    stop("Something went wrong filtering the samples file! No samples remaining.")
+  }
+
   return(samples)
 }
 

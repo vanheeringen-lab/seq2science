@@ -766,7 +766,7 @@ def get_qc_files(wildcards):
         or get_rna_qc in QUALITY_CONTROL
     ) and len(treps.index) > 2:
         plots = ["sample_distance_clustering", "pearson_correlation_clustering", "spearman_correlation_clustering"]
-        files = expand("{qc_dir}/plotCorrelation/{{assembly}}-DESeq2_{plots}_mqc.png", plots=plots, **config)
+        files = expand("{qc_dir}/plotCorrelation/{{assembly}}{custom_assembly_suffix}-DESeq2_{plots}_mqc.png", plots=plots, **config)
         # only perform clustering if there are 2 or more groups in the assembly
         for assembly in treps.assembly:
             if len(treps[treps.assembly == assembly].index) < 2:
