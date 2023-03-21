@@ -1,11 +1,14 @@
 """
 all rules/logic related downloading public fastqs should be here.
 """
-localrules: run2sra, ena2fastq_SE, ena2fastq_PE, gsa2fastq_SE, gsa2fastq_PE, runs2sample
+localrules: ena2fastq_SE, ena2fastq_PE, gsa2fastq_SE, gsa2fastq_PE, runs2sample
 
 
 import os
 
+
+dump_in_tmp = True
+workflow.shadow_prefix = "{resources.tmpdir}"
 
 rule run2sra:
     """
@@ -20,6 +23,8 @@ rule run2sra:
     message: EXPLAIN["run2sra"]
     resources:
         parallel_downloads=1,
+    # shadow: None if not dump_in_tmp else "full"
+    group: "fastq_dumping"
     params:
         outdir=lambda wildcards: f"{config['sra_dir']}/{wildcards.run}",
     conda:
@@ -88,6 +93,8 @@ rule sra2fastq_SE:
         expand("{benchmark_dir}/sra2fastq_SE/{{run}}.benchmark.txt", **config)[0]
     wildcard_constraints:
         run="|".join(SRA_SINGLE_END) if len(SRA_SINGLE_END) else "$a",  # only try to dump (single-end) SRA samples
+    # shadow: None if not dump_in_tmp else "full"
+    group: "fastq_dumping"
     threads: 8
     conda:
         "../envs/get_fastq.yaml"
@@ -131,6 +138,8 @@ rule sra2fastq_PE:
     threads: 8
     wildcard_constraints:
         run="|".join(SRA_PAIRED_END) if len(SRA_PAIRED_END) else "$a",  # only try to dump (paired-end) SRA samples
+    # shadow: None if not dump_in_tmp else "full"
+    group: "fastq_dumping"
     conda:
         "../envs/get_fastq.yaml"
     retries: 2
