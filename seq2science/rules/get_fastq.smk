@@ -23,7 +23,7 @@ rule run2sra:
     message: EXPLAIN["run2sra"]
     resources:
         parallel_downloads=1,
-    # shadow: None if not dump_in_tmp else "full"
+    shadow: None if not dump_in_tmp else "full"
     group: "fastq_dumping"
     params:
         outdir=lambda wildcards: f"{config['sra_dir']}/{wildcards.run}",
@@ -93,7 +93,7 @@ rule sra2fastq_SE:
         expand("{benchmark_dir}/sra2fastq_SE/{{run}}.benchmark.txt", **config)[0]
     wildcard_constraints:
         run="|".join(SRA_SINGLE_END) if len(SRA_SINGLE_END) else "$a",  # only try to dump (single-end) SRA samples
-    # shadow: None if not dump_in_tmp else "full"
+    shadow: None if not dump_in_tmp else "full"
     group: "fastq_dumping"
     threads: 8
     conda:
@@ -138,7 +138,7 @@ rule sra2fastq_PE:
     threads: 8
     wildcard_constraints:
         run="|".join(SRA_PAIRED_END) if len(SRA_PAIRED_END) else "$a",  # only try to dump (paired-end) SRA samples
-    # shadow: None if not dump_in_tmp else "full"
+    shadow: None if not dump_in_tmp else "full"
     group: "fastq_dumping"
     conda:
         "../envs/get_fastq.yaml"
