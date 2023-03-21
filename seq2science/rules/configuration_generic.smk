@@ -391,13 +391,17 @@ if WORKFLOW != "download_fastq":
         # custom assemblies
 
         # files used to extended assemblies (into custom assemblies)
-        if isinstance(config.get("custom_genome_extension"), str):
-            config["custom_genome_extension"] = [config["custom_genome_extension"]]
-        if isinstance(config.get("custom_annotation_extension"), str):
-            config["custom_annotation_extension"] = [config["custom_annotation_extension"]]
+        modified = False
+        for key in ["custom_genome_extension", "custom_annotation_extension"]:
+            if config.get(key) is None:
+                continue
+
+            modified = True
+            if isinstance(config.get(key), str):
+                config[key] = [config[key]]
+            config[key] = [os.path.expanduser(e) for e in config[key]]
     
         # custom assembly suffices
-        modified = config.get("custom_genome_extension") or config.get("custom_annotation_extension")
         suffix = config["custom_assembly_suffix"] if modified else ""
         all_assemblies = [a + suffix for a in used_assemblies]
     
