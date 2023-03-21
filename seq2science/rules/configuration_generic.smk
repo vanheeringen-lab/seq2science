@@ -577,8 +577,6 @@ if "assembly" in samples:
 
     wildcard_constraints:
         assembly=any_given("assembly", suffix=config["custom_assembly_suffix"] if modified else ""),
-        # used in deseq2.smk to strip a suffix from the wildcards.assembly, can be empty.
-        custom_assembly_suffix=f"{config['custom_assembly_suffix']}|"
 
 
 if "technical_replicates" in samples:
