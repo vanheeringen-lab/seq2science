@@ -19,6 +19,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 - edge case when a GSM sample is a reanalysis of another GSM sample.
 - error message referring to `--config` while it should be `--configfile`
+- clear error message when downloading single-end data annotated as paired-end.
 
 ## [0.9.8] - 2023-02-01
 
