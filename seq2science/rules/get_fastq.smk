@@ -20,6 +20,7 @@ rule run2sra:
     message: EXPLAIN["run2sra"]
     resources:
         parallel_downloads=1,
+    priority: -1  # less priority than sra2fastq, to conserve disk space.
     params:
         outdir=lambda wildcards: f"{config['sra_dir']}/{wildcards.run}",
     conda:
@@ -307,6 +308,7 @@ rule runs2sample:
         expand("{log_dir}/run2sample/{{sample}}{{suffix}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/run2sample/{{sample}}{{suffix}}.benchmark.txt", **config)[0]
+    priority: 1  # higher priority to conserve disk space
     wildcard_constraints:
         sample="|".join(public_samples) if len(public_samples) > 0 else "$a",
     run:
