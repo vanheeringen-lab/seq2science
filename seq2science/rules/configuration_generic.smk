@@ -389,8 +389,8 @@ if WORKFLOW != "download_fastq":
                 has_annotation[assembly + config["custom_assembly_suffix"]] = has_annotation[assembly]
     
         # custom assemblies
-    
-        # control whether to custom extended assemblies
+
+        # files used to extended assemblies (into custom assemblies)
         if isinstance(config.get("custom_genome_extension"), str):
             config["custom_genome_extension"] = [config["custom_genome_extension"]]
         if isinstance(config.get("custom_annotation_extension"), str):
@@ -403,7 +403,7 @@ if WORKFLOW != "download_fastq":
     
         def ori_assembly(assembly):
             """
-            remove the extension suffix from an assembly if it was added.
+            remove the custom assembly suffix from an assembly.
             """
             if not modified or not assembly.endswith(config["custom_assembly_suffix"]):
                 return assembly
@@ -573,6 +573,8 @@ if "assembly" in samples:
 
     wildcard_constraints:
         assembly=any_given("assembly", suffix=config["custom_assembly_suffix"] if modified else ""),
+        # used in deseq2.smk to strip a suffix from the wildcards.assembly, can be empty.
+        custom_assembly_suffix=f"{config['custom_assembly_suffix']}|"
 
 
 if "technical_replicates" in samples:

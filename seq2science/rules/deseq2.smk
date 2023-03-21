@@ -10,17 +10,16 @@ when starting, ldpaths is updated. During this process it is opened and deleted.
 Simultaneous R scripts can incidentally crash because it is missing.
 
 active issue: https://github.com/conda-forge/r-base-feedstock/issues/67
-active PR: https://github.com/conda/conda/pull/8776
 """
 
 
 def deseq_input(wildcards):
     if "rna" in WORKFLOW:
-        return expand("{counts_dir}/{{assembly}}-counts.tsv", **config)
+        return expand("{counts_dir}/{{assembly}}{{custom_assembly_suffix}}-counts.tsv", **config)
     elif "atac" in WORKFLOW or "chip" in WORKFLOW:
         # only uses a single peak caller ------------------------------------------v
         # TODO different peak callers can probably be supported with wildcard_constraint peak_caller (.*) <-- empty allowed
-        return (expand("{counts_dir}/{peak_caller}/{{assembly}}_raw_technical_reps.tsv", **config)[0],)
+        return expand("{counts_dir}/{peak_caller}/{{assembly}}_raw_technical_reps.tsv", **config)
     else:
         logger.error(
             f"The workflow you are running ({WORKFLOW}) does not support deseq2. "
@@ -37,17 +36,17 @@ rule deseq2:
     input:
         deseq_input,
     output:
-        diffexp=expand("{deseq2_dir}/{{assembly}}{custom_assembly_suffix}-{{contrast}}.diffexp.tsv", **config),
-        maplot=expand("{qc_dir}/deseq2/{{assembly}}{custom_assembly_suffix}-{{contrast}}.ma_plot.png", **config),
-        volcanoplot=expand("{qc_dir}/deseq2/{{assembly}}{custom_assembly_suffix}-{{contrast}}.volcano_plot.png", **config),
-        pcaplot=expand("{qc_dir}/deseq2/{{assembly}}{custom_assembly_suffix}-{{contrast}}.pca_plot_mqc.png", **config),
+        diffexp=expand("{deseq2_dir}/{{assembly}}{{custom_assembly_suffix}}-{{contrast}}.diffexp.tsv", **config),
+        maplot=expand("{qc_dir}/deseq2/{{assembly}}{{custom_assembly_suffix}}-{{contrast}}.ma_plot.png", **config),
+        volcanoplot=expand("{qc_dir}/deseq2/{{assembly}}{{custom_assembly_suffix}}-{{contrast}}.volcano_plot.png", **config),
+        pcaplot=expand("{qc_dir}/deseq2/{{assembly}}{{custom_assembly_suffix}}-{{contrast}}.pca_plot_mqc.png", **config),
     conda:
         "../envs/deseq2.yaml"
     log:
-        expand("{log_dir}/deseq2/{{assembly}}{custom_assembly_suffix}-{{contrast}}.diffexp.log", **config),
+        expand("{log_dir}/deseq2/{{assembly}}{{custom_assembly_suffix}}-{{contrast}}.diffexp.log", **config),
     message: EXPLAIN["deseq2"]
     benchmark:
-        expand("{benchmark_dir}/deseq2/{{assembly}}{custom_assembly_suffix}-{{contrast}}.diffexp.benchmark.txt", **config)[0]
+        expand("{benchmark_dir}/deseq2/{{assembly}}{{custom_assembly_suffix}}-{{contrast}}.diffexp.benchmark.txt", **config)[0]
     threads: 4
     params:
         samples=os.path.abspath(config["samples"]),
@@ -69,9 +68,9 @@ rule merge_volcano_ma:
         maplot=rules.deseq2.output.maplot,
         volcanoplot=rules.deseq2.output.volcanoplot,
     output:
-        expand("{qc_dir}/deseq2/{{assembly}}-{{contrast}}.combined_ma_volcano_mqc.png", **config),
+        expand("{qc_dir}/deseq2/{{assembly}}{{custom_assembly_suffix}}-{{contrast}}.combined_ma_volcano_mqc.png", **config),
     log:
-        expand("{log_dir}/deseq2/combine_{{assembly}}-{{contrast}}_plots.log", **config),
+        expand("{log_dir}/deseq2/combine_{{assembly}}{{custom_assembly_suffix}}-{{contrast}}_plots.log", **config),
     conda:
         "../envs/imagemick.yaml"
     shell:
@@ -91,11 +90,11 @@ rule blind_clustering:
     input:
         deseq_input,
     output:
-        expand("{qc_dir}/plotCorrelation/{{assembly}}{custom_assembly_suffix}-DESeq2_sample_distance_clustering_mqc.png", **config),
-        expand("{qc_dir}/plotCorrelation/{{assembly}}{custom_assembly_suffix}-DESeq2_pearson_correlation_clustering_mqc.png", **config),
-        expand("{qc_dir}/plotCorrelation/{{assembly}}{custom_assembly_suffix}-DESeq2_spearman_correlation_clustering_mqc.png", **config),
+        expand("{qc_dir}/plotCorrelation/{{assembly}}{{custom_assembly_suffix}}-DESeq2_sample_distance_clustering_mqc.png", **config),
+        expand("{qc_dir}/plotCorrelation/{{assembly}}{{custom_assembly_suffix}}-DESeq2_pearson_correlation_clustering_mqc.png", **config),
+        expand("{qc_dir}/plotCorrelation/{{assembly}}{{custom_assembly_suffix}}-DESeq2_spearman_correlation_clustering_mqc.png", **config),
     log:
-        expand("{log_dir}/plotCorrelation/{{assembly}}{custom_assembly_suffix}-DESeq2_clustering.log", **config),
+        expand("{log_dir}/plotCorrelation/{{assembly}}{{custom_assembly_suffix}}-DESeq2_clustering.log", **config),
     conda:
         "../envs/deseq2.yaml"
     threads: 4
