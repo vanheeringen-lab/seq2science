@@ -152,8 +152,8 @@ rule sra2fastq_PE:
         --defline-qual '+' --gzip >> {log} 2>&1
         
         # check if the files exist
-        if ! compgen -G "{output.tmpdir}/*_1*" > /dev/null ; then echo "ERROR: Couldn't find read 1.fastq after dumping! Perhaps this is not a paired-end file?\n" >> {log} 2>&1; fi
-        if ! compgen -G "{output.tmpdir}/*_2*" > /dev/null ; then echo "ERROR: Couldn't find read 2.fastq after dumping! Perhaps this is not a paired-end file?\n" >> {log} 2>&1; fi
+        if ! compgen -G "{output.tmpdir}/*_1*" > /dev/null ; then printf "ERROR: Couldn't find read 1.fastq after dumping! Perhaps this is not a paired-end file?\n" >> {log} 2>&1; fi
+        if ! compgen -G "{output.tmpdir}/*_2*" > /dev/null ; then printf "ERROR: Couldn't find read 2.fastq after dumping! Perhaps this is not a paired-end file?\n" >> {log} 2>&1; fi
 
         # rename file and move to output dir
         mv {output.tmpdir}/*_1* {output.fastq[0]} >> {log} 2>&1
