@@ -23,7 +23,7 @@ if config["quantifier"] == "salmon":
         log:
             expand("{log_dir}/quantification/{{assembly}}.transcripts.log", **config),
         conda: "../envs/salmon.yaml"
-        priority: 1
+        priority: 10
         shell:
             """
             gffread -w {output} -g {input.fa} {input.gtf} > {log} 2>&1
@@ -49,7 +49,7 @@ if config["quantifier"] == "salmon":
         conda: "../envs/decoy.yaml"
         threads: 40
         resources: mem_gb=64,
-        priority: 1
+        priority: 10
         shell:
             ("cpulimit --include-children -l {threads}00 --" if config.get("cpulimit", True) else "")+
             """\
@@ -109,7 +109,7 @@ if config["quantifier"] == "salmon":
             ),
             params=config["quantifier_index"],
         conda: "../envs/salmon.yaml"
-        priority: 1
+        priority: 10
         threads: 10
         resources: mem_gb=9,  # fully decoy aware
         shell:
@@ -197,7 +197,7 @@ elif  "scrna_seq" == WORKFLOW:
             intermediates1=temp(expand("{fastq_clean_dir}/{{sample}}_clean_{fqext}.{fqsuffix}", **config)),
             intermediates2=temp(expand("{fastq_clean_dir}/{{sample}}_clean_{fqext}.{fqsuffix}.single.fq", **config)),
             intermediates3=temp(expand("{fastq_clean_dir}/{{sample}}_clean_{fqext}.{fqsuffix}.paired.fq", **config)),
-        priority: 1
+        priority: 3
         log:
             expand("{log_dir}/fastq_pair/{{sample}}.log", **config),
         benchmark:
@@ -254,7 +254,7 @@ elif  "scrna_seq" == WORKFLOW:
                 expand("{log_dir}/kallistobus_index/{{assembly}}.log", **config),
             benchmark:
                 expand("{benchmark_dir}/kallistobus_index/{{assembly}}.benchmark.txt", **config)[0]
-            priority: 1
+            priority: 10
             conda:
                 "../envs/kallistobus.yaml"
             resources:
@@ -299,7 +299,7 @@ elif  "scrna_seq" == WORKFLOW:
             params:
                 basename=lambda wildcards, output: f"{output[0]}/{wildcards.assembly}",
                 options=config.get("ref"),
-            priority: 1
+            priority: 10
             shell:
                 """
                 mkdir -p {output}
@@ -334,7 +334,6 @@ elif  "scrna_seq" == WORKFLOW:
                 expand("{log_dir}/kallistobus_count/{{assembly}}-{{sample}}.log", **config),
             benchmark:
                 expand("{benchmark_dir}/kallistobus_count/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
-            priority: 1
             conda:
                 "../envs/kallistobus.yaml"
             threads: 8
@@ -387,7 +386,6 @@ elif  "scrna_seq" == WORKFLOW:
                 expand("{log_dir}/citeseqcount/{{assembly}}-{{sample}}.log", **config),
             benchmark:
                 expand("{benchmark_dir}/citeseqcount/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
-            priority: 1
             conda:
                 "../envs/cite-seq-count.yaml"
             threads: 8
