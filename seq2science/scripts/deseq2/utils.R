@@ -35,6 +35,19 @@ parse_contrast <- function(contrast) {
 parse_samples <- function(samples_file, assembly_name, replicates) {
   samples <- read.delim(samples_file, sep = "\t", na.strings = "", comment.char = "#", stringsAsFactors = F, row.names = "sample", check.names = F)
   colnames(samples) <- gsub("\\s+", "", colnames(samples))  # strip whitespace from column names
+
+  # custom assemblies have a suffix not present in the samples.tsv
+  if (!(assembly_name %in% samples$assembly)){
+    for (assembly in unique(samples$assembly)){
+      assembly <- trimws(assembly)
+      if (startsWith(assembly_name, assembly)){
+        assembly_name <- assembly
+        break
+      }
+    }
+  }
+
+  # drop all samples of other assemblies
   samples <- subset(samples, assembly == assembly_name)
 
   # collapse technical replicates
@@ -52,6 +65,10 @@ parse_samples <- function(samples_file, assembly_name, replicates) {
     to_rename <- is.na(samples$descriptive_name)
     samples$descriptive_name[to_rename] <- as.character(rownames(samples)[to_rename])
     rownames(samples) <- samples$descriptive_name
+  }
+
+  if (nrow(samples) == 0){
+    stop("Something went wrong filtering the samples file! No samples remaining.")
   }
 
   return(samples)

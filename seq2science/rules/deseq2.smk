@@ -10,7 +10,6 @@ when starting, ldpaths is updated. During this process it is opened and deleted.
 Simultaneous R scripts can incidentally crash because it is missing.
 
 active issue: https://github.com/conda-forge/r-base-feedstock/issues/67
-active PR: https://github.com/conda/conda/pull/8776
 """
 
 
@@ -20,7 +19,7 @@ def deseq_input(wildcards):
     elif "atac" in WORKFLOW or "chip" in WORKFLOW:
         # only uses a single peak caller ------------------------------------------v
         # TODO different peak callers can probably be supported with wildcard_constraint peak_caller (.*) <-- empty allowed
-        return (expand("{counts_dir}/{peak_caller}/{{assembly}}_raw_technical_reps.tsv", **config)[0],)
+        return expand("{counts_dir}/{peak_caller}/{{assembly}}_raw_technical_reps.tsv", **config)
     else:
         logger.error(
             f"The workflow you are running ({WORKFLOW}) does not support deseq2. "
