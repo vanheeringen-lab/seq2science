@@ -26,7 +26,7 @@ rule get_genome:
     resources:
         parallel_downloads=1,
         genomepy_downloads=1,
-    priority: 1
+    priority: 10
     retries: 2
     script:
         f"{config['rule_dir']}/../scripts/genomepy/get_genome.py"
@@ -64,7 +64,7 @@ rule get_genome_blacklist:
     resources:
         parallel_downloads=1,
         genomepy_downloads=1,
-    priority: 1
+    priority: 10
     retries: 2
     script:
         f"{config['rule_dir']}/../scripts/genomepy/get_genome_blacklist.py"
@@ -91,7 +91,7 @@ rule get_genome_annotation:
     resources:
         parallel_downloads=1,
         genomepy_downloads=1,
-    priority: 1
+    priority: 10
     retries: 2
     script:
         f"{config['rule_dir']}/../scripts/genomepy/get_genome_annotation.py"

@@ -489,7 +489,7 @@ def expand_contrasts(samples: pd.DataFrame, contrasts: list or str) -> list:
     return new_contrasts
 
 
-def get_contrasts(samples: pd.DataFrame, config: dict, ALL_ASSEMBLIES: list) -> list:
+def get_contrasts(samples: pd.DataFrame, config: dict, all_assemblies: list) -> list:
     """
     list all diffexp.tsv files we expect
     """
@@ -512,10 +512,16 @@ def get_contrasts(samples: pd.DataFrame, config: dict, ALL_ASSEMBLIES: list) -> 
             }
             column = backup_columns[column]
 
-        for assembly in ALL_ASSEMBLIES:
-            groups = set(samples[samples.assembly == assembly][column].to_list())
+        for assembly in all_assemblies:
+            # remove the custom assembly suffix
+            ori_assembly = assembly
+            if assembly not in samples.assembly and assembly.endswith(config["custom_assembly_suffix"]):
+                ori_assembly = assembly[:-len(config["custom_assembly_suffix"])]
+
+            groups = set(samples[samples.assembly == ori_assembly][column].to_list())
             if target in groups and reference in groups:
                 all_contrasts.append(f"{config['deseq2_dir']}/{assembly}-{de_contrast}.diffexp.tsv")
+
     return all_contrasts
 
 
