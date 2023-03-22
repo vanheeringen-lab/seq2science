@@ -29,7 +29,7 @@ else:
         "encode blacklist": "https://doi.org/10.1038/s41598-019-45839-z",
         "fastp": "https://doi.org/10.1093/bioinformatics/bty560",
         "fastqc": "http://www.bioinformatics.babraham.ac.uk/projects/fastqc",
-        "genomepy": "https://doi.org/10.21105/joss.00320",
+        "genomepy": "https://doi.org/10.1093/bioinformatics/btad119",
         "genrich": "https://github.com/jsh58/Genrich",
         "gimmemotifs-minimal": "https://www.biorxiv.org/content/10.1101/474403v1.full",
         "hisat2": "https://doi.org/10.1038/s41587-019-0201-4",
