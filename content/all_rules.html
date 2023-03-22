@@ -1471,24 +1471,28 @@ samtools sort {params.sort_order} -@ {threads} -m $memory {input} -o {output} \
 <h2>sra2fastq_PE<a class="headerlink" href="#sra2fastq-pe" title="Permalink to this heading">¶</a></h2>
 <p>Downloaded (raw) SRAs are converted to paired-end fastq files.
 Forward and reverse samples will be switched if forward/reverse names are not lexicographically ordered.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># move to output dir since somehow parallel-fastq-dump sometimes puts files in the cwd...</span>
-<span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">tmpdir</span><span class="p">};</span> <span class="n">cd</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">tmpdir</span><span class="p">}</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># move to output dir since somehow parallel-fastq-dump sometimes puts files in the cwd...
+mkdir -p {output.tmpdir}; cd {output.tmpdir}
 
-<span class="c1"># acquire the lock</span>
-<span class="p">(</span>
-    <span class="n">flock</span> <span class="o">-</span><span class="n">w</span> <span class="mi">30</span> <span class="mi">200</span> <span class="o">||</span> <span class="n">exit</span> <span class="mi">1</span>
-    <span class="n">sleep</span> <span class="mi">3</span>
-<span class="p">)</span> <span class="mi">200</span><span class="o">&gt;</span><span class="p">{</span><span class="n">PYSRADB_CACHE_LOCK</span><span class="p">}</span>
+# acquire the lock
+(
+    flock -w 30 200 || exit 1
+    sleep 3
+) 200&gt;{PYSRADB_CACHE_LOCK}
 
-<span class="c1"># dump to tmp dir</span>
-<span class="n">parallel</span><span class="o">-</span><span class="n">fastq</span><span class="o">-</span><span class="n">dump</span> <span class="o">-</span><span class="n">s</span> <span class="p">{</span><span class="nb">input</span><span class="p">}</span> <span class="o">-</span><span class="n">O</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">tmpdir</span><span class="p">}</span> \
-<span class="o">--</span><span class="n">threads</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">--</span><span class="n">split</span><span class="o">-</span><span class="n">e</span> <span class="o">--</span><span class="n">skip</span><span class="o">-</span><span class="n">technical</span> <span class="o">--</span><span class="n">dumpbase</span> \
-<span class="o">--</span><span class="n">readids</span> <span class="o">--</span><span class="n">clip</span> <span class="o">--</span><span class="n">read</span><span class="o">-</span><span class="nb">filter</span> <span class="k">pass</span> <span class="o">--</span><span class="n">defline</span><span class="o">-</span><span class="n">seq</span> <span class="s1">&#39;@$ac.$si.$sg/$ri&#39;</span> \
-<span class="o">--</span><span class="n">defline</span><span class="o">-</span><span class="n">qual</span> <span class="s1">&#39;+&#39;</span> <span class="o">--</span><span class="n">gzip</span> <span class="o">&gt;&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
+# dump to tmp dir
+parallel-fastq-dump -s {input} -O {output.tmpdir} \
+--threads {threads} --split-e --skip-technical --dumpbase \
+--readids --clip --read-filter pass --defline-seq &#39;@$ac.$si.$sg/$ri&#39; \
+--defline-qual &#39;+&#39; --gzip &gt;&gt; {log} 2&gt;&amp;1
 
-<span class="c1"># rename file and move to output dir</span>
-<span class="n">mv</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">tmpdir</span><span class="p">}</span><span class="o">/*</span><span class="n">_1</span><span class="o">*</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">fastq</span><span class="p">[</span><span class="mi">0</span><span class="p">]}</span>
-<span class="n">mv</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">tmpdir</span><span class="p">}</span><span class="o">/*</span><span class="n">_2</span><span class="o">*</span> <span class="p">{</span><span class="n">output</span><span class="o">.</span><span class="n">fastq</span><span class="p">[</span><span class="mi">1</span><span class="p">]}</span>
+# check if the files exist
+if ! compgen -G &quot;{output.tmpdir}/*_1*&quot; &gt; /dev/null ; then printf &quot;ERROR: Couldn&#39;t find read 1.fastq after dumping! Perhaps this is not a paired-end file?\n&quot; &gt;&gt; {log} 2&gt;&amp;1; fi
+if ! compgen -G &quot;{output.tmpdir}/*_2*&quot; &gt; /dev/null ; then printf &quot;ERROR: Couldn&#39;t find read 2.fastq after dumping! Perhaps this is not a paired-end file?\n&quot; &gt;&gt; {log} 2&gt;&amp;1; fi
+
+# rename file and move to output dir
+mv {output.tmpdir}/*_1* {output.fastq[0]} &gt;&gt; {log} 2&gt;&amp;1
+mv {output.tmpdir}/*_2* {output.fastq[1]} &gt;&gt; {log} 2&gt;&amp;1
 </pre></div>
 </div>
 <p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/get_fastq.yaml">sra2fastq_PE environment</a>.</p>

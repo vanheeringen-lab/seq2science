@@ -389,21 +389,25 @@ if WORKFLOW != "download_fastq":
                 has_annotation[assembly + config["custom_assembly_suffix"]] = has_annotation[assembly]
     
         # custom assemblies
-    
-        # control whether to custom extended assemblies
-        if isinstance(config.get("custom_genome_extension"), str):
-            config["custom_genome_extension"] = [config["custom_genome_extension"]]
-        if isinstance(config.get("custom_annotation_extension"), str):
-            config["custom_annotation_extension"] = [config["custom_annotation_extension"]]
+
+        # files used to extended assemblies (into custom assemblies)
+        modified = False
+        for key in ["custom_genome_extension", "custom_annotation_extension"]:
+            if len(config.get(key, [])) == 0:
+                continue
+
+            modified = True
+            if isinstance(config.get(key), str):
+                config[key] = [config[key]]
+            config[key] = [os.path.expanduser(e) for e in config[key]]
     
         # custom assembly suffices
-        modified = config.get("custom_genome_extension") or config.get("custom_annotation_extension")
         suffix = config["custom_assembly_suffix"] if modified else ""
         all_assemblies = [a + suffix for a in used_assemblies]
     
         def ori_assembly(assembly):
             """
-            remove the extension suffix from an assembly if it was added.
+            remove the custom assembly suffix from an assembly.
             """
             if not modified or not assembly.endswith(config["custom_assembly_suffix"]):
                 return assembly

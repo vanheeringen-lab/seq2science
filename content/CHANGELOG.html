@@ -387,6 +387,7 @@ and this project adheres to <a class="reference external" href="https://semver.o
 <li><p>moved downloading fastqs to localrules</p></li>
 <li><p>bam indexes are kept (not automatically removed)</p></li>
 <li><p>Salmon updated to the latest version v1.10.1</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--snakemakeOption</span> <span class="pre">debug_dag=True</span></code> can now be used with 1 core (required)</p></li>
 </ul>
 </section>
 <section id="fixed">
@@ -394,6 +395,9 @@ and this project adheres to <a class="reference external" href="https://semver.o
 <ul class="simple">
 <li><p>edge case when a GSM sample is a reanalysis of another GSM sample.</p></li>
 <li><p>error message referring to <code class="docutils literal notranslate"><span class="pre">--config</span></code> while it should be <code class="docutils literal notranslate"><span class="pre">--configfile</span></code></p></li>
+<li><p>cyclic dependency on rule samtools_sort (caused by tildes in config paths)</p></li>
+<li><p>bug in DESeq2 related rules when using custom assemblies</p></li>
+<li><p>clear error message when downloading single-end data annotated as paired-end.</p></li>
 </ul>
 </section>
 </section>
