@@ -33,6 +33,7 @@ rule run2sra:
         # and remove the top level folder since prefetch will assume we are done otherwise
         mkdir -p {params.outdir}; cd {params.outdir}; rm -r {wildcards.run}
 
+        # TODO: for loop can be removed if we dont see the debug message
         # three attempts
         for i in {{1..3}}
         do
@@ -43,21 +44,26 @@ rule run2sra:
             ) 200>{PYSRADB_CACHE_LOCK}
 
             # dump
-            prefetch --max-size 999999999999 --output-directory ./ --log-level debug --progress {wildcards.run} >> {log} 2>&1 && break
+            prefetch --max-size u --output-directory ./ --log-level debug --progress {wildcards.run} \
+            >> {log} 2>&1 && break
+            
+            # retry
+            echo "DEBUG: prefetch try ${{i}} of 3 failed" >> {log}
             sleep 10
         done
 
-        # TODO: this is the strangest bug, in that on some machines (ocimum) prefetch downloads
-        # to a different location. Not sure what causes this, but this should fix that. Could simply
-        # be a global setting that we haven't discovered yet...
+        # TODO: section can be removed if we dont see the debug message
         # bug report: https://github.com/ncbi/sra-tools/issues/533
         if [[ -f "{params.outdir}/{wildcards.run}.sra" ]]; then
+            echo "DEBUG: moving output to correct directory" >> {log}
             mkdir -p {params.outdir}/{wildcards.run}
             mv {params.outdir}/{wildcards.run}.sra {output}
         fi
 
+        # TODO: section can be removed if we dont see the debug message
         # If an sralite file was downloaded instead of a sra file, just rename it
         if [[ -f "{params.outdir}/{wildcards.run}.sralite" ]]; then
+            echo "DEBUG: renaming SRAlite" >> {log}
             mkdir -p {params.outdir}/{wildcards.run}
             mv {params.outdir}/{wildcards.run}.sralite {output}
         fi
@@ -301,12 +307,10 @@ rule runs2sample:
     input:
         get_runs_from_sample,
     output:
-             expand("{fastq_dir}/{{sample}}{{suffix}}", **config) if keep_fastqs else \
-        temp(expand("{fastq_dir}/{{sample}}{{suffix}}", **config))
+        expand("{fastq_dir}/{{sample}}{{suffix}}", **config) if keep_fastqs else \
+            temp(expand("{fastq_dir}/{{sample}}{{suffix}}", **config))
     log:
         expand("{log_dir}/run2sample/{{sample}}{{suffix}}.log", **config),
-    benchmark:
-        expand("{benchmark_dir}/run2sample/{{sample}}{{suffix}}.benchmark.txt", **config)[0]
     wildcard_constraints:
         sample="|".join(public_samples) if len(public_samples) > 0 else "$a",
     run:
