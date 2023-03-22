@@ -373,7 +373,9 @@ def _run(args, base_dir, workflows_dir, config_path):
     else:
         parsed_args["cores"] = 0
 
-    if parsed_args["cores"] < 2 and not (args.unlock or args.cleanup_metadata is not None):
+    if parsed_args["cores"] < 2 and not any(
+            [parsed_args["unlock"], parsed_args["cleanup_metadata"], parsed_args["dryrun"]]
+    ):
         subjectively_prettier_error(core_arg, "specify at least two cores.")
 
     # when running on a cluster assume cores == nodes (just like snakemake does)

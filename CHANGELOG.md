@@ -14,11 +14,14 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - moved downloading fastqs to localrules
 - bam indexes are kept (not automatically removed)
 - Salmon updated to the latest version v1.10.1
+- `--snakemakeOption debug_dag=True` can now be used with 1 core (required)
 
 ### Fixed
 
 - edge case when a GSM sample is a reanalysis of another GSM sample.
 - error message referring to `--config` while it should be `--configfile`
+- cyclic dependency on rule samtools_sort (caused by tildes in config paths)
+- bug in DESeq2 related rules when using custom assemblies
 - clear error message when downloading single-end data annotated as paired-end.
 
 ## [0.9.8] - 2023-02-01
