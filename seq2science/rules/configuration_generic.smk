@@ -393,7 +393,7 @@ if WORKFLOW != "download_fastq":
         # files used to extended assemblies (into custom assemblies)
         modified = False
         for key in ["custom_genome_extension", "custom_annotation_extension"]:
-            if config.get(key) is None:
+            if len(config.get(key, [])) == 0:
                 continue
 
             modified = True
