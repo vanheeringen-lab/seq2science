@@ -25,7 +25,6 @@ rule export_sce_obj:
         ),
     log:
         expand("{log_dir}/scrna-preprocess/{quantifier}/raw/{{assembly}}-{{sample}}_raw_sce.log", **config),
-    priority: 1
     conda:
         "../envs/sce.yaml"
     params:
@@ -56,7 +55,6 @@ rule sctk_qc:
         ),
     log:
         expand("{log_dir}/scrna-preprocess/{quantifier}/sctk/{{assembly}}-{{sample}}_sctk.log", **config),
-    priority: 1
     conda:
         "../envs/sctk.yaml"
     threads: 4

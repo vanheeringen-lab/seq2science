@@ -91,6 +91,7 @@ rule sra2fastq_SE:
     threads: 8
     conda:
         "../envs/get_fastq.yaml"
+    priority: 1
     retries: 2
     shell:
         """
@@ -133,6 +134,7 @@ rule sra2fastq_PE:
         run="|".join(SRA_PAIRED_END) if len(SRA_PAIRED_END) else "$a",  # only try to dump (paired-end) SRA samples
     conda:
         "../envs/get_fastq.yaml"
+    priority: 1
     retries: 2
     shell:
         """
@@ -175,6 +177,7 @@ rule ena2fastq_SE:
         expand("{benchmark_dir}/ena2fastq_SE/{{run}}.benchmark.txt", **config)[0]
     wildcard_constraints:
         run="|".join(ENA_SINGLE_END) if len(ENA_SINGLE_END) else "$a",
+    priority: 1
     retries: 2
     run:
         shell("mkdir -p {config[fastq_dir]}/tmp/ >> {log} 2>&1")
@@ -203,6 +206,7 @@ rule ena2fastq_PE:
         expand("{benchmark_dir}/ena2fastq_PE/{{run}}.benchmark.txt", **config)[0]
     wildcard_constraints:
         run="|".join(ENA_PAIRED_END) if len(ENA_PAIRED_END) else "$a",
+    priority: 1
     retries: 2
     run:
         shell("mkdir -p {config[fastq_dir]}/tmp >> {log} 2>&1")
@@ -238,6 +242,7 @@ rule gsa2fastq_SE:
         expand("{benchmark_dir}/gsa2fastq_SE/{{run}}.benchmark.txt", **config)[0]
     wildcard_constraints:
         run="|".join(GSA_SINGLE_END) if len(GSA_SINGLE_END) else "$a",
+    priority: 1
     retries: 2
     run:
         shell("mkdir -p {config[fastq_dir]}/tmp/ >> {log} 2>&1")
@@ -264,6 +269,7 @@ rule gsa2fastq_PE:
         expand("{benchmark_dir}/gsa2fastq_PE/{{run}}.benchmark.txt", **config)[0]
     wildcard_constraints:
         run="|".join(GSA_PAIRED_END) if len(GSA_PAIRED_END) else "$a",
+    priority: 1
     retries: 2
     run:
         shell("mkdir -p {config[fastq_dir]}/tmp >> {log} 2>&1")
@@ -307,6 +313,7 @@ rule runs2sample:
         expand("{log_dir}/run2sample/{{sample}}{{suffix}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/run2sample/{{sample}}{{suffix}}.benchmark.txt", **config)[0]
+    priority: 2
     wildcard_constraints:
         sample="|".join(public_samples) if len(public_samples) > 0 else "$a",
     run:

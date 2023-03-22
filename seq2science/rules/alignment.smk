@@ -40,7 +40,7 @@ if config["aligner"] == "bowtie2":
             expand("{log_dir}/{aligner}_index/{{assembly}}.log", **config),
         benchmark:
             expand("{benchmark_dir}/{aligner}_index/{{assembly}}.benchmark.txt", **config)[0]
-        priority: 1
+        priority: 10
         threads: 4
         conda:
             "../envs/bowtie2.yaml"
@@ -74,7 +74,6 @@ if config["aligner"] == "bowtie2":
                 else ["-1", input.reads[0], "-2", input.reads[1]]
             ),
             params=config["align"],
-        priority: 0
         threads: get_aligner_threads()
         conda:
             "../envs/bowtie2.yaml"
@@ -101,7 +100,7 @@ elif config["aligner"] == "bwa-mem":
         params:
             prefix="{genome_dir}/{{assembly}}/index/{aligner}/{{assembly}}".format(**config),
             params=config["index"],
-        priority: 1
+        priority: 10
         resources:
             mem_gb=5,
         conda:
@@ -132,7 +131,6 @@ elif config["aligner"] == "bwa-mem":
             params=config["align"],
         resources:
             mem_gb=13,
-        priority: 0
         threads: get_aligner_threads()
         conda:
             "../envs/bwa.yaml"
@@ -158,7 +156,7 @@ elif config["aligner"] == "bwa-mem2":
             expand("{benchmark_dir}/{aligner}_index/{{assembly}}.benchmark.txt", **config)[0]
         params:
             prefix="{genome_dir}/{{assembly}}/index/{aligner}/{{assembly}}".format(**config),
-        priority: 1
+        priority: 10
         resources:
             mem_gb=40,
         conda:
@@ -189,7 +187,6 @@ elif config["aligner"] == "bwa-mem2":
             params=config["align"],
         resources:
             mem_gb=40,
-        priority: 0
         threads: get_aligner_threads()
         conda:
             "../envs/bwamem2.yaml"
@@ -216,7 +213,7 @@ elif config["aligner"] == "hisat2":
         benchmark:
             expand("{benchmark_dir}/{aligner}_index/{{assembly}}.benchmark.txt", **config)[0]
         message: EXPLAIN["hisat_splice_aware"]
-        priority: 1
+        priority: 10
         threads: 8
         resources:
             mem_gb=200,  # yes really
@@ -248,7 +245,7 @@ elif config["aligner"] == "hisat2":
             expand("{log_dir}/{aligner}_index/{{assembly}}.log", **config),
         benchmark:
             expand("{benchmark_dir}/{aligner}_index/{{assembly}}.benchmark.txt", **config)[0]
-        priority: 1
+        priority: 10
         threads: 4
         resources:
             mem_gb=8,
@@ -291,7 +288,6 @@ elif config["aligner"] == "hisat2":
                 else ["-1", input.reads[0], "-2", input.reads[1]]
             ),
             params=config["align"],
-        priority: 0
         threads: get_aligner_threads()
         conda:
             "../envs/hisat2.yaml"
@@ -317,7 +313,7 @@ elif config["aligner"] == "minimap2":
             expand("{benchmark_dir}/{aligner}_index/{{assembly}}.benchmark.txt", **config)[0]
         params:
             config["index"],
-        priority: 1
+        priority: 10
         threads: 3
         resources:
             mem_gb=12,
@@ -347,7 +343,6 @@ elif config["aligner"] == "minimap2":
         params:
             # input=lambda wildcards, input: input.reads if config["layout"][wildcards.sample] == "SINGLE" else input.reads[0:2],
             params=config["align"],
-        priority: 0
         threads: get_aligner_threads()
         resources:
             mem_gb=20,
@@ -388,7 +383,7 @@ elif config["aligner"] == "star":
             expand("{benchmark_dir}/{aligner}_index/{{assembly}}.benchmark.txt", **config)[0]
         params:
             config["index"],
-        priority: 1
+        priority: 10
         threads: 10
         resources:
             mem_gb=41,
@@ -451,7 +446,6 @@ elif config["aligner"] == "star":
             if SAMPLEDICT[wildcards.sample]["layout"] == "SINGLE"
             else input.reads[0:2],
             params=config["align"],
-        priority: 0
         threads: get_aligner_threads()
         resources:
             mem_gb=30,
@@ -485,7 +479,6 @@ rule samtools_presort:
         expand("{log_dir}/samtools_presort/{{assembly}}-{{sample}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/samtools_presort/{{assembly}}-{{sample}}.benchmark.txt", **config)[0]
-    priority: 0
     threads: get_sorter_threads()
     resources:
         mem_gb=config["bam_sort_mem"],
