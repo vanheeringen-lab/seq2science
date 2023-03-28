@@ -158,6 +158,7 @@ def crx2downloads(crx_id):
     # get from the crx number the accession number and the experiment url
     url = f"https://ngdc.cncb.ac.cn/search/?dbId=gsa&q={crx_id}"
     r = requests.get(url)
+    time.sleep(0.1)
     if r.status_code != 200:
         return {}
 
@@ -169,6 +170,7 @@ def crx2downloads(crx_id):
 
     # then get the run id and url from the experiment number page
     r = requests.get(crx_url)
+    time.sleep(0.1)
     if r.status_code != 200:
         return {}
 
@@ -183,6 +185,7 @@ def crx2downloads(crx_id):
 
         # finally find the download links that belong to the run
         r = requests.get(crr_url)
+        time.sleep(0.1)
         if r.status_code != 200:
             return []
 
@@ -236,6 +239,7 @@ def samples2metadata_gsa(samples: List[str], logger) -> dict:
         os._exit(1)  # noqa
 
     return sampledict
+
 
 def samples2metadata_sra(samples: List[str], logger) -> dict:
     """
