@@ -41,7 +41,8 @@ pipeline {
                 printf "\ndownload miniconda\n"
                 PY=$(grep conda-forge::python= requirements.yaml | tr -d -c 0-9)
                 CO=$(grep conda-forge::conda= requirements.yaml | cut -d '=' -f2)
-                wget https://repo.anaconda.com/miniconda/Miniconda3-py${PY}_${CO}-Linux-x86_64.sh -nv -O miniconda.sh
+                URL=https://repo.anaconda.com/miniconda/Miniconda3-py${PY}_${CO}-1-Linux-x86_64.sh
+                wget $URL -nv -O miniconda.sh
 
                 printf "\ninstall miniconda\n"
                 bash miniconda.sh -b -p $WORKSPACE/miniconda > /dev/null 2>&1
@@ -52,8 +53,8 @@ pipeline {
                 conda config --set channel_priority strict
                 
                 printf "\ninstall mamba\n"
-                VERSION=$(cat requirements.yaml | grep mamba | cut -d '=' -f2)
-                conda install -c conda-forge conda=$CO mamba=$VERSION
+                MA=$(cat requirements.yaml | grep mamba | cut -d '=' -f2)
+                conda install -c conda-forge conda=$CO mamba=$MA
 
                 printf "\ninstalling seq2science environment\n"
                 mamba env create -f requirements.yaml
