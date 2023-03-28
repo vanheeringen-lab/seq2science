@@ -3,6 +3,6 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - bioconda::trim-galore=0.6.4
+  - bioconda::trim-galore=0.6.10
   - conda-forge::cpulimit=0.2
   - conda-forge::conda-ecosystem-user-package-isolation=1.0

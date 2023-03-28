@@ -3,6 +3,6 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - bioconda::bedtools=2.29.2
-  - conda-forge::coreutils=9.1
+  - bioconda::bedtools=2.30.0
+  - conda-forge::coreutils=9.2
   - conda-forge::conda-ecosystem-user-package-isolation=1.0

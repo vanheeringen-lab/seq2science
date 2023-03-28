@@ -3,7 +3,6 @@ import base64
 from collections import Counter
 from itertools import accumulate
 
-import pyfaidx
 import matplotlib.pyplot as plt
 import genomepy
 
@@ -15,13 +14,13 @@ assembly = snakemake.wildcards.assembly
 open(outfile, "w").close()
 
 # read the assembly
-fa = pyfaidx.Fasta(snakemake.input.genome)
+fa = genomepy.Genome(snakemake.input.genome)
 
 # variables to keep track of
 gc = at = 0
 sizes = list()
 
-# count gc and at occurances and check how long each contig is
+# count gc and at occurrences and check how long each contig is
 for key in fa.keys():
     sizes += [len(fa[key])]
     c = Counter(str(fa[key]))

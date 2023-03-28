@@ -2,6 +2,6 @@ name: upset
 channels:
   - conda-forge
 dependencies:
-  - conda-forge::upsetplot=0.6.0
-  - conda-forge::matplotlib-base=3.5.3
+  - conda-forge::upsetplot=0.8.0
+  - conda-forge::matplotlib-base=3.7.1
   - conda-forge::conda-ecosystem-user-package-isolation=1.0

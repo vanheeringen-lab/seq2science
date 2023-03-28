@@ -3,5 +3,5 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - bioconda::fastp=0.20.1
+  - bioconda::fastp=0.23.2
   - conda-forge::conda-ecosystem-user-package-isolation=1.0
