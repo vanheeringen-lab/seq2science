@@ -25,16 +25,13 @@ jobs:
           mamba activate
 
           # load channels
-          $CONDA/bin/conda config --add channels defaults
           $CONDA/bin/conda config --add channels bioconda
           $CONDA/bin/conda config --add channels conda-forge
-          rm /usr/share/miniconda/pkgs/cache/*.json  # see mamba/issues/488
           
           # install seq2science env and docs env
           mamba env create --name seq2science --file requirements.yaml
           mamba activate seq2science
-          VERSION=$(cat requirements.yaml | grep mamba | cut -d '=' -f2)
-          mamba install m2r2 sphinx sphinx_rtd_theme sphinx-argparse graphviz networkx importlib_metadata=4.11.4 mamba=$VERSION
+          mamba install m2r2 sphinx sphinx_rtd_theme sphinx-argparse graphviz networkx importlib_metadata genomepy=0.15
           pip3 install .
 
           # make the docs
