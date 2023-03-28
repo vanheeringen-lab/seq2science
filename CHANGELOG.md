@@ -26,6 +26,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - cyclic dependency on rule samtools_sort (caused by tildes in config paths)
 - bug in DESeq2 related rules when using custom assemblies
 - clear error message when downloading single-end data annotated as paired-end.
+- "Max retries exceeded with url" for CRX samples
 
 ## [0.9.8] - 2023-02-01
 
