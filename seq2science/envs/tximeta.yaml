@@ -2,7 +2,6 @@ name: tximeta
 channels:
   - bioconda
   - conda-forge
-  - defaults
 dependencies:
   # linked_txome & txi count table
   - conda-forge::r-base=4.1.1

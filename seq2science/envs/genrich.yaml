@@ -2,7 +2,6 @@ name: genrich
 channels:
   - conda-forge
   - bioconda
-  - defaults
 dependencies:
   - bioconda::genrich=0.6.1
   - conda-forge::conda-ecosystem-user-package-isolation=1.0

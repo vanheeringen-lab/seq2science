@@ -2,7 +2,6 @@ name: deseq2
 channels:
   - conda-forge
   - bioconda
-  - defaults
 dependencies:
   - conda-forge::r-base=4.1  # R hotfix version isn't pinned for libraries
   - bioconda::bioconductor-deseq2=1.34

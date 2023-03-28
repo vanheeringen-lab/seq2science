@@ -1,8 +1,6 @@
 name: upset
 channels:
   - conda-forge
-  - bioconda
-  - defaults
 dependencies:
   - conda-forge::upsetplot=0.6.0
   - conda-forge::matplotlib-base=3.5.3

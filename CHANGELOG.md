@@ -15,6 +15,9 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - bam indexes are kept (not automatically removed)
 - Salmon updated to the latest version v1.10.1
 - `--snakemakeOption debug_dag=True` can now be used with 1 core (required)
+- creating conda environments now faster
+  - updated conda & mamba
+  - dropped indexing of Conda's defaults channel
 
 ### Fixed
 
