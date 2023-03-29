@@ -31,6 +31,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - clear error message when downloading single-end data annotated as paired-end.
 - "Max retries exceeded with url" for CRX samples
 - upsetplot segfault due to interactive matplotlib backend
+- DESeq2 error: "EOF within quoted string"
 - conda environment channel priorities 
 
 ## [0.9.8] - 2023-02-01
