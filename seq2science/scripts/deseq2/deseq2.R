@@ -67,7 +67,7 @@ coldata$batch     <- factor(coldata$batch)
 
 ## filter counts to speed up DESeq
 counts <- read.table(counts_file, row.names = 1, header = T, stringsAsFactors = F, sep = '\t', quote= "", check.names = F)
-reduced_counts <- counts[rowSums(counts) > 0, ]
+reduced_counts <- counts[rowSums(counts) > 0, rownames(coldata)]
 
 ## DESeq2
 design <- if (!is.na(batch)){~ batch + condition} else {~ condition}
