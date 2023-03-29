@@ -120,6 +120,8 @@ rule upset_plot_peaks:
         expand("{counts_dir}/{{peak_caller}}/{{assembly}}_onehotpeaks.tsv", **config)
     output:
         expand("{qc_dir}/upset/{{assembly}}-{{peak_caller}}_upset_mqc.jpg", **config)
+    log:
+        expand("{log_dir}/upset/{{assembly}}-{{peak_caller}}.log", **config),
     conda:
         "../envs/upset.yaml"
     script:
