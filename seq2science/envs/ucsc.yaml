@@ -2,9 +2,7 @@ name: ucsc
 channels:
   - conda-forge
   - bioconda
-  - defaults
 dependencies:
-  - bioconda::grep=3.4
   - bioconda::ucsc-bedsort=377
   - bioconda::ucsc-bedGraphToBigWig=377
   - bioconda::ucsc-bedToBigBed=377
@@ -14,4 +12,5 @@ dependencies:
   - bioconda::ucsc-hggcpercent=377
   - bioconda::ucsc-ixixx=377
   - bioconda::ucsc-wigtobigwig=377
+  - conda-forge::grep=3.10
   - conda-forge::conda-ecosystem-user-package-isolation=1.0

@@ -13,8 +13,14 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 - moved downloading fastqs to localrules
 - bam indexes are kept (not automatically removed)
-- Salmon updated to the latest version v1.10.1
+- Salmon updated to the latest version v1.10.1 (fixes a bug)
+- upsetplot updated to the latest version (fixes a bug)
+- genomepy updated to the latest version (no reason)
+- tabulate updated to the latest version (longer python support)
 - `--snakemakeOption debug_dag=True` can now be used with 1 core (required)
+- creating conda environments now faster
+  - updated conda & mamba
+  - dropped indexing of Conda's defaults channel
 
 ### Fixed
 
@@ -23,6 +29,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - cyclic dependency on rule samtools_sort (caused by tildes in config paths)
 - bug in DESeq2 related rules when using custom assemblies
 - clear error message when downloading single-end data annotated as paired-end.
+- "Max retries exceeded with url" for CRX samples
+- upsetplot segfault due to interactive matplotlib backend
+- DESeq2 error: "EOF within quoted string"
+- conda environment channel priorities 
 
 ## [0.9.8] - 2023-02-01
 

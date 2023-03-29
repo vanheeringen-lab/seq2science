@@ -2,7 +2,6 @@ name: gene_counts
 channels:
   - conda-forge
   - bioconda
-  - defaults
 dependencies:
   - bioconda::htseq=0.12.4
   - bioconda::subread=2.0.1

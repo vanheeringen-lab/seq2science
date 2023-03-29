@@ -225,7 +225,7 @@ heatmap_aesthetics <- function(num_samples){
   } else {
     cell_dimensions <- 5  # minimal size
     fontsize        <- 3.2
-    fontsize_number <- 2.5
+    fontsize_number <- 0  # 2.5
   }
   show_colnames <- ifelse(num_samples > 28, TRUE, FALSE)
   show_rownames <- !show_colnames

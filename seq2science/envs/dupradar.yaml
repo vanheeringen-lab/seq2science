@@ -2,7 +2,6 @@ name: dupradar
 channels:
   - conda-forge
   - bioconda
-  - defaults
 dependencies:
   - conda-forge::r-base=4.0.3
   - bioconda::bioconductor-dupradar=1.20.0

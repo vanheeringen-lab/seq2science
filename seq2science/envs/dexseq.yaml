@@ -2,7 +2,6 @@ name: dexseq
 channels:
   - conda-forge
   - bioconda
-  - defaults
 dependencies:
   - bioconda::bioconductor-dexseq=1.32.0
   - bioconda::pysam=0.16.0.1
