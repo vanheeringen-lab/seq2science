@@ -380,7 +380,11 @@ pipeline {
 
                     # flake8
                     printf "\nflake8\n\n"
-                    flake8
+                    # F821: snakemake uses globals
+                    # F722: snakemake include statement
+                    # E999: snakemake rule statement
+                    # E501: line too long
+                    flake8 --ignore=F821,E501,F722,E999
 
                     # linting
                     printf "\nlinting\n\n"
