@@ -13,7 +13,7 @@ df = df > 0
 data = dict()
 for col in df.columns:
     row = list()
-    for index, val in df[col].iteritems():
+    for index, val in df[col].items():
         if val:
             row.append(index)
     data[col] = row
