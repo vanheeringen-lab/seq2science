@@ -7,6 +7,10 @@ import matplotlib.pyplot as plt
 import genomepy
 
 
+# any non-interactive backend prevents segfaults
+# docs: https://matplotlib.org/stable/users/explain/backends.html
+plt.switch_backend('Agg')
+
 outfile = snakemake.output[0]
 assembly = snakemake.wildcards.assembly
 

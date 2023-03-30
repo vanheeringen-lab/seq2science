@@ -30,7 +30,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - bug in DESeq2 related rules when using custom assemblies
 - clear error message when downloading single-end data annotated as paired-end.
 - "Max retries exceeded with url" for CRX samples
-- upsetplot segfault due to interactive matplotlib backend
+- upsetplot & assembly_stats segfault due to interactive matplotlib backend
 - DESeq2 error: "EOF within quoted string"
 - conda environment channel priorities 
 
