@@ -380,11 +380,14 @@ pipeline {
 
                     # flake8
                     printf "\nflake8\n\n"
-                    # F821: snakemake uses globals
-                    # F722: snakemake include statement
+                    # E225: snakemake notation
+                    # E501: snakemake lines are really long
+                    # E731: lambdas improve readability in snakemake params
                     # E999: snakemake rule statement
-                    # E501: line too long
-                    flake8 --ignore=F821,E501,F722,E999
+                    # F722: snakemake include statement
+                    # F821: snakemake globals
+                    # W291: s2s logo uses trailing whitespaces
+                    flake8 --ignore=E225,E501,E731,E999,F722,F821,W291 seq2science/*
 
                     # linting
                     printf "\nlinting\n\n"
