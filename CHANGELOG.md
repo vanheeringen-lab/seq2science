@@ -21,6 +21,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - creating conda environments now faster
   - updated conda & mamba
   - dropped indexing of Conda's defaults channel
+- one less global variable! (sanitized_samples)
 
 ### Fixed
 
