@@ -642,7 +642,7 @@ rule multiqc_samplesconfig:
     params:
         config_used=len(workflow.overwrite_configfiles) > 0,
         configfile=workflow.overwrite_configfiles[-1],
-        config=config_rerun_parser(config)
+        config=config_rerun_parser(config),
         samples=lambda wildcards: samples.reset_index().to_string(index_names=False),
     conda:
         "../envs/htmltable.yaml"
