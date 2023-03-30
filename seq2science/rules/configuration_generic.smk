@@ -237,14 +237,12 @@ def parse_samples():
     for schema in SAMPLE_SCHEMAS:
         validate(samples_df, schema=f"{config['rule_dir']}/../schemas/samples/{schema}.schema.yaml")
     
-    sanitized_samples_df = copy.copy(samples_df)
-    
     samples_df = samples_df.set_index("sample")
     samples_df.index = samples_df.index.map(str)
     
-    return samples_df, sanitized_samples_df
+    return samples_df
 
-samples, sanitized_samples = parse_samples()
+samples = parse_samples()
 
 # all samples (including controls)
 ALL_SAMPLES = [sample for sample in samples.index]
