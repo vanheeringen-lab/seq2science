@@ -27,7 +27,7 @@ jobs:
           # load channels
           $CONDA/bin/conda config --add channels bioconda
           $CONDA/bin/conda config --add channels conda-forge
-          
+
           # install seq2science with added docs requirements
           declare -a requirements=(
             "graphviz>=7"

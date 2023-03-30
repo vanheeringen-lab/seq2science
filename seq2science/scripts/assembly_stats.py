@@ -24,7 +24,7 @@ fa = genomepy.Genome(snakemake.input.genome)
 gc = at = 0
 sizes = list()
 
-# count gc and at occurances and check how long each contig is
+# count gc and at occurrences and check how long each contig is
 for key in fa.keys():
     sizes += [len(fa[key])]
     c = Counter(str(fa[key]))
