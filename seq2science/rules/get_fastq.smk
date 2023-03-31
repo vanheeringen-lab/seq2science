@@ -1,6 +1,8 @@
 """
 all rules/logic related downloading public fastqs should be here.
 """
+localrules: run2sra, ena2fastq_SE, ena2fastq_PE, gsa2fastq_SE, gsa2fastq_PE, runs2sample
+
 
 import os
 
@@ -8,9 +10,6 @@ import os
 rule run2sra:
     """
     Download the SRA of a sample by its unique identifier.
-
-    Tries first downloading with the faster ascp protocol, if that fails it
-    falls back on the slower http protocol.
     """
     output:
         temp(expand("{sra_dir}/{{run}}/{{run}}/{{run}}.sra", **config)),
@@ -34,6 +33,7 @@ rule run2sra:
         # and remove the top level folder since prefetch will assume we are done otherwise
         mkdir -p {params.outdir}; cd {params.outdir}; rm -r {wildcards.run}
 
+        # TODO: for loop can be removed if we dont see the debug message
         # three attempts
         for i in {{1..3}}
         do
@@ -44,21 +44,26 @@ rule run2sra:
             ) 200>{PYSRADB_CACHE_LOCK}
 
             # dump
-            prefetch --max-size 999999999999 --output-directory ./ --log-level debug --progress {wildcards.run} >> {log} 2>&1 && break
+            prefetch --max-size u --output-directory ./ --log-level debug --progress {wildcards.run} \
+            >> {log} 2>&1 && break
+            
+            # retry
+            echo "DEBUG: prefetch try ${{i}} of 3 failed" >> {log}
             sleep 10
         done
 
-        # TODO: this is the strangest bug, in that on some machines (ocimum) prefetch downloads
-        # to a different location. Not sure what causes this, but this should fix that. Could simply
-        # be a global setting that we haven't discovered yet...
+        # TODO: section can be removed if we dont see the debug message
         # bug report: https://github.com/ncbi/sra-tools/issues/533
         if [[ -f "{params.outdir}/{wildcards.run}.sra" ]]; then
+            echo "DEBUG: moving output to correct directory" >> {log}
             mkdir -p {params.outdir}/{wildcards.run}
             mv {params.outdir}/{wildcards.run}.sra {output}
         fi
 
+        # TODO: section can be removed if we dont see the debug message
         # If an sralite file was downloaded instead of a sra file, just rename it
         if [[ -f "{params.outdir}/{wildcards.run}.sralite" ]]; then
+            echo "DEBUG: renaming SRAlite" >> {log}
             mkdir -p {params.outdir}/{wildcards.run}
             mv {params.outdir}/{wildcards.run}.sralite {output}
         fi
@@ -66,11 +71,12 @@ rule run2sra:
 
 
 # ENA > SRA
-ruleorder: ena2fastq_SE > sra2fastq_SE
-ruleorder: ena2fastq_PE > sra2fastq_PE
+ruleorder: ena2fastq_SE > gsa2fastq_SE > sra2fastq_SE
+ruleorder: ena2fastq_PE > gsa2fastq_PE > sra2fastq_PE
 # PE > SE
 ruleorder: ena2fastq_PE > ena2fastq_SE
 ruleorder: sra2fastq_PE > sra2fastq_SE
+ruleorder: gsa2fastq_PE > gsa2fastq_SE
 
 
 rule sra2fastq_SE:
@@ -91,6 +97,7 @@ rule sra2fastq_SE:
     threads: 8
     conda:
         "../envs/get_fastq.yaml"
+    priority: 1
     retries: 2
     shell:
         """
@@ -133,6 +140,7 @@ rule sra2fastq_PE:
         run="|".join(SRA_PAIRED_END) if len(SRA_PAIRED_END) else "$a",  # only try to dump (paired-end) SRA samples
     conda:
         "../envs/get_fastq.yaml"
+    priority: 1
     retries: 2
     shell:
         """
@@ -150,10 +158,14 @@ rule sra2fastq_PE:
         --threads {threads} --split-e --skip-technical --dumpbase \
         --readids --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' \
         --defline-qual '+' --gzip >> {log} 2>&1
+        
+        # check if the files exist
+        if ! compgen -G "{output.tmpdir}/*_1*" > /dev/null ; then printf "ERROR: Couldn't find read 1.fastq after dumping! Perhaps this is not a paired-end file?\n" >> {log} 2>&1; fi
+        if ! compgen -G "{output.tmpdir}/*_2*" > /dev/null ; then printf "ERROR: Couldn't find read 2.fastq after dumping! Perhaps this is not a paired-end file?\n" >> {log} 2>&1; fi
 
         # rename file and move to output dir
-        mv {output.tmpdir}/*_1* {output.fastq[0]}
-        mv {output.tmpdir}/*_2* {output.fastq[1]}
+        mv {output.tmpdir}/*_1* {output.fastq[0]} >> {log} 2>&1
+        mv {output.tmpdir}/*_2* {output.fastq[1]} >> {log} 2>&1
         """
 
 
@@ -171,6 +183,7 @@ rule ena2fastq_SE:
         expand("{benchmark_dir}/ena2fastq_SE/{{run}}.benchmark.txt", **config)[0]
     wildcard_constraints:
         run="|".join(ENA_SINGLE_END) if len(ENA_SINGLE_END) else "$a",
+    priority: 1
     retries: 2
     run:
         shell("mkdir -p {config[fastq_dir]}/tmp/ >> {log} 2>&1")
@@ -199,6 +212,7 @@ rule ena2fastq_PE:
         expand("{benchmark_dir}/ena2fastq_PE/{{run}}.benchmark.txt", **config)[0]
     wildcard_constraints:
         run="|".join(ENA_PAIRED_END) if len(ENA_PAIRED_END) else "$a",
+    priority: 1
     retries: 2
     run:
         shell("mkdir -p {config[fastq_dir]}/tmp >> {log} 2>&1")
@@ -220,6 +234,66 @@ rule ena2fastq_PE:
             shell("exit 1 >> {log} 2>&1")
 
 
+rule gsa2fastq_SE:
+    """
+    Download single-end fastq files from the GSA.
+    """
+    output:
+        temp(expand("{fastq_dir}/runs/{{run}}.{fqsuffix}.gz", **config)),
+    resources:
+        parallel_downloads=1,
+    log:
+        expand("{log_dir}/gsa2fastq_SE/{{run}}.log", **config),
+    benchmark:
+        expand("{benchmark_dir}/gsa2fastq_SE/{{run}}.benchmark.txt", **config)[0]
+    wildcard_constraints:
+        run="|".join(GSA_SINGLE_END) if len(GSA_SINGLE_END) else "$a",
+    priority: 1
+    retries: 2
+    run:
+        shell("mkdir -p {config[fastq_dir]}/tmp/ >> {log} 2>&1")
+        url = RUN2DOWNLOAD[wildcards.run]
+
+        shell("wget {url} -O {output} --waitretry 20 >> {log} 2>&1")
+
+        if not (os.path.exists(output[0]) and os.path.getsize(output[0]) > 0):
+            shell('echo "Something went wrong.. The downloaded file was empty!" >> {log} 2>&1')
+            shell("exit 1 >> {log} 2>&1")
+
+
+rule gsa2fastq_PE:
+    """
+    Download paired-end fastq files from the GSA.
+    """
+    output:
+        temp(expand("{fastq_dir}/runs/{{run}}_{fqext}.{fqsuffix}.gz", **config)),
+    resources:
+        parallel_downloads=1,
+    log:
+        expand("{log_dir}/gsa2fastq_PE/{{run}}.log", **config),
+    benchmark:
+        expand("{benchmark_dir}/gsa2fastq_PE/{{run}}.benchmark.txt", **config)[0]
+    wildcard_constraints:
+        run="|".join(GSA_PAIRED_END) if len(GSA_PAIRED_END) else "$a",
+    priority: 1
+    retries: 2
+    run:
+        shell("mkdir -p {config[fastq_dir]}/tmp >> {log} 2>&1")
+        urls = RUN2DOWNLOAD[wildcards.run]
+
+        shell("wget {urls[0]} -O {output[0]} --waitretry 20 >> {log} 2>&1")
+        shell("wget {urls[1]} -O {output[1]} --waitretry 20 >> {log} 2>&1")
+
+        if not (
+            os.path.exists(output[0])
+            and (os.path.getsize(output[0]) > 0)
+            and os.path.exists(output[1])
+            and (os.path.getsize(output[1]) > 0)
+        ):
+            shell('echo "Something went wrong.. The downloaded file(s) were empty!" >> {log} 2>&1')
+            shell("exit 1 >> {log} 2>&1")
+
+
 def get_runs_from_sample(wildcards):
     run_fastqs = []
     for run in SAMPLEDICT[wildcards.sample]["runs"]:
@@ -229,6 +303,7 @@ def get_runs_from_sample(wildcards):
 
 
 public_samples = [sample for sample, values in SAMPLEDICT.items() if "runs" in values]
+keep_fastqs = (WORKFLOW == "download_fastq") or config.get("keep_downloaded_fastq")
 
 
 rule runs2sample:
@@ -238,11 +313,13 @@ rule runs2sample:
     input:
         get_runs_from_sample,
     output:
-        expand("{fastq_dir}/{{sample}}{{suffix}}", **config),
+        expand("{fastq_dir}/{{sample}}{{suffix}}", **config) if keep_fastqs else \
+            temp(expand("{fastq_dir}/{{sample}}{{suffix}}", **config))
     log:
         expand("{log_dir}/run2sample/{{sample}}{{suffix}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/run2sample/{{sample}}{{suffix}}.benchmark.txt", **config)[0]
+    priority: 2
     wildcard_constraints:
         sample="|".join(public_samples) if len(public_samples) > 0 else "$a",
     run:

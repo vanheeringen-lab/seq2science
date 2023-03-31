@@ -230,9 +230,11 @@ if config.get("create_trackhub"):
         # if not found, return the original name
         return False, assembly
 
-
-    ucsc_names = {a: get_ucsc_name(a) for a in ALL_ASSEMBLIES}
-
+    # check if trackhubs are available on ucsc (in case we dont force an assembly hub)
+    if config.get("force_assembly_hub", False):
+        ucsc_names = {a: (False, a) for a in ALL_ASSEMBLIES}
+    else:
+        ucsc_names = {a: get_ucsc_name(a) for a in ALL_ASSEMBLIES}
 
     def get_defaultpos(sizefile):
         # extract a default position spanning the first scaffold/chromosome in the sizefile.
@@ -323,9 +325,10 @@ if config.get("create_trackhub"):
         └──composite (1 per peak caller, group trackhub - assembly hub only)
            ├──view: peaks  (forward strand/unstranded for Alignment/RNA-seq)
            ├──view: signal (reverse strand for Alignment/RNA-seq)
-           ├──----brep1       view peak, subgroup brep
-           ├──----brep1 trep1 view signal, subgroup brep
-           └──----brep1 trep2 view signal, subgroup brep
+           ├──----brep1               view peak, subgroup brep
+           ├──----brep1 trep1         view signal, subgroup brep
+           ├──----brep1 trep1_control view signal, subgroup brep
+           └──----brep1 trep2         view signal, subgroup brep
         """
         out = {
             "hub": None,  # the complete trackhub
@@ -465,6 +468,14 @@ if config.get("create_trackhub"):
                     pcs = shorten(peak_caller_suffix, 5)
                     peak_caller_prefix = "" if len(config["peak_caller"]) == 1 else f"{peak_caller} "
                     pcp = shorten(peak_caller_prefix, 5)
+                    peak_caller_sort_order = {
+                        "macs2": "coordinate",
+                        "genrich": "queryname",
+                    }[peak_caller]
+                    peak_caller_sorter = {
+                        "macs2": "samtools",
+                        "genrich": "sambamba",
+                    }[peak_caller]
 
                     # one composite track to rule them all...
                     name = f"{SEQUENCING_PROTOCOL}{peak_caller_suffix} samples"
@@ -506,6 +517,20 @@ if config.get("create_trackhub"):
                         tracktype="bigWig",
                     )
                     composite.add_view(signal_view)
+
+                    # input control view
+                    if "control" in treps:
+                        control_view = trackhub.ViewTrack(
+                            name=trackhub.helpers.sanitize("input control"),
+                            short_label=f"control",  # <= 17 characters suggested
+                            long_label="input control",
+                            view="control",
+                            visibility="full",  # default
+                            maxHeightPixels="100:50:8",  # with 50 the y-axis is visible
+                            tracktype="bigWig",
+                        )
+                        composite.add_view(control_view)
+
 
                     # ...and in subgroup bind them.
                     subgroup = trackhub.SubGroupDefinition(
@@ -555,6 +580,27 @@ if config.get("create_trackhub"):
                             )
                             out["files"].append(file)
                             signal_view.add_tracks(track)
+
+                            # add the control sample(s)
+                            if "control" in treps and isinstance(treps.loc[trep, "control"], str):
+                                control_name = treps.loc[trep, "control"]
+
+                                file = f"{config['bigwig_dir']}/{assembly}-{control_name}.{peak_caller_sorter}-{peak_caller_sort_order}.bw"
+                                priority += 1.0
+                                track = trackhub.Track(
+                                    name=trackhub.helpers.sanitize(f"{rep_to_descriptive(trep)}_control bw"),
+                                    tracktype="bigWig",
+                                    short_label=f"{shorten(rep_to_descriptive(trep), 14-len(pcs), ['signs', 'vowels', 'center'])}_control{pcs} bw",  # <= 17 characters suggested
+                                    long_label=f"{rep_to_descriptive(trep)}_control{peak_caller_suffix} bigWig",
+                                    subgroups={"conditions": safedescr},
+                                    source=file,
+                                    visibility="full",  # full/squish/pack/dense/hide visibility of the track
+                                    color=hsv_to_ucsc(palletes[brep][n + 1]),
+                                    priority=priority,  # the order this track will appear in
+                                )
+                                out["files"].append(file)
+                                control_view.add_tracks(track)
+
 
             elif WORKFLOW in ["alignment", "rna_seq"]:
                 has_strandedness = strandedness_in_assembly(assembly)

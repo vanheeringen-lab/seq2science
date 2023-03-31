@@ -2,7 +2,6 @@ name: sce
 channels:
   - conda-forge
   - bioconda
-  - defaults
 dependencies:
   - bioconda::bioconductor-singlecelltk=2.4.0
   - conda-forge::r-matrix=1.5_1

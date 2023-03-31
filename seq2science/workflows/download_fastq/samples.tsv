@@ -2,5 +2,11 @@
 # https://vanheeringen-lab.github.io/seq2science/content/workflows/download_fastq.html#filling-out-the-samples-tsv
 # also make sure that you use tab as a delimiter
 sample
-GSM2520641
-GSM2520642
+ERX000401
+ERR022487
+GSM2811115
+SRX257149
+SRR800037
+DRX029591
+DRR032791
+CRX269079

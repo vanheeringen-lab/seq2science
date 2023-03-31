@@ -97,6 +97,7 @@ rule combine_peaks:
     input:
         summitfiles=get_summitfiles,
         sizes=rules.get_genome_support_files.output.sizes,
+        genome=rules.get_genome.output,
     output:
         temp(expand("{result_dir}/{{peak_caller}}/{{assembly}}_combinedsummits.bed", **config)),
     log:
@@ -111,8 +112,8 @@ rule combine_peaks:
     message: EXPLAIN["combine_peaks"]
     shell:
         """
-        combine_peaks -i {input.summitfiles} -g {input.sizes} \
-        --window {params.windowsize} > {output} 2> {log}
+        combine_peaks --genome {input.genome} --window {params.windowsize} \
+        {input.summitfiles} > {output} 2> {log}
         """
 
 
@@ -197,7 +198,7 @@ rule coverage_table:
     shell:
         """
         echo "# The number of reads under each peak" > {output} 
-        coverage_table -p {input.peaks} -d {input.replicates} -w {params.peak_width} --nthreads {threads} \
+        coverage_table {input.peaks} {input.replicates} --window {params.peak_width} --nthreads {threads} \
         2> {log} | grep -vE "^#" 2>> {log} |  
         awk 'BEGIN {{ FS = "@" }} NR==1{{gsub("{wildcards.assembly}-|.samtools-coordinate","",$0)}}; \
         {{print $0}}' >> {output}
@@ -338,8 +339,6 @@ rule combine_biological_reps:
     params:
         samples=lambda wildcards: samples[samples["assembly"] == wildcards.assembly].replace(' ', '_', regex=True).to_string(index_names=False),
         breps=lambda wildcards: breps[breps["assembly"] == wildcards.assembly].index.to_list(),
-        technical_replicates=config.get("technical_replicates") == "keep",
-        biological_replicates=config.get("biological_replicates") == "keep",
     script:
         f"{config['rule_dir']}/../scripts/combine_biological_reps.py"
 

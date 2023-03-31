@@ -65,6 +65,11 @@ if [ $1 = "alignment" ]; then
   assert_rulecount $1 runs2sample 3
   assert_rulecount $1 'ena2fastq_SE|sra2fastq_SE' 5
   assert_rulecount $1 'ena2fastq_PE|sra2fastq_PE' 1
+  assert_rulecount $1 'ena2fastq_PE|sra2fastq_PE' 1
+
+  printf "\ndownload gsa\n"
+  seq2science run download-fastq -nr --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/download_fastq/gsa_samples.tsv} | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 'gsa2fastq_SE' 1
 
   # alignment workflow
   WF=alignment
@@ -560,6 +565,12 @@ if [ $1 = "explain" ]; then
     # exit if only the default line is returned
     if [[ $val == *"(https://doi.org/10.5281/zenodo.3921913)." ]]; then
       printf "\nExplain message appears truncated! Exiting.\n"
+      exit 1;
+    fi;
+
+    # exit if nothing is printed at all
+    if [[ $val != *"seq2science"* ]]; then
+      printf "\nExplain message appears empty? Exiting.\n"
       exit 1;
     fi;
   }

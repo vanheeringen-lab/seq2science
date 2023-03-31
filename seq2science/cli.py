@@ -104,7 +104,7 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         description="Explains what has/will be done for the workflow. This prints a string which can serve"
         " as a skeleton for your material & methods section.",
     )
-    clean = subparsers.add_parser(
+    clean = subparsers.add_parser(  # noqa: F841
         "clean",
         help="Remove all cached sample files and conda environments.",
         description="At the start of each workflow run, seq2science starts with installing environments for each "
@@ -112,7 +112,7 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         " large and it might be best to remove them when you are done with an analysis. \n"
         "seq2science clean will clean up these files for you.",
     )
-    docs = subparsers.add_parser(
+    docs = subparsers.add_parser(  # noqa: F841
         "docs",
         description="The docs command tries to open your browser and open the docs' webpage, "
         "if that didn't work it prints the url.",
@@ -321,7 +321,7 @@ def _run(args, base_dir, workflows_dir, config_path):
     if not os.path.exists(config_path):
         sys.stdout.write(
             f"The config file: {config_path} does not exist.\nProvide a path to the config file with "
-            f"--config or if you do not have a config file run:\n"
+            f"--configfile or if you do not have a config file run:\n"
             f"seq2science init {args.workflow}\n"
         )
         os._exit(1)  # noqa
@@ -339,6 +339,7 @@ def _run(args, base_dir, workflows_dir, config_path):
         "unlock": args.unlock,
         "cleanup_metadata": args.cleanup_metadata,
         "force_incomplete": args.rerun_incomplete,
+        "rerun_triggers": ["mtime", "input", "software-env"] if not args.skip_rerun else [],
     }
 
     # get the additional snakemake options
@@ -372,7 +373,9 @@ def _run(args, base_dir, workflows_dir, config_path):
     else:
         parsed_args["cores"] = 0
 
-    if parsed_args["cores"] < 2 and not (args.unlock or args.cleanup_metadata is not None):
+    if parsed_args["cores"] < 2 and not any(
+            [parsed_args["unlock"], parsed_args["cleanup_metadata"], parsed_args["dryrun"]]
+    ):
         subjectively_prettier_error(core_arg, "specify at least two cores.")
 
     # when running on a cluster assume cores == nodes (just like snakemake does)
@@ -387,13 +390,13 @@ def _run(args, base_dir, workflows_dir, config_path):
 
     # run snakemake/seq2science
     #   1. pretty welcome message
-    setup_seq2science_logger(parsed_args)
+    setup_seq2science_logger(parsed_args, args.debug)
     log_welcome(logger, args.workflow)
 
     if args.debug:
         # dump the parsed args as readable json
         import json
-        logger.info(json.dumps(parsed_args, sort_keys=True, indent=2))
+        logger.debug(json.dumps(parsed_args, sort_keys=True, indent=2))
 
     if not args.skip_rerun or args.unlock or args.cleanup_metadata is not None:
         #   2. start a dryrun checking which files need to be created, and check if
@@ -472,6 +475,7 @@ def _explain(args, base_dir, workflows_dir, config_path):
         "dryrun": True,
         "forceall": True,
         "quiet": False,
+        "force_incomplete": True,
     }
 
     # get the additional snakemake options
@@ -641,7 +645,7 @@ def resource_parser(parsed_args):
         parsed_args["resources"]["mem_gb"] = round(mem)
 
 
-def setup_seq2science_logger(parsed_args):
+def setup_seq2science_logger(parsed_args, debug=False):
     setup_logger()
     if not parsed_args["dryrun"]:
         seq2science_logfile = os.path.abspath(
@@ -651,6 +655,8 @@ def setup_seq2science_logger(parsed_args):
         logger.get_logfile = lambda: seq2science_logfile
         logger.logfile_handler = _logging.FileHandler(seq2science_logfile)
         logger.logger.addHandler(logger.logfile_handler)
+    if debug:
+        logger.set_level(snakemake.logging._logging.DEBUG)
 
 
 def run_snakemake(workflow, **config):

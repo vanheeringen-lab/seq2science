@@ -1,7 +1,7 @@
 # Frequently Asked Questions (FAQ)
 
 ## One of the rules failed and the log turns red!
-Even though we (the developers) think that seq2science works perfectly in all situations, this, unfortunately, is not always the case. Luckily most rules keep a log, where the error message of that rule is being printed to. When a rule fails seq2science prints a couple things, and one of those thing is where the log is stored. Open that file and check the error message. Sometimes rules fail because for instance the storage of your server is full or the internet connection during the downloading of a genome/sample got interrupted. If you think the rule failed because of a mistake on our side, please check our [issues page](https://github.com/vanheeringen-lab/seq2science/issues) and see if someone already made an issue about this. If not, we invite you to start a new issue and we'll try to help you as soon as possible.
+Even though we (the developers) think that seq2science works perfectly in all situations, this is, unfortunately, not always the case. Luckily most rules keep a log, where the error message of that rule is being printed to. When a rule fails seq2science prints a couple things, and one of those thing is where the log is stored. Open that file and check the error message. Sometimes rules fail because for instance the storage of your server is full or the internet connection during the downloading of a genome/sample got interrupted. If you think the rule failed because of a mistake on our side, please check our [issues page](https://github.com/vanheeringen-lab/seq2science/issues) and see if someone already made an issue about this. If not, we invite you to start a new issue and we'll try to help you as soon as possible.
 
 p.s. updating to the newest version (if you did not already) also might solve your problem!
 
@@ -81,3 +81,11 @@ bad alloc generally means that kallisto|bustools tried to reserve some memory, b
 Are there other programs running that take up a lot of memory?
 For us (the developers) it also seems as if this rule sometimes happens, seemingly at random.
 Simply restarting seq2science might just solve the problem!
+
+## UCSC trackhub displays no data
+Sometimes this happens because even though the genome assembly used is supported by ucsc, somehow the chromosome ids are different. 
+For instance chr1 vs Chr1 vs 1, etc.
+To solve this one can try to change assembly, with the downside that all the alignment etc. has to be re-run again.
+Or you can add `force_assembly_hub: true` in the config, so that only the trackhub gets remade, but this time as a so-called assembly hub.
+An assembly hub does not use a genome assembly that's provided by UCSC, so that no chromosome id mismatches can occur.
+

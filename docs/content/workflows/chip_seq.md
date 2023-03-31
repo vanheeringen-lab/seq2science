@@ -1,40 +1,61 @@
 ## ChIP-seq
-Running a ChIP-seq analysis has never been easier!
+
+Preprocessing of ChIP-seq has never been easier!
 
 ### Workflow overview (simplified)
 
 <p align="center">
-  <img src="../../_static/chip_seq.png" width="60%">
+  <img src="../../_static/chip_seq.png" style="width:auto;height:500px;">
 </p>
 
 An example quality control report can be [viewed here](https://vanheeringen-lab.github.io/seq2science/_static/chip_seq_multiqc.html).
 
 #### Downloading of sample(s)
+
 Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples.
+The downloading of samples is integrated into each workflow, so you don't have to start a download workflow first.
 You control which samples are used in the [samples.tsv](#filling-out-the-samples-tsv).
 Background on public data can be found [here](./download_fastq.html#download-sra-file).
 
 #### Downloading and indexing of assembly(s)
+
 Depending on whether the assembly and its index you align your samples against already exist seq2science will start with downloading of the assembly through [genomepy](https://github.com/vanheeringen-lab/genomepy).
 
 #### Read trimming
+
 The pipeline starts by trimming the reads with Trim Galore! or Fastp (the default).
 The trimmer will automatically trim the low quality 3' ends of reads, and removes short reads.
-During the quality trimming it automatically detects which adapter was used, and trims this as well.
-Trimming parameters for the pipeline can be set in the configuration.
+During quality trimming it automatically detects which sequencing adapter was used (if it wasn't trimmed off yet), and then trims this as well.
+Trimming parameters for the pipeline can be set in the configuration, for example:
+```
+trimmer:
+  fastp:
+    trimoptions: --trim_front1 3 --trim_front2 14 --trim_poly_x
+```
 
 #### Alignment
-After trimming the reads are aligned against an assembly. Currently we support `bowtie2`, `bwa-mem`, `hisat2` and `star` as aligners. Choosing which aligner is as easy as setting the *aligner* variable in the `config.yaml`, for example: `aligner: bwa`. Sensible defaults have been set for every aligner, but can be overwritten for either (or both) the indexing and alignment by specifying them in the `config.yaml`.
+
+After trimming the reads are aligned against an assembly. Currently we support *bowtie2*, *bwa*, *bwa-mem2*, *hisat2*, *minimap2* and *STAR* as aligners. Choosing which aligner is as easy as setting the *aligner* variable in the `config.yaml`, for example: `aligner: bwa`. Sensible defaults have been set for every aligner, but can be overwritten for either (or both) the indexing and alignment by specifying them in the `config.yaml`:
+
+```
+aligner: 
+  bwa-mem:
+    index: '-a bwtsw'
+    align: '-M'
+```
 
 The pipeline will check if the assembly you specified is present in the *genome_dir*, and otherwise will download it for you through [genomepy](https://github.com/vanheeringen-lab/genomepy). All these aligners require an index to be formed first for each assembly, but don't worry, the pipeline does this for you. 
 
 #### Bam sieving
+
 After aligning the bam you can choose to remove unmapped reads, low quality mappings, duplicates, and multimappers.
 
 #### Peak calling
+
 Currently we support two peak callers for the ChIP-seq workflow, MACS2 and genrich.
 
 ##### MACS2 
+
 [MACS2](https://github.com/taoliu/MACS) is the successor of MACS, created by [taoliu](https://github.com/taoliu) (also one of the co-authors of hmmratac). MACS2 generates a '*pileup*' of all the reads. You can imagine this pileup as laying all reads on top of each other on the genome, and counting how high your pile gets for each basepair. MACS2 then models '*background*' values, based on the total length of all your reads and the genome length, to a [Poisson distribution](https://en.wikipedia.org/wiki/Poisson_distribution) and decides whether your experimental pileup is significant compared to the poisson distribution. MACS2 is one of the, if not the, most used peak caller.
 
 For the calculation of peaks MACS2 requires that an "effective" genome size is being passed as one of its arguments. For the more common assemblies (e.g. mm10 and human) these numbers can be found online. However we found googling these numbers quite the hassle, and for lesser studied species these numbers can't be found online. Therefore the pipeline automatically estimates the effective genome size, we calculate this as **the number of unique kmers of the average read length**.
@@ -50,12 +71,15 @@ peak_caller:
 ```
 
 ##### Genrich
+
 [Genrich](https://github.com/jsh58/Genrich) is a spiritual successor of MACS2, created by [John M. Gaspar](https://github.com/jsh58). Just like MACS2 is generates a '*pileup'*. However the author of genrich realized that the distribution of pileup never follows a poisson distribution. Genrich then uses a [log-normal distribution](https://en.wikipedia.org/wiki/Log-normal_distribution) to model the background. 
 
 #### Quality report
+
 It is always a good idea to check the quality of your samples. Along the way different quality control steps are taken, and are outputted in a single [multiqc report](https://multiqc.info/) in the `qc` folder. Make sure to always check the report, and take a look at [interpreting the multiqc report](../results.html#multiqc-quality-report)!
 
 #### Count table
+
 A useful result the pipeline outputs is the count table, located at {counts_dir}/{peak_caller}/.
 For each narrowpeak (across all samples) its summit is taken, and all other summits within range `peak_windowsize` (default 100) are taken together, and the summit with the highest q-value is taken as the "true" peak.
 The remaining peaks are extended by `slop` on each side and for each sample the number of reads are counted under this peak.
@@ -84,18 +108,21 @@ Note that this table contains **all** peaks, and no selection on differential pe
 
 Seq2science supports differential motif analysis!
 This analysis is based on the tool [gimme maelstrom](https://gimmemotifs.readthedocs.io/en/master/reference.html#command-gimme-maelstrom).
-As input to gimme maelstrom is the count table of the biological reps (average between reps) in the consensus peakset.
+As input to gimme maelstrom is the log 2 transformed quantile normalized count table of the biological reps (average between reps) in the consensus peakset.
 It then tries to solve a system of linear equations, where the output is the read counts in a peak, and the input is the motif score in the peak times the "motif activity".
 This motif activity can then be compared across biological replicates for differential motifs.
 
 #### Differential peak analysis
-On top of that, Seq2science can also use the raw peak counts table to perform differential peak analysis.
+
+On top of that, Seq2science can also use the raw peak counts table to perform differential peak analysis with DESeq2.
 See the [Differential gene/peak analysis page](../DESeq2.html) for more information!
 
 #### Trackhub
+
 A UCSC compatible trackhub can be generated for this workflow. See the [trackhub page](../results.html#trackhub)<!-- @IGNORE PREVIOUS: link --> for more information!
 
 ### Filling out the samples.tsv
+
 Before running a workflow you will have to specify which samples you want to run the workflow on. Each workflow starts with a `samples.tsv` as an example, and you should adapt it to your specific needs. As an example, the `samples.tsv` could look something like this:
 ```
 sample    assembly    replicate    descriptive_name    control
@@ -107,6 +134,7 @@ GSM890    danRer11    stage_9      stage_9             GSM234
 ```
 
 #### Sample column
+
 If you use the pipeline on **public data** this should be the name of the accession (e.g. GSM2837484).
 Accepted formats start with "GSM", "SRR", "SRX", "DRR", "DRX", "ERR" or "ERX".
 
@@ -125,9 +153,11 @@ In the example above, the `fastq_dir` should be set to `/home/user/myfastqs`.
 These setting can be changed in the `config.yaml`.
 
 #### Assembly column
+
 Here you simply add the name of the assembly you want your samples aligned against and the workflow will download it for you.
 
 #### Control (input) column
+
 In the `control` column you can (optionally) add the "sample name" of the input control. 
 It is generally a bad idea to add the input control as a sample in the sample since generally peak callers fail on these samples. 
 Doing so looks like this:
@@ -138,12 +168,14 @@ GSM123    GRCh38      GSMabc
 ```
 
 #### Descriptive_name column
+
 The descriptive\_name column is used for the trackhub and multiqc report.
 In the trackhub your tracks will be called after the descriptive name, and in the multiqc report there will be a button to rename your samples after this column.
 The descriptive name can not contain '-' characters, but underscores '\_' are allowed.
 
 #### technical_replicates column
-Technical replicates, or any fastq file you may wish to merge, are set using the `technical_replicates` column in the samples.tsv file.
+
+Technical replicates, or any fastq file you may wish to merge on the fastq level, are set using the `technical_replicates` column in the samples.tsv file.
 All samples with the same name in the `technical_replicates` column will be concatenated into one file with the replicate name.
 
 Example `samples.tsv` utilizing replicate merging:
@@ -161,9 +193,11 @@ The MultiQC will inform you of the trimming steps performed on all samples, and 
 Note: If you are working with multiple assemblies in one workflow, replicate names have to be unique between assemblies (you will receive a warning if names overlap).
 
 ##### keep
+
 Replicate merging is turned on by default. It can be turned off by setting `technical_replicates` in the `config.yaml` to `keep`.
 
 #### Biological replicates
+
 During ATAC-seq workflows, peak calling can be performed per biological condition, depending on your configuration setting. Biological conditions are determined by the `biological_replicates` column in the samples.tsv file. How these samples are handled is specified by configuration variable `biological_replicates`.
 
 ```
@@ -177,12 +211,15 @@ GSM890    GRCh38
 In this case peaks of the two liver samples (GSMabc and GSMxzy) will be combined by e.g. IDR.
 
 ##### Keep
+
 By setting `biological_replicates` to keep, all biological replicates are analyzed individually. The `biological_replicates` column is ignored.
 
 ##### Irreproducible Discovery Rate (IDR)
-One of the more common methods to combine biological replicates is by the irreproducible discovery rate ([idr](https://github.com/kundajelab/idr)). Shortly; idr sorts all the peaks of two replicates separately on their significance. Since true peaks should be very significant for both replicates these peaks will be one of the highest sorted peaks. As peaks get less and less true (and thus their significance) their ordering also becomes more random between the samples. The idr method then only keeps the peak that overlap *nonrandomly* between the samples. The idr method only works for two replicates, so can not be used when you have more than 2 (`n == 2`). IDR can be turned on by setting `biological_replicates` to idr.
+
+One of the more common methods to combine biological replicates is by the irreproducible discovery rate ([idr](https://github.com/kundajelab/idr)). Shortly; idr sorts all the peaks of two replicates separately on their significance. Since true peaks should be very significant for both replicates these peaks will be one of the highest sorted peaks. As peaks get less and less true (and thus their significance) their ordering also becomes more random between the samples. The idr method then only keeps the peak that overlap *nonrandomly* between the samples. The idr method only works for two replicates, so can not be used when you have more than 2. IDR can be turned on by setting `biological_replicates` to idr.
 
 ##### Fisher's method
+
 [Fisher's method ](https://en.wikipedia.org/wiki/Fisher%27s_method) simply is a method to 'combine' multiple p-values. This method is built-in for genrich and macs2, and allows any number of replicates (`n >= 2`). However a 'disadvantage' of this method is that it assumes the p-values a method generates are actual p-values (and not a general indication of significance). MACS2 is slightly notorious for that its p-values are not true p-values. Genrich claims by fitting on a log-normal distribution that their p-values are true. Even though fisher's method might not be ideal, it's the only option you have (we provide) within this pipeline for more than 2 replicates. Fisher's method can be turned on by setting `biological_replicates` to fisher.
 
 
@@ -199,21 +236,27 @@ GSM890    GRCh38      lindsey_liver        liver
 In this example we have data from Peter and Lindsey. We have one liver sample and one kidney sample from Peter. Of Lindsey we only have a liver sample, which was sequenced across two different lanes. With this sample sheet, the samples of Lindsey get merged after trimming. Then peak calling is done separately on each of the three remaining technical replicates (peter_kidney, peter_liver, lindsey_liver), and afterwards all liver technical replicates belonging to the same biological replicate (in this case peter_liver and lindsey_liver) are combined through e.g. IDR.
 
 #### Colors column
+
 If you are visualizing your data on the UCSC trackhub you can optionally specify the colors of each main track. For ATAC- and ChIP-seq, each biological replicate is a main track.
 To do so, you can add the color by name (google "matplotlib colors" for the options), or RGB values, in the "colors" column. Empty fields are considered black.
 
 #### Final notes
+
 - Make sure that the samples.tsv is a tab separated values file when running the pipeline.
 - Feel free to delete or add columns to your liking.
 
 ### Filling out the config.yaml
+
 Every workflow has many configurable options, and can be set in the `config.yaml` file. In each `config.yaml` we highlighted a couple options that we think are relevant for that specific workflow, and set (we think) **reasonable default** values.
 
 When a workflow starts it prints the complete configuration, and (almost) all these values can be added in the `config.yaml` and changed to your liking. You can see the complete set of configurable options in the [extensive docs](../schemas.html).
 
 ### Best practices
+
 #### Irreproducible Discovery Rate
+
 For idr to work properly, it needs a large portion of peaks that are actually not true peaks. Therefore we recommend to call peaks 'loosely'. One way of doing this is setting the [peak threshold q-value](https://github.com/taoliu/MACS#-q--pvalue) low for macs2 in the configuration.  The q-value controls the ratio of `false positives / (false positives + true positives)`. Setting a q-value of 1 guarantees you have plenty of false positives in your dataset for IDR to work properly.
 
 #### subsampling
+
 In some cases you might want to have the same number of reads between samples. By adding e.g. `subsample:1_000_000` seq2science will make sure that each sample contains at most a million reads. Seq2science always downsamples, never upsamples. 

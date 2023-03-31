@@ -13,6 +13,8 @@ import pathlib
 import pickle
 import urllib.request
 import yaml
+import requests
+import traceback
 from io import StringIO
 from typing import List
 from math import ceil, floor
@@ -126,7 +128,7 @@ def samples2metadata_local(samples: List[str], config: dict, logger) -> dict:
         ):
             SAMPLEDICT[sample] = dict()
             SAMPLEDICT[sample]["layout"] = "PAIRED"
-        elif sample.startswith(("GSM", "DRX", "ERX", "SRX", "DRR", "ERR", "SRR")):
+        elif sample.startswith(("GSM", "DRX", "ERX", "SRX", "DRR", "ERR", "SRR", "CRX")):
             continue
         else:
             extend_msg = ""
@@ -147,6 +149,96 @@ def samples2metadata_local(samples: List[str], config: dict, logger) -> dict:
             os._exit(1)  # noqa
 
     return SAMPLEDICT
+
+
+def crx2downloads(crx_id):
+    """
+    Get the crr (run) and the corresponding download link(s) from a crx id.
+    """
+    # get from the crx number the accession number and the experiment url
+    url = f"https://ngdc.cncb.ac.cn/search/?dbId=gsa&q={crx_id}"
+    r = requests.get(url)
+    time.sleep(0.1)
+    if r.status_code != 200:
+        return {}
+
+    search = re.search(f"https://ngdc.cncb.ac.cn/gsa/browse/(.+)/{crx_id}", r.text)
+    if search is None:
+        return {}
+    crx_url = search.group(0)
+    cra_id = search.group(1)
+
+    # then get the run id and url from the experiment number page
+    r = requests.get(crx_url)
+    time.sleep(0.1)
+    if r.status_code != 200:
+        return {}
+
+    search = re.findall(f"browse/{cra_id}/(CRR\d+)", r.text)
+    if search is None:
+        return {}
+
+    # and finally find the download link(s) per run and add them to the final_res dict
+    final_res = {}
+    for crr_id in search:
+        crr_url = f"https://ngdc.cncb.ac.cn/gsa/browse/{cra_id}/{crr_id}"
+
+        # finally find the download links that belong to the run
+        r = requests.get(crr_url)
+        time.sleep(0.1)
+        if r.status_code != 200:
+            return []
+
+        urls = re.findall(f"https://download[^\s]+.gz", r.text)
+        # remove duplicate urls but keep order
+        urls = list(dict.fromkeys(urls))
+        final_res[crr_id] = urls
+
+    return final_res
+
+
+def samples2metadata_gsa(samples: List[str], logger) -> dict:
+    """
+    Based on a list of gsa crx numbers, this function returns the layout, runs, and download links.
+
+    output:
+        dict(
+            "CRX1234": {"layout": "PAIRED",
+                        "runs": ["CRR1234", "CRR4321"],
+                        "gsa_fastq_http": {CRR1234: [link_1, link_2], ...,
+
+            "SRR5678": {"layout": "SINGLE",
+                        "runs": ["CRR5678"],
+                        gsa_fastq_http: {CRR5678: [link_1]},
+            ...
+        )
+    """
+    failed_samples = []
+    sampledict = {sample: dict() for sample in samples}
+    for crx_id in samples:
+        rundict = crx2downloads(crx_id)
+        # if nothing returned it failed
+        if not rundict:
+            failed_samples.append(crx_id)
+
+        for run, urls in rundict.items():
+            # if more than 2 urls we fail
+            if 1 > len(urls) >= 2:
+                failed_samples.append(crx_id)
+                continue
+
+            if "runs" not in sampledict[crx_id]:
+                sampledict[crx_id]["runs"] = []
+                sampledict[crx_id]["gsa_fastq_http"] = {}
+            sampledict[crx_id]["layout"] = "PAIRED" if len(urls) == 2 else "SINGLE"
+            sampledict[crx_id]["runs"].append(run)
+            sampledict[crx_id]["gsa_fastq_http"][run] = urls
+
+    if len(failed_samples) > 0:
+        logger.error(f"We had trouble querying GSA. These sample(s) failed: {failed_samples}")
+        os._exit(1)  # noqa
+
+    return sampledict
 
 
 def samples2metadata_sra(samples: List[str], logger) -> dict:
@@ -172,7 +264,7 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
         )
     """
     # start with empty dictionary which we fill out later
-    SAMPLEDICT = {sample: dict() for sample in samples}
+    sampledict = {sample: dict() for sample in samples}
 
     # only continue with public samples
     db_sra = pysradb.SRAweb()
@@ -184,32 +276,38 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
     if len(geo_samples):
         try:
             df_geo = db_sra.gsm_to_srx(geo_samples)
-        except:
+        except BaseException as e: 
             logger.error(
                 "We had trouble querying the SRA. This probably means that the SRA was unresponsive, and their servers "
                 "are overloaded or slow. Please try again in a bit...\n"
                 "Another possible option is that you try to access samples that do not exist or are protected, and "
                 "seq2science does not support downloading those..\n\n"
             )
+            logger.debug(f"Affected samples: {', '.join(geo_samples)}")
+            tb_str = traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__)
+            logger.debug("".join(tb_str))
             os._exit(1)  # noqa
 
         sample2clean = dict(zip(df_geo.experiment_alias, df_geo.experiment_accession))
     else:
         sample2clean = dict()
-
+   
     # now add the already SRA compliant names with a reference to itself
     sample2clean.update({sample: sample for sample in samples if sample not in geo_samples})
-
+   
     # check our samples on sra
     try:
         df_sra = db_sra.sra_metadata(list(sample2clean.values()), detailed=True)
-    except:
+    except BaseException as e:
         logger.error(
             "We had trouble querying the SRA. This probably means that the SRA was unresponsive, and their servers "
             "are overloaded or slow. Please try again in a bit...\n"
             "Another possible option is that you try to access samples that do not exist or are protected, and "
             "seq2science does not support downloading those..\n\n"
         )
+        logger.debug(f"Affected samples: {', '.join(sample2clean.values())}")
+        tb_str = traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__)
+        logger.debug("".join(tb_str))
         os._exit(1)  # noqa
 
     # keep track of not-supported samples
@@ -217,13 +315,16 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
     not_supported_samples = []
 
     for sample, clean in sample2clean.items():
+        # catch edge case when sample is a reanalysis so multple GSM numbers are associated with the same data
+        if sample not in sampledict:
+            continue
         # table indices
         idxs = _sample_to_idxs(df_sra, clean)
 
         # get all runs that belong to the sample
         runs = df_sra.loc[idxs].run_accession.tolist()
         assert len(runs) >= 1
-        SAMPLEDICT[sample]["runs"] = runs
+        sampledict[sample]["runs"] = runs
 
         # check if sample is from a supported format
         for bad_format in not_supported_formats:
@@ -235,22 +336,22 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
         layout = df_sra.loc[idxs].library_layout.tolist()
         assert len(set(layout)) == 1, f"sample {sample} consists of mixed layouts, bad!"
         assert layout[0] in ["PAIRED", "SINGLE"], f"sample {sample} is an unclear layout, bad!"
-        SAMPLEDICT[sample]["layout"] = layout[0]
+        sampledict[sample]["layout"] = layout[0]
 
         # get the ena url
-        SAMPLEDICT[sample]["ena_fastq_ftp"] = dict()
+        sampledict[sample]["ena_fastq_ftp"] = dict()
         for run in runs:
             if layout[0] == "SINGLE":
-                SAMPLEDICT[sample]["ena_fastq_ftp"][run] = df_sra[df_sra.run_accession == run].ena_fastq_ftp.tolist()
+                sampledict[sample]["ena_fastq_ftp"][run] = df_sra[df_sra.run_accession == run].ena_fastq_ftp.tolist()
             elif layout[0] == "PAIRED":
-                SAMPLEDICT[sample]["ena_fastq_ftp"][run] = (
+                sampledict[sample]["ena_fastq_ftp"][run] = (
                     df_sra[df_sra.run_accession == run].ena_fastq_ftp_1.tolist()
                     + df_sra[df_sra.run_accession == run].ena_fastq_ftp_2.tolist()
                 )
 
         # if any run from a sample is not found on ENA, better be safe, and assume that sample as a whole is not on ENA
-        if any([any(pd.isna(urls)) for urls in SAMPLEDICT[sample]["ena_fastq_ftp"].values()]):
-            SAMPLEDICT[sample]["ena_fastq_ftp"] = None
+        if any([any(pd.isna(urls)) for urls in sampledict[sample]["ena_fastq_ftp"].values()]):
+            sampledict[sample]["ena_fastq_ftp"] = None
 
     # now report single message for all sample(s) that are from a sequencing platform that is not supported
     assert len(not_supported_samples) == 0, (
@@ -258,7 +359,7 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
         f'these formats; [{", ".join(not_supported_formats)}] are not supported.'
     )
 
-    return SAMPLEDICT
+    return sampledict
 
 
 def samples2metadata(samples: List[str], config: dict, logger) -> dict:
@@ -268,17 +369,21 @@ def samples2metadata(samples: List[str], config: dict, logger) -> dict:
     if len(public_samples) == 0:
         return local_samples
 
+    gsa_samples = [sample for sample in public_samples if sample.startswith("CRX")]
+    gsa_samples = samples2metadata_gsa(gsa_samples, logger)
+    rest_public_samples = [sample for sample in public_samples if sample not in gsa_samples]
+
     # chop public samples into smaller chunks, doing large queries results into
     # pysradb decode errors..
     chunksize = 100
-    chunked_public = [public_samples[i : i + chunksize] for i in range(0, len(public_samples), chunksize)]
+    chunked_public = [rest_public_samples[i : i + chunksize] for i in range(0, len(rest_public_samples), chunksize)]
     sra_samples = dict()
     for chunk in chunked_public:
         sra_samples.update(samples2metadata_sra(chunk, logger))
         # just to be sure sleep in between to not go over our API limit
         time.sleep(1)
 
-    return {**local_samples, **sra_samples}
+    return {**local_samples, **sra_samples, **gsa_samples}
 
 
 def sieve_bam(configdict):
@@ -388,7 +493,7 @@ def expand_contrasts(samples: pd.DataFrame, contrasts: list or str) -> list:
     return new_contrasts
 
 
-def get_contrasts(samples: pd.DataFrame, config: dict, ALL_ASSEMBLIES: list) -> list:
+def get_contrasts(samples: pd.DataFrame, config: dict, all_assemblies: list) -> list:
     """
     list all diffexp.tsv files we expect
     """
@@ -411,10 +516,16 @@ def get_contrasts(samples: pd.DataFrame, config: dict, ALL_ASSEMBLIES: list) -> 
             }
             column = backup_columns[column]
 
-        for assembly in ALL_ASSEMBLIES:
-            groups = set(samples[samples.assembly == assembly][column].to_list())
+        for assembly in all_assemblies:
+            # remove the custom assembly suffix
+            ori_assembly = assembly
+            if assembly not in samples.assembly and assembly.endswith(config["custom_assembly_suffix"]):
+                ori_assembly = assembly[:-len(config["custom_assembly_suffix"])]
+
+            groups = set(samples[samples.assembly == ori_assembly][column].to_list())
             if target in groups and reference in groups:
                 all_contrasts.append(f"{config['deseq2_dir']}/{assembly}-{de_contrast}.diffexp.tsv")
+
     return all_contrasts
 
 
@@ -713,21 +824,27 @@ class PickleDict(dict):
                     format="<green>{time:HH:mm:ss}</green> <bold>|</bold> <blue>{level}</blue> <bold>|</bold> {message}",
                     level="INFO",
                 )
-                for p in genomepy.providers.online_providers():
-                    search_assemblies = [a for a in search_assemblies if self[a]["annotation"] is None]
-                    for assembly in search_assemblies:
-                        if assembly not in p.genomes:
-                            continue  # check again next provider
+                try:
+                    for p in genomepy.providers.online_providers():
+                        search_assemblies = [a for a in search_assemblies if self[a]["annotation"] is None]
+                        for assembly in search_assemblies:
+                            if assembly not in p.genomes:
+                                continue  # check again next provider
 
-                        if p.annotation_links(assembly):
-                            self[assembly]["genome"] = p.name
-                            self[assembly]["annotation"] = p.name
+                            if p.annotation_links(assembly):
+                                self[assembly]["genome"] = p.name
+                                self[assembly]["annotation"] = p.name
 
-                        elif self[assembly]["genome"] is None:
-                            self[assembly]["genome"] = p.name
+                            elif self[assembly]["genome"] is None:
+                                self[assembly]["genome"] = p.name
 
-                    if all(self[a]["annotation"] for a in search_assemblies):
-                        break  # don't load the next provider
+                        if all(self[a]["annotation"] for a in search_assemblies):
+                            break  # don't load the next provider
+                except Exception as e:
+                    logger.error("Seq2science has trouble querying the assembly providers. Try again in a bit.")
+                    logger.error("To see the error stack trace run seq2science with --debug.")
+                    logger.debug(e)
+                    os._exit(1) # noqa
 
         # store added assemblies
         self.save()
@@ -831,6 +948,8 @@ def _get_current_version(package):
         package = "yaml"
     elif package == "biopython":
         package = "Bio"
+    elif package == "matplotlib-base":
+        package = "matplotlib"
 
     ldict = dict()
     exec(f"from {package} import __version__", {}, ldict)

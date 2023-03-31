@@ -45,11 +45,13 @@ rule gimme_maelstrom:
     input:
         genome=rules.get_genome.output,
         count_table=expand("{counts_dir}/{{peak_caller}}/{{assembly}}_log2_quantilenorm_biological_reps.tsv", **config),
-        pfm=rules.motif2factors.output
+        pfm=rules.motif2factors.output if config.get("infer_motif2factors") else []
     output:
         output=directory(expand("{result_dir}/gimme/maelstrom/{{assembly}}-{{gimme_database}}-{{peak_caller}}", **config)),
         cache=temp(directory(expand("{result_dir}/gimme/maelstrom/cache/{{assembly}}-{{gimme_database}}-{{peak_caller}}", **config))),
-    params: config.get("gimme_maelstrom_params", "")
+    params: 
+        params=config.get("gimme_maelstrom_params", ""),
+        pfmfile=lambda wildcards, input: input.pfm if config.get("infer_motif2factors") else (config.get('gimme_maelstrom_database') + ".pfm")
     log:
         expand("{log_dir}/gimme_maelstrom/{{assembly}}-{{gimme_database}}-{{peak_caller}}.log", **config),
     benchmark:
@@ -74,5 +76,5 @@ rule gimme_maelstrom:
         """ +
         ("cpulimit --include-children -l {threads}00 --\\" if config.get("cpulimit", True) else "") +
         """
-        gimme maelstrom {input.count_table} {input.genome} {output.output} --pfmfile {input.pfm} --nthreads {threads} {params} > {log} 2>&1
+        gimme maelstrom {input.count_table} {input.genome} {output.output} --pfmfile {params.pfmfile} --nthreads {threads} {params.params} > {log} 2>&1
         """

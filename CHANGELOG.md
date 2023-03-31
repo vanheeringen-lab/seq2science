@@ -1,4 +1,5 @@
 # Changelog
+
 All notable changes to `seq2science` will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
@@ -10,12 +11,70 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Changed
 
-- for atac-seq workflow `macs2_keep_mates` is enabled by default.
-- Workflow DAGs in the documentation are now simplified
+- moved downloading fastqs to localrules
+- bam indexes are kept (not automatically removed)
+- Salmon updated to the latest version v1.10.1 (fixes a bug)
+- upsetplot updated to the latest version (fixes a bug)
+- genomepy updated to the latest version (no reason)
+- tabulate updated to the latest version (longer python support)
+- `--snakemakeOption debug_dag=True` can now be used with 1 core (required)
+- creating conda environments now faster
+  - updated conda & mamba
+  - dropped indexing of Conda's defaults channel
+- one less global variable! (sanitized_samples)
 
 ### Fixed
 
+- edge case when a GSM sample is a reanalysis of another GSM sample.
+- error message referring to `--config` while it should be `--configfile`
+- cyclic dependency on rule samtools_sort (caused by tildes in config paths)
+- bug in DESeq2 related rules when using custom assemblies
+- clear error message when downloading single-end data annotated as paired-end.
+- "Max retries exceeded with url" for CRX samples
+- upsetplot & assembly_stats segfault due to interactive matplotlib backend
+- DESeq2 error: "EOF within quoted string"
+- conda environment channel priorities 
+
+## [0.9.8] - 2023-02-01
+
+### Added
+
+- (experimental) support for the Chinese Genome Sequence Archive (GSA). Samples can start with their CRX identifiers.
+- a `force_assembly_hub` flag to make an ucsc assembly hub even though a trackhub already exists
+
+### Changed
+
+- MultiQC version updated (1.14)
+
+### Fixed
+
+- edge case with the downloading-fastq workflow when samples file has an assembly column
+- workflow explanation not being properly added to qc report
+- download-fastq finishing succesfully with an error message..
+
+## [0.9.7] - 2023-01-03
+
+### Added
+
+- a message at the end of a succesful seq2science run where to find the report and the trackhub
+- nicer error when genomepy has trouble querying the providers
+- flag `infer_motif2factors` for whether or not motif2factors should be run
+
+### Changed
+
+- Snakemake backend updated to most recent version
+- for atac-seq workflow `macs2_keep_mates` is enabled by default.
+- Workflow DAGs in the documentation are now simplified
+- MultiQC version updated
+- Fastqs downloaded by seq2science are now removed when not used anymore, can be turned on/off with `keep_downloaded_fastq`
+- updated gimmemotifs
+
+### Fixed
+
+- fixed macos errors thanks to reporting of @Jerolen and @WouterVGKULEUVEN
 - clear error when specifying unavailable trimmer (#888)
+- fixed bug with rule combine_biological_reps when no biological reps/descriptive names are present
+- issue computeMatrix_gene without configurable distances, visualized in multiQC plotProfile (#905; default now 3000 bp up&down stream of gene)
 
 ## [0.9.6] - 2022-10-31
 
@@ -693,7 +752,9 @@ Many minor bug- and quality of life fixes.
 ## [0.0.0] - 2020-06-11
 First release of seq2science!
 
-[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.6...develop
+[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.8...develop
+[0.9.8]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.7...v0.9.8
+[0.9.7]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.6...v0.9.7
 [0.9.6]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.5...v0.9.6
 [0.9.5]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.4...v0.9.5
 [0.9.4]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.3...v0.9.4

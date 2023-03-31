@@ -329,10 +329,11 @@ rule computeMatrix_gene:
         if get_descriptive_names(wildcards, input.bw) != ""
         else "",
         gtf=rules.get_genome_annotation.output.gtf,  # TODO: move genomepy to checkpoint and this as input
+        params=config["deeptools_computematrix_gene"],
     shell:
         """
         computeMatrix scale-regions -S {input.bw} {params.labels} -R {params.gtf} \
-        -p {threads} -b 2000 -a 500 -o {output} > {log} 2>&1
+        -p {threads} {params.params} -o {output} > {log} 2>&1
         """
 
 
@@ -561,6 +562,8 @@ rule multiqc_explain:
 
         result = subprocess.run(cli_call, stdout=subprocess.PIPE)
         explanation = result.stdout.decode("utf-8")
+        
+        assert len(explanation) > 0 or "Oh no! Something went wrong..." in explanation
 
         with open(output[0], "w") as f:
             f.write("<!--\n" "id: 'explanation'\n" "section_name: 'Workflow explanation'\n" "-->\n" f"{explanation}")
@@ -639,8 +642,8 @@ rule multiqc_samplesconfig:
     params:
         config_used=len(workflow.overwrite_configfiles) > 0,
         configfile=workflow.overwrite_configfiles[-1],
-        sanitized_samples=sanitized_samples,  # helps resolve changed config options
-        config=config_rerun_parser(config)
+        config=config_rerun_parser(config),
+        samples=lambda wildcards: samples.reset_index().to_string(index_names=False),
     conda:
         "../envs/htmltable.yaml"
     script:
@@ -820,7 +823,7 @@ rule multiqc:
         --config {input.header}                                                    \
         --sample-names {input.sample_names}                                        \
         {params.filter_buttons}                                                    \
-        --cl_config "extra_fn_clean_exts: [                                        \
+        --cl-config "extra_fn_clean_exts: [                                        \
             {{'pattern': ^.*{wildcards.assembly}-, 'type': 'regex'}},              \
             {{'pattern': {params.fqext1},          'type': 'regex'}},              \
             {{'pattern': _allsizes,                'type': 'regex'}},              \

@@ -19,7 +19,6 @@ from filelock import FileLock
 from pandas_schema import Column, Schema
 from pandas_schema.validation import MatchesPatternValidation, IsDistinctValidation
 
-from snakemake.dag import DAG
 from snakemake.logging import logger
 from snakemake.utils import validate
 
@@ -238,14 +237,12 @@ def parse_samples():
     for schema in SAMPLE_SCHEMAS:
         validate(samples_df, schema=f"{config['rule_dir']}/../schemas/samples/{schema}.schema.yaml")
     
-    sanitized_samples_df = copy.copy(samples_df)
-    
     samples_df = samples_df.set_index("sample")
     samples_df.index = samples_df.index.map(str)
     
-    return samples_df, sanitized_samples_df
+    return samples_df
 
-samples, sanitized_samples = parse_samples()
+samples = parse_samples()
 
 # all samples (including controls)
 ALL_SAMPLES = [sample for sample in samples.index]
@@ -282,20 +279,17 @@ if "assembly" in samples:
 
         # make a dict that returns the treps that belong to a brep
         treps_from_brep = dict()
-        if "biological_replicates" in treps:
-            for brep, row in breps.iterrows():
-                assembly = row["assembly"]
-                treps_from_brep[(brep, assembly)] = list(
-                    treps[(treps["assembly"] == assembly) & (treps["biological_replicates"] == brep)].index
-                )
-                treps_from_brep[(brep, assembly + config.get("custom_assembly_suffix",""))] = list(
-                    treps[(treps["assembly"] == assembly) & (treps["biological_replicates"] == brep)].index
-                )
-        else:
-            for brep, row in breps.iterrows():
-                assembly = row["assembly"]
-                treps_from_brep[(brep, assembly)] = [brep]
-                treps_from_brep[(brep, assembly + config.get("custom_assembly_suffix",""))] = [brep]
+        for brep in breps.index.to_list():
+            assembly = breps.at[brep, "assembly"]
+            if "biological_replicates" in treps:
+                tr = treps[(treps["assembly"] == assembly) & (treps["biological_replicates"] == brep)].index.to_list()
+            else:
+                tr = [brep]
+            treps_from_brep[(brep, assembly)] = tr
+
+            # in case we use a custom assembly
+            custom_assembly = assembly + config.get("custom_assembly_suffix","")
+            treps_from_brep[(brep, custom_assembly)] = tr
 
         # and vice versa
         brep_from_treps = dict()
@@ -335,7 +329,7 @@ SEQUENCING_PROTOCOL = (
 )
 
 modified = False
-if "assembly" in samples:
+if WORKFLOW != "download_fastq":
     def parse_assemblies():
         # list assemblies that are used in this workflow
         used_assemblies = list(set(samples["assembly"]))
@@ -393,21 +387,25 @@ if "assembly" in samples:
                 has_annotation[assembly + config["custom_assembly_suffix"]] = has_annotation[assembly]
     
         # custom assemblies
-    
-        # control whether to custom extended assemblies
-        if isinstance(config.get("custom_genome_extension"), str):
-            config["custom_genome_extension"] = [config["custom_genome_extension"]]
-        if isinstance(config.get("custom_annotation_extension"), str):
-            config["custom_annotation_extension"] = [config["custom_annotation_extension"]]
+
+        # files used to extended assemblies (into custom assemblies)
+        modified = False
+        for key in ["custom_genome_extension", "custom_annotation_extension"]:
+            if len(config.get(key, [])) == 0:
+                continue
+
+            modified = True
+            if isinstance(config.get(key), str):
+                config[key] = [config[key]]
+            config[key] = [os.path.expanduser(e) for e in config[key]]
     
         # custom assembly suffices
-        modified = config.get("custom_genome_extension") or config.get("custom_annotation_extension")
         suffix = config["custom_assembly_suffix"] if modified else ""
         all_assemblies = [a + suffix for a in used_assemblies]
     
         def ori_assembly(assembly):
             """
-            remove the extension suffix from an assembly if it was added.
+            remove the custom assembly suffix from an assembly.
             """
             if not modified or not assembly.endswith(config["custom_assembly_suffix"]):
                 return assembly
@@ -477,30 +475,45 @@ def parse_pysradb():
         if (values["layout"] == "PAIRED") and values.get("ena_fastq_ftp") is not None
         for run in values["runs"]
     ]
+    gsa_single_end = [
+        run
+        for values in sampledict.values()
+        if (values["layout"] == "SINGLE") and values.get("gsa_fastq_http") is not None
+        for run in values["runs"]
+    ]
+    gsa_paired_end = [
+        run
+        for values in sampledict.values()
+        if (values["layout"] == "PAIRED") and values.get("gsa_fastq_http") is not None
+        for run in values["runs"]
+    ]
     sra_single_end = [
         run
         for values in sampledict.values()
         if (values["layout"] == "SINGLE")
         for run in values.get("runs", [])
-        if run not in ena_single_end
+        if (run not in ena_single_end and run not in gsa_paired_end)
     ]
     sra_paired_end = [
         run
         for values in sampledict.values()
         if (values["layout"] == "PAIRED")
         for run in values.get("runs", [])
-        if run not in ena_paired_end
+        if (run not in ena_paired_end and run not in gsa_paired_end)
     ]
 
     # get download link per run
     run2download = dict()
     for sample, values in sampledict.items():
         for run in values.get("runs", []):
-            if values["ena_fastq_ftp"] and values["ena_fastq_ftp"][run]:
-                if not (config.get("ascp_path") and config.get("ascp_key")):
-                    run2download[run] = [url.replace("era-fasp@fasp", "ftp") for url in values["ena_fastq_ftp"][run]]
-                else:
-                    run2download[run] = values["ena_fastq_ftp"][run]
+            if "ena_fastq_ftp" in values:
+                if values["ena_fastq_ftp"] and values["ena_fastq_ftp"][run]:
+                    if not (config.get("ascp_path") and config.get("ascp_key")):
+                        run2download[run] = [url.replace("era-fasp@fasp", "ftp") for url in values["ena_fastq_ftp"][run]]
+                    else:
+                        run2download[run] = values["ena_fastq_ftp"][run]
+            if "gsa_fastq_http" in values:
+                run2download[run] = values["gsa_fastq_http"][run]
 
     # if samples are merged add the layout of the technical replicate to the config
     failed_samples = dict()
@@ -525,10 +538,9 @@ def parse_pysradb():
             logger.error("\n")
         os._exit(1)  # noqa
 
-    return sampledict, ena_single_end, ena_paired_end, sra_single_end, sra_paired_end, run2download, pysradb_cache_lock
+    return sampledict, ena_single_end, ena_paired_end, gsa_single_end, gsa_paired_end, sra_single_end, sra_paired_end, run2download, pysradb_cache_lock
 
-SAMPLEDICT, ENA_SINGLE_END, ENA_PAIRED_END, SRA_SINGLE_END, SRA_PAIRED_END, RUN2DOWNLOAD, PYSRADB_CACHE_LOCK = parse_pysradb()
-
+SAMPLEDICT, ENA_SINGLE_END, ENA_PAIRED_END, GSA_SINGLE_END, GSA_PAIRED_END, SRA_SINGLE_END, SRA_PAIRED_END, RUN2DOWNLOAD, PYSRADB_CACHE_LOCK = parse_pysradb()
 
 # workflow
 
@@ -602,12 +614,12 @@ if config.get("create_trackhub"):
                             response = requests.get(f"https://genome.ucsc.edu/cgi-bin/hgGateway", allow_redirects=True)
                         except:
                             logger.error("There seems to be some problems with connecting to UCSC, try again in some time")
-                            assert False
+                            os._exit(1)  # noqa
                         if not response.ok:
                             logger.error("Make sure you are connected to the internet")
-                            assert False
+                            os._exit(1)  # noqa
 
-                        with urllib.request.urlopen("https://api.genome.ucsc.edu/list/ucscGenomes") as url:
+                        with urllib.request.urlopen("https://api.genome.ucsc.edu/list/ucscGenomes", timeout=15) as url:
                             data = json.loads(url.read().decode())["ucscGenomes"]
 
                         # generate a dict ucsc assemblies
