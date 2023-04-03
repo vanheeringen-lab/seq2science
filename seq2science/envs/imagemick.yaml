@@ -2,5 +2,5 @@ name: imagemick
 channels:
   - conda-forge
 dependencies:
-  - conda-forge::imagemagick>=7.0
+  - conda-forge::imagemagick=7.1.1_5
   - conda-forge::conda-ecosystem-user-package-isolation=1.0
