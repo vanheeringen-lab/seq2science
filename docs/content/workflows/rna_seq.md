@@ -8,6 +8,8 @@ Preprocessing of RNA-seq has never been easier!
   <img src="../../_static/rna_seq.png" style="width:auto;height:500px;">
 </p>
 
+An example quality control report can be [viewed here](https://vanheeringen-lab.github.io/seq2science/_static/rna_seq_multiqc.html).
+
 #### Downloading of sample(s)
 
 Depending on whether the samples you start seq2science with is your own data, public data, or a mix, the pipeline might start with downloading samples.
