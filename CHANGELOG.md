@@ -17,6 +17,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - upsetplot updated to the latest version (fixes a bug)
 - genomepy updated to the latest version (no reason)
 - tabulate updated to the latest version (longer python support)
+- everything else updated to the latest version 
 - `--snakemakeOption debug_dag=True` can now be used with 1 core (required)
 - creating conda environments now faster
   - updated conda & mamba
