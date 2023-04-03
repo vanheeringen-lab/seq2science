@@ -225,7 +225,7 @@ heatmap_aesthetics <- function(num_samples){
   } else {
     cell_dimensions <- 5  # minimal size
     fontsize        <- 3.2
-    fontsize_number <- 0  # 2.5
+    fontsize_number <- 2.5
   }
   show_colnames <- ifelse(num_samples > 28, TRUE, FALSE)
   show_rownames <- !show_colnames
@@ -264,7 +264,7 @@ heatmap_plot <- function(mat, title, heatmap_aes, legend_aes, out_pdf) {
     fontsize = heatmap_aes$fontsize,
     legend_breaks = legend_aes$breaks,
     legend_labels = legend_aes$labels,
-    display_numbers = T,  # show values in the plot
+    # display_numbers = T,  # show values in the plot
     fontsize_number = heatmap_aes$fontsize_number,
     cellwidth  = heatmap_aes$cell_dimensions,
     cellheight = heatmap_aes$cell_dimensions,

@@ -23,6 +23,8 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
   - updated conda & mamba
   - dropped indexing of Conda's defaults channel
 - one less global variable! (sanitized_samples)
+- dropped correlation scores from DESeq2 clusterplots
+  - pheatmap is too finickey to get the fontsize right
 
 ### Fixed
 
