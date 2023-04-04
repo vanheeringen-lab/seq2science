@@ -2,7 +2,6 @@ name: fastqc
 channels:
   - conda-forge
   - bioconda
-  - defaults
 dependencies:
-  - bioconda::fastqc=0.11.8
+  - bioconda::fastqc=0.12.1
   - conda-forge::conda-ecosystem-user-package-isolation=1.0

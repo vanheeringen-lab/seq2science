@@ -104,7 +104,7 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         description="Explains what has/will be done for the workflow. This prints a string which can serve"
         " as a skeleton for your material & methods section.",
     )
-    clean = subparsers.add_parser(
+    clean = subparsers.add_parser(  # noqa: F841
         "clean",
         help="Remove all cached sample files and conda environments.",
         description="At the start of each workflow run, seq2science starts with installing environments for each "
@@ -112,7 +112,7 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         " large and it might be best to remove them when you are done with an analysis. \n"
         "seq2science clean will clean up these files for you.",
     )
-    docs = subparsers.add_parser(
+    docs = subparsers.add_parser(  # noqa: F841
         "docs",
         description="The docs command tries to open your browser and open the docs' webpage, "
         "if that didn't work it prints the url.",

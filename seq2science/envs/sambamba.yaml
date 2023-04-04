@@ -2,7 +2,6 @@ name: sambamba
 channels:
   - conda-forge
   - bioconda
-  - defaults
 dependencies:
-  - bioconda::sambamba=0.7.0
+  - bioconda::sambamba=1.0
   - conda-forge::conda-ecosystem-user-package-isolation=1.0

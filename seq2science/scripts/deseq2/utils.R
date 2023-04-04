@@ -264,7 +264,7 @@ heatmap_plot <- function(mat, title, heatmap_aes, legend_aes, out_pdf) {
     fontsize = heatmap_aes$fontsize,
     legend_breaks = legend_aes$breaks,
     legend_labels = legend_aes$labels,
-    display_numbers = T,  # show values in the plot
+    # display_numbers = T,  # show values in the plot
     fontsize_number = heatmap_aes$fontsize_number,
     cellwidth  = heatmap_aes$cell_dimensions,
     cellheight = heatmap_aes$cell_dimensions,
