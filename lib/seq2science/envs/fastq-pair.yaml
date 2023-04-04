@@ -2,7 +2,6 @@ name: fastq-pair
 channels:
   - conda-forge
   - bioconda
-  - defaults
 dependencies:
   - bioconda::fastq-pair=1.0
   - conda-forge::conda-ecosystem-user-package-isolation=1.0

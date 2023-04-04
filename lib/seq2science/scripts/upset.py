@@ -1,8 +1,12 @@
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 from upsetplot import from_contents, from_memberships, from_indicators, plot
+import matplotlib.pyplot as plt
 
+
+# any non-interactive backend prevents segfaults
+# docs: https://matplotlib.org/stable/users/explain/backends.html
+plt.switch_backend('Agg')
 
 # read the table
 df = pd.read_table(snakemake.input[0], comment="#", index_col=0)
@@ -13,11 +17,10 @@ df = df > 0
 data = dict()
 for col in df.columns:
     row = list()
-    for index, val in df[col].iteritems():
+    for index, val in df[col].items():
         if val:
             row.append(index)
     data[col] = row
-
 
 f, ax = plt.subplots()
 ax.axis("off")

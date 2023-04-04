@@ -1,9 +1,0 @@
-#!python
-# PYTHON_ARGCOMPLETE_OK
-"""
-This is the user's entry-point for the seq2science tool.
-"""
-from seq2science.cli import seq2science_main
-
-if __name__ == "__main__":
-    seq2science_main()

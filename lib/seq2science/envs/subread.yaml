@@ -2,7 +2,6 @@ name: subread
 channels:
   - conda-forge
   - bioconda
-  - defaults
 dependencies:
-  - bioconda::subread=1.6.4
+  - bioconda::subread=2.0.3
   - conda-forge::conda-ecosystem-user-package-isolation=1.0
