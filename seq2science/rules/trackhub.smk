@@ -200,7 +200,7 @@ if config.get("create_trackhub"):
             bedToBigBed -extraIndex=name {output.genePredbed} {input.sizes} {output.genePredbigbed} >> {log} 2>&1
     
             # generate searchable indexes (by 1: transcriptID, 2: geneId, 8: proteinID, 9: geneName, 10: transcriptName)
-            grep -v "^#" {output.info} | awk -v len=$l 'BEGIN {{ FS = "\t" }} ; {{ if(len!="0") {{print $9, $1, $2, $8, $9, $10}} else {{print $1, $1, $2, $8, $9, $10}} }}' > {output.indexinfo}
+            grep -v "^#" {output.info} | awk -v n=$n 'BEGIN {{ FS = "\\t"; OFS="\\t" }} ; {{ if(n==1) {{print $9, $1, $2, $8, $9, $10}} else {{print $1, $1, $2, $8, $9, $10}} }}' > {output.indexinfo}
     
             ixIxx {output.indexinfo} {output.ix} {output.ixx} >> {log} 2>&1
             """
