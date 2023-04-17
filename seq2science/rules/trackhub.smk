@@ -187,8 +187,8 @@ if config.get("create_trackhub"):
             # switch columns 1 (transcript_id) and 12 (gene_name)
             awk -v n=$n 'BEGIN {{ FS = "\\t"; OFS="\\t" }}; {{ if(n==1) {{ t = $1; $1 = $12; $12 = t; print; }} else {{ print; }} }}' {output.genePred} > {output.genePrednamed}
     
-            # remove lines with missing headers        
-            grep -v "^ " {output.genePrednamed} > {output.genePred}
+            # remove lines with an empty first column (e.g. no gene names for ERCC RNA spike-in)
+            grep -vP "^\t" {output.genePrednamed} > {output.genePred}
 
             # remove spaces from the genePred (error in annotation)
             sed -i 's/ //g' {output.genePred}
