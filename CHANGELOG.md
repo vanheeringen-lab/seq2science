@@ -25,6 +25,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - one less global variable! (sanitized_samples)
 - dropped correlation scores from DESeq2 clusterplots
   - pheatmap is too finickey to get the fontsize right
+- pheatmap uses the sample order (from the samples.tsv) as best as possible 
 
 ### Fixed
 
