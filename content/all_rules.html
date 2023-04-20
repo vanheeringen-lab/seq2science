@@ -645,7 +645,7 @@ featureCounts -T {threads} -p -a {output.tmp_saf} -F SAF -o {output.real_out} {i
 mv $(dirname {output.real_out})/$(basename {output.summary}) {output.summary}
 </pre></div>
 </div>
-<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/gene_counts.yaml">featureCounts environment</a>.</p>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/subread.yaml">featureCounts environment</a>.</p>
 </section>
 <section id="id1">
 <h2>featurecounts<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h2>
@@ -653,7 +653,7 @@ mv $(dirname {output.real_out})/$(basename {output.summary}) {output.summary}
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">featureCounts</span> <span class="o">-</span><span class="n">a</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">gtf</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">bam</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">endedness</span><span class="p">}</span> <span class="o">-</span><span class="n">s</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">strandedness</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">user_flags</span><span class="p">}</span> <span class="o">-</span><span class="n">T</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">-</span><span class="n">o</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
-<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/gene_counts.yaml">featurecounts environment</a>.</p>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/subread.yaml">featurecounts environment</a>.</p>
 </section>
 <section id="full-decoy-transcripts">
 <h2>full_decoy_transcripts<a class="headerlink" href="#full-decoy-transcripts" title="Permalink to this heading"></a></h2>
@@ -1537,19 +1537,22 @@ My Data &gt; Track Hubs &gt; My Hubs</p>
 <a class="reference external" href="https://www.biostars.org/p/272649/">https://www.biostars.org/p/272649/</a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span># filter out tiny tiny transcripts that make gtftogenepred fail
 min_transcript_length=15
-(awk -v minlen=$min_transcript_length &#39;BEGIN {{ FS = &quot;\\t&quot;; OFS=&quot;\\t&quot; }}; {{ if(($3==&quot;transcript&quot;) &amp;&amp; ($5 - $4 &lt;= minlen)) {{ print $9}} }}&#39; {input.gtf} | grep . || echo &quot;transcript_id \\\&quot;DONTMATCHANYTHING\\\&quot;&quot;) | grep -oP &#39;(?&lt;=transcript_id &quot;).+?(?=&quot;)&#39; | grep -v -f - {input.gtf} &gt; {output.gtf_min_size} 2&gt;&gt; {log}
+(awk -v minlen=$min_transcript_length &#39;BEGIN {{ FS = &quot;\\t&quot;; OFS=&quot;\\t&quot; }}; {{ if(($3==&quot;transcript&quot;) &amp;&amp; ($5 - $4 &lt;= minlen)) {{ print $9 }} }}&#39; {input.gtf} | grep . || echo &quot;transcript_id \\\&quot;DONTMATCHANYTHING\\\&quot;&quot;) | grep -oP &#39;(?&lt;=transcript_id &quot;).+?(?=&quot;)&#39; | grep -v -f - {input.gtf} &gt; {output.gtf_min_size} 2&gt;&gt; {log}
 
 # generate annotation files
 gtfToGenePred -allErrors -ignoreGroupsWithoutExons -geneNameAsName2 -genePredExt {output.gtf_min_size} {output.genePred} -infoOut={output.info} &gt;&gt; {log} 2&gt;&amp;1
 
-# check if gtf has gene_names &gt; if l!=0, use gene_name, else transcript_id
-l=$(head -n 100 {output.gtf_min_size} | (grep gene_name || true) | wc -l)
+# if gtf has gene_names, use gene_names, else transcript_id
+if grep -Fq &quot;gene_name&quot; {output.gtf_min_size}; then n=1; else n=0; fi
 
 # switch columns 1 (transcript_id) and 12 (gene_name)
-awk -v len=$l &#39;BEGIN {{ FS = &quot;\\t&quot; }}; {{ if(len!=&quot;0&quot;) {{ t = $1; $1 = $12; $12 = t; print; }} else {{ print; }} }}&#39; {output.genePred} &gt; {output.genePrednamed}
+awk -v n=$n &#39;BEGIN {{ FS = &quot;\\t&quot;; OFS=&quot;\\t&quot; }}; {{ if(n==1) {{ t = $1; $1 = $12; $12 = t; print; }} else {{ print; }} }}&#39; {output.genePred} &gt; {output.genePrednamed}
 
-# remove lines with missing headers
-grep -v &quot;^ &quot; {output.genePrednamed} &gt; {output.genePred}
+# remove lines with an empty first column (e.g. no gene names for ERCC RNA spike-in)
+grep -vP &quot;^\t&quot; {output.genePrednamed} &gt; {output.genePred}
+
+# remove spaces from the genePred (error in annotation)
+sed -i &#39;s/ //g&#39; {output.genePred}
 
 genePredToBed {output.genePred} {output.genePredbed} &gt;&gt; {log} 2&gt;&amp;1
 
@@ -1558,7 +1561,7 @@ bedSort {output.genePredbed} {output.genePredbed} &gt;&gt; {log} 2&gt;&amp;1
 bedToBigBed -extraIndex=name {output.genePredbed} {input.sizes} {output.genePredbigbed} &gt;&gt; {log} 2&gt;&amp;1
 
 # generate searchable indexes (by 1: transcriptID, 2: geneId, 8: proteinID, 9: geneName, 10: transcriptName)
-grep -v &quot;^#&quot; {output.info} | awk -v len=$l &#39;BEGIN {{ FS = &quot;\t&quot; }} ; {{ if(len!=&quot;0&quot;) {{print $9, $1, $2, $8, $9, $10}} else {{print $1, $1, $2, $8, $9, $10}} }}&#39; &gt; {output.indexinfo}
+grep -v &quot;^#&quot; {output.info} | awk -v n=$n &#39;BEGIN {{ FS = &quot;\\t&quot;; OFS=&quot;\\t&quot; }} ; {{ if(n==1) {{print $9, $1, $2, $8, $9, $10}} else {{print $1, $1, $2, $8, $9, $10}} }}&#39; &gt; {output.indexinfo}
 
 ixIxx {output.indexinfo} {output.ix} {output.ixx} &gt;&gt; {log} 2&gt;&amp;1
 </pre></div>

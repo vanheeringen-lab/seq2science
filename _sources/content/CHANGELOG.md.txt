@@ -25,6 +25,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - one less global variable! (sanitized_samples)
 - dropped correlation scores from DESeq2 clusterplots
   - pheatmap is too finickey to get the fontsize right
+- pheatmap uses the sample order (from the samples.tsv) as best as possible 
 
 ### Fixed
 
@@ -37,6 +38,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - upsetplot & assembly_stats segfault due to interactive matplotlib backend
 - DESeq2 error: "EOF within quoted string"
 - conda environment channel priorities 
+- trackhub index generation now removes rogue spaces from the annotation (instead of crashing)
 
 ## [0.9.8] - 2023-02-01
 

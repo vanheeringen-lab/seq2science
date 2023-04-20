@@ -255,8 +255,15 @@ heatmap_names <- function(mat, coldata) {
 
 
 heatmap_plot <- function(mat, title, heatmap_aes, legend_aes, out_pdf) {
+  #' rotate the dendogram to best match the order in the samples.tsv
+  callback <- function(hc, mat){
+    hc <- dendextend::rotate(hc, order=colnames(mat))
+    return(hc)
+  }
+
   pheatmap::pheatmap(
     mat,
+    clustering_callback = callback,
     main = title,
     angle_col = 45,
     show_colnames = heatmap_aes$show_colnames,  # show names underneath if the image gets to wide
