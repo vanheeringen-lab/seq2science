@@ -176,19 +176,22 @@ if config.get("create_trackhub"):
             """
             # filter out tiny tiny transcripts that make gtftogenepred fail
             min_transcript_length=15
-            (awk -v minlen=$min_transcript_length 'BEGIN {{ FS = "\\t"; OFS="\\t" }}; {{ if(($3=="transcript") && ($5 - $4 <= minlen)) {{ print $9}} }}' {input.gtf} | grep . || echo "transcript_id \\\"DONTMATCHANYTHING\\\"") | grep -oP '(?<=transcript_id ").+?(?=")' | grep -v -f - {input.gtf} > {output.gtf_min_size} 2>> {log}
+            (awk -v minlen=$min_transcript_length 'BEGIN {{ FS = "\\t"; OFS="\\t" }}; {{ if(($3=="transcript") && ($5 - $4 <= minlen)) {{ print $9 }} }}' {input.gtf} | grep . || echo "transcript_id \\\"DONTMATCHANYTHING\\\"") | grep -oP '(?<=transcript_id ").+?(?=")' | grep -v -f - {input.gtf} > {output.gtf_min_size} 2>> {log}
 
             # generate annotation files
             gtfToGenePred -allErrors -ignoreGroupsWithoutExons -geneNameAsName2 -genePredExt {output.gtf_min_size} {output.genePred} -infoOut={output.info} >> {log} 2>&1
     
-            # check if gtf has gene_names > if l!=0, use gene_name, else transcript_id
-            l=$(head -n 100 {output.gtf_min_size} | (grep gene_name || true) | wc -l)
+            # if gtf has gene_names, use gene_names, else transcript_id
+            if grep -Fq "gene_name" {output.gtf_min_size}; then n=1; else n=0; fi
     
             # switch columns 1 (transcript_id) and 12 (gene_name)
-            awk -v len=$l 'BEGIN {{ FS = "\\t" }}; {{ if(len!="0") {{ t = $1; $1 = $12; $12 = t; print; }} else {{ print; }} }}' {output.genePred} > {output.genePrednamed}
+            awk -v n=$n 'BEGIN {{ FS = "\\t"; OFS="\\t" }}; {{ if(n==1) {{ t = $1; $1 = $12; $12 = t; print; }} else {{ print; }} }}' {output.genePred} > {output.genePrednamed}
     
-            # remove lines with missing headers        
-            grep -v "^ " {output.genePrednamed} > {output.genePred}
+            # remove lines with an empty first column (e.g. no gene names for ERCC RNA spike-in)
+            grep -vP "^\t" {output.genePrednamed} > {output.genePred}
+
+            # remove spaces from the genePred (error in annotation)
+            sed -i 's/ //g' {output.genePred}
     
             genePredToBed {output.genePred} {output.genePredbed} >> {log} 2>&1
     
@@ -197,7 +200,7 @@ if config.get("create_trackhub"):
             bedToBigBed -extraIndex=name {output.genePredbed} {input.sizes} {output.genePredbigbed} >> {log} 2>&1
     
             # generate searchable indexes (by 1: transcriptID, 2: geneId, 8: proteinID, 9: geneName, 10: transcriptName)
-            grep -v "^#" {output.info} | awk -v len=$l 'BEGIN {{ FS = "\t" }} ; {{ if(len!="0") {{print $9, $1, $2, $8, $9, $10}} else {{print $1, $1, $2, $8, $9, $10}} }}' > {output.indexinfo}
+            grep -v "^#" {output.info} | awk -v n=$n 'BEGIN {{ FS = "\\t"; OFS="\\t" }} ; {{ if(n==1) {{print $9, $1, $2, $8, $9, $10}} else {{print $1, $1, $2, $8, $9, $10}} }}' > {output.indexinfo}
     
             ixIxx {output.indexinfo} {output.ix} {output.ixx} >> {log} 2>&1
             """
