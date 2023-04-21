@@ -9,6 +9,8 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+## [0.9.9] - 2023-04-21
+
 ### Changed
 
 - moved downloading fastqs to localrules
@@ -752,12 +754,15 @@ It is important to note that the RNA-seq workflow DOES NOT remove duplicate read
 - Snakefmt -l 121 applied
 
 ## [0.0.1] - 2020-06-17
+
 Many minor bug- and quality of life fixes.
 
 ## [0.0.0] - 2020-06-11
+
 First release of seq2science!
 
-[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.8...develop
+[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.9...develop
+[0.9.9]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.8...v0.9.9
 [0.9.8]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.7...v0.9.8
 [0.9.7]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.6...v0.9.7
 [0.9.6]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.5...v0.9.6
