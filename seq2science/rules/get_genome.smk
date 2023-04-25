@@ -193,7 +193,6 @@ rule get_effective_genome_size:
         rules.get_genome.output,
     output:
         expand("{genome_dir}/{{assembly}}/genome_sizes/kmer_{{kmer_size}}.genome_size", **config),
-    message: EXPLAIN["get_effective_genome_size"]
     conda:
         "../envs/khmer.yaml"
     log:
