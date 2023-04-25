@@ -1,6 +1,10 @@
 # for help with filling out the samples.tsv:
 # https://vanheeringen-lab.github.io/seq2science/content/workflows/rna_seq.html#filling-out-the-samples-tsv
 # also make sure that you use tab as a delimiter
-sample	assembly	stage	descriptive_name
-GSM1483769	GRCz11	1	1360_mpf
-GSM1483770	GRCz11	2	1400_mpf
+sample	assembly	descriptive_name	developmental_process	stage	hours_post_fertilization
+GSM1606185	UCB_Xtro_10.0	ClutchA_polyA_5_hpf	blastula	9	5
+GSM1606329	UCB_Xtro_10.0	ClutchB_polyA_5_hpf	blastula	9	5
+GSM1606189	UCB_Xtro_10.0	ClutchA_polyA_7_hpf	gastrula	10	7
+GSM1606333	UCB_Xtro_10.0	ClutchB_polyA_7_hpf	gastrula	10	7
+GSM1606199	UCB_Xtro_10.0	ClutchA_polyA_12_hpf	neurula	13	12
+GSM1606343	UCB_Xtro_10.0	ClutchB_polyA_12_hpf	neurula	13	12
