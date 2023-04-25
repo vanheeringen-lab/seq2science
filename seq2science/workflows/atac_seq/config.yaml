@@ -53,4 +53,4 @@ run_gimme_maelstrom: false
 # differential accessibility analysis
 # for explanation, see: https://vanheeringen-lab.github.io/seq2science/content/DESeq2.html
 #contrasts:
-#  - 'biological_replicates_adult_embryo'
+#  - 'biological_replicates_dome_sphere'
