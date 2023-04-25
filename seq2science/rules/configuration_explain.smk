@@ -168,7 +168,7 @@ else:
         "get_genome": f"Genome assembly {{wildcards.assembly}} was downloaded with {hyperref('genomepy',text=f'genomepy {genomepy.__version__}')}.",
         "custom_extension": "The genome and gene annotations was extended with custom regions.",
         "call_peak_genrich": f"Peaks were called with {href_v('genrich')}{options('peak_caller','genrich')}.",
-        "macs2_callpeak": f"Peaks were called with {href_v('macs2')}{options('peak_caller','macs2')} in {{params.format}} mode. The effective genome size was estimated by taking the number of unique k-mers in the assembly of the same length as the average read length for each sample.",
+        "macs2_callpeak": f"Peaks were called with {href_v('macs2')}{options('peak_caller','macs2')} in {{params.format}} mode. The effective genome size was estimated by by {href_v('khmer')} by taking the number of unique k-mers in the assembly of the same length as the average read length for each sample.",
         "keep_mates": "Before peak calling, paired-end info from reads was removed with seq2science so that both mates in a pair get used.",
         "idr": f"Narrowpeak files of biological replicates belonging to the same condition were merged with the {href_v('idr',text='irreproducible discovery rate')}{options('idr_options')}.",
         "macs_cmbreps": "Narrowpeak files of biological replicates belonging to the same condition were merged with fisher's method in macs2.",
