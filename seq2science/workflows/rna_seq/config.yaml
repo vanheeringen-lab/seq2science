@@ -34,4 +34,6 @@ remove_dups: false # keep duplicates (check dupRadar in the MultiQC)
 # differential gene expression analysis
 # for explanation, see: https://vanheeringen-lab.github.io/seq2science/content/DESeq2.html
 #contrasts:
-#  - 'stage_2_1'
+#  - developmental_process_gastrula_blastula
+#  - developmental_process_neurula_gastrula
+#  - stage_13_9
