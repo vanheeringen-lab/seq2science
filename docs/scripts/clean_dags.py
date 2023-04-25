@@ -27,7 +27,7 @@ rules_to_keep = {
     "fastp_PE": colors["yellow"],
     "trimgalore_SE": colors["yellow"],
     "trimgalore_PE": colors["yellow"],
-    "merge_replicates": colors["yellow"],
+    # "merge_replicates": colors["yellow"],
 
     # alignment
     "bowtie2_align": colors["yellow"],
@@ -37,7 +37,7 @@ rules_to_keep = {
     "minimap2_align": colors["yellow"],
     "star_align": colors["yellow"],
     "mark_duplicates": colors["yellow"],
-    "sieve_bam": colors["yellow"],
+    # "sieve_bam": colors["yellow"],
 
     # peak counting
     "macs2_callpeak": colors["yellow"],
@@ -51,9 +51,9 @@ rules_to_keep = {
     "salmon_quant": colors["yellow"],
 
     # trackhub
-    "bam_bigwig": colors["cherry"],
-    "peak_bigpeak": colors["cherry"],
-    "bedgraph_bigwig": colors["cherry"],
+    # "bam_bigwig": colors["cherry"],
+    # "peak_bigpeak": colors["cherry"],
+    # "bedgraph_bigwig": colors["cherry"],
     "trackhub": colors["cherry"],
 
     # multiqc
@@ -61,11 +61,11 @@ rules_to_keep = {
 
     # peak files
     "coverage_table": colors["green"],
-    "onehot_peaks": colors["green"],
+    # "onehot_peaks": colors["green"],
     "create_bins_SNAP_object": colors["green"],
 
     # gene files
-    "gene_id2name": colors["green"],
+    # "gene_id2name": colors["green"],
     "tpm_matrix": colors["green"],
     "count_matrix": colors["green"],
     "txi_count_matrix": colors["green"],
@@ -201,12 +201,13 @@ class Digraph:
         # remove the node
         self.remove_node(node)
         # connect the neighboring nodes
+        scrna = len({"citeseqcount", "kallistobus_count"} & {self.nodes[n]["label"] for n in self.nodes}) > 0
         for parent in parents:
             for daughter in daughters:
-                # don't mix paired end and single end nodes
+                # don't mix paired end and single end nodes (unless its scRNA-seq)
                 p = self.nodes[parent]["label"][-3:]
                 d = self.nodes[daughter]["label"][-3:]
-                if (p == "_SE" and d == "_PE") or (p == "_PE" and d == "_SE"):
+                if (p == "_SE" and d == "_PE") or (p == "_PE" and d == "_SE") and not scrna:
                     continue
                 edge = (parent, daughter)
                 self.edges.add(edge)
