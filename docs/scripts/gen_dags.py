@@ -24,9 +24,9 @@ for workflow in os.listdir(in_dir):
     if workflow == "rna_seq":
         extra = "contrasts=['stage_13_9']"
     if workflow == "atac_seq":
-        extra = "contrasts=['biological_replicates_high_oblong'] run_gimme_maelstrom=true"
+        extra = "contrasts=['biological_replicates_high_oblong'] run_gimme_maelstrom=True"
     if workflow == "chip_seq":
-        extra = "contrasts=['biological_replicates_gd7_ectoderm_tl10b_mesoderm'] run_gimme_maelstrom=true"
+        extra = "contrasts=['biological_replicates_gd7_ectoderm_tl10b_mesoderm'] run_gimme_maelstrom=True"
         
     # create a DAG rulegraph
     cmd = join(conda_dir, "bin", "snakemake")
