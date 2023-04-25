@@ -20,6 +20,10 @@ for workflow in os.listdir(in_dir):
         barcodes = join(workflow_dir, "barcodes.txt")
         Path(barcodes).touch()
 
+    extra = ""
+    if workflow == "rna_seq":
+        extra = "contrasts=['stage_13_9']"
+
     # create a DAG rulegraph
     cmd = join(conda_dir, "bin", "snakemake")
     snakefile = join(workflow_dir, "Snakefile")
@@ -28,7 +32,7 @@ for workflow in os.listdir(in_dir):
     tmp = join(workflow_dir, ".tmp_graph.txt")
     sp.check_call(
         f"{cmd} -s {snakefile} --configfile {config} "
-        f"--config samples={samples} rule_dir={rule_dir} "
+        f"--config samples={samples} rule_dir={rule_dir} {extra} "
         f"--quiet --rulegraph > {tmp}",
         shell=True,
     )

@@ -1,69 +1,82 @@
 import re
 import networkx as nx
 
+
+colors = {
+    "yellow": "0.13 0.6 0.85",
+    "brown": "0.09 0.6 0.85",
+    "green": "0.28 0.6 0.85",
+    "red": "0.04 0.6 0.85",
+    "cherry": "0.00 0.6 0.85",
+    "purple": "0.63 0.6 0.85",
+    "dark blue": "0.59 0.6 0.85",
+    "blue": "0.58 0.6 0.85",
+    "teal": "0.49 0.6 0.85",
+}
+
 rules_to_keep = {
-    # "0.13 0.6 0.85",  # yellow
-    # "0.09 0.6 0.85",  # brown
-    # "0.28 0.6 0.85",  # green
-    # "0.04 0.6 0.85",  # red
-    # "0.00 0.6 0.85",  # cherry
-    # "0.63 0.6 0.85",  # purple
-    # "0.59 0.6 0.85",  # dark blue
-    # "0.58 0.6 0.85",  # blue
-    # "0.49 0.6 0.85",  # teal
     # input
-    "get_genome": "0.49 0.6 0.85",  # teal
-    "ena2fastq_SE": "0.49 0.6 0.85",  # teal
-    "ena2fastq_PE": "0.49 0.6 0.85",  # teal
-    "sra2fastq_SE": "0.49 0.6 0.85",  # teal
-    "sra2fastq_PE": "0.49 0.6 0.85",  # teal
+    "get_genome": colors["teal"],
+    "ena2fastq_SE": colors["teal"],
+    "ena2fastq_PE": colors["teal"],
+    "sra2fastq_SE": colors["teal"],
+    "sra2fastq_PE": colors["teal"],
+
     # fastq
-    "fastp_SE": "0.13 0.6 0.85",  # yellow
-    "fastp_PE": "0.13 0.6 0.85",  # yellow
-    "trimgalore_SE": "0.13 0.6 0.85",  # yellow
-    "trimgalore_PE": "0.13 0.6 0.85",  # yellow
-    "merge_replicates": "0.13 0.6 0.85",  # yellow
-    # align
-    "bowtie2_align": "0.13 0.6 0.85",  # yellow
-    "bwa_mem": "0.13 0.6 0.85",  # yellow
-    "bwa_mem2": "0.13 0.6 0.85",  # yellow
-    "hisat2_align": "0.13 0.6 0.85",  # yellow
-    "minimap2_align": "0.13 0.6 0.85",  # yellow
-    "star_align": "0.13 0.6 0.85",  # yellow
-    "mark_duplicates": "0.13 0.6 0.85",  # yellow
-    "sieve_bam": "0.13 0.6 0.85",  # yellow
+    "fastp_SE": colors["yellow"],
+    "fastp_PE": colors["yellow"],
+    "trimgalore_SE": colors["yellow"],
+    "trimgalore_PE": colors["yellow"],
+    # "merge_replicates": colors["yellow"],
+
+    # alignment
+    "bowtie2_align": colors["yellow"],
+    "bwa_mem": colors["yellow"],
+    "bwa_mem2": colors["yellow"],
+    "hisat2_align": colors["yellow"],
+    "minimap2_align": colors["yellow"],
+    "star_align": colors["yellow"],
+    "mark_duplicates": colors["yellow"],
+    # "sieve_bam": colors["yellow"],
+
     # peak counting
-    "macs2_callpeak": "0.13 0.6 0.85",  # yellow
-    "call_peak_genrich": "0.13 0.6 0.85",  # yellow
-    "hmmratac": "0.13 0.6 0.85",  # yellow
-    "create_SNAP_object": "0.13 0.6 0.85",  # yellow
+    "macs2_callpeak": colors["yellow"],
+    "call_peak_genrich": colors["yellow"],
+    "hmmratac": colors["yellow"],
+    "create_SNAP_object": colors["yellow"],
+
     # gene counting/quantification
-    "htseq_count": "0.13 0.6 0.85",  # yellow
-    "featurecounts": "0.13 0.6 0.85",  # yellow
-    "salmon_quant": "0.13 0.6 0.85",  # yellow
+    "htseq_count": colors["yellow"],
+    "featurecounts": colors["yellow"],
+    "salmon_quant": colors["yellow"],
+
     # trackhub
-    "bam_bigwig": "0.00 0.6 0.85",  # cherry
-    "peak_bigpeak": "0.00 0.6 0.85",  # cherry
-    "bedgraph_bigwig": "0.00 0.6 0.85",  # cherry
-    "trackhub": "0.00 0.6 0.85",  # cherry
+    # "bam_bigwig": colors["cherry"],
+    # "peak_bigpeak": colors["cherry"],
+    # "bedgraph_bigwig": colors["cherry"],
+    "trackhub": colors["cherry"],
+
     # multiqc
-    "multiqc": "0.63 0.6 0.85",  # purple
+    "multiqc": colors["purple"],
+
     # peak files
-    "coverage_table": "0.28 0.6 0.85",  # green
-    "onehot_peaks": "0.28 0.6 0.85",  # green
-    "create_bins_SNAP_object": "0.28 0.6 0.85",  # green
+    "coverage_table": colors["green"],
+    # "onehot_peaks": colors["green"],
+    "create_bins_SNAP_object": colors["green"],
+
     # gene files
-    "gene_id2name": "0.28 0.6 0.85",  # green
-    "tpm_matrix": "0.28 0.6 0.85",  # green
-    "count_matrix": "0.28 0.6 0.85",  # green
-    "txi_count_matrix": "0.28 0.6 0.85",  # green
-    "pytxi_count_matrix": "0.28 0.6 0.85",  # green
-    "citeseqcount": "0.28 0.6 0.85",  # green
-    "kallistobus_count": "0.28 0.6 0.85",  # green
-    # other
-    "gimme_maelstrom": "0.28 0.6 0.85",  # green
-    "deseq2": "0.28 0.6 0.85",  # green
-    "dexseq_count_matrix": "0.28 0.6 0.85",  # green
+    # "gene_id2name": colors["green"],
+    "tpm_matrix": colors["green"],
+    "count_matrix": colors["green"],
+    "txi_count_matrix": colors["green"],
+    "pytxi_count_matrix": colors["green"],
+    "citeseqcount": colors["green"],
+    "kallistobus_count": colors["green"],
+
+    # analysis
+    "gimme_maelstrom": colors["green"],
+    "deseq2": colors["green"],
+    "dexseq_count_matrix": colors["green"],
 }
 
 
@@ -188,8 +201,14 @@ class Digraph:
         # remove the node
         self.remove_node(node)
         # connect the neighboring nodes
+        scrna = len({"citeseqcount", "kallistobus_count"} & {self.nodes[n]["label"] for n in self.nodes}) > 0
         for parent in parents:
             for daughter in daughters:
+                # don't mix paired end and single end nodes (unless its scRNA-seq)
+                p = self.nodes[parent]["label"][-3:]
+                d = self.nodes[daughter]["label"][-3:]
+                if (p == "_SE" and d == "_PE") or (p == "_PE" and d == "_SE") and not scrna:
+                    continue
                 edge = (parent, daughter)
                 self.edges.add(edge)
 
