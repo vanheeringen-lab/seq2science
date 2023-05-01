@@ -15,8 +15,3 @@ properties:
     default:
       samtools:
         coordinate
-
-  cram_no_bam:
-    description: whether to store cram instead of bam
-    type: boolean
-    default: false

@@ -32,7 +32,9 @@ rule seq2science:
     """
     input:
         expand(
+            ([f"{{final_bam_dir}}/{CUSTOM_ASSEMBLIES[treps.loc[trep, 'assembly']]}-{trep}.samtools-coordinate.{{b}}am" for trep in treps.index]) +
+            ([f"{{final_bam_dir}}/{CUSTOM_ASSEMBLIES[treps.loc[trep, 'assembly']]}-{trep}.samtools-coordinate.{{b}}am.{{b}}ai" for trep in treps.index]) +
             (["{trackhub_dir}"]                     if config['create_trackhub'] else []) +
             (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []),
-            assemblies=ALL_ASSEMBLIES, **config) +
+            assemblies=ALL_ASSEMBLIES, b="cr" if config.get('cram_no_bam') else "b", **config) +
          count_table_output() + DE_CONTRASTS

@@ -181,6 +181,12 @@ properties:
     default: 2
     type: integer
 
+  # store final output as cram file
+  cram_no_bam:
+    description: whether to store cram instead of bam
+    type: boolean
+    default: false
+
   # custom extensions to the assemblies
   custom_genome_extension:
     description: File(s) to append to the genome (must be in fasta format)

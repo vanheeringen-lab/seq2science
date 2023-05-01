@@ -106,10 +106,6 @@ if config.get("bam_sorter", False):
     config["bam_sort_order"] = list(config["bam_sorter"].values())[0]
     config["bam_sorter"] = list(config["bam_sorter"].keys())[0]
 
-if config.get('cram_no_bam'):
-    assert config['bam_sorter'] == 'samtools', "CRAM files require samtools"
-    assert config['bam_sort_order'] == 'coordinate', "CRAM files require coordinate sorted bams"
-
 
 # ...for scrna quantification
 if WORKFLOW == "scrna_seq":
