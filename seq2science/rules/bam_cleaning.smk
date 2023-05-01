@@ -210,7 +210,7 @@ rule samtools_sort:
     input:
         rules.sieve_bam.output.bam if sieve_bam(config) else rules.mark_duplicates.output.bam,  # noqa
     output:
-        temp(expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-{{sorting}}.bam",**config)) if config.get("cram_no_cram") else\
+        temp(expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-{{sorting}}.bam",**config)) if config.get("store_as_cram") else\
              expand("{final_bam_dir}/{{assembly}}-{{sample}}.samtools-{{sorting}}.bam",**config)
     log:
         expand("{log_dir}/samtools_sort/{{assembly}}-{{sample}}-samtools_{{sorting}}.log",**config),

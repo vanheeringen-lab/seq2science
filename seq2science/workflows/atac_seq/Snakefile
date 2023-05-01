@@ -36,6 +36,6 @@ rule seq2science:
             ([f"{{final_bam_dir}}/{CUSTOM_ASSEMBLIES[treps.loc[trep, 'assembly']]}-{trep}.samtools-coordinate.{{b}}am.{{b}}ai" for trep in treps.index]) +
             (["{trackhub_dir}"]                     if config['create_trackhub'] else []) +
             (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []),
-            assemblies=ALL_ASSEMBLIES, b="cr" if config.get('cram_no_bam') else "b", **config) +
+            assemblies=ALL_ASSEMBLIES, b="cr" if config.get('store_as_cram') else "b", **config) +
          count_table_output() + DE_CONTRASTS
 

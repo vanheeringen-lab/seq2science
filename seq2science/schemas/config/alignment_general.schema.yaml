@@ -182,7 +182,7 @@ properties:
     type: integer
 
   # store final output as cram file
-  cram_no_bam:
+  store_as_cram:
     description: whether to store cram instead of bam
     type: boolean
     default: false
