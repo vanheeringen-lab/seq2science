@@ -183,7 +183,7 @@ properties:
 
   # store final output as cram file
   cram_no_bam:
-    description: whether to store cram instead of bam
+    description: whether to store the final mapped and filtered reads as cram instead of bam
     type: boolean
     default: false
 
