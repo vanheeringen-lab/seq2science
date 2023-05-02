@@ -185,6 +185,7 @@ if [ $1 = "atac-seq" ]; then
   for n in 1 2 3 4 5 6 7 8; do
     touch tests/local_test_results/final_bam/GRCh38.p13-sample${n}.samtools-coordinate.bam
   done
+  touch tests/local_test_results/final_bam/GRCh38.p13-H2_2.samtools-coordinate.bam
 
   touch -m tests/deseq2/atac/macs2/GRCh38.p13_onehotpeaks.tsv
   for rep in technical_reps biological_reps; do
