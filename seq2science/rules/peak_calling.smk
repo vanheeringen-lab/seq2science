@@ -208,7 +208,7 @@ rule keep_mates:
     input:
         FINAL_BAM,
     output:
-        expand("{final_bam_dir}/{{assembly}}-{{sample}}-mates.samtools-coordinate.bam", **config),
+        temp(expand("{final_bam_dir}/{{assembly}}-{{sample}}-mates.samtools-coordinate.bam", **config)),
     message: EXPLAIN["keep_mates"]
     log:
         expand("{log_dir}/keep_mates/{{assembly}}-{{sample}}.log", **config),
