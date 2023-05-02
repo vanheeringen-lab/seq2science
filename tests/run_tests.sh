@@ -168,6 +168,7 @@ if [ $1 = "atac-seq" ]; then
   printf "\natac-seq - trackhub\n"
   seq2science run atac-seq --cores $CORES -r --configfile tests/alignment/remote_genome_n_sample.yaml --snakemakeOptions config={aligner:bowtie2,create_trackhub:True,custom_genome_extension:tests/tinydata/tinyERCC92.fa,max_template_length:150} show_failed_logs=True
 
+  printf "\natac-seq - deseq2\n"
   # fake input data & fix timestamps
   mkdir -p tests/local_test_results/GRCh38.p13
   touch tests/local_test_results/GRCh38.p13/GRCh38.p13.fa
@@ -180,7 +181,10 @@ if [ $1 = "atac-seq" ]; then
     done
     touch tests/local_test_results/fastq/replicate_${ext}.fastq.gz
   done
-  
+  for n in 1 2 3 4 5 6 7 8; do
+    touch tests/local_test_results/final_bam_dir/GRCh38.p13-sample${n}_${ext}.samtools-coordinate.bam
+  done
+
   touch -m tests/deseq2/atac/macs2/GRCh38.p13_onehotpeaks.tsv
   for rep in technical_reps biological_reps; do
       touch -m tests/deseq2/atac/macs2/GRCh38.p13_raw_${rep}.tsv  # update timestamps
