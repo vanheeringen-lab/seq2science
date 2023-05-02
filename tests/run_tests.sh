@@ -181,8 +181,9 @@ if [ $1 = "atac-seq" ]; then
     done
     touch tests/local_test_results/fastq/replicate_${ext}.fastq.gz
   done
+  mkdir -p tests/local_test_results/final_bam
   for n in 1 2 3 4 5 6 7 8; do
-    touch tests/local_test_results/final_bam_dir/GRCh38.p13-sample${n}_${ext}.samtools-coordinate.bam
+    touch tests/local_test_results/final_bam/GRCh38.p13-sample${n}_${ext}.samtools-coordinate.bam
   done
 
   touch -m tests/deseq2/atac/macs2/GRCh38.p13_onehotpeaks.tsv
