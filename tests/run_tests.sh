@@ -182,10 +182,22 @@ if [ $1 = "atac-seq" ]; then
     touch tests/local_test_results/fastq/replicate_${ext}.fastq.gz
   done
   mkdir -p tests/local_test_results/final_bam
-  for n in 1 2 3 4 5 6 7 8; do
-    touch tests/local_test_results/final_bam/GRCh38.p13-sample${n}.samtools-coordinate.bam
-  done
+  touch tests/local_test_results/final_bam/GRCh38.p13-C0_1.samtools-coordinate.bam
+  touch tests/local_test_results/final_bam/GRCh38.p13-C0_2.samtools-coordinate.bam
+  touch tests/local_test_results/final_bam/GRCh38.p13-C2_1.samtools-coordinate.bam
+  touch tests/local_test_results/final_bam/GRCh38.p13-C2_2.samtools-coordinate.bam
+  touch tests/local_test_results/final_bam/GRCh38.p13-H0_1.samtools-coordinate.bam
+  touch tests/local_test_results/final_bam/GRCh38.p13-H0_2.samtools-coordinate.bam
+  touch tests/local_test_results/final_bam/GRCh38.p13-H2_1.samtools-coordinate.bam
   touch tests/local_test_results/final_bam/GRCh38.p13-H2_2.samtools-coordinate.bam
+  touch tests/local_test_results/final_bam/GRCh38.p13-C0_1.samtools-coordinate.bam.bai
+  touch tests/local_test_results/final_bam/GRCh38.p13-C0_2.samtools-coordinate.bam.bai
+  touch tests/local_test_results/final_bam/GRCh38.p13-C2_1.samtools-coordinate.bam.bai
+  touch tests/local_test_results/final_bam/GRCh38.p13-C2_2.samtools-coordinate.bam.bai
+  touch tests/local_test_results/final_bam/GRCh38.p13-H0_1.samtools-coordinate.bam.bai
+  touch tests/local_test_results/final_bam/GRCh38.p13-H0_2.samtools-coordinate.bam.bai
+  touch tests/local_test_results/final_bam/GRCh38.p13-H2_1.samtools-coordinate.bam.bai
+  touch tests/local_test_results/final_bam/GRCh38.p13-H2_2.samtools-coordinate.bam.bai
 
   touch -m tests/deseq2/atac/macs2/GRCh38.p13_onehotpeaks.tsv
   for rep in technical_reps biological_reps; do
