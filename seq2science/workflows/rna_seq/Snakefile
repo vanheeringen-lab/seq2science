@@ -34,9 +34,10 @@ rule seq2science:
     """
     input:
          expand(
-             (["{trackhub_dir}"]                     if config['create_trackhub']  else []) +
+             ([f"{{final_bam_dir}}/{CUSTOM_ASSEMBLIES[treps.loc[trep, 'assembly']]}-{trep}.samtools-coordinate.{{b}}am" for trep in treps.index]) +
+             ([f"{{final_bam_dir}}/{CUSTOM_ASSEMBLIES[treps.loc[trep, 'assembly']]}-{trep}.samtools-coordinate.{{b}}am.{{b}}ai" for trep in treps.index]) +             (["{trackhub_dir}"]                     if config['create_trackhub']  else []) +
              (["{qc_dir}/multiqc_{assemblies}.html"] if config["create_qc_report"] else []) +
              (["{counts_dir}/{assemblies}-counts.tsv", "{counts_dir}/{assemblies}-TPM.tsv"]) +
              (["{counts_dir}/{assemblies}-DEXSeq_counts.tsv"] if config['dexseq'] else []) +
-             (["{genome_dir}/{assemblies}/gene_id2name.tsv"]), assemblies=ALL_ASSEMBLIES, **config) +
+             (["{genome_dir}/{assemblies}/gene_id2name.tsv"]), assemblies=ALL_ASSEMBLIES, b="cr" if config.get('store_as_cram') else "b", **config) +
          DE_CONTRASTS
