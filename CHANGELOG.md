@@ -11,7 +11,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Added
 
-- CRAM support for ATAC+ChIP+RNA-seq workflows
+- CRAM support for ATAC+ChIP+RNA-seq workflows (in addition to the existing alignment workflow cram support)
 
 ## [0.9.9] - 2023-04-21
 
