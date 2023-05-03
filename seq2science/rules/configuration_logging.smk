@@ -5,6 +5,7 @@ all logic related to logging to stdout/file should be here.
 import os
 import shutil
 import textwrap
+import subprocess
 
 from tabulate import tabulate
 from snakemake.logging import logger
@@ -66,6 +67,12 @@ onsuccess:
             dance_message += message[i - offset]
         dance_message += "\n"
     logger.info(dance_message)
+
+    # now get a workflow explanation
+    result = subprocess.run(["seq2science", "explain", WORKFLOW.replace("_", "-")], stdout=subprocess.PIPE)
+    if result.returncode == 0:
+        logger.info("Workflow explanation:\n")
+        logger.info(result.stdout.decode('utf-8'))
 
 onerror:
     logger.info(
