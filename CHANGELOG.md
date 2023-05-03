@@ -9,6 +9,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- at the end of a succesful seq2science run an explanation of what has been done gets printed.
+
 ## [0.9.9] - 2023-04-21
 
 ### Changed
