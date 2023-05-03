@@ -9,6 +9,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- CRAM support for ATAC+ChIP+RNA-seq workflows
+
 ## [0.9.9] - 2023-04-21
 
 ### Changed
