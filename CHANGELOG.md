@@ -9,6 +9,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Changed
+
+- sctk yaml simplified
+
 ## [0.9.9] - 2023-04-21
 
 ### Changed
