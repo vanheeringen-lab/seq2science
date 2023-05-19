@@ -3,5 +3,5 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - bioconda::subread=2.0.3
+  - bioconda::subread=1.6.4
   - conda-forge::conda-ecosystem-user-package-isolation=1.0
