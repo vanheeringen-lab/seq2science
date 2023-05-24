@@ -89,3 +89,5 @@ To solve this one can try to change assembly, with the downside that all the ali
 Or you can add `force_assembly_hub: true` in the config, so that only the trackhub gets remade, but this time as a so-called assembly hub.
 An assembly hub does not use a genome assembly that's provided by UCSC, so that no chromosome id mismatches can occur.
 
+## ATAC-seq: bwa-mem2: Runs are aborted due to a segmentation fault. 
+If you get an error while running the rules bwa-mem2/samtools_presort, yet the log bwa-mem2_align and samtools_presort log files show no errors, this may be due to memory leaks that sometimes occur when running bwa-mem2. This can be circumvented by using the aligner bwa-mem instead. 
