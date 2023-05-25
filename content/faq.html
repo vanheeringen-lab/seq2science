@@ -11,6 +11,8 @@
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/doctools.js"></script>
         <script src="../_static/sphinx_highlight.js"></script>
@@ -60,6 +62,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#scrna-seq-kallisto-bustools-warn-no-reads-pseudoaligned">scRNA-seq: Kallisto|Bustools: [~warn] no reads pseudoaligned</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#scrna-seq-kallisto-bustools-what-std-bad-alloc">scRNA-seq: Kallisto|Bustools: what():  std::bad_alloc</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ucsc-trackhub-displays-no-data">UCSC trackhub displays no data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#atac-seq-bwa-mem2-runs-are-aborted-due-to-a-segmentation-fault">ATAC-seq: bwa-mem2: Runs are aborted due to a segmentation fault.</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../CONTRIBUTING.html">Contributing to seq2science</a></li>
@@ -181,6 +184,10 @@ For instance chr1 vs Chr1 vs 1, etc.
 To solve this one can try to change assembly, with the downside that all the alignment etc. has to be re-run again.
 Or you can add <code class="docutils literal notranslate"><span class="pre">force_assembly_hub:</span> <span class="pre">true</span></code> in the config, so that only the trackhub gets remade, but this time as a so-called assembly hub.
 An assembly hub does not use a genome assembly that’s provided by UCSC, so that no chromosome id mismatches can occur.</p>
+</section>
+<section id="atac-seq-bwa-mem2-runs-are-aborted-due-to-a-segmentation-fault">
+<h2>ATAC-seq: bwa-mem2: Runs are aborted due to a segmentation fault.<a class="headerlink" href="#atac-seq-bwa-mem2-runs-are-aborted-due-to-a-segmentation-fault" title="Permalink to this heading"></a></h2>
+<p>If you get an error while running the rules bwa-mem2/samtools_presort, yet the log bwa-mem2_align and samtools_presort log files show no errors, this may be due to segmentation faults that sometimes occur when running bwa-mem2. This can be circumvented by using the aligner bwa-mem instead.</p>
 </section>
 </section>
 
