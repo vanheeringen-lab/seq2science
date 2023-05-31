@@ -16,6 +16,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Fixed
 
 - DESeq2 should no longer crash without DE genes
+- bug with single-ended reads and subread
 
 ## [0.9.9] - 2023-04-21
 
