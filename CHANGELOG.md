@@ -13,6 +13,15 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 - CRAM support for ATAC+ChIP+RNA-seq workflows (in addition to the existing alignment workflow cram support)
 
+### Changed
+
+- sctk yaml simplified
+
+### Fixed
+
+- DESeq2 should no longer crash without DE genes
+- bug with single-ended reads and subread
+
 ## [0.9.9] - 2023-04-21
 
 ### Changed

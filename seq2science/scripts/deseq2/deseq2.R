@@ -101,7 +101,6 @@ cat('DE genes table saved\n\n')
 n_DEGs <- length(resLFC[resLFC$padj <= fdr & !is.na(resLFC$padj), ][,1])
 if (n_DEGs == 0) {
   cat("No differentially expressed genes found!\n")
-  quit(save = "no" , status = 0)
 } else {
   cat(n_DEGs, "differentially expressed genes found!\n")
 }
