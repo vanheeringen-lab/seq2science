@@ -9,6 +9,8 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+## [1.0.0] - 2023-05-31
+
 ### Added
 
 - CRAM support for ATAC+ChIP+RNA-seq workflows (in addition to the existing alignment workflow cram support)
@@ -776,7 +778,8 @@ Many minor bug- and quality of life fixes.
 
 First release of seq2science!
 
-[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.9...develop
+[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v1.0.0...develop
+[1.0.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.9...v1.0.0
 [0.9.9]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.8...v0.9.9
 [0.9.8]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.7...v0.9.8
 [0.9.7]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.6...v0.9.7
