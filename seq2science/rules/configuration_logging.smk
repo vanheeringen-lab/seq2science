@@ -31,7 +31,7 @@ onsuccess:
     # be happy that it finished succesfully
     # and indicate where important files are located
     message = f"Nice, a succesful run! Check out the docs for help with the results: https://vanheeringen-lab.github.io/seq2science/content/workflows/{WORKFLOW}.html. "
-    if WORKFLOW != "download-fastq":
+    if WORKFLOW != "download_fastq":
         if config.get("create_qc_report"):
             rand_assembly = list(ORI_ASSEMBLIES.keys())[0]
             message += f"Make sure to check out the QC report, it can be found at {config['qc_dir']}/multiqc_{rand_assembly}.html. "
