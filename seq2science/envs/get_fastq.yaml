@@ -3,7 +3,7 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - bioconda::sra-tools=3.0.3
+  - bioconda::sra-tools=2.11.0
   - bioconda::parallel-fastq-dump=0.6.7
   - conda-forge::flock=0.2.3
   - conda-forge::conda-ecosystem-user-package-isolation=1.0
