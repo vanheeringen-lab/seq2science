@@ -744,17 +744,12 @@ def get_qc_files(wildcards):
 
     if get_rna_qc in QUALITY_CONTROL:
         # Skip if desired, or if no BAMs are made (no trackhub + Salmon)
-        if not (
-            config.get("ignore_strandedness")
-            or (config.get("quantifier", "") == "salmon" and config.get("create_trackhub") == False)
-        ):
+        if not config.get("ignore_strandedness") and config.get("gen_bams"):
             for trep in treps[treps["assembly"] == ORI_ASSEMBLIES[wildcards.assembly]].index:
                 qc["files"].update(get_rna_qc(trep))
 
         # add dupRadar plots if BAMs are made
-        if "REMOVE_DUPLICATES=true" not in config.get("markduplicates", "") and not (
-            config.get("quantifier", "") == "salmon" and config.get("create_trackhub") == False
-        ):
+        if "REMOVE_DUPLICATES=true" not in config.get("markduplicates", "") and config.get("gen_bams"):
             qc["files"].update(expand("{qc_dir}/dupRadar/{{assembly}}-dupRadar_mqc.png", **config))
 
     # DESeq2 sample distance/correlation cluster heatmaps
@@ -954,8 +949,7 @@ def get_alignment_qc(sample):
 
     if (
         WORKFLOW in ["alignment", "chip_seq", "atac_seq", "scatac_seq"]
-        or WORKFLOW == "rna_seq"
-        and (config.get("create_trackhub") or config.get("quantifier") != "salmon")
+        or WORKFLOW == "rna_seq" and config.get("gen_bams")
     ):
         output.append("{qc_dir}/plotFingerprint/{{assembly}}.tsv")
     if len(breps[breps["assembly"] == treps.loc[sample, "assembly"]].index) > 1 and config.get("deeptools_qc"):

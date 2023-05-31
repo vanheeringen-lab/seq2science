@@ -9,6 +9,21 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- CRAM support for ATAC+ChIP+RNA-seq workflows (in addition to the existing alignment workflow cram support)
+
+### Changed
+
+- sctk yaml simplified
+
+### Fixed
+
+- DESeq2 should no longer crash without DE genes
+- bug with single-ended reads and subread
+- gimme maelstrom dependency missing
+- gimme maelstrom bug when XDG_CACHE_DIR is not set
+
 ## [0.9.9] - 2023-04-21
 
 ### Changed

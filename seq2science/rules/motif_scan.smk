@@ -66,10 +66,10 @@ rule gimme_maelstrom:
         """
         NEW_CACHE={output.cache}
         mkdir -p $NEW_CACHE
-        if [ -z $XDG_CACHE_HOME ]; then
-            XDG_CACHE_HOME=$HOME/.cache
+        if [ -z ${{XDG_CACHE_HOME+x}} ]; then
+            export XDG_CACHE_HOME=$HOME/.cache
         fi
-        if [ -d $XDG_CACHE_HOME/gimmemotifs ]; then 
+        if [ -d $XDG_CACHE_HOME/gimmemotifs ]; then
             cp -r $XDG_CACHE_HOME/gimmemotifs $NEW_CACHE/
         fi
         export XDG_CACHE_HOME=$NEW_CACHE
@@ -78,3 +78,4 @@ rule gimme_maelstrom:
         """
         gimme maelstrom {input.count_table} {input.genome} {output.output} --pfmfile {params.pfmfile} --nthreads {threads} {params.params} > {log} 2>&1
         """
+

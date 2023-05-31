@@ -36,5 +36,10 @@ quantifier:
 # Optional for unsupported technologies
 #barcodefile: "barcodes.txt"
 
+# single-cell toolkit options
+sc_preprocess:
+  run_sctk_qc: True
+  sctk_detect_mito: False
+
 # For additional scRNA-seq quality control options visit
 # https://vanheeringen-lab.github.io/seq2science/content/workflows/scrna_seq.html#scrna-seq-pre-processing-and-quality-control
