@@ -101,7 +101,7 @@ if WORKFLOW == "rna_seq":
     config["deseq2"] = dict(config["deseq2"])
     
     # only store as cram when bams get made
-    config["gen_bams"] = config.get("create_trackhub") or (config.get("aligner") in ["salmon"])
+    config["gen_bams"] = config.get("create_trackhub") or (config.get("quantifier") not in ["salmon"])
     if config.get("store_as_cram") and not config["gen_bams"]:
         logger.warning(
             f"The salmon aligner does not create BAM files, so there is no bam to be converted to cram. Ignoring this setting."
