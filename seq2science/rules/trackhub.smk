@@ -35,7 +35,7 @@ if config.get("create_trackhub"):
             "../envs/ucsc.yaml"
         shell:
             """
-            faToTwoBit {input} {output} >> {log} 2>&1
+            faToTwoBit -long {input} {output} >> {log} 2>&1
             """
 
 
