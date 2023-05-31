@@ -168,6 +168,7 @@ if [ $1 = "atac-seq" ]; then
   printf "\natac-seq - trackhub\n"
   seq2science run atac-seq --cores $CORES -r --configfile tests/alignment/remote_genome_n_sample.yaml --snakemakeOptions config={aligner:bowtie2,create_trackhub:True,custom_genome_extension:tests/tinydata/tinyERCC92.fa,max_template_length:150} show_failed_logs=True
 
+  printf "\natac-seq - deseq2\n"
   # fake input data & fix timestamps
   mkdir -p tests/local_test_results/GRCh38.p13
   touch tests/local_test_results/GRCh38.p13/GRCh38.p13.fa
@@ -180,7 +181,24 @@ if [ $1 = "atac-seq" ]; then
     done
     touch tests/local_test_results/fastq/replicate_${ext}.fastq.gz
   done
-  
+  mkdir -p tests/local_test_results/final_bam
+  touch tests/local_test_results/final_bam/GRCh38.p13-C0_1.samtools-coordinate.bam
+  touch tests/local_test_results/final_bam/GRCh38.p13-C0_2.samtools-coordinate.bam
+  touch tests/local_test_results/final_bam/GRCh38.p13-C2_1.samtools-coordinate.bam
+  touch tests/local_test_results/final_bam/GRCh38.p13-C2_2.samtools-coordinate.bam
+  touch tests/local_test_results/final_bam/GRCh38.p13-H0_1.samtools-coordinate.bam
+  touch tests/local_test_results/final_bam/GRCh38.p13-H0_2.samtools-coordinate.bam
+  touch tests/local_test_results/final_bam/GRCh38.p13-H2_1.samtools-coordinate.bam
+  touch tests/local_test_results/final_bam/GRCh38.p13-H2_2.samtools-coordinate.bam
+  touch tests/local_test_results/final_bam/GRCh38.p13-C0_1.samtools-coordinate.bam.bai
+  touch tests/local_test_results/final_bam/GRCh38.p13-C0_2.samtools-coordinate.bam.bai
+  touch tests/local_test_results/final_bam/GRCh38.p13-C2_1.samtools-coordinate.bam.bai
+  touch tests/local_test_results/final_bam/GRCh38.p13-C2_2.samtools-coordinate.bam.bai
+  touch tests/local_test_results/final_bam/GRCh38.p13-H0_1.samtools-coordinate.bam.bai
+  touch tests/local_test_results/final_bam/GRCh38.p13-H0_2.samtools-coordinate.bam.bai
+  touch tests/local_test_results/final_bam/GRCh38.p13-H2_1.samtools-coordinate.bam.bai
+  touch tests/local_test_results/final_bam/GRCh38.p13-H2_2.samtools-coordinate.bam.bai
+
   touch -m tests/deseq2/atac/macs2/GRCh38.p13_onehotpeaks.tsv
   for rep in technical_reps biological_reps; do
       touch -m tests/deseq2/atac/macs2/GRCh38.p13_raw_${rep}.tsv  # update timestamps

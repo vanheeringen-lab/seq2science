@@ -9,6 +9,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- CRAM support for ATAC+ChIP+RNA-seq workflows (in addition to the existing alignment workflow cram support)
+
 ### Changed
 
 - sctk yaml simplified
