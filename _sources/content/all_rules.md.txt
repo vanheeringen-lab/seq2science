@@ -598,10 +598,10 @@ Gimme maelstrom is a method to infer differential motifs between two or more bio
 ```
 NEW_CACHE={output.cache}
 mkdir -p $NEW_CACHE
-if [ -z $XDG_CACHE_HOME ]; then
-    XDG_CACHE_HOME=$HOME/.cache
+if [ -z ${{XDG_CACHE_HOME+x}} ]; then
+    export XDG_CACHE_HOME=$HOME/.cache
 fi
-if [ -d $XDG_CACHE_HOME/gimmemotifs ]; then 
+if [ -d $XDG_CACHE_HOME/gimmemotifs ]; then
     cp -r $XDG_CACHE_HOME/gimmemotifs $NEW_CACHE/
 fi
 export XDG_CACHE_HOME=$NEW_CACHE
@@ -1626,7 +1626,7 @@ make an upset plot which shows the distribution of peaks amongst the biological 
 [featurecounts]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/gene_counts.yaml
 [prepare_DEXseq_annotation]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/dexseq.yaml
 [dexseq_count]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/dexseq.yaml
-[export_sce_obj]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/sce.yaml
+[export_sce_obj]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/sctk.yaml
 [sctk_qc]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/sctk.yaml
 [featureCounts]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/subread.yaml
 [plotHeatmap_peak]: https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/deeptools.yaml

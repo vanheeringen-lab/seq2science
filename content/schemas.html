@@ -94,6 +94,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#remove-dups">remove_dups</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#create-qc-report">create_qc_report</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#bam-sort-mem">bam_sort_mem</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#store-as-cram">store_as_cram</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#custom-genome-extension">custom_genome_extension</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#custom-annotation-extension">custom_annotation_extension</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#custom-assembly-suffix">custom_assembly_suffix</a></li>
@@ -108,7 +109,6 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#workflow-alignment">Workflow: Alignment</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#bam-sorter">bam_sorter</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#cram-no-bam">cram_no_bam</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#workflow-chip-atac-seq">Workflow: ChIP &amp; ATAC-seq</a><ul>
@@ -613,6 +613,15 @@
 </pre></div>
 </div>
 </section>
+<section id="store-as-cram">
+<h3>store_as_cram<a class="headerlink" href="#store-as-cram" title="Permalink to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">store_as_cram</span><span class="p">:</span>
+    <span class="n">description</span><span class="p">:</span> <span class="n">whether</span> <span class="n">to</span> <span class="n">store</span> <span class="n">the</span> <span class="n">final</span> <span class="n">mapped</span> <span class="ow">and</span> <span class="n">filtered</span> <span class="n">reads</span> <span class="k">as</span> <span class="n">cram</span> <span class="n">instead</span> <span class="n">of</span> <span class="n">bam</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="n">boolean</span>
+    <span class="n">default</span><span class="p">:</span> <span class="kc">False</span>
+</pre></div>
+</div>
+</section>
 <section id="custom-genome-extension">
 <h3>custom_genome_extension<a class="headerlink" href="#custom-genome-extension" title="Permalink to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">custom_genome_extension</span><span class="p">:</span>
@@ -712,15 +721,6 @@
         <span class="nb">type</span><span class="p">:</span> <span class="n">string</span>
     <span class="n">default</span><span class="p">:</span>
         <span class="n">samtools</span><span class="p">:</span> <span class="n">coordinate</span>
-</pre></div>
-</div>
-</section>
-<section id="cram-no-bam">
-<h3>cram_no_bam<a class="headerlink" href="#cram-no-bam" title="Permalink to this heading"></a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cram_no_bam</span><span class="p">:</span>
-    <span class="n">description</span><span class="p">:</span> <span class="n">whether</span> <span class="n">to</span> <span class="n">store</span> <span class="n">cram</span> <span class="n">instead</span> <span class="n">of</span> <span class="n">bam</span>
-    <span class="nb">type</span><span class="p">:</span> <span class="n">boolean</span>
-    <span class="n">default</span><span class="p">:</span> <span class="kc">False</span>
 </pre></div>
 </div>
 </section>

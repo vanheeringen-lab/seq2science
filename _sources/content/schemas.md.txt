@@ -337,6 +337,13 @@ bam_sort_mem:
     default: 2
     type: integer
 ```
+#####store_as_cram
+```
+store_as_cram:
+    description: whether to store the final mapped and filtered reads as cram instead of bam
+    type: boolean
+    default: False
+```
 #####custom_genome_extension
 ```
 custom_genome_extension:
@@ -415,13 +422,6 @@ bam_sorter:
         type: string
     default:
         samtools: coordinate
-```
-#####cram_no_bam
-```
-cram_no_bam:
-    description: whether to store cram instead of bam
-    type: boolean
-    default: False
 ```
 
 ## Workflow: ChIP & ATAC-seq

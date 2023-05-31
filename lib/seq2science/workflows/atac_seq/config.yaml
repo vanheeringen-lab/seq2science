@@ -32,6 +32,9 @@ only_primary_align: true
 max_template_length: 150
 remove_dups: true
 
+# should the final output be stored as cram files (instead of bam) to save storage?
+store_as_cram: false
+
 # macs2 ignores the mates in a paired sequencing sample. with this option enabled
 # seq2science removes the mate information after alignment, so all reads are used
 macs2_keep_mates: true
