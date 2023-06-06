@@ -4,4 +4,5 @@ channels:
   - bioconda
 dependencies:
   - bioconda::idr=2.0.4.2
+  - conda-forge::numpy=1.19.5
   - conda-forge::conda-ecosystem-user-package-isolation=1.0
