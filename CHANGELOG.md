@@ -12,6 +12,9 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Fixed
 
 - idr bug with numpy dependency > 1.20
+- replacing all spaces with underscores in the samples.tsv
+  - should only affect columns where this was not enforced already (custom columns)
+  - required for rule multiqc_samplesconfig
 
 ## [1.0.0] - 2023-05-31
 
