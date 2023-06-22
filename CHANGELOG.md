@@ -11,6 +11,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Fixed
 
+- crash with combination of technical reps and biological reps when combining them.
 - idr bug with numpy dependency > 1.20
 - replacing all spaces with underscores in the samples.tsv
   - should only affect columns where this was not enforced already (custom columns)
