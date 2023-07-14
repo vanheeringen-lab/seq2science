@@ -9,7 +9,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
-## [1.0.1] - 2023-07-14
+## [1.0.2] - 2023-07-14
 
 ### Fixed
 
