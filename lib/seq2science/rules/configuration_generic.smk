@@ -239,6 +239,7 @@ def parse_samples():
     
     samples_df = samples_df.set_index("sample")
     samples_df.index = samples_df.index.map(str)
+    samples_df.replace({' ': '_'}, regex=True, inplace=True)
     
     return samples_df
 
