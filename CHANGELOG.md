@@ -9,6 +9,8 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+## [1.0.1] - 2023-07-14
+
 ### Fixed
 
 - crash with combination of technical reps and biological reps when combining them.
@@ -786,7 +788,8 @@ Many minor bug- and quality of life fixes.
 
 First release of seq2science!
 
-[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v1.0.0...develop
+[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v1.0.1...develop
+[1.0.1]: https://github.com/vanheeringen-lab/seq2science/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.9...v1.0.0
 [0.9.9]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.8...v0.9.9
 [0.9.8]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.7...v0.9.8
