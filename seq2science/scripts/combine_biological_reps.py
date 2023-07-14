@@ -20,7 +20,11 @@ with open(str(snakemake.log), "w") as f:
             breps = snakemake.params.breps
             groups = []
             for column in counts.columns:
-                idx = breps.index(samples.at[column, "biological_replicates"])
+                idx = samples.at[column, "biological_replicates"]
+                if isinstance(idx, pd.Series):
+                    assert idx.duplicated(keep=False).all()
+                    idx = idx.iloc[0]
+                idx = breps.index(idx)
                 groups.append(idx)
 
             # average all columns per biological replicate and assign the brep names to the results
