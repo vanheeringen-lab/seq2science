@@ -9,6 +9,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Fixed
+
+- issue with printing a nice traceback when the SRA is unresponsive
+
 ## [1.0.2] - 2023-07-14
 
 ### Fixed
