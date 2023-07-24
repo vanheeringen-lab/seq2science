@@ -284,7 +284,7 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
                 "seq2science does not support downloading those..\n\n"
             )
             logger.debug(f"Affected samples: {', '.join(geo_samples)}")
-            tb_str = traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__)
+            tb_str = traceback.format_exception(value=e, tb=e.__traceback__)
             logger.debug("".join(tb_str))
             os._exit(1)  # noqa
 
@@ -306,7 +306,7 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
             "seq2science does not support downloading those..\n\n"
         )
         logger.debug(f"Affected samples: {', '.join(sample2clean.values())}")
-        tb_str = traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__)
+        tb_str = traceback.format_exception(value=e, tb=e.__traceback__)
         logger.debug("".join(tb_str))
         os._exit(1)  # noqa
 
