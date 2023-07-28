@@ -9,6 +9,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Changed
+
+- use the snakemake greedy scheduler as default as the ilp scheduler struggles with "many" samples
+
 ## [1.0.3] - 2023-07-26
 
 ### Fixed
