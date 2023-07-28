@@ -172,4 +172,4 @@ if not config.get("no_config_log"):
 
     logger.info(tabulate(table, headers=["config variable", "value"], tablefmt="pipe"))
     logger.info("\n\n")
-    logger.info(f"Using the snakemake {workflow._scheduler_type} scheduler.\n")
+    logger.info(f"Using the snakemake {workflow.scheduler_type} scheduler.\n")
