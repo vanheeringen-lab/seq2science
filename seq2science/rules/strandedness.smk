@@ -36,7 +36,10 @@ def get_strandedness(report_file, fmt="htseq"):
 
     cutoff = 0.6
     with open(report_file) as rf:
-        fwd, rev = rf.read().splitlines()[2:4]
+        try:
+            fwd, rev = rf.read().splitlines()[2:4]
+        except:
+            logger.error(f"An unexpected issue has occurred with inferring the strandedness of this file: {report_file}...")
 
     fwd = float(fwd.split(": ")[1])
     if fwd > cutoff:
