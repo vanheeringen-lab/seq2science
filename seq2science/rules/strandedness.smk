@@ -40,7 +40,8 @@ def get_strandedness(report_file, fmt="htseq"):
             fwd, rev = rf.read().splitlines()[2:4]
         except:
             logger.error(f"An unexpected issue has occurred with inferring the strandedness of this file: {report_file}...")
-            sys.exit(1)
+            # I think we don't want to exit as we want snakemake to resolve the running jobs
+            assert False
 
     fwd = float(fwd.split(": ")[1])
     if fwd > cutoff:
