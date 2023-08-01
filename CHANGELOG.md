@@ -14,6 +14,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Fixed
 
 - issue with printing a nice traceback when the SRA is unresponsive
+- more informative error with troubles inferring the strandedness of samples
 
 ## [1.0.2] - 2023-07-14
 
