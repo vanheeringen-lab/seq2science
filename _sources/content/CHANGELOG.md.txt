@@ -12,6 +12,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Changed
 
 - use the snakemake greedy scheduler as default as the ilp scheduler struggles with "many" samples
+- use braLan3 for motif2factors instead of braLan2
 
 ## [1.0.3] - 2023-07-26
 

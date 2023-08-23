@@ -538,7 +538,7 @@ motif2factors_database_references:
 ```
 motif2factors_reference:
     description: Which assemblies should be taken along for the orthology inference.
-    default: ['danRer11', 'UCB_Xtro_10.0', 'galGal6', 'BraLan2', 'oryLat2', 'ARS-UCD1.2', 'phaCin_unsw_v4.1', 'rCheMyd1.pri']
+    default: ['danRer11', 'UCB_Xtro_10.0', 'galGal6', 'BraLan3', 'oryLat2', 'ARS-UCD1.2', 'phaCin_unsw_v4.1', 'rCheMyd1.pri']
     type: array
     items:
         type: string
