@@ -79,6 +79,8 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
     """
     Make the seq2science parser.
     """
+    supp_workflows = [dir.replace("_", "-") for dir in os.listdir(workflows_dir)]
+
     # setup the parser
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--version", action="version", version=f"seq2science: v{seq2science.__version__}")
@@ -89,20 +91,22 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         help="Initialise a workflow with an example config and samples file.",
         description="Each workflow requires a configuration and samples file to run. "
         'Running "seq2science init {workflow}" initialises a default '
-        "configuration and samples file for the specific workflow.",
+        "configuration and samples file for the specific workflow. "
+        f"Supported workflows: {', '.join(supp_workflows)}",
     )
-    global run
     run = subparsers.add_parser(
         "run",
         help="Run a complete workflow.",
         description="Run a complete workflow. This requires that a config and samples file "
-        "are either present in the current directory, or passed as an argument.",
+        "are either present in the current directory, or passed as an argument. "
+        f"Supported workflows: {', '.join(supp_workflows)}",
     )
     explain = subparsers.add_parser(
         "explain",
         help="Write a materials & methods section.",
         description="Explains what has/will be done for the workflow. This prints a string which can serve"
-        " as a skeleton for your material & methods section.",
+        " as a skeleton for your material & methods section. "
+        f"Supported workflows: {', '.join(supp_workflows)}",
     )
     clean = subparsers.add_parser(  # noqa: F841
         "clean",
@@ -122,7 +126,7 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
     # init, run and explain can use all workflows
     for subparser in [init, run, explain]:
         subparser.add_argument(
-            "workflow", metavar="WORKFLOW", choices=[dir.replace("_", "-") for dir in os.listdir(workflows_dir)]
+            "workflow", metavar="WORKFLOW", choices=supp_workflows
         )
 
     # init arguments
