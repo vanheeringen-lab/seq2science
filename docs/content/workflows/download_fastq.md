@@ -22,14 +22,16 @@ As an example, the `samples.tsv` could look something like this:
 
 ```
 sample
-ERX123  <-- EBI ENA experiment
-ERR321  <-- EBI ENA run
-GSMabc  <-- GEO sample
-SRX456  <-- SRA experiment
-SRRxzy  <-- SRA run
-DRX890  <-- DDBJ experiment
-DRR098  <-- DDBJ run
-CRX123  <-- GSA experiment
+CRX123    <-- GSA experiment
+DRX890    <-- DDBJ experiment
+DRR098    <-- DDBJ run
+ENCSR765  <-- ENCODE assay
+ENCFF432  <-- ENCODE fastq file
+ERX123    <-- EBI ENA experiment
+ERR321    <-- EBI ENA run
+GSMabc    <-- GEO sample
+SRX456    <-- SRA experiment
+SRRxzy    <-- SRA run
 ```
 
 #### Sample column
@@ -37,7 +39,9 @@ CRX123  <-- GSA experiment
 When downloading fastq files there is only one column in the samples.txt. 
 This is the sample column, where each sample is specified.
 Samples are specified with their name of the accession (e.g. GSM2837484).
-(Accepted formats start with "GSM", "SRR", "SRX", "DRR", "DRX", "ERR" "ERX", or "CRX")
+(Accepted formats start with "CRX", "DRR", "DRX", "ENCFF" "ENCSR", "ERR", "ERX", "GSM", "SRR", or "SRX")
+
+When specifying an ENCODE fastq file, and it belongs to a paired sequencing run, both fastq files will be downloaded. They will have the file name of the sample, and R1 and R2 will correspond to ENCODE.
 
 #### Final notes
 
