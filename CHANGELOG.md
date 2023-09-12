@@ -9,11 +9,19 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+## [1.0.4] - 2023-09-05
+
+### Changed
+
+- use the snakemake greedy scheduler as default as the ilp scheduler struggles with "many" samples
+- use braLan3 for motif2factors instead of braLan2
+
 ## [1.0.3] - 2023-07-26
 
 ### Fixed
 
 - issue with printing a nice traceback when the SRA is unresponsive
+- more informative error with troubles inferring the strandedness of samples
 
 ## [1.0.2] - 2023-07-14
 
@@ -794,7 +802,8 @@ Many minor bug- and quality of life fixes.
 
 First release of seq2science!
 
-[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v1.0.3...develop
+[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v1.0.4...develop
+[1.0.4]: https://github.com/vanheeringen-lab/seq2science/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/vanheeringen-lab/seq2science/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/vanheeringen-lab/seq2science/compare/v1.0.0...v1.0.2
 [1.0.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.9...v1.0.0
