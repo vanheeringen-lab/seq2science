@@ -9,6 +9,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Fixed
+
+- issue when specifying colors in the samples table and the QC report not rendering the table correctly anymore.
+
 ## [1.0.4] - 2023-09-05
 
 ### Changed
