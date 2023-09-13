@@ -16,9 +16,9 @@ Please note that `deseq2science` can accept a gzipped tsv file as well.
 Also note that the `--single-cell` flag should *not* be used with pseudo-bulk counts.
 
 ##### Overview of the DESeq2 method
-DESeq2 automatically performs library bias correction when loading your data, and batch correction is performed if it is included in the contrast design.
-After calculating differentially expressed genes/peaks, a multiple testing procedure is applied, which is either the Benjamini-Hochberg procedure (the default) or Independent Hypothesis Weighing.
-The False Discovery Rate cutoff is set by alpha, which is 0.1 by default.
+DESeq2 accepts raw count data, automatically performing library bias correction and batch correction (if included in the contrast design).
+After calculating differentially expressed genes/peaks, a multiple testing procedure is applied: either the Benjamini-Hochberg procedure (the default) or Independent Hypothesis Weighing.
+The False Discovery Rate is set by the variable `alpha`, which is 0.1 by default.
 Finally, count values are log transformed and shrunk (by default using the apeglm method).
 These defaults can be changed in the [config.yaml](./schemas.html#deseq2), under the `deseq2` variables using the `multiple_testing_procedure`, `alpha_value` and `shrinkage_estimator` options respectively.
 
@@ -27,16 +27,19 @@ For more information, check out the steps in this [vignette](https://www.biocond
 ##### Contrast designs
 The following section will guide you through the process of creating a DESeq2 contrast using only the samples.tsv and the config.yaml.
 
-Here are some definitions: a **contrast** design tells us which samples to compare. It contains three or four parts: a **condition** (a column name in the samples.tsv), and two **groups** (labels in this column).
-The first group will be the **target**, and the second group will be the **reference**.
-Additionally, a contrast can optionally contain a **batch** effect, which you want to correct for.
+Here are some definitions: a **contrast** design tells us which samples to compare, and how. 
+A contrast contains three or four parts: 
+  - an optional **batch** effect to correct for (a column name in the samples.tsv)
+  - a **condition** (a column name in the samples.tsv)
+  - two **groups** (labels in the condition column)
 
+For each contrast, DESeq2 will determine which genes/peaks are differentially expressed in the first group (the **target** group), compared to the second group (**reference** group).
 To determine differentially expressed genes/accessible peaks, DESeq2 requires at least two samples per group.
 A design contrast therefore requires at least 2x2 samples.
 
 ###### Contrast in the samples.tsv
-In the `samples.tsv`, add a column for every property you wish to test in your samples.
-Next, add labels to the samples involved in the test. You can leave labels empty, or add labels and not use them.
+In the `samples.tsv`, add a condition column for every comparisson you wish to make.
+Next, add group labels to the samples involved in the test. You can leave labels empty, or add labels and not use them.
 For example:
 
 1. a column named 'conditions' with values 'wildtype' and 'knockout'.
@@ -56,7 +59,7 @@ For example:
 Next, in the `config.yaml` add one or more contrasts:
 
 In order to compare two groups, the contrast condition is the column name, followed by the target group and finally the reference group.
-For example, to compare stage 1 to stage 3 from the examples above, the contrast would be `stages_3_1`.
+For example, to determine which genes/peaks are differentially expressed/active at stage 3 compared to stage 1, the contrast would be `stages_3_1`.
 
 To compare all groups against one reference, the contrast condition is the column name, followed by target group "all" and finally the reference group.
 For example, to compare all treatments to the control from the examples above, the contrast would be `treatments_all_control`
@@ -103,7 +106,7 @@ contrasts:
 ##### Output
 For each contrast design, the list of *all* genes/peaks is saved to file, with analysis results for expressed genes. Briefly, these include:
 - The column `padj` contains the adjusted p-values after multiple testing. **(These should be used to identify DE genes/peaks)**.
-- The column `log2FoldChange` contains the fold change of each gene between the two conditions. (The reference group is the one _last mentioned_ in the contrast design, so use `condition_treatment_control`. If you use `condition_control_treatment` the fold change is _inverted_.)
+- The column `log2FoldChange` contains the fold change of each gene between the two conditions.
 - Several other columns were kept for sake of completion, such as column `pvalue`, which contains p-values not adjusted for multiple testing.
 
 In addition, MA and PCA plots are generated for each contrast design.
