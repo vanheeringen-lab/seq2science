@@ -7,8 +7,8 @@
 Download and install [miniconda](https://www.anaconda.com/) if not yet installed:
 
 ```console
-user@comp:~$ wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
-user@comp:~$ bash miniconda.sh # (make sure to say **yes** when asked to run conda init)
+user@comp:~$ wget https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh -O mambaforge.sh
+user@comp:~$ bash mambaforge.sh # (make sure to say **yes** when asked to initialize conda)
 user@comp:~$ source ~/.bashrc
 ```
 
@@ -25,7 +25,7 @@ user@comp:~$ conda config --add channels conda-forge
 The most straightforward way to install seq2science is by using [conda](https://docs.continuum.io/anaconda/) using the [bioconda](https://bioconda.github.io/) channel. To install seq2science in a fresh environment using bioconda:
 
 ```console
-(base) user@comp:~$ conda create -n seq2science seq2science
+(base) user@comp:~$ mamba create -n seq2science seq2science
 ```
 
 This should install the *newest* official release of seq2science.

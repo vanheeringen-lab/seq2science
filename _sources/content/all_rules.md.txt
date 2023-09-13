@@ -609,13 +609,13 @@ export XDG_CACHE_HOME=$NEW_CACHE
 
 [gimme_maelstrom environment][gimme_maelstrom].
 
-#### gsa2fastq_PE
+#### gsa_or_encode2fastq_PE
 
-Download paired-end fastq files from the GSA.
+Download paired-end fastq files from the GSA or ENCODE DCC.
 
-#### gsa2fastq_SE
+#### gsa_or_encode2fastq_SE
 
-Download single-end fastq files from the GSA.
+Download single-end fastq files from the GSA or ENCODE DCC.
 
 #### hisat2_align
 

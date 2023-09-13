@@ -112,9 +112,9 @@
   <img src="../../_static/download_fastq.png" style="width:auto;height:100px;">
 </p><section id="download-sra-file">
 <h3>Download SRA file<a class="headerlink" href="#download-sra-file" title="Link to this heading"></a></h3>
-<p>The four most popular databases that store sequencing data are National Center for Biotechnology Information (NCBI), the European Nucleotide Archive (ENA), the DNA Data Bank of Japan (DDBJ), and the Genome Sequence Archive (GSA).
-Only ENA and GSA store the actual fastq files, and DDBJ and NCBI store the raw data (as a sra file) from which a fastq can be derived.
-For this reason for each sample will first be checked if it can be downloaded from ENA.
+<p>The five most popular databases that store sequencing data are National Center for Biotechnology Information (NCBI), the European Nucleotide Archive (ENA), the DNA Data Bank of Japan (DDBJ), the Genome Sequence Archive (GSA), and the Encode project (ENCODE).
+ENA, ENCODE, and GSA store the actual fastq files, and DDBJ and NCBI store the raw data (as a sra file) from which a fastq can be derived.
+For this reason for each sample on DDBJ and NCBI seq2science will first check if it can be downloaded from ENA as a fastq directly.
 Otherwise we will download the samples in its raw format. To convert this data to a fastq it has to be “<em>dumped</em>“.</p>
 </section>
 </section>
@@ -124,14 +124,16 @@ Otherwise we will download the samples in its raw format. To convert this data t
 Each workflow starts with a <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> as an example, and you should adapt it to your specific needs.
 As an example, the <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> could look something like this:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sample</span>
-<span class="n">ERX123</span>  <span class="o">&lt;--</span> <span class="n">EBI</span> <span class="n">ENA</span> <span class="n">experiment</span>
-<span class="n">ERR321</span>  <span class="o">&lt;--</span> <span class="n">EBI</span> <span class="n">ENA</span> <span class="n">run</span>
-<span class="n">GSMabc</span>  <span class="o">&lt;--</span> <span class="n">GEO</span> <span class="n">sample</span>
-<span class="n">SRX456</span>  <span class="o">&lt;--</span> <span class="n">SRA</span> <span class="n">experiment</span>
-<span class="n">SRRxzy</span>  <span class="o">&lt;--</span> <span class="n">SRA</span> <span class="n">run</span>
-<span class="n">DRX890</span>  <span class="o">&lt;--</span> <span class="n">DDBJ</span> <span class="n">experiment</span>
-<span class="n">DRR098</span>  <span class="o">&lt;--</span> <span class="n">DDBJ</span> <span class="n">run</span>
-<span class="n">CRX123</span>  <span class="o">&lt;--</span> <span class="n">GSA</span> <span class="n">experiment</span>
+<span class="n">CRX123</span>    <span class="o">&lt;--</span> <span class="n">GSA</span> <span class="n">experiment</span>
+<span class="n">DRX890</span>    <span class="o">&lt;--</span> <span class="n">DDBJ</span> <span class="n">experiment</span>
+<span class="n">DRR098</span>    <span class="o">&lt;--</span> <span class="n">DDBJ</span> <span class="n">run</span>
+<span class="n">ENCSR765</span>  <span class="o">&lt;--</span> <span class="n">ENCODE</span> <span class="n">assay</span>
+<span class="n">ENCFF432</span>  <span class="o">&lt;--</span> <span class="n">ENCODE</span> <span class="n">fastq</span> <span class="n">file</span>
+<span class="n">ERX123</span>    <span class="o">&lt;--</span> <span class="n">EBI</span> <span class="n">ENA</span> <span class="n">experiment</span>
+<span class="n">ERR321</span>    <span class="o">&lt;--</span> <span class="n">EBI</span> <span class="n">ENA</span> <span class="n">run</span>
+<span class="n">GSMabc</span>    <span class="o">&lt;--</span> <span class="n">GEO</span> <span class="n">sample</span>
+<span class="n">SRX456</span>    <span class="o">&lt;--</span> <span class="n">SRA</span> <span class="n">experiment</span>
+<span class="n">SRRxzy</span>    <span class="o">&lt;--</span> <span class="n">SRA</span> <span class="n">run</span>
 </pre></div>
 </div>
 <section id="sample-column">
@@ -139,7 +141,8 @@ As an example, the <code class="docutils literal notranslate"><span class="pre">
 <p>When downloading fastq files there is only one column in the samples.txt.
 This is the sample column, where each sample is specified.
 Samples are specified with their name of the accession (e.g. GSM2837484).
-(Accepted formats start with “GSM”, “SRR”, “SRX”, “DRR”, “DRX”, “ERR” “ERX”, or “CRX”)</p>
+(Accepted formats start with “CRX”, “DRR”, “DRX”, “ENCFF” “ENCSR”, “ERR”, “ERX”, “GSM”, “SRR”, or “SRX”)</p>
+<p>When specifying an ENCODE fastq file, and it belongs to a paired sequencing run, both fastq files will be downloaded. They will have the file name of the sample, and R1 and R2 will correspond to ENCODE.</p>
 </section>
 <section id="final-notes">
 <h3>Final notes<a class="headerlink" href="#final-notes" title="Link to this heading"></a></h3>

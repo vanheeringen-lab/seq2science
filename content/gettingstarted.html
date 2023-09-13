@@ -95,8 +95,8 @@
 <section id="seq2science-requires-anaconda">
 <h3>seq2science requires anaconda<a class="headerlink" href="#seq2science-requires-anaconda" title="Link to this heading"></a></h3>
 <p>Download and install <a class="reference external" href="https://www.anaconda.com/">miniconda</a> if not yet installed:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">user@comp:~$ </span>wget<span class="w"> </span>https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh<span class="w"> </span>-O<span class="w"> </span>miniconda.sh
-<span class="gp">user@comp:~$ </span>bash<span class="w"> </span>miniconda.sh<span class="w"> </span><span class="c1"># (make sure to say **yes** when asked to run conda init)</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">user@comp:~$ </span>wget<span class="w"> </span>https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh<span class="w"> </span>-O<span class="w"> </span>mambaforge.sh
+<span class="gp">user@comp:~$ </span>bash<span class="w"> </span>mambaforge.sh<span class="w"> </span><span class="c1"># (make sure to say **yes** when asked to initialize conda)</span>
 <span class="gp">user@comp:~$ </span><span class="nb">source</span><span class="w"> </span>~/.bashrc
 </pre></div>
 </div>
@@ -110,7 +110,7 @@
 <section id="easy-and-recommended-installation-bioconda">
 <h3>Easy and recommended installation (bioconda)<a class="headerlink" href="#easy-and-recommended-installation-bioconda" title="Link to this heading"></a></h3>
 <p>The most straightforward way to install seq2science is by using <a class="reference external" href="https://docs.continuum.io/anaconda/">conda</a> using the <a class="reference external" href="https://bioconda.github.io/">bioconda</a> channel. To install seq2science in a fresh environment using bioconda:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(base)</span> <span class="gp">user@comp:~$ </span>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>seq2science<span class="w"> </span>seq2science
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(base)</span> <span class="gp">user@comp:~$ </span>mamba<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>seq2science<span class="w"> </span>seq2science
 </pre></div>
 </div>
 <p>This should install the <em>newest</em> official release of seq2science.</p>
