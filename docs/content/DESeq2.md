@@ -6,14 +6,14 @@ After completing the workflow, rerunning Seq2science with new contrasts will onl
 Alternatively, you can call the DESeq2 script from the command line.
 To get started with the command line script, try out `deseq2science --help`.
 
-This section details how the contrast designs are created.
+This page details how the contrast designs are created.
 Examples are given [below](./DESeq2.html#contrast-designs), and each `config.yaml` contains a commented-out example contrast design at the bottom.
 
 ##### single-cell DESeq2
 If your counts table contains all cells, and your samples.tsv contains a group identifier for each cell, you can perform DESeq2 on this data using `deseq2science` by passing the `--single-cell` flag. 
 Please note that `deseq2science` can accept a gzipped tsv file as well.
 
-Also note that the `--single-cell` flag should *not* be used with pseudo-bulk.
+Also note that the `--single-cell` flag should *not* be used with pseudo-bulk counts.
 
 ##### Overview of the DESeq2 method
 DESeq2 automatically performs library bias correction when loading your data, and batch correction is performed if it is included in the contrast design.
