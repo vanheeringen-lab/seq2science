@@ -188,7 +188,8 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
             "-p",
             "--profile",
             metavar="PROFILE NAME",
-            help="Use a seq2science profile. Profiles can be taken from: https://github.com/s2s-profiles",
+            help="Use a seq2science profile. Profiles can be taken from: https://github.com/vanheeringen-lab/seq2science-profiles. "
+            "Profiles are an experimental feature and might not always work as intended. Please let us know if something doesn't work properly!",
         )
         subparser.add_argument(
             "-c",
