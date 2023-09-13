@@ -9,6 +9,8 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+## [1.1.0] - 2023-09-13
+
 ### Added
 
 - download samples directly from ENCODE by assay (ENCSR) and file (ENCFF) accession ids.
@@ -810,7 +812,8 @@ Many minor bug- and quality of life fixes.
 
 First release of seq2science!
 
-[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v1.0.4...develop
+[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v1.1.0...develop
+[1.1.0]: https://github.com/vanheeringen-lab/seq2science/compare/v1.0.4...v1.1.0
 [1.0.4]: https://github.com/vanheeringen-lab/seq2science/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/vanheeringen-lab/seq2science/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/vanheeringen-lab/seq2science/compare/v1.0.0...v1.0.2
