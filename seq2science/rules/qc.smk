@@ -643,7 +643,7 @@ rule multiqc_samplesconfig:
         config_used=len(workflow.overwrite_configfiles) > 0,
         configfile=workflow.overwrite_configfiles[-1],
         config=config_rerun_parser(config),
-        samples=lambda wildcards: samples.reset_index().to_string(index_names=False),
+        samples=lambda wildcards: samples.reset_index().to_string(index_names=False).replace(" ", "_"),
     conda:
         "../envs/htmltable.yaml"
     script:
