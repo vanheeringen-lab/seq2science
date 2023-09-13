@@ -1,7 +1,7 @@
 """
 all rules/logic related downloading public fastqs should be here.
 """
-localrules: run2sra, ena2fastq_SE, ena2fastq_PE, gsa2fastq_SE, gsa2fastq_PE, runs2sample
+localrules: run2sra, ena2fastq_SE, ena2fastq_PE, gsa_or_encode2fastq_SE, gsa_or_encode2fastq_PE, runs2sample
 
 
 import os
@@ -71,12 +71,12 @@ rule run2sra:
 
 
 # ENA > SRA
-ruleorder: ena2fastq_SE > gsa2fastq_SE > sra2fastq_SE
-ruleorder: ena2fastq_PE > gsa2fastq_PE > sra2fastq_PE
+ruleorder: ena2fastq_SE > gsa_or_encode2fastq_SE > sra2fastq_SE
+ruleorder: ena2fastq_PE > gsa_or_encode2fastq_PE > sra2fastq_PE
 # PE > SE
 ruleorder: ena2fastq_PE > ena2fastq_SE
 ruleorder: sra2fastq_PE > sra2fastq_SE
-ruleorder: gsa2fastq_PE > gsa2fastq_SE
+ruleorder:gsa_or_encode2fastq_PE > gsa_or_encode2fastq_SE
 
 
 rule sra2fastq_SE:
@@ -234,9 +234,9 @@ rule ena2fastq_PE:
             shell("exit 1 >> {log} 2>&1")
 
 
-rule gsa2fastq_SE:
+rule gsa_or_encode2fastq_SE:
     """
-    Download single-end fastq files from the GSA.
+    Download single-end fastq files from the GSA or ENCODE DCC.
     """
     output:
         temp(expand("{fastq_dir}/runs/{{run}}.{fqsuffix}.gz", **config)),
@@ -247,7 +247,7 @@ rule gsa2fastq_SE:
     benchmark:
         expand("{benchmark_dir}/gsa2fastq_SE/{{run}}.benchmark.txt", **config)[0]
     wildcard_constraints:
-        run="|".join(GSA_SINGLE_END) if len(GSA_SINGLE_END) else "$a",
+        run="|".join(GSA_OR_ENCODE_SINGLE_END) if len(GSA_OR_ENCODE_SINGLE_END) else "$a",
     priority: 1
     retries: 2
     run:
@@ -261,9 +261,9 @@ rule gsa2fastq_SE:
             shell("exit 1 >> {log} 2>&1")
 
 
-rule gsa2fastq_PE:
+rule gsa_or_encode2fastq_PE:
     """
-    Download paired-end fastq files from the GSA.
+    Download paired-end fastq files from the GSA or ENCODE DCC.
     """
     output:
         temp(expand("{fastq_dir}/runs/{{run}}_{fqext}.{fqsuffix}.gz", **config)),
@@ -274,7 +274,7 @@ rule gsa2fastq_PE:
     benchmark:
         expand("{benchmark_dir}/gsa2fastq_PE/{{run}}.benchmark.txt", **config)[0]
     wildcard_constraints:
-        run="|".join(GSA_PAIRED_END) if len(GSA_PAIRED_END) else "$a",
+        run="|".join(GSA_OR_ENCODE_PAIRED_END) if len(GSA_OR_ENCODE_PAIRED_END) else "$a",
     priority: 1
     retries: 2
     run:
