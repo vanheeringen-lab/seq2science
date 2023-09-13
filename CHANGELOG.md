@@ -13,6 +13,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 - download samples directly from ENCODE by assay (ENCSR) and file (ENCFF) accession ids.
 
+### Changed
+
+- the init, run, and explain commands display the supported workflows in their --help
+
 ## [1.0.4] - 2023-09-05
 
 ### Changed
