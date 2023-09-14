@@ -9,6 +9,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Fixed
+
+- (major) issue with chip input controls being ignored.
+
 ## [1.1.0] - 2023-09-13
 
 ### Added
