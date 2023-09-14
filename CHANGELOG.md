@@ -11,7 +11,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Changed
 
-- DESeq2 filtering now uses more samples in the count matrix to estimate the dispersions
+- DESeq2 now uses more samples to estimate count dispersions
   - all samples with a label in the condition column are used
   - (this feature was previously dependent on a batch effect correction in the contrast design)
 
