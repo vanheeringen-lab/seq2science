@@ -183,7 +183,7 @@ rule macs2_callpeak:
             )
             else "BAM"
         ),
-        control=lambda wildcards, input: f"-c {input.control}" if input hasattr("control") else "",
+        control=lambda wildcards, input: f"-c {input.control}" if hasattr(input, "control") else "",
         keep_mates=config["macs2_keep_mates"]
     resources:
         mem_gb=4,
