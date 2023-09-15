@@ -84,7 +84,7 @@ rule genrich_pileup:
         "../envs/genrich.yaml"
     params:
         params=config["peak_caller"].get("genrich", " "),
-        control=lambda wildcards, input: f"-c {input.control}" if hasatr(input, "control") else "",
+        control=lambda wildcards, input: f"-c {input.control}" if hasattr(input, "control") else "",
         reps=lambda wildcards, input: input,  # help resolve changes in input files
     resources:
         mem_gb=8,
