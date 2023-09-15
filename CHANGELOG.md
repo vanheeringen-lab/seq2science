@@ -25,6 +25,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 - the init, run, and explain commands display the supported workflows in their --help
 
+### Fixed
+
+- issue when specifying colors in the samples table, causing the QC report not rendering the table correctly anymore.
+
 ## [1.0.4] - 2023-09-05
 
 ### Changed
