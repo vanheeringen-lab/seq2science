@@ -9,6 +9,12 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Changed
+
+- DESeq2 now uses more samples to estimate count dispersions
+  - all samples with a label in the condition column are used
+  - (this feature was previously dependent on a batch effect correction in the contrast design)
+
 ### Fixed
 
 - (major) issue with chip input controls being ignored.
@@ -22,6 +28,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Changed
 
 - the init, run, and explain commands display the supported workflows in their --help
+
+### Fixed
+
+- issue when specifying colors in the samples table, causing the QC report not rendering the table correctly anymore.
 
 ## [1.0.4] - 2023-09-05
 
