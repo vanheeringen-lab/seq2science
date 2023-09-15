@@ -17,7 +17,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Fixed
 
-- (major) issue with chip input controls being ignored.
+- (major) regression where peak calling input controls were being ignored.
 
 ## [1.1.0] - 2023-09-13
 
