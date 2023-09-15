@@ -76,13 +76,13 @@ The contrast `stages_3_1` will compare the expression of the target group (`3`, 
 The contrast `conditions_knockout_wildtype` will compare the expression of the target group (`knockout`, containing sample_2 and sample_4) against the reference group (`wildtype`, containing sample_1 and sample_3).
 
 ###### Count dispersions
-For each design contrast, you can specify which samples should be used to estimate the count dispersions by giving them a label.
+For each design contrast, you can specify which samples should be used to estimate the count dispersions by giving them a label in the contrast condition column.
 This can be used to exclude failed samples from the analysis.
-In general, more samples improves the dispersion estimate.
+In general, more samples improves the statistical power of the experiment.
 
-In contrast `stages_3_1` all samples will be used to estimate the count dispersions, including sample_3 and sample_4.
+In contrast `stages_3_1` all samples will be used to estimate the count dispersions, including sample_3 and sample_4 (because they have a label in the `stages` column).
 
-In contrast `conditions_knockout_wildtype` sample_5 and sample_6 will **not** be used to estimate the count dispersions.
+In contrast `conditions_knockout_wildtype` sample_5 and sample_6 will **not** be used to estimate the count dispersions (because they do not have a label in the `conditions` column).
 
 ###### The 'all' keyword
 To compare all groups in a column against the same reference group, the contrast condition is the column name, 
