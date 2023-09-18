@@ -104,6 +104,20 @@ As input to gimme maelstrom is the log 2 transformed quantile normalized count t
 It then tries to solve a system of linear equations, where the output is the read counts in a peak, and the input is the motif score in the peak times the "motif activity".
 This motif activity can then be compared across biological replicates for differential motifs.
 
+By default seq2science makes use of the gimme.vertebrate.v5.0 motif database. 
+This can be changed with the `gimme_maelstrom_database` config option.
+The gimme.vertebrate.v5.0 motif database is based on human and mouse gene names.
+When making use of a non-human/mouse genome assembly, seq2science makes use of the gimme motif2factors command to update the gene names for the used assembly.
+This option can be turned on/off with the `infer_motif2factors` option.
+Updating the motif database is done by downloading a set of other genome assemblies (including mouse and human), and inferring the orthologous between the used assembly and the human/mouse motif database.
+The config option `motif2factors_reference` controls which assemblies are used for ortholog inference, and comes with a default set of vertebrate assemblies.
+The config option `motif2factors_database_references` controls on which assemblies the reference is based on, and is by default the human and mouse genome assembly.
+
+If you change the `gimme_maelstrom_database` to, for instance, an invertebrate database, and you want the motif database to use the gene names in your assembly.
+You will also have to update the `motif2factors_reference` and the `motif2factors_database_references`.
+
+See the [gimme motif2factors docs](https://gimmemotifs.readthedocs.io/en/master/reference.html#command-gimme-motif2factors) for a more extensive explanation of how the motif database is updated.
+
 #### Differential peak analysis
 
 On top of that, Seq2science can also use the raw peak counts table to perform differential peak analysis with DESeq2.
