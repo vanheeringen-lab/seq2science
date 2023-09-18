@@ -15,6 +15,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
   - all samples with a label in the condition column are used
   - (this feature was previously dependent on a batch effect correction in the contrast design)
 
+### Fixed
+
+- (major) regression where peak calling input controls were being ignored.
+
 ## [1.1.0] - 2023-09-13
 
 ### Added
