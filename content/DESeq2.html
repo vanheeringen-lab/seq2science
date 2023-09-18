@@ -55,8 +55,10 @@
 <li class="toctree-l3"><a class="reference internal" href="#contrast-designs">Contrast designs</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#contrast-in-the-samples-tsv">Contrast in the samples.tsv</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#contrast-in-the-config-yaml">Contrast in the config.yaml</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#group-order">Group order</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#batches">Batches</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#count-dispersions">Count dispersions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#the-all-keyword">The ‘all’ keyword</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#condition-group-order">Condition group order</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#batch-effect-correction">Batch effect correction</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#output">Output</a></li>
@@ -97,24 +99,26 @@
              
   <section id="differential-gene-peak-analysis">
 <h1>Differential gene/peak analysis<a class="headerlink" href="#differential-gene-peak-analysis" title="Link to this heading"></a></h1>
-<p>Seq2science outputs counts matrices for each assembly in any bulk-sequencing workflow, which can optionally can be used for differential gene/peak analysis with <a class="reference external" href="https://genomebiology.biomedcentral.com/articles/10.1186/s13059-014-0550-8">DESeq2</a>.
-To do so, add one or more contrast design(s) in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file, with matching identifiers in the <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> file.</p>
-<p>After completing the workflow, rerunning Seq2science with new contrasts will only perform the new analyses.
+<p>In a differential gene analysis, two groups of samples are compared in order to determine which genes are significantly over- and underexpressed in the target group, compared to the reference group.
+The technique is made for RNA-seq, but can be applied to ATAC-/ChIP-seq peaks as well.</p>
+<p>Seq2science outputs counts matrices for each assembly in any bulk-sequencing workflow, which can can be used for differential gene/peak analysis with <a class="reference external" href="https://genomebiology.biomedcentral.com/articles/10.1186/s13059-014-0550-8">DESeq2</a>.
+To perform a differential analysis, add one or more contrast design(s) in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file, with matching identifiers in the <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> file.
+This page details how the contrast designs are created.
+Examples of design contrasts are given <a class="reference external" href="./DESeq2.html#contrast-designs">below</a>, and each <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> contains a commented-out example contrast design at the bottom.</p>
+<p>After completing a workflow, rerunning Seq2science with new contrasts will only perform the new analyses.
 Alternatively, you can call the DESeq2 script from the command line.
 To get started with the command line script, try out <code class="docutils literal notranslate"><span class="pre">deseq2science</span> <span class="pre">--help</span></code>.</p>
-<p>This section details how the contrast designs are created.
-Examples are given <a class="reference external" href="./DESeq2.html#contrast-designs">below</a>, and each <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> contains a commented-out example contrast design at the bottom.</p>
 <section id="single-cell-deseq2">
 <h2>single-cell DESeq2<a class="headerlink" href="#single-cell-deseq2" title="Link to this heading"></a></h2>
 <p>If your counts table contains all cells, and your samples.tsv contains a group identifier for each cell, you can perform DESeq2 on this data using <code class="docutils literal notranslate"><span class="pre">deseq2science</span></code> by passing the <code class="docutils literal notranslate"><span class="pre">--single-cell</span></code> flag.
 Please note that <code class="docutils literal notranslate"><span class="pre">deseq2science</span></code> can accept a gzipped tsv file as well.</p>
-<p>Also note that the <code class="docutils literal notranslate"><span class="pre">--single-cell</span></code> flag should <em>not</em> be used with pseudo-bulk.</p>
+<p>Also note that the <code class="docutils literal notranslate"><span class="pre">--single-cell</span></code> flag should <em>not</em> be used with pseudo-bulk counts.</p>
 </section>
 <section id="overview-of-the-deseq2-method">
 <h2>Overview of the DESeq2 method<a class="headerlink" href="#overview-of-the-deseq2-method" title="Link to this heading"></a></h2>
-<p>DESeq2 automatically performs library bias correction when loading your data, and batch correction is performed if it is included in the contrast design.
-After calculating differentially expressed genes/peaks, a multiple testing procedure is applied, which is either the Benjamini-Hochberg procedure (the default) or Independent Hypothesis Weighing.
-The False Discovery Rate cutoff is set by alpha, which is 0.1 by default.
+<p>DESeq2 accepts raw count data, automatically performing normalization, and batch correction if included in the contrast design.
+After calculating differentially expressed genes/peaks, a multiple testing procedure is applied: either the Benjamini-Hochberg procedure (the default) or Independent Hypothesis Weighing.
+The False Discovery Rate is set by the variable <code class="docutils literal notranslate"><span class="pre">alpha</span></code>, which is 0.1 by default.
 Finally, count values are log transformed and shrunk (by default using the apeglm method).
 These defaults can be changed in the <a class="reference external" href="./schemas.html#deseq2">config.yaml</a>, under the <code class="docutils literal notranslate"><span class="pre">deseq2</span></code> variables using the <code class="docutils literal notranslate"><span class="pre">multiple_testing_procedure</span></code>, <code class="docutils literal notranslate"><span class="pre">alpha_value</span></code> and <code class="docutils literal notranslate"><span class="pre">shrinkage_estimator</span></code> options respectively.</p>
 <p>For more information, check out the steps in this <a class="reference external" href="https://www.bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html">vignette</a>, which Seq2science follows.</p>
@@ -122,16 +126,21 @@ These defaults can be changed in the <a class="reference external" href="./schem
 <section id="contrast-designs">
 <h2>Contrast designs<a class="headerlink" href="#contrast-designs" title="Link to this heading"></a></h2>
 <p>The following section will guide you through the process of creating a DESeq2 contrast using only the samples.tsv and the config.yaml.</p>
-<p>Here are some definitions: a <strong>contrast</strong> design tells us which samples to compare. It contains three or four parts: a <strong>condition</strong> (a column name in the samples.tsv), and two <strong>groups</strong> (labels in this column).
-The first group will be the <strong>target</strong>, and the second group will be the <strong>reference</strong>.
-Additionally, a contrast can optionally contain a <strong>batch</strong> effect, which you want to correct for.</p>
-<p>To determine differentially expressed genes/accessible peaks, DESeq2 requires at least two samples per group.
+<p>Here are some definitions: a <strong>contrast</strong> design tells us which groups of samples to compare.
+A contrast contains three or four parts:</p>
+<ul class="simple">
+<li><p>an optional <strong>batch effect correction</strong> to apply (a column in the samples.tsv)</p></li>
+<li><p>a <strong>condition</strong> (a column in the samples.tsv)</p></li>
+<li><p>two <strong>groups</strong> (labels in the condition column)</p></li>
+</ul>
+<p>For each contrast design DESeq2 will determine which genes/peaks are differentially expressed in the first group (the <strong>target</strong> group), compared to the second group (<strong>reference</strong> group).
+To determine differentially expressed genes/accessible peaks, DESeq2 requires at least two samples per group.
 A design contrast therefore requires at least 2x2 samples.</p>
 <section id="contrast-in-the-samples-tsv">
 <h3>Contrast in the samples.tsv<a class="headerlink" href="#contrast-in-the-samples-tsv" title="Link to this heading"></a></h3>
-<p>In the <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code>, add a column for every property you wish to test in your samples.
-Next, add labels to the samples involved in the test. You can leave labels empty, or add labels and not use them.
-For example:</p>
+<p>In the <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code>, add a condition column for every comparison you wish to make.
+Next, add group labels to the samples involved in the test.
+Here are three examples:</p>
 <ol class="arabic simple">
 <li><p>a column named ‘conditions’ with values ‘wildtype’ and ‘knockout’.</p></li>
 <li><p>a column named ‘stages’ with values 1, 2 and 3.</p></li>
@@ -179,7 +188,7 @@ For example:</p>
 </tr>
 <tr class="row-odd"><td><p>sample_6</p></td>
 <td><p>hg38</p></td>
-<td><p>unused</p></td>
+<td></td>
 <td><p>3</p></td>
 <td><p>treatmentB</p></td>
 </tr>
@@ -190,65 +199,87 @@ For example:</p>
 <h3>Contrast in the config.yaml<a class="headerlink" href="#contrast-in-the-config-yaml" title="Link to this heading"></a></h3>
 <p>Next, in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> add one or more contrasts:</p>
 <p>In order to compare two groups, the contrast condition is the column name, followed by the target group and finally the reference group.
-For example, to compare stage 1 to stage 3 from the examples above, the contrast would be <code class="docutils literal notranslate"><span class="pre">stages_3_1</span></code>.</p>
-<p>To compare all groups against one reference, the contrast condition is the column name, followed by target group “all” and finally the reference group.
-For example, to compare all treatments to the control from the examples above, the contrast would be <code class="docutils literal notranslate"><span class="pre">treatments_all_control</span></code>
-(our gremlins will carefully unpack all of your input and pass only unique designs to DESeq2).</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># contrasts for examples 1-3 in the config.yaml</span>
-<span class="n">contrasts</span><span class="p">:</span>
-  <span class="o">-</span> <span class="s1">&#39;conditions_knockout_wildtype&#39;</span>
-  <span class="o">-</span> <span class="s1">&#39;stages_3_1&#39;</span>
-  <span class="o">-</span> <span class="s1">&#39;treatments_all_control&#39;</span>
+For example: to determine which genes/peaks are differentially expressed/active at stage 3 compared to stage 1, the contrast would be <code class="docutils literal notranslate"><span class="pre">stages_3_1</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">contrasts</span><span class="p">:</span>
+  <span class="o">-</span> <span class="n">stages_3_1</span>
+  <span class="o">-</span> <span class="n">conditions_knockout_wildtype</span>
+  <span class="o">-</span> <span class="n">treatments_all_control</span>        <span class="c1"># the &#39;all&#39; keyword is explained below</span>
 </pre></div>
 </div>
+<p>The contrast <code class="docutils literal notranslate"><span class="pre">stages_3_1</span></code> will compare the expression of the target group (<code class="docutils literal notranslate"><span class="pre">3</span></code>, containing sample_5 and sample_6) against the reference group (<code class="docutils literal notranslate"><span class="pre">1</span></code>, containing sample_1 and sample_2).</p>
+<p>The contrast <code class="docutils literal notranslate"><span class="pre">conditions_knockout_wildtype</span></code> will compare the expression of the target group (<code class="docutils literal notranslate"><span class="pre">knockout</span></code>, containing sample_2 and sample_4) against the reference group (<code class="docutils literal notranslate"><span class="pre">wildtype</span></code>, containing sample_1 and sample_3).</p>
 </section>
-<section id="group-order">
-<h3>Group order<a class="headerlink" href="#group-order" title="Link to this heading"></a></h3>
-<p>As a rule of thumb: the reference group should be specified <strong>last</strong>.</p>
+<section id="count-dispersions">
+<h3>Count dispersions<a class="headerlink" href="#count-dispersions" title="Link to this heading"></a></h3>
+<p>For each design contrast, you can specify which samples should be used to estimate the count dispersions by giving them a label in the contrast condition column.
+This can be used to exclude failed samples from the analysis.
+In general, more samples improves the statistical power of the experiment.</p>
+<p>In contrast <code class="docutils literal notranslate"><span class="pre">stages_3_1</span></code> all samples will be used to estimate the count dispersions, including sample_3 and sample_4 (because they have a label in the <code class="docutils literal notranslate"><span class="pre">stages</span></code> column).</p>
+<p>In contrast <code class="docutils literal notranslate"><span class="pre">conditions_knockout_wildtype</span></code> sample_5 and sample_6 will <strong>not</strong> be used to estimate the count dispersions (because they do not have a label in the <code class="docutils literal notranslate"><span class="pre">conditions</span></code> column).</p>
+</section>
+<section id="the-all-keyword">
+<h3>The ‘all’ keyword<a class="headerlink" href="#the-all-keyword" title="Link to this heading"></a></h3>
+<p>To compare all groups in a column against the same reference group, the contrast condition is the column name,
+followed by the <code class="docutils literal notranslate"><span class="pre">all</span></code> keyword and finally the reference group.
+For example: to compare all treatments to the control from the examples above, the contrast would be <code class="docutils literal notranslate"><span class="pre">treatments_all_control</span></code>
+(our gremlins will carefully unpack all of your input and pass only unique designs to DESeq2).</p>
+</section>
+<section id="condition-group-order">
+<h3>Condition group order<a class="headerlink" href="#condition-group-order" title="Link to this heading"></a></h3>
+<p>As a rule of thumb: the reference group should be specified last.</p>
 <p>The order of the groups in a design contrast determines the direction of the expression log fold change.
 In the example <code class="docutils literal notranslate"><span class="pre">stages_3_1</span></code>, a gene upregulated at stage 3 has a <em>positive</em> expression fold change.
 In contrast <code class="docutils literal notranslate"><span class="pre">stages_1_3</span></code>, a gene upregulated at stage 3 has a <em>negative</em> expression fold change.
 Other values are unaffected.</p>
 </section>
-<section id="batches">
-<h3>Batches<a class="headerlink" href="#batches" title="Link to this heading"></a></h3>
-<p>If your data has batch effects, DESeq2 can try to account for these.
-Note that this can only be done if the batch effects are spread over different conditions.</p>
+<section id="batch-effect-correction">
+<h3>Batch effect correction<a class="headerlink" href="#batch-effect-correction" title="Link to this heading"></a></h3>
+<p>If your data has batch effects, DESeq2 can try to account for these.</p>
 <p>Similar to conditions, add a column to samples.tsv and note the batch of each sample:</p>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>sample</p></th>
-<th class="head"><p>sequencing_month</p></th>
-<th class="head"><p>conditions</p></th>
+<th class="head"><p>researcher</p></th>
+<th class="head"><p>treatments</p></th>
 </tr>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>sample_1</p></td>
-<td><p>jan</p></td>
+<td><p>jane</p></td>
 <td><p>control</p></td>
 </tr>
 <tr class="row-odd"><td><p>sample_2</p></td>
-<td><p>feb</p></td>
+<td><p>jane</p></td>
 <td><p>control</p></td>
 </tr>
 <tr class="row-even"><td><p>sample_3</p></td>
-<td><p>jan</p></td>
-<td><p>treatment</p></td>
+<td><p>jane</p></td>
+<td><p>treatmentA</p></td>
 </tr>
 <tr class="row-odd"><td><p>sample_4</p></td>
-<td><p>feb</p></td>
-<td><p>treatment</p></td>
+<td><p>jane</p></td>
+<td><p>treatmentA</p></td>
+</tr>
+<tr class="row-even"><td><p>sample_5</p></td>
+<td><p>bob</p></td>
+<td><p>treatmentB</p></td>
+</tr>
+<tr class="row-odd"><td><p>sample_6</p></td>
+<td><p>jane</p></td>
+<td><p>treatmentB</p></td>
 </tr>
 </tbody>
 </table>
-<p>In this example, the <code class="docutils literal notranslate"><span class="pre">sequencing_month</span></code> may have caused a batch effect.
-Since the (potential) batch effect is spread over the test conditions (control vs treatment) it can be taken into account during DE analysis.
-To correct for a batch, add the column and a plus sign in from of the regular contrast.</p>
+<p>In this example, <code class="docutils literal notranslate"><span class="pre">jane</span></code> was sick one day and asked <code class="docutils literal notranslate"><span class="pre">bob</span></code> to perform one of her experiments.
+This may have caused a batch effect.
+To correct for a batch, add the batch column, and a plus sign, in front of the regular contrast:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">contrasts</span><span class="p">:</span>
-  <span class="o">-</span> <span class="s1">&#39;conditions_treatment_control&#39;</span>
-  <span class="o">-</span> <span class="s1">&#39;sequencing_month + conditions_treatment_control&#39;</span>
+  <span class="o">-</span> <span class="n">treatments_treatmentB_control</span>                 <span class="c1"># no batch correction</span>
+  <span class="o">-</span> <span class="n">researcher</span> <span class="o">+</span> <span class="n">treatments_treatmentB_control</span>    <span class="c1"># batch correction</span>
 </pre></div>
 </div>
+<p>Note: if <code class="docutils literal notranslate"><span class="pre">bob</span></code> had performed both <code class="docutils literal notranslate"><span class="pre">treatmentB</span></code> experiments, it would be impossible to tell if the output is caused by <code class="docutils literal notranslate"><span class="pre">treatmentB</span></code> or by <code class="docutils literal notranslate"><span class="pre">bob</span></code>,
+but because the batch effect is divided over the test conditions it can be taken into account during DE analysis.</p>
 </section>
 </section>
 <section id="output">
@@ -256,13 +287,13 @@ To correct for a batch, add the column and a plus sign in from of the regular co
 <p>For each contrast design, the list of <em>all</em> genes/peaks is saved to file, with analysis results for expressed genes. Briefly, these include:</p>
 <ul class="simple">
 <li><p>The column <code class="docutils literal notranslate"><span class="pre">padj</span></code> contains the adjusted p-values after multiple testing. <strong>(These should be used to identify DE genes/peaks)</strong>.</p></li>
-<li><p>The column <code class="docutils literal notranslate"><span class="pre">log2FoldChange</span></code> contains the fold change of each gene between the two conditions. (The reference group is the one <em>last mentioned</em> in the contrast design, so use <code class="docutils literal notranslate"><span class="pre">condition_treatment_control</span></code>. If you use <code class="docutils literal notranslate"><span class="pre">condition_control_treatment</span></code> the fold change is <em>inverted</em>.)</p></li>
-<li><p>Several other columns were kept for sake of completion, such as column <code class="docutils literal notranslate"><span class="pre">pvalue</span></code>, which contains p-values not adjusted for multiple testing.</p></li>
+<li><p>The column <code class="docutils literal notranslate"><span class="pre">log2FoldChange</span></code> contains the fold change of each gene between the two conditions.</p></li>
+<li><p>Several other columns were kept for the sake of completion, such as the uncorrected <code class="docutils literal notranslate"><span class="pre">pvalue</span></code>.</p></li>
 </ul>
-<p>In addition, MA and PCA plots are generated for each contrast design.</p>
-<p>If the design includes a batch effect, several PCA plots are generated to visualize the effect of the batch correction.</p>
-<p>DESeq2 models the batch effect in their package, but downstream methods may not.
-For this reason, seq2science will produce a batch-corrected counts matrix (and a batch corrected TPM matrix if quantified with Salmon).</p>
+<p>In addition, MA and PCA plots are generated for each contrast design (stored in the qc folder).</p>
+<p>If a contrast design includes a batch effect, several PCA plots are generated to visualize the effect of the batch correction.
+DESeq2 corrects the batch effect internally, but downstream methods may not.
+Therefore, Seq2science will produce batch-corrected count and TPM matrices as well.</p>
 </section>
 </section>
 
