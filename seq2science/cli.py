@@ -79,6 +79,8 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
     """
     Make the seq2science parser.
     """
+    supp_workflows = [dir.replace("_", "-") for dir in os.listdir(workflows_dir)]
+
     # setup the parser
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--version", action="version", version=f"seq2science: v{seq2science.__version__}")
@@ -89,22 +91,24 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         help="Initialise a workflow with an example config and samples file.",
         description="Each workflow requires a configuration and samples file to run. "
         'Running "seq2science init {workflow}" initialises a default '
-        "configuration and samples file for the specific workflow.",
+        "configuration and samples file for the specific workflow. "
+        f"Supported workflows: {', '.join(supp_workflows)}",
     )
-    global run
     run = subparsers.add_parser(
         "run",
         help="Run a complete workflow.",
         description="Run a complete workflow. This requires that a config and samples file "
-        "are either present in the current directory, or passed as an argument.",
+        "are either present in the current directory, or passed as an argument. "
+        f"Supported workflows: {', '.join(supp_workflows)}",
     )
     explain = subparsers.add_parser(
         "explain",
         help="Write a materials & methods section.",
         description="Explains what has/will be done for the workflow. This prints a string which can serve"
-        " as a skeleton for your material & methods section.",
+        " as a skeleton for your material & methods section. "
+        f"Supported workflows: {', '.join(supp_workflows)}",
     )
-    clean = subparsers.add_parser(
+    clean = subparsers.add_parser(  # noqa: F841
         "clean",
         help="Remove all cached sample files and conda environments.",
         description="At the start of each workflow run, seq2science starts with installing environments for each "
@@ -112,7 +116,7 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
         " large and it might be best to remove them when you are done with an analysis. \n"
         "seq2science clean will clean up these files for you.",
     )
-    docs = subparsers.add_parser(
+    docs = subparsers.add_parser(  # noqa: F841
         "docs",
         description="The docs command tries to open your browser and open the docs' webpage, "
         "if that didn't work it prints the url.",
@@ -122,7 +126,7 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
     # init, run and explain can use all workflows
     for subparser in [init, run, explain]:
         subparser.add_argument(
-            "workflow", metavar="WORKFLOW", choices=[dir.replace("_", "-") for dir in os.listdir(workflows_dir)]
+            "workflow", metavar="WORKFLOW", choices=supp_workflows
         )
 
     # init arguments
@@ -184,7 +188,8 @@ def seq2science_parser(workflows_dir="./seq2science/workflows/"):
             "-p",
             "--profile",
             metavar="PROFILE NAME",
-            help="Use a seq2science profile. Profiles can be taken from: https://github.com/s2s-profiles",
+            help="Use a seq2science profile. Profiles can be taken from: https://github.com/vanheeringen-lab/seq2science-profiles. "
+            "Profiles are an experimental feature and might not always work as intended. Please let us know if something doesn't work properly!",
         )
         subparser.add_argument(
             "-c",
@@ -345,6 +350,7 @@ def _run(args, base_dir, workflows_dir, config_path):
     # get the additional snakemake options
     snakemake_options = args.snakemakeOptions if args.snakemakeOptions is not None else dict()
     snakemake_options.setdefault("config", {}).update({"rule_dir": os.path.join(base_dir, "rules")})
+    snakemake_options = snakemake_options | {"scheduler": "greedy"}
     snakemake_options["configfiles"] = [config_path]
     for key, value in snakemake_options.items():
         if not isinstance(value, str):
@@ -373,7 +379,9 @@ def _run(args, base_dir, workflows_dir, config_path):
     else:
         parsed_args["cores"] = 0
 
-    if parsed_args["cores"] < 2 and not (args.unlock or args.cleanup_metadata is not None):
+    if parsed_args["cores"] < 2 and not any(
+            [parsed_args["unlock"], parsed_args["cleanup_metadata"], parsed_args["dryrun"]]
+    ):
         subjectively_prettier_error(core_arg, "specify at least two cores.")
 
     # when running on a cluster assume cores == nodes (just like snakemake does)

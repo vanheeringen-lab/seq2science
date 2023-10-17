@@ -34,29 +34,28 @@ samples <- parse_samples(samples_file, assembly, replicates)
 coldata <- samples
 coldata[,"condition"] <- coldata[condition]
 coldata[,"batch"]     <- if (!is.na(batch)) { coldata[batch] } else { NA }
-coldata <- coldata[c("condition", "batch")]
+coldata               <- coldata[c("condition", "batch")]
 
 # log involved samples
 cat('samples per group:\n')
-cat('  - target    (', groups[1],'):', rownames(coldata[coldata$condition %in% groups[1],]),'\n')
-cat('  - reference (', groups[2],'):', rownames(coldata[coldata$condition %in% groups[2],]),'\n\n')
+cat('  - target    (', condition, groups[1],'): ', rownames(coldata[coldata$condition %in% groups[1],]),'\n')
+cat('  - reference (', condition, groups[2],'): ', rownames(coldata[coldata$condition %in% groups[2],]),'\n\n')
 
 # determine if we need to run batch correction on the whole assembly
 output_batch_corr_counts <- sub(paste0(contrast, ".diffexp.tsv"), paste0(batch, ".batch_corr_counts.tsv"), output, fixed=TRUE)
 output_batch_corr_pca    <- sub(paste0(contrast, ".diffexp.tsv"), paste0(batch, ".batch_corr_pca.png"), output, fixed=TRUE)
 output_batch_corr_tpm    <- sub(paste0(contrast, ".diffexp.tsv"), paste0(batch, ".batch_corr_tpm.tsv"), output, fixed=TRUE)
-# not required if: no batch, too much data, or already done
-no_batch_correction_required <- is.na(batch) | single_cell | (file.exists(output_batch_corr_counts) & file.exists(output_batch_corr_pca) & (!salmon | file.exists(output_batch_corr_tpm)))
 
-# filter out unused conditions & order data for DESeq
-if (no_batch_correction_required) {
-  coldata <- coldata[coldata$condition %in% c(groups[1], groups[2]),]
-} else {
-  cat('\nbatch correction dataset selected\n\n')
-  # for batch corrected counts we want all samples marked in the batch column
-  coldata <- coldata[!is.na(coldata$batch),]
-  if (any(is.na(coldata$condition))) {
-    cat('Error: all samples marked for batch correction (in column "', batch,'") must have a condition (in column "', condition,'").')
+# filter unused samples & order data for DESeq
+coldata <- coldata[!is.na(coldata$condition),]
+cat('Using all (', length(rownames(coldata[!is.na(coldata$condition), ])) ,') ', sep = "")
+cat('samples labelled in the condition column ("', condition, '") ', sep = "")
+cat('to calculate the dispersions:', rownames(coldata[!is.na(coldata$condition), ]), '\n\n')
+if (!is.na(batch)) {
+  if (any(is.na(coldata$batch))) {
+    cat('Error: all samples labelled in the condition column ("', condition, '") ', sep = "")
+    cat('need a label in the batch column ("', batch,'").\n', sep = "")
+    cat('Unlabelled samples:', rownames(coldata[is.na(coldata$batch), ]), '\n\n')
     quit(save = "no" , status = 1)
   }
 }
@@ -66,7 +65,7 @@ coldata$batch     <- factor(coldata$batch)
 
 
 ## filter counts to speed up DESeq
-counts <- read.table(counts_file, row.names = 1, header = T, stringsAsFactors = F, sep = '\t', check.names = F)
+counts <- read.table(counts_file, row.names = 1, header = T, stringsAsFactors = F, sep = '\t', quote= "", check.names = F)
 reduced_counts <- counts[rowSums(counts) > 0, rownames(coldata)]
 
 ## DESeq2
@@ -101,7 +100,6 @@ cat('DE genes table saved\n\n')
 n_DEGs <- length(resLFC[resLFC$padj <= fdr & !is.na(resLFC$padj), ][,1])
 if (n_DEGs == 0) {
   cat("No differentially expressed genes found!\n")
-  quit(save = "no" , status = 0)
 } else {
   cat(n_DEGs, "differentially expressed genes found!\n")
 }

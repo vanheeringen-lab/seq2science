@@ -65,7 +65,7 @@ cat('\n')
 parallelType <- "MulticoreParam"
 Params <- list()
 
-message(paste0(date(), " .. Setting MulticoreParam for parallel computation to:", numCores))
+message(paste0(date(), " .. Setting MulticoreParam for parallel computation to ", numCores))
 parallelParam <- MulticoreParam(workers = numCores)
 
 # Set BPARAM for individual QC components

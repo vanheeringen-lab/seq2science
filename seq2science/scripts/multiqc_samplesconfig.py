@@ -1,6 +1,8 @@
 """
 Make a pretty samples table and config yaml for in the MultiQC report
 """
+from io import StringIO
+import pandas as pd
 from pretty_html_table import build_table
 
 
@@ -10,9 +12,9 @@ outstring = \
     "section_name: 'Samples & Config'\n" \
     "-->\n"
 
-
+samples = pd.read_table(StringIO(snakemake.params.samples), sep="\s+")
 outstring += "The samples file used for this run: <br>" \
-             f"{build_table(snakemake.params.sanitized_samples, 'blue_dark')}"
+             f"{build_table(samples, 'blue_dark')}"
 
 if snakemake.params.config_used:
     outstring += "The config file used for this run: <br>"

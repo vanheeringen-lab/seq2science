@@ -6,6 +6,7 @@ import re
 import os
 import sys
 import glob
+import json
 import time
 import colorsys
 import tempfile
@@ -128,7 +129,7 @@ def samples2metadata_local(samples: List[str], config: dict, logger) -> dict:
         ):
             SAMPLEDICT[sample] = dict()
             SAMPLEDICT[sample]["layout"] = "PAIRED"
-        elif sample.startswith(("GSM", "DRX", "ERX", "SRX", "DRR", "ERR", "SRR", "CRX")):
+        elif sample.startswith(("GSM", "DRX", "ERX", "SRX", "DRR", "ERR", "SRR", "CRX", "ENCSR", "ENCFF")):
             continue
         else:
             extend_msg = ""
@@ -143,7 +144,7 @@ def samples2metadata_local(samples: List[str], config: dict, logger) -> dict:
                 f"We checked directory '{config['fastq_dir']}' "
                 f"for gzipped files starting with '{sample}' and containing '{config['fqsuffix']}'.\n"
                 + extend_msg
-                + f"Since the sample did not start with either GSM, SRX, SRR, ERR, and DRR we "
+                + f"Since the sample did not start with either GSM, SRX, SRR, ERX, ERR, DRX, DRR, CRX, ENCSR, or ENCFF we "
                 f"couldn't find it online..\n"
             )
             os._exit(1)  # noqa
@@ -158,6 +159,7 @@ def crx2downloads(crx_id):
     # get from the crx number the accession number and the experiment url
     url = f"https://ngdc.cncb.ac.cn/search/?dbId=gsa&q={crx_id}"
     r = requests.get(url)
+    time.sleep(0.1)
     if r.status_code != 200:
         return {}
 
@@ -169,6 +171,7 @@ def crx2downloads(crx_id):
 
     # then get the run id and url from the experiment number page
     r = requests.get(crx_url)
+    time.sleep(0.1)
     if r.status_code != 200:
         return {}
 
@@ -183,6 +186,7 @@ def crx2downloads(crx_id):
 
         # finally find the download links that belong to the run
         r = requests.get(crr_url)
+        time.sleep(0.1)
         if r.status_code != 200:
             return []
 
@@ -204,7 +208,7 @@ def samples2metadata_gsa(samples: List[str], logger) -> dict:
                         "runs": ["CRR1234", "CRR4321"],
                         "gsa_fastq_http": {CRR1234: [link_1, link_2], ...,
 
-            "SRR5678": {"layout": "SINGLE",
+            "CRR5678": {"layout": "SINGLE",
                         "runs": ["CRR5678"],
                         gsa_fastq_http: {CRR5678: [link_1]},
             ...
@@ -236,6 +240,7 @@ def samples2metadata_gsa(samples: List[str], logger) -> dict:
         os._exit(1)  # noqa
 
     return sampledict
+
 
 def samples2metadata_sra(samples: List[str], logger) -> dict:
     """
@@ -280,7 +285,7 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
                 "seq2science does not support downloading those..\n\n"
             )
             logger.debug(f"Affected samples: {', '.join(geo_samples)}")
-            tb_str = traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__)
+            tb_str = traceback.format_exception(value=e, tb=e.__traceback__)
             logger.debug("".join(tb_str))
             os._exit(1)  # noqa
 
@@ -302,7 +307,7 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
             "seq2science does not support downloading those..\n\n"
         )
         logger.debug(f"Affected samples: {', '.join(sample2clean.values())}")
-        tb_str = traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__)
+        tb_str = traceback.format_exception(value=e, tb=e.__traceback__)
         logger.debug("".join(tb_str))
         os._exit(1)  # noqa
 
@@ -358,6 +363,110 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
     return sampledict
 
 
+def samples2metadata_encode(samples: List[str], logger) -> dict:
+    """
+
+
+    """
+    metadata = {}
+    for sample in samples:
+        if sample.startswith("ENCSR"):
+            metadata.update(ENCSR2metadata(sample))
+        elif sample.startswith("ENCFF"):
+            metadata.update(ENCFF2metadata(sample))
+        else:
+            assert False
+    return metadata
+
+
+def ENCFF2metadata(sample):
+    """
+    encode file (fastq) to metadata
+    """
+    url = f"https://www.encodeproject.org/files/{sample}/?format=json"
+    response = urllib.request.urlopen(urllib.request.Request(url)).read()
+    response = json.loads(response.decode('utf-8'))
+    response
+
+    assert response["file_format"] == "fastq"
+
+    metadata = {sample: {}}
+
+    if response["run_type"] == "single-ended":
+        metadata[sample]["layout"] = "SINGLE"
+        metadata[sample]["encode_fastq_http"] = "https://www.encodeproject.org" + response["href"]
+        metadata[sample]["runs"] = [sample]
+    elif response["run_type"] == "paired-ended":
+        metadata[sample]["layout"] = "PAIRED"
+        mate = response["paired_with"].split("/")[2]
+        mate_url = f"https://www.encodeproject.org/files/{mate}/?format=json"
+        mate_response = urllib.request.urlopen(urllib.request.Request(mate_url)).read()
+        mate_response = json.loads(mate_response.decode('utf-8'))
+
+        if response["paired_end"] == "1":
+            metadata[sample]["encode_fastq_http"] = {
+                sample: [
+                    "https://www.encodeproject.org" + response["href"],
+                    "https://www.encodeproject.org" + mate_response["href"],
+                ]
+            }
+        else:
+            metadata[sample]["encode_fastq_http"] = {
+                sample: [
+                    "https://www.encodeproject.org" + mate_response["href"],
+                    "https://www.encodeproject.org" + response["href"],
+                ]
+            }
+
+        metadata[sample]["runs"] = [sample]
+    else:
+        assert False
+    return metadata
+
+
+def ENCSR2metadata(sample):
+    """
+    encode assay to metadata
+
+    an assay can exist out of multiple isogenic and technical replicates
+    """
+    url = f"https://www.encodeproject.org/search/?type=File&dataset=/experiments/{sample}/&file_format=fastq&format=json&frame=object"
+    response = urllib.request.urlopen(urllib.request.Request(url)).read()
+    response = json.loads(response.decode('utf-8'))
+    response
+
+    metadata = {sample: {}}
+
+    # check if all run types are the same
+    assert len({file["run_type"] for file in response["@graph"]}) == 1
+    layout = response["@graph"][0]["run_type"]
+
+    if layout == "single-ended":
+        metadata[sample]["layout"] = "SINGLE"
+        metadata[sample]["encode_fastq_http"] = {
+            x["accession"]: "https://www.encodeproject.org" + x["href"] for x in response["@graph"]
+        }
+        metadata[sample]["runs"] = list(metadata[sample]["encode_fastq_http"].keys())
+
+    elif layout == "paired-ended":
+        graph = {x["accession"]: x for x in response["@graph"]}
+
+        metadata[sample]["layout"] = "PAIRED"
+        metadata[sample]["runs"] = [x["accession"] for x in response["@graph"] if x["paired_end"] == "1"]
+
+        metadata[sample]["encode_fastq_http"] = {
+            run: [
+                "https://www.encodeproject.org" + graph[run]["href"],
+                "https://www.encodeproject.org" + graph[graph[run]["paired_with"].split("/")[2]]["href"],
+            ]
+            for run in metadata[sample]["runs"]
+        }
+    else:
+        assert False
+
+    return metadata
+
+
 def samples2metadata(samples: List[str], config: dict, logger) -> dict:
     local_samples = samples2metadata_local(samples, config, logger)
     public_samples = [sample for sample in samples if sample not in local_samples.keys()]
@@ -367,7 +476,9 @@ def samples2metadata(samples: List[str], config: dict, logger) -> dict:
 
     gsa_samples = [sample for sample in public_samples if sample.startswith("CRX")]
     gsa_samples = samples2metadata_gsa(gsa_samples, logger)
-    rest_public_samples = [sample for sample in public_samples if sample not in gsa_samples]
+    encode_samples = [sample for sample in public_samples if sample.startswith(("ENCSR", "ENCFF"))]
+    encode_samples = samples2metadata_encode(encode_samples, logger)
+    rest_public_samples = [sample for sample in public_samples if sample not in (list(gsa_samples.keys()) + list(encode_samples.keys()))]
 
     # chop public samples into smaller chunks, doing large queries results into
     # pysradb decode errors..
@@ -379,7 +490,7 @@ def samples2metadata(samples: List[str], config: dict, logger) -> dict:
         # just to be sure sleep in between to not go over our API limit
         time.sleep(1)
 
-    return {**local_samples, **sra_samples, **gsa_samples}
+    return {**local_samples, **sra_samples, **gsa_samples, **encode_samples}
 
 
 def sieve_bam(configdict):
@@ -489,7 +600,7 @@ def expand_contrasts(samples: pd.DataFrame, contrasts: list or str) -> list:
     return new_contrasts
 
 
-def get_contrasts(samples: pd.DataFrame, config: dict, ALL_ASSEMBLIES: list) -> list:
+def get_contrasts(samples: pd.DataFrame, config: dict, all_assemblies: list) -> list:
     """
     list all diffexp.tsv files we expect
     """
@@ -512,10 +623,16 @@ def get_contrasts(samples: pd.DataFrame, config: dict, ALL_ASSEMBLIES: list) -> 
             }
             column = backup_columns[column]
 
-        for assembly in ALL_ASSEMBLIES:
-            groups = set(samples[samples.assembly == assembly][column].to_list())
+        for assembly in all_assemblies:
+            # remove the custom assembly suffix
+            ori_assembly = assembly
+            if assembly not in samples.assembly and assembly.endswith(config["custom_assembly_suffix"]):
+                ori_assembly = assembly[:-len(config["custom_assembly_suffix"])]
+
+            groups = set(samples[samples.assembly == ori_assembly][column].to_list())
             if target in groups and reference in groups:
                 all_contrasts.append(f"{config['deseq2_dir']}/{assembly}-{de_contrast}.diffexp.tsv")
+
     return all_contrasts
 
 
@@ -938,6 +1055,8 @@ def _get_current_version(package):
         package = "yaml"
     elif package == "biopython":
         package = "Bio"
+    elif package == "matplotlib-base":
+        package = "matplotlib"
 
     ldict = dict()
     exec(f"from {package} import __version__", {}, ldict)

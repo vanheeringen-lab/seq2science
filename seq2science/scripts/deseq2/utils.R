@@ -33,8 +33,21 @@ parse_contrast <- function(contrast) {
 #' collapse technical replicates (if present) and
 #' convert to descriptive names (if present).
 parse_samples <- function(samples_file, assembly_name, replicates) {
-  samples <- read.delim(samples_file, sep = "\t", na.strings = "", comment.char = "#", stringsAsFactors = F, row.names = "sample", check.names = F)
+  samples <- read.delim(samples_file, sep = "\t", na.strings = "", comment.char = "#", stringsAsFactors = F, row.names = "sample", check.names = F, colClasses="character")
   colnames(samples) <- gsub("\\s+", "", colnames(samples))  # strip whitespace from column names
+
+  # custom assemblies have a suffix not present in the samples.tsv
+  if (!(assembly_name %in% samples$assembly)){
+    for (assembly in unique(samples$assembly)){
+      assembly <- trimws(assembly)
+      if (startsWith(assembly_name, assembly)){
+        assembly_name <- assembly
+        break
+      }
+    }
+  }
+
+  # drop all samples of other assemblies
   samples <- subset(samples, assembly == assembly_name)
 
   # collapse technical replicates
@@ -52,6 +65,10 @@ parse_samples <- function(samples_file, assembly_name, replicates) {
     to_rename <- is.na(samples$descriptive_name)
     samples$descriptive_name[to_rename] <- as.character(rownames(samples)[to_rename])
     rownames(samples) <- samples$descriptive_name
+  }
+
+  if (nrow(samples) == 0){
+    stop("Something went wrong filtering the samples file! No samples remaining.")
   }
 
   return(samples)
@@ -238,8 +255,15 @@ heatmap_names <- function(mat, coldata) {
 
 
 heatmap_plot <- function(mat, title, heatmap_aes, legend_aes, out_pdf) {
+  #' rotate the dendogram to best match the order in the samples.tsv
+  callback <- function(hc, mat){
+    hc <- dendextend::rotate(hc, order=colnames(mat))
+    return(hc)
+  }
+
   pheatmap::pheatmap(
     mat,
+    clustering_callback = callback,
     main = title,
     angle_col = 45,
     show_colnames = heatmap_aes$show_colnames,  # show names underneath if the image gets to wide
@@ -247,7 +271,7 @@ heatmap_plot <- function(mat, title, heatmap_aes, legend_aes, out_pdf) {
     fontsize = heatmap_aes$fontsize,
     legend_breaks = legend_aes$breaks,
     legend_labels = legend_aes$labels,
-    display_numbers = T,  # show values in the plot
+    # display_numbers = T,  # show values in the plot
     fontsize_number = heatmap_aes$fontsize_number,
     cellwidth  = heatmap_aes$cell_dimensions,
     cellheight = heatmap_aes$cell_dimensions,

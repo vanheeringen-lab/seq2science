@@ -13,7 +13,7 @@ with open(str(snakemake.log), "w") as f:
         genome = str(snakemake.wildcards.assembly)
         if any(genome.startswith(sup_genome) for sup_genome in supported_genome_prefixes):
             # copy the default m2f
-            from gimmemotifs.motif import pfmfile_location
+            from gimmemotifs.utils import pfmfile_location
 
             in_pfmfile = pfmfile_location(None)
             out_pfmfile = snakemake.output[0]

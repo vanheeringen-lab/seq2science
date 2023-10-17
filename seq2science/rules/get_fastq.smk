@@ -1,19 +1,83 @@
 """
 all rules/logic related downloading public fastqs should be here.
 """
-localrules: ena2fastq_SE, ena2fastq_PE, gsa2fastq_SE, gsa2fastq_PE, runs2sample
+
+localrules: run2sra, ena2fastq_SE, ena2fastq_PE, gsa_or_encode2fastq_SE, gsa_or_encode2fastq_PE, runs2sample
 
 
 import os
 
 
+rule run2sra:
+    """
+    Download the SRA of a sample by its unique identifier.
+    """
+    output:
+        temp(expand("{sra_dir}/{{run}}/{{run}}/{{run}}.sra", **config)),
+    log:
+        expand("{log_dir}/run2sra/{{run}}.log", **config),
+    benchmark:
+        expand("{benchmark_dir}/run2sra/{{run}}.benchmark.txt", **config)[0]
+    message: EXPLAIN["run2sra"]
+    resources:
+        parallel_downloads=1,
+    params:
+        outdir=lambda wildcards: f"{config['sra_dir']}/{wildcards.run}",
+    conda:
+        "../envs/get_fastq.yaml"
+    wildcard_constraints:
+        run="[DES]RR\d+",
+    retries: 2
+    shell:
+        """
+        # move to output dir since somehow prefetch sometimes puts files in the cwd...
+        # and remove the top level folder since prefetch will assume we are done otherwise
+        mkdir -p {params.outdir}; cd {params.outdir}; rm -r {wildcards.run}
+
+        # TODO: for loop can be removed if we dont see the debug message
+        # three attempts
+        for i in {{1..3}}
+        do
+            # acquire a lock
+            (
+                flock -w 30 200 || continue
+                sleep 2
+            ) 200>{PYSRADB_CACHE_LOCK}
+
+            # dump
+            prefetch --max-size u --output-directory ./ --log-level debug --progress {wildcards.run} \
+            >> {log} 2>&1 && break
+            
+            # retry
+            echo "DEBUG: prefetch try ${{i}} of 3 failed" >> {log}
+            sleep 10
+        done
+
+        # TODO: section can be removed if we dont see the debug message
+        # bug report: https://github.com/ncbi/sra-tools/issues/533
+        if [[ -f "{params.outdir}/{wildcards.run}.sra" ]]; then
+            echo "DEBUG: moving output to correct directory" >> {log}
+            mkdir -p {params.outdir}/{wildcards.run}
+            mv {params.outdir}/{wildcards.run}.sra {output}
+        fi
+
+        # TODO: section can be removed if we dont see the debug message
+        # If an sralite file was downloaded instead of a sra file, just rename it
+        if [[ -f "{params.outdir}/{wildcards.run}.sralite" ]]; then
+            echo "DEBUG: renaming SRAlite" >> {log}
+            mkdir -p {params.outdir}/{wildcards.run}
+            mv {params.outdir}/{wildcards.run}.sralite {output}
+        fi
+        """
+
+
 # ENA > SRA
-ruleorder: ena2fastq_SE > gsa2fastq_SE > sra2fastq_SE
-ruleorder: ena2fastq_PE > gsa2fastq_PE > sra2fastq_PE
+ruleorder: ena2fastq_SE > gsa_or_encode2fastq_SE > sra2fastq_SE
+ruleorder: ena2fastq_PE > gsa_or_encode2fastq_PE > sra2fastq_PE
 # PE > SE
 ruleorder: ena2fastq_PE > ena2fastq_SE
 ruleorder: sra2fastq_PE > sra2fastq_SE
-ruleorder: gsa2fastq_PE > gsa2fastq_SE
+ruleorder:gsa_or_encode2fastq_PE > gsa_or_encode2fastq_SE
 
 
 rule sra2fastq_SE:
@@ -34,6 +98,7 @@ rule sra2fastq_SE:
     threads: 8
     conda:
         "../envs/get_fastq.yaml"
+    priority: 1
     retries: 2
     shell:
         """
@@ -90,6 +155,7 @@ rule sra2fastq_PE:
         run="|".join(SRA_PAIRED_END) if len(SRA_PAIRED_END) else "$a",  # only try to dump (paired-end) SRA samples
     conda:
         "../envs/get_fastq.yaml"
+    priority: 1
     retries: 2
     shell:
         """
@@ -118,11 +184,14 @@ rule sra2fastq_PE:
         --threads {threads} --split-e --skip-technical --dumpbase --readids \
         --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' \
         --defline-qual '+' --gzip >> {log} 2>&1
+        
+        # check if the files exist
+        if ! compgen -G "{output.tmpdir}/*_1*" > /dev/null ; then printf "ERROR: Couldn't find read 1.fastq after dumping! Perhaps this is not a paired-end file?\n" >> {log} 2>&1; fi
+        if ! compgen -G "{output.tmpdir}/*_2*" > /dev/null ; then printf "ERROR: Couldn't find read 2.fastq after dumping! Perhaps this is not a paired-end file?\n" >> {log} 2>&1; fi
 
         # rename file and move to output dir
-        mv $tmpdir/*_1* {output[0]} >> {log} 2>&1
-        mv $tmpdir/*_2* {output[1]} >> {log} 2>&1
-        
+        mv {output.tmpdir}/*_1* {output.fastq[0]} >> {log} 2>&1
+        mv {output.tmpdir}/*_2* {output.fastq[1]} >> {log} 2>&1
         # Remove temporary directory
         rm -rf $tmpdir >> {log} 2>&1
         """
@@ -141,6 +210,7 @@ rule ena2fastq_SE:
         expand("{benchmark_dir}/ena2fastq_SE/{{run}}.benchmark.txt", **config)[0]
     wildcard_constraints:
         run="|".join(ENA_SINGLE_END) if len(ENA_SINGLE_END) else "$a",
+    priority: 1
     retries: 2
     run:
         shell("mkdir -p {config[fastq_dir]}/tmp/ >> {log} 2>&1")
@@ -169,6 +239,7 @@ rule ena2fastq_PE:
         expand("{benchmark_dir}/ena2fastq_PE/{{run}}.benchmark.txt", **config)[0]
     wildcard_constraints:
         run="|".join(ENA_PAIRED_END) if len(ENA_PAIRED_END) else "$a",
+    priority: 1
     retries: 2
     run:
         shell("mkdir -p {config[fastq_dir]}/tmp >> {log} 2>&1")
@@ -190,9 +261,9 @@ rule ena2fastq_PE:
             shell("exit 1 >> {log} 2>&1")
 
 
-rule gsa2fastq_SE:
+rule gsa_or_encode2fastq_SE:
     """
-    Download single-end fastq files from the GSA.
+    Download single-end fastq files from the GSA or ENCODE DCC.
     """
     output:
         temp(expand("{fastq_dir}/runs/{{run}}.{fqsuffix}.gz", **config)),
@@ -203,7 +274,8 @@ rule gsa2fastq_SE:
     benchmark:
         expand("{benchmark_dir}/gsa2fastq_SE/{{run}}.benchmark.txt", **config)[0]
     wildcard_constraints:
-        run="|".join(GSA_SINGLE_END) if len(GSA_SINGLE_END) else "$a",
+        run="|".join(GSA_OR_ENCODE_SINGLE_END) if len(GSA_OR_ENCODE_SINGLE_END) else "$a",
+    priority: 1
     retries: 2
     run:
         shell("mkdir -p {config[fastq_dir]}/tmp/ >> {log} 2>&1")
@@ -216,9 +288,9 @@ rule gsa2fastq_SE:
             shell("exit 1 >> {log} 2>&1")
 
 
-rule gsa2fastq_PE:
+rule gsa_or_encode2fastq_PE:
     """
-    Download paired-end fastq files from the GSA.
+    Download paired-end fastq files from the GSA or ENCODE DCC.
     """
     output:
         temp(expand("{fastq_dir}/runs/{{run}}_{fqext}.{fqsuffix}.gz", **config)),
@@ -229,7 +301,8 @@ rule gsa2fastq_PE:
     benchmark:
         expand("{benchmark_dir}/gsa2fastq_PE/{{run}}.benchmark.txt", **config)[0]
     wildcard_constraints:
-        run="|".join(GSA_PAIRED_END) if len(GSA_PAIRED_END) else "$a",
+        run="|".join(GSA_OR_ENCODE_PAIRED_END) if len(GSA_OR_ENCODE_PAIRED_END) else "$a",
+    priority: 1
     retries: 2
     run:
         shell("mkdir -p {config[fastq_dir]}/tmp >> {log} 2>&1")
@@ -267,12 +340,13 @@ rule runs2sample:
     input:
         get_runs_from_sample,
     output:
-             expand("{fastq_dir}/{{sample}}{{suffix}}", **config) if keep_fastqs else \
-        temp(expand("{fastq_dir}/{{sample}}{{suffix}}", **config))
+        expand("{fastq_dir}/{{sample}}{{suffix}}", **config) if keep_fastqs else \
+            temp(expand("{fastq_dir}/{{sample}}{{suffix}}", **config))
     log:
         expand("{log_dir}/run2sample/{{sample}}{{suffix}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/run2sample/{{sample}}{{suffix}}.benchmark.txt", **config)[0]
+    priority: 2
     wildcard_constraints:
         sample="|".join(public_samples) if len(public_samples) > 0 else "$a",
     run:

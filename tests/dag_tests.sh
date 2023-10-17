@@ -68,8 +68,9 @@ if [ $1 = "alignment" ]; then
   assert_rulecount $1 'ena2fastq_PE|sra2fastq_PE' 1
 
   printf "\ndownload gsa\n"
-  seq2science run download-fastq -nr --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/download_fastq/gsa_samples.tsv} | tee tests/local_test_results/${1}_dag
-  assert_rulecount $1 'gsa2fastq_SE' 1
+  seq2science run download-fastq -nr --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={samples:tests/download_fastq/gsa_encode_samples.tsv} | tee tests/local_test_results/${1}_dag
+  assert_rulecount $1 'gsa_or_encode2fastq_SE' 5
+  assert_rulecount $1 'gsa_or_encode2fastq_PE' 1
 
   # alignment workflow
   WF=alignment
@@ -130,7 +131,7 @@ if [ $1 = "alignment" ]; then
   assert_rulecount $1 sambamba_sort 1
 
   printf "\ncram support\n"
-  seq2science run alignment -nr --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={cram_no_bam:True} | tee tests/local_test_results/${1}_dag
+  seq2science run alignment -nr --configfile tests/$WF/default_config.yaml --snakemakeOptions quiet=True config={store_as_cram:True} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 bam2cram 1
 
   printf "\ntrackhub\n"

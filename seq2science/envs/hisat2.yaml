@@ -2,7 +2,6 @@ name: hisat2
 channels:
   - conda-forge
   - bioconda
-  - defaults
 dependencies:
   - bioconda::hisat2=2.2.1
   - conda-forge::conda-ecosystem-user-package-isolation=1.0

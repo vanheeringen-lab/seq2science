@@ -29,6 +29,9 @@ min_mapping_quality: 30
 only_primary_align: true
 remove_dups: true
 
+# should the final output be stored as cram files (instead of bam) to save storage?
+store_as_cram: false
+
 # peak caller
 peak_caller:
   macs2:
@@ -46,4 +49,4 @@ run_gimme_maelstrom: false
 # differential peak analysis
 # for explanation, see: https://vanheeringen-lab.github.io/seq2science/content/DESeq2.html
 #contrasts:
-#  - 'descriptive_name_all_HEL'
+#  - 'biological_replicates_gd7ectoderm_tl10bmesoderm'

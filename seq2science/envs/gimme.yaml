@@ -2,10 +2,10 @@ name: gimme
 channels:
   - conda-forge
   - bioconda
-  - defaults
 dependencies:
-  - bioconda::gimmemotifs-minimal=0.17.2
+  - bioconda::gimmemotifs-minimal=0.18.0
   - bioconda::gffread=0.12.7
   - bioconda::orthofinder=2.5.4
+  - conda-forge::xgboost=1.0.2
   - conda-forge::cpulimit=0.2
   - conda-forge::conda-ecosystem-user-package-isolation=1.0

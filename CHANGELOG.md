@@ -9,16 +9,105 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+## [1.2.0] - 2023-09-18
+
+### Changed
+
+- DESeq2 now uses more samples to estimate count dispersions
+  - all samples with a label in the condition column are used
+  - (this feature was previously dependent on a batch effect correction in the contrast design)
+
+### Fixed
+
+- (major) regression where peak calling input controls were being ignored.
+
+## [1.1.0] - 2023-09-13
+
+### Added
+
+- download samples directly from ENCODE by assay (ENCSR) and file (ENCFF) accession ids.
+
+### Changed
+
+- the init, run, and explain commands display the supported workflows in their --help
+
+### Fixed
+
+- issue when specifying colors in the samples table, causing the QC report not rendering the table correctly anymore.
+
+## [1.0.4] - 2023-09-05
+
+### Changed
+
+- use the snakemake greedy scheduler as default as the ilp scheduler struggles with "many" samples
+- use braLan3 for motif2factors instead of braLan2
+
+## [1.0.3] - 2023-07-26
+
+### Fixed
+
+- issue with printing a nice traceback when the SRA is unresponsive
+- more informative error with troubles inferring the strandedness of samples
+
+## [1.0.2] - 2023-07-14
+
+### Fixed
+
+- crash with combination of technical reps and biological reps when combining them.
+- idr bug with numpy dependency > 1.20
+- replacing all spaces with underscores in the samples.tsv
+  - should only affect columns where this was not enforced already (custom columns)
+  - required for rule multiqc_samplesconfig
+
+## [1.0.0] - 2023-05-31
+
+### Added
+
+- CRAM support for ATAC+ChIP+RNA-seq workflows (in addition to the existing alignment workflow cram support)
+
+### Changed
+
+- sctk yaml simplified
+
+### Fixed
+
+- DESeq2 should no longer crash without DE genes
+- bug with single-ended reads and subread
+- gimme maelstrom dependency missing
+- gimme maelstrom bug when XDG_CACHE_DIR is not set
+
+## [0.9.9] - 2023-04-21
+
 ### Changed
 
 - moved downloading fastqs to localrules
 - bam indexes are kept (not automatically removed)
-- Salmon updated to the latest version v1.10.1
+- Salmon updated to the latest version v1.10.1 (fixes a bug)
+- upsetplot updated to the latest version (fixes a bug)
+- genomepy updated to the latest version (no reason)
+- tabulate updated to the latest version (longer python support)
+- everything else updated to the latest version 
+- `--snakemakeOption debug_dag=True` can now be used with 1 core (required)
+- creating conda environments now faster
+  - updated conda & mamba
+  - dropped indexing of Conda's defaults channel
+- one less global variable! (sanitized_samples)
+- dropped correlation scores from DESeq2 clusterplots
+  - pheatmap is too finickey to get the fontsize right
+- pheatmap uses the sample order (from the samples.tsv) as best as possible 
 
 ### Fixed
 
 - edge case when a GSM sample is a reanalysis of another GSM sample.
 - error message referring to `--config` while it should be `--configfile`
+- cyclic dependency on rule samtools_sort (caused by tildes in config paths)
+- bug in DESeq2 related rules when using custom assemblies
+- clear error message when downloading single-end data annotated as paired-end.
+- "Max retries exceeded with url" for CRX samples
+- upsetplot & assembly_stats segfault due to interactive matplotlib backend
+- DESeq2 error: "EOF within quoted string"
+- conda environment channel priorities 
+- trackhub index generation now removes rogue spaces from the annotation (instead of crashing)
 
 ## [0.9.8] - 2023-02-01
 
@@ -732,12 +821,21 @@ It is important to note that the RNA-seq workflow DOES NOT remove duplicate read
 - Snakefmt -l 121 applied
 
 ## [0.0.1] - 2020-06-17
+
 Many minor bug- and quality of life fixes.
 
 ## [0.0.0] - 2020-06-11
+
 First release of seq2science!
 
-[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.8...develop
+[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v1.2.0...develop
+[1.2.0]: https://github.com/vanheeringen-lab/seq2science/compare/v1.1.0...v1.2.0
+[1.1.0]: https://github.com/vanheeringen-lab/seq2science/compare/v1.0.4...v1.1.0
+[1.0.4]: https://github.com/vanheeringen-lab/seq2science/compare/v1.0.3...v1.0.4
+[1.0.3]: https://github.com/vanheeringen-lab/seq2science/compare/v1.0.2...v1.0.3
+[1.0.2]: https://github.com/vanheeringen-lab/seq2science/compare/v1.0.0...v1.0.2
+[1.0.0]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.9...v1.0.0
+[0.9.9]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.8...v0.9.9
 [0.9.8]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.7...v0.9.8
 [0.9.7]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.6...v0.9.7
 [0.9.6]: https://github.com/vanheeringen-lab/seq2science/compare/v0.9.5...v0.9.6

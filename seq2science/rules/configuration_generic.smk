@@ -237,14 +237,13 @@ def parse_samples():
     for schema in SAMPLE_SCHEMAS:
         validate(samples_df, schema=f"{config['rule_dir']}/../schemas/samples/{schema}.schema.yaml")
     
-    sanitized_samples_df = copy.copy(samples_df)
-    
     samples_df = samples_df.set_index("sample")
     samples_df.index = samples_df.index.map(str)
+    samples_df.replace({' ': '_'}, regex=True, inplace=True)
     
-    return samples_df, sanitized_samples_df
+    return samples_df
 
-samples, sanitized_samples = parse_samples()
+samples = parse_samples()
 
 # all samples (including controls)
 ALL_SAMPLES = [sample for sample in samples.index]
@@ -389,21 +388,25 @@ if WORKFLOW != "download_fastq":
                 has_annotation[assembly + config["custom_assembly_suffix"]] = has_annotation[assembly]
     
         # custom assemblies
-    
-        # control whether to custom extended assemblies
-        if isinstance(config.get("custom_genome_extension"), str):
-            config["custom_genome_extension"] = [config["custom_genome_extension"]]
-        if isinstance(config.get("custom_annotation_extension"), str):
-            config["custom_annotation_extension"] = [config["custom_annotation_extension"]]
+
+        # files used to extended assemblies (into custom assemblies)
+        modified = False
+        for key in ["custom_genome_extension", "custom_annotation_extension"]:
+            if len(config.get(key, [])) == 0:
+                continue
+
+            modified = True
+            if isinstance(config.get(key), str):
+                config[key] = [config[key]]
+            config[key] = [os.path.expanduser(e) for e in config[key]]
     
         # custom assembly suffices
-        modified = config.get("custom_genome_extension") or config.get("custom_annotation_extension")
         suffix = config["custom_assembly_suffix"] if modified else ""
         all_assemblies = [a + suffix for a in used_assemblies]
     
         def ori_assembly(assembly):
             """
-            remove the extension suffix from an assembly if it was added.
+            remove the custom assembly suffix from an assembly.
             """
             if not modified or not assembly.endswith(config["custom_assembly_suffix"]):
                 return assembly
@@ -444,7 +447,7 @@ def parse_pysradb():
                     sampledict.update(samples2metadata(missing_samples, config, logger))
 
                 pickle.dump(
-                    {k: v for k, v in sampledict.items() if k.startswith(("ERR", "ERX", "SRR", "SRX", "GSM", "DRX", "DRR"))},
+                    {k: v for k, v in sampledict.items() if k.startswith(("ERR", "ERX", "SRR", "SRX", "GSM", "DRX", "DRR", "CRX", "ENCSR", "ENCFF"))},
                     open(pysradb_cache, "wb"),
                 )
 
@@ -473,16 +476,16 @@ def parse_pysradb():
         if (values["layout"] == "PAIRED") and values.get("ena_fastq_ftp") is not None
         for run in values["runs"]
     ]
-    gsa_single_end = [
+    gsa_or_encode_single_end = [
         run
         for values in sampledict.values()
-        if (values["layout"] == "SINGLE") and values.get("gsa_fastq_http") is not None
+        if (values["layout"] == "SINGLE") and values.get("gsa_fastq_http", values.get("encode_fastq_http")) is not None
         for run in values["runs"]
     ]
-    gsa_paired_end = [
+    gsa_or_encode_paired_end = [
         run
         for values in sampledict.values()
-        if (values["layout"] == "PAIRED") and values.get("gsa_fastq_http") is not None
+        if (values["layout"] == "PAIRED") and values.get("gsa_fastq_http", values.get("encode_fastq_http")) is not None
         for run in values["runs"]
     ]
     sra_single_end = [
@@ -490,14 +493,14 @@ def parse_pysradb():
         for values in sampledict.values()
         if (values["layout"] == "SINGLE")
         for run in values.get("runs", [])
-        if (run not in ena_single_end and run not in gsa_paired_end)
+        if (run not in ena_single_end and run not in gsa_or_encode_single_end)
     ]
     sra_paired_end = [
         run
         for values in sampledict.values()
         if (values["layout"] == "PAIRED")
         for run in values.get("runs", [])
-        if (run not in ena_paired_end and run not in gsa_paired_end)
+        if (run not in ena_paired_end and run not in gsa_or_encode_paired_end)
     ]
 
     # get download link per run
@@ -512,6 +515,8 @@ def parse_pysradb():
                         run2download[run] = values["ena_fastq_ftp"][run]
             if "gsa_fastq_http" in values:
                 run2download[run] = values["gsa_fastq_http"][run]
+            if "encode_fastq_http" in values:
+                run2download[run] = values["encode_fastq_http"][run]
 
     # if samples are merged add the layout of the technical replicate to the config
     failed_samples = dict()
@@ -536,9 +541,9 @@ def parse_pysradb():
             logger.error("\n")
         os._exit(1)  # noqa
 
-    return sampledict, ena_single_end, ena_paired_end, gsa_single_end, gsa_paired_end, sra_single_end, sra_paired_end, run2download, pysradb_cache_lock
+    return sampledict, ena_single_end, ena_paired_end, gsa_or_encode_single_end, gsa_or_encode_paired_end, sra_single_end, sra_paired_end, run2download, pysradb_cache_lock
 
-SAMPLEDICT, ENA_SINGLE_END, ENA_PAIRED_END, GSA_SINGLE_END, GSA_PAIRED_END, SRA_SINGLE_END, SRA_PAIRED_END, RUN2DOWNLOAD, PYSRADB_CACHE_LOCK = parse_pysradb()
+SAMPLEDICT, ENA_SINGLE_END, ENA_PAIRED_END, GSA_OR_ENCODE_SINGLE_END, GSA_OR_ENCODE_PAIRED_END, SRA_SINGLE_END, SRA_PAIRED_END, RUN2DOWNLOAD, PYSRADB_CACHE_LOCK = parse_pysradb()
 
 # workflow
 

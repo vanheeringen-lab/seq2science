@@ -44,7 +44,7 @@ coldata  <- samples[cols]
 coldata['assembly'] <- factor(as.character(seq_len(nrow(coldata))))
 
 # filter counts to speed up DESeq
-counts <- read.table(counts_file, row.names = 1, header = T, stringsAsFactors = F, sep = '\t', check.names = F)
+counts <- read.table(counts_file, row.names = 1, header = T, stringsAsFactors = F, sep = '\t', quote= "", check.names = F)
 reduced_counts <- counts[rowSums(counts) > 0, rownames(coldata)]
 
 
