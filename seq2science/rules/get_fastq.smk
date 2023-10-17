@@ -2,73 +2,10 @@
 all rules/logic related downloading public fastqs should be here.
 """
 
-localrules: run2sra, ena2fastq_SE, ena2fastq_PE, gsa_or_encode2fastq_SE, gsa_or_encode2fastq_PE, runs2sample
+localrules: ena2fastq_SE, ena2fastq_PE, gsa_or_encode2fastq_SE, gsa_or_encode2fastq_PE, runs2sample
 
 
 import os
-
-
-rule run2sra:
-    """
-    Download the SRA of a sample by its unique identifier.
-    """
-    output:
-        temp(expand("{sra_dir}/{{run}}/{{run}}/{{run}}.sra", **config)),
-    log:
-        expand("{log_dir}/run2sra/{{run}}.log", **config),
-    benchmark:
-        expand("{benchmark_dir}/run2sra/{{run}}.benchmark.txt", **config)[0]
-    message: EXPLAIN["run2sra"]
-    resources:
-        parallel_downloads=1,
-    params:
-        outdir=lambda wildcards: f"{config['sra_dir']}/{wildcards.run}",
-    conda:
-        "../envs/get_fastq.yaml"
-    wildcard_constraints:
-        run="[DES]RR\d+",
-    retries: 2
-    shell:
-        """
-        # move to output dir since somehow prefetch sometimes puts files in the cwd...
-        # and remove the top level folder since prefetch will assume we are done otherwise
-        mkdir -p {params.outdir}; cd {params.outdir}; rm -r {wildcards.run}
-
-        # TODO: for loop can be removed if we dont see the debug message
-        # three attempts
-        for i in {{1..3}}
-        do
-            # acquire a lock
-            (
-                flock -w 30 200 || continue
-                sleep 2
-            ) 200>{PYSRADB_CACHE_LOCK}
-
-            # dump
-            prefetch --max-size u --output-directory ./ --log-level debug --progress {wildcards.run} \
-            >> {log} 2>&1 && break
-            
-            # retry
-            echo "DEBUG: prefetch try ${{i}} of 3 failed" >> {log}
-            sleep 10
-        done
-
-        # TODO: section can be removed if we dont see the debug message
-        # bug report: https://github.com/ncbi/sra-tools/issues/533
-        if [[ -f "{params.outdir}/{wildcards.run}.sra" ]]; then
-            echo "DEBUG: moving output to correct directory" >> {log}
-            mkdir -p {params.outdir}/{wildcards.run}
-            mv {params.outdir}/{wildcards.run}.sra {output}
-        fi
-
-        # TODO: section can be removed if we dont see the debug message
-        # If an sralite file was downloaded instead of a sra file, just rename it
-        if [[ -f "{params.outdir}/{wildcards.run}.sralite" ]]; then
-            echo "DEBUG: renaming SRAlite" >> {log}
-            mkdir -p {params.outdir}/{wildcards.run}
-            mv {params.outdir}/{wildcards.run}.sralite {output}
-        fi
-        """
 
 
 # ENA > SRA
@@ -90,20 +27,17 @@ rule sra2fastq_SE:
         expand("{log_dir}/sra2fastq_SE/{{run}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/sra2fastq_SE/{{run}}.benchmark.txt", **config)[0]
-    message: EXPLAIN["run2sra"]
-    resources:
-        parallel_downloads=1,
     wildcard_constraints:
         run="|".join(SRA_SINGLE_END) if len(SRA_SINGLE_END) else "$a",  # only try to dump (single-end) SRA samples
     threads: 8
     conda:
         "../envs/get_fastq.yaml"
-    priority: 1
     retries: 2
     shell:
         """
         tmpdir=`mktemp -d`
-        echo "Using tmpdir $tmpdir" >> {log}
+	    echo $tmpdir        
+	    echo "Using tmpdir $tmpdir" >> {log}
 
         # move to output dir since somehow prefetch and parallel-fastq-dump sometimes put files in the cwd...
         cd $tmpdir
@@ -147,20 +81,17 @@ rule sra2fastq_PE:
         expand("{log_dir}/sra2fastq_PE/{{run}}.log", **config),
     benchmark:
         expand("{benchmark_dir}/sra2fastq_PE/{{run}}.benchmark.txt", **config)[0]
-    message: EXPLAIN["run2sra"]
-    resources:
-        parallel_downloads=1,
     threads: 8
     wildcard_constraints:
         run="|".join(SRA_PAIRED_END) if len(SRA_PAIRED_END) else "$a",  # only try to dump (paired-end) SRA samples
     conda:
         "../envs/get_fastq.yaml"
-    priority: 1
     retries: 2
     shell:
         """
         tmpdir=`mktemp -d`
-        echo "Using tmpdir $tmpdir" >> {log}
+        echo $tmpdir
+	    echo "Using tmpdir $tmpdir" >> {log}
 
         # move to output dir since somehow prefetch and parallel-fastq-dump sometimes put files in the cwd...
         cd $tmpdir
@@ -178,20 +109,25 @@ rule sra2fastq_PE:
             source {workflow.basedir}/../../scripts/download_sra.sh {wildcards.run} {log} && break
             sleep 10
         done
-        
+
         # dump to tmp dir
         parallel-fastq-dump -s {wildcards.run}/{wildcards.run}.sra -O $tmpdir \
         --threads {threads} --split-e --skip-technical --dumpbase --readids \
         --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' \
         --defline-qual '+' --gzip >> {log} 2>&1
-        
-        # check if the files exist
-        if ! compgen -G "{output.tmpdir}/*_1*" > /dev/null ; then printf "ERROR: Couldn't find read 1.fastq after dumping! Perhaps this is not a paired-end file?\n" >> {log} 2>&1; fi
-        if ! compgen -G "{output.tmpdir}/*_2*" > /dev/null ; then printf "ERROR: Couldn't find read 2.fastq after dumping! Perhaps this is not a paired-end file?\n" >> {log} 2>&1; fi
 
-        # rename file and move to output dir
-        mv {output.tmpdir}/*_1* {output.fastq[0]} >> {log} 2>&1
-        mv {output.tmpdir}/*_2* {output.fastq[1]} >> {log} 2>&1
+        # check if the files exist
+        if ! compgen -G $tmpdir/*_1* > /dev/null ; then printf "ERROR: Couldn't find read 1.fastq after dumping! Perhaps this is not a paired-end file?\n" >> {log} 2>&1; fi
+        if ! compgen -G $tmpdir/*_2* > /dev/null ; then printf "ERROR: Couldn't find read 2.fastq after dumping! Perhaps this is not a paired-end file?\n" >> {log} 2>&1; fi
+	   
+       # rename file and move to output dir
+        if ls $tmpdir/*_1* 1> /dev/null 2>&1; then
+	        mv $tmpdir/*_1* {output[0]} >> {log} 2>&1
+            mv $tmpdir/*_2* {output[1]} >> {log} 2>&1
+        else
+	        echo "No paired end files found!" >> {log}
+        fi
+
         # Remove temporary directory
         rm -rf $tmpdir >> {log} 2>&1
         """
