@@ -11,6 +11,7 @@ import copy
 import json
 import requests
 import yaml
+from subprocess import check_output, STDOUT, CalledProcessError
 
 import xdg
 import pandas as pd
@@ -42,6 +43,18 @@ DAG.warn_about_changes = lambda *args: None
 
 # get the cache and config dirs
 CACHE_DIR = os.path.join(xdg.XDG_CACHE_HOME, "seq2science", seq2science.__version__)
+
+
+def is_valid_url(url):
+    cmd = ["wget", "--spider", url]
+    try:
+        result = check_output(cmd, stderr=STDOUT).decode().strip()
+    except CalledProcessError:
+        return False
+    if result.endswith("exists.") and not "does not exist" in result:
+        return True
+    else:
+        return False
 
 
 def parse_config(cfg):
@@ -467,13 +480,13 @@ def parse_pysradb():
     ena_single_end = [
         run
         for values in sampledict.values()
-        if (values["layout"] == "SINGLE") and values.get("ena_fastq_ftp") is not None
+        if (values["layout"] == "SINGLE") and values.get("ena_fastq_ftp") is not None and is_valid_url(values["ena_fastq_ftp"].replace("era-fasp@fasp", "ftp"))
         for run in values["runs"]
     ]
     ena_paired_end = [
         run
         for values in sampledict.values()
-        if (values["layout"] == "PAIRED") and values.get("ena_fastq_ftp") is not None
+        if (values["layout"] == "PAIRED") and values.get("ena_fastq_ftp") is not None and is_valid_url(values["ena_fastq_ftp"].replace("era-fasp@fasp", "ftp"))
         for run in values["runs"]
     ]
     gsa_or_encode_single_end = [
