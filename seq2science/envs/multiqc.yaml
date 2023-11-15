@@ -4,4 +4,5 @@ channels:
   - bioconda
 dependencies:
   - bioconda::multiqc=1.14
+  - python=3.10
   - conda-forge::conda-ecosystem-user-package-isolation=1.0
