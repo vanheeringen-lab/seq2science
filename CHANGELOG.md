@@ -9,6 +9,8 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+## [1.2.0] - 2023-09-18
+
 ### Changed
 
 - DESeq2 now uses more samples to estimate count dispersions
@@ -827,7 +829,8 @@ Many minor bug- and quality of life fixes.
 
 First release of seq2science!
 
-[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v1.1.0...develop
+[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v1.2.0...develop
+[1.2.0]: https://github.com/vanheeringen-lab/seq2science/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/vanheeringen-lab/seq2science/compare/v1.0.4...v1.1.0
 [1.0.4]: https://github.com/vanheeringen-lab/seq2science/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/vanheeringen-lab/seq2science/compare/v1.0.2...v1.0.3

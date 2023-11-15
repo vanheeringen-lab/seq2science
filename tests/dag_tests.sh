@@ -564,7 +564,7 @@ if [ $1 = "explain" ]; then
     fi;
 
     # exit if only the default line is returned
-    if [[ $val == *"(https://doi.org/10.5281/zenodo.3921913)." ]]; then
+    if [[ $val == *"(https://doi.org/10.7717/peerj.16380)." ]]; then
       printf "\nExplain message appears truncated! Exiting.\n"
       exit 1;
     fi;
