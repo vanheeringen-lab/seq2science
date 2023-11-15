@@ -9,6 +9,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Fixed
+
+- MultiQC error (module not found 'imp')
+
 ## [1.2.0] - 2023-09-18
 
 ### Changed
@@ -20,7 +24,6 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 ### Fixed
 
 - (major) regression where peak calling input controls were being ignored.
-- MultiQC error (module not found 'imp')
 
 ## [1.1.0] - 2023-09-13
 
