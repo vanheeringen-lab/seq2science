@@ -55,7 +55,7 @@ mtp                <- "BH"                                                      
 fdr                <- 0.1                                                                    #  |-default options only
 se                 <- "apeglm"                                                               # /
 salmon             <- FALSE                                                                  # only work with counts data
-threads            <- 1
+threads            <- 4
 output             <- file.path(out_dir, paste0(assembly, "-", contrast, ".diffexp.tsv"))
 output_ma_plot     <- sub(".diffexp.tsv", ".ma_plot.png", output)
 output_vol_plot    <- sub(".diffexp.tsv", ".volcano_plot.png", output)
