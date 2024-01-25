@@ -9,6 +9,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Fixed
+
+- chipseeker env got corrupted, it should work again.
+
 ## [1.2.1] - 2023-11-15
 
 ### Fixed
