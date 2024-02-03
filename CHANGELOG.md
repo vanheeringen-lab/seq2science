@@ -11,6 +11,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Fixed
 
+- chipseeker env got corrupted, it should work again.
 - replaced deprecated --split-e flag with --split-3 flag for fastq downloading
 - removed support for GSA as their "API" changed
 
