@@ -9,6 +9,8 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+## [1.2.2] - 2024-02-03
+
 ### Fixed
 
 - chipseeker env got corrupted, it should work again.
@@ -840,7 +842,8 @@ Many minor bug- and quality of life fixes.
 
 First release of seq2science!
 
-[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v1.2.1...develop
+[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v1.2.2...develop
+[1.2.2]: https://github.com/vanheeringen-lab/seq2science/compare/v1.2.0...v1.2.1
 [1.2.1]: https://github.com/vanheeringen-lab/seq2science/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/vanheeringen-lab/seq2science/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/vanheeringen-lab/seq2science/compare/v1.0.4...v1.1.0
