@@ -155,7 +155,7 @@ rule sra2fastq_PE:
 
         # dump to tmp dir
         parallel-fastq-dump -s {input} -O {output.tmpdir} \
-        --threads {threads} --split-e --skip-technical --dumpbase \
+        --threads {threads} --split-3 --skip-technical --dumpbase \
         --readids --clip --read-filter pass --defline-seq '@$ac.$si.$sg/$ri' \
         --defline-qual '+' --gzip >> {log} 2>&1
         
