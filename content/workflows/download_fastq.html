@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Downloading fastqs &mdash; seq2science  documentation</title>
-      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -112,7 +114,7 @@
   <img src="../../_static/download_fastq.png" style="width:auto;height:100px;">
 </p><section id="download-sra-file">
 <h3>Download SRA file<a class="headerlink" href="#download-sra-file" title="Link to this heading"></a></h3>
-<p>The five most popular databases that store sequencing data are National Center for Biotechnology Information (NCBI), the European Nucleotide Archive (ENA), the DNA Data Bank of Japan (DDBJ), the Genome Sequence Archive (GSA), and the Encode project (ENCODE).
+<p>The five most popular databases that store sequencing data are National Center for Biotechnology Information (NCBI), the European Nucleotide Archive (ENA), the DNA Data Bank of Japan (DDBJ), the Genome Sequence Archive (GSA) (GSA is currently not supported anymore), and the Encode project (ENCODE).
 ENA, ENCODE, and GSA store the actual fastq files, and DDBJ and NCBI store the raw data (as a sra file) from which a fastq can be derived.
 For this reason for each sample on DDBJ and NCBI seq2science will first check if it can be downloaded from ENA as a fastq directly.
 Otherwise we will download the samples in its raw format. To convert this data to a fastq it has to be “<em>dumped</em>“.</p>
@@ -124,7 +126,6 @@ Otherwise we will download the samples in its raw format. To convert this data t
 Each workflow starts with a <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> as an example, and you should adapt it to your specific needs.
 As an example, the <code class="docutils literal notranslate"><span class="pre">samples.tsv</span></code> could look something like this:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sample</span>
-<span class="n">CRX123</span>    <span class="o">&lt;--</span> <span class="n">GSA</span> <span class="n">experiment</span>
 <span class="n">DRX890</span>    <span class="o">&lt;--</span> <span class="n">DDBJ</span> <span class="n">experiment</span>
 <span class="n">DRR098</span>    <span class="o">&lt;--</span> <span class="n">DDBJ</span> <span class="n">run</span>
 <span class="n">ENCSR765</span>  <span class="o">&lt;--</span> <span class="n">ENCODE</span> <span class="n">assay</span>

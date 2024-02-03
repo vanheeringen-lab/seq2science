@@ -9,7 +9,7 @@ Downloading public data in bulk from the NCBI, ENA, and DDBJ databases has never
 
 #### Download SRA file
 
-The five most popular databases that store sequencing data are National Center for Biotechnology Information (NCBI), the European Nucleotide Archive (ENA), the DNA Data Bank of Japan (DDBJ), the Genome Sequence Archive (GSA), and the Encode project (ENCODE).
+The five most popular databases that store sequencing data are National Center for Biotechnology Information (NCBI), the European Nucleotide Archive (ENA), the DNA Data Bank of Japan (DDBJ), the Genome Sequence Archive (GSA) (GSA is currently not supported anymore), and the Encode project (ENCODE).
 ENA, ENCODE, and GSA store the actual fastq files, and DDBJ and NCBI store the raw data (as a sra file) from which a fastq can be derived.
 For this reason for each sample on DDBJ and NCBI seq2science will first check if it can be downloaded from ENA as a fastq directly.
 Otherwise we will download the samples in its raw format. To convert this data to a fastq it has to be "*dumped*".
@@ -22,7 +22,6 @@ As an example, the `samples.tsv` could look something like this:
 
 ```
 sample
-CRX123    <-- GSA experiment
 DRX890    <-- DDBJ experiment
 DRR098    <-- DDBJ run
 ENCSR765  <-- ENCODE assay

@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Per rule explanation &mdash; seq2science  documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -647,7 +649,7 @@ featureCounts -T {threads} -p -a {output.tmp_saf} -F SAF -o {output.real_out} {i
 mv $(dirname {output.real_out})/$(basename {output.summary}) {output.summary}
 </pre></div>
 </div>
-<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/gene_counts.yaml">featureCounts environment</a>.</p>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/subread.yaml">featureCounts environment</a>.</p>
 </section>
 <section id="id1">
 <h2>featurecounts<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
@@ -655,7 +657,7 @@ mv $(dirname {output.real_out})/$(basename {output.summary}) {output.summary}
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">featureCounts</span> <span class="o">-</span><span class="n">a</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">gtf</span><span class="p">}</span> <span class="p">{</span><span class="nb">input</span><span class="o">.</span><span class="n">bam</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">endedness</span><span class="p">}</span> <span class="o">-</span><span class="n">s</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">strandedness</span><span class="p">}</span> <span class="p">{</span><span class="n">params</span><span class="o">.</span><span class="n">user_flags</span><span class="p">}</span> <span class="o">-</span><span class="n">T</span> <span class="p">{</span><span class="n">threads</span><span class="p">}</span> <span class="o">-</span><span class="n">o</span> <span class="p">{</span><span class="n">output</span><span class="p">}</span> <span class="o">&gt;</span> <span class="p">{</span><span class="n">log</span><span class="p">}</span> <span class="mi">2</span><span class="o">&gt;&amp;</span><span class="mi">1</span>
 </pre></div>
 </div>
-<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/gene_counts.yaml">featurecounts environment</a>.</p>
+<p><a class="reference external" href="https://github.com/vanheeringen-lab/seq2science/blob/docs_updates/seq2science/envs/subread.yaml">featurecounts environment</a>.</p>
 </section>
 <section id="full-decoy-transcripts">
 <h2>full_decoy_transcripts<a class="headerlink" href="#full-decoy-transcripts" title="Link to this heading"></a></h2>
@@ -1407,7 +1409,7 @@ mkdir -p {output.tmpdir}; cd {output.tmpdir}
 
 # dump to tmp dir
 parallel-fastq-dump -s {input} -O {output.tmpdir} \
---threads {threads} --split-e --skip-technical --dumpbase \
+--threads {threads} --split-3 --skip-technical --dumpbase \
 --readids --clip --read-filter pass --defline-seq &#39;@$ac.$si.$sg/$ri&#39; \
 --defline-qual &#39;+&#39; --gzip &gt;&gt; {log} 2&gt;&amp;1
 
