@@ -9,6 +9,12 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+## [1.2.3] - 2024-05-9
+
+### Fixed
+
+- replaced older conda version with newer conda version, seems to install packages again
+
 ## [1.2.2] - 2024-02-03
 
 ### Fixed
