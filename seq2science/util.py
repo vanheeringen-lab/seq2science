@@ -1043,7 +1043,8 @@ def _get_current_version(package):
     # xdg keeps its version in a pyproject.toml (not included)
     # argcomplete keeps its version in a setup.py (not included)
     # trackhub versioning is weird
-    if package in ["conda-ecosystem-user-package-isolation", "xdg", "argcomplete", "trackhub"]:
+    # mamba is not a package
+    if package in ["conda-ecosystem-user-package-isolation", "xdg", "argcomplete", "trackhub", "mamba"]:
         return None
     if package == "python":
         return sys.version.split()[0]

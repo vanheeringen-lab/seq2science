@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+	#!/usr/bin/env python
 """
 This is the user's entry-point for the seq2science tool.
 """
