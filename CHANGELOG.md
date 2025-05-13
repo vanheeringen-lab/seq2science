@@ -9,6 +9,11 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Fixed
+
+- updated genomepy version
+- fixed chipseeker warning
+
 ## [1.2.3] - 2024-05-9
 
 ### Fixed
