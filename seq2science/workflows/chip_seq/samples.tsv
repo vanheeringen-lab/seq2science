@@ -3,7 +3,7 @@
 # https://vanheeringen-lab.github.io/seq2science/content/workflows/chip_seq.html#filling-out-the-samples-tsv
 # Make sure that you use tab as a delimiter
 sample	assembly	biological_replicates	descriptive_name	control
-GSM1689671	BDGP6.46	gd7ectoderm	gd7_ectodermal_rep1	GSM1689679
-GSM1689672	BDGP6.46	gd7ectoderm	gd7_ectodermal_rep2	GSM1689680
-GSM1689692	BDGP6.46	tl10bmesoderm	tl10b_mesodermal_rep1	GSM1689700
-GSM1689693	BDGP6.46	tl10bmesoderm	tl10b_mesodermal_rep2	GSM1689701
+GSM1689671	dm6	gd7ectoderm	gd7_ectodermal_rep1	GSM1689679
+GSM1689672	dm6	gd7ectoderm	gd7_ectodermal_rep2	GSM1689680
+GSM1689692	dm6	tl10bmesoderm	tl10b_mesodermal_rep1	GSM1689700
+GSM1689693	dm6	tl10bmesoderm	tl10b_mesodermal_rep2	GSM1689701
