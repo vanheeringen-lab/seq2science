@@ -9,12 +9,15 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+## [1.2.4] - 2025-05-14
+
 ### Fixed
 
-- updated genomepy version
-- fixed chipseeker warning
+- updated genomepy version (works with all providers again)
+- fixed chipseeker warnings
+- fixed upsetplot warnings
 
-## [1.2.3] - 2024-05-9
+## [1.2.3] - 2025-05-9
 
 ### Fixed
 
@@ -854,7 +857,8 @@ Many minor bug- and quality of life fixes.
 
 First release of seq2science!
 
-[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v1.2.3...develop
+[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v1.2.4...develop
+[1.2.3]: https://github.com/vanheeringen-lab/seq2science/compare/v1.2.3...v1.2.4
 [1.2.3]: https://github.com/vanheeringen-lab/seq2science/compare/v1.2.2...v1.2.3
 [1.2.2]: https://github.com/vanheeringen-lab/seq2science/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/vanheeringen-lab/seq2science/compare/v1.2.0...v1.2.1
