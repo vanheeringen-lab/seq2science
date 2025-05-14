@@ -2,24 +2,27 @@ name: docs
 
 on:
   push:
+    branches: [ "master" , "develop" ]
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
 
 jobs:
   docs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           persist-credentials: false
 
-      - uses: actions/setup-python@v3
+      - uses: actions/setup-python@v5
         with:
           python-version: 3.8
 
       - name: Install dependencies 🔨 & Build 🔧
         run: |
-          # setup mambaforge
-          wget -q -O Mambaforge.sh  "https://github.com/conda-forge/miniforge/releases/download/4.11.0-1/Mambaforge-$(uname)-$(uname -m).sh"
-          bash Mambaforge.sh -b -p "${HOME}/conda" > /dev/null
+          # setup miniforge
+          wget -O Miniforge3.sh "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh"
+          bash Miniforge3.sh -b -p "${HOME}/conda" > /dev/null
           source "${HOME}/conda/etc/profile.d/conda.sh"
           source "${HOME}/conda/etc/profile.d/mamba.sh"
           mamba activate
@@ -45,7 +48,7 @@ jobs:
           mamba env create --name seq2science --file doc_reqs.yaml
           rm doc_reqs.yaml
           mamba activate seq2science
-          pip3 install .
+          pip3 install . --no-deps --ignore-installed
 
           # make the docs
           python docs/scripts/schemas.py
@@ -55,7 +58,6 @@ jobs:
           sphinx-build docs/ build -W
           touch build/.nojekyll
 
-      # only deploy
       - name: Deploy 📬
         uses: JamesIves/github-pages-deploy-action@releases/v3
         if: github.ref == 'refs/heads/master'
