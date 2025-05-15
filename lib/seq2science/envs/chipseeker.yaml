@@ -3,5 +3,6 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - bioconda::bioconductor-chipseeker=1.34.0
+  - bioconda::bioconductor-chipseeker=1.42.0
+  - bioconda::bioconductor-txdbmaker=1.2.0
   - conda-forge::conda-ecosystem-user-package-isolation=1.0

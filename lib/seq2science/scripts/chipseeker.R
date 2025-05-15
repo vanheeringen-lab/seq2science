@@ -33,7 +33,7 @@ cat('\n')
 
 
 # load the gtf file and make it a txdb
-txdb_from_gtf <- makeTxDbFromGFF(gtf)
+txdb_from_gtf <- txdbmaker::makeTxDbFromGFF(gtf)
 
 peaks_list = list()
 for (i in seq_along(narrowpeaks)) {
