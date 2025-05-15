@@ -59,9 +59,10 @@ jobs:
           touch build/.nojekyll
 
       - name: Deploy 📬
-        uses: JamesIves/github-pages-deploy-action@releases/v3
+        uses: JamesIves/github-pages-deploy-action@v4
         if: github.ref == 'refs/heads/master'
         with:
-          ACCESS_TOKEN: ${{ secrets.AccessToken }}
-          BRANCH: gh-pages # The branch the action should deploy to.
-          FOLDER: build # The folder the action should deploy.
+          # token: ${{ secrets.AccessToken }}
+          branch: gh-pages # The branch the action should deploy to.
+          folder: build # The folder the action should deploy.
+          clean: true
