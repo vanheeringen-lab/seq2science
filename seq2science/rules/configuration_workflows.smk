@@ -71,6 +71,18 @@ if config.get("peak_caller", False):
             "To run gimme maelstrom you need more than one biological replicate!"
         )
 
+        # only need additional assemblies when ortholog inference is truly needed
+        if config["infer_motif2factors"] is True:
+            if len(set(samples["assembly"]) - set(config["motif2factors_database_references"])) == 0:
+                config["infer_motif2factors"] = False
+        if config["infer_motif2factors"] is False:
+            config["motif2factors_database_references"] = []
+            config["motif2factors_reference"] = []
+    else:
+        config["infer_motif2factors"] = False
+        config["motif2factors_database_references"] = []
+        config["motif2factors_reference"] = []
+
 # make sure that both maximum and minimum insert sizes are existing when one of them is used
 if config.get("min_template_length") and not config.get("max_template_length"):
     config["max_template_length"] = 1_000_000_000
