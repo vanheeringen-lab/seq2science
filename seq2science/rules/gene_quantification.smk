@@ -7,149 +7,207 @@ import os.path
 
 from seq2science.util import get_bustools_rid
 
-if config["quantifier"] == "salmon":
+if WORKFLOW == "rna_seq":
+    if config["quantifier"] == "salmon":
 
-    rule get_transcripts:
-        """
-        Generate transcripts.fasta using gffread.
-
-        Requires genome.fa and annotation.gtf (with matching chromosome/scaffold names)
-        """
-        input:
-            fa=rules.get_genome.output,
-            gtf=rules.get_genome_annotation.output.gtf,
-        output:
-            expand("{genome_dir}/{{assembly}}/{{assembly}}.transcripts.fa", **config),
-        log:
-            expand("{log_dir}/quantification/{{assembly}}.transcripts.log", **config),
-        conda: "../envs/salmon.yaml"
-        priority: 10
-        shell:
+        rule get_transcripts:
             """
-            gffread -w {output} -g {input.fa} {input.gtf} > {log} 2>&1
+            Generate transcripts.fasta using gffread.
+    
+            Requires genome.fa and annotation.gtf (with matching chromosome/scaffold names)
             """
+            input:
+                fa=rules.get_genome.output,
+                gtf=rules.get_genome_annotation.output.gtf,
+            output:
+                expand("{genome_dir}/{{assembly}}/{{assembly}}.transcripts.fa", **config),
+            log:
+                expand("{log_dir}/quantification/{{assembly}}.transcripts.log", **config),
+            conda: "../envs/salmon.yaml"
+            priority: 10
+            shell:
+                """
+                gffread -w {output} -g {input.fa} {input.gtf} > {log} 2>&1
+                """
 
-    rule partial_decoy_transcripts:
-        """
-        Compute a set of decoy sequences by mapping the annotated transcripts against 
-        a hard-masked version of the organism’s genome.
-        """
-        input:
-            genome=rules.get_genome.output,
-            gtf=rules.get_genome_annotation.output.gtf,
-            transcripts=rules.get_transcripts.output,
-        output:
-            gentrome=temp(expand("{genome_dir}/{{assembly}}/gentrome.fa", **config)),
-            decoys=temp(expand("{genome_dir}/{{assembly}}/decoys.txt", **config)),
-        params:
-            script=f"{config['rule_dir']}/../scripts/generateDecoyTranscriptome.sh",
-        log:
-            expand("{log_dir}/quantification/{{assembly}}.partial_decoy_transcripts.log",**config),
-        message: EXPLAIN["partially_decoy_aware"]
-        conda: "../envs/decoy.yaml"
-        threads: 40
-        resources: mem_gb=64,
-        priority: 10
-        shell:
-            ("cpulimit --include-children -l {threads}00 --" if config.get("cpulimit", True) else "")+
-            """\
-            sh {params.script} -j {threads} -g {input.genome} -a {input.gtf} -t {input.transcripts} -o $(dirname {output[0]}) > {log} 2>&1
+        rule partial_decoy_transcripts:
             """
-
-    rule full_decoy_transcripts:
-        """
-        Use the entire genome as decoy sequence.
-        """
-        input:
-            genome=rules.get_genome.output,
-            sizes=rules.get_genome_support_files.output.sizes,
-            transcripts=rules.get_transcripts.output,
-        output:
-            gentrome=temp(expand("{genome_dir}/{{assembly}}/full_gentrome.fa",**config)),
-            decoys=temp(expand("{genome_dir}/{{assembly}}/full_decoys.txt",**config)),
-        message: EXPLAIN["fully_decoy_aware"]
-        shell:
+            Compute a set of decoy sequences by mapping the annotated transcripts against 
+            a hard-masked version of the organism’s genome.
             """
-            cut -f 1 {input.sizes} > {output.decoys}
-            cat {input.transcripts} {input.genome} > {output.gentrome}
+            input:
+                genome=rules.get_genome.output,
+                gtf=rules.get_genome_annotation.output.gtf,
+                transcripts=rules.get_transcripts.output,
+            output:
+                gentrome=temp(expand("{genome_dir}/{{assembly}}/gentrome.fa", **config)),
+                decoys=temp(expand("{genome_dir}/{{assembly}}/decoys.txt", **config)),
+            params:
+                script=f"{config['rule_dir']}/../scripts/generateDecoyTranscriptome.sh",
+            log:
+                expand("{log_dir}/quantification/{{assembly}}.partial_decoy_transcripts.log",**config),
+            message: EXPLAIN["partially_decoy_aware"]
+            conda: "../envs/decoy.yaml"
+            threads: 40
+            resources: mem_gb=64,
+            priority: 10
+            shell:
+                ("cpulimit --include-children -l {threads}00 --" if config.get("cpulimit", True) else "")+
+                """\
+                sh {params.script} -j {threads} -g {input.genome} -a {input.gtf} -t {input.transcripts} -o $(dirname {output[0]}) > {log} 2>&1
+                """
+
+        rule full_decoy_transcripts:
             """
-
-
-    def salmon_index_input(wildcards):
-        level = config.get("quantifier_decoys", "")
-        if level == "full":
-            return rules.full_decoy_transcripts.output
-        if level == "partial":
-            return rules.partial_decoy_transcripts.output
-        return rules.get_transcripts.output
-
-
-    salmon_index_output = "salmon"
-    if config.get("quantifier_decoys", "") == "full":
-        salmon_index_output += "_fully_decoy_aware"
-    elif config.get("quantifier_decoys", "") == "partial":
-        salmon_index_output += "_partially_decoy_aware"
-
-
-    rule salmon_index:
-        """
-        Generate a transcriptome index for Salmon.
-        """
-        input:
-            salmon_index_input
-        output:
-            directory(expand(f"{{genome_dir}}/{{{{assembly}}}}/index/{salmon_index_output}", **config)),
-        log:
-            expand(f"{{log_dir}}/quantification/{{{{assembly}}}}_{salmon_index_output}_index.log",**config),
-        params:
-            decoys=(
-                lambda wildcards, input: [""]
-                if config.get("quantifier_decoys", "none") == "none"
-                else ["-d", input[1]]
-            ),
-            params=config["quantifier_index"],
-        conda: "../envs/salmon.yaml"
-        priority: 10
-        threads: 10
-        resources: mem_gb=9,  # fully decoy aware
-        shell:
+            Use the entire genome as decoy sequence.
             """
-            mkdir -p {output}
+            input:
+                genome=rules.get_genome.output,
+                sizes=rules.get_genome_support_files.output.sizes,
+                transcripts=rules.get_transcripts.output,
+            output:
+                gentrome=temp(expand("{genome_dir}/{{assembly}}/full_gentrome.fa",**config)),
+                decoys=temp(expand("{genome_dir}/{{assembly}}/full_decoys.txt",**config)),
+            message: EXPLAIN["fully_decoy_aware"]
+            shell:
+                """
+                cut -f 1 {input.sizes} > {output.decoys}
+                cat {input.transcripts} {input.genome} > {output.gentrome}
+                """
 
-            salmon index -t {input[0]} {params.decoys} -i {output} {params.params} \
-            --threads {threads} > {log} 2>&1
-            """
 
-    rule salmon_quant:
-        """
-        Align reads against a transcriptome (index) with Salmon (mapping-based mode) and output a quantification file per sample.
-        """
-        input:
-            reads=get_reads,
-            index=rules.salmon_index.output,
-        output:
-            expand("{result_dir}/{quantifier}/{{assembly}}-{{sample}}/quant.sf", **config),
-        log:
-            expand("{log_dir}/quantification/{{assembly}}_{quantifier}-{{sample}}.log",**config),
-        params:
-            input=(
-                lambda wildcards, input: ["-r", input.reads]
-                if SAMPLEDICT[wildcards.sample]["layout"] == "SINGLE"
-                else ["-1", input.reads[0], "-2", input.reads[1]]
-            ),
-            params=config["quantifier_flags"],
-            reps=lambda wildcards, input: input,  # help resolve changes in input files
-        message: EXPLAIN["salmon_quant"]
-        conda: "../envs/salmon.yaml"
-        threads: 12
-        resources: mem_gb=8,
-        shell:
-            """
-            salmon quant -i {input.index} -l A {params.input} {params.params} -o $(dirname {output}) \
-            --threads {threads} > {log} 2>&1
-            """
+        def salmon_index_input(wildcards):
+            level = config.get("quantifier_decoys", "")
+            if level == "full":
+                return rules.full_decoy_transcripts.output
+            if level == "partial":
+                return rules.partial_decoy_transcripts.output
+            return rules.get_transcripts.output
 
-elif  "scrna_seq" == WORKFLOW:
+
+        salmon_index_output = "salmon"
+        if config.get("quantifier_decoys", "") == "full":
+            salmon_index_output += "_fully_decoy_aware"
+        elif config.get("quantifier_decoys", "") == "partial":
+            salmon_index_output += "_partially_decoy_aware"
+
+        rule salmon_index:
+            """
+            Generate a transcriptome index for Salmon.
+            """
+            input:
+                salmon_index_input
+            output:
+                directory(expand(f"{{genome_dir}}/{{{{assembly}}}}/index/{salmon_index_output}", **config)),
+            log:
+                expand(f"{{log_dir}}/quantification/{{{{assembly}}}}_{salmon_index_output}_index.log",**config),
+            params:
+                decoys=(
+                    lambda wildcards, input: [""]
+                    if config.get("quantifier_decoys", "none") == "none"
+                    else ["-d", input[1]]
+                ),
+                params=config["quantifier_index"],
+            conda: "../envs/salmon.yaml"
+            priority: 10
+            threads: 10
+            resources: mem_gb=9,  # fully decoy aware
+            shell:
+                """
+                mkdir -p {output}
+    
+                salmon index -t {input[0]} {params.decoys} -i {output} {params.params} \
+                --threads {threads} > {log} 2>&1
+                """
+
+        rule salmon_quant:
+            """
+            Align reads against a transcriptome (index) with Salmon (mapping-based mode) and output a quantification file per sample.
+            """
+            input:
+                reads=get_reads,
+                index=rules.salmon_index.output,
+            output:
+                expand("{result_dir}/{quantifier}/{{assembly}}-{{sample}}/quant.sf", **config),
+            log:
+                expand("{log_dir}/quantification/{{assembly}}_{quantifier}-{{sample}}.log",**config),
+            params:
+                input=(
+                    lambda wildcards, input: ["-r", input.reads]
+                    if SAMPLEDICT[wildcards.sample]["layout"] == "SINGLE"
+                    else ["-1", input.reads[0], "-2", input.reads[1]]
+                ),
+                params=config["quantifier_flags"],
+                reps=lambda wildcards, input: input,  # help resolve changes in input files
+            message: EXPLAIN["salmon_quant"]
+            conda: "../envs/salmon.yaml"
+            threads: 12
+            resources: mem_gb=8,
+            shell:
+                """
+                salmon quant -i {input.index} -l A {params.input} {params.params} -o $(dirname {output}) \
+                --threads {threads} > {log} 2>&1
+                """
+
+    elif config["quantifier"] == "htseq":
+
+        rule htseq_count:
+            """
+            summarize reads to gene level. Outputs a counts table per bam file.
+            """
+            input:
+                bam=FINAL_BAM,
+                gtf=rules.get_genome_annotation.output.gtf,
+                report=rules.infer_strandedness.output,
+            output:
+                expand("{counts_dir}/{{assembly}}-{{sample}}.counts.tsv",**config),
+            log:
+                expand("{log_dir}/counts_matrix/{{assembly}}-{{sample}}.counts.log",**config),
+            params:
+                strandedness=lambda wildcards, input: get_strandedness(input.report[0]),
+                user_flags=config["htseq_flags"],
+            message: EXPLAIN["htseq_count"]
+            conda: "../envs/gene_counts.yaml"
+            threads: 1
+            shell:
+                """
+                htseq-count {input.bam} {input.gtf} -r pos -s {params.strandedness} {params.user_flags} -n {threads} -c {output} > {log} 2>&1
+                """
+
+    elif config["quantifier"] == "featurecounts":
+
+        rule featurecounts:
+            """
+            summarize reads to gene level. Outputs a counts table per bam file.
+            """
+            input:
+                bam=FINAL_BAM,
+                gtf=rules.get_genome_annotation.output.gtf,
+                report=rules.infer_strandedness.output,
+            output:
+                expand("{counts_dir}/{{assembly}}-{{sample}}.counts.tsv",**config),
+            log:
+                expand("{log_dir}/counts_matrix/{{assembly}}-{{sample}}.counts.log",**config),
+            params:
+                strandedness=lambda wildcards, input: get_strandedness(input.report[0], fmt="fc"),
+                endedness=lambda wildcards: "" if SAMPLEDICT[wildcards.sample]["layout"] == "SINGLE" else "-p",
+                user_flags=config["featurecounts_flags"],
+            message: EXPLAIN["featurecounts_rna"]
+            conda: "../envs/gene_counts.yaml"
+            threads: 1
+            shell:
+                """
+                featureCounts -a {input.gtf} {input.bam} {params.endedness} -s {params.strandedness} {params.user_flags} -T {threads} -o {output} > {log} 2>&1
+                """
+
+    else:
+        raise AssertionError(
+            f'Quantifier "{config["quantifier"]}" not recognized! Options: ' +
+            ", ".join(["salmon", "htseq", "featurecounts"])
+        )
+
+
+elif WORKFLOW == "scrna_seq":
 
     def get_fastq_pair_reads(wildcards):
         """
@@ -234,80 +292,79 @@ elif  "scrna_seq" == WORKFLOW:
         if "kite" in config.get("ref", ""):
 
             ruleorder: kallistobus_ref_kite > get_genome
-            ruleorder: kallistobus_ref_kite > kallistobus_ref
+            # ruleorder: kallistobus_ref_kite > kallistobus_ref
 
+            rule kallistobus_ref_kite:
+                """
+                Make a mismatch index for kallistobus. 
+                This index is required to count feature barcodes, such as antibody tags.
+                """
+                input:
+                    featurebarcodes=expand("{genome_dir}/{{assembly}}.tsv", **config),
+                output:
+                    directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/kite", **config)),
+                log:
+                    expand("{log_dir}/kallistobus_index_kite/{{assembly}}.log", **config),
+                conda:
+                    "../envs/kallistobus.yaml"
+                resources:
+                    mem_gb=12,
+                params:
+                    basename=lambda wildcards, output: f"{output[0]}/{wildcards.assembly}",
+                    options=config.get("ref"),
+                priority: 10
+                shell:
+                    """
+                    mkdir -p {output}
+                    kb ref  \
+                    {input.featurebarcodes} \
+                    {params.options} \
+                    -i {params.basename}.idx -g {params.basename}_t2g.txt -f1 {params.basename}_cdna.fa > {log} 2>&1
+                    """
 
         else:
 
-            ruleorder: kallistobus_ref > kallistobus_ref_kite
+            # ruleorder: kallistobus_ref > kallistobus_ref_kite
 
-        rule kallistobus_ref:
-            """
-            Make a genome index for kallistobus. This index is required for counting.
-            """
-            input:
-                fa=rules.get_genome.output,
-                gtf=rules.get_genome_annotation.output.gtf,
-            output:
-                directory(expand("{genome_dir}/{{assembly}}/index/kallistobus", **config)),
-            log:
-                expand("{log_dir}/kallistobus_index/{{assembly}}.log", **config),
-            benchmark:
-                expand("{benchmark_dir}/kallistobus_index/{{assembly}}.benchmark.txt", **config)[0]
-            priority: 10
-            conda:
-                "../envs/kallistobus.yaml"
-            resources:
-                mem_gb=88,
-            params:
-                basename=lambda wildcards, output: f"{output[0]}/{wildcards.assembly}",
-                options=config.get("ref"),
-                c1=lambda wildcards, output: f"-c1 {output[0]}/{wildcards.assembly}_cdna_t2c.txt"
-                if ("lamanno" or "nucleus") in config.get("ref")
-                else "",
-                c2=lambda wildcards, output: f"-c2 {output[0]}/{wildcards.assembly}_intron_t2c.txt"
-                if ("lamanno" or "nucleus") in config.get("ref")
-                else "",
-                f2=lambda wildcards, output: f"-f2 {output[0]}/{wildcards.assembly}_intron.fa"
-                if ("lamanno" or "nucleus") in config.get("ref")
-                else "",
-            shell:
+            rule kallistobus_ref:
                 """
-                mkdir -p {output}
-                kb ref \
-                {input.fa} {input.gtf} \
-                -i {params.basename}.idx -g {params.basename}_t2g.txt -f1 {params.basename}_cdna.fa \
-                {params.f2} {params.c1} {params.c2} \
-                {params.options} > {log} 2>&1
+                Make a genome index for kallistobus. This index is required for counting.
                 """
-
-
-        rule kallistobus_ref_kite:
-            """
-            Make a mismatch index for kallistobus. This index is required to count feature barcodes, such as antibody tags.
-            """
-            input:
-                featurebarcodes=expand("{genome_dir}/{{assembly}}.tsv", **config),
-            output:
-                directory(expand("{genome_dir}/{{assembly}}/index/kallistobus/kite", **config)),
-            log:
-                expand("{log_dir}/kallistobus_index_kite/{{assembly}}.log", **config),
-            conda:
-                "../envs/kallistobus.yaml"
-            resources:
-                mem_gb=12,
-            params:
-                basename=lambda wildcards, output: f"{output[0]}/{wildcards.assembly}",
-                options=config.get("ref"),
-            priority: 10
-            shell:
-                """
-                mkdir -p {output}
-                kb ref  \
-                {input.featurebarcodes} \
-                {params.options} \
-                -i {params.basename}.idx -g {params.basename}_t2g.txt -f1 {params.basename}_cdna.fa > {log} 2>&1
-                """
+                input:
+                    fa=rules.get_genome.output,
+                    gtf=rules.get_genome_annotation.output.gtf,
+                output:
+                    directory(expand("{genome_dir}/{{assembly}}/index/kallistobus", **config)),
+                log:
+                    expand("{log_dir}/kallistobus_index/{{assembly}}.log", **config),
+                benchmark:
+                    expand("{benchmark_dir}/kallistobus_index/{{assembly}}.benchmark.txt", **config)[0]
+                priority: 10
+                conda:
+                    "../envs/kallistobus.yaml"
+                resources:
+                    mem_gb=88,
+                params:
+                    basename=lambda wildcards, output: f"{output[0]}/{wildcards.assembly}",
+                    options=config.get("ref"),
+                    c1=lambda wildcards, output: f"-c1 {output[0]}/{wildcards.assembly}_cdna_t2c.txt"
+                    if ("lamanno" or "nucleus") in config.get("ref")
+                    else "",
+                    c2=lambda wildcards, output: f"-c2 {output[0]}/{wildcards.assembly}_intron_t2c.txt"
+                    if ("lamanno" or "nucleus") in config.get("ref")
+                    else "",
+                    f2=lambda wildcards, output: f"-f2 {output[0]}/{wildcards.assembly}_intron.fa"
+                    if ("lamanno" or "nucleus") in config.get("ref")
+                    else "",
+                shell:
+                    """
+                    mkdir -p {output}
+                    kb ref \
+                    {input.fa} {input.gtf} \
+                    -i {params.basename}.idx -g {params.basename}_t2g.txt -f1 {params.basename}_cdna.fa \
+                    {params.f2} {params.c1} {params.c2} \
+                    {params.options} > {log} 2>&1
+                    """
 
 
         def get_kb_dir(wildcards):
@@ -364,8 +421,7 @@ elif  "scrna_seq" == WORKFLOW:
                 fi
                 """
 
-
-    if config["quantifier"] == "citeseqcount":
+    elif config["quantifier"] == "citeseqcount":
 
         ruleorder: citeseqcount > get_genome
 
@@ -403,56 +459,11 @@ elif  "scrna_seq" == WORKFLOW:
                 {params.options} -o {params.outdir} > {log} 2>&1
                 """
 
-elif config["quantifier"] == "htseq":
-
-    rule htseq_count:
-        """
-        summarize reads to gene level. Outputs a counts table per bam file.
-        """
-        input:
-            bam=FINAL_BAM,
-            gtf=rules.get_genome_annotation.output.gtf,
-            report=rules.infer_strandedness.output,
-        output:
-            expand("{counts_dir}/{{assembly}}-{{sample}}.counts.tsv",**config),
-        log:
-            expand("{log_dir}/counts_matrix/{{assembly}}-{{sample}}.counts.log",**config),
-        params:
-            strandedness=lambda wildcards, input: get_strandedness(input.report[0]),
-            user_flags=config["htseq_flags"],
-        message: EXPLAIN["htseq_count"]
-        conda: "../envs/gene_counts.yaml"
-        threads: 1
-        shell:
-            """
-            htseq-count {input.bam} {input.gtf} -r pos -s {params.strandedness} {params.user_flags} -n {threads} -c {output} > {log} 2>&1
-            """
-
-elif config["quantifier"] == "featurecounts":
-
-    rule featurecounts:
-        """
-        summarize reads to gene level. Outputs a counts table per bam file.
-        """
-        input:
-            bam=FINAL_BAM,
-            gtf=rules.get_genome_annotation.output.gtf,
-            report=rules.infer_strandedness.output,
-        output:
-            expand("{counts_dir}/{{assembly}}-{{sample}}.counts.tsv",**config),
-        log:
-            expand("{log_dir}/counts_matrix/{{assembly}}-{{sample}}.counts.log",**config),
-        params:
-            strandedness=lambda wildcards, input: get_strandedness(input.report[0], fmt="fc"),
-            endedness=lambda wildcards: "" if SAMPLEDICT[wildcards.sample]["layout"] == "SINGLE" else "-p",
-            user_flags=config["featurecounts_flags"],
-        message: EXPLAIN["featurecounts_rna"]
-        conda: "../envs/gene_counts.yaml"
-        threads: 1
-        shell:
-            """
-            featureCounts -a {input.gtf} {input.bam} {params.endedness} -s {params.strandedness} {params.user_flags} -T {threads} -o {output} > {log} 2>&1
-            """
+    else:
+        raise AssertionError(
+            f'Quantifier "{config["quantifier"]}" not recognized! Options: ' +
+            ", ".join(["kallistobus", "citeseqcount"])
+        )
 
 if config.get("dexseq"):
 

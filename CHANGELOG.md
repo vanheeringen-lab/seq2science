@@ -9,6 +9,16 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Changed
+
+- only one scRNA-seq index generation rule is loaded per run 
+
+### Fixed
+
+- raise a descriptive error if the specified aligner/quantifier is incorrect
+- raise a descriptive error if the gene annotation is required, but is not found locally, and cannot be downloaded
+- integration test for rna-seq
+
 ## [1.2.5] - 2026-02-24
 
 ### Fixed

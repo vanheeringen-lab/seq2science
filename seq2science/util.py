@@ -969,7 +969,7 @@ class PickleDict(dict):
                 os._exit(1)  # noqa
 
             if self[assembly]["annotation"] is None:
-                if verbose:
+                if verbose or annotation_required:
                     logger.warning(
                         f"No annotation for assembly {assembly} can be downloaded. Another provider (and "
                         f"thus another assembly name) might have a gene annotation.\n"
