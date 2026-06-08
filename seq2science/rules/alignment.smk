@@ -467,6 +467,14 @@ elif config["aligner"] == "star":
             """
 
 
+# scRNA-seq does not use an aligner
+elif WORKFLOW != "scrna_seq":
+    raise AssertionError(
+        f'Aligner "{config["aligner"]}" not recognized! Options: ' +
+        ", ".join(["bowtie2", "bwa-mem", "bwa-mem2", "hisat2", "minimap2", "star"])
+    )
+
+
 rule samtools_presort:
     """
     (Pre)sort the result of alignment with the samtools sorter.

@@ -408,7 +408,7 @@ if [ $1 = "rna-seq" ]; then
   assert_rulecount $1 dexseq_count 1
 
   printf "\ndecoy aware salmon index\n"
-  seq2science run rna-seq --skip-rerun -nr --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions quiet=True config={samples:tests/alignment/dag_sample.tsv,fastq_dir:tests/local_test_results/fastq} | tee tests/local_test_results/${1}_dag
+  seq2science run rna-seq --skip-rerun -nr --configfile tests/rna_seq/salmon_config.yaml --snakemakeOptions quiet=True config={samples:tests/alignment/dag_sample.tsv,fastq_dir:tests/local_test_results/fastq,genome_dir:tests/local_test_results} | tee tests/local_test_results/${1}_dag
   assert_rulecount $1 full_decoy_transcripts 1
 
   printf "\ndecoy tximeta\n"
