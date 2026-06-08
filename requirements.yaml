@@ -5,8 +5,8 @@ channels:
 dependencies:
   - conda-forge::python=3.10
   - bioconda::snakemake-minimal=7.25.0
-  - conda-forge::conda=23.5.2
-  - conda-forge::mamba=1.5.1
+  - conda-forge::conda=24.1.2
+  - conda-forge::mamba=1.5.9
   - bioconda::genomepy=0.16.3
   - conda-forge::biopython=1.81
   - conda-forge::filelock=3.10.7
@@ -19,9 +19,10 @@ dependencies:
   - conda-forge::xdg=6.0.0
   - conda-forge::argcomplete=3.0.5
   - conda-forge::tabulate=0.9.0
-  # - conda-forge::setuptools=60  # for the pkg_resources module
+  - conda-forge::setuptools=60  # for the pkg_resources module
   - conda-forge::conda-ecosystem-user-package-isolation=1.0
+  - conda-forge::toml=0.10.2  # build requirement
 
-  # build
-  - conda-forge::setuptools=59.4.0
-  - conda-forge::toml=0.10.2
+  - pip
+  - pip:
+    - git+https://github.com/vanheeringen-lab/genomepy.git@develop
