@@ -1039,20 +1039,14 @@ def _get_current_version(package):
     """
     Attempt to return a given package's version
     """
-    # conda-ecosystem-user-package-isolation is not a package
-    # xdg keeps its version in a pyproject.toml (not included)
-    # argcomplete keeps its version in a setup.py (not included)
-    # trackhub versioning is weird
-    # mamba is not a package
-    # setuptools and toml are for packaging only
     if package in [
-        "conda-ecosystem-user-package-isolation",
-        "xdg",
-        "argcomplete",
-        "trackhub",
-        "mamba",
-        "setuptools",
-        "toml",
+        "conda-ecosystem-user-package-isolation",  # not a package
+        "xdg",  # keeps its version in a pyproject.toml (not included)
+        "argcomplete",  # keeps its version in a setup.py (not included)
+        "trackhub",  # versioning is weird
+        "mamba",  # not a package
+        "setuptools",  # for packaging purposes only
+        "toml",  # for packaging purposes only
     ]:
         return None
     if package == "python":

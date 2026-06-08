@@ -1,0 +1,6 @@
+KeyError in file /home/siebrenf/git/seq2science/seq2science/rules/../rules/configuration_generic.smk, line 74:
+'rule_dir'
+  File "/home/siebrenf/git/seq2science/seq2science/workflows/rna_seq/Snakefile", line 4, in <module>
+  File "/home/siebrenf/git/seq2science/seq2science/workflows/rna_seq/../../rules/configuration.smk", line 10, in <module>
+  File "/home/siebrenf/git/seq2science/seq2science/rules/../rules/configuration_generic.smk", line 108, in <module>
+  File "/home/siebrenf/git/seq2science/seq2science/rules/../rules/configuration_generic.smk", line 74, in parse_config

@@ -337,9 +337,12 @@ if WORKFLOW != "download_fastq":
         # we make a temporary _used assemblies as gimme maelstrom might need more assemblies downloaded
         # and those assemblies need to be saved in the local/remote assemblies variable
         _used_assemblies = used_assemblies
-        if (config.get("run_gimme_maelstrom") and config.get("infer_motif2factors") and
-                set(samples["assembly"]) - set(config.get("motif2factors_database_references"))):
-            _used_assemblies = used_assemblies + config["motif2factors_reference"] + config["motif2factors_database_references"]
+        if config.get("run_gimme_maelstrom") and config.get("infer_motif2factors"):
+            _used_assemblies = list(set(
+                    used_assemblies +
+                    config["motif2factors_reference"] +
+                    config["motif2factors_database_references"]
+            ))
 
         # dictionary with which providers to use per genome
         providers = PickleDict(os.path.join(CACHE_DIR, "providers.p"))
