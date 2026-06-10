@@ -3,8 +3,9 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - bioconda::genomepy=0.16.3
+  - bioconda::genomepy=0.16.4
   - conda-forge::conda-ecosystem-user-package-isolation=1.0
+
   - pip
   - pip:
     - git+https://github.com/vanheeringen-lab/pytxi.git@v0.1.2

@@ -5,5 +5,5 @@ channels:
 dependencies:
   - conda-forge::python=3.9
   - conda-forge::matplotlib-base=3.7.1
-  - bioconda::genomepy=0.16.3
+  - bioconda::genomepy=0.16.4
   - conda-forge::conda-ecosystem-user-package-isolation=1.0

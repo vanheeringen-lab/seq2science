@@ -15,9 +15,12 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ### Fixed
 
+- downloading of gene annotation from NCBI (updated genomepy to 0.16.4)
 - raise a descriptive error if the specified aligner/quantifier is incorrect
 - raise a descriptive error if the gene annotation is required, but is not found locally, and cannot be downloaded
 - integration test for rna-seq
+- error message when SRA is down
+- rule multiqc_explain now works with compound binary CLI arguments (e.g. -rk)
 
 ## [1.2.5] - 2026-02-24
 
