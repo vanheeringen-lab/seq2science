@@ -21,6 +21,7 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 - integration test for rna-seq
 - error message when SRA is down
 - rule multiqc_explain now works with compound binary CLI arguments (e.g. -rk)
+- rule motif2factors (updated to gimmemotifs 0.18.4 + orthofinder 3.1.5)
 
 ## [1.2.5] - 2026-02-24
 
