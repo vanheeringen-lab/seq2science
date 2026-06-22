@@ -337,7 +337,7 @@ def _run(args, base_dir, workflows_dir, config_path):
         "use_conda": True,
         "conda_cleanup_pkgs": "cache",
         "conda_frontend": "mamba",
-        "conda_prefix": os.path.join(base_dir, ".snakemake"),
+        "conda_prefix": os.path.join(base_dir, ".snakemake"),  # TODO: "{.condarc:envs_dirs}/.snakemake"
         "dryrun": args.dryrun,
         "printreason": args.reason,
         "keepgoing": args.keep_going,

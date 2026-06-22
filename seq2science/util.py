@@ -285,7 +285,7 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
                 "seq2science does not support downloading those..\n\n"
             )
             logger.debug(f"Affected samples: {', '.join(geo_samples)}")
-            tb_str = traceback.format_exception(value=e, tb=e.__traceback__)
+            tb_str = traceback.format_exception(e)
             logger.debug("".join(tb_str))
             os._exit(1)  # noqa
 
@@ -307,7 +307,7 @@ def samples2metadata_sra(samples: List[str], logger) -> dict:
             "seq2science does not support downloading those..\n\n"
         )
         logger.debug(f"Affected samples: {', '.join(sample2clean.values())}")
-        tb_str = traceback.format_exception(value=e, tb=e.__traceback__)
+        tb_str = traceback.format_exception(e)
         logger.debug("".join(tb_str))
         os._exit(1)  # noqa
 
@@ -1039,12 +1039,15 @@ def _get_current_version(package):
     """
     Attempt to return a given package's version
     """
-    # package-isolation is not a package
-    # xdg keeps its version in a pyproject.toml (not included)
-    # argcomplete keeps its version in a setup.py (not included)
-    # trackhub versioning is weird
-    # mamba is not a package
-    if package in ["conda-ecosystem-user-package-isolation", "xdg", "argcomplete", "trackhub", "mamba"]:
+    if package in [
+        "conda-ecosystem-user-package-isolation",  # not a package
+        "xdg",  # keeps its version in a pyproject.toml (not included)
+        "argcomplete",  # keeps its version in a setup.py (not included)
+        "trackhub",  # versioning is weird
+        "mamba",  # not a package
+        "setuptools",  # for packaging purposes only
+        "toml",  # for packaging purposes only
+    ]:
         return None
     if package == "python":
         return sys.version.split()[0]

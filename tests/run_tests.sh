@@ -1,5 +1,4 @@
 # to run these tests locally:
-#   mamba install toml --yes
 #   python setup.py develop
 #   bash ./tests/run_tests.sh TEST
 

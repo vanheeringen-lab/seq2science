@@ -6,6 +6,7 @@ report.html
 *config*yaml*
 seq2science.*.log
 **/.tmp_graph.txt
+__pycache__/
 *test*
 build/
 *.egg*

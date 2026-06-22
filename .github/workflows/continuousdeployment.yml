@@ -30,7 +30,7 @@ jobs:
         version: ${{ steps.tag_name.outputs.current_version }}
         path: ./CHANGELOG.md
 
-    - name: Create Release
+    - name: Create Release  # TODO: fix
       uses: actions/create-release@latest
       env:
         GITHUB_TOKEN: ${{ secrets.AccessToken }}
