@@ -9,6 +9,8 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+## [1.2.6] - 2026-06-22
+
 ### Changed
 
 - only one scRNA-seq index generation rule is loaded per run 
@@ -877,7 +879,8 @@ Many minor bug- and quality of life fixes.
 
 First release of seq2science!
 
-[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/v1.2.5...develop
+[Unreleased]: https://github.com/vanheeringen-lab/seq2science/compare/master...develop
+[1.2.6]: https://github.com/vanheeringen-lab/seq2science/compare/v1.2.5...v1.2.6
 [1.2.5]: https://github.com/vanheeringen-lab/seq2science/compare/v1.2.4...v1.2.5
 [1.2.4]: https://github.com/vanheeringen-lab/seq2science/compare/v1.2.3...v1.2.4
 [1.2.3]: https://github.com/vanheeringen-lab/seq2science/compare/v1.2.2...v1.2.3
