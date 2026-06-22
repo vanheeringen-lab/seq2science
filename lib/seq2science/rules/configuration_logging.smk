@@ -154,6 +154,8 @@ if not config.get("no_config_log"):
         ("min_mapping_quality", no_aligners),
         ("only_primary_align", no_aligners),
         ("remove_blacklist", no_aligners),
+        ("motif2factors_database_references", not config.get("motif2factors_database_references")),
+        ("motif2factors_reference", not config.get("motif2factors_reference")),
         ("tx2gene_from_gtf", config.get("quantifier") != "salmon"),
         ("tximeta", config.get("quantifier") != "salmon"),
         ("deseq2", not config.get("contrasts")),

@@ -2,6 +2,7 @@
 all rules/logic related to quality control and the final multiQC report should be here.
 """
 
+import itertools
 import glob
 import re
 
@@ -528,22 +529,22 @@ rule multiqc_explain:
         cli_call[1] = "explain"
 
         # remove run specific commands
-        cli_call = [
-            arg
-            for arg in cli_call
-            if arg
-            not in {
-                "--unlock",
-                "--rerun-incomplete",
-                "-k",
-                "--keep-going",
-                "--skip-rerun",
-                "--reason",
-                "-r",
-                "--dryrun",
-                "-n",
-            }
-        ]
+        blacklist = {
+            "--unlock",
+            "--rerun-incomplete",
+            "--keep-going",
+            "--skip-rerun",
+            "--reason",
+            "--dryrun",
+        }
+        # all permutations of the binary flags -n, -r and -k
+        for a in ["r", "n", "k"]:
+            blacklist.add(f"-{a}")
+        for a, b in itertools.permutations(["r", "n", "k"],2):
+            blacklist.add(f"-{a}{b}")
+        for a, b, c in itertools.permutations(["r", "n", "k"],3):
+            blacklist.add(f"-{a}{b}{c}")
+        cli_call = [arg for arg in cli_call if arg not in blacklist]
         if "--cores" in cli_call:
             cores_index = cli_call.index("--cores")
             del cli_call[cores_index : cores_index + 2]

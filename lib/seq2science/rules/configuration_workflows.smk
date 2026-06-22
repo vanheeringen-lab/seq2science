@@ -66,10 +66,21 @@ if config.get("peak_caller", False):
         else:
             config["macs2_types"].extend(["summits.bed", "peaks.narrowPeak"])
 
-    if "run_gimme_maelstrom" in config and config["run_gimme_maelstrom"]:
+    if config.get("run_gimme_maelstrom"):
         assert len(breps.index) > 1, (
             "To run gimme maelstrom you need more than one biological replicate!"
         )
+
+        # only need additional assemblies when ortholog inference is truly needed
+        if len(set(samples["assembly"]) - set(config["motif2factors_database_references"])) == 0:
+            config["infer_motif2factors"] = False
+        if config["infer_motif2factors"] is False:
+            config["motif2factors_database_references"] = []
+            config["motif2factors_reference"] = []
+    else:
+        config["infer_motif2factors"] = False
+        config["motif2factors_database_references"] = []
+        config["motif2factors_reference"] = []
 
 # make sure that both maximum and minimum insert sizes are existing when one of them is used
 if config.get("min_template_length") and not config.get("max_template_length"):
