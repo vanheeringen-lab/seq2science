@@ -9,6 +9,10 @@ All changed fall under either one of these types: `Added`, `Changed`, `Deprecate
 
 ## [Unreleased]
 
+### Added
+
+- automated mitochondrial gene retrieval with genomepy for SCTK quality control
+
 ### Changed
 
 - only one scRNA-seq index generation rule is loaded per run 
